@@ -1,0 +1,39 @@
+<?php
+
+if (null === $this->container) {
+    $this->container = $this->breadcrumbs()->getContainer();
+}
+
+// find deepest active
+if (!$active = $this->breadcrumbs()->findActive($this->container)) {
+    return '';
+}
+
+$active = $active['page'];
+
+// put the deepest active page last in breadcrumbs
+if ($this->breadcrumbs()->getLinkLast()) {
+    $html = $active;
+} else {
+    $html = $active->getLabel();
+    if ($this->breadcrumbs()->getUseTranslator() && $t = $this->breadcrumbs()->getTranslator()) {
+        $html = $t->translate($html);
+    }
+    $html = $this->escape($html);
+}
+
+// walk back to root
+while (($parent = $active->getParent()) != null) {
+    if ($parent instanceof Zend_Navigation_Page) {
+        // prepend crumb to html
+        $html = $parent->getLabel() . $this->breadcrumbs()->getSeparator() . $html;
+    }
+
+    if ($parent === $this->container) {
+        // at the root of the given container
+        break;
+    }
+
+    $active = $parent;
+}
+echo strlen($html) ? $this->breadcrumbs()->getIndent() . $html : '';

@@ -1,0 +1,20 @@
+<div id="deposito">
+	<dd id="identification-element">
+	    <fieldset id="fieldset-deposito">
+		<legend>Identificação</legend>
+		<dl>
+		    <dt id="deposito-codigo-label" class="codigo"><label for="deposito-codigo" class="optional">Código:</label></dt>
+		    <dd id="deposito-codigo-element" class="codigo"><?php echo "{$this->element->id}";?></dd>
+		    
+		    <dt id="deposito-descricao-label" class="descricao"><label for="deposito-descricao" class="optional">*Descrição:</label></dt>
+		    <dd id="deposito-descricao-element" class="descricao"><?php echo "{$this->element->descricao}";?></dd>
+		    
+		    <dt id="deposito-filial-label" class="extra"><label for="deposito-filial" class="optional">*Filial:</label></dt>
+		    <dd id="deposito-filial-element" class="extra"><?php echo "{$this->element->idFilial}";?></dd>
+		    
+		    <dt id="deposito-ativo-label" class="depositoAtivo"><label for="deposito-descricao" class="optional">Ativo:</label></dt>
+		    <dd id="deposito-ativo-element" class="extra"><?php echo "{$this->element->isAtivo}";?></dd>
+		</dl>
+	    </fieldset>
+	</dd>
+</div>

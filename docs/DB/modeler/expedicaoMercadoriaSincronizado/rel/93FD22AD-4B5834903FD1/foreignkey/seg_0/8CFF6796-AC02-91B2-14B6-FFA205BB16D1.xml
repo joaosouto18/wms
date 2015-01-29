@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="8CFF6796-AC02-91B2-14B6-FFA205BB16D1" name="OND_RES_OS_OND_RES_FK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>OND_RES_OS_OND_RES_FK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>5FADD783-C1D7-19D9-34C5-DAA6B376CA1C</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>E89038C5-78C2-50E9-41F3-6017CE4CD2ED</localFKIndex>
+<keyObject>65B389AB-CC57-7769-28EC-EAC16B19D77D</keyObject>
+<mandatory>true</mandatory>
+<transferable>true</transferable>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

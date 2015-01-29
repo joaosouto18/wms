@@ -1,0 +1,75 @@
+<?php if ($this->volume): ?>
+    <style>
+        table.dialogData {
+            width: 100%;
+        }
+        table.dialogData tr.title {
+            font-weight: bold;
+        }
+        table.dialogData td {
+            font-size: 12px;
+            height: 21px;
+        }
+    </style>    
+    <table class="dialogData">
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <tr class="title">
+            <td>Largura:</td>
+            <td>Altura:</td>
+            <td>Profundidade:</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->volume->getLargura() ?></td>
+            <td><?php echo $this->volume->getLargura() ?></td>
+            <td><?php echo $this->volume->getLargura() ?></td>
+        </tr>
+        <tr class="title">
+            <td>Sequencia:</td>
+            <td>Cubagem:</td>
+            <td>Peso:</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->volume->getCodigoSequencial() ?></td>
+            <td><?php echo $this->volume->getCubagem() ?></td>
+            <td><?php echo $this->volume->getPeso() ?></td>
+        </tr>
+        <tr class="title">
+            <td colspan="3">Código de Barras:</td>
+        </tr>
+        <tr>
+            <td colspan="3"><?php echo $this->volume->getCodigoBarras() ?></td>
+        </tr>        
+        <tr>
+            <td colspan="3">&nbsp;</td>
+        </tr>
+        <?php
+        $normas = $this->volume->getNormasUnitizacao();
+        if ($normas):
+            ?>
+            <tr class="title">
+                <td colspan="3" style="color: #666">Relação de Normas vinculadas: </td>
+            </tr>
+                <?php
+            foreach ($normas as $norma):
+                ?>
+            <tr>
+                <td>Unitizador: <?php echo $norma->getIdUnitizador() ?></td>
+                <td>Lastro: <?php echo $norma->getLastro() ?></td>
+                <td>Número de Camadas: <?php echo $norma->getNumCamadas() ?></td>
+            <tr>
+            </tr>
+                <td>Peso: <?php echo $norma->getPeso() ?></td>
+                <td>Norma: <?php echo $norma->getNorma() ?></td>
+                <td>Padrão: <?php echo $norma->getIsPadrao() ?></td>
+            </tr>      
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+            <?php
+        endforeach;
+    endif;
+    ?>
+    </table>
+<?php endif; ?>

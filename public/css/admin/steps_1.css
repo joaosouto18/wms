@@ -1,0 +1,36 @@
+@CHARSET "UTF-8";
+
+ul.steps {
+    background: url(../../../img/admin/stepline.png) repeat-x 0 8px;
+    display: table;
+    width: 90%;
+    margin:auto;
+}
+ul.steps li {
+    list-style: none;
+    display: table-cell;
+    text-align: center;
+}
+ul.steps li span {
+    display: block;
+}
+ul.steps li span.dot {
+    background: url(../../../img/admin/steps.png) no-repeat center center;
+    line-height: 40px;
+    height: 20px;
+    width: 20px;
+    margin: auto;
+}
+ul.steps li:first-child span.dot {
+    background-position-x: 0 -40px;
+}
+ul.steps li span.text {
+    margin-top: 5px;
+}
+ul.steps li.checked span {
+    background-position: 0 -100px;
+}
+ul.steps li.checked span.text {
+    font-weight: bold;
+}
+

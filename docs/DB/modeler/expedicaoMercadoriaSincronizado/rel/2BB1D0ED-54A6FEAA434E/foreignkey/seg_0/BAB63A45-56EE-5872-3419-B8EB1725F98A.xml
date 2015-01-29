@@ -1,0 +1,16 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" id="BAB63A45-56EE-5872-3419-B8EB1725F98A" directorySegmentName="seg_0" name="ETQ_SEPAR_PROD_EMB_FK">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>ETIQUETA_SEPARACAO_PRODUTO_EMBALAGEM_FK</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>F39BAE12-16CF-315D-38B3-B777D9ACB7FC</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>9A60CC31-57EC-64F3-8ACD-3702D1A2E847</localFKIndex>
+<keyObject>F139F52D-2FA7-ACEF-C0C1-43C889543156</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+</FKIndexAssociation>

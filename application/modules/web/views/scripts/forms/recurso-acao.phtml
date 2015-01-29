@@ -1,0 +1,28 @@
+<dt id="identificacao-label">&nbsp;</dt>
+<dd id="identificacao-element">
+    <fieldset id="fieldset-identificacao">
+	<legend>Ações vinculadas a este recurso</legend>
+	<dl>
+	    <table style="border-collapse: separate; border-spacing: 5px;">
+		<tr>
+		    <th align="left">Ação</th>
+		    <th align="left">Nome do Vinculo</th>
+		</tr>
+		<?php 
+		$count = 0;
+		foreach ($this->element->getElements() as $element) {
+		    //exibe 2 elementos por vez dentro uma div
+		    echo ($count == 0) ? '<tr>' : '';
+		    echo '<td>' . $element . '</td>';
+		    echo ($count == 1) ? '</tr>' : '';
+		    $count++;
+
+		    if (($count - 2) == 0) {
+			$count = 0;
+		    }
+		}
+		?>
+	    </table>
+	</dl>
+    </fieldset>
+</dd>

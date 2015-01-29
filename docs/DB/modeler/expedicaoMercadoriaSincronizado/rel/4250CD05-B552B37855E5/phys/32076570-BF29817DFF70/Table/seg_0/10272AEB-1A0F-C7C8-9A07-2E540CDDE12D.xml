@@ -1,0 +1,99 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="UNITIZADOR" directorySegmentName="seg_0" id="10272AEB-1A0F-C7C8-9A07-2E540CDDE12D">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:00 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>3374B01E-72FC-037B-1A29-C861A3A38F66</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<indexProxies>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="PK_UNITI" id="F2482C0E-4C8E-4781-B7FB-C0917304FB96">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+</indexProxies>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="NUM_ALTURA_UNITIZADOR" id="03306B87-68CF-D908-2A4A-30D93E3F3377">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+<ColumnProxy name="COD_UNITIZADOR" id="11254BC5-53B8-59A9-9D8B-94D0AE0E6FB4">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_CAPACIDADE_UNITIZADOR" id="1B0B9DD8-12D5-EE82-FBD8-F33A22EC88AC">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_AREA_UNITIZADOR" id="4E14509E-09D4-6896-E4FA-17D825A8CA4C">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+<ColumnProxy name="NUM_PROFUNDIDADE_UNITIZADOR" id="5721A5A5-F72F-9EC6-5369-184F513A4848">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+<ColumnProxy name="NUM_LARGURA_UNITIZADOR" id="8886E253-3C53-1422-CD11-F99EA15D51B2">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+<ColumnProxy name="DSC_UNITIZADOR" id="BAF4A14C-657D-6F62-F48E-668BE9FC5B5E">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_CUBAGEM_UNITIZADOR" id="BD42EC9A-66C4-5039-DFA9-6C3A735155B5">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="QTD_ENDERECOS_BLOQUEAR" id="DC4CD526-86C6-7DD9-917A-D5B83EBF8DD3">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+</columnProxies>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="PK_UNITI" id="72192CFA-9F1F-F2DE-2C53-52EC7B2FF887">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+<existingIndex>F2482C0E-4C8E-4781-B7FB-C0917304FB96</existingIndex>
+<indexSegment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</indexSegment>
+<indexSort>SORTED</indexSort>
+<usingIndex>BY INDEX NAME</usingIndex>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

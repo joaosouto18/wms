@@ -1,0 +1,18 @@
+ContextoParametro:
+  type: entity
+  table: CONTEXTO_PARAMETRO
+  fields:
+    codContextoParametro:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_CONTEXTO_PARAMETRO
+      generator:
+        strategy: SEQUENCE
+    dscContextoParametro:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_CONTEXTO_PARAMETRO
+  lifecycleCallbacks: {  }

@@ -1,0 +1,48 @@
+PessoaRelacionamento:
+  type: entity
+  table: PESSOA_RELACIONAMENTO
+  fields:
+    codPessoaPrincipal:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA_PRINCIPAL
+    codPessoaSecundaria:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA_SECUNDARIA
+    codTipoRelacionamento:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_TIPO_RELACIONAMENTO
+    indRelacionamentoAtivo:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_RELACIONAMENTO_ATIVO
+  oneToOne:
+    codPessoaPrincipal:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA_PRINCIPAL:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+    codPessoaSecundaria:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA_SECUNDARIA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

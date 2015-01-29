@@ -1,0 +1,23 @@
+<h3>Recebimentos Aguardando Conferência</h3>
+<ul class="menu">
+    <?php if(count($this->recebimentoIniciado) == 0): ?>
+    <li>Nenhum Recebimento aguardando conferência.</li>    
+    <?php endif;?>
+    <?php foreach($this->recebimentoIniciado as $recebimento): ?>
+    <li>
+        <a href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?></a>
+    </li>
+    <?php endforeach; ?>
+</ul>
+
+<h3>Recebimentos em Conferência por <?php echo \Zend_Auth::getInstance()->getIdentity()->getPessoa()->getNome() ?></h3>
+<ul class="menu">
+    <?php if(count($this->recebimentoEmConferencia) == 0): ?>
+    <li>Nenhum Recebimento Em Conferência Pelo seu Usuário.</li>    
+    <?php endif;?>
+    <?php foreach($this->recebimentoEmConferencia as $recebimento): ?>
+    <li>
+        <a href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?></a>
+    </li>
+    <?php endforeach; ?>
+</ul>

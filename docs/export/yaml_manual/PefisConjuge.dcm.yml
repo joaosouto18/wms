@@ -1,0 +1,88 @@
+PefisConjuge:
+  type: entity
+  table: PEFIS_CONJUGE
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+      generator:
+        strategy: SEQUENCE
+    codTipoAtividadeConjuge:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ATIVIDADE_CONJUGE
+    datNascimentoConjuge:
+      type: datetime
+      nullable: true
+      column: DAT_NASCIMENTO_CONJUGE
+    dscCargoConjuge:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_CARGO_CONJUGE
+    nomConjuge:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_CONJUGE
+    nomEmpregadorConjuge:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_EMPREGADOR_CONJUGE
+    numCpfConjuge:
+      type: string
+      length: 11
+      fixed: false
+      nullable: true
+      column: NUM_CPF_CONJUGE
+    numDddConjuge:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_CONJUGE
+    numDddEmpregador:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_EMPREGADOR
+    numTelefoneConjuge:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_CONJUGE
+    numTelefoneEmpregador:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_EMPREGADOR
+    qtdTempoServicoConjuge:
+      type: decimal
+      nullable: true
+      column: QTD_TEMPO_SERVICO_CONJUGE
+    vlrSalarioConjuge:
+      type: decimal
+      nullable: true
+      column: VLR_SALARIO_CONJUGE
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOAFISICA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

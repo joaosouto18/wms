@@ -1,0 +1,343 @@
+<?php
+$produto = $this->produto;
+$idProduto = $this->idProduto;
+$gradeProduto = $this->gradeProduto;
+$produtoUnitario = $this->produtoUnitario;
+$produtoComposto = $this->produtoComposto;
+$produtoEmbalagens = $this->produtoEmbalagens;
+$embalagemNormasPaletizacao = $this->embalagemNormasPaletizacao;
+$sim = 'Sim';
+$nao = 'Não';
+?>
+<fieldset id="fieldset-produto">
+    <legend>Identificação</legend>
+    <table class="detailsPopUp">
+        <tr class="title">
+            <td>Código:</td>
+            <td>Grade:</td>
+            <td colspan="4">Descrição:</td>
+        </tr>
+        <tr>
+            <td><?php echo $produto->getId(); ?></td>
+            <td><?php echo $produto->getGrade(); ?></td>
+            <td colspan="4"><?php echo $produto->getDescricao(); ?></td>
+        </tr>
+
+        <tr>
+            <td colspan="6" style="height:10px"></td>
+        </tr>
+
+        <tr class="title">
+            <td colspan="3">Classe:</td>
+            <td colspan="3">Fabricante:</td>
+        </tr>
+        <tr>
+            <td colspan="3"><?php echo $produto->getClasse()->getNome(); ?></td>
+            <td colspan="3"><?php echo $produto->getFabricante()->getNome(); ?></td>
+        </tr>
+
+        <tr>
+            <td colspan="6" style="height:10px"></td>
+        </tr>
+
+        <tr class="title">
+            <td colspan="3">Linha de Separação:</td>
+            <td colspan="3">Tipo Comercialização:</td>
+        </tr>
+        <tr>
+            <?php if ($produto->getLinhaSeparacao() == null): ?>
+                <td colspan="3"><?php echo ''; ?></td>
+            <?php else : ?>
+                <td colspan="3"><?php echo $produto->getLinhaSeparacao()->getDescricao(); ?></td>
+            <?php endif; ?>
+            <td colspan="3"><?php echo $produto->getTipoComercializacao()->getDescricao(); ?></td>
+        </tr>
+
+        <tr>
+            <td colspan="6" style="height:10px"></td>
+        </tr>
+
+        <?php if ($produto->getCodigoBarrasBase()): ?>
+            <tr class="title">
+                <td colspan="3">Código de Barra Base:</td>
+                <td colspan="3">Nº Volumes:</td>
+            </tr>
+            <tr>
+                <td colspan="3"><?php echo $produto->getCodigoBarrasBase(); ?></td>
+                <td colspan="3"><?php echo $produto->getNumVolumes(); ?></td>
+            </tr>
+        <?php endif; ?>
+
+    </table>
+</fieldset>
+
+<?php
+//Se produto for unitario
+if ($produto->getTipoComercializacao()->getId() == $produtoUnitario) :
+    ?>
+
+    <fieldset id="fieldset-embalagem">
+        <legend>Embalagens</legend>
+        <?php
+        $i = 0;
+        foreach ($produtoEmbalagens as $embalagem):
+            ?>
+            <table class="detailsPopUp">
+                <tr class="title">
+                    <td>Descrição:</td>
+                    <td>Quantidade:</td>
+                    <td>Padrão Recebimento:</td>
+                    <td>Endereço:</td>
+                </tr>
+                <tr>
+                    <td><?php echo $embalagem['descricao']; ?></td>
+                    <td><?php echo $embalagem['quantidade']; ?></td>
+                    <td><?php echo $embalagem['isPadrao']; ?></td>                        
+                    <td><?php echo $embalagem['endereco']; ?></td>
+                </tr>
+                <tr>
+                    <td colspan="6" style="height:10px"></td>
+                </tr>
+                <tr class="title">
+                    <td>Cod. Barras Automático:</td>
+                    <td>Imprimir Etiqueta de Cod. Barras:</td>
+                    <td>Código de Barras:</td>
+                </tr>
+                <tr>
+                    <td><?php echo $embalagem['CBInterno']; ?></td>
+                    <td><?php echo $embalagem['imprimirCB']; ?></td>
+                    <td><?php echo $embalagem['codigoBarras']; ?></td>
+                </tr>
+
+                <?php
+                if ($i != count($produtoEmbalagens)):
+                    ?>
+                    <tr>
+                        <td colspan="6"><hr class='detailsPopUp'/></td>
+                    </tr>
+                    <?php
+                endif;
+                $i++;
+            endforeach;
+            if ($i == 0):
+                echo "<img src = " . $this->baseUrl('img/icons/information.png') . " style = 'vertical-align: top' /> Nenhuma embalagem cadastrada.";
+            endif;
+            ?>
+        </table>
+    </fieldset>
+
+    <fieldset id="fieldset-dadoLogistico">
+        <legend>Dados Logísticos</legend>
+        <table class="detailsPopUp">
+            <?php
+            $i = 0;
+            foreach ($embalagemNormasPaletizacao as $normaPaletizacao):
+                ?>
+                <fieldset id="fieldset-normaPaletizacao">
+                    <legend>Norma de Paletização</legend>
+                    <div style=" height: 40px;">
+                        <div style="width: 200px; float: left;">
+                            <label class="title">Unitizador:</label>
+                            <div><?php echo $normaPaletizacao['unitizador']; ?></div>
+                        </div>
+                        <div style="width: 100px; float: left;">
+                            <label class="title">Padrão:</label>
+                            <div><?php echo $normaPaletizacao['isPadrao']; ?></div>
+                        </div>
+                        <div style="width: 100px; float: left;">
+                            <label class="title">Lastro:</label>
+                            <div><?php echo $normaPaletizacao['numLastro']; ?></div>
+                        </div>
+                        <div style="width: 100px; float: left;">
+                            <label class="title">Camadas:</label>
+                            <div><?php echo $normaPaletizacao['numCamadas']; ?></div>
+                        </div>
+                        <div style="width: 100px; float: left;">
+                            <label class="title">Norma:</label>
+                            <div><?php echo $normaPaletizacao['numNorma']; ?></div>
+                        </div>
+                        <div style="width: 100px; float: left;">
+                            <label class="title">Peso(Kg):</label>
+                            <div><?php echo $normaPaletizacao['numPeso']; ?></div>
+                        </div>
+                    </div>
+
+                    <?php
+                    foreach ($normaPaletizacao['dadosLogisticos'] as $dadoLogistico):
+                        ?>
+
+                        <div style="border-top: 1px solid #B7B7B7;">
+                            <div style="height: 20px; margin-top: 5px;">
+                                <label class="title">Descrição: <?php echo $dadoLogistico['dscEmbalagem']; ?></label>
+                            </div>
+                            <div style="width: 120px; float: left;">
+                                <label class="title">Altura(m):</label>
+                                <div><?php echo $dadoLogistico['altura']; ?></div>
+                            </div>
+                            <div style="width: 120px; float: left;">
+                                <label class="title">Largura(m):</label>
+                                <div><?php echo $dadoLogistico['largura']; ?></div>
+                            </div>
+                            <div style="width: 150px; float: left;">
+                                <label class="title">Profundidade(m):</label>
+                                <div><?php echo $dadoLogistico['profundidade']; ?></div>
+                            </div>
+                            <div style="width: 150px; float: left;">
+                                <label class="title">Cubagem(m³):</label>
+                                <div><?php echo $dadoLogistico['cubagem']; ?></div>
+                            </div>
+                            <div style="width: 100%; margin-bottom: 15px;">
+                                <label class="title">Peso(Kg):</label>
+                                <div><?php echo $dadoLogistico['peso']; ?></div>
+                            </div>
+                        </div>
+                        <?php
+                        $i++;
+                    endforeach;
+                    ?>
+                </fieldset>
+                <?php
+            endforeach;
+            if ($i == 0):
+                echo "<img src = " . $this->baseUrl('img/icons/information.png') . " style = 'vertical-align: top' /> Nenhum dado logístico cadastrado.";
+            endif;
+            ?>
+        </table>
+    </fieldset>
+
+    <?php
+//Se produto for composto
+elseif ($produto->getTipoComercializacao()->getId() == $produtoComposto) :
+    ?>
+
+    <fieldset id="fieldset-volume">
+        <legend>Volumes</legend>
+        <?php
+        $i = 1;
+        $volumes = $produto->getVolumes();
+        if (count($volumes) == 0) :
+            echo "<img src = " . $this->baseUrl('img/icons/information.png') . " style = 'vertical-align: top' /> Nenhum volume cadastrado.";
+        endif;
+
+        $idNormaPaletizacao = 0;
+        foreach ($volumes as $volume):
+            if ($gradeProduto == $volume->getGrade()):
+                if ($volume->getNormaPaletizacao()->getId() != $idNormaPaletizacao) :
+                    ?>
+                    <fieldset id="fieldset-normaPaletizacao">
+                        <legend>Norma de Paletização</legend>
+                        <?php
+                        $isPadrao = $sim;
+                        if ($volume->getNormaPaletizacao()->getIsPadrao() == 'N'):
+                            $isPadrao = $nao;
+                        endif;
+                        ?>
+                        <div style=" height: 40px;">
+                            <div style="width: 200px; float: left;">
+                                <label class="title">Unitizador:</label>
+                                <div><?php echo $volume->getNormaPaletizacao()->getUnitizador()->getDescricao(); ?></div>
+                            </div>
+                            <div style="width: 100px; float: left;">
+                                <label class="title">Padrão:</label>
+                                <div><?php echo $isPadrao; ?></div>
+                            </div>
+                            <div style="width: 100px; float: left;">
+                                <label class="title">Lastro:</label>
+                                <div><?php echo $volume->getNormaPaletizacao()->getNumLastro(); ?></div>
+                            </div>
+                            <div style="width: 100px; float: left;">
+                                <label class="title">Camadas:</label>
+                                <div><?php echo $volume->getNormaPaletizacao()->getNumCamadas(); ?></div>
+                            </div>
+                            <div style="width: 100px; float: left;">
+                                <label class="title">Norma:</label>
+                                <div><?php echo $volume->getNormaPaletizacao()->getNumNorma(); ?></div>
+                            </div>
+                            <div style="width: 100px; float: left;">
+                                <label class="title">Peso(Kg):</label>
+                                <div><?php echo $volume->getNormaPaletizacao()->getNumPeso(); ?></div>
+                            </div>
+                        </div>
+
+                        <?php
+                        $idNormaPaletizacao = $volume->getNormaPaletizacao()->getId();
+                        foreach ($volumes as $volumeNorma):
+                            $idNormaPaletizacaoVolume = $volumeNorma->getNormaPaletizacao()->getId();
+                            if ($idNormaPaletizacaoVolume == $idNormaPaletizacao) :
+                                ?>
+                                <div style="border-top: 1px solid #B7B7B7;">
+                                    <div style="height: 20px; margin-top: 5px;">
+                                        <label class="title">Sequência do Volume: <?php echo $volumeNorma->getCodigoSequencial(); ?></label>
+                                    </div>
+                                    <div style="width: 120px; float: left;">
+                                        <label class="title">Altura(m):</label>
+                                        <div><?php echo $volumeNorma->getAltura(); ?></div>
+                                    </div>
+                                    <div style="width: 120px; float: left;">
+                                        <label class="title">Largura(m):</label>
+                                        <div><?php echo $volumeNorma->getLargura(); ?></div>
+                                    </div>
+                                    <div style="width: 150px; float: left;">
+                                        <label class="title">Profundidade(m):</label>
+                                        <div><?php echo $volumeNorma->getProfundidade(); ?></div>
+                                    </div>
+                                    <div style="width: 150px; float: left;">
+                                        <label class="title">Cubagem(m³):</label>
+                                        <div><?php echo $volumeNorma->getCubagem(); ?></div>
+                                    </div>
+                                    <div style="width: 100%; margin-bottom: 15px;">
+                                        <label class="title">Peso(Kg):</label>
+                                        <div><?php echo $volumeNorma->getPeso(); ?></div>
+                                    </div>
+
+                                    <div style="width: 240px; float: left;">
+                                        <label class="title">Descrição:</label>
+                                        <div><?php echo $volumeNorma->getDescricao(); ?></div>
+                                    </div>
+                                    <?php
+                                    $CBInterno = $sim;
+                                    if ($volumeNorma->getCBInterno() == 'N'):
+                                        $CBInterno = $nao;
+                                    endif;
+
+                                    $imprimirCB = $sim;
+                                    if ($volumeNorma->getImprimirCB() == 'N'):
+                                        $imprimirCB = $nao;
+                                    endif;
+
+                                    $dscEndereco = '';
+                                    if ($volumeNorma->getEndereco() != null):
+                                        $dscEndereco = $volumeNorma->getEndereco()->getDescricao();
+                                    endif;
+                                    ?>
+                                    <div style="width: 150px; float: left; ">
+                                        <label class="title" >Automático?</label>
+                                        <div><?php echo $CBInterno; ?></div>
+                                    </div>
+                                    <div style="width: 100%; margin-bottom: 15px;">
+                                        <label class="title">Imprimir Etiqueta?</label>
+                                        <div><?php echo $imprimirCB; ?></div>
+                                    </div>
+
+                                    <div style="width: 240px; float: left;">
+                                        <label class="title">Cod. Barras:</label>
+                                        <div><?php echo $volumeNorma->getCodigoBarras(); ?></div>
+                                    </div>
+                                    <div style="width: 100%; height: 30px;">
+                                        <label class="title">Endereço:</label>
+                                        <div><?php echo $dscEndereco; ?></div>
+                                    </div>
+
+                                </div>
+                                <?php
+                            endif;
+                        endforeach;
+                        ?>
+                    </fieldset>
+                    <?php
+                endif;
+            endif;
+        endforeach;
+        ?>
+    </fieldset>
+<?php endif; ?>

@@ -1,0 +1,19 @@
+<h3>Expedições Parc.Finalizadas</h3>
+<ul class="menu">
+    <?php if(count($this->expedicoes) == 0): ?>
+        <li>Nenhuma Recebimentos Trasbordo aguardando conferência.</li>
+    <?php endif;?>
+    <?php foreach($this->expedicoes as $expedicao):
+        if (in_array($expedicao['id'],$this->iniciadas)) {
+            $this->complemento = ' (Conferência Iniciada)';
+        }
+        else {
+            $this->complemento = "";
+        }
+        ?>
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'seleciona-placa', 'idExpedicao' => $expedicao['id'] )); ?>" title="<?php echo $expedicao['id'] ?>" >Exp. <?php echo $expedicao['id'] . $this->complemento ?> - Parc. Finalizado</a>
+        </li>
+    <?php endforeach; ?>
+</ul>
+

@@ -1,0 +1,70 @@
+<style>
+    form.filtro { margin-bottom: 0 }
+</style>
+
+<?php if($this->parametros != true) : ?>
+    <?php echo $this->form; ?>
+<?php endif ?>
+
+<?php
+    if ($this->enderecos != NULL) {?>
+        <form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'enderecamento', 'controller' =>'endereco', 'action' =>'enderecar' ))?>">
+            <div id="quantidade-grid" class="grid">
+                <table class="gTable ">
+                    <caption>Endereços Disponiveis</caption>
+                    <tbody>
+                    <tr class ="gTTitle">
+                        <td></td>
+                        <td>Endereço</td>
+                        <td>Área de Armazenagem</td>
+                        <td>Característica</td>
+                        <td>Estrutura de Armazenagem</td>
+                        <td>Tipo de Endereço</td>
+						<td>Tam Disponivel (m)</td>
+                    </tr>
+                    <?php
+                    foreach ($this->enderecos as $endereco):
+                        $this->color = !($this->color);?>
+                        <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                            <td>
+                                <?php if($this->origin == 'movimentacao') { ?>
+                                    <a class="btn reader button" href="<?php echo "/enderecamento/movimentacao/index/return/selecionarEndereco/idEndereco/".$endereco['COD_DEPOSITO_ENDERECO']?>">Selecionar</a>
+                                <?php } else { ?>
+                                    <a data-name="<?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?>" data-id="<?php echo $endereco['COD_DEPOSITO_ENDERECO'] ?>" class="selecionar btn reader button" href="<?php echo "/enderecamento/endereco/enderecar/id/".$endereco['COD_DEPOSITO_ENDERECO']."/uma/".$this->uma?>">Selecionar</a>
+                                <?php } ?>
+                            </td>
+                            <td><?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?></td>
+                            <td><?php echo $endereco['DSC_AREA_ARMAZENAGEM'] ?></td>
+                            <td><?php echo $endereco['DSC_CARACTERISTICA_ENDERECO'] ?></td>
+                            <td><?php echo $endereco['DSC_TIPO_EST_ARMAZ'] ?></td>
+                            <td><?php echo $endereco['DSC_TIPO_ENDERECO'] ?></td>
+							<td><?php echo $endereco['TAMANHO_DISPONIVEL']/100 ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <div class = "gPager">
+            <span>
+                <?php echo "Total de " . count($this->enderecos) . " registros encontrados"?>
+            </span>
+                </div>
+            </div>
+        </form>
+    <?php }
+ ?>
+<?php if($this->parametros != true) : ?>
+<form id="confirmar-selecionados" action="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'endereco', 'action' => 'enderecar')) ?>" method="post">
+    <div id="selecionados">
+        <table>
+        </table>
+    </div>
+
+    <?php if($this->origin != 'movimentacao') : ?>
+        <input type="submit" style="margin-bottom: 15px" name="busca" value="Confirmar selecionados" id="submit" class="btn">
+    <?php endif; ?>
+
+    <input id="umas" type="hidden" name="umas" value="" />
+</form>
+
+<div id="resultado-filtro"></div>
+<?php endif; ?>

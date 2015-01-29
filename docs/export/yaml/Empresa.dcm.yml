@@ -1,0 +1,51 @@
+Empresa:
+  type: entity
+  table: EMPRESA
+  fields:
+    codEmpresa:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_EMPRESA
+      generator:
+        strategy: SEQUENCE
+    nomEmpresa:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_EMPRESA
+  manyToMany:
+    codFilial:
+      targetEntity: PessoaJuridica
+      cascade: {  }
+      mappedBy: null
+      inversedBy: codEmpresa
+      joinTable:
+        name: filial
+        joinColumns:
+          -
+            name: COD_EMPRESA
+            referencedColumnName: COD_EMPRESA
+        inverseJoinColumns:
+          -
+            name: COD_FILIAL
+            referencedColumnName: COD_PESSOA
+      orderBy: null
+    codParametro:
+      targetEntity: Parametro
+      cascade: {  }
+      mappedBy: null
+      inversedBy: codEmpresa
+      joinTable:
+        name: parametro_valor
+        joinColumns:
+          -
+            name: COD_EMPRESA
+            referencedColumnName: COD_EMPRESA
+        inverseJoinColumns:
+          -
+            name: COD_PARAMETRO
+            referencedColumnName: COD_PARAMETRO
+      orderBy: null
+  lifecycleCallbacks: {  }

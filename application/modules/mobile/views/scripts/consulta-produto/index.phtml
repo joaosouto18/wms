@@ -1,0 +1,40 @@
+﻿<?php echo $this->form; ?>
+<?php if ($this->exibe == true): ?>
+<table style="margin-left: 2%; width: 90%; margin-right: 2%; margin-top: 2%; margin-bottom: 5%">
+    <div style="margin-left: 2%; margin-top: 2%; margin-right: 2%">
+    <label><h2><?php echo $this->descricao;?></h2></label>
+    </div>
+    <tbody>
+        <tr>
+            <td><b>Código:</b> <?php echo $this->codProduto;?></td>
+            <td><b>Tipo:</b> <?php echo $this->tipo;?></td>
+        </tr>
+
+        <tr>
+            <td><b>Grade:</b> <?php echo $this->grade;?></td>
+            <td><b>Emb.:</b> <?php echo $this->embalagem;?></td>
+        </tr>
+        <tr>
+            <td><b>Norma:</b> <?php echo $this->lastro;?>x<?php echo $this->camadas;?>=<?php echo $this->norma;?></td>
+            <td><b>Peso:</b> <?php echo $this->peso;?></td>
+        </tr>
+        <tr>
+            <td colspan="2"><b>Unit.:</b> <?php echo $this->unitizador;?></td>
+        </tr>
+
+        <tr>
+            <td colspan="2"><b>Linha:</b> <?php echo $this->linhaSeparacao;?></td>
+        </tr>
+
+        <tr>
+            <td colspan="2"><b>Cod.Barras:</b> <?php echo $this->codigoBarras;?></td>
+        </tr>
+
+        <tr>
+            <td colspan="2"><b>Picking:</b> <?php echo $this->picking;?></td>
+        </tr>
+
+
+    </tbody>
+</table>
+<?php endif; ?>

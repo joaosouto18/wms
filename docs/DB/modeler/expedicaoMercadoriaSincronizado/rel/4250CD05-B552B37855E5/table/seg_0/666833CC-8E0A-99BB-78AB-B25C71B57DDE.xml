@@ -1,0 +1,234 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="666833CC-8E0A-99BB-78AB-B25C71B57DDE" name="HISTORICO_ESTOQUE">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>HISTORICO_ESTOQUE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_HISTORICO_ESTOQUE" id="B3A6CDAE-345E-A9A5-0512-5DDBAAA1D582">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_HISTORICO_ESTOQUE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="QTD" id="D190C96E-7D16-E798-B8C7-FE8AE88314E1">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>QTD</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_PRODUTO" id="EEC4FC89-A212-BD3B-6934-431EA64CD8B3">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_PRODUTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_GRADE" id="65A160ED-0335-0D37-563F-C12C295FE452">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>DSC_GRADE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO_ENDERECO" id="94874653-DAE6-FC8B-C232-EC6C6C1AB72C">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_DEPOSITO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>EC2D9AB0-E55C-995B-2DAC-811AB75235E4</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="77B5C285-DEF6-5F87-5731-D3E3CE3765EA" referredColumn="EC2D9AB0-E55C-995B-2DAC-811AB75235E4"/>
+</associations>
+</Column>
+<Column name="OBSERVACAO" id="78838F3F-EF7C-5DE6-90CE-6618A89880EF">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>OBSERVACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>300 CHAR</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="IND_TIPO" id="46EDC34D-F756-0FF6-D14C-4D16E9EFDCC4">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>IND_TIPO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>1 CHAR</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_MOVIMENTACAO" id="4414884B-106F-9446-E273-3DD04BB42FB6">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>DTH_MOVIMENTACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_OS" id="9B699855-B3B7-B7E2-F7B4-AA3D1F1D7C0E">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_OS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>45E7CCED-0C29-C713-5328-D63D5A1DD1B7</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="88EF9640-B172-F370-1062-74256752290E" referredColumn="45E7CCED-0C29-C713-5328-D63D5A1DD1B7"/>
+</associations>
+</Column>
+<Column name="COD_PESSOA" id="A68D51CA-3715-1B4C-A490-301771D37BCE">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>HISTORICO_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_PESSOA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="C05AD023-27F8-80AA-20CC-A01D214C8F0F" name="HISTORICO_ESTOQUE_PK">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>HISTORICO_ESTOQUE_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="B3A6CDAE-345E-A9A5-0512-5DDBAAA1D582"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="CBD515A7-ADD8-B906-3E7F-601CA1FAAD8F" name="HISTORICO_ESTOQUE_PK">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>HISTORICO_ESTOQUE_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="B3A6CDAE-345E-A9A5-0512-5DDBAAA1D582"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="961228DF-C1A4-BE60-2224-FC4CDC093BA5" name="HISTORICO_ESTOQUE_ENDERECO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:06 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="94874653-DAE6-FC8B-C232-EC6C6C1AB72C"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="A9DCA130-913B-E01D-7128-A6EA379EA767" name="HISTORICO_ESTOQUE_OS_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:27 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="9B699855-B3B7-B7E2-F7B4-AA3D1F1D7C0E"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="AB2A7355-3D28-3B03-A1DF-50058258B240" name="HISTORICO_ESTOQUE_PRODUTO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:04:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="EEC4FC89-A212-BD3B-6934-431EA64CD8B3"/>
+<colUsage columnID="65A160ED-0335-0D37-563F-C12C295FE452"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

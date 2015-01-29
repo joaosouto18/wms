@@ -1,0 +1,62 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<UserOraclev10g class="oracle.dbtools.crest.model.design.storage.oracle.v10g.UserOraclev10g" name="WMS_ADM" directorySegmentName="seg_0" id="60E1D35D-5D44-8F4F-B289-CEF44307056B">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjName>WMS_ADM</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:00:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<defTableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</defTableSpace>
+<privileges>UNLIMITED TABLESPACE, CREATE VIEW, DEBUG CONNECT SESSION, CREATE SESSION, DEBUG ANY PROCEDURE, CREATE PROCEDURE</privileges>
+<quotaItems>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem1" id="431A5BE9-4A60-4527-009F-AE88CB0C5B2D">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:00:27 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</QuotaItem>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem2" id="47D4630A-521B-004E-A6AA-F41C2C438A5C">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:07 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</QuotaItem>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem3" id="16235856-96DC-D496-4104-7D04B9931733">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:01:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</QuotaItem>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem4" id="76AA4E5E-B975-1A01-65D2-59B2438E0BDE">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</QuotaItem>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem5" id="5916ABF7-532F-0911-7EDF-E2DBC2C8AABB">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:24 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</QuotaItem>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem6" id="79796E71-0CE7-B59E-1BAE-34F79CE61F86">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:58 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</QuotaItem>
+<QuotaItem class="oracle.dbtools.crest.model.design.storage.oracle.v10g.QuotaItemOraclev10g" name="QuotaItem7" id="E52B542E-7C14-A0D8-BFC1-69ACCC35675A">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:00 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</QuotaItem>
+</quotaItems>
+</UserOraclev10g>

@@ -1,0 +1,47 @@
+<?php echo $this->render('recebimento/produto-detalhes.phtml');?>
+
+
+<form method="post" id="recebimento-volume-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+
+    <input type="hidden" id="idRecebimento" name="idRecebimento"  value="<?php echo $this->recebimento->getId() ?>"/>
+    <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
+    <input type="hidden" id="idProdutoVolume" name="idProdutoVolume" value="<?php echo $this->itemNF['idVolume'] ?>" />
+    <input type="hidden" id="unidadePorVolume" value="0" name="quantidadeVolume" />
+
+    <table class="info">
+        <tr class="title">
+            <td colspan="2">Código de Barras</td>
+        </tr>
+        <tr>
+            <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
+        </tr>
+
+        <tr class="title">
+            <td>Norma: <span style="font-weight: normal;"><?php echo $this->itemNF['numNorma'] ?></span></td>
+            <td>Sequência: <span style="font-weight: normal;"><?php echo $this->itemNF['sequenciaVolume'] ?></span></td>
+        </tr>
+
+        <tr class="title">
+            <td><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
+            <td>
+                <label class="field required" for="qtdConferida">Quantidade</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">
+                    <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
+                        <option value="<?php echo $id;?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+            <td>
+                <input type="text" maxlength="15" size="10" class=" required focus" id="qtdConferida" name="qtdConferida" value="" />
+            </td>
+        </tr>
+
+    </table>
+
+    <input type="submit" class="btn" value="Salvar" id="submit" name="submit">
+</form>
+

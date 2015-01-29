@@ -1,0 +1,21 @@
+
+
+<form id="formAgrupar" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'index', 'action' =>'agruparcargas',"idExpedicao"=>array("id"=>$this->id) ))?>" onsubmit="javascript:verificarExpedicao();" >
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable ">
+            <tbody>
+            <tr style="line-height: 50px;">
+                <td colspan="3">
+                    <?php
+                    echo '<label>Digite o código da Expedição que deseja agrupar as cargas: </label>';
+                    echo "<input type='text' name='idExped' id='idExped' />";
+                    ?>
+
+                    <input type="hidden" name="idAtual" id="idAtual"  value="<?php echo $this->id; ?>" />
+                    <button name="btnFinalizar" id="btnFinalizar" type="button" value="finalizar">Confirmar</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

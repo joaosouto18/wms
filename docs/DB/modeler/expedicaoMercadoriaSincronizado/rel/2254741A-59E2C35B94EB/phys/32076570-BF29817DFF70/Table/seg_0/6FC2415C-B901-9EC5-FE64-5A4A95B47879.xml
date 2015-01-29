@@ -1,0 +1,81 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="CARGA" id="6FC2415C-B901-9EC5-FE64-5A4A95B47879" directorySegmentName="seg_0">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>7F874BB5-718C-5B12-DE10-81E42D9385F4</segment>
+<tableSpace>F9C65FCE-5ECC-02FB-B244-0945805943E6</tableSpace>
+<columnProxies>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="DSC_PLACA_CARGA" id="1B81B576-09FA-0AB1-778D-09F9BDF9FCF5">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_EXPEDICAO" id="1FF00DA0-B47F-012C-6606-9F64E263DD37">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 12:21:06 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_CARGA_EXTERNO" id="30893532-C6D5-C6B3-83A7-A9C277230534">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="DSC_PLACA_EXPEDICAO" id="59876FF6-AC09-0467-BE35-E335863C1DE0">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="CENTRAL_ENTREGA" id="694490C7-9C37-1CD3-A138-1A8A83C063E4">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_TIPO_CARGA" id="BF78E499-BDD1-B7F7-8EDD-299AB38027A2">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_CARGA" id="D31F9300-4784-479D-633B-6F4169246B76">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="DTH_FECHAMENTO" id="FF8D2E3E-88AB-7128-0782-BF76F81CFA53">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<foreignKeys>
+<ForeignKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.FKProxyOraclev10g" name="CARGA_EXPEDICAO_FK" id="72B8B922-01EF-6983-2B5C-BC84CD34D321">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 12:21:06 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ForeignKey>
+</foreignKeys>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="CARGA_PK" id="FDAFC69B-2EF9-C30B-F3BA-C90092448B8E">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:14:45 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<sortedRows>SORTED</sortedRows>
+<tableSpace>F9C65FCE-5ECC-02FB-B244-0945805943E6</tableSpace>
+<indexSegment>43122670-BBD0-2427-A45B-B97FF8C1604D</indexSegment>
+<indexSort>SORTED</indexSort>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

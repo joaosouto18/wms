@@ -1,0 +1,42 @@
+Auditoria:
+  type: entity
+  table: AUDITORIA
+  fields:
+    codAuditoria:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_AUDITORIA
+      generator:
+        strategy: SEQUENCE
+    codFilial:
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_FILIAL
+    codRecurso:
+      type: smallint
+      nullable: false
+      column: COD_RECURSO
+    dscOperacao:
+      type: string
+      length: 500
+      fixed: false
+      nullable: false
+      column: DSC_OPERACAO
+    dthOperacao:
+      type: datetime
+      nullable: false
+      column: DTH_OPERACAO
+  oneToOne:
+    codUsuario:
+      targetEntity: USUARIO
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_USUARIO:
+          referencedColumnName: COD_USUARIO
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

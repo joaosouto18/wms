@@ -1,0 +1,7 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<SchemaObject class="oracle.dbtools.crest.model.design.relational.SchemaObject" name="WMS_LOCAL" directorySegmentName="seg_0" id="FE8237F4-F32B-BB83-C732-22C6848C2D12">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</SchemaObject>

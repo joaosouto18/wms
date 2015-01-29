@@ -1,0 +1,53 @@
+﻿O Endereço Selecionado é diferente do endereço reservado para este palete.
+<br> <br>
+<table>
+    <tbody>
+        <tr>
+            <td colspan="3">
+                Deseja endereçar assim mesmo?
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="<?php echo '/mobile/enderecamento/efetivar-enderecamento/uma/' . $this->uma . '/endereco/' . $this->idEnderecoSelecionado . '/confirma/S'?>" class="btn reader button">Sim</a>
+            </td>
+            <td>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+            <td>
+                <a href="<?php echo '/mobile/enderecamento/efetivar-enderecamento/uma/' . $this->uma . '/endereco/' . $this->idEnderecoSelecionado . '/confirma/N'?>" class="btn reader button">Não</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<br> <br>
+<fieldset>
+    <legend>Dados dos Endereços</legend>
+    <dl>
+        <div id="quantidade-grid" class="grid">
+            <table>
+                <tbody>
+                <tr class = 'title'>
+                    <td>Endereço Antigo</td>
+                    <td colspan="2">Endereço Novo</td>
+                </tr>
+                <tr class>
+                    <td><?php echo $this->enderecoAntigo ?></td>
+                    <td colspan="2"><?php echo $this->enderecoSelecionado?></td>
+                </tr>
+                <tr class>
+                    <td>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </dl>
+</fieldset>
+
+

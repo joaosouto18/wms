@@ -1,0 +1,258 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="DD1C158B-71D3-D451-EE73-27AE4718EDF7" name="ORDEM_SERVICO">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>ORDEM_SERVICO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:24 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_OS" id="45E7CCED-0C29-C713-5328-D63D5A1DD1B7">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_OS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<commentInRDBMS>Número da Ordem de Serviço alocada para o conferente</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_RECEBIMENTO" id="D9AF7FC8-A7D6-703F-ACBE-8CAEE653FF12">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_RECEBIMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<commentInRDBMS>Código Recebimento</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_INICIO_ATIVIDADE" id="69A43873-9F53-F0F7-F54B-CBD2372128BE">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>DTH_INICIO_ATIVIDADE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<commentInRDBMS>Data e hora do início da atividade</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_FINAL_ATIVIDADE" id="45CADB8E-604F-B4C9-6F09-2C565B67BCAB">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>DTH_FINAL_ATIVIDADE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<commentInRDBMS>Data e hora do final da atividade</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_ATIVIDADE" id="30FACE3D-17DA-0D09-6DEA-D6137B52739F">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_ATIVIDADE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<commentInRDBMS>Código Atividade (código sequêncial para a atividade)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_OBSERVACAO" id="6329F49D-3E05-9D6C-053C-4D5B16143E88">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>DSC_OBSERVACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>128 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_PESSOA" id="2E3ABAE2-C387-B6F4-26A7-01369774200D">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_PESSOA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_FORMA_CONFERENCIA" id="498582B2-162B-2A19-2CC0-A3B978D38317">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_FORMA_CONFERENCIA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<commentInRDBMS>M = Manual (Conferencia Cega)    C = Coletor</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="BLOQUEIO" id="7A4FC803-0AB7-D2E3-F47E-F1B3D9F4B402">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>BLOQUEIO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>250 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_EXPEDICAO" id="42ADA823-D0C7-D414-EC59-4979E1096666">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_EXPEDICAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_ENDERECAMENTO" id="D62956F4-3EF6-6E16-0614-ED3E8C75951E">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>ORDEM_SERVICO</sourceObjSchema>
+<sourceObjName>COD_ENDERECAMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="0B4EF205-4BA4-74F4-4211-C2AC42FBF5B0" name="XPKORDEM_SERVICO">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>XPKORDEM_SERVICO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="45E7CCED-0C29-C713-5328-D63D5A1DD1B7"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="93B1FA0C-A91F-4071-3382-02087D776CCC" name="FK_ORDSE_PEFIS">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>FK_ORDSE_PEFIS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="2E3ABAE2-C387-B6F4-26A7-01369774200D"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="9706DACC-B0A1-D682-F4AF-5193CABBBF20" name="FK_ORDSE_ATIVI">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>FK_ORDSE_ATIVI</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="30FACE3D-17DA-0D09-6DEA-D6137B52739F"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="177E23F2-08B3-AA21-C471-A6BA47E3543B" name="PK_ORDSE">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PK_ORDSE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="45E7CCED-0C29-C713-5328-D63D5A1DD1B7"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="B06C3DC0-4BFB-E604-022D-F92CE52C6271" name="XIF2ORDEM_SERVICO">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>XIF2ORDEM_SERVICO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="D9AF7FC8-A7D6-703F-ACBE-8CAEE653FF12"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

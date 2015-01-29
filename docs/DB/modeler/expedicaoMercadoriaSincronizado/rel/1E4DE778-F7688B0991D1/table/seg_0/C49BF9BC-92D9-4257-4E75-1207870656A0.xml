@@ -1,0 +1,107 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="C49BF9BC-92D9-4257-4E75-1207870656A0" directorySegmentName="seg_0" name="ATIVIDADE">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 12:58:18 UTC</createdTime>
+<commentInRDBMS>Cadastra as atividade (atividade é cada operação realizada dentro do Centro de Distriuição).</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<pkName>PK_ATIVI</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_ATIVIDADE" id="BE926D7D-8468-3AA2-BCF0-A1D754630AE7">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 12:58:18 UTC</createdTime>
+<commentInRDBMS>Código Atividade (código sequêncial para a atividade)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_ATIVIDADE" id="A8D4F299-4724-B80E-F03D-4F1E95258B0F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 12:58:18 UTC</createdTime>
+<commentInRDBMS>Descrição Atividade</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>60 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_SETOR_OPERACIONAL" id="2A94C9E1-3488-C4FB-FE00-C2CC5A7002E7">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 12:58:18 UTC</createdTime>
+<commentInRDBMS>Código interno sequencial</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="C92F85D2-A46D-5E09-DE74-F45431BC88A2" name="PK_ATIVI">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 12:58:18 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="BE926D7D-8468-3AA2-BCF0-A1D754630AE7"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="31C95B22-5132-CABF-2F90-D447C62C6090" name="FK_ATIVI_SETOP">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 12:58:18 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<indexColumnUsage>
+<colUsage columnID="2A94C9E1-3488-C4FB-FE00-C2CC5A7002E7"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

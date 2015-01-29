@@ -1,0 +1,16 @@
+﻿<script>
+
+    function playSound(soundfile) {
+        document.getElementById("dummy").innerHTML=
+            "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+    }
+
+    window.onload=function()
+    {
+        playSound('/alarme.mp3');
+    };
+
+</script>
+
+<span id="dummy"></span>
+<?php echo $this->form; ?>

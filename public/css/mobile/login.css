@@ -1,0 +1,46 @@
+/* 
+    Document   : mobile/style.css
+    Created on : Ago 15, 2012
+    Author     : Adriano Uliana
+    Description: Mainly structure of the software
+*/
+#body {
+    width: 100%;
+}
+#loginBlock {
+    display: block;
+    background: #FFF;
+    width: 100%;
+}
+#loginBlock fieldset {
+    border: 2px solid #D0DEF1;
+    border-radius: 7px;
+    moz-border-radius: 7px;
+    background: #F3F3F3;
+    padding: 0 10px 10px 10px;
+}
+#loginBlock fieldset legend {
+    color: #1c94c4;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 5px;
+    moz-border-radius: 5px;
+    padding: 4px;
+}
+
+#loginBlock #username, #loginBlock #password {
+    margin-bottom: 10px;
+    width: 100%;
+    height: 20px;
+    line-height: 20px;
+}
+
+#loginBlock input#submit {
+    width: 100%;
+}
+
+#loginBlock label {
+    float: left;
+    width: 100%;
+    display: block;
+}

@@ -1,0 +1,70 @@
+
+#fieldset-volume dt {
+    display: block;
+    width: 100%;
+    min-height: 13px;
+}
+.grupoVolumes {
+    border: 1px solid silver; 
+    border-style: dashed; 
+    padding: 0 10px 10px 10px; 
+    margin-bottom: 10px;
+    background: url(../../../img/admin/dropVolume.png) no-repeat left top #FFF;
+}
+td.codSequencia {
+    text-align: left !important;
+    font-weight: bold;
+}
+
+#btn-salvar-dado-logistico{
+    margin: 0px;
+}
+
+#fieldset-volumes-cadastrados{
+    width: 450px;
+    min-height: 187px;
+    margin-right: 10px;
+    float: left;
+}
+
+/* testados e aprovados */
+
+#fieldset-volume {
+    width: 320px;
+}
+#fieldset-grupo-volumes {
+    clear: none;
+    float: right;
+    width: 600px;
+}
+input.btnAddGrupo {
+    cursor: pointer;
+    float: right;
+    margin-bottom: 10px;
+    border: none;
+    background: url(../../../img/icons/add.png) no-repeat left center #FFF;
+    text-indent: 20px;
+}
+input.btnExcluirGrupo {
+    cursor: pointer;
+    border: none;
+    text-indent: 20px;
+    background: url(../../../img/icons/delete.png) no-repeat left center #FFF;
+}
+#div-lista-volumes {
+    clear: both;
+}
+.produto_volume {
+    margin-bottom: 10px;
+}
+.dataNormaPaletizacao {
+    display: table;
+    margin-bottom: 10px;
+}
+.grupoVolumes .grupoOpcoes {
+    float: left;
+    display: block;
+    width: 100%;
+    padding: 5px 0 10px 0;
+    text-align: right;
+}

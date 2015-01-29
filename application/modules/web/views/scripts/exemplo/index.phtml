@@ -1,0 +1,131 @@
+  <div id="panelPage">
+	<div class="left">
+	  <a href="<?php echo $this->url(array('controller' => 'exemplo', 'action' => 'edit')); ?>" class="btn btnAdd"><span>Criar Novo</span></a>
+	</div>
+	<h4>Grid</h4>
+  </div>
+
+  <div class="gControl">
+	<div class="gPager">
+	  <span>P&aacute;gina</span>
+	  <img src="../../img/admin/pager_arrow_left_off.gif" alt="&lt;" />
+	  <input type="text" name="" size="2" value="0" />
+	  <img src="../../img/admin/pager_arrow_right_off.gif" alt="&lt;" />
+	  <span>de 1 p&aacute;gina</span>
+	  <span>|</span>
+	  <span>Visualizar</span>
+	  <select name="">
+		<option value="20">20</option>
+		<option value="30">30</option>
+	  </select>
+	  <span>por p&aacute;gina</span>
+	  <span>|</span>
+	  <span>Total de 9 registros encontrados.</span>
+	</div>
+	<div class="gExport">
+	  <select name="">
+		<option value="#">CSV</option>
+		<option value="#">Excel XML</option>
+		<option value="#">PDF</option>
+	  </select>
+	  <button type="button"><span>Exportar</span></button>
+	</div>
+	<div class="gFilter">
+	  <button type="button"><span>Remover Filtro</span></button>
+	  <button type="button"><span>Buscar</span></button>
+	</div>
+  </div>
+  
+  <div class="gMassAction">
+	<div class="gSelect">
+	  <a href="#" title="">Marcar Vis&iacute;vel</a>
+	  <span>|</span>
+	  <a href="#" title="">Desmarcar Vis&iacute;vel</a>
+	  <span>|</span>
+	  <span>0 selecionados</span>
+	</div>
+	<div class="gAction">
+	  <span>A&ccedil;&atilde;o: </span>
+	  <select name="">
+		<option value=""></option>
+		<option value="#">Remover</option>
+	  </select>
+	  <button type="button"><span>Executar</span></button>
+	</div>
+  </div>
+
+  <table class="gTable">
+	<tr class="gTTitle">
+	  <td colspan="2"></td>
+	  <td><a href="#" title="" class="sortArrowDesc"><span>Cod.</span></a></td>
+	  <td><a href="#" title=""><span>Nome</span></a></td>
+	  <td><a href="#" title=""><span>E-mail</span></a></td>
+	  <td><a href="#" title=""><span>Grupo</span></a></td>
+	  <td><a href="#" title=""><span>Telefone</span></a></td>
+	  <td><a href="#" title=""><span>Data</span></a></td>
+	</tr>
+	<tr class="gTFilter">
+	  <td colspan="2"></td>
+	  <td><input type="text" name="" value="" /></td>
+	  <td><input type="text" name="" value="" /></td>
+	  <td><input type="text" name="" value="" /></td>
+	  <td>
+		<select name="">
+		  <option value=""></option>
+		  <option value="">Curabitur</option>
+		</select>
+	  </td>
+	  <td><input type="text" name="" value="" /></td>
+	  <td><input type="text" name="" size="10" value="" /></td>
+	</tr>
+	<?php
+	for($i=1; $i<=15; $i++)
+	{
+	?>
+	<tr class="gTResultSet <?php if($i%2) echo "gRowColor"?>">
+	  <td class="gRowCheck"><input type="checkbox" name="" value="" /></td>
+	  <td>
+		<div class="gOpcRow">
+		  <ul>
+			<li><img src="<?php echo $this->baseUrl('../../img/admin/icon_opc.gif') ?>" alt="Op&ccedil;&otilde;es" />
+			  <ul>
+				<li><a href="#" title="">Editar</a></li>
+				<li><a href="#" class="view" title="">Visualizar</a></li>
+				<li><a href="#" class="del" title="">Excluir</a></li>
+			  </ul>
+			</li>
+		  </ul>
+		</div>
+	  </td>
+	  <td><?php echo $i ?></td>
+	  <td>Lorem ipsum</td>
+	  <td>orem@ipsum.com</td>
+	  <td>Curabitur</td>
+	  <td>(00) 0000-0000</td>
+	  <td>00/00/0000</td>
+	</tr>
+	<?php
+	}
+	?>
+  </table>
+
+  <div class="gControl">
+	<div class="gPager">
+	  <span>P&aacute;gina</span>
+	  <img src="../../img/admin/pager_arrow_left_off.gif" alt="&lt;" />
+	  <input type="text" name="" size="2" value="0" />
+	  <img src="../../img/admin/pager_arrow_right_off.gif" alt="&lt;" />
+	  <span>de 1 p&aacute;gina</span>
+	  <span>|</span>
+	  <span>Visualizar</span>
+	  <select name="">
+		<option value="20">20</option>
+		<option value="30">30</option>
+	  </select>
+	  <span>por p&aacute;gina</span>
+	  <span>|</span>
+	  <span>Total de 9 registros encontrados.</span>
+	</div>
+  </div>
+
+

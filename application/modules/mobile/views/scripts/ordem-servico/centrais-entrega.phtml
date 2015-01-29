@@ -1,0 +1,18 @@
+<h3>Centrais de Entrega</h3>
+
+<ul class="menu">
+    <?php foreach($this->centraisPermitidas as $central):?>
+
+        <?php if($this->transbordo) : ?>
+            <li>
+                <a href="<?php echo $this->url(array('controller' => 'ordem-servico', 'action' => 'conferencia-transbordo', 'idCentral' => $central )); ?>" title="<?php echo $central ?>" >Expedições Central <?php echo $central ?> </a>
+            </li>
+            <?else : ?>
+                    <li>
+                        <a href="<?php echo $this->url(array('controller' => 'ordem-servico', 'action' => 'conferencia-expedicao', 'idCentral' => $central )); ?>" title="<?php echo $central ?>" >Expedições Central <?php echo $central ?> </a>
+                    </li>
+        <?php endif; ?>
+
+    <?php endforeach; ?>
+</ul>
+

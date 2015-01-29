@@ -1,0 +1,47 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="ATIVIDADE" id="C49BF9BC-92D9-4257-4E75-1207870656A0" directorySegmentName="seg_0">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<logging>YES</logging>
+<columnProxies>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_SETOR_OPERACIONAL" id="2A94C9E1-3488-C4FB-FE00-C2CC5A7002E7">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="DSC_ATIVIDADE" id="A8D4F299-4724-B80E-F03D-4F1E95258B0F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_ATIVIDADE" id="BE926D7D-8468-3AA2-BCF0-A1D754630AE7">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<indexProxies>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_ATIVI_SETOP" id="31C95B22-5132-CABF-2F90-D447C62C6090">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<sortedRows>SORTED</sortedRows>
+</IndexProxy>
+</indexProxies>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="PK_ATIVI" id="C92F85D2-A46D-5E09-DE74-F45431BC88A2">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:42 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<sortedRows>SORTED</sortedRows>
+<indexSort>SORTED</indexSort>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

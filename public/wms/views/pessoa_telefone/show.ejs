@@ -1,0 +1,14 @@
+<div <%=this%> style="background: #f1dcc7; margin-bottom: 5px; padding:3px;">
+    <a href="javascript://" style="float:right" class="btn-excluir-telefone">Excluir</a>
+
+    <strong><%=this.lblTipoTelefone%></strong><br/> 
+    Número: (<%=this.ddd%>) <%=this.numero%> - 
+    <% if (this.ramal != undefined){ console.log(this.ramal) %>
+    Ramal: <%=this.ramal%>
+    <% } %>
+    <input type="hidden" name="telefones[<%=this.id%>][idTipo]" value="<%=this.idTipo%>"/>
+    <input type="hidden" name="telefones[<%=this.id%>][ddd]" value="<%=this.ddd%>"/>
+    <input type="hidden" name="telefones[<%=this.id%>][numero]" value="<%=this.numero%>"/>
+    <input type="hidden" name="telefones[<%=this.id%>][ramal]" value="<%=this.ramal%>"/>
+    <input type="hidden" name="telefones[<%=this.id%>][acao]" value="<%=this.acao%>"/>
+</div>

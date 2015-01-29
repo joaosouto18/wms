@@ -1,0 +1,9 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<OSDM_Design class="oracle.dbtools.crest.model.design.Design" name="expedicaoMercadoriaSincronizado" id="3343504F-B778-CEB6-44F3-E07A8E6AD348" version="3.5">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:30:10 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<capitalNames>false</capitalNames>
+<designId>3343504F-B778-CEB6-44F3-E07A8E6AD348</designId>
+</OSDM_Design>

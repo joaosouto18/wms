@@ -1,0 +1,84 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="ONDA_RESSUPRIMENTO_PEDIDO" directorySegmentName="seg_0" id="D77D166B-F290-A323-D848-605F45E86B14">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>C6661857-9A37-1A78-2337-F127D1000E3F</segment>
+<tableSpace>15EED60F-64B1-7333-5AF7-9AF74E41124F</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<indexProxies>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="ONDA_RESSUPRIMENTO_PEDIDO_PK" id="C5E1D4FC-84A9-A813-F69E-4AD71A7C7B0F">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<segment>EEEEE92C-ACF2-CB8D-4788-FCFAD1C6B821</segment>
+<tableSpace>15EED60F-64B1-7333-5AF7-9AF74E41124F</tableSpace>
+</IndexProxy>
+</indexProxies>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="DSC_GRADE" id="09F0AAC4-D1D9-24FA-E92B-600BA9B738C4">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_PRODUTO" id="304FC278-C239-C8DF-5DED-CA0C468C71E0">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="QTD" id="82AB1EB9-2593-D16A-57D3-5E9C6ACDD9BC">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_ONDA_RESSUPRIMENTO_PEDIDO" id="834A7104-9B16-6ED5-D974-25339E755532">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_ONDA_RESSUPRIMENTO" id="CF765D9D-1DB6-24DC-F3F8-46207A6BCF09">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_PEDIDO" id="F9FBE4EB-0B66-7AFC-17A1-8C10A1550339">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<foreignKeys>
+<ForeignKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.FKProxyOraclev10g" name="OND_RES_PED_OND_RES_FK" id="ECE8186B-5A06-6A68-6061-B6304A4419C5">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ForeignKey>
+</foreignKeys>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="ONDA_RESSUPRIMENTO_PEDIDO_PK" id="AFF4E50F-2062-E1F8-A9BF-79976753772B">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:51 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<segment>EEEEE92C-ACF2-CB8D-4788-FCFAD1C6B821</segment>
+<tableSpace>15EED60F-64B1-7333-5AF7-9AF74E41124F</tableSpace>
+<existingIndex>C5E1D4FC-84A9-A813-F69E-4AD71A7C7B0F</existingIndex>
+<indexSegment>EEEEE92C-ACF2-CB8D-4788-FCFAD1C6B821</indexSegment>
+<indexSort>SORTED</indexSort>
+<usingIndex>BY INDEX NAME</usingIndex>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

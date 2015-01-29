@@ -1,0 +1,141 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="2137B832-DB03-74C3-7734-F00A52772493" directorySegmentName="seg_0" name="PEDIDO">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PEDIDO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:18:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77</schemaObject>
+<pkName>PEDIDO_PK</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_PEDIDO" id="E72147D6-2E53-2F59-313A-3D47612DB3B2">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>COD_PEDIDO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:18:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_TIPO_PEDIDO" id="EB499DDD-C81C-2AB1-07A9-34EC122EEC58">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>COD_TIPO_PEDIDO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:18:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_LINHA_ENTREGA" id="C1A87E47-C76B-C38F-1EBE-E053050E242C">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>DSC_LINHA_ENTREGA</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:18:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>300 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_CARGA" id="B692E1BD-5451-8638-117F-23D193251BFF">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>COD_CARGA</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:11:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<delegate>D31F9300-4784-479D-633B-6F4169246B76</delegate>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="CF507683-554F-FC9B-D87E-EC78A57DDA94" referredColumn="D31F9300-4784-479D-633B-6F4169246B76"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="488AC4FF-3579-8E76-D80E-DE86B9BBADAC" name="PEDIDO_PK">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PEDIDO_PK</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 20:18:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="E72147D6-2E53-2F59-313A-3D47612DB3B2"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="427B2811-A80D-9F5D-68E5-8AF303478773" name="PEDIDO_CARGA_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:11:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="B692E1BD-5451-8638-117F-23D193251BFF"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

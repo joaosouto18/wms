@@ -1,0 +1,254 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="F39BAE12-16CF-315D-38B3-B777D9ACB7FC" directorySegmentName="seg_0" name="ETIQUETA_SEPARACAO">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>ETIQUETA_SEPARACAO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<afterCreate>CREATE SEQUENCE SQ_ETQ_SEPARACAO_01&lt;br/&gt;	INCREMENT BY 1&lt;br/&gt;	START WITH 1&lt;br/&gt;	MAXVALUE 999999999999999999999999999&lt;br/&gt;	MINVALUE 0&lt;br/&gt;	NOCYCLE&lt;br/&gt;	NOCACHE&lt;br/&gt;	NOORDER&lt;br/&gt;;</afterCreate>
+<schemaObject>7650DBEC-A26A-91C3-8BCD-FAE0AEB78661</schemaObject>
+<shouldGeneratescript>true</shouldGeneratescript>
+<pkName>ETIQUETA_PK</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_ETIQUETA_SEPARACAO" id="45A4E007-0590-B3DE-0364-5C612C885D62">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>COD_ETIQUETA_SEPARACAO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_PRODUTO_EMBALAGEM" id="2BB4FEF8-05AC-0816-D756-C11B5916B4DB">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>COD_PRODUTO_EMBALAGEM</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<delegate>6BBFAE4C-35F8-F979-89C7-B06F48035EE9</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="BAB63A45-56EE-5872-3419-B8EB1725F98A" referredColumn="6BBFAE4C-35F8-F979-89C7-B06F48035EE9"/>
+</associations>
+</Column>
+<Column name="COD_PRODUTO_VOLUME" id="257C477B-AC89-DFC2-0D68-4ABE3E37EE72">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>COD_PRODUTO_VOLUME</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<delegate>4B988FAC-141D-3C8A-1185-D42B5AED2C51</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="1D6D8538-20E7-38E4-0F35-F7FFA83C5873" referredColumn="4B988FAC-141D-3C8A-1185-D42B5AED2C51"/>
+</associations>
+</Column>
+<Column name="DTH_CONFERENCIA" id="1FBC214D-AD41-9102-64B0-17E79E907426">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>DTH_CONFERENCIA</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT008</logicalDatatype>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_STATUS" id="4393467A-D216-03D5-6C0C-0CDB894C2B20">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>COD_STATUS</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_PRODUTO" id="B6E75E74-38D0-8C08-0633-C4A9DE91A932">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>COD_PRODUTO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-26 16:26:24 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20 BYTE</dataTypeSize>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_GRADE" id="2A2C20D8-C647-868E-0672-4306F8E48D42">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ETIQUETA_SEPARACAO</sourceObjSchema>
+<sourceObjName>DSC_GRADE</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-26 16:26:24 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10 BYTE</dataTypeSize>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_PEDIDO" id="565CCB4E-0BC5-EC16-65AC-4414EDCD3DC6">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-26 16:26:24 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_PEDIDO_PRODUTO" id="83DC4764-AD15-93DE-90B7-B1A1261ABD1D">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-04-25 17:27:26 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>0</dataTypePrecision>
+<dataTypeScale>8</dataTypeScale>
+<delegate>5396863A-3A2A-E605-7143-BC920494A5B0</delegate>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="27B9B24C-554A-A55B-9233-61CA90AC4C1F" referredColumn="5396863A-3A2A-E605-7143-BC920494A5B0"/>
+</associations>
+</Column>
+<Column name="DSC_REIMPRESSAO" id="7ABCA228-C706-7842-569E-B8AF8F3F6656">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-05-19 03:32:02 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>120 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="E4ED66EE-4C9F-439B-81CC-CF2F3FB8FEF6" name="ETIQUETA_PK">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>ETIQUETA_PK</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="45A4E007-0590-B3DE-0364-5C612C885D62"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="F0249D26-82A4-76F5-7FE6-FFD54A57498F" name="ETQ_SEPAR_PROD_VOL_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="257C477B-AC89-DFC2-0D68-4ABE3E37EE72"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="9A60CC31-57EC-64F3-8ACD-3702D1A2E847" name="ETQ_SEPAR_PROD_EMB_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="2BB4FEF8-05AC-0816-D756-C11B5916B4DB"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="B49FCE79-43F0-C7F5-6065-CB46F280F74F" name="ES_PED_PROD_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-26 16:26:24 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="83DC4764-AD15-93DE-90B7-B1A1261ABD1D"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

@@ -1,0 +1,72 @@
+<div id="tabs">
+  <ul>
+	<li><a href="#tabs-1">Pessoal</a></li>
+	<li><a href="#tabs-2">Profissional</a></li>
+  </ul>
+  <form enctype="application/x-www-form-urlencoded" action="<?php echo $this->element->getAction() ?>" accept-charset="UTF-8" method="<?php echo $this->element->getMethod() ?>">
+	<div id="tabs-1">
+	  <dd id="identificacao-element">
+		<fieldset id="fieldset-identificacao">
+		  <legend>Identificação (Pessoa Fisica)</legend>
+		  <dl>
+			<?php echo $this->element->Pessoal->cpf ?>
+			<?php echo $this->element->Pessoal->nome; ?>
+			<?php echo $this->element->Pessoal->dataNasc; ?>
+			<?php echo $this->element->Pessoal->nomeTrat; ?>
+			<?php echo $this->element->Pessoal->nomePai; ?>
+			<?php echo $this->element->Pessoal->nomeMae; ?>
+			<?php echo $this->element->Pessoal->sexo; ?>
+			<?php echo $this->element->Pessoal->nRG; ?>
+			<?php echo $this->element->Pessoal->orgExp; ?>
+			<?php echo $this->element->Pessoal->uf; ?>
+			<?php echo $this->element->Pessoal->dExped; ?>
+			<?php echo $this->element->Pessoal->natu; ?>
+			<?php echo $this->element->Pessoal->nacio; ?>
+		  </dl>
+		</fieldset>
+	  </dd>
+	  <dd id="contactar-element">
+		<fieldset id="fieldset-contactar">
+		  <legend>Como gostaria de ser contactado</legend>
+		  <dl>
+			  <?php echo $this->element->Pessoal->contEmail ?>
+			  <?php echo $this->element->Pessoal->contFone ?>
+			  <?php echo $this->element->Pessoal->contOutro ?>
+		  </dl>
+		</fieldset>
+	  </dd>
+	</div>
+	<div id="tabs-2">
+	  <dd id="extras-element">
+		<fieldset id="fieldset-extras">
+		  <legend>Extras</legend>
+		  <dl>
+			<?php echo $this->element->Profissional->escolaridade ?>
+		  </dl>
+		</fieldset>
+	  </dd>
+	  <dd id="contato-element">
+		<fieldset id="fieldset-contato">
+		  <legend>Contato</legend>
+		  <dl>
+			<?php echo $this->element->Profissional->telefone1 ?>
+			<?php echo $this->element->Profissional->celular1 ?>
+			<?php echo $this->element->Profissional->telefone2 ?>
+			<?php echo $this->element->Profissional->celular2 ?>
+			<?php echo $this->element->Profissional->email ?>
+			<?php echo $this->element->Profissional->url ?>
+		  </dl>
+		</fieldset>
+	  </dd>
+	  <dd id="descricao-element">
+		<fieldset id="fieldset-descricao">
+		  <legend>Descrição</legend>
+		  <dl>
+			<?php //echo $this->element->Profissional->submit ?>
+			<?php echo $this->element->Profissional->observacao ?>
+		  </dl>
+		</fieldset>
+	  </dd>
+	</div>
+  </form>
+</div>

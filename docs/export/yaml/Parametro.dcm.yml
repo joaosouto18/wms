@@ -1,0 +1,54 @@
+Parametro:
+  type: entity
+  table: PARAMETRO
+  fields:
+    codParametro:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_PARAMETRO
+      generator:
+        strategy: SEQUENCE
+    codTipoAtributo:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: COD_TIPO_ATRIBUTO
+    dscParametro:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_PARAMETRO
+    dscTituloParametro:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_TITULO_PARAMETRO
+    indParametroSistema:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_PARAMETRO_SISTEMA
+  manyToMany:
+    codEmpresa:
+      targetEntity: Empresa
+      cascade: {  }
+      mappedBy: codParametro
+      inversedBy: null
+      joinTable: null
+      orderBy: null
+  oneToOne:
+    codContextoParametro:
+      targetEntity: CONTEXTOPARAMETRO
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_CONTEXTO_PARAMETRO:
+          referencedColumnName: COD_CONTEXTO_PARAMETRO
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

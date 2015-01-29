@@ -1,0 +1,35 @@
+Sigla:
+  type: entity
+  table: SIGLA
+  fields:
+    codSigla:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_SIGLA
+      generator:
+        strategy: SEQUENCE
+    codReferenciaSigla:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: COD_REFERENCIA_SIGLA
+    dscSigla:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_SIGLA
+  oneToOne:
+    codTipoSigla:
+      targetEntity: TIPOSIGLA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_TIPO_SIGLA:
+          referencedColumnName: COD_TIPO_SIGLA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

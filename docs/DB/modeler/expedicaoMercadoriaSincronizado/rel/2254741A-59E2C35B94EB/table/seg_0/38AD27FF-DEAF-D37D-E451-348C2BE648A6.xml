@@ -1,0 +1,142 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="38AD27FF-DEAF-D37D-E451-348C2BE648A6" directorySegmentName="seg_0" name="PRODUTO_PEDIDO">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>wms_adm</sourceObjSchema>
+<sourceObjName>PRODUTO_PEDIDO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:14 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77</schemaObject>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_PRODUTO" id="9B5681C2-BCA9-3736-3725-5270CBC28CA4">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PRODUTO_PEDIDO</sourceObjSchema>
+<sourceObjName>COD_PRODUTO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:33 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20 BYTE</dataTypeSize>
+<delegate>E1D6724B-9F3E-38B7-7484-656504AA7A48</delegate>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="49A5EBD6-F1D4-1C00-150F-15CB5E42560D" referredColumn="E1D6724B-9F3E-38B7-7484-656504AA7A48"/>
+</associations>
+</Column>
+<Column name="DSC_GRADE" id="FAF3CCE8-E561-C1D4-C747-8EBF6692066B">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PRODUTO_PEDIDO</sourceObjSchema>
+<sourceObjName>DSC_GRADE</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:33 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10 BYTE</dataTypeSize>
+<delegate>F853A6FB-5CF7-C617-4FF0-343D80CCD7A0</delegate>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="49A5EBD6-F1D4-1C00-150F-15CB5E42560D" referredColumn="F853A6FB-5CF7-C617-4FF0-343D80CCD7A0"/>
+</associations>
+</Column>
+<Column name="COD_PEDIDO" id="8C3AC904-00F8-0370-7811-298E8BE82F07">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PRODUTO_PEDIDO</sourceObjSchema>
+<sourceObjName>COD_PEDIDO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypeSize>22</dataTypeSize>
+<delegate>E72147D6-2E53-2F59-313A-3D47612DB3B2</delegate>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="8714E7EC-8EFB-51D5-7E95-26431036DA22" referredColumn="E72147D6-2E53-2F59-313A-3D47612DB3B2"/>
+</associations>
+</Column>
+<Column name="QUANTIDADE" id="E28E7490-4E1F-4D88-0609-DA3426C7EA24">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PRODUTO_PEDIDO</sourceObjSchema>
+<sourceObjName>QUANTIDADE</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:14 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT005</logicalDatatype>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="3B6055B2-A5C8-2F91-C28A-61F13C8A463D" name="PRODUTO_PEDIDO_PRODUTO_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:33 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="9B5681C2-BCA9-3736-3725-5270CBC28CA4"/>
+<colUsage columnID="FAF3CCE8-E561-C1D4-C747-8EBF6692066B"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="6E1D91D9-7408-25BE-5717-70594B2633FD" name="PRODUTO_PEDIDO_PEDIDO_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-07 14:13:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="8C3AC904-00F8-0370-7811-298E8BE82F07"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

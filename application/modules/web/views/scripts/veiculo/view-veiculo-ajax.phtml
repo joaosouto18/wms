@@ -1,0 +1,78 @@
+<style>
+    <!--
+    fieldset dt{
+        width: 0px;
+    }
+    label.lblPlaca{
+        width: 130px;
+        float: left;
+    }
+    div.placa{
+        width: 130px;
+        height: 25px;
+        float: left;
+    }
+    label.lblDescricao{
+        width: 250px;
+        float: left;
+    }
+    div.descricao{
+        width: 250px;
+        height: 25px;
+        float: left;
+    }
+    input#identificacao-descricao{
+        width: 300px;
+    }
+    label.lblIdTipo{
+        width: 150px;
+        float: left;
+    }
+    div.idTipo{
+        width: 150px;
+        height: 25px;
+        float: left;
+    }
+    div.idTransportador{
+        width: 120px;
+        height: 25px;
+        margin-bottom: 15px;
+        float: left;
+    }
+    fieldset.medidas{
+        height: 60px;
+    }
+    label.lblMedida{
+        width: 130px;
+        float: left;
+    }
+    div.medida{
+        width: 130px;
+        float: left;
+    }
+    -->
+</style>
+<fieldset id="fieldset-veiculo">
+    <label class="lblPlaca">Placa</label>
+    <label class="lblDescricao">Descrição</label>
+    <label class="lblIdTipo">Tipo</label>
+    <label>Transportador</label>
+    <div class="placa"><?php echo $this->veiculo->getId(); ?></div>
+    <div class="descricao"><?php echo $this->veiculo->getDescricao(); ?></div>
+    <div class="idTipo"><?php echo $this->veiculo->getTipo()->getDescricao(); ?></div>
+    <div class="idTransportador"><?php echo $this->veiculo->getTransportador()->getPessoa()->getNomeFantasia(); ?></div>
+
+    <fieldset class="medidas">
+        <legend>Medidas</legend>
+        <label class="lblMedida">Altura(m)</label>
+        <label class="lblMedida">Largura(m)</label>
+        <label class="lblMedida">Profundidade(m)</label>
+        <label class="lblMedida">Cubagem(m³)</label>
+        <label>Capacidade(kg)</label>
+        <div class="medida"><?php echo $this->veiculo->getAltura(); ?></div>
+        <div class="medida"><?php echo $this->veiculo->getLargura(); ?></div>
+        <div class="medida"><?php echo $this->veiculo->getProfundidade(); ?></div>
+        <div class="medida"><?php echo $this->veiculo->getCubagem(); ?></div>
+        <div class="medida"><?php echo $this->veiculo->getCapacidade(); ?></div>
+    </fieldset>
+</fieldset>

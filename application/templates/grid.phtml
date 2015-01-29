@@ -1,0 +1,211 @@
+<?php 
+$grid = $this->grid;
+$pager = $grid->getPager();
+
+// grid's attributes
+$attribs = $grid->getAttribs();
+?>
+<script type="text/javascript">
+    $(document).ready(function(){   
+        $('#grid-export').click(function() {
+            var select = $('select[name="grid[export]"]');
+            
+            if(select.val() == "") {
+                alert('Select the Format');
+                select.focus();
+                return false;
+            }
+            
+            $('#formGrid')
+                .attr('action', '?')
+                .attr('target', '_blank')
+                .submit();
+                
+            select.val('');
+            
+            return false;
+        })
+        
+        // button apply filter
+        $('#btnAddFilter').click(function() {
+            $('#formGrid')
+                .attr('action', '?')
+                .attr('target', '_self')
+                .submit();
+        });
+        /**
+         * MASS ACTIONS
+         */
+        
+        // Des/Select all
+        $('input.massaction-check-all').click(function() {
+            $('input.massaction-check-opt')
+                .prop('checked', this.checked)
+                .countCheckedCbx();
+            
+        });
+        
+        $('input.massaction-check-opt').click(function() {
+            $(this).countCheckedCbx();
+        });
+        
+        // counter
+        $.fn.countCheckedCbx = function() {
+            $('span.check-selected-counter')
+                .html( $('input.massaction-check-opt:checked').size() );
+        }
+        
+        // button mass action
+        $('button.massaction-button').click(function() {
+            // check selected action
+            var select = $('select[name="massaction-select"]');
+            
+            if(select.val() == "") {
+                alert('Por favor, selecione uma opção');
+                select.focus();
+                return false;
+            }
+            
+            // check selected records
+            if($('input.massaction-check-opt:checked').size() == 0) {
+                alert('Selecione ao menos um registro');
+                return false;
+            }
+  
+            // submit
+            $('#formGrid')
+                .attr('action', URL + '/' + select.val())
+                .attr('target', '_self')
+                .submit();
+        });
+    });
+    -->
+</script>
+    
+<form id="formGrid" action="?" method="post">
+<div id="<?php echo $grid->getId();?>" class="grid">
+<div class="gControl">
+    <?php if ($grid->getShowPager()) { echo $this->render('grid/pager.phtml'); } ?>
+    <?php if ($grid->getShowFilter()) { ?>
+    <div class="gFilter">
+        <a href="?grid[removeFilter]=1" class="btn btnRemFilter"><span>Remover Filtros</span></a>
+        <button id="btnAddFilter" class="btn">Aplicar Filtros</button>
+    </div>
+    <?php } ?>
+    <?php if ($grid->getHasOrdering()) { ?>
+    <div class="gOrder">
+        <a href="?grid[removeOrder]=1" class="btn btnRemOrder"><span>Remover Ordena&ccedil;&atilde;o</span></a>
+    </div>
+    <?php } ?>
+    <?php if ($grid->getShowExport()) { ?>
+    <div class="gExport">
+	<select name="grid[export]">
+            <option value="" selected="selected">Formato...</option>
+            <option value="csv">CSV</option>
+            <option value="xml">Excel XML</option>
+            <option value="pdf">PDF</option>
+        </select>
+        <button id="grid-export" class="btn">Exportar</button>
+    </div>
+    <?php } ?>
+
+    <?php if ($grid->getShowButtonForm()) : ?>
+        <div class="gFilter">
+            <button id="button-action" class="btn"><?php echo $grid->getShowButtonForm() ?></button>
+            <input id="codExpedicao-hidden" type="hidden" name="codExpedicao" value="" />
+        </div>
+    <?php endif; ?>
+</div>
+    
+        <!--  MASS ACTION -->
+        <?php if ($grid->getShowMassActions()) : ?>
+            <div class="gMassAction">
+                <div class="gSelect">
+                    <label for="checkAllGrid" id="checkAllGridLbl">
+                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox" class="massaction-check-all" style="float: left; margin-right: 2px;"/>Marcar/Desmarcar</label>
+                    <span class="massDelimiter">|</span>
+                    <span><span class="check-selected-counter">0</span> selecionados</span>
+                </div>
+                <div class="gAction">
+                    <span>Mass Action: </span>
+                    <select name="massaction-select">
+                        <option value=""></option>
+                        <?php foreach ($grid->getMassActions() as $name => $label) : ?>
+                            <option value="<?php echo $name ?>"><?php echo $label; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="button" class="massaction-button"><span>Executar</span></button>
+                </div>
+                <form class="massaction-form" method="post">
+                    <input type="hidden" value="" class="massaction-values"/>
+                </form>
+            </div>
+        <?php endif; ?>
+    
+    
+    <table class="gTable <?php if(isset($attribs['class'])) echo $attribs['class']; ?>">
+        <?php if(isset($attribs['caption'])) echo "<caption>" . $attribs['caption'] . "</caption>"; ?>
+        <?php if ($grid->getShowHeaders()) { ?>
+        <tr class="gTTitle">
+            <?php if ($grid->getShowMassActions() || $grid->getShowActions()) { ?>
+            <td colspan="<?php echo ($grid->getShowMassActions() && $grid->getShowActions()) ? '2' : '1';?>"></td>
+            <?php } ?>
+            <?php foreach ($grid->getColumns() as $column) { ?>
+                <?php if ($column->getHasOrdering()) { ?>
+                <td width="<?php echo $column->getWidth();?>"><a href="<?php echo $column->getOrdering()->getHref();?>" title="" class="<?php echo $column->getOrdering()->getClass();?>"><span><?php echo $column->getLabel();?></span></a></td>
+                <?php } else { ?>
+                <td width="<?php echo $column->getWidth();?>"><span><?php echo $column->getLabel();?></span></td>
+                <?php } ?>
+            <?php } ?>
+        </tr>
+        <?php } ?>
+        <?php if ($grid->getShowFilter()) { ?>
+            <input type="hidden" name="grid[addFilter]" value="1" />
+        <tr class="gTFilter">
+            <?php if ($grid->getShowMassActions() || $grid->getShowActions()) { ?>
+            <td colspan="<?php echo ($grid->getShowMassActions() && $grid->getShowActions()) ? '2' : '1';?>"></td>
+            <?php } ?>
+            <?php foreach ($grid->getColumns() as $column) { ?>
+                <td>
+                <?php if ($column->hasFilter()) { ?>
+                <?php echo $column->getFilter()->render(); ?>
+                <?php } ?>
+                </td>	
+            <?php } ?>
+        </tr>
+        <?php } ?>
+        <?php
+        $i = 0;
+        foreach ($grid->getResult() as $row) { ?>
+            <tr class="gTResultSet <?php if ($i % 2) echo "gRowColor" ?>">
+                <?php if ($grid->getShowMassActions()) { ?>
+                <td class="gRowCheck"><input type="checkbox" name="mass-id[]" class="massaction-check-opt" value="<?php echo $row[$grid->getPkIndex()]; ?>" /></td>
+                <?php } ?>
+                <?php if ($grid->getShowActions()) { ?>
+                <td class="gTdOpcRow">
+                    <div class="gOpcRow">
+                        <ul>
+                            <li><img src="<?php echo $this->baseUrl('img/admin/icon_opc.gif') ?>" alt="Op&ccedil;&otilde;es" />
+                                <ul>
+                                    <?php foreach ($grid->getActionsByRow($row) as $action) { ?>
+                                        <?php if ($action->getCondition($row)) { ?>
+                                        <li><a href="<?php echo $action->getUrl($row);?>" class="<?php echo $action->getCssClass();?>" title="<?php echo $action->getTitle();?>" target="<?php echo $action->getTarget();?>"><?php echo $action->getLabel();?></a></li>
+                                        <?php } ?>
+                                    <?php } ?>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+                <?php } ?>
+                <?php foreach ($grid->getColumns() as $column) { ?>
+                    <td style="text-align:<?php echo $column->getAlign(false); ?>"><?php echo $column->getRender($row)->render(); ?></td>
+                <?php } ?>
+            </tr>
+            <?php 
+            $i++;
+        } ?>
+    </table>
+<?php if ($grid->getShowPager()) { echo $this->render('grid/pager.phtml'); } ?>
+</div>
+</form>

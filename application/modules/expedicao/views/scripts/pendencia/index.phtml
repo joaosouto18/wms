@@ -1,0 +1,10 @@
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'pendencia', 'action' =>'view', 'tipo' => $this->tipo ))?>">
+<?php
+    echo $this->formSubmit("btnRelatorio-Produtos-Pendentes-Conferencia", "Visualizar Relatório", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 0 px;'));
+?>
+<div class="padding-top">
+    <?php 
+        echo $this->gridCortes;
+    ?>
+</div>
+</form>

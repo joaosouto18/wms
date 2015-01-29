@@ -1,0 +1,119 @@
+Verficar existencia de registros já existentes em campos UNIQUE (login, perfil de acesso, etc...)
+Criar Zend_Validator_DB_RecordExists para Doctrine
+
+Estilizar listas ajax de Telefones, Endereços
+
+Colocar busca ajax por CEP no cadastro de endereços
+
+Migrar pra GIT
+CACHE USANDO apc 
+SELENIUM
+Webgrind + Xdebug + Zfdebug
+TESTS!
+
+
++ Terminar funcionalidade de grid
+	+ criar hover na grid
++ Rever esquema de herança do doctrine (Pessoa, Sigla)
++ Criar esquema de atalhos
+
+MELHORAR CARREGAMENTO DO MENU
+
+HTML COMPRESSOR
+
+###########----###########----###########----###########----###########----###########----###########
+
+Referencia não é obrigatório:
+	Pode ser cadastrado no WMS
+Classe de produto:
+	Tem até 4 níveis
+	É utilizado pra consulta
+	É como se fosse categoria dos protudos
+	Cada produto pode ter varias categorias
+
+	Conversar com Ricardo novamente
+Grade:
+	Taamanho, Cor, 
+	Conversar com o marcelo se é agrupado ou não.
+	Se não tiver grade, vindo do ERP, 
+	É obrigatório caso o produto possua
+
+	Verificar problema de nota fiscal vs cadastro do wms
+
+Fornecedor != Fabricante
+Criar cadastro de Fabricante	
+
+Kit, Composto ou Unitário
+	Kit:  Cesta básica, Computador, se na nota é 1 produto, ou é detalhado
+	Composto: Vários volumes
+	Unitário: 1 Volume
+
+
+##### WEBSERVICES ##################
+falta documentar os WS
+fazer rotas
+consertar WMS de produtos: trocar lista de parâmetros pra receber objeto
+colocar autenticação para acesso 
+
+
+
+#ERRINHOOOOOOOOOOOOOSSS#
+    Bloquear cadastros de logins repetidos
+    Bloquear cadastros de perfis de usuário repetidos
+    Bloquear cadastros de CPFs e CNPJ inválidos e REPETIDOS
+    Bloquear cadastros de Recursos do sistema repetidos
+    Trocar o validador de data para o formato em PT-br
+    
+#################
+
+Cadastro logístico de produto: Todo esse cadastro é aplicado ao volume ou ao produto somente?
+	+ informar se vai trabalhar junto ou separado. Alguns volumes podem ser juntos, mas algumas partes podem estar separadas. pode agrupar um produto de 5 volumes (4 mesmas coisas + 1 diferente)
+	Embalagem de recebimento
+		Cubagem e peso: São por volume? 
+			+ é por volume, é o sometário de todas as embalagens
+	Normas de paletização
+		Utilizar norma de volume: é um campo que se aplica a um ou a todos unitizadores? 
+			+ Não, o conceito mudou. agrupar protduto
+		Norma de paletização: é lastro X camada? 
+			+ SIM
+		Peso do unitizador: Isso é o peso que o unitizador suporta? No cadastro de unitizador já há o peso que ele suporta. 
+			+ Peso = Norma de paletização X Peso da embalagem de recebimento. Uma norma por unitizador
+	Armazenagem
+		Tipo de endereço de pulmao: ???????
+			+ Tipo de endereço. É um nome que o usuário vai determinar: Inteiro, meio, 1/3. Não é PICKING E PULMÃO. PICKING E PULMÃO SERIAM caracteristicas de endereços.
+		Endereço de picking: Podem haver mais de 1 endereço?
+		Tipo de endereço de picking: No cadsatro de endereço, já fala se ele é picking ou pulmão, o que seria realmente essa informação?
+		Capacidade de picking: Quais são os possíveis valores para esse campo?
+			+ Numeros inteiros
+		Tipo de reposição: Possíveis valores para esse campo? Pode ter mais de um?
+			+ Capacidade do picking, ou completar picking
+		Ponto de reposição (quantidade): WTF again!!!!???!?!?! 
+			+ Inteiros 
+		Ponto de reposição de picking: o que seria essa porcentagem? É a quantidade relativa a que tem no pulmão?
+			+ Flutuante
+		Estrutura: Pode ter mais de 1?
+			Estrutura?  Os valores vêm de Tipo Estrutura armazenagem?
+				+ É o tipo de estrutura de armazenagem. Pode ter mais de 1
+			Restrição de nível? WTF?
+				+ Limita a qual nível o produto se limita. Inteiro. É o endereço do nível. Ex: Evitar colocar produtos pesados muito ao alto
+	Embalagem do produto: Cada embalagem é um volume?
+		+ Não é do volume. Ex: Caixa de celular com 10 unidades
+		Descrição: É um campo de texto livre?
+			+ Exemplo: Caixa - 10 un, Fardo com 15, Peça c/ 1 unidade. Sempre deve ter ao mínimo 1 embalagem 		
+		Quantidade de unidades: Do que se trata realmente este campo?
+			+ O número de unidades que têm na caixa.
+		Padrão: Informa se a embalagem é padrão????? WTF!!?!???
+			+ Embalagem de recebimento é a padrão
+	Aba de volume: Será necessário mesmo reinformar as mesmas infos?
+	Códigos de barras: É sempre por volume?
+		+ Não. É o código da embalagem do produto. Ex: Cx de celular com 20un. É o código de cada unidade. Mas o volume também pode ter código de barras.
+		+ Pode ter vários códigos de barras. O código de barras pode mudar, por isso adiciona vários códigos de barras ao PRODUTO
+		Código de barras: Pode ser gerado sequencialmente? CODPPRODUTO + N. Volume?
+		Tipo: Deve ser uma listagem pre-definida?
+		Descrição embalagem: Os valores dessa lista vêm do cadastro de "Embalagem do produto"
+	Volumes:
+		Código: É código sequencial? cod-produto + n volume?
+		Refencia: é o código de industria?
+		Complemento: é somente a sequencia do volume?
+		
+			

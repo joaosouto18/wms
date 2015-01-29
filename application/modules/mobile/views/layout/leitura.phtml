@@ -1,0 +1,113 @@
+﻿<?php
+echo $this->doctype();
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="Content-Language" content="pt-br" />
+        <title>WMS-MS</title>
+        <script>
+            function load(url, formId, callback) {
+                var xhr;
+
+                if(typeof XMLHttpRequest !== 'undefined') xhr = new XMLHttpRequest();
+                else {
+                    var versions = ["MSXML2.XmlHttp.5.0",
+                        "MSXML2.XmlHttp.4.0",
+                        "MSXML2.XmlHttp.3.0",
+                        "MSXML2.XmlHttp.2.0",
+                        "Microsoft.XMLHTTP"]
+
+                    for(var i = 0, len = versions.length; i < len; i++) {
+                        try {
+                            xhr = new ActiveXObject(versions[i]);
+                            break;
+                        }
+                        catch(e){}
+                    } // end for
+                }
+
+                xhr.onreadystatechange = ensureReadiness;
+
+                function ensureReadiness() {
+                    if(xhr.readyState < 4) {
+                        return;
+                    }
+
+                    if(xhr.status !== 200) {
+                        return;
+                    }
+
+                    // all is well
+                    if(xhr.readyState === 4) {
+                        callback(xhr);
+                    }
+                }
+
+                var elem = document.getElementById(formId).elements;
+                var params = "";
+                //url = document.getElementById(formId).action;
+                for(var i = 0; i < elem.length; i++){
+                    if (elem[i].tagName == "SELECT"){
+                        params += elem[i].name + "=" +     encodeURIComponent(elem[i].options[elem[i].selectedIndex].value) + "&";
+                    }else{
+                        params += elem[i].name + "=" + encodeURIComponent(elem[i].value) + "&";
+                    }
+                }
+
+                xhr.open("POST",url,false);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.setRequestHeader("Content-length", params.length);
+                xhr.setRequestHeader("Connection", "close");
+                xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+                xhr.send(params);
+            }
+
+            function playSound(soundfile) {
+                document.getElementById("dummy").innerHTML=
+                    "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+            }
+
+        </script>
+        <?php echo $this->headScript() ?>
+    </head>
+    <body onload="focusInput()">
+        <div id="body">
+            <div id="top">
+                <div id="userInfo">
+                    <a href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" >Inicio</a>
+                    <a href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" >Voltar</a>
+                    <a href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" >Sair</a>
+                </div>
+            </div>
+
+            <div id="content">
+                <?php $this->messenger();
+                    if ( !empty($this->mensagem))
+                        echo $this->mensagem;
+                ?>
+                <?php
+                    if ( empty($this->bloqueiaOS) || $this->bloqueiaOS!="1" ) {
+                        echo $this->layout()->content;
+                    } else {
+                        echo '
+                                    <link rel="stylesheet" href="/css/mobile/style.css" type="text/css" media="screen" />
+
+                                    <script >playSound(\'/alarme.mp3\');</script>
+                                    <div id="body">
+                                        <div id="content">
+                                            <div class="contentPadding">
+                                                <div id="retorno"></div>
+                                                <span id="dummy">'.$this->messenger().'<embed src="/alarme.mp3" hidden="true" autostart=\"true\" loop="false" /></span><br>
+                                                Foram encontrados erros na expedição. Clique em confirmar para voltar.<br><br>
+                                                <a href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" style="font-size:14px" >Confirmar</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                               ';
+                    }
+                ?>
+            </div>
+        </div>
+    </body>
+</html>

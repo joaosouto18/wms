@@ -1,0 +1,93 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="7059823B-8495-4EAC-A27C-9B9AA1C97E83" directorySegmentName="seg_0" name="ITINERARIO">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>ITINERARIO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>7650DBEC-A26A-91C3-8BCD-FAE0AEB78661</schemaObject>
+<pkName>ITINERARIO_PK</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_ITINERARIO" id="99D7FF01-79B3-6FC9-F422-ED0F1257036C">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ITINERARIO</sourceObjSchema>
+<sourceObjName>COD_ITINERARIO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_ITINERARIO" id="3FF37084-3819-2756-7BCB-556AF263CA8B">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>ITINERARIO</sourceObjSchema>
+<sourceObjName>DSC_ITINERARIO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>50 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="70706478-C518-D062-272C-A701CC960DED" name="ITINERARIO_PK">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>ITINERARIO_PK</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="99D7FF01-79B3-6FC9-F422-ED0F1257036C"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

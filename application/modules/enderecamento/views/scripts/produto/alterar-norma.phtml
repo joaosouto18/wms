@@ -1,0 +1,34 @@
+<?php
+echo $this->msg;
+?>
+
+<br>
+<br>
+
+<?php if ($this->tabela == true) {?>
+    <legend><?php echo $this->dscProduto?></legend>
+    <table >
+    <tr>
+        <td>Unidade: </td>
+        <td>&nbsp;</td>
+        <td><?php echo $this->unidade?></td>
+    </tr>
+    <tr>
+        <td>Unitizador: </td>
+        <td>&nbsp;</td>
+        <td><?php echo $this->unitizador?></td>
+    </tr>
+    <tr>
+        <td>Norma: </td>
+        <td>&nbsp;</td>
+        <td><?php echo $this->lastro . " x " . $this->camadas . " = " . $this->qtdNorma?></td>
+    </tr>
+</table>
+<?php }?>
+
+<br>
+
+<?php if ($this->botaoConfirma == true) {?>
+    <a class="btn reader dialogAjax"
+       href="<?php echo "/enderecamento/produto/confirmar-alteracao/id/" . $this->idRecebimento . "/codigo/" . $this->codProduto . "/grade/" . urlencode($this->grade) ?>">Confirmar</a>
+<?php }?>

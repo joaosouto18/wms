@@ -1,0 +1,104 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="PRODUTO_DADO_LOGISTICO" id="7F4B3853-96AC-0DA2-92EC-6635467C5B2A" directorySegmentName="seg_0">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>9870F2F9-B10F-57CE-658A-AD6EAE4150BF</segment>
+<tableSpace>F9C65FCE-5ECC-02FB-B244-0945805943E6</tableSpace>
+<columnProxies>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="NUM_CUBAGEM" id="48486A7D-08EA-3413-E2BC-8802FB270FB8">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="NUM_ALTURA" id="4CF7A4C9-9829-B0AF-CEE8-3231A340275C">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="NUM_PESO" id="9E544E4B-3F5F-CC6A-B0FB-CD4ED0211629">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_PRODUTO_DADO_LOGISTICO" id="9F8D0A7F-4735-72C1-48C8-8A1F85B320ED">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_NORMA_PALETIZACAO" id="9FF4EF31-D7D2-597B-6BC5-2D6B443795FA">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_PRODUTO_EMBALAGEM" id="B247EB7D-F459-4FFE-CAE7-49C1ACF3FD3A">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="NUM_PROFUNDIDADE" id="D6A1B909-BC10-5438-EFCF-8CD3956C1D00">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="NUM_LARGURA" id="FB727C25-202B-15D2-9B42-C1299C530F52">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>0</defaultValue>
+</ColumnProxy>
+</columnProxies>
+<indexProxies>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DALOG_NORPA" id="50DDDDD8-C8E7-85BD-E061-7E2C25164BA0">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<segment>626B9F59-B283-7F84-0CD4-532B0E937FE3</segment>
+<sortedRows>SORTED</sortedRows>
+<tableSpace>F9C65FCE-5ECC-02FB-B244-0945805943E6</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DALOG_PROEM" id="8CDE082A-C235-6A00-0F99-444B75A316DE">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<segment>626B9F59-B283-7F84-0CD4-532B0E937FE3</segment>
+<sortedRows>SORTED</sortedRows>
+<tableSpace>F9C65FCE-5ECC-02FB-B244-0945805943E6</tableSpace>
+</IndexProxy>
+</indexProxies>
+<foreignKeys>
+<ForeignKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.FKProxyOraclev10g" name="FK_DALOG_PROEM" id="9152F28E-F4BA-23D2-B287-8CB35F75178A">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:47 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ForeignKey>
+</foreignKeys>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="PK_DALOG" id="5B85FE7A-1B87-7CD3-2AF8-97CB599C7EDF">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<sortedRows>SORTED</sortedRows>
+<tableSpace>F9C65FCE-5ECC-02FB-B244-0945805943E6</tableSpace>
+<indexSegment>626B9F59-B283-7F84-0CD4-532B0E937FE3</indexSegment>
+<indexSort>SORTED</indexSort>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

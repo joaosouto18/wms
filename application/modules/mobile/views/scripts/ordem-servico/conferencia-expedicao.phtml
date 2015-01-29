@@ -1,0 +1,18 @@
+<h3>Expedições disponíveis</h3>
+<ul class="menu">
+    <?php if(count($this->expedicoes) == 0): ?>
+        <li>Nenhuma Expedição aguardando conferência.</li>
+    <?php endif;?>
+    <?php foreach($this->expedicoes as $expedicao):
+        if (in_array($expedicao['id'],$this->iniciadas)) {
+            $this->complemento = ' (Conferência Iniciada)';
+        }
+        else {
+            $this->complemento = "";
+        }
+    ?>
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras', 'idExpedicao' => $expedicao['id'] )); ?>" title="<?php echo $expedicao['id'] ?>" >Cod. Exp. <?php echo $expedicao['id'] . ' - C:'. $expedicao['placaExpedicao'] . $this->complemento ?> </a>
+        </li>
+    <?php endforeach; ?>
+</ul>

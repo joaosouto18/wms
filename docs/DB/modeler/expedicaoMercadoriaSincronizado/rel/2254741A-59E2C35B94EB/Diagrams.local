@@ -1,0 +1,4 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="main_view" objectID="24843AA2-0CE7-66EF-CA8F-EBA438A0733E" name="Tela Expedicao Mercadorias" visible="false"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

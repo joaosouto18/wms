@@ -1,0 +1,60 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="2B192898-CF31-3330-5294-CC71740EEA27" name="RESERVA_ESTOQUE_ENDERECAMENTO">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>RESERVA_ESTOQUE_ENDERECAMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:12 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="UMA" id="832A1A4F-F645-78FE-DD34-5A9A6616347D">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE_ENDERECAMENTO</sourceObjSchema>
+<sourceObjName>UMA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:12 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_RESERVA_ESTOQUE" id="E750600A-3561-EC11-E4F1-673DF288E802">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE_ENDERECAMENTO</sourceObjSchema>
+<sourceObjName>COD_RESERVA_ESTOQUE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:12 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>61353F52-BC2B-AEC8-E41A-97378C8A8384</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="D1CF2934-6922-8863-3D24-2056D1C82D73" referredColumn="61353F52-BC2B-AEC8-E41A-97378C8A8384"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="CACA070E-A2DC-8938-C7F8-A6FF32E6CC33" name="RES_EST_RES_EST_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:12 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="E750600A-3561-EC11-E4F1-673DF288E802"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

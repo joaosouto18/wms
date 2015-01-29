@@ -1,0 +1,195 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="FA3510AD-1E67-677F-EEFD-3D015917628F" directorySegmentName="seg_0" name="PEDIDO">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PEDIDO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>7650DBEC-A26A-91C3-8BCD-FAE0AEB78661</schemaObject>
+<pkName>PEDIDO_PK</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_PEDIDO" id="47C4D343-8072-E56D-FBEF-99EFA320F7A7">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_TIPO_PEDIDO" id="B1DFAC5B-803D-510E-D886-DE4D55BFD11F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_LINHA_ENTREGA" id="FBBC32BC-75DC-7192-A5B6-0C0B758C0148">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>300 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_CARGA" id="729C5F66-C1A0-58FA-DCD8-BD178313FE14">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>COD_CARGA</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>08EA9B8A-4A4A-6553-4D51-43E4A54748A7</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="C06B1940-890E-451B-DB1F-AE602FE378BB" referredColumn="08EA9B8A-4A4A-6553-4D51-43E4A54748A7"/>
+</associations>
+</Column>
+<Column name="COD_ITINERARIO" id="247ABA03-CABB-54DE-4518-9A38072FD4D9">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>COD_ITINERARIO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<delegate>99D7FF01-79B3-6FC9-F422-ED0F1257036C</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="856B9330-A950-654F-B8FC-0C717B009591" referredColumn="99D7FF01-79B3-6FC9-F422-ED0F1257036C"/>
+</associations>
+</Column>
+<Column name="COD_PESSOA" id="6B76B024-DD0B-BBCF-CB09-D712A6159C30">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>PEDIDO</sourceObjSchema>
+<sourceObjName>COD_PESSOA</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>F0562E3A-5478-C934-A81C-B556E7A858C3</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="BD26A540-EDCC-81BE-ED88-14D01A9024E9" referredColumn="F0562E3A-5478-C934-A81C-B556E7A858C3"/>
+</associations>
+</Column>
+<Column name="CENTRAL_ENTREGA" id="0D3761C7-F5C5-5CC3-7BF9-70A30B554533">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-05-22 13:49:56 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="9FA41A66-ED09-F61B-3DF5-612504D23642" name="PEDIDO_PK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>7650DBEC-A26A-91C3-8BCD-FAE0AEB78661</schemaObject>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="47C4D343-8072-E56D-FBEF-99EFA320F7A7"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="07BF4449-A355-DC08-A60B-687F2372D6EC" name="PEDIDO_ITINERARIO_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="247ABA03-CABB-54DE-4518-9A38072FD4D9"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="2425FD68-BE46-8F2C-D31B-741E9996829C" name="PEDIDO_CARGA_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="729C5F66-C1A0-58FA-DCD8-BD178313FE14"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="10CA3B49-312F-17E9-AA3A-759993BBAA17" name="PEDIDO_CLIENTE_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="6B76B024-DD0B-BBCF-CB09-D712A6159C30"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

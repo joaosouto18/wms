@@ -1,0 +1,11 @@
+<?php 
+echo $this->render('recebimento/cabecalho.phtml');
+?>
+<form id="recebimento-form" enctype="application/x-www-form-urlencoded" class="saveForm" action="" method="post" novalidate="novalidate">
+<fieldset>
+    <legend>Selecionar Box</legend>
+    <div><?php echo $this->form->getElement('idBox');?></div>
+    <div><br /><br />Observação:<br /><?php echo $this->form->getElement('observacao');?></div>
+    <div><?php echo $this->form->getElement('submit');?></div>
+</fieldset>
+</form>

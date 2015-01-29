@@ -1,0 +1,176 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="A8C95595-F67F-A0DC-9BB1-8904A98CB2B7" directorySegmentName="seg_0" name="BOX">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>BOX</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:17 UTC</createdTime>
+<commentInRDBMS>Cadastro dos Boxes e dos sub-Boxes (o Box é a área dentro do depósito utilizada para os processos de conferência de entradas e saídas).</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77</schemaObject>
+<pkName>PK_BOX</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_BOX" id="DA9B1333-8704-5A0F-6AC8-ACC40FD99D09">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>BOX</sourceObjSchema>
+<sourceObjName>COD_BOX</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:18 UTC</createdTime>
+<commentInRDBMS>Código do Box</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>5 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_BOX_PAI" id="824F4977-3F40-6CB6-16C9-A080D8B73CD9">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>BOX</sourceObjSchema>
+<sourceObjName>COD_BOX_PAI</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:18 UTC</createdTime>
+<commentInRDBMS>Código do Box Pai (código que faz referencia ao box pai)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>5 BYTE</dataTypeSize>
+<delegate>DA9B1333-8704-5A0F-6AC8-ACC40FD99D09</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="9679AFB1-3567-932A-F547-9761E86B83F8" referredColumn="DA9B1333-8704-5A0F-6AC8-ACC40FD99D09"/>
+</associations>
+</Column>
+<Column name="DSC_BOX" id="699AB6E9-B561-FCB5-D447-644BB60A9841">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>BOX</sourceObjSchema>
+<sourceObjName>DSC_BOX</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:18 UTC</createdTime>
+<commentInRDBMS>Descrição do Box</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>60 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO" id="BCCE526E-59BA-7E26-6FAE-912B325CF8BE">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>BOX</sourceObjSchema>
+<sourceObjName>COD_DEPOSITO</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:18 UTC</createdTime>
+<commentInRDBMS>Código do Depósito</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>BCCE526E-59BA-7E26-6FAE-912B325CF8BE</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="9679AFB1-3567-932A-F547-9761E86B83F8" referredColumn="BCCE526E-59BA-7E26-6FAE-912B325CF8BE"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="F17DD81D-C983-A001-AB5B-C87E2057994F" name="PK_BOX">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PK_BOX</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:23 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77</schemaObject>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="BCCE526E-59BA-7E26-6FAE-912B325CF8BE"/>
+<colUsage columnID="DA9B1333-8704-5A0F-6AC8-ACC40FD99D09"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="BC34D71D-902A-62E7-781F-4D0D4DF83514" name="FK_BOX_BOX">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>FK_BOX_BOX</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:23 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77</schemaObject>
+<indexColumnUsage>
+<colUsage columnID="BCCE526E-59BA-7E26-6FAE-912B325CF8BE"/>
+<colUsage columnID="824F4977-3F40-6CB6-16C9-A080D8B73CD9"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="1974A844-6B30-9308-1255-BC2AB49C5F68" name="FK_BOX_DEPOS">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>FK_BOX_DEPOS</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:23 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77</schemaObject>
+<indexColumnUsage>
+<colUsage columnID="BCCE526E-59BA-7E26-6FAE-912B325CF8BE"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="96213D60-5E56-E588-B3C6-A04E0867A22D" name="FK_BOX_BOX">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-06 19:32:31 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="BCCE526E-59BA-7E26-6FAE-912B325CF8BE"/>
+<colUsage columnID="824F4977-3F40-6CB6-16C9-A080D8B73CD9"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

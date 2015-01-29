@@ -1,0 +1,50 @@
+<?php
+if (count($this->notasFiscais) > 0):
+    ?>
+    <form action="/recebimento/gerar" method="post">
+        <div class="gControl">
+            <div class="gPager" style="width: 100%">
+                <input type="submit" name="submit" class="btn" style="float:right" value="Gerar Recebimento" />
+                <span>Total de <?php echo count($this->notasFiscais) ?> registros encontrados.</span>
+            </div>
+        </div>
+        <table class="gTable">
+            <tr class="gTTitle">
+                <td colspan="2"></td>
+                <td width=""><a title=""><span>Placa</span></a></td>
+                <td width=""><a title=""><span>Nota Fiscal</span></a></td>
+                <td width=""><a title=""><span>Serie</span></a></td>
+                <td width=""><a title=""><span>Data Entrada</span></a></td>
+                <td width=""><a title=""><span>Fornecedor</span></a></td>
+                <td width=""><a title=""><span>Status</span></a></td>
+                <td width=""><a title=""><span>Qtd. Produtos</span></a></td>
+            </tr>
+            <?php foreach ($this->notasFiscais as $notaFiscal): ?>
+                <tr class="gTResultSet ">
+                    <td class="gRowCheck"><input type="checkbox" name="notasFiscais[]" value="<?php echo $notaFiscal['id'] ?>" /></td>
+                    <td class="gTdOpcRow">
+                        <div class="gOpcRow">
+                            <ul>
+                                <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
+                                    <ul>
+                                        <li><a href="/consulta_nota-fiscal/view-nota-ajax/id/<?php echo $notaFiscal['id'] ?>" class="dialogAjax" title="Detalhes da NotaFiscal">Visualizar NotaFiscal</a></li>
+                                        <li><a href="/recebimento/excluir-nota/id/<?php echo $notaFiscal['id'] ?>" title="Excluir NotaFiscal">Excluir NotaFiscal</a></li>
+									</ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td style="text-align:left"><?php echo $notaFiscal['placa'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['numero'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['serie'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['dataEntrada'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['fornecedor'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['status'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['qtdProduto'] ?></td>
+                <?php endforeach; ?>
+            </tr>
+        </table>
+    </form>
+    <?php
+endif;
+?>

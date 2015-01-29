@@ -1,0 +1,51 @@
+<fieldset id="fieldset-endereco">
+    <table>
+        <tr height="25">
+            <td></td>
+            <td>Inicial</td>
+            <td>Final</td>
+            <td></td>
+            <td>Inicial</td>
+            <td>Final</td>
+            <td></td>
+        </tr>
+        <tr height="25">
+            <td width="35">Rua:</td>
+            <td width="60"><?php echo "{$this->element->inicialRua}"; ?></td>
+            <td width="80"><?php echo "{$this->element->finalRua}"; ?></td>
+
+            <td width="40">Nível:</td>
+            <td width="60"><?php echo "{$this->element->inicialNivel}"; ?></td>
+            <td width="80"><?php echo "{$this->element->finalNivel}"; ?></td>
+
+            <td width="80">Característica:</td>
+            <td width="100"><?php echo $this->element->idCaracteristica;?></td>
+
+            <td width="80">Tipo do Endereço:</td>
+            <td width="100"><?php echo $this->element->idTipoEndereco;?></td>
+
+            <td width="80">Tipo de Unitizador:</td>
+            <td width="100"><?php echo $this->element->unitizador;?></td>
+
+            <td width="80">Lado:</td>
+            <td width="100"><?php echo $this->element->lado;?></td>
+
+            <td width="100"><?php echo $this->element->origin;?></td>
+
+        </tr>
+        <tr height="25">
+		    <td colspan="2" width="80">Picking:</td>
+            <td colspan="3" width="100"><?php echo $this->element->picking->getValue();?></td>
+
+            <td colspan="3" width="80">Norma de Paletização:</td>
+           <td colspan="2" width="100"><?php echo $this->element->norma->getValue();?></td>
+
+			<td colspan="1" width="80">Ocupado:</td>
+            <td colspan="1" width="100"><?php echo $this->element->ocupado;?></td>
+
+            <td colspan="10">
+                <input type="submit" class="btn" id="submit" value="Filtrar" name="busca" style="margin-bottom: 15px; float:right;"/>
+            </td>
+        </tr>
+    </table>
+</fieldset>

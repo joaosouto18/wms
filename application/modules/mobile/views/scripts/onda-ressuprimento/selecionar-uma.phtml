@@ -1,0 +1,33 @@
+﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'finalizar')) ?>" method="post">
+    <div>
+        <table class="gTable" style="width: 100%">
+            <tbody>
+            <tr>
+                <td colspan="3"><b><?php echo $this->dscProduto?></b></td>
+            </tr>
+            <tr>
+                <td><b>Cod:</b> <?php echo $this->codProduto?></td>
+                <td><b>Grade:</b> <?php echo $this->grade?></td>
+                <td><b>Qtd:</b> <?php echo $this->qtd?></td>
+            </tr>
+            <tr>
+                <td colspan="3"><b>Pulmão:</b> <?php echo $this->endPulmao?></td>
+                <td colspan="3"><b>Picking:</b> <?php echo $this->endPicking?></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+
+    <div>
+        <b><label style="font-size:17px">U.M.A.</label></b>
+        <input class="focus" type="text" name="codigoBarrasUma" id="codigoBarrasUma" value="" />
+    </div>
+
+    <div>
+        <input type="submit" name="submit" id="submit" value="Buscar" />
+    </div>
+    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'selecionar-produto', 'idOnda' => $this->idOnda)); ?>">Alternar para Produto</a>
+</form>
+
+<div class = "gPager">

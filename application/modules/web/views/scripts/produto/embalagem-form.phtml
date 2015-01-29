@@ -1,0 +1,56 @@
+<style>
+    #fieldset-embalagem {
+        width: 350px; 
+        float: left; 
+        margin-right: 10px;
+    }
+    #fieldset-embalagem div.field {
+        clear:both;
+    }
+    #fieldset-embalagens-cadastradas {
+        float: right;
+        width: 570px;
+    }
+    
+    div.checkbox label.optional {
+        margin: 0;
+    }
+</style>
+<div id="produto-embalagem">
+    <dd id="identification-element">
+        <fieldset id="fieldset-embalagem">
+            <legend>Criar Novo</legend>
+            <?php
+            echo $this->element->id;
+            echo $this->element->grade;
+            echo $this->element->acao;
+            echo $this->element->idProduto;
+            echo $this->element->codigoBarrasAntigo;
+            ?>
+            <table>
+                <tr>
+                    <td colspan="3"><?php echo $this->element->descricao; ?></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><?php echo $this->element->quantidade; ?></td>
+                    <td colspan="1"><?php echo $this->element->isPadrao; ?></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><?php echo $this->element->CBInterno; ?></td>
+                    <td colspan="1"><?php echo $this->element->imprimirCB; ?></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><?php echo $this->element->codigoBarras; ?></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><?php echo $this->element->endereco; ?></td>
+                    <td colspan="1"><?php echo $this->element->embalado; ?></td>
+                </tr>
+            </table>
+            <?php echo $this->element->btnEmbalagem; ?>
+        </fieldset>
+        <fieldset id="fieldset-embalagens-cadastradas">
+            <legend>Embalagens Cadastradas (Clique para Editar)</legend>
+        </fieldset>
+    </dd>
+</div>

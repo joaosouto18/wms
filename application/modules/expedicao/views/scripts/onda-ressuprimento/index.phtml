@@ -1,0 +1,43 @@
+<?php 
+echo $this->form;
+?>
+<form id="relatorio-picking-listar" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'onda-ressuprimento', 'action' =>'gerar' ))?>">
+<div id="quantidade-grid" class="grid">
+    <input type="button" style="margin-bottom: 15px; display:none" name="busca" value="Gerar Onda" id="gerar" class="btn" >
+    <table class="gTable ">
+        <caption>Selecione as Expedições</caption>
+        <tbody>
+            <tr class ="gTTitle">
+                <td>Gerar</td>
+                <td>Expedição</td>
+                <td>Placa</td>
+                <td>Cargas</td>
+                <td>Itinerário</td>
+                <td>Dth.Abertura</td>
+                <td>Status</td>
+            </tr>
+            <?php if ($this->expedicoes) : ?>
+                <?php
+                foreach ($this->expedicoes as $expedicao): $this->color = !($this->color);?>
+                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td>
+                            <input
+                                class="checkBoxClass"
+                                style="vertical-align: middle"
+                                type="checkbox"
+                                name="expedicao[]"
+                                value="<?php echo $expedicao['COD_EXPEDICAO']?>">
+                        </td>
+                        <td><?php echo $expedicao['COD_EXPEDICAO'] ?></td>
+                        <td><?php echo $expedicao['PLACA'] ?></td>
+                        <td><?php echo $expedicao['CARGA'] ?></td>
+                        <td><?php echo $expedicao['ITINERARIO'] ?></td>
+                        <td><?php echo $expedicao['DTH_INICIO'] ?></td>
+                        <td><?php echo $expedicao['STATUS'] ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+        </table>
+<div class = "gPager">
+</form>

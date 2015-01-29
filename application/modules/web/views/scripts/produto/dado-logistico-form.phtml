@@ -1,0 +1,56 @@
+<?php
+echo $this->headLink()->appendStylesheet('/css/admin/form/dadoLogisticoForm.css'); 
+?>
+<div id="produto-dado-logistico">
+    <dd id="identification-element">
+
+        <fieldset id="fieldset-grupo-normas">
+            <legend>Normas de Paletização - (Arraste os blocos de dados sobre uma norma)</legend>
+            <input type="button" name="btnAddGrupo" id="btn-add-grupo" value="Adicionar Nova Norma de Paletização" class="btnAddGrupo" />
+
+            <div id="div-lista-dados-logisticos" class="ui-sortable"></div>
+        </fieldset>
+
+        <fieldset id="fieldset-dado-logistico">
+            <legend>Criar Novo</legend>
+            <?php echo $this->element->id; ?>
+            <?php echo $this->element->idNormaPaletizacao; ?>
+            <?php echo $this->element->acao; ?>
+            <?php echo $this->element->idProduto; ?>
+            <?php echo $this->element->grade; ?>
+            <table>
+                <tr>
+                    <td colspan="3">
+                        <?php echo $this->element->idEmbalagem; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <?php echo $this->element->altura; ?>
+                    </td>
+                    <td>
+                        <?php echo $this->element->largura; ?>
+                    </td>
+                    <td>
+                        <?php echo $this->element->profundidade; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <?php echo $this->element->cubagem; ?>
+                    </td>
+                    <td>
+                        <?php echo $this->element->peso; ?>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <?php echo $this->element->btnDadosLogisticos; ?>
+                    </td>
+                </tr>
+            </table>            
+        </fieldset>
+
+    </dd>
+</div>

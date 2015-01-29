@@ -1,0 +1,29 @@
+E:
+  type: entity
+  table: E
+  fields:
+    codE:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_E
+      generator:
+        strategy: SEQUENCE
+    dscE:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_E
+  oneToOne:
+    codD:
+      targetEntity: D
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_D:
+          referencedColumnName: COD_D
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

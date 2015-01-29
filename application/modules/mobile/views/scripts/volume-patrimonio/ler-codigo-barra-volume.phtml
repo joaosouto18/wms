@@ -1,0 +1,95 @@
+﻿<script>
+
+    function focusInput() {
+        document.getElementById('volume').focus();
+    }
+
+    function formSubmit(event)
+    {
+        volume = document.getElementById('volume');
+        if (volume.value !== "") {
+            loadResult(volume);
+        }
+
+        if(event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+    }
+
+    function loadResult(volume)
+    {
+        volume.disabled = true;
+
+        document.getElementById('retorno').innerHTML = 'Pesquisando...';
+        load(document.getElementById('formulario').action, 'formulario', function(xhr){
+
+            document.getElementById('retorno').innerHTML = '';
+            volume.disabled = false;
+            volume.value = "";
+            volume.focus();
+
+            xmlDoc=xhr.responseXML;
+
+            x=xmlDoc.getElementsByTagName("retorno");
+            i=0;
+
+            exibeMensagem(x,i);
+
+            if (x[i].getElementsByTagName("redirect").length > 0) {
+                volume.disabled = true;
+                redirect=(x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
+                setTimeout("location.href = redirect;",0);
+            }
+
+        });
+    }
+
+    function exibeMensagem(x,i)
+    {
+        if (x[i].getElementsByTagName("message").length > 0) {
+            message=(x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
+            document.getElementById("retorno").innerHTML=message;
+        }
+
+        if (x[i].getElementsByTagName("resposta").length > 0) {
+            status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
+            if (status == 'error') {
+                playSound('/alarme.mp3');
+            }
+        }
+    }
+
+</script>
+
+<div id='retorno'></div>
+<span id="dummy"></span>
+
+
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'volume-patrimonio', 'action' => $this->urlFormAction)) ?>" onSubmit="formSubmit(event)" method="post">
+
+    <div>
+        <label>VOLUME:</label>
+        <input type="text" name="volume" id="volume" value="" />
+        <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" />
+        <input type="hidden" name="idTipoVolume" id="idTipoVolume" value="<?php echo $this->idTipoVolume ?>" />
+    </div>
+
+    <input type="submit" name="submit" id="submit" value="Buscar" />
+</form>
+
+<?php if($this->urlFormAction =='confere-volume-expedicao') : ?>
+    <div id="footer">
+        <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+    </div>
+<?php endif; ?>
+
+<?php if(isset($this->volumesPatrimonio)) : ?>
+    <p>Vinculados à expedição <?php echo $this->idExpedicao ?></p>
+    <ul>
+        <?php foreach($this->volumesPatrimonio as $volume) : ?>
+            <li><?php echo $volume['id'] ?> - <?php echo $volume['descricao'] ?> - <?php echo $volume['aberto'] ?></li>
+        <?php endforeach ?>
+    </ul>
+<?php endif; ?>

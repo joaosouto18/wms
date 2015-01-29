@@ -1,0 +1,46 @@
+<style>
+    <!--
+    fieldset.idTipo{
+        width: 280px;
+        height: 45px;
+        margin-right: 10px;
+        float: left;
+    }
+    fieldset.sigla{
+        width: 315px;
+        height: 45px;
+        margin-right: 10px;
+        float: left;
+    }
+    fieldset.referencia{
+        width: 280px;
+        height: 45px;
+    }
+    fieldset dt{
+        width: 0px;
+    }
+    #fieldset-sigla input.error {
+        border-color: #F00;
+    }
+    #fieldset-sigla select.error {
+        border-color: #F00;
+    }
+    #fieldset-sigla label.error {
+        display:none !important;
+    }
+    -->
+</style>
+<fieldset id="fieldset-sigla">
+    <fieldset class="idTipo">
+        <legend>Tipo</legend>
+        <?php echo $this->element->idTipo; ?>
+    </fieldset>
+    <fieldset class="sigla">
+        <legend>Sigla</legend>
+        <?php echo $this->element->sigla; ?>
+    </fieldset>
+    <fieldset class="referencia">
+        <legend>Referência</legend>
+        <?php echo $this->element->referencia; ?>
+    </fieldset>
+</fieldset>

@@ -1,0 +1,633 @@
+PefisVersaoAnterior:
+  type: entity
+  table: PEFIS_VERSAO_ANTERIOR
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+    dthVersao:
+      id: true
+      type: datetime
+      nullable: false
+      column: DTH_VERSAO
+    codDddCel:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: COD_DDD_CEL
+    codDddCom:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: COD_DDD_COM
+    codDddRes:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: COD_DDD_RES
+    codLocalidadeAnt:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_LOCALIDADE_ANT
+    codLocalidadeCom:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_LOCALIDADE_COM
+    codLocalidadeRes:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_LOCALIDADE_RES
+    codSexo:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: COD_SEXO
+    codSituacaoConjugal:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_SITUACAO_CONJUGAL
+    codTipoAtividade:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ATIVIDADE
+    codTipoAtividadeConjuge:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ATIVIDADE_CONJUGE
+    codTipoOrganizacao:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ORGANIZACAO
+    codTipoResidencia:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: COD_TIPO_RESIDENCIA
+    codUsuario:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_USUARIO
+    datAberturaConta1:
+      type: datetime
+      nullable: true
+      column: DAT_ABERTURA_CONTA_1
+    datAberturaConta2:
+      type: datetime
+      nullable: true
+      column: DAT_ABERTURA_CONTA_2
+    datAberturaConta3:
+      type: datetime
+      nullable: true
+      column: DAT_ABERTURA_CONTA_3
+    datAdmissaoEmprego:
+      type: datetime
+      nullable: true
+      column: DAT_ADMISSAO_EMPREGO
+    datExpedicaoRg:
+      type: datetime
+      nullable: true
+      column: DAT_EXPEDICAO_RG
+    datNascimento:
+      type: datetime
+      nullable: true
+      column: DAT_NASCIMENTO
+    datNascimentoConjuge:
+      type: datetime
+      nullable: true
+      column: DAT_NASCIMENTO_CONJUGE
+    dscApelido:
+      type: string
+      length: 30
+      fixed: false
+      nullable: true
+      column: DSC_APELIDO
+    dscCargoConjuge:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_CARGO_CONJUGE
+    dscCargoEmprego:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_CARGO_EMPREGO
+    dscComplementoAnt:
+      type: string
+      length: 36
+      fixed: false
+      nullable: true
+      column: DSC_COMPLEMENTO_ANT
+    dscComplementoCom:
+      type: string
+      length: 36
+      fixed: false
+      nullable: true
+      column: DSC_COMPLEMENTO_COM
+    dscComplementoRes:
+      type: string
+      length: 36
+      fixed: false
+      nullable: true
+      column: DSC_COMPLEMENTO_RES
+    dscDoctoRenda:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: DSC_DOCTO_RENDA
+    dscEmail:
+      type: string
+      length: 100
+      fixed: false
+      nullable: true
+      column: DSC_EMAIL
+    dscEnderecoAnt:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: DSC_ENDERECO_ANT
+    dscEnderecoCom:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: DSC_ENDERECO_COM
+    dscEnderecoRes:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: DSC_ENDERECO_RES
+    dscNacionalidade:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_NACIONALIDADE
+    dscNaturalidade:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_NATURALIDADE
+    dscPontoReferenciaAnt:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_PONTO_REFERENCIA_ANT
+    dscPontoReferenciaCom:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_PONTO_REFERENCIA_COM
+    dscPontoReferenciaRes:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_PONTO_REFERENCIA_RES
+    indCartaoLoja1:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CARTAO_LOJA_1
+    indCartaoLoja2:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CARTAO_LOJA_2
+    indCartaoLoja3:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CARTAO_LOJA_3
+    indCartaoMastercard:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CARTAO_MASTERCARD
+    indCartaoVisa:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CARTAO_VISA
+    indChequeEspecial1:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CHEQUE_ESPECIAL_1
+    indChequeEspecial2:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CHEQUE_ESPECIAL_2
+    indChequeEspecial3:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_CHEQUE_ESPECIAL_3
+    indComprovanteRenda:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_COMPROVANTE_RENDA
+    indComprovanteResidencia:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_COMPROVANTE_RESIDENCIA
+    indOutroCartao:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_OUTRO_CARTAO
+    nomBairroAnt:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: NOM_BAIRRO_ANT
+    nomBairroCom:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: NOM_BAIRRO_COM
+    nomBairroRes:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: NOM_BAIRRO_RES
+    nomConjuge:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_CONJUGE
+    nomEmpregador:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_EMPREGADOR
+    nomEmpregadorConjuge:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_EMPREGADOR_CONJUGE
+    nomExpedidorRg:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: NOM_EXPEDIDOR_RG
+    nomMae:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_MAE
+    nomOutroCartao:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_OUTRO_CARTAO
+    nomPai:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_PAI
+    nomPessoa:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_PESSOA
+    nomReferenciaComercial1:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_REFERENCIA_COMERCIAL_1
+    nomReferenciaComercial2:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_REFERENCIA_COMERCIAL_2
+    nomReferenciaComercial3:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_REFERENCIA_COMERCIAL_3
+    nomReferenciaPessoal1:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_REFERENCIA_PESSOAL_1
+    nomReferenciaPessoal2:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_REFERENCIA_PESSOAL_2
+    nomReferenciaPessoal3:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_REFERENCIA_PESSOAL_3
+    numAgencia1:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_AGENCIA_1
+    numAgencia2:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_AGENCIA_2
+    numAgencia3:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_AGENCIA_3
+    numBanco1:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_BANCO_1
+    numBanco2:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_BANCO_2
+    numBanco3:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_BANCO_3
+    numCepAnt:
+      type: string
+      length: 10
+      fixed: false
+      nullable: true
+      column: NUM_CEP_ANT
+    numCepCom:
+      type: string
+      length: 10
+      fixed: false
+      nullable: true
+      column: NUM_CEP_COM
+    numCepRes:
+      type: string
+      length: 10
+      fixed: false
+      nullable: true
+      column: NUM_CEP_RES
+    numCpf:
+      type: string
+      length: 11
+      fixed: false
+      nullable: true
+      column: NUM_CPF
+    numCpfConjuge:
+      type: string
+      length: 11
+      fixed: false
+      nullable: true
+      column: NUM_CPF_CONJUGE
+    numDddConjuge:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_CONJUGE
+    numDddEmpregador:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_EMPREGADOR
+    numDddReferComercial1:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_REFER_COMERCIAL_1
+    numDddReferComercial2:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_REFER_COMERCIAL_2
+    numDddReferComercial3:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_REFER_COMERCIAL_3
+    numDddReferPessoal1:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_REFER_PESSOAL_1
+    numDddReferPessoal2:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_REFER_PESSOAL_2
+    numDddReferPessoal3:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: NUM_DDD_REFER_PESSOAL_3
+    numEnderecoAnt:
+      type: string
+      length: 6
+      fixed: false
+      nullable: true
+      column: NUM_ENDERECO_ANT
+    numEnderecoCom:
+      type: string
+      length: 6
+      fixed: false
+      nullable: true
+      column: NUM_ENDERECO_COM
+    numEnderecoRes:
+      type: string
+      length: 6
+      fixed: false
+      nullable: true
+      column: NUM_ENDERECO_RES
+    numMatriculaEmprego:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: NUM_MATRICULA_EMPREGO
+    numRg:
+      type: string
+      length: 15
+      fixed: false
+      nullable: true
+      column: NUM_RG
+    numTelefoneCel:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_CEL
+    numTelefoneCom:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_COM
+    numTelefoneConjuge:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_CONJUGE
+    numTelefoneEmpregador:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_EMPREGADOR
+    numTelefoneReferComercial1:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_REFER_COMERCIAL_1
+    numTelefoneReferComercial2:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_REFER_COMERCIAL_2
+    numTelefoneReferComercial3:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_REFER_COMERCIAL_3
+    numTelefoneReferPessoal1:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_REFER_PESSOAL_1
+    numTelefoneReferPessoal2:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_REFER_PESSOAL_2
+    numTelefoneReferPessoal3:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_REFER_PESSOAL_3
+    numTelefoneRes:
+      type: string
+      length: 8
+      fixed: false
+      nullable: true
+      column: NUM_TELEFONE_RES
+    qtdDependentes:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: QTD_DEPENDENTES
+    qtdTempoResidencia:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: QTD_TEMPO_RESIDENCIA
+    qtdTempoServicoConjuge:
+      type: decimal
+      nullable: true
+      column: QTD_TEMPO_SERVICO_CONJUGE
+    qtdVeiculos:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: QTD_VEICULOS
+    sglUfExpedidorRg:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: SGL_UF_EXPEDIDOR_RG
+    vlrAluguel:
+      type: decimal
+      nullable: true
+      column: VLR_ALUGUEL
+    vlrOutraRenda:
+      type: decimal
+      nullable: true
+      column: VLR_OUTRA_RENDA
+    vlrSalario:
+      type: decimal
+      nullable: true
+      column: VLR_SALARIO
+    vlrSalarioConjuge:
+      type: decimal
+      nullable: true
+      column: VLR_SALARIO_CONJUGE
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOAFISICA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

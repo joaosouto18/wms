@@ -1,0 +1,42 @@
+<div <%=this%> class="blockData">
+    
+    <table>
+        <tr class="actions">
+            <td colspan="3"></td>
+            <td colspan="3">
+                <a href="javascript://" class="btnAction btn-editar-dado-logistico" title="Clique para Editar">
+                    <img src="<%=URL_SISTEMA%>/img/icons/application_edit.png" /> Editar
+                </a>
+                <a href="javascript://" class="btnAction btn-excluir-dado-logistico" title="Clique para Excluir">
+                    <img src="<%=URL_SISTEMA%>/img/icons/delete.png" /> Excluir
+                </a>
+            </td>
+        </tr>
+        <tr style="font-weight: bold">
+            <td>Embalagem</td>
+            <td>Altura</td>
+            <td>Largura</td>
+            <td>Profundidade</td>
+            <td>Cubagem</td>
+            <td>Peso</td>
+        </tr>
+        <tr>
+            <td><%=this.lblEmbalagem%></td>
+            <td><%=this.altura%></td>
+            <td><%=this.largura%></td>
+            <td><%=this.profundidade%></td>
+            <td><%=this.cubagem%></td>
+            <td><%=this.peso%></td>
+        </tr>
+    </table>
+    
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][acao]" value="<%=this.acao%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][id]" value="<%=this.id%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][idEmbalagem]" class="idEmbalagem" value="<%=this.idEmbalagem%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][idNormaPaletizacao]" class="idNormaPaletizacao" value="<%=this.idNormaPaletizacao%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][largura]" value="<%=this.largura%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][altura]" value="<%=this.altura%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][profundidade]" value="<%=this.profundidade%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][cubagem]" class="cubagem" value="<%=this.cubagem%>"/>
+    <input type="hidden" name="dadosLogisticos[<%=this.id%>][peso]" class="peso" value="<%=this.peso%>"/>
+</div>

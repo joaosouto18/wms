@@ -1,0 +1,86 @@
+PessoaJuridica:
+  type: entity
+  table: PESSOA_JURIDICA
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+      generator:
+        strategy: SEQUENCE
+    codEmpresa:
+      type: smallint
+      nullable: false
+      column: COD_EMPRESA
+    codRamoAtividade:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_RAMO_ATIVIDADE
+    codTipoOrganizacao:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ORGANIZACAO
+    datAbertura:
+      type: datetime
+      nullable: true
+      column: DAT_ABERTURA
+    nomFantasia:
+      type: string
+      length: 30
+      fixed: false
+      nullable: true
+      column: NOM_FANTASIA
+    numCnpj:
+      type: string
+      length: 14
+      fixed: false
+      nullable: true
+      column: NUM_CNPJ
+    qtdTotalCotas:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: QTD_TOTAL_COTAS
+    vlrUnitarioCota:
+      type: decimal
+      nullable: true
+      column: VLR_UNITARIO_COTA
+  manyToMany:
+    codEmpresa:
+      targetEntity: Empresa
+      cascade: {  }
+      mappedBy: codFilial
+      inversedBy: null
+      joinTable: null
+      orderBy: null
+    codRepresentante:
+      targetEntity: Pessoa
+      cascade: {  }
+      mappedBy: null
+      inversedBy: codPessoa
+      joinTable:
+        name: pejur_representante
+        joinColumns:
+          -
+            name: COD_PESSOA
+            referencedColumnName: COD_PESSOA
+        inverseJoinColumns:
+          -
+            name: COD_REPRESENTANTE
+            referencedColumnName: COD_PESSOA
+      orderBy: null
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

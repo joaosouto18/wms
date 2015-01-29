@@ -1,0 +1,236 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="D2F5DB25-BD15-5833-C8AB-FDEA9C84E9EB" name="RESERVA_ESTOQUE">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>RESERVA_ESTOQUE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_RESERVA_ESTOQUE" id="61353F52-BC2B-AEC8-E41A-97378C8A8384">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_RESERVA_ESTOQUE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO_ENDERECO" id="7E66BF03-116C-2960-0B0B-A49A1959B5F4">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_DEPOSITO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>EB9EDDBD-464D-CEFE-D7D8-1B10FC69B74C</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="4193706B-224B-C86D-E8B0-B8C8FF98E617" referredColumn="EB9EDDBD-464D-CEFE-D7D8-1B10FC69B74C"/>
+</associations>
+</Column>
+<Column name="COD_PRODUTO" id="7E8E149D-4F2A-3E8A-E346-52EAF020198D">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_PRODUTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_GRADE" id="269BEB5E-DCA8-3C72-045D-8FCB6CC9A0C4">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>DSC_GRADE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="QTD_RESERVADA" id="2C20FC43-A95F-D03F-F79A-4BE8D0447CE6">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>QTD_RESERVADA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="TIPO_RESERVA" id="E706E445-9C80-3844-E8DB-ACB12E404B2E">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>TIPO_RESERVA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>1 CHAR</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="IND_ATENDIDA" id="F927E9FF-19B3-F6E8-27F9-E955E60C1ACD">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>IND_ATENDIDA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>1 CHAR</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_USUARIO" id="D6F33845-62A9-1B40-3947-239375E539BC">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_USUARIO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_RESERVA" id="C04100FA-347C-1392-9E60-9A69EF7AECAF">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>DTH_RESERVA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_ATENDIMENTO" id="61F2AD57-66A8-7255-7C70-F21C09C8A5A5">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>DTH_ATENDIMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_USUARIO_ATENDIMENTO" id="8D82F900-270C-2FE3-6ADC-E18FEA9E5EB3">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>COD_USUARIO_ATENDIMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_OBSERVACAO" id="DD6E500A-AE1F-3EFE-D8E2-51F9FB545238">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE</sourceObjSchema>
+<sourceObjName>DSC_OBSERVACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>300 CHAR</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="ED134F65-C51B-B3D6-0DA9-1C3BE5353A05" name="RESERVA_ESTOQUE_PK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>RESERVA_ESTOQUE_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="61353F52-BC2B-AEC8-E41A-97378C8A8384"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="8C3C7679-EF3F-6C67-0DA2-9453AB1A4359" name="RESERVA_ESTOQUE_PK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>RESERVA_ESTOQUE_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="61353F52-BC2B-AEC8-E41A-97378C8A8384"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="E666F214-D5D7-EDD6-A67C-2D1991A127A1" name="RES_EST_DEP_END_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:55:26 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="7E66BF03-116C-2960-0B0B-A49A1959B5F4"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

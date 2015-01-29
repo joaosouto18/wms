@@ -1,0 +1,1110 @@
+<?php
+
+use Wms\Domain\Entity\Recebimento as RecebimentoEntity,
+    Wms\Domain\Entity\Recebimento\Andamento,
+    Wms\Domain\Entity\OrdemServico,
+    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
+    Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+    Wms\Domain\Entity\Produto as ProdutoEntity,
+    Wms\Domain\Entity\Atividade as AtividadeEntity,
+    Wms\Module\Web\Page,
+    Wms\Module\Web\Controller\Action\Crud,
+    Wms\Module\Web\Report\Recebimento\DadosLogisticosProduto as RelatorioDadosLogisticosProduto,
+    Wms\Module\Web\Form\OrdemServico as OrdemServicoForm,
+    Wms\Module\Web\Form\Recebimento\ObservacaoAndamento as ObservacaoAndamentoForm,
+    Wms\Module\Web\Form\Recebimento as RecebimentoForm,
+    Wms\Module\Web\Form\Subform\FiltroRecebimentoMercadoria,
+    Wms\Module\Web\Form\Subform\FiltroNotaFiscal as FiltroNotaFiscalForm,
+    Wms\Module\Web\Grid\Recebimento as RecebimentoGrid,
+    Wms\Module\Web\Grid\Recebimento\Andamento as AndamentoGrid,
+    Wms\Module\Web\Grid\Recebimento\Conferencia as ConferenciaGrid;
+
+/**
+ * Description of Web_RecebimentoController
+ *
+ * @author Renato Medina <medinadato@gmail.com>
+ */
+class Web_RecebimentoController extends \Wms\Controller\Action {
+
+    protected $repository = 'Recebimento';
+
+    /**
+     *
+     * @return type 
+     */
+    public function indexAction() {
+        $form = new FiltroRecebimentoMercadoria;
+
+        $values = $form->getParams();
+
+        //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje
+        if (!$values) {
+
+            $dataI1 = new \DateTime();
+            $dataI2 = new \DateTime();
+
+            $values = array(
+                'dataInicial1' => $dataI1->format('d/m/Y'),
+                'dataInicial2' => $dataI2->format('d/m/Y'),
+                'dataFinal1' => '',
+                'dataFinal2' => '',
+                'uma' => '',
+                'idRecebimento' => ''
+            );
+        }
+
+        // grid
+        $grid = new RecebimentoGrid;
+        $this->view->grid = $grid->init($values)
+                ->render();
+        // form
+        $this->view->form = $form->setSession($values)
+                ->populate($values);
+    }
+
+    public function excluirNotaAction () {
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            $idNf = $this->_getParam('id');
+            $nfRepo = $em->getRepository("wms:NotaFiscal");
+            /** @var \Wms\Domain\Entity\NotaFiscal $nf */
+            $nf = $nfRepo->findOneBy(array('id'=>$idNf));
+            if ($nf == null)
+                throw new \Exception('Nota Fiscal não encontrado');
+
+            $itensNf = $nf->getItens();
+            foreach ($itensNf as $itemNf) {
+                $em->remove($itemNf);
+            }
+
+            $em->remove($nf);
+            $em->commit();
+			$em->flush();
+			
+            $this->addFlashMessage('success', 'Nota Fiscal excluida com sucesso');
+            $this->redirect('index');
+        } catch (\Exception $e) {
+            $em->rollback();
+
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->redirect('index');
+        }
+    }
+	
+    /**
+     * Iniciar Recebimento
+     */
+    public function iniciarAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+
+        $params = $this->getRequest()->getParams();
+
+        //edita o recebimento para o status iniciado com o box de origem para descarga  
+        try {
+            //Recupera o id do recebimento
+            $idRecebimento = $params['id'];
+
+            if ($idRecebimento == null)
+                throw new \Exception('Id must be provided for the edit action');
+
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+
+            $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
+            
+            //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimentoEntity->getId()));
+
+            if ($notaFiscalEntity)
+                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+            // status de recebimento
+            $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimentoEntity);
+            $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimentoEntity->getStatus()->getReferencia());
+
+            $this->view->recebimento = $recebimentoEntity;
+
+            $form = new RecebimentoForm;
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+                $recebimentoRepo->save($recebimentoEntity, $params);
+
+                $this->_helper->messenger('success', 'Recebimento iniciado com sucesso');
+                return $this->redirect('conferencia-cega', null, null, array('id' => $idRecebimento));
+            }
+
+            $form->setDefaultsFromEntity($recebimentoEntity);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+        $this->view->form = $form;
+    }
+
+    /**
+     * Cancelar Recebimento
+     */
+    public function deleteAction() {
+        //Recupera o id do recebimento
+        extract($this->getRequest()->getParams());
+
+        try {
+            if ($idRecebimento == null)
+                throw new \Exception('ID inválido');
+
+            $recebimento = $this->em->getReference('wms:Recebimento', $idRecebimento);
+
+            if ($recebimento == null)
+                throw new \Exception('Recebimento não encontrado');
+
+            $this->em->getRepository('wms:Recebimento')->cancelar($recebimento, 'Recebimento Cancelado');
+
+            $this->addFlashMessage('success', 'Recebimento cancelado com sucesso');
+            $this->redirect('index');
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->redirect('index');
+        }
+    }
+
+    /**
+     * Cancelar Recebimento
+     */
+    public function desfazerAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+
+        //Recupera o id do recebimento
+        extract($this->getRequest()->getParams());
+
+        $recebimento = $this->em->find('wms:Recebimento', $id);
+        $this->view->recebimento = $recebimento;
+
+        // status de recebimento
+        $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
+        $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
+
+        //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
+
+        if ($notaFiscalEntity)
+            $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+        $formObservacao = new ObservacaoAndamentoForm;
+        $formObservacao->getElement('idRecebimento')->setValue($id);
+        $formObservacao->getElement('btnSubmit')->setLabel('Desfazer Recebimento');
+        $formObservacao->setAction($this->view->url(array('controller' => 'recebimento', 'action' => 'desfazer')));
+
+        try {
+            if ($this->getRequest()->isPost()) {
+
+                if ($idRecebimento == null)
+                    throw new \Exception('ID inválido');
+
+                $recebimento = $this->em->getReference('wms:Recebimento', $idRecebimento);
+
+                if ($recebimento == null)
+                    throw new \Exception('Recebimento não encontrado');
+
+                $cancelarPaletesParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CANCELA_PALETES_DESFAZER_RECEBIMENTO'));
+                if ($cancelarPaletesParam->getValor() == "S") {
+                    $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
+                    $paletesEn = $paleteRepo->findBy(array('recebimento'=>$idRecebimento));
+                    foreach ($paletesEn as $paleteEn) {
+                        $paleteRepo->cancelaPalete($paleteEn->getId());
+                    }
+                }
+
+                $this->em->getRepository('wms:Recebimento')->desfazer($recebimento, $_POST['descricao']);
+                $this->addFlashMessage('success', 'Recebimento desfeito com sucesso');
+                $this->redirect('index');
+            }
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+
+        $this->view->form = $formObservacao;
+        // grid
+        $grid = new AndamentoGrid;
+        $this->view->grid = $grid->init(array('idRecebimento' => $id))
+                ->render();
+    }
+
+    /**
+     * Finalizar Recebimento
+     */
+    public function finalizarAction() {
+        //Recupera o id do recebimento
+        $idRecebimento = $this->getRequest()->getParam('id');
+
+        $recebimento = $this->em->find('wms:Recebimento', $idRecebimento);
+
+        if ($idRecebimento == null)
+            throw new \Exception('ID Inválido');
+
+        if ($recebimento == null)
+            throw new \Exception('Recebimento inválido');
+
+        //edita o recebimento para o status finalizado
+        $result = $this->em->getRepository('wms:Recebimento')->finalizar($recebimento);
+
+        if ($result['concluido'] == true) {
+            $this->addFlashMessage('success', 'Recebimento finalizado com sucesso');
+            $this->redirect('index');
+        } else {
+            throw $result['exception'];
+        }
+    }
+
+    /**
+     * Conferencia (salva o produto e a quantidade conferida do recebimento)
+     */
+    public function conferenciaAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index'
+                    ),
+                    'tag' => 'a'
+                ),
+            ),
+        ));
+
+        try {
+            //Recuperando o id da ordem servico
+            $params = $this->getRequest()->getParams();
+            $idOrdemServico = ($this->_hasParam('id')) ? $params['id'] : $params['idOrdemServico'];
+
+            // repositories
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+            $conferenciaRepo = $this->em->getRepository('wms:Recebimento\Conferencia');
+
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+            $conferenteRepo = $this->em->getRepository('wms:Pessoa\Fisica\Conferente');
+
+            // checo se há conferencia cadastrada
+            $conferenciaEntity = $conferenciaRepo->findOneBy(array('ordemServico' => $idOrdemServico));
+
+            if ($conferenciaEntity)
+                $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
+
+            $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
+
+            //recebimento
+            $recebimentoEntity = $ordemServicoEntity->getRecebimento();
+            $idRecebimento = $ordemServicoEntity->getRecebimento()->getId();
+
+            // status de recebimento
+            $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimentoEntity);
+            $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimentoEntity->getStatus()->getReferencia());
+
+            //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
+
+            if ($notaFiscalEntity)
+                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+            // view recebimento
+            $this->view->recebimento = $recebimentoEntity;
+            // conferente
+            $this->view->conferentes = $conferenteRepo->getIdValue();
+            //produtos
+            $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
+
+            //salvar produto e quantidade Conferencia
+            if ($this->getRequest()->isPost()) {
+                // checando quantidades
+                $idConferente = $this->getRequest()->getParam('idPessoa');
+                $qtdNFs = $this->getRequest()->getParam('qtdNF');
+                $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
+                $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
+
+                // executa os dados da conferencia
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true);
+
+                if ($result['exception'] != null) {
+                    throw $result['exception'];
+                }
+                if ($result['message'] != null) {
+                    $this->addFlashMessage('success', $result['message']);
+                }
+                if ($result['concluido'] == true) {
+                    $this->redirect('index');
+                } else {
+                    $this->redirect('divergencia','recebimento',null,array('id' => $idOrdemServico));
+                }
+
+            }
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Calcula valores cadastrados nas tabelas recebimento_embalagem e recebimento_volume
+     * faz os devidos calculos e insere na tabela recebimento_conferencia 
+     * Uma vez com os dados cadastrados redireciona para divergencia ou finalização
+     * 
+     */
+    public function conferenciaColetorAjaxAction()
+    {
+        $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+
+        $idOrdemServico = $this->getRequest()->getParam('idOrdemServico');
+        $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
+        $idRecebimento = $ordemServicoEntity->getRecebimento()->getId();
+
+        /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $descargaRepo */
+        $descargaRepo = $this->em->getRepository('wms:Recebimento\Descarga');
+        if ($descargaRepo->realizarDescarga($idRecebimento) === true) {
+            $this->redirect('index','descarga','produtividade',array('recebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico));
+        }
+
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+
+        $result =  $recebimentoRepo->conferenciaColetor($idRecebimento, $idOrdemServico);
+
+        if ($result['exception'] != null) {
+            throw $result['exception'];
+        }
+        if ($result['message'] != null) {
+            $this->addFlashMessage('success', $result['message']);
+        }
+        if ($result['concluido'] == true) {
+            $this->redirect('index');
+        } else {
+            $this->redirect('divergencia','recebimento',null,array('id' => $idOrdemServico));
+        }
+    }
+
+    /**
+     * 
+     */
+    public function divergenciaAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+
+        try {
+
+            $params = $this->getRequest()->getParams();
+            $idOrdemServico = $params['id'];
+
+            // motivos de divergencia
+            $motivosDivergencia = $this->em->getRepository('wms:Recebimento\Divergencia\Motivo')->getIdValue();
+
+            $motivos[] = 'Selecione';
+            foreach ($motivosDivergencia as $key => $motivo) {
+                $motivos[$key] = $motivo;
+            }
+            $this->view->motivosDivergencia = $motivos;
+
+
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+            $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
+            //recebimento
+            $recebimentoEntity = $ordemServicoEntity->getRecebimento();
+
+            // status de recebimento
+            $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimentoEntity);
+            $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimentoEntity->getStatus()->getReferencia());
+
+            $this->view->recebimento = $recebimentoEntity;
+            //conferente
+            $this->view->conferentes = $this->em->getRepository('wms:Pessoa\Fisica\Conferente')->getIdValue();
+            
+            //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimentoEntity->getId()));
+
+            if ($notaFiscalEntity)
+                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+            //produtos
+            $produtosDivergencia = $this->em->getRepository('wms:Recebimento\Conferencia')->getProdutoDivergencia($idOrdemServico);
+
+            $this->view->ordemServicoEntity = $ordemServicoEntity;
+
+            // notas fiscais
+            $notasFiscais = $recebimentoEntity->getNotasFiscais();
+
+            for ($i = 0; $i < count($produtosDivergencia); $i++) {
+
+                $produtosDivergencia[$i]['nfs'][] = 'Selecione';
+
+                foreach ($notasFiscais as $notaFiscal) {
+                    foreach ($notaFiscal->getItens() as $item) {
+
+                        if (($produtosDivergencia[$i]['idProduto'] == $item->getProduto()->getId()) && ($produtosDivergencia[$i]['grade'] == $item->getGrade())) {
+                            $produtosDivergencia[$i]['nfs'][$notaFiscal->getId()] = 'Nº ' . $notaFiscal->getNumero() . ' - Serie. ' . $notaFiscal->getSerie();
+                        }
+                    }
+                }
+            }
+            $this->view->notasFiscais = $notasFiscais;
+
+            $this->view->produtosConferencia = $produtosDivergencia;
+
+            //salvar produto e quantidade Conferencia
+            if ($this->getRequest()->isPost()) {
+
+                $idRecebimento = $recebimentoEntity->getId();
+
+                switch ($params['acaoFinalizacao']) {
+                    case 'recontagem':
+
+                        $this->em->beginTransaction();
+
+                        try {
+                            $ordemServicoEntity->setDataFinal(new \DateTime());
+                            $this->em->persist($ordemServicoEntity);
+
+                            // gerar nova ordem servico
+                            $ordemServicoRepo->save(new OrdemServicoEntity, array(
+                                'identificacao' => array(
+                                    'idRecebimento' => $ordemServicoEntity->getRecebimento()->getId(),
+                                    'idAtividade' => $ordemServicoEntity->getAtividade()->getId(),
+                                    'formaConferencia' => $ordemServicoEntity->getFormaConferencia(),
+                                    'idPessoa' => $ordemServicoEntity->getPessoa()->getId(),
+                                )
+                            ));
+
+                            $recebimentoEntity->addAndamento(false, false, 'Recontagem solicitada para o Recebimento.');
+                            $this->em->persist($recebimentoEntity);
+
+                            $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'conferencia-cega-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Conferência Cega</a>';
+                            $mensagem = 'Ordem de Serviço para Recontagem gerada com sucesso para o Recebimento Nº. ' . $idRecebimento . '. ';
+
+                            if ($ordemServicoEntity->getFormaConferencia() == OrdemServicoEntity::MANUAL)
+                                $mensagem .= 'Clique para visualizar o ' . $link;
+
+                            $this->addFlashMessage('success', $mensagem);
+
+                            $this->em->commit();
+                            $this->em->flush();
+                        } catch (\Exception $e) {
+                            $this->em->rollback();
+                            $this->addFlashMessage('error', $e->getMessage());
+                        }
+
+                        $this->redirect('index');
+
+                        break;
+                    // divergencia
+                    case 'divergencia':
+
+                        $senhaDivergencia = $params['senhaDivergencia'];
+                        $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 3, 'constante' => 'SENHA_AUTORIZAR_DIVERGENCIA'));
+                        $senhaAutorizacao = $senhaAutorizacao->getValor();
+
+                        if ($senhaDivergencia != $senhaAutorizacao)
+                            throw new \Exception('Senha de autorização de fechamento da divergencia está incorreta.');
+
+                        // checando observacoes
+                        $motivosDivergencia = $this->getRequest()->getParam('motivosDivergencia');
+                        $notasFiscais = $this->getRequest()->getParam('notasFiscais');
+
+                        foreach ($motivosDivergencia as $key => $cod_motivo_divergencia) {
+
+                            $recebimentoConferenciaEntity = $this->em->getReference('wms:Recebimento\Conferencia', $key);
+                            $motivoDivergenciaEntity = $this->em->getReference('wms:Recebimento\Divergencia\Motivo', $cod_motivo_divergencia);
+                            $notaFiscalEntity = $this->em->getReference('wms:NotaFiscal', $notasFiscais[$key]);
+
+                            $recebimentoConferenciaEntity->setMotivoDivergencia($motivoDivergenciaEntity)
+                                    ->setNotaFiscal($notaFiscalEntity);
+
+                            $this->em->persist($recebimentoConferenciaEntity);
+                        }
+
+                        $ordemServicoEntity->setDataFinal(new \DateTime());
+                        $this->em->persist($ordemServicoEntity);
+                        $this->em->flush();
+
+                        //recebimento para o status finalizado
+                        $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento);
+
+                        $this->addFlashMessage('success', 'Recebimento finalizado com divergencias.');
+
+                        $this->redirect('index');
+                        break;
+                }
+            }
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Visualização de andamentos 
+     */
+    public function viewAndamentoAjaxAction() {
+        $id = $this->getRequest()->getParam('id');
+
+        $recebimento = $this->em->find('wms:Recebimento', $id);
+        $this->view->recebimento = $recebimento;
+
+        //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
+
+        if ($notaFiscalEntity)
+            $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+        // status de recebimento
+        $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
+        $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
+
+        $source = $this->em->createQueryBuilder()
+                ->select('a, p.nome', 's.sigla as tipoAndamento')
+                ->from('wms:Recebimento\Andamento', 'a')
+                ->leftJoin('a.usuario', 'u')
+                ->leftJoin('u.pessoa', 'p')
+                ->leftJoin('a.tipoAndamento', 's')
+                ->where('a.recebimento = :idRecebimento')
+                ->setParameter('idRecebimento', $id)
+                ->orderBy('a.dataAndamento', 'desc');
+
+        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
+        $grid->setAttrib('caption', 'Histórico')
+                ->addColumn(array(
+                    'label' => 'Data Andamento',
+                    'index' => 'dataAndamento',
+                    'render' => 'DataTime'
+                ))
+                ->addColumn(array(
+                    'label' => 'Status',
+                    'index' => 'tipoAndamento'
+                ))
+                ->addColumn(array(
+                    'label' => 'Usuário',
+                    'index' => 'nome'
+                ))
+                ->addColumn(array(
+                    'label' => 'Observação',
+                    'index' => 'dscObservacao'
+                    ))
+
+                ->setShowExport(false);
+
+        $this->view->grid = $grid->build();
+    }
+
+    /**
+     * Cancelamento de Recebimento
+     */
+    public function viewCancelamentoAjaxAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index'
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+
+        $id = $this->getRequest()->getParam('id');
+
+        $recebimento = $this->em->find('wms:Recebimento', $id);
+        $this->view->recebimento = $recebimento;
+
+        $formObservacao = new ObservacaoAndamentoForm;
+        $formObservacao->getElement('idRecebimento')->setValue($id);
+        $formObservacao->setAction($this->view->url(array('controller' => 'recebimento', 'action' => 'delete')));
+
+        $source = $this->em->createQueryBuilder()
+                ->select('a, p.nome', 's.sigla as tipoAndamento')
+                ->from('wms:Recebimento\Andamento', 'a')
+                ->leftJoin('a.usuario', 'u')
+                ->leftJoin('u.pessoa', 'p')
+                ->leftJoin('a.tipoAndamento', 's')
+                ->where('a.recebimento = :idRecebimento')
+                ->setParameter('idRecebimento', $id)
+                ->orderBy('a.dataAndamento', 'desc');
+
+        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
+        $grid->setAttrib('caption', 'Histórico')
+                ->addColumn(array(
+                    'label' => 'Data do Andamento',
+                    'index' => 'dataAndamento',
+                    'render' => 'DataTime'
+                ))
+                ->addColumn(array(
+                    'label' => 'Tipo do Andamento',
+                    'index' => 'tipoAndamento'
+                ))
+                ->addColumn(array(
+                    'label' => 'Usuário do Andamento',
+                    'index' => 'nome'
+                ))
+                ->setShowExport(false);
+
+        $this->view->form = $formObservacao;
+        $this->view->grid = $grid->build();
+    }
+
+    /**
+     * Nota Item
+     */
+    public function viewNotaItemAjaxAction() {
+
+        $id = $this->getRequest()->getParam('id');
+
+        $recebimento = $this->em->find('wms:Recebimento', $id);
+        $this->view->recebimento = $recebimento;
+
+        //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
+
+        if ($notaFiscalEntity)
+            $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+        // status de recebimento
+        $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
+        $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
+
+        // busco notas fiscais
+        $dql = $this->em->createQueryBuilder()
+                ->select('nf.id, nf.numero, nf.serie, nf.dataEmissao, pj.nomeFantasia, s.id idStatus, s.sigla status')
+                ->from('wms:NotaFiscal', 'nf')
+                ->innerJoin('nf.fornecedor', 'f')
+                ->innerJoin('f.pessoa', 'pj')
+                ->innerJoin('nf.status', 's')
+                ->where('nf.recebimento = :idRecebimento')
+                ->setParameter('idRecebimento', $id)
+                ->orderBy('nf.id');
+
+        $notasFiscais = $dql->getQuery()->execute();
+
+        // loop nas notas
+        foreach ($notasFiscais as $key => $notaFiscal) {
+
+            //busco produtos da nota
+            $dql = $this->em->createQueryBuilder()
+                    ->select('p.id, nfi.grade, nfi.quantidade, p.descricao')
+                    ->from('wms:NotaFiscal\Item', 'nfi')
+                    ->innerJoin('nfi.produto', 'p')
+                    ->andWhere('p.grade = nfi.grade')
+                    ->andWhere('nfi.notaFiscal = :idNotafiscal')
+                    ->setParameter('idNotafiscal', $notaFiscal['id'])
+                    ->orderBy('nfi.id');
+            $itens = $dql->getQuery()->execute();
+
+            $notasFiscais[$key]['itens'] = $itens;
+        }
+
+        $this->view->notasFiscais = $notasFiscais;
+        $this->view->idStatusCancelado = NotaFiscalEntity::STATUS_CANCELADA;
+    }
+
+    /**
+     * Ordem Serviço
+     */
+    public function viewOrdemServicoAjaxAction() {
+
+        $id = $this->getRequest()->getParam('id');
+
+        $recebimento = $this->em->find('wms:Recebimento', $id);
+        $this->view->recebimento = $recebimento;
+
+        //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
+
+        if ($notaFiscalEntity)
+            $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+        // status de recebimento
+        $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
+        $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
+
+        if ($recebimento->getStatus()->getId() == RecebimentoEntity::STATUS_FINALIZADO) {
+            $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'produtos-conferidos-pdf', 'id' => $id)) . '" target="_blank" class="btnAlert relProdutosConferidos"><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" />Gerar Relatório de Produtos Conferidos</a>';
+            $this->view->gerarRelatorio = $link;
+        }
+
+        $source = $this->em->createQueryBuilder()
+                ->select('os, r.id idRecebimento, p.nome, a.descricao as dscAtividade, s.id statusId, s.sigla status')
+                ->from('wms:OrdemServico', 'os')
+                ->join('os.recebimento', 'r')
+                ->join('r.status', 's')
+                ->leftJoin('os.atividade', 'a')
+                ->leftJoin('os.pessoa', 'p')
+                ->where('os.recebimento = :idRecebimento')
+                ->setParameter('idRecebimento', $id)
+                ->orderBy('os.id');
+
+        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
+        $grid->setId('recebimento-view-ordem-servico-ajax-grid')
+                ->addColumn(array(
+                    'label' => 'Ordem de Serviço',
+                    'index' => 'id'
+                ))
+                ->addColumn(array(
+                    'label' => 'Responsável',
+                    'index' => 'nome'
+                ))
+                ->addColumn(array(
+                    'label' => 'Atividade',
+                    'index' => 'dscAtividade'
+                ))
+                ->addColumn(array(
+                    'label' => 'Data Início',
+                    'index' => 'dataInicial',
+                    'render' => 'Data'
+                ))
+                ->addColumn(array(
+                    'label' => 'Data Final',
+                    'index' => 'dataFinal',
+                    'render' => 'Data'
+                ))
+                ->addAction(array(
+                    'label' => 'Digitação da Conferência Cega',
+                    'actionName' => 'conferencia',
+                    'pkIndex' => 'id',
+                    'condition' => function ($row) {
+                        return $row['dataFinal'] == null;
+                    }
+                ))
+                ->addAction(array(
+                    'label' => 'Visualizar Conferência',
+                    'actionName' => 'view-conferencia',
+                    'cssClass' => 'view-conferencia',
+                    'pkIndex' => 'id',
+                    'condition' => function ($row) {
+                        return $row['dataFinal'] != null;
+                    }
+                ))
+                ->addAction(array(
+                    'label' => 'Gerar Relatório de Conferência Cega',
+                    'actionName' => 'conferencia-cega-pdf',
+                    'pkIndex' => 'idRecebimento',
+                    'target' => 'blank',
+                    'condition' => function ($row) {
+                        return ( ($row['dataFinal'] == null) && ($row['statusId'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA || $row['statusId'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR));
+                    }
+                ))
+                ->setShowExport(false);
+
+        $this->view->grid = $grid->build();
+    }
+
+    /**
+     * Visualizar Conferencia
+     */
+    public function viewConferenciaAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index'
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+
+        $id = $this->getRequest()->getParam('id');
+
+        $ordemServicoEntity = $this->em->find('wms:OrdemServico', $id);
+        $this->view->ordemServico = $ordemServicoEntity;
+
+        //recebimento
+        $recebimento = $ordemServicoEntity->getRecebimento();
+        $this->view->recebimento = $recebimento;
+
+        //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimento->getId()));
+
+        if ($notaFiscalEntity)
+            $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+
+        // grid da conferencia
+        $grid = new ConferenciaGrid;
+        $this->view->grid = $grid->init(array('idOrdemServico' => $id))
+                ->render();
+    }
+
+    /**
+     * Relatorio de Conferencia Cega
+     */
+    public function conferenciaCegaAction() {
+        //adding default buttons to the page
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Recebimentos',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index'
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+
+        $params = $this->getRequest()->getParams();
+
+        $form = new OrdemServicoForm;
+
+
+        try {
+            //Recupera o id do recebimento
+            $idRecebimento = $params['id'];
+
+            if ($idRecebimento == null)
+                throw new \Exception('Id must be provided for the edit action');
+
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+            $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
+
+            // status de recebimento
+            $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimentoEntity);
+            $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimentoEntity->getStatus()->getReferencia());
+
+            $this->view->recebimento = $recebimentoEntity;
+
+            //verifica se existe produtos com impressão automática do código de barras
+            $produtoRepo = $this->em->getRepository('wms:Produto');
+            $produtoEntity = $produtoRepo->verificarProdutosImprimirCodigoBarras($idRecebimento);
+
+            if ($produtoEntity == "S") {
+                $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'gerar-etiqueta-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Etiquetas</a>';
+                $this->addFlashMessage('success', 'Clique para imprimir etiquetas de Embalagem/Volumes dos Produtos ' . $link);
+            }
+
+            if ($this->getRequest()->isPost() && $form->isValid($_POST)) {
+
+                $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+                $ordemServicoEntity = $ordemServicoRepo->findOneBy(array('recebimento' => $idRecebimento, 'atividade' => 1, 'dataFinal' => null));
+
+                if ($ordemServicoEntity)
+                    throw new \Exception('Já existe uma ordem de serviço de conferencia cega Nº. ' . $ordemServicoEntity->getId() . ' aberta para este recebimento.');
+
+                // gerar
+                $recebimentoEntity->addAndamento(RecebimentoEntity::STATUS_CONFERENCIA_CEGA, false, 'Conferência iniciada pelo WMS.');
+                $recebimentoRepo->updateStatus($recebimentoEntity, RecebimentoEntity::STATUS_CONFERENCIA_CEGA);
+                $ordemServicoRepo->save(new OrdemServicoEntity, array('identificacao' => array(
+                        'idRecebimento' => $idRecebimento,
+                        'idAtividade' => AtividadeEntity::CONFERIR_PRODUTO,
+                        'formaConferencia' => OrdemServicoEntity::MANUAL,
+                        )));
+
+                //verifica se existe produtos com impressão automática do código de barras
+                $produtoRepo = $this->em->getRepository('wms:Produto');
+                $produtoEntity = $produtoRepo->verificarProdutosImprimirCodigoBarras($idRecebimento);
+
+                if ($produtoEntity == "S") {
+                    $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'gerar-etiqueta-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Etiquetas</a>';
+                    $this->addFlashMessage('success', 'Clique para imprimir etiquetas de Embalagem/Volumes dos Produtos ' . $link);
+                }
+
+                $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'conferencia-cega-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Conferência Cega</a>';
+                $this->addFlashMessage('success', 'Ordem de Serviço gerada com sucesso para o Recebimento Nº. ' . $idRecebimento . '. Clique para visualizar o ' . $link);
+                $this->redirect('index');
+            }
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+
+        $form->setDefault('idRecebimento', $idRecebimento);
+        $this->view->form = $form;
+    }
+
+    /**
+     * Relatorio de Conferencia Cega
+     */
+    public function conferenciaCegaPdfAction() {
+        $idRecebimento = $this->getRequest()->getParam('id');
+
+        $conferenciaCegaReport = new \Wms\Module\Web\Report\Recebimento\ConferenciaCega();
+
+        $conferenciaCegaReport->init(array(
+            'idRecebimento' => $idRecebimento,
+        ));
+    }
+
+    /**
+     * Relatorio de Produtos Conferidos
+     */
+    public function produtosConferidosPdfAction() {
+        $idRecebimento = $this->getRequest()->getParam('id');
+
+        $produtosConferidosReport = new \Wms\Module\Web\Report\Recebimento\ProdutosConferidos();
+
+        $produtosConferidosReport->init(array(
+            'idRecebimento' => $idRecebimento,
+        ));
+    }
+
+    /**
+     *
+     * @return type 
+     */
+    public function gerarAction() {
+        $values = $this->getRequest()->getParams();
+        $notasFiscais = 0;
+        try {
+            if (isset($values['notasFiscais'])){
+                $notasFiscais = count($values['notasFiscais']);
+            }
+            if ($notasFiscais == 0)
+                throw new \Exception('Por favor selecione alguma nota para gerar o recebimento');
+
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+            $recebimentoId = $recebimentoRepo->gerar($values['notasFiscais']);
+
+            $this->_helper->messenger('success', "Nota de Recebimento No. {$recebimentoId} gerada com sucesso!");
+
+            //redirect
+            $this->session = new \Zend_Session_Namespace("Wms\Module\Web\Form\Subform\FiltroRecebimentoMercadoria");
+            $this->session->params = array('identificacao' => array('idRecebimento' => $recebimentoId));
+            $this->redirect('iniciar', 'recebimento', null, array('id' => $recebimentoId));
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+            $this->redirect('buscar-nota');
+        }
+    }
+
+    /**
+     *
+     * @return type 
+     */
+    public function buscarNotaAction() {
+        $filtroNotaFiscalForm = new FiltroNotaFiscalForm;
+        $this->view->form = $filtroNotaFiscalForm;
+
+        $params = $filtroNotaFiscalForm->getParams();
+        if (!$params) {
+            $dataI1 = new \DateTime;
+            $dataI2 = new \DateTime;
+            $params = array(
+                'dataEntradaInicial' => $dataI1->format('d/m/Y'),
+                'dataEntradaFinal' => $dataI2->format('d/m/Y'),
+                'idFornecedor'=>'',
+                'numero'=>'',
+                'serie'=>''
+            );
+            $filtroNotaFiscalForm->populate($params);
+        }
+
+        if ($params) {
+
+            $resultSet = $this->getEntityManager()
+                    ->getRepository('wms:NotaFiscal')
+                    ->search($params);
+
+            $data = array();
+
+            foreach ($resultSet as $key => $row) {
+
+                $dataEntrada = ($row[0]->getDataEntrada()) ? $row[0]->getDataEntrada()->format('d/m/Y') : '00/00/0000';
+
+                $data[$key]['id'] = $row[0]->getId();
+                $data[$key]['numero'] = $row[0]->getNumero();
+                $data[$key]['serie'] = $row[0]->getSerie();
+                $data[$key]['placa'] = $row[0]->getPlaca();
+                $data[$key]['dataEntrada'] = $dataEntrada;
+                $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 20);
+                $data[$key]['status'] = $row[0]->getStatus()->getSigla();
+                $data[$key]['qtdProduto'] = (int) $row['qtdProduto'];
+            }
+
+            if (count($data) == 0)
+                $this->_helper->messenger('info', 'Nenhuma nota fiscal encontrada.');
+
+            $filtroNotaFiscalForm->populate($params);
+
+            $this->view->notasFiscais = $data;
+        }
+    }
+
+    /**
+     * Relatorio de Produtos Sem Dados Logisticos
+     */
+    public function produtosSemDadosLogisticosPdfAction() {
+        $idRecebimento = $this->getRequest()->getParam('id');
+
+        $produtosDadosLogisticosReport = new RelatorioDadosLogisticosProduto();
+
+        $produtosDadosLogisticosReport->init(array(
+            'idRecebimento' => $idRecebimento,
+            'indDadosLogisticos' => 'N'
+        ));
+    }
+
+    /**
+     * Gera etiqueta para os Produtos com impressão automática do código de barras
+     */
+    public function gerarEtiquetaPdfAction() {
+        $idRecebimento = $this->getRequest()->getParam('id');
+        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
+
+        if ($this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO") == 1) {
+            $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+        } else {
+            $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+        }
+        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null ,$modelo);
+    }
+
+    public function __call($methodName, $args)
+    {
+        parent::__call($methodName, $args);
+    }
+}

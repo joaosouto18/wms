@@ -1,0 +1,39 @@
+Feriado:
+  type: entity
+  table: FERIADO
+  fields:
+    codFeriado:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_FERIADO
+      generator:
+        strategy: SEQUENCE
+    codTipoFeriado:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: COD_TIPO_FERIADO
+    dscFeriado:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_FERIADO
+    numAnoFeriado:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_ANO_FERIADO
+    numDiaFeriado:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_DIA_FERIADO
+    numMesFeriado:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: NUM_MES_FERIADO
+  lifecycleCallbacks: {  }

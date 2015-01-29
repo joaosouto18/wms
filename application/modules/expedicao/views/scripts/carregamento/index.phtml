@@ -1,0 +1,12 @@
+<script>
+    $(document).ready(function(){
+
+        $('#codExpedicao-hidden').val($('#codExpedicao').val());
+
+    });
+</script>
+<input type="hidden" value="<?php echo $this->codExpedicao ?>" name="" id="codExpedicao" />
+<?php
+echo $this->form;
+echo $this->grid;
+?>

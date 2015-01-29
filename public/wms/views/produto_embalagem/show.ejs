@@ -1,0 +1,54 @@
+<div <%=this%> class="blockData">
+
+    <table>
+        <tr class="actions">
+            <td colspan="6">
+                <a href="javascript://" class="btnAction btn-editar-embalagem" title="Clique para Editar">
+                    <img src="<%=URL_SISTEMA%>/img/icons/application_edit.png"" /> Editar
+                </a>
+                <a href="javascript://" class="btnAction btn-excluir-embalagem" title="Clique para Excluir">
+                    <img src="<%=URL_SISTEMA%>/img/icons/delete.png" /> Excluir
+                </a>
+            </td>
+        </tr>
+
+        <tr style="font-weight: bold">
+            <td style="width:200px">Descrição</td>
+            <td style="width:70px">Qtde.</td>
+            <td style="width:80px">Emb. Receb.</td>
+            <td style="width:80px">Automático?</td>
+            <td style="width:100px">Imprimir Etiqueta?</td>
+        </tr>
+
+        <tr>
+            <td style="width:200px"><%=this.descricao%></td>
+            <td style="width:70px"><%=this.quantidade%></td>
+            <td style="width:80px"><%=this.lblIsPadrao%></td>
+            <td style="width:80px"><%=this.lblCBInterno%></td>
+            <td style="width:100px"><%=this.lblImprimirCB%></td>
+        </tr>
+
+        <tr style="font-weight: bold">
+            <td>Cód. Barras</td>
+            <td>Endereço</td>
+            <td>Embalado</td>
+        </tr>
+        <tr>
+            <td><span class="codigoBarras"><%=this.codigoBarras%><span></td>
+            <td><span class="endereco"><%=this.endereco%><span></td>
+            <td><span class="endereco"><%=this.lblEmbalado%><span></td>
+        </tr>
+
+    </table>
+    
+    <input type="hidden" name="embalagens[<%=this.id%>][acao]" class="acao" value="<%=this.acao%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][id]" class="embalagem-id" value="<%=this.id%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][descricao]" class="embalagem-descricao" value="<%=this.descricao%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][quantidade]" class="qtdItens" value="<%=this.quantidade%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][isPadrao]" class="isPadrao" value="<%=this.isPadrao%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][CBInterno]" class="CBInterno" value="<%=this.CBInterno%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][imprimirCB]" class="imprimirCB" value="<%=this.imprimirCB%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][codigoBarras]" class="codigoBarras" value="<%=this.codigoBarras%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][endereco]" class="endereco" value="<%=this.endereco%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][embalado]" class="embalado" value="<%=this.embalado%>"/>
+</div>

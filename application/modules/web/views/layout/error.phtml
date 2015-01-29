@@ -1,0 +1,40 @@
+<?php 
+echo $this->doctype(); 
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="Content-Language" content="pt-br" />
+	<meta name="Keywords" content="" />
+	<meta name="Description" content="" />
+	<meta name="url" content="http://www.wmsms.com.br" />
+	<meta name="reply-to" content="info@wmsms.com.br" />
+	<meta name="copyright" content="www.wmsms.com.br" />
+	<meta name="category" content="Internet" />
+	<meta name="Robots" content="Index,Follow" />
+	<meta name="author" content="Renato Medina" />
+	<title>Erro na Aplicação</title>
+	<link rel="shortcut icon" href="<?php echo $this->baseUrl('img/admin/favicon.ico') ?>" type="image/x-icon" />
+	<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('css/jquery/menu.css') ?>" />
+    </head>
+    <body>
+
+	<div id="body">
+	    <div id="top">
+		<h1><a href="#" title="Wms-MS">Wms-MS</a></h1>
+	    </div>
+	    <div id="content">
+		<div class="contentPadding">
+		    <div id="panelPage">
+			<h4>Erro na aplicação</h4>
+		    </div>
+		    <?php echo $this->layout()->content ?>
+		</div>
+	    </div>
+	    <div id="footer">
+		<p>Wms M&oacute;veis Simonetti 2011</p>
+		<p>&copy; Todos os Direitos Reservados.</p>
+	    </div>
+	</div>
+    </body>
+</html>

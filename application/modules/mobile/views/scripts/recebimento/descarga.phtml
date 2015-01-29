@@ -1,0 +1,19 @@
+<form id="formGrid" method="post" action="">
+
+    <table>
+        <tbody><tr>
+            <td colspan="1"></td>
+            <td width=""><span>Nome Usuario</span></td>
+        </tr>
+        <?php foreach($this->operadores as $operador) : ?>
+            <tr>
+                <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <button type="submit"><span>Vincular</span></button>
+    <input type="hidden" value="<?php echo $this->recebimento ?>" name="recebimento"/>
+</form>

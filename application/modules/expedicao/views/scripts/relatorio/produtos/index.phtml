@@ -1,0 +1,69 @@
+<?php
+echo $this->form;
+?>
+<form id="expedicoes" method="post" class="saveForm"
+      action="<?php echo $this->url(array('module' => 'expedicao', 'controller' => 'relatorio_produtos', 'action' => 'imprimir'))?>"
+      xmlns="http://www.w3.org/1999/html">
+    <div id="quantidade-grid" class="grid">
+        <table style="width: 35%">
+            <tbody>
+                <tr>
+                    <td>Central</td>
+                    <td>Linha de Separação</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><select name="filial" id="filial" class="medio">
+                            <?php foreach ($this->filiais as $key=>$filial):?>
+                                <option value="<?php echo $key?>" label="<?php echo $filial?>"><?php echo $filial?></option>
+                            <?php endforeach; ?>
+                        </select></td>
+                    <td><select name="linhaSeparacao" id="linhaSeparacao" class="medio">
+                            <option value="" label="Todos">Todos</option>
+                            <?php foreach ($this->linhaSeparacao as $key=>$linha):?>
+                                <option value="<?php echo $key?>" label="<?php echo $linha?>"><?php echo $linha?></option>
+                            <?php endforeach; ?>
+                        </select></td>
+                    <td><input type="submit" style="margin-bottom: 15px" name="busca" value="Imprimir" id="submit" class="btn"></td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <table class="gTable ">
+            <caption>Expedições</caption>
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Imprimir</td>
+                <td>Expedição</td>
+                <td>Placa</td>
+                <td>Cargas</td>
+                <td>Itinerário</td>
+                <td>Dth.Abertura</td>
+                <td>Status</td>
+            </tr>
+            <?php if ($this->expedicoes) : ?>
+                <?php
+                foreach ($this->expedicoes as $expedicao): $this->color = !($this->color);?>
+                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td>
+                            <input
+                                class="checkBoxClass"
+                                style="vertical-align: middle"
+                                type="checkbox"
+                                name="expedicao[]"
+                                value="<?php echo $expedicao['id']?>">
+                        </td>
+                        <td><?php echo $expedicao['id'] ?></td>
+                        <td><?php echo $expedicao['placaExpedicao'] ?></td>
+                        <td><?php echo $expedicao['carga'] ?></td>
+                        <td><?php echo $expedicao['itinerario'] ?></td>
+                        <td><?php echo $expedicao['dataInicio'] ?></td>
+                        <td><?php echo $expedicao['status'] ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+        <div class = "gPager">
+</form>

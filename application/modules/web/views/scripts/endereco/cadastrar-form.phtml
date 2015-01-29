@@ -1,0 +1,84 @@
+<style>
+    div.ui-widget-content{
+        width: 100%;
+        display: table;
+    }
+    #fieldset-endereco input.error {
+        border-color: #F00;
+    }
+    #fieldset-endereco label.error {
+        display:none !important;
+    }
+    fieldset dd#endereco-legenda-element{
+        margin-left: 80px;
+    }
+    fieldset#fieldset-endereco label{
+        width: 80px;
+        padding-top: 3px;
+        float: left;
+    }
+    fieldset#fieldset-identificacao label{
+        width: 180px;
+        padding-top: 3px;
+    }
+</style>
+
+<fieldset id="fieldset-endereco" style="width: 180px; float: left; margin-right: 10px; ">
+    <legend><?php echo $this->element->getDisplayGroup('endereco')->getLegend() ?></legend>
+    <dd id="endereco-legenda-element" class="depositoEndereco">
+        <?php echo "Inicial"; ?>  
+        &nbsp&nbsp&nbsp&nbsp&nbsp
+        <?php echo "Final"; ?>
+    </dd>
+    <label for="endereco-rua" class="optional">*Rua:</label>
+
+    <?php
+    echo $this->element->inicialRua;
+    echo $this->element->finalRua;
+    ?>
+
+    <dt id="endereco-predio-label" class="depositoEndereco"><label for="endereco-predio" class="optional">*Prédio:</label></dt>
+
+    <?php
+    echo $this->element->inicialPredio;
+    echo $this->element->finalPredio;
+    ?>
+
+    <dt id="endereco-nivel-label" class="depositoEndereco"><label for="endereco-nivel" class="optional">*Nível:</label></dt>
+
+    <?php
+    echo $this->element->inicialNivel;
+    echo $this->element->finalNivel;
+    ?>
+
+    <dt id="endereco-apartamento-label" class="depositoEndereco"><label for="endereco-apartamento" class="optional">*Apartamento:</label></dt>
+
+    <?php
+    echo $this->element->inicialApartamento;
+    echo $this->element->finalApartamento;
+    ?>
+    <dt id="identificacao-lado-label" class="depositoEndereco"><label for="identificacao-lado" class="optional">*Lado:</label></dt>
+    <?php echo $this->element->lado; ?>
+    <button id="endereco-checar-intervalo">Verificar Disponibilidade</button>
+</fieldset>
+
+<fieldset id="fieldset-identificacao" style="width: 750px; display: none">
+    <legend><?php echo $this->element->getDisplayGroup('identificacao')->getLegend() ?></legend>
+    <?php
+    echo $this->element->idDeposito;
+    echo $this->element->id;
+    echo $this->element->idAreaArmazenagem;
+    echo $this->element->idCaracteristica;
+    echo $this->element->idEstruturaArmazenagem;
+    echo $this->element->idTipoEndereco;
+    echo $this->element->situacao;
+    echo $this->element->status;
+    echo $this->element->ativo;
+        ?>
+</fieldset>
+
+<fieldset id="fieldset-lista-intervalo-enderecos" style="width: 750px; display: none;">
+    <legend>Lista de endereços cadastrados no intervalo</legend>
+    <div id="div-lista-intervalo-enderecos"></div>
+</fieldset>
+

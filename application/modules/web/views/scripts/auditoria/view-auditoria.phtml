@@ -1,0 +1,31 @@
+<div id="dialog-delete-record" title="Deseja excluir este registro?" style="display:none;">
+    <p>
+	<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+	Este item será removido permanentemente e não poderá ser recuperado. Está certo disto?
+    </p>
+</div>
+
+<script type="text/javascript">
+    $('.visualizarAud').click(function() {
+	targetUrl = $(this).attr("href");
+	$( "#dialog:ui-dialog" ).dialog( "destroy" );
+
+	$( "#dialog-delete-record" ).dialog({
+	    resizable: false,
+	    height:160,
+	    modal: true,
+	    buttons: {
+		"Deletar registro": function() {
+		    window.location.href = targetUrl;
+		    //$( this ).dialog( "close" );
+		},
+		'Cancelar' : function() {
+		    $( this ).dialog( "close" );
+		}
+	    }
+	});
+
+	return false;
+    });
+</script>
+

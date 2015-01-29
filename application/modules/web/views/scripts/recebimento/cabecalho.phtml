@@ -1,0 +1,45 @@
+<table class="details">
+    <caption>Recebimento Código: <?php echo $this->recebimento->getId(); ?></caption>
+    <tr class="title">
+        <td>Filial:</td>
+        <td>Depósito:</td>
+        <td>Box:</td>
+        <td>Veículo:</td>
+        <td>Data Inicial:</td>
+        <td>Data Final:</td>
+    </tr>
+    <tr>
+        <td><?php echo $this->recebimento->getFilial()->getPessoa()->getNomeFantasia(); ?></td>
+        <td><?php
+            $deposito = $this->recebimento->getDeposito();
+            if ($deposito)
+                echo $deposito->getDescricao();
+            ?>
+        </td>
+        <td><?php
+            $box = $this->recebimento->getBox();
+            if ($box)
+                echo $box->getDescricao();
+            ?>
+        </td>
+        <td><?php
+            $placaVeiculo = '';
+            if ($this->placaVeiculo)
+                $placaVeiculo = $this->placaVeiculo;
+                
+            echo $placaVeiculo;
+            ?>
+        </td>
+        <td><?php echo $this->recebimento->getDataInicial(); ?></td>
+        <td><?php echo $this->recebimento->getDataFinal(); ?></td>
+    </tr>
+    <tr>
+        <td colspan="6">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="6">
+            <?php if (isset($this->recebimentoStatus)) echo $this->recebimentoStatus; ?>
+        </td>
+    </tr>
+</table>
+

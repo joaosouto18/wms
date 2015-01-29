@@ -1,0 +1,31 @@
+<?php
+echo $this->form;
+?>
+<?php if(is_array($this->endereco)) { ?>
+    <form id="imprimiretiqueta-form" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'web', 'controller' =>'imprimir', 'action' =>'imprimir' ))?>">
+        <input type="submit" style="margin-bottom: 15px" name="busca" value="Imprimir" id="submit" class="btn">
+        <table class="gTable ">
+            <caption>Endereços de Picking</caption>
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Selecione</td>
+                <td>Rua</td>
+                <td>Prédio</td>
+                <td>Nível</td>
+                <td>Apartamento</td>
+                <td>Descrição</td>
+            </tr>
+            <?php foreach($this->endereco as $enderecos) : ?>
+                <tr>
+                    <td><input name="enderecos[]" value="<?php echo $enderecos['CODIGO'] ?>" type="checkbox" checked></td>
+                    <td><?php echo $enderecos['RUA'] ?></td>
+                    <td><?php echo $enderecos['PREDIO'] ?></td>
+                    <td><?php echo $enderecos['NIVEL'] ?></td>
+                    <td><?php echo $enderecos['APARTAMENTO'] ?></td>
+                    <td><?php echo $enderecos['ENDERECO'] ?></td>
+                </tr>
+            <?php endforeach ?>
+            </tbody>
+        </table>
+    </form>
+<?php } ?>

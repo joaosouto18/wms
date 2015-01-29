@@ -1,0 +1,26 @@
+<h2>unitizadors</h2>
+<table cellspacing='0px'>
+	<thead>
+	<tr>
+		<% for(var attr in Wms.Models.Unitizador.attributes){%>
+			<% if(attr == 'id') continue;%>
+			<th><%= attr%> </th>	 
+		<%}%>
+		<th>Options</th>
+	</tr>
+	</thead>
+	<tbody>
+		<%= $.View('//wms/views/unitizador/list',{unitizadors: unitizadors})%>
+	</tbody>
+</table>
+<h2>New unitizador</h2>
+<form>
+	<% for(var attr in Wms.Models.Unitizador.attributes){ %>
+		<% if(attr == 'id') continue;%>
+		<div>
+			<label><%= attr %> </label><br />
+			<input type="text" value="" name="<%= attr %>"/>
+		</div>
+	<%}%>
+	<input type='submit' value='Create'/>
+</form>

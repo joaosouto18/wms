@@ -1,0 +1,27 @@
+UsuarioFilial:
+  type: entity
+  table: USUARIO_FILIAL
+  fields:
+    codFilial:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_FILIAL
+    codUsuario:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_USUARIO
+  oneToOne:
+    fkUsuarioFilialUsuario1:
+      targetEntity: USUARIO
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_USUARIO:
+          referencedColumnName: COD_USUARIO
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

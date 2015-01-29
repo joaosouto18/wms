@@ -1,0 +1,16 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" id="36A24422-5706-5511-472C-69E7E88CEFFE" directorySegmentName="seg_0" name="FK_DALOG_PROEM">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>FK_DALOG_PROEM</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-08 14:24:47 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>7F4B3853-96AC-0DA2-92EC-6635467C5B2A</containerWithKeyObject>
+<deleteRule>SET NULL</deleteRule>
+<localFKIndex>9152F28E-F4BA-23D2-B287-8CB35F75178A</localFKIndex>
+<keyObject>525218EF-057D-E09A-687C-0729C592818A</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+</FKIndexAssociation>

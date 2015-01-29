@@ -1,0 +1,215 @@
+@CHARSET "UTF-8";
+/*
+    Document   : admin/grid.css
+    Created on : Jan 17, 2012, 11:15:27 AM
+    Author     : Medina
+    Description: Login structure
+*/
+/*********************
+  Grid
+*********************/
+.gControl {
+    display: table;
+    width: 100%;
+    margin-bottom: 5px;
+}
+.gControl div {
+    
+}
+.gPager {
+    float:left;
+    width: auto;
+}
+.gPager img {
+    vertical-align: middle;
+}
+.gPager form {
+    display: inline; 
+    width: none;
+}
+.gExport {
+    float: right;
+    width: 170px;
+}
+.gExport select {
+    width: 90px;
+    vertical-align: top;
+}
+
+div.gOrder {
+    float: right;
+    text-align: right;
+}
+
+.btnRemOrder {
+    margin-right: 5px;
+}
+
+div.gFilter {
+    float: right;
+    text-align: right;
+}
+
+.gSelect label {
+    display: inline;
+}
+                
+.gSelect a {
+    color: #ED6502;
+}
+.gSelect span {
+    margin: 0 5px;
+}
+
+/* Grid - Table */
+.gTable {
+    width: 100%;
+    margin-bottom: 5px;
+}
+.gTable tr.gRowColor td {
+    background: #EDEDED;
+}
+.gTable tr:hover {
+    background: #c7d5e2;
+}
+.gTable td {
+    border-left: 1px solid #EDFFF9;
+    border-right: 1px solid #EDFFF9;
+    border-bottom: 1px solid #EDFFF9;
+    padding: 0 2px;
+}
+.gTTitle {
+    height: 25px;
+}
+.gTTitle td {
+    background: repeat-x center center url(../../img/admin/sort_row_bg.gif);
+}
+.gTTitle td a {
+    color: #333;
+    font-weight: bold;
+}
+.gTTitle td a span {
+    display: block;
+    line-height: 20px;
+    margin: 0 5px;
+}
+.gTTitle a.sort {
+    display: block;
+    background: repeat-x top left url(../../img/admin/sort_off_bg.png);
+}
+.gTTitle a.sort span {
+    background: no-repeat right center url(../../img/admin/grid_sort_both.png);
+}
+.gTTitle a.sortArrowAsc, .gTTitle a.sortArrowDesc {
+    background: repeat-x top left url(../../img/admin/sort_on_bg.gif);
+}
+.gTTitle a.sortArrowAsc span {
+    background: no-repeat right center url(../../img/admin/grid_sort_asc.gif);
+}
+.gTTitle a.sortArrowDesc span {
+    background: no-repeat right center url(../../img/admin/grid_sort_desc.gif);
+}
+.gTFilter {
+    background: #D6E8F5;
+    height: 30px;
+}
+.gTResultSet input[type=checkbox] {
+    border: 0;
+}
+.gTResultSet .gRowCheck {
+    text-align: center;
+    width: 22px;
+}
+.gTResultSet td {
+    line-height:20px;
+}
+
+/* grid table rows' options */
+.gTdOpcRow {
+    width: 22px;
+}
+
+.gOpcRow {
+    position: relative;
+}
+.gOpcRow ul {
+    list-style: none;
+}
+.gOpcRow ul li ul {
+    display: none;
+}
+.gOpcRow ul li:hover ul {
+    display: block;
+}
+.gOpcRow ul li ul {
+    position: absolute;
+    top:0;
+    left:17px;
+    border: 1px double #DEDEDE;
+}
+.gOpcRow ul li ul li {
+    background: #F3F3F3;
+    border: 1px dotted #FFF;
+    line-height: 18px;
+}
+.gOpcRow ul li ul li:hover {
+    background: #D6E8F5;
+}
+.gOpcRow a {
+    width: 210px;
+    display: inline-block;
+    text-indent: 25px;
+    line-height: 22px;
+    background: 4px no-repeat url(../../img/icons/application_edit.png);
+    color: #333;
+}
+.gOpcRow a.dialogAjax {
+    background-image: url(../../img/icons/application_double.png);
+}
+.gOpcRow a.view {
+    background-image: url(../../img/icons/zoom.png);
+}
+.gOpcRow a.del {
+    background-image: url(../../img/icons/delete.png);
+}
+.gOpcRow a.pdf {
+    background-image: url(../../img/icons/page_white_acrobat.png);
+}
+.fieldGrid {
+    
+}
+
+/* Mass Action */
+
+.gMassAction {
+    display: table;
+    width: 100%;
+    margin-bottom: 5px;
+    background: repeat-x top left url(img/massaction_bg.gif) #c8c8c8;
+    border: 1px solid #CCC;
+    line-height: 24px;
+}
+.gSelect {
+    float: left;
+    margin-left: 10px;
+}
+.gSelect a {
+    color: #ED6502;
+}
+.gAction {
+    float: right;
+    margin-right: 10px;
+}
+.gAction select {
+    width: 100px;
+}
+
+label#checkAllGridLbl {
+    line-height: 20px;
+}
+input#checkAllGrid {
+    margin:0;
+}
+span.massDelimiter {
+    margin:0 15px;
+}

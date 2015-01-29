@@ -1,0 +1,59 @@
+Usuario:
+  type: entity
+  table: USUARIO
+  fields:
+    codUsuario:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_USUARIO
+      generator:
+        strategy: SEQUENCE
+    codNivelUsuario:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_NIVEL_USUARIO
+    codPapelUsuario:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_PAPEL_USUARIO
+    dscIdentificacaoUsuario:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: DSC_IDENTIFICACAO_USUARIO
+    dscSenhaAcesso:
+      type: string
+      length: 32
+      fixed: false
+      nullable: true
+      column: DSC_SENHA_ACESSO
+    indAtivo:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_ATIVO
+  manyToMany:
+    fkUsuarioPerfilUsuario1:
+      targetEntity: PerfilUsuario
+      cascade: {  }
+      mappedBy: codUsuario
+      inversedBy: null
+      joinTable: null
+      orderBy: null
+  oneToOne:
+    fkUsuarioPessoaFisica1:
+      targetEntity: PESSOAFISICA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_USUARIO:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

@@ -1,0 +1,119 @@
+<style>
+    table.migrar, table.grade {
+        width: 100%;
+    }
+    table.grade tr.title td {
+        font-weight: bold;
+    }
+    table.migrar thead td {
+        font-weight: bold;
+        font-size: 14px;
+    }
+    table.migrar td {
+        vertical-align: top;
+    }
+    table.grade td {
+        line-height: 20px;
+    }
+    td.goTo {
+        color: #CCC; 
+        font-size: 80px; 
+        font-weight: bold;
+        text-align: center;
+    }
+    td.submit {
+        padding-top:10px;
+        text-align: center;
+    }
+</style>
+<form action="<?php echo $this->url(array('controller' => 'produto', 'action' => 'dado-logistico-ajax')); ?>" method="post">
+    <?php echo $this->formHidden("clonar", 1); ?>
+    <?php echo $this->formHidden("id", $this->id); ?>
+    <?php echo $this->formHidden("grade", $this->grade); ?>
+    <table class="migrar">
+        <caption>Produto Código : <?php echo $this->id . ' - ' . $this->descricao ?></caption>
+        <thead>
+            <tr>
+                <td>Grade Origem</td>
+                <td></td>
+                <td>Grade(s) Destino(s)</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>
+                    <table class="grade">
+                        <tr class="title">
+                            <td></td>
+                            <td>Tipo Comerc.</td>
+                            <td>Qtd. Emb.</td>
+                            <td>Qtd. Vol.</td>
+                        </tr>
+                        <?php foreach ($this->produtos as $key => $produto): ?>
+                            <?php if ($this->grade == $produto[0]['grade']): ?>
+                                <tr>
+                                    <td>
+                                        <label>
+                                            <input type="radio" name="gradeDe" value="<?php echo $produto[0]['grade'] ?>" checked="checked" >
+                                            <?php echo $produto[0]['grade'] ?>
+                                        </label>
+                                    </td>
+                                    <td><?php echo $produto['tipoComercializacao'] ?></td>
+                                    <td><?php echo $produto['qtdEmbalagem'] ?></td>
+                                    <td><?php echo $produto['qtdVolume'] ?></td>
+                                </tr>
+                            <?php endif ?>
+                        <?php endforeach; ?>
+                    </table>
+                </td>
+
+                <td class="goTo" >&gt;</td>
+
+                <td>
+
+                    <table class="grade">
+                        <tr class="title">
+                            <td></td>
+                            <td>Tipo Comerc.</td>
+                            <td>Qtd. Emb.</td>
+                            <td>Qtd. Vol.</td>
+                        </tr>
+                        <?php foreach ($this->produtos as $key => $produto): ?>
+                            <?php if ($this->grade != $produto[0]['grade']): ?>
+                                <tr>
+                                    <td>
+                                        <label>
+                                            <input type="checkbox" name="gradePara[]" value="<?php echo $produto[0]['grade'] ?>" />
+                                            <?php echo $produto[0]['grade'] ?>
+                                        </label>
+                                    </td>
+                                    <td><?php echo $produto['tipoComercializacao'] ?></td>
+                                    <td><?php echo $produto['qtdEmbalagem'] ?></td>
+                                    <td><?php echo $produto['qtdVolume'] ?></td>
+                                </tr>
+                            <?php endif ?>
+                        <?php endforeach; ?>
+                    </table>
+
+                </td> 
+            </tr>
+            <tr>
+                <td colspan="3" class="submit">
+                    <?php echo $this->formSubmit("btnMigrar", "Exportar", array('class' => 'btn', 'style' => 'margin-top: 0;')); ?> 
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="4" style="text-align: center; padding-top: 30px; ">
+                    <img src="<?php echo $this->baseUrl('img/icons/information.png'); ?>" alt="#" style="vertical-align: middle" /> 
+                    O tipo de comercialização do produto DESTINO deve ser o <strong>MESMO</strong> do ORIGEM.
+                    <br />
+                    <img src="<?php echo $this->baseUrl('img/icons/information.png'); ?>" alt="#" style="vertical-align: middle" /> 
+                    Atenção, todos os dados logísticos das grades do produto de DESTINO serão sobrescritas pelas de ORIGEM.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>

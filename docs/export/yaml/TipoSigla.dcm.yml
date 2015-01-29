@@ -1,0 +1,24 @@
+TipoSigla:
+  type: entity
+  table: TIPO_SIGLA
+  fields:
+    codTipoSigla:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_TIPO_SIGLA
+      generator:
+        strategy: SEQUENCE
+    dscTipoSigla:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_TIPO_SIGLA
+    indSiglaSistema:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_SIGLA_SISTEMA
+  lifecycleCallbacks: {  }

@@ -1,0 +1,132 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="267EE13A-6E28-D2D5-315A-533C86EA792B" directorySegmentName="seg_0" name="EXPEDICAO_ANDAMENTO">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:05:49 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pkName>EXPEDICAO_ANDAMENTO_PK</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="NUM_SEQUENCIA" id="D913A657-4BAD-D7BC-F2CE-424C869A3AA3">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:07:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_EXPEDICAO" id="87B6D87A-5D77-0696-3EF8-8A8F748C7E4F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:50:40 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>8173CB96-CC28-6C47-CDD5-FD67DEAACFA2</delegate>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="C385E593-CC4D-71A5-D8D0-352DAC14ED0E" referredColumn="8173CB96-CC28-6C47-CDD5-FD67DEAACFA2"/>
+</associations>
+</Column>
+<Column name="COD_USUARIO" id="7F46B689-66C4-483B-986A-7CA86AF87422">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:07:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_ANDAMENTO" id="93BE6477-808B-3CB2-A42E-18BF72217B17">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:33:41 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT008</logicalDatatype>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_OBSERVACAO" id="F5BDD1FF-740E-B90F-C500-99E8608DC20F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:33:41 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>512 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="5CA0C456-6066-87B0-622A-D3BF3E5780D6" name="EXPEDICAO_ANDAMENTO_PK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:07:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="D913A657-4BAD-D7BC-F2CE-424C869A3AA3"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="1FDB6515-FBA4-9E10-9888-1BF37E73A7EC" name="EXPEDICAO_ANDAMENTO_EXPEDICAO_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:50:40 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<indexColumnUsage>
+<colUsage columnID="87B6D87A-5D77-0696-3EF8-8A8F748C7E4F"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

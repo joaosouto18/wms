@@ -1,0 +1,75 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="8234113F-89A0-3A68-33E4-32466E35075B" name="RESERVA_ESTOQUE_EXPEDICAO">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>RESERVA_ESTOQUE_EXPEDICAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:17 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_EXPEDICAO" id="0A40C827-75DD-E8D8-09D2-541AF7B0586E">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE_EXPEDICAO</sourceObjSchema>
+<sourceObjName>COD_EXPEDICAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:17 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>345F40AA-86EA-92FC-FD68-18302507D043</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="802C1313-F966-0330-B32E-B0A085C50D30" referredColumn="345F40AA-86EA-92FC-FD68-18302507D043"/>
+</associations>
+</Column>
+<Column name="COD_RESERVA_ESTOQUE" id="A1DC68E0-1B40-DF22-95ED-231F8B0B6209">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>RESERVA_ESTOQUE_EXPEDICAO</sourceObjSchema>
+<sourceObjName>COD_RESERVA_ESTOQUE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:17 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>61353F52-BC2B-AEC8-E41A-97378C8A8384</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="C9EE9BDC-85C5-83C3-2F30-1698BB285BAD" referredColumn="61353F52-BC2B-AEC8-E41A-97378C8A8384"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="60F15931-1917-AAD9-8F0B-79F93A9D0C1D" name="RES_EST_EXP_RES_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:53:17 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="A1DC68E0-1B40-DF22-95ED-231F8B0B6209"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="54F9938A-B556-052C-2804-32C6A3E2F9D2" name="RES_EST_EXP_EXP_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:54:11 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="0A40C827-75DD-E8D8-09D2-541AF7B0586E"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

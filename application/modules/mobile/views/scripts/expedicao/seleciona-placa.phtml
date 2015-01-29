@@ -1,0 +1,9 @@
+<h3>Centrais de Entrega</h3>
+<ul class="menu">
+    <?php foreach($this->placas as $placa):?>
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras', 'placa' => $placa["placaCarga"] )); ?>" title="<?php echo $placa["placaCarga"] ?>" >Placa <?php echo $placa["placaCarga"]  ?>  - C:<?php echo $placa['codCargaExterno'] ?> </a>
+        </li>
+    <?php endforeach; ?>
+</ul>
+

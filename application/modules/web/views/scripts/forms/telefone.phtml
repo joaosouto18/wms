@@ -1,0 +1,25 @@
+<style>
+    <!--
+    button#btn-salvar-telefone {
+        margin-top: 15px;
+    }
+    -->
+</style>
+<div id="pessoa-telefone">
+    <fieldset id="fieldset-telefone" style="width: 480px; float: left; margin-right: 10px;">
+        <legend>Identificação</legend>
+        <?php
+        echo $this->element->idTipo;
+        echo $this->element->ddd;
+        echo $this->element->numero;
+        echo $this->element->ramal;
+        echo $this->element->btnTelefone;
+        echo $this->element->id;
+        echo $this->element->acao;
+        echo $this->element->idPessoa;
+        ?>
+    </fieldset>
+    <fieldset id="fieldset-telefones-cadastrados" style="width: 450px;">
+        <legend>Telefones cadastrados</legend>
+    </fieldset>
+</div>

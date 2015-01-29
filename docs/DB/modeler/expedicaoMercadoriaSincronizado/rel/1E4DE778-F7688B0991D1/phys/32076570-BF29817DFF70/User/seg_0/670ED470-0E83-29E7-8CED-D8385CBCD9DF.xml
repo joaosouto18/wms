@@ -1,0 +1,11 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<UserOraclev10g class="oracle.dbtools.crest.model.design.storage.oracle.v10g.UserOraclev10g" name="WMS_ADM" id="670ED470-0E83-29E7-8CED-D8385CBCD9DF" directorySegmentName="seg_0">
+<sourceConnName>WMS_DEVELOP</sourceConnName>
+<sourceObjName>WMS_ADM</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:02:50 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<defTableSpace>32AF3825-74CB-A2EF-D58B-5272E19FD8C4</defTableSpace>
+</UserOraclev10g>

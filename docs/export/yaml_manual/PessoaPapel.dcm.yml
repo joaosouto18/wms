@@ -1,0 +1,32 @@
+PessoaPapel:
+  type: entity
+  table: PESSOA_PAPEL
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+    numSequencia:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: NUM_SEQUENCIA
+    codPapel:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_PAPEL
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

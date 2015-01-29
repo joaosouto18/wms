@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<relationalModel class="oracle.dbtools.crest.model.design.relational.RelationalDesign" name="Etiqueta Separacao" id="2BB1D0ED-AA8F-9271-BE83-54A6FEAA434E" mainViewID="C64A9D62-1C98-D079-36B8-34C44AD0197D">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:55:39 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<shouldBeOpen>false</shouldBeOpen>
+<selectedRDBMSSite>32076570-2523-435C-2E92-BF29817DFF70</selectedRDBMSSite>
+<importConnectionStamps>
+<importConnectionStamp class="oracle.dbtools.crest.imports.DBConnectionStamp">
+<connName>WMS_DEV</connName>
+<connUrl>WMS_DEVELOP</connUrl>
+<connUser>wms_adm</connUser>
+<connType>1</connType>
+</importConnectionStamp>
+</importConnectionStamps>
+</relationalModel>

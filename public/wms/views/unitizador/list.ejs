@@ -1,0 +1,5 @@
+<%for(var i = 0; i < unitizadors.length ; i++){%>
+	<tr <%= unitizadors[i]%>>
+		<%= $.View('//wms/views/unitizador/show',unitizadors[i])%>
+	</tr>
+<%}%>

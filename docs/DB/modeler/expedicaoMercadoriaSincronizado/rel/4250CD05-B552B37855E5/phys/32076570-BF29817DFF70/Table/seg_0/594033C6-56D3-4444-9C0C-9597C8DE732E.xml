@@ -1,0 +1,188 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="DEPOSITO_ENDERECO" directorySegmentName="seg_0" id="594033C6-56D3-4444-9C0C-9597C8DE732E">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>3374B01E-72FC-037B-1A29-C861A3A38F66</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<indexProxies>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DEPEN_ARARM" id="1D26429A-1C97-AAB8-C1F2-D2C47D028311">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DEPEN_TPEND" id="28AA0BAA-3F36-A62C-75DE-B14CC74E4681">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DEPEN_DEPOS" id="37C63D55-9D5C-9787-82AC-BF1216F9F887">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DEPEN_TPESA" id="40EC15F7-B890-A96D-F018-2441EB3A85DD">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="FK_DEPEN_CARAC" id="577DA607-BEA3-EC9A-8459-1B0E0779723A">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="PK_DEPEN" id="5D62A0B4-F50B-CCDC-D25B-A22421712A88">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="DBA_GEOVANI_DEPOSITO_END_IDX01" id="9D3DA038-22EE-66D1-ADF9-55034834D505">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>0459BAD8-F353-5538-3BB2-0F0AC7B82005</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="IX_DEPEN_01" id="C5F42A83-89D1-783A-56D2-BEA956AE034B">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+</IndexProxy>
+</indexProxies>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="COD_DEPOSITO" id="162B34D2-1658-0A66-5B36-FB4529B624E4">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="DSC_DEPOSITO_ENDERECO" id="1B12CADD-9432-B296-D20B-39921CFFE40C">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="IND_SITUACAO" id="37ABF266-2BB6-1D49-3133-789C9CB6E84D">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_NIVEL" id="43A9C81F-D4A3-02F0-9D6B-6CB8D2CB1CE0">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="IND_DISPONIVEL" id="51CFC738-B7BD-9F46-1E8E-6A56FA5B6957">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<defaultValue>&apos;S&apos;</defaultValue>
+</ColumnProxy>
+<ColumnProxy name="NUM_RUA" id="6420A694-F50B-3A13-5947-18FA9A819C24">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_TIPO_EST_ARMAZ" id="66CBD4CC-C6C5-F1F2-EA53-9CF696D46F70">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_APARTAMENTO" id="6FFBD48F-D43E-D214-A6B2-DCA8F069B13F">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="IND_STATUS" id="A2242C1F-0558-31A0-1C18-4C41B6421BAD">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_PREDIO" id="A54571AC-CB7C-2F72-6A0C-C8956DD621F0">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_TIPO_ENDERECO" id="A9944B52-2186-29EC-4B14-A3558A5DF314">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_CARACTERISTICA_ENDERECO" id="C25959DE-FE36-F847-48AF-CD8C890EBA84">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_AREA_ARMAZENAGEM" id="D06A7BFC-4D90-6BF5-0453-4ACAA0F8D9C4">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_DEPOSITO_ENDERECO" id="EC2D9AB0-E55C-995B-2DAC-811AB75235E4">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:03 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="PK_DEPEN" id="625EB2F0-09D0-CD6E-7239-D3E0A4C59072">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:04 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<segment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</segment>
+<tableSpace>5BF59FEF-D366-6267-F25B-6B95D7381FA3</tableSpace>
+<existingIndex>5D62A0B4-F50B-CCDC-D25B-A22421712A88</existingIndex>
+<indexSegment>69A79494-CBA8-04E2-A050-21C29C2E1BAA</indexSegment>
+<indexSort>SORTED</indexSort>
+<usingIndex>BY INDEX NAME</usingIndex>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

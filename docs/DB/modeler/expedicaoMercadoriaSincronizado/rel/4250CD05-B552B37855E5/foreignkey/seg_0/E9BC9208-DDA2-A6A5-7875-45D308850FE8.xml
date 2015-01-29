@@ -1,0 +1,14 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="E9BC9208-DDA2-A6A5-7875-45D308850FE8" name="ESTOQUE_UNITIZADOR_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:02 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>AF6D7769-755C-730E-0A21-A6509017779A</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>D5D0168C-FEA4-3450-4001-132891813465</localFKIndex>
+<keyObject>F2482C0E-4C8E-4781-B7FB-C0917304FB96</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

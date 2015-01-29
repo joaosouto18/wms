@@ -1,0 +1,22 @@
+<div <%=this%> style="background: #f1dcc7; margin-bottom: 5px; padding:3px;">
+    <a href="javascript://" style="float:right" class="btn-excluir-endereco">Excluir</a>
+
+    Tipo: <strong><%=this.lblTipoEndereco%></strong><br />
+    <%=this.descricao%>, <%=this.numero%>, <%=this.bairro%><br />
+    <%=this.localidade%>, <%=this.lblUfEndereco%><br />
+    Complemento: <%=this.complemento%><br />
+    Referência: <%=this.pontoReferencia%><br />
+    Cep: <%=this.cep%> - ECT: <%=this.isEct == 'S' ? 'SIM' : 'NÃO' %>
+    
+    <input type="hidden" name="enderecos[<%=this.id%>][idTipo]" value="<%=this.idTipo%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][descricao]" value="<%=this.descricao%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][numero]" value="<%=this.numero%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][complemento]" value="<%=this.complemento%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][bairro]" value="<%=this.bairro%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][localidade]" value="<%=this.localidade%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][idUf]" value="<%=this.idUf%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][cep]" value="<%=this.cep%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][pontoReferencia]" value="<%=this.pontoReferencia%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][isEct]" value="<%=this.isEct%>"/>
+    <input type="hidden" name="enderecos[<%=this.id%>][acao]" value="<%=this.acao%>"/>
+</div>

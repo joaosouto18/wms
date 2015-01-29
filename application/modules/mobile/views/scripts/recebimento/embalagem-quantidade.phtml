@@ -1,0 +1,55 @@
+<?php echo $this->render('recebimento/produto-detalhes.phtml'); ?>
+
+<form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+
+    <input type="hidden" id="idRecebimento" name="idRecebimento" value="<?php echo $this->recebimento->getId() ?>" />
+    <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
+    <input type="hidden" id="idProdutoEmbalagem" name="idProdutoEmbalagem" value="<?php echo $this->itemNF['idEmbalagem'] ?>" />
+    <input type="hidden" id="unidadePorEmbalagem" name="unidadePorEmbalagem" value="<?php echo $this->itemNF['quantidadeEmbalagem'] ?>" />
+
+    <table class="info">
+        <tr class="title">
+            <td>Descrição Emb.</td>
+            <td colspan="2">Código de Barras</td>
+        </tr>
+        <tr>
+            <td><?php echo $this->itemNF['descricaoEmbalagem'] ?></td>
+            <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
+        </tr>
+        
+        <tr class="title">
+            <td>Norma:</td>
+            <td colspan="2"><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></td>
+            <td colspan="2">
+                <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">
+                    <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
+                        <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+
+        <tr class="title">
+            <td>Unidades Por Emb.</td>
+            <td>
+                <label class="field required" for="qtdConferida">Quantidade</label>
+            </td>
+            <td>Total Unidades</td>
+        </tr>
+
+        <tr>
+            <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
+            <td>
+                <input type="text" maxlength="15" size="10" class=" required focus" id="qtdConferida" name="qtdConferida" value="" />
+            </td>
+            <td><span id="totalQuantidade">0</span></td>
+        </tr>
+
+    </table>
+
+    <input type="submit" class="btn" value="Salvar" id="submit" name="submit">
+</form>
+

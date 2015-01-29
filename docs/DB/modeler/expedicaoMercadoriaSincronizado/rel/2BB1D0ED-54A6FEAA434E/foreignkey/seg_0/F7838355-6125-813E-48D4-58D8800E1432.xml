@@ -1,0 +1,19 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" id="F7838355-6125-813E-48D4-58D8800E1432" directorySegmentName="seg_0" name="FK_PRODU_LISEP">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PRODUTO_LINHA_SEPARACAO_FK</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>6BDC1ECD-133E-235C-5996-E9D5141CB8BF</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>B7468A86-6D5B-DCEF-7432-36F39A098691</localFKIndex>
+<keyObject>51309F1B-B697-3341-8E19-AA3AD03D71DE</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+<propertyMap>
+<property name="createdByFKDiscoverer" value="true"/>
+</propertyMap>
+</FKIndexAssociation>

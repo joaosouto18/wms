@@ -1,0 +1,86 @@
+PessoaEndereco:
+  type: entity
+  table: PESSOA_ENDERECO
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+    codTipoEndereco:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_TIPO_ENDERECO
+    codLocalidade:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_LOCALIDADE
+    dscComplemento:
+      type: string
+      length: 36
+      fixed: false
+      nullable: true
+      column: DSC_COMPLEMENTO
+    dscEndereco:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: DSC_ENDERECO
+    dscPontoReferencia:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_PONTO_REFERENCIA
+    indEnderecoEct:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_ENDERECO_ECT
+    nomBairro:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: NOM_BAIRRO
+    nomLocalidade:
+      type: string
+      length: 72
+      fixed: false
+      nullable: true
+      column: NOM_LOCALIDADE
+    numCep:
+      type: string
+      length: 10
+      fixed: false
+      nullable: true
+      column: NUM_CEP
+    numEndereco:
+      type: string
+      length: 6
+      fixed: false
+      nullable: true
+      column: NUM_ENDERECO
+    sglUf:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: SGL_UF
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

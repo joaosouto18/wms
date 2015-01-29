@@ -1,0 +1,14 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="88EF9640-B172-F370-1062-74256752290E" name="HISTORICO_ESTOQUE_OS_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:03:27 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>666833CC-8E0A-99BB-78AB-B25C71B57DDE</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>A9DCA130-913B-E01D-7128-A6EA379EA767</localFKIndex>
+<keyObject>0B4EF205-4BA4-74F4-4211-C2AC42FBF5B0</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

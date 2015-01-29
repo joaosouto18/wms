@@ -1,0 +1,43 @@
+<style>
+    label {
+	display: inline !important;
+    }
+    .gTable td {
+        border:1px solid #CCC;
+        height: 25px;
+    }
+    .gTable input[type=radio] {
+        vertical-align: middle;
+        margin: 0 5px 0 20px;
+    }
+</style>
+<form id="mainForm" method="post" class="saveForm">
+    <div id="sentido-grid" class="grid">
+	<table class="gTable">
+	    <thead>
+		<tr class="gTTitle">
+		    <th><span>Rua</span></th>
+		    <th><span>Sentido</span></th>
+		</tr>
+	    </thead>
+	    <tbody border="1">
+		<?php foreach ($this->ruas as $rua) { ?>
+    		<tr>
+    		    <td align="center"><?php echo $rua['rua'] ?></td>
+    		    <td align="center">
+		    <?php
+		    echo $this->formRadio(
+			    "sentido[{$rua['rua']}]", 
+			    $rua['sentido'], 
+			    null, 
+			    array('C' => 'Crescente', 'D' => 'Decrescente'), 
+			    null
+		    );
+		    ?>
+    		    </td>
+    		</tr>
+		<?php } ?>
+	    </tbody>
+	</table>
+    </div>
+</form>

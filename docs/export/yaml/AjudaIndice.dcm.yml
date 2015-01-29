@@ -1,0 +1,49 @@
+AjudaIndice:
+  type: entity
+  table: AJUDA_INDICE
+  fields:
+    codAjudaIndice:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_AJUDA_INDICE
+      generator:
+        strategy: SEQUENCE
+    codPeso:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_PESO
+    dscAjudaIndice:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_AJUDA_INDICE
+    dscUrlDestino:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_URL_DESTINO
+  oneToOne:
+    fkAjudaIndiceAjudaIndice1:
+      targetEntity: AJUDAINDICE
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_AJUDA_INDICE_PAI:
+          referencedColumnName: COD_AJUDA_INDICE
+      orphanRemoval: false
+    fkAjudaIndiceAjuda:
+      targetEntity: AJUDA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_IDENTIFICACAO_AJUDA:
+          referencedColumnName: COD_IDENTIFICACAO_AJUDA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

@@ -1,0 +1,21 @@
+<?php
+echo $this->form;
+?>
+<form id="relatorio-picking-listar" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'onda-ressuprimento', 'action' =>'gerar' ))?>">
+    <div id="quantidade-grid" class="grid">
+        <?php if ($this->enderecos) : ?>
+            <table class="gTable ">
+                <caption>Endereços de Picking</caption>
+                <tbody>
+                <tr class ="gTTitle"><td>Endereço</td></tr>
+                    <?php foreach ($this->enderecos as $endereco): $this->color = !($this->color);?>
+                        <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                            <td><?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    <div class = "gPager">
+
+</form>

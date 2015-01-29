@@ -1,0 +1,47 @@
+form {
+    
+    padding: 0 1px;
+}
+form fieldset{
+    border: 2px solid #D0DEF1;
+    moz-border-radius: 7px;
+    background: #F3F3F3;
+    padding: 0 10px 10px 10px;
+}
+form fieldset legend {
+    color: #1c94c4;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 5px;
+    moz-border-radius: 5px;
+    padding: 0 5px;
+}
+form div.field {
+    margin-bottom: 10px;
+}
+form label {
+    float:left;
+    width: 100%;
+    display: block;
+    line-height: 20px;
+}
+form input {
+    margin: 0;
+    padding: 0;
+    line-height: 22px;
+    height: 22px;
+    border: none;
+    font-size: 12px;
+    border-top: 1px solid #999;
+    border-left: 1px solid #999;
+    border-bottom: 2px solid #999;
+    border-right: 2px solid #999;
+}
+
+form ul.errors li, label.error {
+    display: block;
+    color: #F00;
+    line-height: 10px;
+    font-size: 9px;
+    font-style: italic;
+}

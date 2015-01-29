@@ -1,0 +1,8 @@
+<ul class="menu">
+    <?php foreach($this->tipoVolume as $id => $tipo):?>
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'volume-patrimonio', 'action' => 'ler-codigo-barra-volume', 'idExpedicao' => $this->idExpedicao, 'idTipoVolume' => $tipo['codCargaExterno'] )); ?>">Cod Carga - <?php echo $tipo['codCargaExterno'] ?></a>
+        </li>
+    <?php endforeach; ?>
+</ul>
+

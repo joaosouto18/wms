@@ -1,0 +1,147 @@
+<?php
+$pessoa = $this->pessoa->getPessoa();
+?>
+<form method="post" action="" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded" id="mainForm">
+    <div id="mainForm-container" class="tabContainer ui-tabs ui-widget ui-widget-content ui-corner-all">
+	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+	    <li class="ui-tabs-nav-item ui-state-default ui-corner-top ui-tabs-selected ui-state-active"><a href="#mainForm-container-frag-1"><span>Identificação</span></a></li>
+	    <li class="ui-tabs-nav-item ui-state-default ui-corner-top"><a href="#mainForm-container-frag-2"><span>Telefones</span></a></li>
+	    <li class="ui-tabs-nav-item ui-state-default ui-corner-top"><a href="#mainForm-container-frag-3"><span>Endereços</span></a></li>
+	</ul>
+	
+	<div class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="mainForm-container-frag-1" style="padding:5px 0px;">
+	    <dl>
+		<dt id="pessoal-label">&nbsp;</dt>
+		<dd id="pessoal-element">
+		    <fieldset id="fieldset-pessoal">
+			<legend>Identificação</legend>
+				<dl>
+				    <dt id="pessoaJuridica-nome-label"><label class="required" for="pessoaJuridica-nome">Razão Social:</label></dt>
+				    <dd id="pessoaJuridica-nome-element"><strong><?php echo $pessoa->getNome(); ?></strong></dd>
+				    
+				    <?php if ($pessoa instanceof \Wms\Domain\Entity\Pessoa\Juridica) { ?>
+					<?php if ($pessoa->getTipoRamoAtividade() != null) { ?>
+					<dt id="pessoaJuridica-ramoAtividade-label"><label class="optional" for="pessoaJuridica-ramoAtividade">Ramo de Atividade:</label></dt>
+					<dd id="pessoaJuridica-ramoAtividade-element"><strong><?php echo $pessoa->getTipoRamoAtividade()->getNome(); ?></strong></dd>
+					<?php } ?>
+					<?php if ($pessoa->getTipoOrganizacao() != null) { ?>
+					<dt id="pessoaJuridica-tipoOrganizacao-label"><label class="optional" for="pessoaJuridica-tipoOrganizacao">Tipo da Organização:</label></dt>
+					<dd id="pessoaJuridica-tipoOrganizacao-element"><strong><?php echo $pessoa->getTipoOrganizacao()->getNome(); ?></strong></dd>
+					<?php } ?>
+					<dt id="pessoaJuridica-dataAbertura-label"><label class="optional" for="pessoaJuridica-dataAbertura">Data de Abertura:</label></dt>
+					<dd id="pessoaJuridica-dataAbertuura-element"><strong><?php echo $pessoa->getDataAbertura(); ?></strong></dd>
+
+					<dt id="pessoaJuridica-nomeFantasia-label"><label class="optional" for="pessoaJuridica-nomeFantasia">Nome Fantasia:</label></dt>
+					<dd id="pessoaJuridica-nomeFantasia-element"><strong><?php echo $pessoa->getNomeFantasia(); ?></strong></dd>
+
+					<dt id="pessoaJuridica-numCnpj-label"><label class="optional" for="pessoaJuridica-numCnpj">CNPJ:</label></dt>
+					<dd id="pessoaJuridica-numCnpj-elemet"><strong><?php echo $pessoa->getCnpj(); ?></strong></dd>
+
+					<dt id="pessoaJuridica-inscricaoEstadual-label"><label class="optional" for="pessoaJuridica-inscricaoEstadual">Inscrição Estadual:</label></dt>
+					<dd id="pessoaJuridica-inscricaoEstadual-element"><strong><?php echo $pessoa->getInscricaoEstadual();?></strong></dd>
+
+					<dt id="pessoaJuridica-inscricaoMunicipal-label"><label class="optional" for="pessoaJuridica-inscricaoMunicipal">Inscrição Municipal:</label></dt>
+					<dd id="pessoaJuridica-inscricaoMunicipal-elemet"><strong><?php echo $pessoa->getInscricaoMunicipal();?></strong></dd>
+				    <?php } else { ?>
+					<dt id="pessoaFisica-sexo-label"><label class="optional" for="pessoaFisica-sexo">Sexo:</label></dt>
+					<dd id="pessoaFisica-sexo-element"><strong><?php echo $pessoa->getSexo(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-dataNascimento-label"><label class="optional" for="pessoaFisica-dataNascimento">Data de Nascimento:</label></dt>
+					<dd id="pessoaFisica-dataNascimento-element"><strong><?php echo $pessoa->getDataNascimento(); ?></strong></dd>
+					<?php if ($pessoa->getGrauEscolaridade() != null) { ?>
+					<dt id="pessoaFisica-grauEscolaridade-label"><label class="optional" for="pessoaFisica-grauEscolaridade">Grau de Escolaridade:</label></dt>
+					<dd id="pessoaFisica-grauEscolaridade-element"><strong><?php echo $pessoa->getGrauEscolaridade()->getSigla(); ?></strong></dd>
+					<?php } ?>
+					<?php if ($pessoa->getSituacaoConjugal() != null) { ?>
+					<dt id="pessoaFisica-situacaoConjugal-label"><label class="optional" for="pessoaFisica-situacaoConjugal">Situação Conjugal:</label></dt>
+					<dd id="pessoaFisica-situacaoConjugal-element"><strong><?php echo $pessoa->getSituacaoConjugal()->getSigla(); ?></strong></dd>
+					<?php } ?>
+					<dt id="pessoaFisica-naturalidade-label"><label class="optional" for="pessoaFisica-naturalidade">Naturalidade:</label></dt>
+					<dd id="pessoaFisica-naturalidade-element"><strong><?php echo $pessoa->getNaturalidade(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-nacionalidade-label"><label class="optional" for="pessoaFisica-nacionalidade">Nacionalidade:</label></dt>
+					<dd id="pessoaFisica-nacionalidade-element"><strong><?php echo $pessoa->getNacionalidade(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-cpf-label"><label class="optional" for="pessoaFisica-cpf">CPF:</label></dt>
+					<dd id="pessoaFisica-cpf-element"><strong><?php echo $pessoa->getCpf(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-rg-label"><label class="optional" for="pessoaFisica-rg">RG:</label></dt>
+					<dd id="pessoaFisica-rg-element"><strong><?php echo $pessoa->getRg(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-orgaoExpedidorRg-label"><label class="optional" for="pessoaFisica-orgaoExpedidorRg">Orgão Expedidor:</label></dt>
+					<dd id="pessoaFisica-orgaoExpedidorRg-element"><strong><?php echo $pessoa->getOrgaoExpedidorRg(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-ufOrgaoExpedidorRg-label"><label class="optional" for="pessoaFisica-ufOrgaoExpedidorRg">UF Orgão Expedidor:</label></dt>
+					<dd id="pessoaFisica-ufOrgaoExpedidorRg-element"><strong><?php echo $pessoa->getUfOrgaoExpedidorRg(); ?></strong></dd>
+					
+					<dt id="pessoaFisica-dataExpedicaoRg-label"><label class="optional" for="pessoaFisica-dataExpedicaoRg">Data de Expedição:</label></dt>
+					<dd id="pessoaFisica-dataExpedicaoRg-element"><strong><?php echo $pessoa->getDataExpedicaoRg(); ?></strong></dd>
+				    <?php } ?>
+				</dl>
+		    </fieldset>
+		</dd>
+	    </dl>
+	</div>
+	
+	<div class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" id="mainForm-container-frag-2" style="padding:5px 0px;">
+	    <dl>
+		<div id="pessoa-telefone" class="wms_pessoa_telefone">
+		    <dd id="identification-element">
+			<fieldset style="width: 480px;" id="fieldset-telefone">
+			    <legend>Telefone</legend>
+			    <?php
+			    $i = 1;
+			    $telefones = $pessoa->getTelefones();
+			    foreach ($telefones as $telefone) 
+			    {?>
+				<p>Tipo do Telefone: <strong><?php echo $telefone->getTipo()->getNome(); ?></strong><br/>
+				   Número: <strong><?php echo $telefone->getDdd();
+				   echo' '; echo $telefone->getNumero(); ?></strong><br/>
+				   Ramal: <strong><?php echo $telefone->getRamal(); ?></strong><br/>
+				</p>
+				<?php if ($i != count($telefones))
+				    echo '<hr/>'; ?>
+				<?php
+				$i++;
+			    }?>
+			</fieldset>
+		    </dd>
+		</div>
+	    </dl>
+	</div>
+	
+	<div class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" id="mainForm-container-frag-3" style="padding:5px 0px;">
+	    <dl>
+		<div id="pessoa-endereco" class="wms_pessoa_endereco">
+		    <dd id="identification-element">
+			<fieldset style="width: 480px;" id="fieldset-endereco">
+			    <legend>Endereços</legend>
+			    <?php
+			    $i = 1;
+			    $enderecos = $pessoa->getEnderecos();
+			    foreach ($enderecos as $endereco) 
+			    {?>
+				<p>Tipo de Endereço: <strong><?php echo $endereco->getTipo()->getNome(); ?></strong><br/>
+				   Logradouro: <strong><?php echo $endereco->getDescricao(); ?></strong><br/>
+				   Número: <strong><?php echo $endereco->getNumero(); ?></strong><br/>
+				   Complemento: <strong><?php echo $endereco->getComplemento(); ?></strong><br/>
+				   Bairro: <strong><?php echo $endereco->getBairro(); ?></strong><br/>
+				   Cidade: <strong><?php echo $endereco->getLocalidade(); ?></strong><br/>
+				   <?php if ($endereco->getUf() != null) { ?>
+				   Estado: <strong><?php echo $endereco->getUf()->getSigla(); ?></strong><br/>
+				   <?php }?>
+				   CEP: <strong><?php echo $endereco->getCep(); ?></strong><br/>
+				   Ponto de Referência: <strong><?php echo $endereco->getPontoReferencia(); ?></strong>
+				</p>
+				<?php if ($i != count($enderecos))
+				    echo '<hr/>'; ?>
+				<?php
+				$i++;
+			    }?>
+			</fieldset>
+		    </dd>
+		</div>
+	    </dl>
+	</div>
+    </div>
+</form>

@@ -1,0 +1,53 @@
+ItemMenu:
+  type: entity
+  table: ITEM_MENU
+  fields:
+    codItemMenu:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_ITEM_MENU
+      generator:
+        strategy: SEQUENCE
+    codPeso:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_PESO
+    codSistema:
+      type: smallint
+      nullable: false
+      column: COD_SISTEMA
+    dscItemMenu:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_ITEM_MENU
+    dscUrlDestino:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_URL_DESTINO
+  oneToOne:
+    codItemMenuPai:
+      targetEntity: ITEMMENU
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_ITEM_MENU_PAI:
+          referencedColumnName: COD_ITEM_MENU
+      orphanRemoval: false
+    codRecurso:
+      targetEntity: RECURSO
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_RECURSO:
+          referencedColumnName: COD_RECURSO
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

@@ -1,0 +1,62 @@
+<script>
+    $(document).ready(function(){
+        $('#todos').live('click',function(){
+            var checked_status = this.checked;
+            $("input").each(function()
+            {
+                this.checked = checked_status;
+            });
+        });
+    });
+</script>
+<form id="enderecamento-form" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'web', 'controller' =>'enderecamento', 'action' =>'imprimir' ))?>">
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable ">
+            <caption>Recebimento <?php echo $this->idRecebimento ?> - <?php echo "Paletes do Produto $this->codProduto - $this->produto / $this->grade"?></caption>
+            <p>Endereço de picking:<?php echo $this->endPicking ?></p>
+            <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
+            <tbody>
+                <tr class ="gTTitle">
+                    <td>Selecione</td>
+                    <td>U.M.A.</td>
+                    <td>Unitizador</td>
+                    <td>Qtd.Produtos</td>
+                    <td>Situacao</td>
+                    <td>Endereço</td>
+                    <td>Impresso</td>
+                    <td>Ação</td>
+                </tr>
+                <?php
+                foreach ($this->paletes as $palete): $this->color = !($this->color);?>
+                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td><input name="palete[]" value="<?php echo $palete->getId() ?>" type="checkbox" /> </td>
+                        <td><?php echo $palete->getId() ?></td>
+                        <td><?php echo $palete->getUnitizador()->getDescricao() ?></td>
+                        <td><?php echo $palete->getQtd()  ?></td>
+                        <td><?php echo $palete->getStatus()->getSigla() ?></td>
+                        <td>
+                            <?php if ($palete->getDepositoEndereco() == NULL) {echo "";} else { echo $palete->getDepositoEndereco()->getDescricao();} ?>
+                        </td>
+                        <td>
+                            <?php if ($palete->getImpresso() == 'S') {echo "SIM";} else { echo "NÃO";} ?>
+                        </td>
+                        <td><?php if (($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) ||
+                                      ($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO)) {?>
+                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete->getId()?>">Retornar Status</a>
+                                <?php
+                            } else if (($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO) ||
+                                       ($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO)) {?>
+                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete->getId()?>">Excluir</a>
+                            <?php }?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <div class = "gPager">
+            <span>
+                <?php echo "Total de " . count($this->paletes) . " registros encontrados"?>
+            </span>
+        </div>
+    </div>
+</form>

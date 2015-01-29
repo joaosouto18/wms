@@ -1,0 +1,44 @@
+<?php 
+$pager = $this->grid->getPager(); 
+$request = $this->grid->getRequest();
+
+$prevParams = array('page' => $pager->getPreviousPage());
+$nextParams = array('page' => $pager->getNextPage());
+
+
+$prevUrl = $this->url($prevParams);
+$nextUrl = $this->url($nextParams);
+
+if(isset($_SERVER['QUERY_STRING'])) {
+    $prevUrl.= '?' . $_SERVER['QUERY_STRING'];
+    $nextUrl.= '?' . $_SERVER['QUERY_STRING'];
+}
+
+$leftOff = ($pager->getPage() == 1) ? '_off' : '';
+$rightOff = ($pager->getPage() == $pager->getTotalPages()) ? '_off' : '';
+?>
+<div class="gPager">
+    <?php if ($pager->haveToPaginate()) {?>
+    <span>P&aacute;gina</span>
+    <a href="<?php echo $prevUrl; ?>"><img src="<?php echo $this->baseUrl('img/admin/pager_arrow_left' . $leftOff . '.gif') ?>" alt="&lt;" /></a>
+    <select name="page" class="gPagerFormSelect" style="text-align: center;">
+        <?php for($i=1; $i<=$pager->getTotalPages(); $i++): 
+            //monto a url dinamicamente
+            $url = $this->url(array('page' => $i)) . '?' . $_SERVER['QUERY_STRING'];
+            ?>
+        <option value="<?php echo $url ?>" <?php if($i == $pager->getPage()) echo 'selected="selected"'; ?>><?php echo $i; ?></option>
+        <?php endfor; ?>
+    </select>
+    <a href="<?php echo $nextUrl; ?>"><img src="<?php echo $this->baseUrl('img/admin/pager_arrow_right' . $rightOff . '.gif'); ?>" alt="&lt;" /></a>
+    <span>de <?php echo $pager->getTotalPages(); ?> p&aacute;gina</span>
+<!--    <span>|</span>
+    <span>Visualizar</span>
+    <select name="maxPerPage">
+	<option value="20">20</option>
+	<option value="30">30</option>
+    </select>-->
+    <span>por p&aacute;gina</span>
+    <span>|</span>
+    <?php } ?>
+    <span>Total de <?php echo $pager->getNumResults(); ?> registros encontrados.</span>
+</div>

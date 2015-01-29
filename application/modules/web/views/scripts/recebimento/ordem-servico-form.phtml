@@ -1,0 +1,26 @@
+<form id="mainForm" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post">
+    <?php echo $this->element->idRecebimento; ?>
+    <table style="width: 100%">
+        <tr>
+            
+            <td>
+                <div>
+                    <fieldset id="fieldset-identificacao">
+                        <legend>Clique abaixo para gerar a conferencia cega</legend>
+                        <?php echo $this->element->btnSubmit; ?>
+                    </fieldset>
+                </div>    
+            </td>
+            
+            <td>
+                <div>
+                    <fieldset id="fieldset-coletor">
+                        <legend>Recebimento via coletor</legend>
+                        <a style="margin-top:15px" href="<?php echo $this->baseUrl('/recebimento/index')?>" class="btn reader"><span>Aguardar conferência via Coletor</span></a>
+                    </fieldset>
+                </div>                                
+            </td>
+            
+        </tr>
+    </table>
+</form>

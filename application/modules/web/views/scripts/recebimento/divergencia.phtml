@@ -1,0 +1,86 @@
+
+<?php echo $this->render('recebimento/cabecalho.phtml'); ?>
+
+<style>
+    table.produtoConferencias th {
+        text-align: left;
+        font-weight: bold;
+    }
+    table.produtoConferencias tbody td {
+        text-align: left;
+        border-bottom: 1px solid #CCC;
+    }
+    label {
+        display: inline !important;
+    }
+</style>
+<form id="recebimento-divergencia-form" method="post" class="saveForm">    
+    <?php
+    echo $this->formHidden("acaoFinalizacao", "");
+    ?> 
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable produtoConferencias">
+            <thead>
+                <tr style="text-align: center; font-weight: bold; border-left: #666; background: #CCC; line-height: 22px">
+                    <td colspan="2">Item</td>
+                    <td colspan="2">Qtde. Recebida </td>
+                    <td colspan="3">Devolução</td>
+                </tr>
+                <tr class="gTTitle">
+                    <td>Cód. - Produto</td>
+                    <td>Grade</td>
+                    <td>Qtde. Conferida </td>
+                    <td>Qtde. Avaria</td>
+                    <td>Qtde. Divergência</td>
+                    <td>Nota Fiscal</td>
+                    <td>Observação</td>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                foreach ($this->produtosConferencia as $produtoConferencia):
+                    $tipoDivergencia = ($produtoConferencia['qtdDivergencia'] < 0) ? 'Falta' : 'Sobra';
+                    ?>
+                    <tr height="35">
+                        <td><?php echo $produtoConferencia['idProduto'] . ' - ' . $produtoConferencia['dscProduto'] ?></td>
+                        <td ><?php echo $produtoConferencia['grade'] ?></td>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
+                        <td ><?php echo $produtoConferencia['qtdDivergencia'] . ' (' . $tipoDivergencia . ')' ?></td>
+                        <td>
+                            <?php
+                            echo $this->formSelect("notasFiscais[{$produtoConferencia['id']}]", '', array('style' => 'max-width: 150px', 'class' => 'notaFiscal'), $produtoConferencia['nfs']);
+                            ?>
+                        </td>
+                        <td align="center">
+                            <?php
+                            echo $this->formSelect("motivosDivergencia[{$produtoConferencia['id']}]", '', array('style' => 'width: 250px', 'class' => 'motivosDivergencia'), $this->motivosDivergencia);
+                            ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <tr style="line-height: 50px;">
+                    <td colspan="2">
+                        Conferente: <strong><?php echo $this->ordemServicoEntity->getPessoa()->getNome(); ?></strong>
+                    </td>
+                    <td colspan="2">
+                        <?php
+                        echo $this->formSubmit("btnRecontagem", "Gerar Recontagem", array('class' => 'btn', 'style' => 'margin-top: 0;'));
+                        ?> 
+                    </td>
+                    <td colspan="3">
+                        <?php
+                        echo '<label>Senha de Divergencia: </label>';
+                        echo $this->formPassword("senhaDivergencia", '', array(
+                            'size' => '10',
+                            'maxlength' => '20',
+                        ));
+                        echo $this->formSubmit("btnDivergencia", "Fechar Recebimento com Divergencia", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+                        ?> 
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</form>

@@ -1,0 +1,105 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="5F09D4BA-5DAE-E437-53B9-3EBAAE650AA3" name="ONDA_RESSUPRIMENTO">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>ONDA_RESSUPRIMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_ONDA_RESSUPRIMENTO" id="84601B5C-51F5-694A-9D64-B01D8E54C153">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO</sourceObjSchema>
+<sourceObjName>COD_ONDA_RESSUPRIMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_USUARIO" id="AEB62153-4851-1145-43D3-3A4571C3BE0A">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO</sourceObjSchema>
+<sourceObjName>COD_USUARIO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_CRIACAO" id="F2395C81-1BC5-044C-FD84-FEE8E08794DD">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO</sourceObjSchema>
+<sourceObjName>DTH_CRIACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_OBSERVACAO" id="012CBAA6-6571-8BAB-A29D-9403FF81AD4A">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO</sourceObjSchema>
+<sourceObjName>DSC_OBSERVACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>300 CHAR</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="8AA5EDF8-C5E8-4910-F945-A93228AEE662" name="ONDA_RESSUPRIMENTO_PK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>ONDA_RESSUPRIMENTO_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="84601B5C-51F5-694A-9D64-B01D8E54C153"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="65B389AB-CC57-7769-28EC-EAC16B19D77D" name="ONDA_RESSUPRIMENTO_PK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>ONDA_RESSUPRIMENTO_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="84601B5C-51F5-694A-9D64-B01D8E54C153"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

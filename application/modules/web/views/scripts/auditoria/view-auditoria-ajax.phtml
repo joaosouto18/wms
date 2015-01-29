@@ -1,0 +1,22 @@
+<?php echo $this->render('auditoria/cabecalho.phtml'); ?>
+<table class="details">
+    <tr class="title">
+        <td>Label:</td>
+        <td>Valor:</td>
+    </tr>
+    <?php
+    for ($i = 0; $i < count($this->dados); $i++):
+        $valorDescricao = explode('|', $this->dados[$i]['dscOperacao']);
+        $dscMascaraAuditoria = explode('|', $this->dados[$i]['dscMascaraAuditoria']);
+
+        for ($i = 0; $i < count($valorDescricao); $i++):
+            ?>
+            <tr>
+                <td><?php echo $dscMascaraAuditoria[$i] ?></td>
+                <td><?php echo $valorDescricao[$i] ?></td>
+            </tr>
+            <?php
+        endfor;
+    endfor;
+    ?>
+</table>

@@ -1,0 +1,77 @@
+﻿Ambientes
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Local (dev.wms)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Desenvolvimento (wms-dev.local)
+
+Host:		192.168.40.102
+Login: 		root
+Senha:		lalala123
+
+Banco de dados
+
+Host:		192.168.40.240
+Service_Name:	ROVTD01
+Login:		wms_adm
+Senha:		wms_adm
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Homologação
+http://wmshomolog.moveissimonetti.com.br
+
+Host:		192.168.
+Login: 		
+Senha:		
+
+Banco de dados
+
+Host:		192.168.1.27
+Service_Name:	TH01
+Login:		wms_adm
+Senha:		wms_adm
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Produção 
+wms.moveissimonetti.com.br
+
+Host:		192.168.
+Login: 		
+Senha:	
+
+Banco de dados
+
+Host:		192.168.1.27
+Service_Name:	TP01
+Login:		wms_adm
+Senha:		wms_adm
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Ferramenta de Gerenciamento
+ClockingIT 
+ms-dev-vix.clockingit.com/activities/list
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Ferramenta de modelagem
+ERwin
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Ferramenta de Versionamento
+
+Projeto WMS
+svn://192.168.1.69/wms
+Documentação WMS
+svn://192.168.1.69/wms_doc
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+

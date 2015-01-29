@@ -1,0 +1,32 @@
+Filial:
+  type: entity
+  table: FILIAL
+  fields:
+    codFilial:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_FILIAL
+      generator:
+        strategy: SEQUENCE
+  oneToOne:
+    fkFilialEmpresa1:
+      targetEntity: EMPRESA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_EMPRESA:
+          referencedColumnName: COD_EMPRESA
+      orphanRemoval: false
+    fkFilialFilialPesJur1:
+      targetEntity: PESSOAJURIDICA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_FILIAL:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

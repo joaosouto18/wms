@@ -1,0 +1,202 @@
+/* 
+    Document   : form
+    Created on : Apr 15, 2011, 10:58:28 AM
+    Author     : medina
+    Description: Maintenance of form's style
+*/
+
+form {
+    display: block;
+    width: 990px;
+}
+fieldset {
+    border: 1px solid #D0DEF1;
+    padding: 10px;
+    background: #F3F3F3;
+    margin-bottom: 10px;
+}
+fieldset legend {
+    color: #1c94c4;
+    font-weight: bold;
+    border-radius: 5px;
+    moz-border-radius: 5px;
+    padding-bottom: 3px;
+}
+form fieldset input.btn {
+    width: auto;
+}
+
+form fieldset div.field {
+    display: block;
+    float:left;
+    min-height: 55px;
+    margin-right: 20px;
+}
+
+form label {
+    display: inline-block;
+    min-height: 15px;
+}
+
+div label.title {
+    font-weight: bold;
+}
+
+form fieldset div label.field, label.error {
+    display: block;
+}
+
+form input.date {
+    width: 80px;
+    background: no-repeat left center url(../../img/icons/calendar.png) #FFF;
+    text-indent: 17px;
+}
+form fieldset input.required {
+    background-color: #F9ECE8;
+}
+form fieldset div.checkbox {
+    display: inline-block;
+    float: left;
+}
+form fieldset div.checkbox label {
+    line-height: 18px;
+    margin: 0 50px 0 5px;
+    float: right;
+}
+form fieldset div.checkbox input {
+    float: left;
+    border: none;
+}
+form input[type=checkbox] {
+    float: left;
+    margin-right: 5px;
+    margin-top: -2px;
+}
+
+form ul.errors {
+    list-style: none;
+}
+form ul.errors li, label.error {
+    color: #F00;
+    line-height: 18px;
+    font-size: 9px;
+    font-style: italic;
+}
+/* Validation */
+form.filtro {
+    margin-bottom: 25px;
+}
+
+form.configs fieldset dt {
+    width: 300px;
+    text-align: right;
+    clear: both;
+    padding-right: 10px;
+    margin-top: 3px;
+    float: left;
+}
+
+form.configs fieldset dd {
+    margin-bottom:5px;
+    width: auto;
+}
+
+fieldset.filtro tr {
+    height: 25px;
+}
+
+fieldset.filtro td {
+    padding-right: 50px;
+}
+
+fieldset.filtro td label {
+    display: inline;
+}
+
+
+input, select, textarea {
+    border: 1px solid #CCC;
+}
+
+input, select {
+    line-height:20px;
+    height:20px;
+    margin: 0;
+}
+
+input[type="submit"] {
+    margin-top: 15px;
+}
+
+input[type="radio"] {
+    margin: 5px 3px 0 10px;
+    height: 10px;
+}
+.ui-autocomplete-loading { 
+    background: white url('../../img/ui-anim_basic_16x16.gif') right center no-repeat; 
+}
+
+/*
+ Blocos de dados carregados dinamicamente
+*/
+.blockData {
+    background: #f1dcc7; 
+    margin-bottom: 5px; 
+    padding:5px;
+    border-right: 2px solid #b7a089;
+    border-bottom: 1px solid #b7a089;
+}
+
+.blockData table {
+    width: 100%;
+}
+.blockData table tr td {
+    line-height:20px; 
+}
+.blockData table tr.actions td {
+    border-bottom:1px solid #CCC; 
+    text-align: right;
+    padding-bottom: 4px;
+}
+.blockData table tr.actions td a {
+    margin-left: 10px;
+}
+
+.blockData table tr.actions td img {
+    vertical-align:bottom;
+}
+
+/*
+ Blocos de dados carregados dinamicamente recebem esta classe no dragdrop
+*/
+.moveData {
+    background: #EEE; 
+    margin-bottom: 5px; 
+    padding:5px;
+    border-right: 2px solid #CCD6EE;
+    border-bottom: 1px solid #CCD6EE;
+}
+
+.moveData table {
+    width: 100%;
+}
+.moveData table tr td {
+    line-height:20px; 
+}
+.moveData table tr.actions td {
+    border-bottom:1px solid #CCC; 
+    text-align: right;
+    padding-bottom: 4px;
+}
+.moveData table tr.actions td a {
+    margin-left: 10px;
+}
+
+.moveData table tr.actions td img {
+    vertical-align:bottom;
+}
+
+.tabContainer {
+    display: table;
+    width: 100%;
+}

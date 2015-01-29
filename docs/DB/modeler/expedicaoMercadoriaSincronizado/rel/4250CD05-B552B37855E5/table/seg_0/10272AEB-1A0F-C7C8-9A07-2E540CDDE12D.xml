@@ -1,0 +1,195 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="10272AEB-1A0F-C7C8-9A07-2E540CDDE12D" name="UNITIZADOR">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:00 UTC</createdTime>
+<commentInRDBMS>Cadastro de Unitizadores (unitizador é o equipamento utilizado para a grupar os produtos e permitir a movimentação do mesmo, exemplo palete).</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_UNITIZADOR" id="11254BC5-53B8-59A9-9D8B-94D0AE0E6FB4">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>COD_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Código Unitizador (código sequêncial para o unitilizador)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_UNITIZADOR" id="BAF4A14C-657D-6F62-F48E-668BE9FC5B5E">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>DSC_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Descrição Unitizador</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>60 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_CAPACIDADE_UNITIZADOR" id="1B0B9DD8-12D5-EE82-FBD8-F33A22EC88AC">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>NUM_CAPACIDADE_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Número peso (capacidade de peso é em kg)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>15</dataTypePrecision>
+<dataTypeScale>3</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_ALTURA_UNITIZADOR" id="03306B87-68CF-D908-2A4A-30D93E3F3377">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>NUM_ALTURA_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Número da dimensão da altura (dimensão da altura é em metros)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>0</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>15</dataTypePrecision>
+<dataTypeScale>3</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_LARGURA_UNITIZADOR" id="8886E253-3C53-1422-CD11-F99EA15D51B2">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>NUM_LARGURA_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Número da dimensão da largura (dimensão da largura é em metros)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>0</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>15</dataTypePrecision>
+<dataTypeScale>3</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_PROFUNDIDADE_UNITIZADOR" id="5721A5A5-F72F-9EC6-5369-184F513A4848">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>NUM_PROFUNDIDADE_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Número da dimensão da profundidade (dimensão da profundidade é em metros)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>0</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>15</dataTypePrecision>
+<dataTypeScale>3</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_AREA_UNITIZADOR" id="4E14509E-09D4-6896-E4FA-17D825A8CA4C">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>NUM_AREA_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Número da área unitizador (mutiplicação dos campos largura, profundidade; a dimensão é em m²)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>0</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>15</dataTypePrecision>
+<dataTypeScale>3</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_CUBAGEM_UNITIZADOR" id="BD42EC9A-66C4-5039-DFA9-6C3A735155B5">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>NUM_CUBAGEM_UNITIZADOR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<commentInRDBMS>Cubagem do unitizador (em metros cúbicos)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>15</dataTypePrecision>
+<dataTypeScale>4</dataTypeScale>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="QTD_ENDERECOS_BLOQUEAR" id="DC4CD526-86C6-7DD9-917A-D5B83EBF8DD3">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>UNITIZADOR</sourceObjSchema>
+<sourceObjName>QTD_ENDERECOS_BLOQUEAR</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>0</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="72192CFA-9F1F-F2DE-2C53-52EC7B2FF887" name="PK_UNITI">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PK_UNITI</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="11254BC5-53B8-59A9-9D8B-94D0AE0E6FB4"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="F2482C0E-4C8E-4781-B7FB-C0917304FB96" name="PK_UNITI">
+<sourceConnName>Pwms</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PK_UNITI</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="11254BC5-53B8-59A9-9D8B-94D0AE0E6FB4"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

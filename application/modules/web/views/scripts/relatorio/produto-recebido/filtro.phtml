@@ -1,0 +1,22 @@
+<form id="filtro-produto-recebido-form" method="get" class="filtro" action="<?php echo $this->url(array('action' => 'index', 'controller' => 'relatorio_produto-recebido')) ?>">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Filtro da Busca</legend>
+            <table style="width:100%">
+                <tr>
+                    <td>Cod. Produto:</td>
+                    <td>Grade:</td>
+                    <td>Descrição:</td>
+                    <td>Data do Recebimento:</td>
+                    <td rowspan="2"><?php echo "{$this->element->submit}"; ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo "{$this->element->id}"; ?></td>
+                    <td><?php echo "{$this->element->grade}"; ?></td>
+                    <td><?php echo "{$this->element->descricao}"; ?></td>
+                    <td><?php echo "{$this->element->dataFinal1}"; ?> a <?php echo "{$this->element->dataFinal2}"; ?></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</form>

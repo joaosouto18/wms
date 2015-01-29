@@ -1,0 +1,14 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="B727DED9-3EB9-D39A-B054-6C98F23A9696" name="PALETE_UNITIZADOR_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:06:02 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>D614EAF3-3F7A-1828-D9F5-1D5FE7B8FF58</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>F99256D5-9C0B-BA19-EBA4-5263FA7FF760</localFKIndex>
+<keyObject>F2482C0E-4C8E-4781-B7FB-C0917304FB96</keyObject>
+<mandatory>true</mandatory>
+<transferable>true</transferable>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

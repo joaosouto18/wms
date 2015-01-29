@@ -1,0 +1,28 @@
+<table class="details">
+    <caption>Código do Recebimento: <?php echo $this->recebimento->getId(); ?></caption>
+    <tr class="title">
+        <td>Filial:</td>
+        <td>Depósito:</td>
+        <td>Box:</td>
+    </tr>
+    <tr>
+        <td><?php echo $this->recebimento->getFilial()->getPessoa()->getNomeFantasia(); ?></td>
+        <td><?php $deposito = $this->recebimento->getDeposito(); if($deposito) echo $deposito->getDescricao(); ?></td>
+        <td><?php $box = $this->recebimento->getBox(); if($box) echo $this->recebimento->getBox()->getDescricao(); ?></td>
+    </tr>
+    <tr class="title">
+        <td>Status Atual:</td>
+        <td>Data Inicial:</td>
+        <td>Data Final:</td>
+    </tr>
+    <tr>
+        <td><?php echo $this->recebimento->getStatus()->getSigla(); ?></td>
+        <td><?php echo $this->recebimento->getDataInicial(); ?></td>
+        <td><?php echo $this->recebimento->getDataFinal(); ?></td>
+    </tr>
+    
+    <tr>
+        <td colspan="3"><?php echo $this->form; ?></ br></ br></td>
+    </tr>
+    
+</table>

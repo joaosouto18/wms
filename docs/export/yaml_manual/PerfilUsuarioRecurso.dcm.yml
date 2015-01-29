@@ -1,0 +1,32 @@
+PerfilUsuarioRecurso:
+  type: entity
+  table: PERFIL_USUARIO_RECURSO
+  fields:
+    codPerfilUsuario:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PERFIL_USUARIO
+    codRecurso:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_RECURSO
+    dscTipoAcesso:
+      type: string
+      length: 6
+      fixed: false
+      nullable: true
+      column: DSC_TIPO_ACESSO
+  oneToOne:
+    codRecurso:
+      targetEntity: RECURSO
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_RECURSO:
+          referencedColumnName: COD_RECURSO
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

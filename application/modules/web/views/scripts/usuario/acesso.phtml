@@ -1,0 +1,33 @@
+<style>
+    <!--
+    fieldset#fieldset-identificacao {
+        min-height: 102px;
+        margin-right: 10px;
+        float: left;
+    }
+    fieldset#fieldset-perfis {
+        width: 250px;
+        margin-right: 10px;
+        float: left;
+    }
+    fieldset#fieldset-deposito {
+        min-height: 102px;
+    }
+    -->
+</style>
+
+<fieldset id="fieldset-identificacao">
+    <legend>Identificação</legend>
+    <?php
+    echo $this->element->login;
+    echo $this->element->isAtivo;
+    ?>
+</fieldset>
+<fieldset id="fieldset-perfis">
+    <legend>Perfis</legend>
+    <?php echo $this->element->perfis; ?>
+</fieldset>                            
+<fieldset id="fieldset-deposito">
+    <legend>Depósitos que este usuário terá acesso</legend>
+    <?php echo $this->element->depositos; ?>
+</fieldset>

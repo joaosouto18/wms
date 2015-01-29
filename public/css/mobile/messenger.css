@@ -1,0 +1,45 @@
+ul.flashMessenger {
+    display: block;
+    width: 100%;
+    list-style: none;
+}
+ul.flashMessenger li {
+    display: block;
+    padding: 1px 10px 1px 20px;
+    margin-bottom: 4px;
+    line-height: 22px;
+    background: #F9F5D1;
+    text-indent: 10px;
+    border: 1px solid #FFC402;
+}
+
+ul.flashMessenger li a.fmBtnClose {
+    color: #999;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+ul.flashMessenger li {
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+}
+
+ul.flashMessenger li.msg_message {
+    background-image: url(../../img/icons/help.png);
+}
+
+ul.flashMessenger li.error_message {
+    background-image: url(../../img/icons/error.png);
+}
+
+ul.flashMessenger li.info_message {
+    background-image: url(../../img/icons/information.png);
+}
+
+ul.flashMessenger li.success_message {
+    background-image: url(../../img/icons/accept.png);
+}
+
+ul.flashMessenger li.warning_message {
+    background-image: url(../../img/icons/exclamation.png);
+}

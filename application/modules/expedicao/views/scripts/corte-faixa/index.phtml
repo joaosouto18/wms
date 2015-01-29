@@ -1,0 +1,63 @@
+<script>
+    function gotoFinal(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codBarrasInicial').value != "") {
+                codBarrasFinal   = document.getElementById('codBarrasFinal');
+                if (codBarrasFinal) {
+                    codBarrasFinal.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    function gotoSenha(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codBarrasFinal').value != "") {
+                senha   = document.getElementById('senha');
+                if (senha) {
+                    senha.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'corte-faixa', 'action' =>'index' ))?>">
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable ">
+            <tbody>
+            <tr>
+                <td>
+                    <label>Código de barras inicial:</label>
+                    <input class="focus" type="text" name="codBarrasInicial" id="codBarrasInicial" onkeydown="gotoFinal(event)" />
+                </td>
+                <td>
+                    <label>Código de barras final:</label>
+                    <input class="focus" type="text" name="codBarrasFinal" id="codBarrasFinal" onkeydown="gotoSenha(event)" />
+                </td>
+                <td >
+                    <?php
+                    echo '<label>Senha para confirmação: </label>';
+                    echo $this->formPassword("senha", '', array(
+                        'size' => '10',
+                        'maxlength' => '20',
+                    ));
+                    echo $this->formSubmit("btnConfirmacao", "Cortar", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+                    ?>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+</form>

@@ -1,0 +1,19 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" id="5B2315D3-8909-9BFE-7FD5-E0374E1F4E67" directorySegmentName="seg_0" name="FK_PROEM_DEPEN">
+<sourceConnName>WMS_DEV</sourceConnName>
+<sourceObjSchema>WMS_ADM</sourceObjSchema>
+<sourceObjName>PRODUTO_EMBALAGEM_DEPOSITO_ENDERECO_FK</sourceObjName>
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>A80B27D8-19F7-A93C-1C2E-C3D6841F5047</containerWithKeyObject>
+<deleteRule>SET NULL</deleteRule>
+<localFKIndex>47EF886D-0178-E14C-1D24-03684763F023</localFKIndex>
+<keyObject>8EE22098-4DAF-0A2C-D417-6529BA9F1046</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+<propertyMap>
+<property name="createdByFKDiscoverer" value="true"/>
+</propertyMap>
+</FKIndexAssociation>

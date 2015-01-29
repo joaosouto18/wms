@@ -1,0 +1,14 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="F1233CAB-ECB8-3AC4-2274-D1011CBF0D35" name="PALETE_DEPOSITO_ENDERECO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-05-02 18:02:06 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>D614EAF3-3F7A-1828-D9F5-1D5FE7B8FF58</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>CD695837-4F29-49F3-F08B-DBBE820343AE</localFKIndex>
+<keyObject>5D62A0B4-F50B-CCDC-D25B-A22421712A88</keyObject>
+<mandatory>false</mandatory>
+<transferable>true</transferable>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

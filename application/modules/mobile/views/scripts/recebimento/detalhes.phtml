@@ -1,0 +1,30 @@
+<?php
+$placaVeiculo = '';
+
+if ($this->placaVeiculo)
+    $placaVeiculo = $this->placaVeiculo;
+
+?>
+<table class="info">
+    <caption>Recebimento:  <?php echo $this->recebimento->getId() ?> - <?php echo $this->recebimento->getBox()->getDescricao() ?> - <?php echo $this->recebimento->getDataInicial() ?></caption>
+    <caption>Veículo: <?php echo $placaVeiculo ?></caption>
+    <?php
+    if (isset($this->listaProdutos)):
+        ?>
+        <tr>
+            <td colspan="2"><b>Produtos a serem conferidos</b></td>
+        </tr>
+        <tr>
+            <td>
+                <div id="carousel">
+                    <?php foreach ($this->listaProdutos as $produto): ?>
+                        <div id="lista-produto<?php echo $produto['codigo'] ?>"><?php echo $produto['descricao'] ?> - <?php echo $produto['grade'] ?></div>
+                    <?php endforeach; ?>
+                </div>
+            </td>
+            <td style="width: 20%"> <button id="next"> >| </button></td>
+        </tr>
+        <?php
+    endif;
+    ?>
+</table>

@@ -1,0 +1,15 @@
+<label>Operador de empilhadeira:
+    <?php
+    $conferentes[] = 'Selecione';
+    foreach ($this->conferentes as $key => $conferente) {
+        $conferentes[$key] = $conferente;
+    }
+    //($name, $value = null, $attribs = null, $options = null, $listsep = "<br />\n")
+    echo $this->formSelect("idPessoa", null, null, $conferentes);
+    ?>
+</label>
+
+<button type="submit" class="btnEnderecar" name="btnEnderecar">Endereçar manualmente</button>
+<input type="hidden" value="<?php echo $this->id ?>" name="id" id="id" />
+<input type="hidden" value="<?php echo $this->codigo ?>" name="codigo" id="codigo" />
+<input type="hidden" value="<?php echo urlencode($this->grade) ?>" name="grade" id="grade" />

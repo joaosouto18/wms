@@ -1,0 +1,5 @@
+<%for(var i = 0; i < perfil_usuarios.length ; i++){%>
+	<tr <%= perfil_usuarios[i]%>>
+		<%= $.View('//wms/views/perfil_usuario/show',perfil_usuarios[i])%>
+	</tr>
+<%}%>

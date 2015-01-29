@@ -1,0 +1,13 @@
+<table class="details">
+    <caption>Usuário: <?php echo $this->auditoria->getUsuario()->getLogin(); ?></caption>
+    <tr class="title">
+        <td>Filial:</td>
+        <td>Data:</td>
+        <td>Recurso:</td>
+    </tr>
+    <tr>
+        <td><?php echo $this->auditoria->getFilial()->getPessoa()->getNomeFantasia(); ?></td>
+        <td><?php echo $this->auditoria->getDatOperacao(); ?></td>
+        <td><?php echo $this->auditoria->getRecurso()->getDescricao(); ?></td>
+    </tr>
+</table>

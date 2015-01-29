@@ -1,0 +1,22 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="A5FAAE9C-9A96-9B6E-C7F0-8C13070DFB77" name="WMS_ADM" seqName="seg_0"/>
+   <object objectType="Table" objectID="A8C95595-F67F-A0DC-9BB1-8904A98CB2B7" name="BOX" seqName="seg_0"/>
+   <object objectType="Table" objectID="6FC2415C-B901-9EC5-FE64-5A4A95B47879" name="CARGA" seqName="seg_0"/>
+   <object objectType="Table" objectID="7F757114-2006-69E4-BBDF-6B34E62DC1C6" name="EXPEDICAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="2137B832-DB03-74C3-7734-F00A52772493" name="PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="1B23E9D9-0A0A-765B-B1A2-2969470D4598" name="PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="7F4B3853-96AC-0DA2-92EC-6635467C5B2A" name="PRODUTO_DADO_LOGISTICO" seqName="seg_0"/>
+   <object objectType="Table" objectID="BDFBC93D-0AE0-AABC-6E3C-E5842A55D9C5" name="PRODUTO_EMBALAGEM" seqName="seg_0"/>
+   <object objectType="Table" objectID="38AD27FF-DEAF-D37D-E451-348C2BE648A6" name="PRODUTO_PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="4F1E1128-9EB3-9AA1-B121-66267DD10EBC" name="PRODUTO_VOLUME" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="1AA72462-71F2-96CC-40B6-243DBA671E4E" name="CARGA_EXPEDICAO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="D2A7FFCC-1A15-881A-C768-C17203C218B5" name="EXPEDICAO_BOX_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="9679AFB1-3567-932A-F547-9761E86B83F8" name="FK_BOX_BOX" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="36A24422-5706-5511-472C-69E7E88CEFFE" name="FK_DALOG_PROEM" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="7E47A0CA-54DA-4BF6-12AB-6696947299CD" name="FK_PROEM_PRODU" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="D36AA38B-1B60-2803-E712-DC44FA7DA178" name="FK_PROVO_PRODU" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="CF507683-554F-FC9B-D87E-EC78A57DDA94" name="PEDIDO_CARGA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="8714E7EC-8EFB-51D5-7E95-26431036DA22" name="PRODUTO_PEDIDO_PEDIDO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="49A5EBD6-F1D4-1C00-150F-15CB5E42560D" name="PRODUTO_PEDIDO_PRODUTO_FK" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

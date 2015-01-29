@@ -1,0 +1,192 @@
+﻿<script>
+
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetaSeparacao').value != "") {
+                etiquetaProduto   = document.getElementById('etiquetaProduto');
+                if (etiquetaProduto) {
+                    etiquetaProduto.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function formSubmit(event)
+    {
+
+        etiquetaSeparacao = document.getElementById('etiquetaSeparacao');
+        etiquetaProduto   = document.getElementById('etiquetaProduto');
+
+        if (etiquetaProduto) {
+            if (etiquetaSeparacao.value !== "" && etiquetaProduto.value !== "") {
+                loadResult();
+            }
+        } else {
+            if (etiquetaSeparacao.value !== "") {
+                loadResult();
+            }
+        }
+
+        if(event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+
+    }
+
+    function loadResult()
+    {
+        etiquetaSeparacao = document.getElementById('etiquetaSeparacao');
+        etiquetaProduto   = document.getElementById('etiquetaProduto');
+
+        etiquetaSeparacao.disabled = true;
+
+        if (etiquetaProduto) {
+            etiquetaProduto.disabled = true;
+        }
+
+        document.getElementById('retorno').innerHTML = 'Pesquisando...';
+        load(document.getElementById('formulario').action, 'formulario', function(xhr){
+
+            document.getElementById('retorno').innerHTML = '';
+
+            if (etiquetaProduto) {
+                etiquetaProduto.disabled = false;
+                etiquetaProduto.value = "";
+            }
+
+            etiquetaSeparacao.disabled = false;
+            etiquetaSeparacao.value = "";
+            etiquetaSeparacao.focus();
+
+            xmlDoc=xhr.responseXML;
+
+            x=xmlDoc.getElementsByTagName("retorno");
+            i=0;
+
+            exibeMensagem(x,i);
+
+            if (x[i].getElementsByTagName("redirect").length > 0) {
+                etiquetaSeparacao.disabled = true;
+                redirect=(x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
+                setTimeout("location.href = redirect;",0);
+            }else{
+                etiquetaSeparacao.focus();
+            }
+
+        });
+    }
+
+    function exibeMensagem(x,i)
+    {
+        if (x[i].getElementsByTagName("message").length > 0) {
+            message=(x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
+            document.getElementById("retorno").innerHTML=message;
+        }
+
+        if (x[i].getElementsByTagName("resposta").length > 0) {
+            status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
+            if (status == 'error') {
+                playSound('/alarme.mp3');
+            }
+        }
+    }
+
+    function finalizar(event, element)
+    {
+        document.getElementById('retorno').innerHTML = 'Calculando...';
+        load(element.href , 'formulario', function(xhr){
+            document.getElementById('retorno').innerHTML = '';
+
+            xmlDoc=xhr.responseXML;
+
+            x=xmlDoc.getElementsByTagName("retorno");
+            i=0;
+
+            exibeMensagem(x,i);
+
+        });
+
+        if(event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+    }
+
+</script>
+
+<?php echo $this->bloqueiaOS; ?>
+<?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
+
+<div id='retorno'></div>
+<span id="dummy"></span>
+
+
+
+<?php if (isset($this->idExpedicao))  : ?>
+
+    <p>Expedição:<?php echo $this->idExpedicao ?>
+        <?php if (isset($this->volume))  : ?>
+            Volume: <?php echo $this->volume ?>
+        <?php endif; ?>
+    </p>
+
+<?php endif; ?>
+
+<?php if ( empty($this->bloqueiaOS) )  { ?>
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'buscar-etiquetas')) ?>" onSubmit="formSubmit(event)" method="post">
+
+    <?php if (isset($this->idExpedicao))  : ?>
+        <input name="idExpedicao" type="hidden" value="<?php echo $this->idExpedicao?>" />
+    <?php endif; ?>
+
+    <?php if (isset($this->volume))  : ?>
+        <input name="volume" type="hidden" value="<?php echo $this->volume?>" />
+    <?php endif; ?>
+    <?php if (isset($this->idTipoVolume))  : ?>
+        <input name="idTipoVolume" type="hidden" value="<?php echo $this->idTipoVolume?>" />
+    <?php endif; ?>
+
+    <?php if (isset($this->placa))  : ?>
+        <input name="placa" type="hidden" value="<?php echo $this->placa?>" />
+        <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+        <?php else : ?>
+            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+            <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+    <?php endif; ?>
+
+    <input type="submit" name="submit" id="submit" value="Conferir" />
+</form>
+
+    <?php if (isset($this->placa) && !is_null($this->placa))  : ?>
+
+        <div id="footer">
+            <a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a>
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+        </div>
+
+        <?php elseif(isset($this->volume)) : ?>
+
+        <div id="footer">
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'volume-patrimonio', 'action' => 'fechar-caixa', 'idExpedicao' => $this->idExpedicao, 'volume' => $this->volume)); ?>">Fechar Caixa</a>
+            |
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+        </div>
+
+        <?php else : ?>
+            <div id="footer">
+                <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+            </div>
+    <?php endif; ?>
+
+<?php } else { ?>
+    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras')); ?>">Confirmar</a>
+<?php } ?>

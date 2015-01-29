@@ -1,0 +1,102 @@
+<form id="header-expedicao-os-form" class="header" action="">
+    <div>
+        <fieldset id="fieldset-expedicao">
+            <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
+            <table class="gTable">
+                <tbody>
+                <tr class = "">
+                    <td width=""><span><b>Expedicao</b></span></td>
+                    <td width=""><span><b>Status</b></span></td>
+                    <td width=""><span><b>Qtd. Etiquetas</b></span></td>
+                    <td width=""><span><b>Etq. Conferidas</b></span></td>
+                    <td width=""><span><b>Etq. Pendentes</b></span></td>
+                    <td width=""><span><b>% Conferencia</b></span></td>
+                    <td width=""><span><b>Inicio</b></span></td>
+                    <td width=""><span><b>Fim</b></span></td>
+                </tr>
+                <tr>
+                    <td width = ""><span><?php echo $this->idExpedicao; ?></span></td>
+                    <td width = ""><span><?php echo $this->status; ?></span></td>
+                    <td width = ""><span><?php echo $this->qtdEtiquetas;?></span></td>
+                    <td width = ""><span><?php echo $this->qtdConferidas;?></span></td>
+                    <td width = ""><span><?php echo $this->qtdPendentes;?></span></td>
+                    <td width = ""><span><?php echo $this->percentualConclusao;?></span></td>
+                    <td width = ""><span><?php echo $this->dataInicio;?></span></td>
+                    <td width = ""><span><?php echo $this->dataFim;?></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+
+    <?php if (count($this->resumoPlacaCarga) > 0) : ?>
+        <div>
+            <fieldset id="fieldset-resumo-cargas">
+                <legend> Resumo por Placa da Carga</legend>
+                <table class="gTable">
+                    <tbody>
+                       <tr calss = "">
+                           <td width=""><span><b>Placa</b></span></td>
+                           <td width=""><span><b>Carga</b></span></td>
+                           <td width=""><span><b>Ponto de Transbordo</b></span></td>
+                           <td width=""><span><b>Qtd. Etiquetas</b></span></td>
+                           <td width=""><span><b>Qtd. Conferidas</b></span></td>
+                           <td width=""><span><b>Qtd. Rec. Transbordo</b></span></td>
+                           <td width=""><span><b>Qtd. Exp. Transbordo</b></span></td>
+                           <td width=""><span><b>Pendências</b></span></td>
+                       </tr>
+                       <?php foreach($this->resumoPlacaCarga as $resumo) : ?>
+                           <tr calss = "">
+                               <td width=""><span><?php echo $resumo['placaCarga'];            ?></span></td>
+                               <td width="" title="Sequencia da carga representada pelo número dentro do ()"><span><?php echo $resumo['codCargaExterno'];            ?>(<?php echo $resumo['sequencia'];            ?>)</span></td>
+                               <td width=""><span><?php echo $resumo['pontoTransbordo'];            ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdEtiqueta'];           ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdConferidas'];         ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdRecebidoTransbordo']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdExpedidoTransbordo']; ?></span></td>
+                               <td width=""><span>
+                                       <a class="btn reader dialogAjax"
+                                                     href="<?php echo "/expedicao/pendencia/index/id/". $this->idExpedicao . "/placa/" . $resumo['placaCarga'] . "/transbordo/" . $resumo['pontoTransbordo'] . "/carga/" . $resumo['codCargaExterno'] ?>/tipo/conferida">Conferidas</a></span>
+                                   <span>
+                                   <a class="btn reader dialogAjax"
+                                                     href="<?php echo "/expedicao/pendencia/index/id/". $this->idExpedicao . "/placa/" . $resumo['placaCarga'] . "/transbordo/" . $resumo['pontoTransbordo'] . "/carga/" . $resumo['codCargaExterno'] ?>/tipo/recebido">Recb. Transbordo</a>
+                                   </span>
+                                   <span>
+                                   <a class="btn reader dialogAjax"
+                                                     href="<?php echo "/expedicao/pendencia/index/id/". $this->idExpedicao . "/placa/" . $resumo['placaCarga'] . "/transbordo/" . $resumo['pontoTransbordo'] . "/carga/" . $resumo['codCargaExterno'] ?>/tipo/expedido">Exp. Transbordo</a>
+                                   </span>
+
+                               </td>
+                           </tr>
+                       <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+    <?php endif; ?>
+</form>
+
+<div class="padding-top">
+    <?php
+        echo $this->gridOS;
+    ?>
+</div>
+
+<br>
+<br>
+
+<div class="padding-top">
+    <?php
+    echo $this->gridAndamento;
+    ?>
+</div>
+
+<br>
+<br>
+
+<div class="padding-top">
+    <?php
+        echo $this->gridPendencias;
+    ?>
+</div>
+

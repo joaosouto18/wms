@@ -1,0 +1,25 @@
+Ajuda:
+  type: entity
+  table: AJUDA
+  fields:
+    codIdentificacaoAjuda:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_IDENTIFICACAO_AJUDA
+      generator:
+        strategy: SEQUENCE
+    dscConteudoAjuda:
+      type: string
+      length: 2000
+      fixed: false
+      nullable: true
+      column: DSC_CONTEUDO_AJUDA
+    dscIdentificacaoAjuda:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_IDENTIFICACAO_AJUDA
+  lifecycleCallbacks: {  }

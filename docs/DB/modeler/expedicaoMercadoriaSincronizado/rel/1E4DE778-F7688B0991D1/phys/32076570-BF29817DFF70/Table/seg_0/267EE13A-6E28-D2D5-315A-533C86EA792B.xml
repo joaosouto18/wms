@@ -1,0 +1,58 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="EXPEDICAO_ANDAMENTO" id="267EE13A-6E28-D2D5-315A-533C86EA792B" directorySegmentName="seg_0">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:05:49 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<logging>YES</logging>
+<columnProxies>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_USUARIO" id="7F46B689-66C4-483B-986A-7CA86AF87422">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:07:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="COD_EXPEDICAO" id="87B6D87A-5D77-0696-3EF8-8A8F748C7E4F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:50:40 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="DTH_ANDAMENTO" id="93BE6477-808B-3CB2-A42E-18BF72217B17">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:33:41 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="NUM_SEQUENCIA" id="D913A657-4BAD-D7BC-F2CE-424C869A3AA3">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:07:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy class="oracle.dbtools.crest.model.design.storage.oracle.v11g.ColumnProxyOraclev11g" name="DSC_OBSERVACAO" id="F5BDD1FF-740E-B90F-C500-99E8608DC20F">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:33:41 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<foreignKeys>
+<ForeignKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.FKProxyOraclev10g" name="EXPEDICAO_ANDAMENTO_EXPEDICAO_FK" id="1FDB6515-FBA4-9E10-9888-1BF37E73A7EC">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:50:40 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ForeignKey>
+</foreignKeys>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="EXPEDICAO_ANDAMENTO_PK" id="5CA0C456-6066-87B0-622A-D3BF3E5780D6">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-23 14:07:38 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<sortedRows>SORTED</sortedRows>
+<indexSort>SORTED</indexSort>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

@@ -1,0 +1,19 @@
+D:
+  type: entity
+  table: D
+  fields:
+    codD:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_D
+      generator:
+        strategy: SEQUENCE
+    dscD:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_D
+  lifecycleCallbacks: {  }

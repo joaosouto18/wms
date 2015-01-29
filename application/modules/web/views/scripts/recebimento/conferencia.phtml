@@ -1,0 +1,87 @@
+
+<?php echo $this->render('recebimento/cabecalho.phtml'); ?>
+
+<style>
+    table.produtos th {
+        text-align: left;
+        font-weight: bold;
+    }
+    table.produtos tbody td {
+        text-align: left;
+        border-bottom: 1px solid #CCC;
+    }
+    label {
+        display: inline !important;
+    }
+</style>
+
+<form id="form-recebimento-conferencia" method="post" class="saveForm">    
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable produtos">
+            <thead>
+                <tr class="gTTitle">
+                    <td>Cód. - Produto</td>
+                    <td>Grade</td>
+                    <td>Quantidade</td>
+                    <td>Qtde. Avaria</td>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($this->produtos as $produto) { ?>
+                    <tr height="35">
+                        <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
+                        <td ><?php echo $produto['grade'] ?></td>
+                        <td>
+                            <?php
+                            echo $this->formHidden("qtdNF[{$produto['codigo']}][{$produto['grade']}]", $produto['quantidade'], array(
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                                'class' => "qtdNF",
+                            ));
+                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}]", 0, array(
+                                'size' => 8,
+                                'validators' => array('numeric'),
+                                'alt' => 'number',
+                                'class' => "qtdConferida",
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                            ));
+                            ?>
+                        </td>
+                        <td>
+                            <?php
+                            echo $this->formHidden("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(
+                                'size' => 8,
+                                'validators' => array('numeric'),
+                                'alt' => 'number',
+                                'class' => "qtdAvaria",
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                                'readyonly' => 'readyonly',
+                            ));
+                            ?>0
+                        </td>
+                    </tr>
+                <?php } ?>
+                <tr style="line-height: 50px;">
+                    <td></td>
+                    <td colspan="2">
+                        <label>Conferente: 
+                            <?php
+                            $conferentes[] = 'Selecione';
+                            foreach ($this->conferentes as $key => $conferente) {
+                                $conferentes[$key] = $conferente;
+                            }
+                            //($name, $value = null, $attribs = null, $options = null, $listsep = "<br />\n")
+                            echo $this->formSelect("idPessoa", null, null, $conferentes);
+                            ?> 
+                        </label>
+                    </td>
+                    <td>
+                        <?php
+                        echo $this->formSubmit("submit", "Salvar e Finalizar", array('id' => 'btnCconferencia', 'class' => 'btn', 'style' => 'margin-top: 0;'));
+                        ?> 
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</form>

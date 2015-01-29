@@ -1,0 +1,82 @@
+<div>
+    <a class="btnAlert" href="<?php echo $this->url(array('module' => 'expedicao', 'controller' => 'os', 'action' => 'relatorio', 'id' => $this->idOS, 'tipo' => 'transbordo')); ?>"><span>Imprimir relatório</span></a>
+</div>
+<form id="header-expedicao-os-form" class="header padding-top" action="">
+    <div>
+        <fieldset id="fieldset-expedicao">
+            <legend> Ordem de Serviço</legend>
+            <table class="gTable">
+                <tbody>
+                    <tr class = "">
+                        <td width="">
+                            <span>
+                                <b>OS</b>
+                            </span>
+                        </td>
+                        <td width="">
+                            <span>
+                                <b>Funcionário</b>
+                            </span>
+                        </td>
+                        <td width="">
+                            <span>
+                                <b>Atividade</b>
+                            </span>
+                        </td>
+                        <td width="">
+                            <span>
+                                <b>Inicio</b>
+                            </span>
+                        </td>
+                        <td width="">
+                            <span>
+                                <b>Fim</b>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width = "">
+                            <span>
+                              <?php
+                                echo $this->idOS;
+                              ?>
+                            </span>
+                        </td>
+                        <td width = "">
+                            <span>
+                              <?php
+                                echo $this->conferente;
+                              ?>
+                            </span>
+                        </td>
+                        <td width = "">
+                            <span>
+                              <?php
+                              echo $this->atividade;
+                              ?>
+                            </span>
+                        </td>
+                        <td width = "">
+                            <span>
+                              <?php
+                              echo $this->inicioOS;
+                              ?>
+                            </span>
+                        </td>
+                        <td width = "">
+                            <span>
+                              <?php
+                              echo $this->fimOS;
+                              ?>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+</form>
+
+<?php
+echo $this->grid;
+?>

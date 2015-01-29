@@ -1,0 +1,145 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" id="B8D31765-4DA8-3C24-413B-3ED941128954" directorySegmentName="seg_0" name="PESSOA">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:26 UTC</createdTime>
+<commentInRDBMS>Esta tabela armazenara todas as pessoas cadastradas no sistema, independentemente dos papeis que ela exerca no sistema.</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<pkName>PK_PESSO</pkName>
+<fonts itemClass="oracle.dbtools.crest.model.design.FontObjectWr">
+<FontObject>
+<foType>Título</foType>
+<fontStyle>1</fontStyle>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Coluna</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Tipo de Dados</foType>
+<colorRGB>-16744448</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Primária</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento da Chave Estrangeira</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Elemento de Chave Exclusiva</foType>
+<colorRGB>-16776961</colorRGB>
+</FontObject>
+<FontObject>
+<foType>NOT NULL</foType>
+<colorRGB>-65536</colorRGB>
+</FontObject>
+<FontObject>
+<foType>Chave</foType>
+<colorRGB>-16777216</colorRGB>
+</FontObject>
+</fonts>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_PESSOA" id="81FF5B0A-3505-21FD-1D81-29FDB2704D7B">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:26 UTC</createdTime>
+<commentInRDBMS>Código da Pessoa (código sequêncial para a pessoa)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NOM_PESSOA" id="05328E1E-1BBA-129E-E79E-9719DFC860FD">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:26 UTC</createdTime>
+<commentInRDBMS>Nome da Pessoa</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>60 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_TIPO_PESSOA" id="E89313D3-D6CB-40A5-617D-FCB33C68C051">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:26 UTC</createdTime>
+<commentInRDBMS>Código do tipo de Pessoa (&lt;br/&gt;&lt;br/&gt;F - física | &lt;br/&gt;J - jurídica)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_INCLUSAO" id="0869720F-EFCC-174B-4588-47191834414A">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:26 UTC</createdTime>
+<commentInRDBMS>Data e hora da inclusão da pessoa no cadastro</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DTH_ULTIMA_ALTERACAO" id="F6ED0CBA-0C19-6363-D3EB-E45BE1E59048">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:26 UTC</createdTime>
+<commentInRDBMS>Data e hora da última alteração do cadastro da pessoa</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<dataTypeSize>7</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_USUARIO" id="6231C207-0203-BD11-CE8A-542FD92BA6F2">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:27 UTC</createdTime>
+<commentInRDBMS>Código do usuário que realizou a última alteração no cadastro.</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="6B18CCD1-752B-E3DE-932D-06AC441FE102" name="PK_PESSO">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:27 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<indexColumnUsage>
+<colUsage columnID="81FF5B0A-3505-21FD-1D81-29FDB2704D7B"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="6D03F2B8-D9A4-4327-83E6-C5CDCEAA008A" name="IX_PESSOA_01">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-07-17 16:21:27 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>5FFE1416-9038-A2D1-290B-D106533CEB1E</schemaObject>
+<indexExpression>UPPER(&quot;NOM_PESSOA&quot;)</indexExpression>
+</ind_PK_UK>
+</indexes>
+</Table>

@@ -1,0 +1,43 @@
+<script>
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codBarra').value != "") {
+                senhaConfirmacao   = document.getElementById('senhaConfirmacao');
+                if (senhaConfirmacao) {
+                    senhaConfirmacao.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'corte', 'action' =>'salvar' ))?>">
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable ">
+            <tbody>
+            <tr>
+                <td>
+                    <label>Código de barras etiqueta:</label>
+                    <input class="focus" type="text" name="codBarra" id="codBarra" value="<?php echo $this->codBarra; ?>" onkeydown="nextInput(event)" />
+                </td>
+                <td >
+                    <?php
+                    echo '<label>Senha para confirmação: </label>';
+                    echo $this->formPassword("senhaConfirmacao", '', array(
+                        'size' => '10',
+                        'maxlength' => '20',
+                    ));
+                    echo $this->formSubmit("btnConfirmacao", "Cortar", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+                    ?>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+</form>

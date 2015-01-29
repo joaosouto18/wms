@@ -1,0 +1,213 @@
+<?php
+$pessoa = $this->pessoa->getPessoa();
+?>
+
+<fieldset id="fieldset-telefone">
+    <legend>Identificação</legend>
+    <table class="detailsPopUp">
+        <?php if ($pessoa instanceof \Wms\Domain\Entity\Pessoa\Juridica) : ?>
+            <tr class="title">
+                <td colspan="3">Razão Social:</td>
+                <td colspan="3">Ramo de Atividade:</td>
+            </tr>
+            <tr>
+                <td colspan="3"><?php echo $pessoa->getNome(); ?></td>
+                <td colspan="3"><?php echo $pessoa->getTipoRamoAtividade()->getNome(); ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="6" style="height:10px"></td>
+            </tr>
+
+            <tr class="title">
+                <td colspan="3">Nome Fantasia:</td>
+                <td colspan="3">CNPJ:</td>
+            </tr>
+            <tr>
+                <td colspan="3"><?php echo $pessoa->getNomeFantasia(); ?></td>
+                <td colspan="3"><?php echo $pessoa->getCnpj(); ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="6" style="height:10px"></td>
+            </tr>
+
+            <tr class="title">
+                <td>Tipo da Organização:</td>
+                <td colspan="2">Data de Abertura:</td>
+                <td>Inscrição Estadual:</td>
+                <td colspan="2">Inscrição Municipal:</td>
+            </tr>
+            <tr>
+                <td><?php echo $pessoa->getTipoOrganizacao()->getNome(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getDataAbertura(); ?></td>
+                <td><?php echo $pessoa->getInscricaoEstadual(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getInscricaoMunicipal(); ?></td>
+            </tr>
+        <?php else : ?>
+            <tr class="title">
+                <td colspan="4">Nome:</td>
+                <td colspan="2">Sexo:</td>
+                <td colspan="4">Data de Nascimento:</td>
+            </tr>
+            <tr>
+                <td colspan="4"><?php echo $pessoa->getNome(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getSexo(); ?></td>
+                <td colspan="4"><?php echo $pessoa->getDataNascimento(); ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="10" style="height:10px"></td>
+            </tr>
+
+            <tr class="title">
+                
+                <td colspan="2">Grau de Escolaridade:</td>
+                <td colspan="2">Situação Conjugal:</td>
+                <td colspan="2">Naturalidade:</td>
+                <td colspan="2">Nacionalidade:</td>
+            </tr>
+            <tr>
+                
+                <td colspan="2"><?php echo $pessoa->getGrauEscolaridade()->getSigla(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getSituacaoConjugal()->getSigla(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getNaturalidade(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getNacionalidade(); ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="10" style="height:10px"></td>
+            </tr>
+
+            <tr class="title">
+                <td colspan="2">CPF:</td>
+                <td colspan="2">RG:</td>
+                <td colspan="2">Orgão Expedidor:</td>
+                <td colspan="2">UF Orgão Expedidor:</td>
+                <td colspan="2">Data de Expedição:</td>
+            </tr>
+            <tr>
+                <td colspan="2"><?php echo $pessoa->getCpf(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getRg(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getOrgaoExpedidorRg(); ?></td>
+                <td colspan="2"><?php echo $pessoa->getDataExpedicaoRg(); ?></td>
+            </tr>
+        <?php endif; ?>
+    </table>
+</fieldset>
+
+
+<fieldset id="fieldset-telefone">
+    <legend>Telefone</legend>
+    <?php
+    $i = 1;
+    $telefones = $pessoa->getTelefones();
+    ?>
+    <table class="detailsPopUp">
+        <?php
+        if (count($telefones) == 0)
+            echo "<img src = " . $this->baseUrl('img/icons/information.png') . " style = 'vertical-align: top' /> Nenhum telefone cadastrado.";
+
+        foreach ($telefones as $telefone):
+            ?>
+            <tr class="title">
+                <td>Tipo:</td>
+                <td>Número:</td>
+                <td>Ramal:</td>
+            </tr>
+            <tr>
+                <td><?php echo $telefone->getTipo()->getNome(); ?></td>
+                <td><?php echo $telefone->getDdd() . ' - ' . $telefone->getNumero(); ?></td>
+                <td><?php echo $telefone->getRamal(); ?></td>
+            </tr>
+            <?php
+            if ($i != count($telefones)):
+                ?>
+                <tr>
+                    <td colspan="6"><hr class='detailsPopUp'/></td>
+                </tr>
+                <?php
+            endif;
+            $i++;
+        endforeach;
+        ?>
+    </table>
+</fieldset>
+
+<fieldset id="fieldset-endereco">
+    <legend>Endereço</legend>
+    <?php
+    $i = 1;
+    $enderecos = $pessoa->getEnderecos();
+    ?>
+    <table class="detailsPopUp">
+        <?php
+        if (count($enderecos) == 0)
+            echo "<img src = " . $this->baseUrl('img/icons/information.png') . " style = 'vertical-align: top' /> Nenhum endereço cadastrado.";
+
+        foreach ($enderecos as $endereco) :
+            ?>
+            <tr class="title">
+                <td colspan="2">Tipo:</td>
+                <td colspan="4">Logradouro:</td>
+                <td colspan="2">Complemento:</td>
+            </tr>
+
+            <tr>
+                <td colspan="2"><?php echo $endereco->getTipo()->getNome(); ?></td>
+                <td colspan="4"><?php echo $endereco->getDescricao(); ?></td>
+                <td colspan="2"><?php echo $endereco->getComplemento(); ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="6" style="height:10px"></td>
+            </tr>
+
+            <tr class="title">
+                <td>Número:</td>
+                <td colspan="2">Bairro:</td>
+                <td>Cidade:</td>
+                <td colspan="2">Estado:</td>
+                <td>CEP:</td>
+            </tr>
+            <tr>
+                <td><?php echo $endereco->getNumero(); ?></td>
+                <td colspan="2"><?php echo $endereco->getBairro(); ?></td>
+                <td><?php echo $endereco->getLocalidade(); ?></td>
+
+                <?php
+                //verifica se tem UF, se tiver busca a Sigla
+                $enderecoUF = $endereco->getUf();
+                if ($enderecoUF != null) {
+                    $enderecoUF = $endereco->getUf()->getSigla();
+                }
+                ?>
+                <td colspan="2"><?php echo $enderecoUF ?></td>
+                <td><?php echo $endereco->getCep(); ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="6" style="height:10px"></td>
+            </tr>
+
+            <tr class="title">
+                <td colspan="2">Ponto de Referência:</td>
+            </tr>
+            <tr>
+                <td colspan="2"><?php echo $endereco->getPontoReferencia(); ?></td>
+            </tr>
+
+            <?php
+            if ($i != count($enderecos)):
+                ?>
+                <tr>
+                    <td colspan="8"><hr class='detailsPopUp'/></td>
+                </tr>
+                <?php
+            endif;
+
+            $i++;
+        endforeach;
+        ?>
+    </table>
+</fieldset>

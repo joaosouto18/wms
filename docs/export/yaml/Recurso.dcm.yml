@@ -1,0 +1,18 @@
+Recurso:
+  type: entity
+  table: RECURSO
+  fields:
+    codRecurso:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_RECURSO
+      generator:
+        strategy: SEQUENCE
+    dscRecurso:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_RECURSO
+  lifecycleCallbacks: {  }

@@ -1,0 +1,38 @@
+<script>
+    $(document).ready(function(){
+
+        $('#submit-filtro-recebimento').live('click', function(){
+            $.ajax({
+                url: URL_MODULO + '/palete/trocar/',
+                type: 'post',
+                dataType: 'html',
+                data: $('#form-filtro-recebimento').serialize(),
+                success: function(data) {
+                    $('#grid-filtro-recebimento').html(data);
+                }
+            })
+            return false;
+        });
+
+    });
+</script>
+
+
+<form id="form-filtro-recebimento" action="" method="post" class="" enctype="application/x-www-form-urlencoded" id="">
+    <div class="ui-tabs-panel" id="">
+        <div>
+            <fieldset id="fieldset-trocaum">
+                <table>
+                    <tbody>
+                    <tr height="25">
+                        <td>
+                            Recebimento:  <input type="text" title="" alt="recebimento" size="15" value="" id="filtro-recebimento" name="filtro-recebimento">
+                            <input type="submit"  name="submit-filtro-recebimento" value="Filtrar" id="submit-filtro-recebimento" class="btn">
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+    </div>
+</form>

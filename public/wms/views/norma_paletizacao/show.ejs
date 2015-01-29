@@ -1,0 +1,50 @@
+<div class="grupoDadosLogisticos">
+    <div class="dataNormaPaletizacao">
+        <div class="grupoOpcoes">
+            <input type="button" name="btnExcluirGrupo" id="btn-excluir-grupo" value="Excluir Norma de Paletização" class="btnExcluirGrupo" />
+        </div>
+
+        <input type="hidden" name="normasPaletizacao[<%=this.id%>][acao]" class="normasPaletizacao-acao" value="<%=this.acao%>" />
+        <input type="hidden" name="normasPaletizacao[<%=this.id%>][id]" class="normasPaletizacao-id" value="<%=this.id%>" />
+
+        <input type="hidden" name="normasPaletizacao[<%=this.id%>][idUnitizadorTemp]" value="<%=this.idUnitizador%>" />
+
+        <div class="field">
+            <label for="grupo-unitizador" class="field optional">Unitizador:</label>
+            <select name="normasPaletizacao[<%=this.id%>][idUnitizador]" mostrarselecione="" class="valid">
+                <%for(var i=0; i < this.unitizadores.length; i++) { %>
+                    <option value="<%=this.unitizadores[i].id%>" <% if(this.idUnitizador == this.unitizadores[i].id) { %> selected="selected" <% } %>><%=this.unitizadores[i].descricao%></option>
+                <% }%>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="grupo-isPadrao" class="field optional">Padrão:</label>
+            <select name="normasPaletizacao[<%=this.id%>][isPadrao]" class="valid">
+                <option value="S" <% if(this.isPadrao == 'S') { %> selected="selected" <% } %>>SIM</option>
+                <option value="N" <% if(this.isPadrao == 'N') { %> selected="selected" <% } %>>NÃO</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="grupo-numLastro" class="field optional">Lastro:</label>
+            <input type="text" id="normaPaletizacao-numLastro" name="normasPaletizacao[<%=this.id%>][numLastro]" value="<%=this.numLastro%>" alt="number" class="parametro-norma" size="8" style="text-align: right;" />
+        </div>
+
+        <div class="field">
+            <label for="grupo-numCamadas" class="field optional">Camadas:</label>
+            <input type="text" id="normaPaletizacao-numCamadas" name="normasPaletizacao[<%=this.id%>][numCamadas]" value="<%=this.numCamadas%>" alt="number" class="parametro-norma" size="8" style="text-align: right;" />
+        </div>
+
+        <div class="field">
+            <label for="grupo-numNorma" class="field optional">Norma:</label>
+            <input type="text" id="normaPaletizacao-numNorma" name="normasPaletizacao[<%=this.id%>][numNorma]" value="<%=this.numNorma%>" alt="number" class="parametro-norma" size="12" style="text-align: right;" readonly="true" />
+        </div>
+
+        <div class="field">
+            <label for="grupo-numPeso" class="field optional">Peso(kg):</label>
+            <input type="text" id="normaPaletizacao-numPeso" name="normasPaletizacao[<%=this.id%>][numPeso]" value="<%=this.numPeso%>" alt="centesimal" size="12" style="text-align: right;" readonly="true" />
+        </div>
+
+    </div>
+</div>

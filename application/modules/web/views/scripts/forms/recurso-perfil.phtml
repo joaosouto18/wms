@@ -1,0 +1,42 @@
+<style>
+    #fieldset-recurso p a {
+        display: inline-block;
+        line-height: 22px;
+        text-indent: 18px;
+        background-repeat: no-repeat;
+        background-position: left center;
+        padding: 0 5px;
+    }
+    #fieldset-recurso p a:hover {
+        background-color: #D0DEF1;
+    }
+    #btnContrairAll {
+        background-image: url(../../../img/icons/arrow_in.png);
+    }
+    #btnExpandirAll {
+        background-image: url(../../../img/icons/arrow_out.png);
+    }
+    #btnSelectAll {
+        background-image: url(../../../img/icons/bullet_green.png);
+    }
+    #btnDeselectAll {
+        background-image: url(../../../img/icons/bullet_red.png);
+    }
+</style>
+<dd id="recurso-element">
+    <fieldset id="fieldset-recurso">
+	<legend>Selecione os recursos que este perfil deve possuir</legend>
+	<dl>
+	    <?php echo $this->element->codPerfilUsuarioPai; ?>
+	    <div style="clear: both">
+		<p>
+                    <a href="#" id="btnExpandirAll">Expandir</a>
+                    <a href="#" id="btnContrairAll">Contrair</a>
+		    <a href="#" id="btnSelectAll">Marcar todos</a>
+		    <a href="#" id="btnDeselectAll">Desmarcar todos</a>
+		</p>
+		<div id="tree"></div>
+	    </div>
+	</dl>
+    </fieldset>
+</dd>

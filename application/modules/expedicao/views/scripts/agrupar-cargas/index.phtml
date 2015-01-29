@@ -1,0 +1,41 @@
+<form id="agrupar-carga-grid" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'agrupar-cargas', 'action' =>'agrupar' ))?>">
+    <div id="quantidade-grid" class="grid">
+        <?php echo $this->formSubmit("btnAgruparExpedições", "Agrupar Expedições", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 0 px;')); ?>
+
+        <table class="gTable ">
+            <caption>Selecione as Expedições</caption>
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Selecionar   </td>
+                <td>Expedição</td>
+                <td>Peso</td>
+                <td>Cubagem</td>
+                <td>Dt.Inicio</td>
+                <td>Cargas</td>
+                <td>Itinerario</td>
+            </tr>
+            <?php
+            foreach ($this->expedicoes as $expedicao): $this->color = !($this->color);?>
+                <?php if (($expedicao['carga'] != '') && ($this->idExpedicao != $expedicao['id'])): ?>
+                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td>
+                            <input
+                                class="checkBoxClass"
+                                style="vertical-align: middle"
+                                type="checkbox"
+                                name="expedicao[]"
+                                value="<?php echo $expedicao['id']?>">
+                        </td>
+                        <td><?php echo $expedicao['id'] ?></td>
+                        <td><?php echo $expedicao['peso'] ?></td>
+                        <td><?php echo $expedicao['cubagem'] ?></td>
+                        <td><?php echo $expedicao['dataInicio'] ?></td>
+                        <td><?php echo $expedicao['carga'] ?></td>
+                        <td><?php echo $expedicao['itinerario'] ?></td>
+                    </tr>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <div class = "gPager">
+</form>

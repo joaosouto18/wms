@@ -1,0 +1,13 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" id="BB626256-4771-A119-0897-6CA09C78E3B6" directorySegmentName="seg_0" name="PEDIDO_PRODUTO_FK">
+<createdBy>Mateus</createdBy>
+<createdTime>2013-03-20 16:56:37 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>5DDB966E-5A90-AFB2-E471-58355D8CC07D</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>89B620C2-FFEF-5C83-E935-4BFEEAE4DFEE</localFKIndex>
+<keyObject>9FA41A66-ED09-F61B-3DF5-612504D23642</keyObject>
+<mandatory>true</mandatory>
+<transferable>true</transferable>
+</FKIndexAssociation>

@@ -1,0 +1,48 @@
+<?php echo $this->doctype(); ?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="Content-Language" content="pt-br" />
+	<meta name="Keywords" content="" />
+	<meta name="Description" content="" />
+	<meta name="url" content="http://www.wmsms.com.br" />
+	<meta name="reply-to" content="info@wmsms.com.br" />
+	<meta name="copyright" content="www.wmsms.com.br" />
+	<meta name="category" content="Internet" />
+	<meta name="Robots" content="Index,Follow" />
+	<meta name="author" content="Renato Medina" />
+	<title>WMS-MS</title>
+	<link rel="shortcut icon" href="<?php echo $this->baseUrl('../img/admin/favicon.ico') ?>" type="image/x-icon" />
+	<script type="text/javascript">
+	  var ADMIN_URL = "<?php echo $this->serverUrl($this->baseUrl('/admin/')) ?>";
+	</script>
+        
+        <link rel="shortcut icon" href="<?php echo $this->baseUrl('../img/admin/favicon.ico') ?>" type="image/x-icon" />
+        <link rel="stylesheet" href="/css/admin/login.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="/css/admin/style.css" type="text/css" media="screen" />        
+        <script type="text/javascript" src="/jquery/jquery.js"></script>
+        <script type="text/javascript" src="/wms/resources/validate.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('form').validate();
+                $('.focus').focus();
+            });
+        </script>
+  </head>
+  <body>
+	<div id="body">
+	  <div id="top">
+		<h1><a href="#" title="WMS-MS">WMS-MS</a></h1>
+	  </div>
+	  <div id="content">
+		<?php $this->messenger(); ?>
+		<?php echo $this->layout()->content; ?>
+	  </div>
+	  <div id="footer">
+		<p>Wms M&oacute;veis Simonetti 2011</p>
+		<p>&copy; Todos os Direitos Reservados.</p>
+	  </div>
+	</div>
+
+  </body>
+</html>

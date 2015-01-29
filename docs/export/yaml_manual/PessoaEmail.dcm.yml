@@ -1,0 +1,44 @@
+PessoaEmail:
+  type: entity
+  table: PESSOA_EMAIL
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+    numSequencia:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: NUM_SEQUENCIA
+    codTipoEmail:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_EMAIL
+    dscEmail:
+      type: string
+      length: 100
+      fixed: false
+      nullable: true
+      column: DSC_EMAIL
+    indEmailPrincipal:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_EMAIL_PRINCIPAL
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

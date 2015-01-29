@@ -1,0 +1,35 @@
+MascaraRecurso:
+  type: entity
+  table: MASCARA_RECURSO
+  fields:
+    codRecurso:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_RECURSO
+    datInicioVigencia:
+      id: true
+      type: datetime
+      nullable: false
+      column: DAT_INICIO_VIGENCIA
+    datFinalVigencia:
+      type: datetime
+      nullable: true
+      column: DAT_FINAL_VIGENCIA
+    dscMascaraAuditoria:
+      type: string
+      length: 255
+      fixed: false
+      nullable: true
+      column: DSC_MASCARA_AUDITORIA
+  oneToOne:
+    fkMascaraRecursoRecurso1:
+      targetEntity: RECURSO
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_RECURSO:
+          referencedColumnName: COD_RECURSO
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

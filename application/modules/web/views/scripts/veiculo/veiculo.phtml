@@ -1,0 +1,40 @@
+<style>
+    <!--
+
+    fieldset.medidas{
+        display: inline;
+        width: 945px;
+    }
+
+    #fieldset-veiculo input.error {
+        border-color: #F00;
+    }
+    #fieldset-veiculo select.error {
+        border-color: #F00;
+    }
+    #fieldset-veiculo label.error {
+        display:none !important;
+    }
+    -->
+</style>
+<fieldset id="fieldset-veiculo">
+
+    <?php 
+    echo $this->element->id;
+    echo $this->element->descricao;
+    echo $this->element->idTipo;
+    echo $this->element->idTransportador;
+    ?>
+
+    <fieldset class="medidas">
+        <legend>Medidas</legend>
+
+        <?php
+        echo $this->element->altura;
+        echo $this->element->largura;
+        echo $this->element->profundidade;
+        echo $this->element->cubagem;
+        echo $this->element->capacidade;
+        ?>
+    </fieldset>
+</fieldset>

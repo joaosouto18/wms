@@ -1,0 +1,35 @@
+PerfilUsuario:
+  type: entity
+  table: PERFIL_USUARIO
+  fields:
+    codPerfilUsuario:
+      id: true
+      type: smallint
+      nullable: false
+      column: COD_PERFIL_USUARIO
+      generator:
+        strategy: SEQUENCE
+    dscPerfilUsuario:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_PERFIL_USUARIO
+  manyToMany:
+    codUsuario:
+      targetEntity: Usuario
+      cascade: {  }
+      mappedBy: null
+      inversedBy: codPerfilUsuario
+      joinTable:
+        name: usuario_perfil_usuario
+        joinColumns:
+          -
+            name: COD_PERFIL_USUARIO
+            referencedColumnName: COD_PERFIL_USUARIO
+        inverseJoinColumns:
+          -
+            name: COD_USUARIO
+            referencedColumnName: COD_USUARIO
+      orderBy: null
+  lifecycleCallbacks: {  }

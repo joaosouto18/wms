@@ -1,0 +1,147 @@
+PessoaFisica:
+  type: entity
+  table: PESSOA_FISICA
+  fields:
+    codPessoa:
+      id: true
+      type: integer
+      unsigned: false
+      nullable: false
+      column: COD_PESSOA
+      generator:
+        strategy: SEQUENCE
+    codEmpresa:
+      type: smallint
+      nullable: false
+      column: COD_EMPRESA
+    codGrauEscolaridade:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_GRAU_ESCOLARIDADE
+    codSexo:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: COD_SEXO
+    codSituacaoConjugal:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_SITUACAO_CONJUGAL
+    codTipoAtividade:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ATIVIDADE
+    codTipoOrganizacao:
+      type: integer
+      unsigned: false
+      nullable: true
+      column: COD_TIPO_ORGANIZACAO
+    datAdmissaoEmprego:
+      type: datetime
+      nullable: true
+      column: DAT_ADMISSAO_EMPREGO
+    datExpedicaoRg:
+      type: datetime
+      nullable: true
+      column: DAT_EXPEDICAO_RG
+    datNascimento:
+      type: datetime
+      nullable: true
+      column: DAT_NASCIMENTO
+    dscApelido:
+      type: string
+      length: 30
+      fixed: false
+      nullable: true
+      column: DSC_APELIDO
+    dscCargoEmprego:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_CARGO_EMPREGO
+    dscNacionalidade:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_NACIONALIDADE
+    dscNaturalidade:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: DSC_NATURALIDADE
+    indFalecido:
+      type: string
+      length: 1
+      fixed: true
+      nullable: true
+      column: IND_FALECIDO
+    nomEmpregador:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_EMPREGADOR
+    nomExpedidorRg:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: NOM_EXPEDIDOR_RG
+    nomMae:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_MAE
+    nomPai:
+      type: string
+      length: 60
+      fixed: false
+      nullable: true
+      column: NOM_PAI
+    numCpf:
+      type: string
+      length: 11
+      fixed: false
+      nullable: true
+      column: NUM_CPF
+    numMatriculaEmprego:
+      type: string
+      length: 20
+      fixed: false
+      nullable: true
+      column: NUM_MATRICULA_EMPREGO
+    numRg:
+      type: string
+      length: 15
+      fixed: false
+      nullable: true
+      column: NUM_RG
+    sglUfExpedidorRg:
+      type: string
+      length: 2
+      fixed: false
+      nullable: true
+      column: SGL_UF_EXPEDIDOR_RG
+    vlrSalario:
+      type: decimal
+      nullable: true
+      column: VLR_SALARIO
+  oneToOne:
+    codPessoa:
+      targetEntity: PESSOA
+      cascade: {  }
+      mappedBy: null
+      inversedBy: null
+      joinColumns:
+        COD_PESSOA:
+          referencedColumnName: COD_PESSOA
+      orphanRemoval: false
+  lifecycleCallbacks: {  }

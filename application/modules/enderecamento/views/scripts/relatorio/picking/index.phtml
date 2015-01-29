@@ -1,0 +1,26 @@
+<div id="quantidade-grid" class="grid">
+    <table class="gTable ">
+        <caption>Endereços Selecionados</caption>
+        <tbody>
+        <tr class ="gTTitle">
+            <td>Endereço</td>
+            <td>Código</td>
+            <td>Grade</td>
+            <td>Produto</td>
+            <td></td>
+        </tr>
+        <?php
+        foreach ($this->pickings as $picking): $this->color = !($this->color);?>
+            <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                <td><?php echo $picking['endereco'] ?></td>
+                <td><?php echo $picking['codProduto'] ?></td>
+                <td><?php echo $picking['grade'] ?></td>
+                <td><?php echo $picking['descricao'] ?></td>
+                <td>
+                    <a class="btn reader button" href="<?php echo "/enderecamento/relatorio_picking/index/remover/".$picking['endereco']?>">Remover</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+</tbody>
+</table>
+<div class = "gPager">

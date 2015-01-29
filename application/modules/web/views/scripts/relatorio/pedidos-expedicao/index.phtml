@@ -1,0 +1,16 @@
+<?php 
+echo $this->form;
+
+?>
+
+<form  method="post" class="saveForm" id="relatorios-form" action="<?php echo $this->url(array('module' => 'web', 'controller' =>'relatorios-simples', 'action' =>'imprimir' ))?>">
+    <input type="button" style="margin-bottom: 15px; display:none" name="busca" value="Gerar Relatório" data-tipo="pdf" data-relatorio="relatorio-pedidos-expedicao" id="gerar" class="btn" ><br><br>
+    <?php
+    if (!empty($this->parametros))
+        foreach ($this->parametros as $chv => $vlr){
+            echo "<input type='hidden'  name='".$chv."' value='".$vlr."' id='".$chv."'  >";
+        }
+    echo $this->grid;
+
+
+    ?>

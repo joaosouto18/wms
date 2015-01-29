@@ -1,0 +1,5 @@
+<%for(var i = 0; i < foos.length ; i++){%>
+	<tr <%= foos[i]%>>
+		<%= $.View('//wms/views/foo/show',foos[i])%>
+	</tr>
+<%}%>

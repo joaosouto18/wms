@@ -1,0 +1,24 @@
+<fieldset id="fieldset-busca">
+    <table style="width:100%">
+        <tr>
+            <td>Fornecedor:</td>
+            <td coslpan="2">Data Emissão Entre:</td>
+            <td>Nota Fiscal</td>
+            <td>Serie</td>
+            <td>Placa</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->element->idFornecedor; ?></td>
+            <td>
+                <?php echo $this->element->dataEntradaInicial; ?>
+                e
+                <?php echo $this->element->dataEntradaFinal; ?>
+            </td>
+            <td><?php echo $this->element->numero; ?></td>
+            <td><?php echo $this->element->serie; ?></td>
+            <td><?php echo $this->element->placa; ?></td>
+            <td style="text-align: right"><input type="submit" class="btn" id="submit" value="Buscar" name="busca"/></td>
+        </tr>
+    </table>
+</fieldset>

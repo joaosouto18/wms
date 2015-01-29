@@ -1,0 +1,30 @@
+﻿<script>
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codigoBarras').value != "") {
+                nivel   = document.getElementById('nivel');
+                if (nivel) {
+                    nivel.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'ressuprimento', 'action' => 'endereco-estoque')) ?>" method="post">
+
+    <div>
+        <label>Endereço:</label>
+        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
+    </div>
+    <div>
+        <label>Nível:</label>
+        <input type="text" name="nivel" id="nivel" value="" />
+    </div>
+    <input type="submit" name="submit" id="submit" value="Buscar" />
+</form>

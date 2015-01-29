@@ -1,0 +1,51 @@
+﻿<script>
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codigoBarras').value != "") {
+                nivel   = document.getElementById('nivel');
+                if (nivel) {
+                    nivel.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'validar-endereco')) ?>" method="post">
+    <div>
+        <table class="gTable" style="width: 100%">
+            <tbody>
+            <tr>
+                <td colspan="3"><b><?php echo $this->dscProduto?></b></td>
+            </tr>
+            <tr">
+                <td><B>Cod:</B> <?php echo $this->codProduto?></td>
+                <td><B>Grade:</B> <?php echo $this->grade?></td>
+                <td><B>Qtd:</B> <?php echo $this->qtd?></td>
+            </tr>
+            <tr>
+                <td colspan="3"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div>
+        <label>Endereço:</label>
+        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
+    </div>
+    <div>
+        <label>Nível:</label>
+        <input type="text" name="nivel" id="nivel" value="" />
+    </div>
+    <input type="submit" name="submit" id="submit" value="Buscar" />
+
+    <input type="hidden" name="idOnda" id="idOnda" value="<?php echo $this->idOnda?>"/>
+    <input type="hidden" name="idEnderecoPulmao" id="idEnderecoPulmao" value="<?php echo $this->idEnderecoPulmao?>"/>
+
+</form>

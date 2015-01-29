@@ -1,0 +1,47 @@
+﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'ressuprimento', 'action' => 'confirma-movimentacao')) ?>" method="post">
+    <div id="quantidade-grid" class="grid">
+        <label><?php echo $this->descricaoProduto?></label>
+        <br>
+        <table class="gTable ">
+            <tbody>
+            <tr>
+                <td>Endereço</td>
+                <td>&nbsp;</td><td>&nbsp;</td>
+                <td>Código</td>
+                <td>&nbsp;</td><td>&nbsp;</td>
+                <td>Grade</td>
+                <td>&nbsp;</td><td>&nbsp;</td>
+                <td>Qtde</td>
+            </tr>
+            <tr>
+                <td><?php echo $this->endereco ?></td>
+                <td>&nbsp;</td><td>&nbsp;</td>
+                <td><?php echo $this->codProduto?></td>
+                <td>&nbsp;</td><td>&nbsp;</td>
+                <td><?php echo $this->grade ?></td>
+                <td>&nbsp;</td><td>&nbsp;</td>
+                <td><?php echo $this->qtd ?></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <input type="hidden" name="idProduto" id="idProduto" value="<?php echo $this->codProduto?>"/>
+        <input type="hidden" name="grade" id="grade" value="<?php echo $this->grade?>"/>
+        <input type="hidden" name="idEndereco" id="idEndereco" value="<?php echo $this->idEndereco?>"/>
+        <table class="gTable">
+            <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+            <tr>
+                <td>Quantidade:</td>
+                <td> <input class="focus" type="text" name="quantidade" id="quantidade" value="" /></td>
+            </tr>
+        </table>
+        <br>
+        <input type="submit" name="submit" id="submit" value="Movimentar" />
+    </div>
+
+
+</form>
+
+

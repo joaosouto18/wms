@@ -1,0 +1,204 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="5FADD783-C1D7-19D9-34C5-DAA6B376CA1C" name="ONDA_RESSUPRIMENTO_OS">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>ONDA_RESSUPRIMENTO_OS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_ONDA_RESSUPRIMENTO_OS" id="3343DED1-8062-12C8-0A37-B8D005EDDBC2">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>COD_ONDA_RESSUPRIMENTO_OS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_ONDA_RESSUPRIMENTO" id="4C7A3282-DDB2-1FAE-5CB2-8754D98C9B85">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>COD_ONDA_RESSUPRIMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>84601B5C-51F5-694A-9D64-B01D8E54C153</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="8CFF6796-AC02-91B2-14B6-FFA205BB16D1" referredColumn="84601B5C-51F5-694A-9D64-B01D8E54C153"/>
+</associations>
+</Column>
+<Column name="COD_PRODUTO" id="4FE7A9B1-04A3-D007-1DA0-1BB600AC472D">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>COD_PRODUTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_GRADE" id="BBB7AB81-4402-FB3F-528E-BE90A6A9CA58">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>DSC_GRADE</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="QTD" id="0C7A0572-5432-83CC-85A3-1DB63D6E500D">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>QTD</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO_ENDERECO" id="7B600151-9370-8541-86A1-67A74D8933EE">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>COD_DEPOSITO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>EB9EDDBD-464D-CEFE-D7D8-1B10FC69B74C</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="9703E540-2381-EF68-D5FB-3663E5E37FD5" referredColumn="EB9EDDBD-464D-CEFE-D7D8-1B10FC69B74C"/>
+</associations>
+</Column>
+<Column name="COD_STATUS" id="EE710E79-7F90-F00C-7856-5A8989635118">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>COD_STATUS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_OS" id="1E30975E-9729-DD39-B7A6-802167F62307">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>ONDA_RESSUPRIMENTO_OS</sourceObjSchema>
+<sourceObjName>COD_OS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>B87ED65E-B4BD-4EF7-A9B5-F89461C4BAA7</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="BE396ABC-3009-EC8C-22EF-B105A4E3DBEB" referredColumn="B87ED65E-B4BD-4EF7-A9B5-F89461C4BAA7"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="C96B248C-403C-C389-9BCF-2B1986AB64D4" name="ONDA_RESSUPRIMENTO_OS_PK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>ONDA_RESSUPRIMENTO_OS_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="3343DED1-8062-12C8-0A37-B8D005EDDBC2"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="9D14D1F0-9074-B354-9FCC-D804464847B1" name="ONDA_RESSUPRIMENTO_OS_PK">
+<sourceConnName>31.31.31.31+-+WMS_LOCAL</sourceConnName>
+<sourceObjSchema>WMS_LOCAL</sourceObjSchema>
+<sourceObjName>ONDA_RESSUPRIMENTO_OS_PK</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>FE8237F4-F32B-BB83-C732-22C6848C2D12</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="3343DED1-8062-12C8-0A37-B8D005EDDBC2"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="E89038C5-78C2-50E9-41F3-6017CE4CD2ED" name="OND_RES_OS_OND_RES_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:51:44 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="4C7A3282-DDB2-1FAE-5CB2-8754D98C9B85"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="51804CDA-F610-089D-4251-5400B5C8C638" name="OND_RES_OS_DEP_END_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:55:26 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="7B600151-9370-8541-86A1-67A74D8933EE"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="7163A0A7-068D-4406-579B-9E538BD1E5BD" name="OND_RES_OS_OS_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2014-09-25 14:58:11 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="1E30975E-9729-DD39-B7A6-802167F62307"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

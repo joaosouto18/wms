@@ -1,0 +1,64 @@
+<?php
+echo $this->doctype();
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="Content-Language" content="pt-br" />
+        <meta name="Keywords" content="" />
+        <meta name="Description" content="" />
+        <meta name="url" content="http://www.wmsms.com.br" />
+        <meta name="reply-to" content="info@wmsms.com.br" />
+        <meta name="copyright" content="www.wmsms.com.br" />
+        <meta name="category" content="Internet" />
+        <meta name="Robots" content="Index,Follow" />
+        <meta name="author" content="Renato Medina" />
+        <title>WMS-MS</title>
+        <link rel="shortcut icon" href="<?php echo $this->baseUrl('img/admin/favicon.ico') ?>" type="image/x-icon" />
+        <link rel="stylesheet" href="/css/mobile/style.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="/css/mobile/login.css" type="text/css" media="screen" />
+        <script type="text/javascript" src="<?php echo $this->baseUrl() . "/jquery/jquery.js" ?>"></script>
+
+        <script>
+            $(document).ready(function(){
+                $("#username").focus();
+                //precionando ENTER na tela de login evita o submit do botão enquanto os campos não estiverem preenchidos
+                $(document).keypress(function(e, v) {
+                    if(e.which == 13) {
+                        if(($.trim($("#username").val()) == '')){
+                            $("#username").focus();
+                            e.preventDefault();
+                            return false;
+                        }else if($.trim($("#password").val()) == ''){
+                            $("#password").focus();
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+                
+                //Fechar as mensagens
+                $('a.fmBtnClose').click(function() {
+                    // remove li
+                    $(this).parent('div').parent('li').fadeOut();
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div id="body">
+            <div id="top">
+                <h1><a href="#" title="Wms-MS">Wms-MS</a></h1>
+            </div>
+
+            <div id="content">
+                <div class="contentPadding">
+                    <?php $this->messenger(); ?>
+                    <?php echo $this->layout()->content; ?>
+                </div>
+            </div>
+        </div>
+    </body>
+
+</html>

@@ -1,0 +1,14 @@
+<style>
+    .relProdutosConferidos{
+        margin-bottom: 20px;
+    }
+</style>
+
+<?php
+echo $this->render('recebimento/cabecalho.phtml');
+
+if ($this->gerarRelatorio):
+    echo $this->gerarRelatorio;
+endif;
+
+echo $this->grid;
