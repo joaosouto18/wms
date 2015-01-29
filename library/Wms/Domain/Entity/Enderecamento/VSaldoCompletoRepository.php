@@ -19,6 +19,8 @@ class VSaldoCompletoRepository extends EntityRepository
 
         $query->andWhere('e.ativo <> \'N\' ');
 
+       // $query->andWhere('( ( u.id=23 and e.apartamento=3 and e.disponivel = \'N\' )  or e.apartamento<>3  ) ');
+        $query->andWhere('( ( u.id=23 and e.apartamento=3 and e.disponivel = \'N\' )  or e.apartamento<>3 or ( e.apartamento=3 and u.id<>23 ) ) ');
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             $grandeza = implode(',',$grandeza);
@@ -42,7 +44,6 @@ class VSaldoCompletoRepository extends EntityRepository
         if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
             $query->andWhere("e.idCaracteristica = '$tipoPicking'");
         }
-        
 		$result = $query->getQuery()->getResult();
         return $result;
     }

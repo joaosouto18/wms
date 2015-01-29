@@ -168,7 +168,7 @@ class Mobile_OndaRessuprimentoController extends Action
             $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $estoqueEn->getId());
             if ($result == NULL) {
                 $this->addFlashMessage("error","UMA $codigoBarrasUMA Não encontrada neste endereço");
-                $this->_redirect('/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda );
+                $this->_redirect('/mobile/onda-ressuprimento/selecionar-uma/onda/'. $idOnda );
             }
         }
 
@@ -180,7 +180,7 @@ class Mobile_OndaRessuprimentoController extends Action
             $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $estoqueEn->getId());
             if ($result == NULL) {
                 $this->addFlashMessage("error","Produto $etiquetaProduto não encontrado neste endereço");
-                $this->_redirect('/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda );
+                $this->_redirect('/mobile/onda-ressuprimento/selecionar-produto/onda/' . $idOnda );
             }
         }
 
@@ -190,9 +190,9 @@ class Mobile_OndaRessuprimentoController extends Action
         if (($codProduto != $ondaOsEn->getProduto()->getId()) || ($grade != $ondaOsEn->getProduto()->getGrade())){
             $this->addFlashMessage("error","Produto diferente do indicado na onda");
             if ($codigoBarrasUMA) {
-                $this->_redirect('/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda );
+                $this->_redirect('/mobile/onda-ressuprimento/selecionar-uma/onda/'. $idOnda );
             }else {
-                $this->_redirect('/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda );
+                $this->_redirect('/mobile/onda-ressuprimento/selecionar-produto/onda/' . $idOnda );
             }
         }
 
