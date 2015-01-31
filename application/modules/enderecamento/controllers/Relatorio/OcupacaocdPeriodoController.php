@@ -40,9 +40,9 @@ class Enderecamento_Relatorio_OcupacaocdPeriodoController extends \Wms\Controlle
 
     public function gravarAction() {
 
-       /** @var \Wms\Domain\Entity\Enderecamento\PosicaoEstoqueResumidoRepository $posicaoRepo */
-        $posicaoRepo = $this->em->getRepository("wms:Enderecamento\PosicaoEstoqueResumido");
-        $pos_estoque = $posicaoRepo->verificarResumoEstoque();
+       /** @var \Wms\Domain\Entity\Enderecamento\PosicaoEstoqueRepository $posicaoRepo */
+        $posicaoRepo = $this->em->getRepository("wms:Enderecamento\PosicaoEstoque");
+        $pos_estoque = $posicaoRepo->verificarEstoque();
 
         if ($pos_estoque == 0){
             $msg = "Confirma gravar o estoque de hoje?";
@@ -56,11 +56,11 @@ class Enderecamento_Relatorio_OcupacaocdPeriodoController extends \Wms\Controlle
 
     public function atualizarAction() {
 
-        /** @var \Wms\Domain\Entity\Enderecamento\PosicaoEstoqueResumidoRepository $posicaoRepo */
-        $posicaoRepo = $this->em->getRepository("wms:Enderecamento\PosicaoEstoqueResumido");
+        /** @var \Wms\Domain\Entity\Enderecamento\PosicaoEstoqueRepository $posicaoRepo */
+        $posicaoRepo = $this->em->getRepository("wms:Enderecamento\PosicaoEstoque");
 
         $posicaoRepo->removerEstoqueAtual();
-        $posicaoRepo->gravarResumoEstoque();
+        $posicaoRepo->gravarEstoque();
 
         $this->addFlashMessage('success', 'Estoque gravado com sucesso');
         $this->_redirect("/enderecamento/relatorio_ocupacaocd-periodo");

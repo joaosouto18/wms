@@ -421,7 +421,7 @@ class ExpedicaoRepository extends EntityRepository
     public function getCodCargasExterno ($idExpedicao)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('c.codCargaExterno, c.sequencia')
+            ->select('c.codCargaExterno')
             ->from('wms:Expedicao', 'e')
             ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
             ->where('e.id = :idExpedicao')
@@ -825,107 +825,6 @@ class ExpedicaoRepository extends EntityRepository
         return $dql->getQuery()->getArrayResult();
     }
 
-    /**
-     * @param $parametros
-     * @return \Doctrine\ORM\QueryBuilder
-     */
-    public function getPesos($parametros)
-    {
-
-        $where="";
-        $and="";
-        if (isset($parametros['id']) && (!empty($parametros['id']))) {
-            $where.=$and."c.COD_EXPEDICAO = ".$parametros['id']."";
-            $and=" and ";
-        }
-
-
-        if (isset($parametros['agrup']) && (!empty($parametros['agrup'])) && $parametros['agrup']=='carga'  ) {
-            $agrupador="q.COD_CARGA, q.COD_CARGA_EXTERNO";
-        } else if (isset($parametros['agrup']) && (!empty($parametros['agrup'])) && $parametros['agrup']=='expedicao'  ) {
-            $agrupador="q.COD_EXPEDICAO";
-        }
-
-        $sql='
-                SELECT
-                  '.$agrupador.',
-                  SUM(q.NUM_CUBAGEM) NUM_CUBAGEM,
-                  SUM(q.PESO_TOTAL) PESO_TOTAL
-                FROM
-                (
-                  SELECT
-                    c.COD_CARGA,
-                    c.COD_CARGA_EXTERNO,
-                    c.COD_EXPEDICAO,
-                    ped.COD_PEDIDO,
-                    pedProd.COD_PEDIDO_PRODUTO,
-                    prod.COD_PRODUTO,
-                    prod.DSC_GRADE ,
-                    prod.NUM_CUBAGEM,
-                    SUM(prod.NUM_PESO*pedProd.QUANTIDADE) as PESO_TOTAL
-                  FROM
-                    CARGA c
-                  INNER JOIN
-                    PEDIDO ped on (c.COD_CARGA=ped.COD_CARGA)
-                  INNER JOIN
-                    PEDIDO_PRODUTO pedProd on (ped.COD_PEDIDO=pedProd.COD_PEDIDO)
-                  INNER JOIN
-                    (
-                         SELECT
-                      P.COD_PRODUTO,
-                      P.DSC_GRADE,
-                      PDL.NUM_PESO,
-                      PDL.NUM_CUBAGEM
-                      FROM(
-                      SELECT PE.COD_PRODUTO,
-                           PE.DSC_GRADE,
-                           MIN(PDL.COD_PRODUTO_DADO_LOGISTICO) as COD_PRODUTO_DADO_LOGISTICO
-                        FROM (SELECT MIN(COD_PRODUTO_EMBALAGEM) AS COD_PRODUTO_EMBALAGEM,
-                               PE.COD_PRODUTO,
-                               PE.DSC_GRADE
-                            FROM PRODUTO_EMBALAGEM PE
-                           INNER JOIN (SELECT MIN(QTD_EMBALAGEM) AS FATOR, COD_PRODUTO, DSC_GRADE
-                                   FROM PRODUTO_EMBALAGEM PE
-                                  GROUP BY COD_PRODUTO,DSC_GRADE) PEM
-                            ON (PEM.COD_PRODUTO = PE.COD_PRODUTO) AND (PEM.DSC_GRADE = PE.DSC_GRADE) AND (PEM.FATOR = PE.QTD_EMBALAGEM)
-                           GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE) PE
-                       INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
-                       GROUP BY COD_PRODUTO, DSC_GRADE
-                      ) P
-                       INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_DADO_LOGISTICO = P.COD_PRODUTO_DADO_LOGISTICO
-                       UNION
-                       SELECT PV.COD_PRODUTO,
-                          PV.DSC_GRADE,
-                          SUM(PV.NUM_PESO) as NUM_PESO,
-                          SUM(PV.NUM_CUBAGEM) as NUM_CUBAGEM
-                       FROM PRODUTO_VOLUME PV
-                      GROUP BY PV.COD_PRODUTO,
-                           PV.DSC_GRADE
-
-                    ) prod on (pedProd.COD_PRODUTO=prod.COD_PRODUTO and pedProd.DSC_GRADE=prod.DSC_GRADE)
-                  where
-                    '.$where.'
-                  group by
-                    c.COD_CARGA,C.COD_CARGA_EXTERNO, ped.COD_PEDIDO,pedProd.COD_PEDIDO_PRODUTO,prod.COD_PRODUTO,prod.DSC_GRADE ,prod.NUM_PESO,
-                   prod.NUM_CUBAGEM,
-                   pedProd.QUANTIDADE,
-                    c.COD_EXPEDICAO
-                  order by
-                    c.COD_CARGA,ped.COD_PEDIDO,pedProd.COD_PEDIDO_PRODUTO,prod.COD_PRODUTO,prod.DSC_GRADE,prod.NUM_PESO,
-                   prod.NUM_CUBAGEM,
-                   pedProd.QUANTIDADE,
-                    c.COD_EXPEDICAO
-                ) q
-                GROUP BY
-                  '.$agrupador
-                  ;
-
-        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $result;
-
-    }
-
 
     /**
      * @param $parametros
@@ -999,8 +898,6 @@ class ExpedicaoRepository extends EntityRepository
                     C.CARGAS AS "carga",
                     S.DSC_SIGLA AS "status",
                     P.QTD AS "prodSemEtiqueta",
-                    PESO.NUM_PESO as "peso",
-                    PESO.NUM_CUBAGEM as "cubagem",
                     I.ITINERARIOS AS "itinerario"
                   FROM
                     EXPEDICAO E
@@ -1063,42 +960,6 @@ class ExpedicaoRepository extends EntityRepository
                       CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
                     LEFT JOIN
                       PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
-                    LEFT JOIN
-                    (SELECT C.COD_EXPEDICAO,
-       SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
-       SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
-  FROM CARGA C
-  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-  LEFT JOIN (SELECT P.COD_PRODUTO,
-                    P.DSC_GRADE,
-                    PDL.NUM_PESO,
-                    PDL.NUM_CUBAGEM
-               FROM (SELECT PE.COD_PRODUTO,
-                            PE.DSC_GRADE,
-                            MIN(PDL.COD_PRODUTO_DADO_LOGISTICO) as COD_PRODUTO_DADO_LOGISTICO
-                       FROM (SELECT MIN(COD_PRODUTO_EMBALAGEM) AS COD_PRODUTO_EMBALAGEM,
-                                    PE.COD_PRODUTO,
-                                    PE.DSC_GRADE
-                               FROM PRODUTO_EMBALAGEM PE
-                         INNER JOIN (SELECT MIN(QTD_EMBALAGEM) AS FATOR, COD_PRODUTO, DSC_GRADE
-                                       FROM PRODUTO_EMBALAGEM PE
-                                      GROUP BY COD_PRODUTO,DSC_GRADE) PEM
-                                 ON (PEM.COD_PRODUTO = PE.COD_PRODUTO) AND (PEM.DSC_GRADE = PE.DSC_GRADE) AND (PEM.FATOR = PE.QTD_EMBALAGEM)
-                              GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE) PE
-                      INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
-                      GROUP BY COD_PRODUTO, DSC_GRADE) P
-         INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_DADO_LOGISTICO = P.COD_PRODUTO_DADO_LOGISTICO
-              UNION
-             SELECT PV.COD_PRODUTO,
-                    PV.DSC_GRADE,
-                    SUM(PV.NUM_PESO) as NUM_PESO,
-                    SUM(PV.NUM_CUBAGEM) as NUM_CUBAGEM
-               FROM PRODUTO_VOLUME PV
-              GROUP BY PV.COD_PRODUTO,
-                       PV.DSC_GRADE) PROD
-                       ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-    GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
                     WHERE
                       '.$where.'
                     GROUP BY
@@ -1109,8 +970,6 @@ class ExpedicaoRepository extends EntityRepository
                         C.CARGAS,
                         S.DSC_SIGLA,
                         P.QTD,
-                        PESO.NUM_PESO,
-                        PESO.NUM_CUBAGEM,
                         I.ITINERARIOS
                     ORDER BY
                       E.COD_EXPEDICAO DESC
@@ -1120,11 +979,6 @@ class ExpedicaoRepository extends EntityRepository
        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
-    }
-
-
-    public function getExpedicaoIntegradas(){
-
     }
 
     /**
@@ -1228,12 +1082,12 @@ class ExpedicaoRepository extends EntityRepository
                       s.id as codSigla,
                       s.sigla')
             ->from('wms:Expedicao', 'e')
-            ->leftJoin("e.status", "s")
+            ->innerJoin("e.status", "s")
             ->addSelect("(
                          SELECT COUNT(es1.id)
                            FROM wms:Expedicao\EtiquetaSeparacao es1
-                          LEFT JOIN es1.pedido ped1
-                          LEFT JOIN ped1.carga c1
+                          INNER JOIN es1.pedido ped1
+                          INNER JOIN ped1.carga c1
                           WHERE c1.codExpedicao = e.id
                             AND es1.codStatus NOT IN(524,525)
                           GROUP BY c1.codExpedicao
@@ -1241,8 +1095,8 @@ class ExpedicaoRepository extends EntityRepository
             ->addSelect("(
                          SELECT COUNT(es2.id)
                            FROM wms:Expedicao\EtiquetaSeparacao es2
-                          LEFT JOIN es2.pedido ped2
-                          LEFT JOIN ped2.carga c2
+                          INNER JOIN es2.pedido ped2
+                          INNER JOIN ped2.carga c2
                           WHERE c2.codExpedicao = e.id
                             AND es2.codStatus in ( 526, 531, 532 )
                           GROUP BY c2.codExpedicao

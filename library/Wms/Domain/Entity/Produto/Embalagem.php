@@ -102,12 +102,6 @@ class Embalagem
     protected $endereco;
 
     /**
-     * @Column(type="integer", name="COD_DEPOSITO_ENDERECO")
-     * @var integer código do endereco
-     */
-    protected $codEndereco;
-
-    /**
      * @var string $ind_embalado
      * @Column(name="IND_EMBALADO", type="string", length=30, nullable=false)
      */

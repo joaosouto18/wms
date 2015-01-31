@@ -123,7 +123,6 @@
 
 </script>
 
-<?php echo $this->bloqueiaOS; ?>
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
 
 <div id='retorno'></div>
@@ -169,7 +168,7 @@
     <?php if (isset($this->placa) && !is_null($this->placa))  : ?>
 
         <div id="footer">
-            <a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a>
+            <!--<a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a> |-->
             <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
 

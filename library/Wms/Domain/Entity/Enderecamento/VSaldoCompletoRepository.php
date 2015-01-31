@@ -14,13 +14,8 @@ class VSaldoCompletoRepository extends EntityRepository
         ->from("wms:Enderecamento\VSaldoCompleto","s")
         ->leftJoin("s.produto","p")
         ->leftJoin("s.depositoEndereco", "e")
-        ->leftJoin("wms:Armazenagem\Unitizador","u","WITH","u.id=s.codUnitizador")
         ->orderBy("e.rua,lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade");
 
-        $query->andWhere('e.ativo <> \'N\' ');
-
-       // $query->andWhere('( ( u.id=23 and e.apartamento=3 and e.disponivel = \'N\' )  or e.apartamento<>3  ) ');
-        $query->andWhere('( ( u.id=23 and e.apartamento=3 and e.disponivel = \'N\' )  or e.apartamento<>3 or ( e.apartamento=3 and u.id<>23 ) ) ');
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             $grandeza = implode(',',$grandeza);

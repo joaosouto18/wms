@@ -25,22 +25,3 @@ https://www.virtualbox.org/wiki/Downloads
 7) Digite vagrant up
 
 8) Acesse http://localhost:8080/
-
-=========================
-Configuração banco local
-
-ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;
-
-CREATE TABLESPACE wms_develop
-LOGGING DATAFILE 'E:\tablespace\wms_develop.dbf' SIZE 10M
-AUTOEXTEND ON NEXT 512k MAXSIZE 2000M
-BLOCKSIZE 16k
-EXTENT MANAGEMENT LOCAL UNIFORM SIZE 512K
-SEGMENT SPACE MANAGEMENT AUTO
-ONLINE
-
-CREATE USER wms_develop
-IDENTIFIED BY wms_adm
-DEFAULT TABLESPACE wms_develop;
-
-GRANT ALL PRIVILEGES TO wms_develop;

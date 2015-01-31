@@ -63,19 +63,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param $idExpedicao
      * @return mixed
      */
-    public function countByStatus ($status = null, $expedicaoEn = null, $centralEntrega = null, $placaCarga = null, $idCarga = null)
+    public function countByStatus ($status, $expedicaoEn, $centralEntrega = null, $placaCarga = null)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('COUNT(es.codBarras)')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
-            ->Where('es.codExpedicao = :idExpedicao')
-            ->setParameter('idExpedicao', $expedicaoEn->getId());
-
-        if ($status != NULL) {
-            $dql->andWhere('es.codStatus = :Status')
-                ->setParameter('Status', $status);
-        }
+            ->where('es.codExpedicao = :idExpedicao')
+            ->andWhere('es.codStatus = :Status')
+            ->setParameter('idExpedicao', $expedicaoEn->getId())
+            ->setParameter('Status', $status);
 
         if ($centralEntrega != NULL) {
             if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) {
@@ -91,15 +88,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->setParameter('placaCarga', $placaCarga);
         }
 
-        if ($idCarga != NULL) {
-            $dql->andWhere('c.id = :idCarga')
-                ->setParameter('idCarga', $idCarga);
-        }
-
         return $dql->getQuery()->getSingleScalarResult();
     }
 
-    public function countByPontoTransbordo ($status, $idExpedicao, $centralEntrega = null, $placaCarga = null, $codCargaExterno = null)
+    public function countByPontoTransbordo ($status, $idExpedicao, $centralEntrega = null, $placaCarga = null)
     {
 
         $dql = $this->getEntityManager()->createQueryBuilder()
@@ -109,8 +101,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->where('es.codExpedicao = :idExpedicao')
             ->andWhere('es.codStatus = :Status')
             ->andWhere('es.pontoTransbordo = :centralEntrega')
-            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE )
-            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO )
             ->setParameter('idExpedicao', $idExpedicao)
             ->setParameter('Status', $status)
             ->setParameter('centralEntrega', $centralEntrega);
@@ -118,11 +108,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($placaCarga != NULL) {
             $dql->andWhere('c.placaCarga = :placaCarga')
                 ->setParameter('placaCarga', $placaCarga);
-        }
-
-        if ($codCargaExterno != NULL) {
-            $dql->andWhere('c.codCargaExterno = :codCargaExterno')
-                ->setParameter('codCargaExterno', $codCargaExterno);
         }
 
         return $dql->getQuery()->getSingleScalarResult();
@@ -133,16 +118,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' count(es.codBarras) as qtdEtiqueta,
-                      c.placaCarga, es.pontoTransbordo, c.codCargaExterno, c.sequencia')
+                      c.placaCarga, es.pontoTransbordo')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->where('es.codExpedicao = :idExpedicao')
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE )
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO )
-            ->groupBy('c.placaCarga, c.codCargaExterno, c.sequencia')
+            ->groupBy('c.placaCarga')
             ->addGroupBy('es.pontoTransbordo')
-            ->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('c.placaCarga, c.sequencia');
+            ->setParameter('idExpedicao', $idExpedicao);
         return $dql->getQuery()->getArrayResult();
     }
 
@@ -186,7 +170,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
-    public function getPendenciasByExpedicaoAndStatus($idExpedicao,$status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL, $carga = NULL) {
+    public function getPendenciasByExpedicaoAndStatus($idExpedicao,$status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL) {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select("es.codBarras,
                       es.cliente,
@@ -213,16 +197,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $dql->andwhere("es.placaCarga = '$placaCarga'");
         }
 
-        if (!is_null($carga)) {
-            $dql->andwhere("es.codCargaExterno = '$carga'");
-        }
-
         if (!is_null($embalado)) {
             if ($embalado == "S") {
                 $dql->andwhere("emb.embalado = 'S'");
             }
             if ($embalado == "N") {
-                $dql->andwhere("(emb.embalado = 'N' OR emb.embalado IS NULL)");
+                $dql->andwhere("(emb.embalado = 'N' OR emb IS NULL)");
             }
         }
 
@@ -246,11 +226,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
-                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, c.sequencia
+                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
-            ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->where('es.codExpedicao = :idExpedicao')
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
@@ -291,11 +270,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
-                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, c.sequencia ')
+                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->leftJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','etq.id = es.codBarras')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
-            ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->andWhere('etq.id >= '.$codigoInicial)
             ->andWhere('etq.id <= '.$codigoFinal)
             ->andWhere('etq.reimpressao IS NULL')

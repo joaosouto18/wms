@@ -27,7 +27,8 @@ class FiltroRelatorio extends Form
             ))
             ->addElement('text', 'rua', array(
                 'size' => 3,
-                'label' => 'Rua'
+                'label' => 'Rua',
+                'class' => 'focus',
             ))
             ->addElement('text', 'predio', array(
                 'size' => 3,

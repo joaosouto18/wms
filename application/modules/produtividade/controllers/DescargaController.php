@@ -40,8 +40,7 @@ class Produtividade_DescargaController  extends Action
             ->innerJoin('u.depositos', 'd')
             ->innerJoin('u.perfis', 'p')
             ->orderBy('pf.nome')
-            ->andWhere("p.nome = 'DESCARREGADOR RECEBI'")
-            ->andWhere("u.isAtivo = 'S'");
+            ->andWhere("p.nome = 'DESCARREGADOR RECEBI'");
 
         $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
         $grid->addColumn(array(

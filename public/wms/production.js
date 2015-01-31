@@ -1,6 +1,6 @@
 steal.plugins("jquery/controller","jquery/controller/subscribe","jquery/view/ejs","jquery/controller/view","jquery/model","jquery/dom/form_params").css("../css/admin/style","../css/admin/form","../css/jquery/menu","../css/admin/grid","../css/jquery/ui","../css/jquery/dynatree/ui.dynatree").resources("ui","form","menu","validate","cookie","mask","metadata","dynatree","priceformat","fn","uiblock","SetCase","jquery/flot.min","jquery/jqplot.barRenderer.min","jquery/jqplot.categoryAxisRenderer.min","jquery/jqplot.pointLabels.min",
 "jquery/jqplot.pieRenderer.min","jquery/jquery.cycle.all.latest","jsapi","admin/default","wms").models("perfil_usuario","pessoa_dados_pessoais","pessoa_endereco","pessoa_telefone","produto_embalagem","produto_volume","deposito_endereco","menu_item","norma_paletizacao","produto_dado_logistico","enderecamento").controllers("perfil_usuario","pessoa_dados_pessoais","pessoa_endereco","pessoa_telefone","calculo_medida","box","ajuda","produto_embalagem","produto_volume","produto_dado_logistico","recebimento",
-"auditoria","deposito_endereco","veiculo","menu_item","produto","filtro_nota_fiscal","expedicao","relatorios_simples","agruparcargas","relatorio_pedidos_expedicao","enderecamento").views().then(function(){});
+"auditoria","deposito_endereco","veiculo","menu_item","produto","filtro_nota_fiscal","expedicao","relatorios_simples","relatorio_pedidos_expedicao","enderecamento").views().then(function(){});
 ;
 steal.end();
 steal.plugins("jquery/class","jquery/lang","jquery/event/destroyed").then(function(e){var u=function(a,b,c){var d,f=a.bind&&a.unbind?a:e(j(a)?[a]:a);if(b.indexOf(">")===0){b=b.substr(1);d=function(g){g.target===a&&c.apply(this,arguments)}}f.bind(b,d||c);return function(){f.unbind(b,d||c);a=b=c=d=null}},p=e.makeArray,v=e.isArray,j=e.isFunction,k=e.extend,q=e.String,w=function(a,b,c,d){e(a).delegate(b,c,d);return function(){e(a).undelegate(b,c,d);a=c=d=b=null}},r=function(a,b,c,d){return d?w(a,d,b,
@@ -1539,9 +1539,6 @@ $.Controller.extend("Wms.Controllers.Expedicao",{pluginName:"expedicao"},{"{wind
 ;
 steal.end();
 $(document).ready(function(){$("#gerar").click(function(){var a=$(this).attr("data-relatorio"),b=$(this).attr("data-tipo");$("#relatorios-form").append("<input type='hidden' value='"+a+"' name='relatorio' />");$("#relatorios-form").append("<input type='hidden' value='"+b+"' name='tipo' />");$("#relatorios-form").submit()})});
-;
-steal.end();
-function verificarExpedicao(){if($("#idExped").val()==""){alert("Digite uma expedicao");return false}return true}$("#btnFinalizar").live("click",function(){var a=$("#idExped").val(),b=$("#idAtual").val();if(a==""){alert("Digite uma expedicao");return false}else if(b==a){alert("Digite uma expedicao diferente da atual");return false}a=$("#formAgrupar").attr("action")+"/idExpedicaoNova/"+a;$("#formAgrupar").attr("action",a);$("#formAgrupar").submit()});
 ;
 steal.end();
 var clickSelection=false;

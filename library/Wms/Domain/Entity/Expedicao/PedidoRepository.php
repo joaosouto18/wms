@@ -150,7 +150,7 @@ class PedidoRepository extends EntityRepository
             $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
             $etiquetas = $EtiquetaSeparacaoRepo->getEtiquetasByPedido($idPedido);
 
-           foreach ($etiquetas as $etiqueta){
+            foreach ($etiquetas as $etiqueta){
                 /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
                 $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
                 if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
@@ -162,7 +162,6 @@ class PedidoRepository extends EntityRepository
                     }
                 }
             }
-			
             $this->_em->flush();
             $this->gerarEtiquetasById($idPedido, EtiquetaSeparacao::STATUS_CORTADO);
             $this->cancelaPedido($idPedido);

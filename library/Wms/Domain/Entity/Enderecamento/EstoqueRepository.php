@@ -15,7 +15,6 @@ class EstoqueRepository extends EntityRepository
 
         $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
 
-        /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
         $enderecoEn = $em->getRepository('wms:Deposito\Endereco')->findOneBy(array('id'=>$idEndereco));
         $produtoEn = $em->getRepository("wms:Produto")->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
         $pessoaEn = $em->getRepository("wms:Pessoa")->find($idPessoa);
@@ -25,12 +24,6 @@ class EstoqueRepository extends EntityRepository
             throw new \Exception("Endereço $idEndereco não encontrado");
         if($produtoEn== null)
             throw new \Exception("Produto $codProduto / $grade não encontrado");
-
-        //IGNORO QUALQUER MOVIMENTAÇÃO NO ENDEREÇO DE PICKING
-        //RETIRAR QUANDO IMPLANTAR RESSUPRIMENTO
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
-        if ($enderecoEn->getIdCaracteristica() == $tipoPicking)
-            return true;
 
         $osEn = NULL;
         $qtdAdjacentes = 1;
@@ -176,8 +169,6 @@ class EstoqueRepository extends EntityRepository
             }
         }
 
-        $condPicking=str_replace("E.","P.",$cond);
-
         $SQL="
             SELECT * FROM
                 (
@@ -233,6 +224,8 @@ class EstoqueRepository extends EntityRepository
                   ON E.COD_PRODUTO=P.COD_PRODUTO AND E.DSC_GRADE=P.DSC_GRADE
                 LEFT JOIN UNITIZADOR  U
                   ON E.COD_UNITIZADOR=U.COD_UNITIZADOR
+                LEFT JOIN UNITIZADOR  U
+                  ON E.COD_UNITIZADOR=U.COD_UNITIZADOR
                 LEFT JOIN PRODUTO_VOLUME  PV
                   ON P.COD_PRODUTO=PV.COD_PRODUTO
                 LEFT JOIN DEPOSITO_ENDERECO  PVE
@@ -264,6 +257,7 @@ class EstoqueRepository extends EntityRepository
             }
 
         }
+
 		return $groupByProduto;
 
     }
@@ -413,8 +407,8 @@ class EstoqueRepository extends EntityRepository
 
         $query = $this->getEntityManager()->createQueryBuilder()
         ->select("de.descricao,
-                 NVL(NVL(NVL(e.codProduto, p.codProduto),pv.codProduto),pe.codProduto) as codProduto,
-                 NVL(NVL(NVL(e.grade, p.grade),pv.grade),pe.grade) as grade,
+                 NVL(e.codProduto, p.codProduto) as codProduto,
+                 NVL(e.grade, p.grade) as grade,
                  NVL(e.qtd,p.qtd) as qtd,
                  p.id as uma,
                  r.id as idRecebimento,
@@ -422,15 +416,11 @@ class EstoqueRepository extends EntityRepository
                  ")
         ->from("wms:Deposito\Endereco", 'de')
         ->leftJoin("wms:Enderecamento\Estoque", "e", "WITH", "e.depositoEndereco = de.id")
-        ->leftJoin("wms:Enderecamento\Palete", "p", "WITH", "p.depositoEndereco = de.id  AND p.codStatus !=". Palete::STATUS_ENDERECADO . " AND p.codStatus !=" . Palete::STATUS_CANCELADO)
-        ->leftJoin("wms:Produto\Volume", "pv", "WITH", "de.id = pv.codEndereco ")
-        ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.codEndereco ")
+        ->leftJoin("wms:Enderecamento\Palete", "p", "WITH", "p.depositoEndereco = de.id AND p.codStatus !=". Palete::STATUS_ENDERECADO . " AND p.codStatus !=" . Palete::STATUS_CANCELADO )
         ->leftJoin("p.recebimento", "r")
         ->leftJoin("p.status", "s")
         ->distinct(true)
         ->orderBy("de.descricao");
-
-        $query->andWhere('(pv.id is  null and pe.id is  null)');
 
         if (!empty($params['rua'])) {
             $query->andWhere('de.rua = :rua');

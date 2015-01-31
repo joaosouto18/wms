@@ -40,7 +40,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje
         if (!$values) {
 
-            $dataI1 = new \DateTime();
+            $dataI1 = new \DateTime;
+            $dataI1->modify('-1 day');
             $dataI2 = new \DateTime();
 
             $values = array(
@@ -1030,18 +1031,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $filtroNotaFiscalForm;
 
         $params = $filtroNotaFiscalForm->getParams();
-        if (!$params) {
-            $dataI1 = new \DateTime;
-            $dataI2 = new \DateTime;
-            $params = array(
-                'dataEntradaInicial' => $dataI1->format('d/m/Y'),
-                'dataEntradaFinal' => $dataI2->format('d/m/Y'),
-                'idFornecedor'=>'',
-                'numero'=>'',
-                'serie'=>''
-            );
-            $filtroNotaFiscalForm->populate($params);
-        }
 
         if ($params) {
 

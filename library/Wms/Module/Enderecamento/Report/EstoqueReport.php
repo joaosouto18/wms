@@ -13,13 +13,13 @@ class EstoqueReport extends Pdf
         $this->SetFont('Arial','B',10);
         $this->Cell(20, 20, utf8_decode("RELATÓRIO DE ESTOQUE"), 0, 1);
         $this->SetFont('Arial', 'B', 8);
-        $this->Cell(12,  5, utf8_decode("Código"), 1, 0);
-        $this->Cell(11,  5, utf8_decode("Grade")   ,1, 0);
-        $this->Cell(90, 5, utf8_decode("Descrição") ,1, 0);
-        $this->Cell(18, 5, utf8_decode("Picking") ,1, 0);
-        $this->Cell(18, 5, utf8_decode("Pulmão"), 1, 0);
+        $this->Cell(14,  5, utf8_decode("Código"), 1, 0);
+        $this->Cell(20,  5, utf8_decode("Grade")   ,1, 0);
+        $this->Cell(70, 5, utf8_decode("Descrição") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Picking") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Pulmão"), 1, 0);
         $this->Cell(29, 5, utf8_decode("Dth Entrada") ,1, 0);
-        $this->Cell(15, 5, "Qtde", 1, 1);
+        $this->Cell(22, 5, "Qtde", 1, 1);
     }
 
     public function layout()
@@ -74,16 +74,16 @@ class EstoqueReport extends Pdf
             $picking = $produto[0]['enderecoPicking'];
 
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(12, 5, $codProduto, 1, 0);
-            $this->Cell(11, 5, utf8_decode($grade), 1, 0);
-            $this->Cell(90, 5, substr(utf8_decode($nomeProduto),0,70), 1, 0);
-            $this->Cell(18, 5, utf8_decode($picking), 1, 0);
-            $this->Cell(18, 5, "", 1, 0);
+            $this->Cell(14, 5, $codProduto, 1, 0);
+            $this->Cell(20, 5, utf8_decode($grade), 1, 0);
+            $this->Cell(70, 5, substr(utf8_decode($nomeProduto),0,40), 1, 0);
+            $this->Cell(20, 5, utf8_decode($picking), 1, 0);
+            $this->Cell(20, 5, "", 1, 0);
             $this->Cell(29, 5, "", 1, 0);
-            $this->Cell(15, 5, "", 1, 1);
+            $this->Cell(22, 5, "", 1, 1);
 
             $total = 0;
-            $i=0;
+
             foreach($produto as $estoque)
             {
                 $descricao = $estoque['descricao'];
@@ -105,13 +105,13 @@ class EstoqueReport extends Pdf
                 }
             }
 
-            $this->Cell(12, 5, "", 0, 0);
-            $this->Cell(11, 5, "", 0, 0);
-            $this->Cell(90, 5, "", 0, 0);
-            $this->Cell(18, 5, "", 0, 0);
-            $this->Cell(18, 5, "", 0, 0);
+            $this->Cell(14, 5, "", 0, 0);
+            $this->Cell(20, 5, "", 0, 0);
+            $this->Cell(70, 5, "", 0, 0);
+            $this->Cell(20, 5, "", 0, 0);
+            $this->Cell(20, 5, "", 0, 0);
             $this->Cell(29, 5, "", 0, 0);
-            $this->Cell(15, 5,"Total: ".$total, 1, 1);
+            $this->Cell(22, 5,"Total: ".$total, 1, 1);
 
             $this->Cell(30,5,"",0,1);
         }

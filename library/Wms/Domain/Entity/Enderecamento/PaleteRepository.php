@@ -246,7 +246,6 @@ class PaleteRepository extends EntityRepository
                     }
                 }
 
-
                 $qtdPaletes         = $qtd / $unitizador['numNorma'];
                 $qtdUltimoPalete    = $qtd % $unitizador['numNorma'];
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['idUnitizador']);

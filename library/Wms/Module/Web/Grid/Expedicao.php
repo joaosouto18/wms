@@ -32,18 +32,8 @@ class Expedicao extends Grid
                 ->setId('expedicao-index-grid')
                 ->setAttrib('class', 'grid-expedicao')
                 ->addColumn(array(
-                    'label' => 'Expedição',
+                    'label' => 'Código da Expedição',
                     'index' => 'id',
-                ))
-                ->addColumn(array(
-                    'label' => 'Cubagem',
-                    'index' => 'cubagem',
-                    'render' => 'N2'
-                ))
-                ->addColumn(array(
-                    'label' => 'Peso',
-                    'index' => 'peso',
-                    'render' => 'N0'
                 ))
                 ->addColumn(array(
                     'label' => 'Placa',
@@ -65,6 +55,7 @@ class Expedicao extends Grid
                     'label' => 'Data Final',
                     'index' => 'dataFinalizacao',
                 ))
+
                 ->addColumn(array(
                     'label' => 'Produtos Sem Etiquetas',
                     'index' => 'prodSemEtiqueta',
@@ -73,22 +64,7 @@ class Expedicao extends Grid
                     'label' => 'Status',
                     'index' => 'status',
                 ))
-                ->addAction(array(
-                    'label' => 'Consultar Peso',
-                    'modelName' => 'expedicao',
-                    'controllerName' => 'index',
-                    'actionName' => 'consultarpeso',
-                    'cssClass' => 'dialogAjax',
-                    'pkIndex' => 'id'
-                ))
-                ->addAction(array(
-                    'label' => 'Agrupar Cargas',
-                    'modelName' => 'expedicao',
-                    'controllerName' => 'agrupar-cargas',
-                    'actionName' => 'index',
-                    'cssClass' => 'dialogAjax',
-                    'pkIndex' => 'id'
-                ))
+
                 ->addAction(array(
                     'label' => 'Imprimir Etiquetas',
                     'modelName' => 'expedicao',
@@ -101,6 +77,7 @@ class Expedicao extends Grid
                     },
                     'pkIndex' => 'id'
                 ))
+
                 ->addAction(array(
                     'label' => 'Reimprimir Etiqueta',
                     'modelName' => 'expedicao',

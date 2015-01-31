@@ -12,9 +12,6 @@ class CargaRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $entityCarga = $this->findBy(array('expedicao' => $carga['idExpedicao']));
-        $numeroDeCargas = count($entityCarga)+1;
-
         $em->beginTransaction();
         try {
             $tipoCarga = $em->getRepository('wms:Util\Sigla')->findOneBy(array('tipo' => 69,'referencia'=> $carga['codTipoCarga']));
@@ -26,7 +23,6 @@ class CargaRepository extends EntityRepository
             $enCarga->setExpedicao($carga['idExpedicao']);
             $enCarga->setPlacaCarga($carga['placaCarga']);
             $enCarga->setTipoCarga($tipoCarga);
-            $enCarga->setSequencia($numeroDeCargas);
 
             $em->persist($enCarga);
             $em->flush();

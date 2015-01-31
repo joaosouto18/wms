@@ -82,31 +82,8 @@ echo $this->doctype();
             </div>
 
             <div id="content">
-                <?php $this->messenger();
-                    if ( !empty($this->mensagem))
-                        echo $this->mensagem;
-                ?>
-                <?php
-                    if ( empty($this->bloqueiaOS) || $this->bloqueiaOS!="1" ) {
-                        echo $this->layout()->content;
-                    } else {
-                        echo '
-                                    <link rel="stylesheet" href="/css/mobile/style.css" type="text/css" media="screen" />
-
-                                    <script >playSound(\'/alarme.mp3\');</script>
-                                    <div id="body">
-                                        <div id="content">
-                                            <div class="contentPadding">
-                                                <div id="retorno"></div>
-                                                <span id="dummy">'.$this->messenger().'<embed src="/alarme.mp3" hidden="true" autostart=\"true\" loop="false" /></span><br>
-                                                Foram encontrados erros na expedição. Clique em confirmar para voltar.<br><br>
-                                                <a href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" style="font-size:14px" >Confirmar</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                               ';
-                    }
-                ?>
+                <?php $this->messenger(); ?>
+                <?php echo $this->layout()->content; ?>
             </div>
         </div>
     </body>

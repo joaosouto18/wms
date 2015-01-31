@@ -129,12 +129,11 @@ class Expedicao_OsController extends Action
         $this->view->percentualConclusao = number_format($percentualConclusao,2) . '%';
         $this->view->status              = $resumoConferencia['sigla'];
         $this->view->dataInicio          = $resumoConferencia['dataInicio']->format('d/m/Y H:i:s');
-
         $resumoByPlacaCarga = $EtiquetaSeparacaoRepo->getCountGroupByCentralPlaca($idExpedicao);
         foreach ($resumoByPlacaCarga as $key => $resumo) {
-            $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']);
-            $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']) + $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'];
-            $resumoByPlacaCarga[$key]['qtdConferidas']         = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_CONFERIDO,          $idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']) + $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'];
+            $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga']);
+            $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga']) + $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'];
+            $resumoByPlacaCarga[$key]['qtdConferidas']         = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_CONFERIDO,          $idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga']) + $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'];
         }
         $this->view->resumoPlacaCarga    = $resumoByPlacaCarga;
 

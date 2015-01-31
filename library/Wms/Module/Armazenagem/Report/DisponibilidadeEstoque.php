@@ -10,7 +10,7 @@ class DisponibilidadeEstoque extends Pdf
     {
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
-        $this->Cell(20, 20, utf8_decode("RELATÓRIO DE DISPONIBILIDADE DE ENDEREÇO" ), 0, 1);
+        $this->Cell(20, 20, utf8_decode("RELATÓRIOD DE DISPONIBILIDADE DE ENDEREÇO" ), 0, 1);
 
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(20,  5, utf8_decode("Endereço")  ,1, 0);

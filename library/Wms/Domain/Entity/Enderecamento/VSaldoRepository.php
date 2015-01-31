@@ -16,8 +16,6 @@ class VSaldoRepository extends EntityRepository
         ->leftJoin("s.depositoEndereco", "e")
         ->orderBy("e.rua,lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade");
 
-        $query->andWhere('e.ativo <> \'N\' and e.situacao= \'D\' ');
-
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             $grandeza = implode(',',$grandeza);
