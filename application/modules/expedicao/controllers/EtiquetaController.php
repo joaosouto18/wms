@@ -172,4 +172,13 @@ class Expedicao_EtiquetaController  extends Action
         }
     }
 
+    public function consultarAction()
+    {
+        $form = new \Wms\Module\Expedicao\Form\ConsultaEtiqueta();
+        /**
+         *
+         */
+        $this->view->form = $form;
+    }
+
 }
