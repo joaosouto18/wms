@@ -74,4 +74,14 @@ class FilialRepository extends AtorRepository
         return $filiais;
     }
 
+    public function getIdAndDescriptionExternoValue()
+    {
+        $filiais = array();
+
+        foreach ($this->findAll() as $filial)
+            $filiais[$filial->getCodExterno()] = $filial->getPessoa()->getNomeFantasia() . ' - ' . $filial->getCodExterno();
+
+        return $filiais;
+    }
+
 }
