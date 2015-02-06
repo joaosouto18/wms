@@ -11,6 +11,8 @@ class ModeloSeparacao
 {
     /**
      * @Id
+     * @GeneratedValue(strategy="SEQUENCE")
+     * @SequenceGenerator(sequenceName="SQ_MODELO_SEPARACAO_01", allocationSize=1, initialValue=1)
      * @Column(name="COD_MODELO_SEPARACAO", type="integer", nullable=false)
      */
     protected $id;
@@ -68,6 +70,18 @@ class ModeloSeparacao
      * @Column(name="TIPO_CONFERENCIA_NAO_EMBALADO", type="string", nullable=true)
      */
     protected $tipoConferenciaNaoEmbalado;
+
+    /**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacaoTipoQuebraFracionado", mappedBy="modeloSeparacao", cascade={"persist", "remove"})
+     * @var ArrayCollection tipos de quebra para fracionados
+     */
+    protected $tiposQuebraFracionado;
+
+    /**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado", mappedBy="modeloSeparacao", cascade={"persist", "remove"})
+     * @var ArrayCollection tipos de quebra para nao fracionados
+     */
+    protected $tiposQuebraNaoFracionado;
 
 
     public function setDescricao($descricao)
@@ -188,6 +202,38 @@ class ModeloSeparacao
     public function setTipoConferenciaNaoEmbalado($tipoConferenciaNaoEmbalado)
     {
         $this->tipoConferenciaNaoEmbalado = $tipoConferenciaNaoEmbalado;
+    }
+
+    /**
+     * @return ArrayCollection
+     */
+    public function getTiposQuebraFracionado()
+    {
+        return $this->tiposQuebraFracionado;
+    }
+
+    /**
+     * @param ArrayCollection $tiposQuebraFracionado
+     */
+    public function setTiposQuebraFracionado($tiposQuebraFracionado)
+    {
+        $this->tiposQuebraFracionado = $tiposQuebraFracionado;
+    }
+
+    /**
+     * @return ArrayCollection
+     */
+    public function getTiposQuebraNaoFracionado()
+    {
+        return $this->tiposQuebraNaoFracionado;
+    }
+
+    /**
+     * @param ArrayCollection $tiposQuebraNaoFracionado
+     */
+    public function setTiposQuebraNaoFracionado($tiposQuebraNaoFracionado)
+    {
+        $this->tiposQuebraNaoFracionado = $tiposQuebraNaoFracionado;
     }
 
 
