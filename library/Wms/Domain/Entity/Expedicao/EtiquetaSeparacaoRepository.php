@@ -644,4 +644,26 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
+    public function buscarEtiqueta($parametros)
+    {
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('es.id, es.codProduto, es.reimpressao, es.codStatus')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->orderBy("es.id" , "DESC")
+            ->distinct(true);
+
+        $parametros['etiqueta'] = 1;
+
+        if (!empty($parametros['etiqueta'])) {
+            $source->andWhere("es.id = ?", $parametros['etiqueta']);
+        }
+
+        if (!empty($parametros['codCliente'])) {
+            $source->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao');
+            $source->andWhere("es.id = ?", $parametros['codCliente']);
+        }
+
+        return $source->getQuery()->getResult();
+    }
+
 }
