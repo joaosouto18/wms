@@ -179,31 +179,9 @@ class Expedicao_EtiquetaController  extends Action
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
-        $dataI1 = new \DateTime;
-
-        if ( !empty($params) ) {
-
-        } else {
-            $dataI1 = new \DateTime;
-            $dataI2 = new \DateTime;
-            $dataI1->sub(new DateInterval('P01D'));
-
-            $params = array(
-                'dataInicial1' => $dataI1->format('d/m/Y'),
-                'dataInicial2' => $dataI2->format('d/m/Y')
-            );
-            unset($params['control']);
-        }
 
         $form->populate($params);
         $this->view->form = $form;
-
-        $dataI1 = new \DateTime;
-        $dataI2 = new \DateTime;
-        $params = array(
-            'dataInicio' => $dataI1->format('d/m/Y'),
-            'dataFim' => $dataI2->format('d/m/Y')
-        );
 
         $Grid = new \Wms\Module\Web\Grid\ConsultaEtiqueta();
         $this->view->grid = $Grid->init($params)->render();

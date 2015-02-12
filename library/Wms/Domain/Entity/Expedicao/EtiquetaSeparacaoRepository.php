@@ -647,20 +647,79 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function buscarEtiqueta($parametros)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('es.id, es.codProduto, es.reimpressao, es.codStatus')
+            ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
-            ->orderBy("es.id" , "DESC")
+            ->leftJoin('es.pedido', 'p')
+            ->leftJoin('es.produto', 'prod')
+            ->leftJoin('p.carga', 'c')
+            ->leftJoin('c.expedicao', 'e')
+            ->leftJoin('es.status', 's')
+            ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('p.itinerario', 'i')
             ->distinct(true);
 
-        $parametros['etiqueta'] = 1;
+        if (!empty($parametros['dataInicio']) && !empty($parametros['dataFim'])) {
+            /*
+            $data1 = new \DateTime($parametros['dataInicio']);
+            $data2 = new \DateTime($parametros['dataFim']);
 
-        if (!empty($parametros['etiqueta'])) {
-            $source->andWhere("es.id = ?", $parametros['etiqueta']);
+            $source
+                ->where('e.fecha BETWEEN :monday AND :sunday')
+                ->setParameter('monday', $data1->format('Y-m-d'))
+                ->setParameter('sunday', $data2->format('Y-m-d'));
+            */
         }
 
-        if (!empty($parametros['codCliente'])) {
-            $source->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao');
-            $source->andWhere("es.id = ?", $parametros['codCliente']);
+        if (!empty($parametros['etiqueta'])) {
+            $source
+                ->where('es.id = :idEtiqueta')
+                ->setParameter('idEtiqueta', $parametros['etiqueta'])
+                ->orderBy("es.id" , "DESC");
+        }
+
+        if (!empty($parametros['grade'])) {
+            $source
+                ->where('c.codCargaExterno = :grade')
+                ->setParameter('grade', $parametros['etiqueta']);
+        }
+
+        /*
+        if (!empty($parametros['itinerario'])) {
+            $source
+                ->where('i.id = :itinerario')
+                ->setParameter('itinerario', $parametros['itinerario']);
+        }
+        */
+
+        if (!empty($parametros['codProduto'])) {
+            $source
+                ->andWhere('es.produto = :codProduto')
+                ->setParameter('codProduto', $parametros['codProduto']);
+        }
+
+        if ($parametros['reimpresso'] == 'S') {
+            $reimpresso = $parametros['reimpresso'];
+            $source->where("es.reimpressao = '$reimpresso'");
+        } else {
+            $source->where("es.reimpressao = ''");
+        }
+
+        if (!empty($parametros['pedido'])) {
+            $source
+                ->setParameter('codPedido', $parametros['pedido'])
+                ->andWhere('es.pedido = :codPedido');
+        }
+
+        if (!empty($parametros['situacao'])) {
+            $source
+                ->setParameter('situacao', $parametros['situacao'])
+                ->andWhere('es.status = :situacao');
+        }
+
+        if (!empty($parametros['codExpedicao'])) {
+            $source
+                ->setParameter('idExpedicao', $parametros['codExpedicao'])
+                ->andWhere('e.id = :idExpedicao');
         }
 
         return $source->getQuery()->getResult();

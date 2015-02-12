@@ -41,15 +41,15 @@ class ConsultaEtiqueta extends Grid
             ))
             ->addColumn(array(
                 'label' => 'Cód. Produto',
-                'index' => 'codProduto',
+                'index' => 'produto',
             ))
             ->addColumn(array(
                 'label' => 'Grade',
-                'index' => 'grade',
+                'index' => 'dscGrade',
             ))
             ->addColumn(array(
                 'label' => 'Produto',
-                'index' => 'produto',
+                'index' => 'descricao',
             ))
             ->addColumn(array(
                 'label' => 'Embalagem',
@@ -57,18 +57,19 @@ class ConsultaEtiqueta extends Grid
             ))
             ->addColumn(array(
                 'label' => 'Situação',
-                'index' => 'situacao',
+                'index' => 'sigla',
             ))
             ->addAction(array(
-                'label' => 'Relatório de Produtos',
+                'label' => 'Dados da Etiqueta',
                 'target' => '_blank',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
-                'actionName' => 'index',
-                'params' => array('urlAction' => 'index', 'urlController' => 'relatorio_produtos-expedicao', 'sc' => true),
+                'actionName' => 'buscar-etiqueta',
                 'cssClass' => 'dialogAjax pdf',
                 'pkIndex' => 'id'
-            ));
+            ))
+            ->setShowExport(true)
+            ->setShowMassActions($params);;
 
         return $this;
     }

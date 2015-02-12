@@ -29,7 +29,7 @@ class ConsultaEtiqueta extends Form
                 'label' => 'Cód. Carga',
                 'size' => 10,
             ))
-            ->addElement('text', 'codPedido', array(
+            ->addElement('text', 'pedido', array(
                 'label' => 'Cód. Pedido',
                 'size' => 10,
             ))
@@ -85,7 +85,7 @@ class ConsultaEtiqueta extends Form
             ->addDisplayGroup(array(
                 'codExpedicao',
                 'codCarga',
-                'codPedido',
+                'pedido',
                 'dataInicio',
                 'dataFim',
                 'situacao',
