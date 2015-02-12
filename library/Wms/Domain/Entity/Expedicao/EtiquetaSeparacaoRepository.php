@@ -17,20 +17,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getCountEtiquetasByExpedicao ($idExpedicao)
     {
         $produtos = $this->getEntityManager()->createQueryBuilder()
-                ->select("p.id, p.grade, SUM(pp.quantidade) quantidade")
-                ->from("wms:Expedicao\PedidoProduto", "pp")
-                ->innerJoin("pp.produto", "p")
-                ->innerJoin("pp.pedido", "ped")
-                ->innerJoin("ped.carga", "c")
-                ->leftJoin("p.volumes", "v")
-                ->where("c.expedicao = " . $idExpedicao)
-                ->groupBy("p.id, p.grade")->getQuery()->getResult();
-        
+            ->select("p.id, p.grade, SUM(pp.quantidade) quantidade")
+            ->from("wms:Expedicao\PedidoProduto", "pp")
+            ->innerJoin("pp.produto", "p")
+            ->innerJoin("pp.pedido", "ped")
+            ->innerJoin("ped.carga", "c")
+            ->leftJoin("p.volumes", "v")
+            ->where("c.expedicao = " . $idExpedicao)
+            ->groupBy("p.id, p.grade")->getQuery()->getResult();
+
         $qtdTotal = 0;
         foreach ($produtos as $produto) {
             $qtdTotal = $qtdTotal + $produto['quantidade'];
         }
-        
+
         return $qtdTotal;
     }
 
@@ -88,7 +88,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if ($placaCarga != NULL) {
             $dql->andWhere('c.placaCarga = :placaCarga')
-            ->setParameter('placaCarga', $placaCarga);
+                ->setParameter('placaCarga', $placaCarga);
         }
 
         if ($idCarga != NULL) {
@@ -277,7 +277,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         switch ($sequencia) {
             case 2:
                 $dql->orderBy("es.codBarras","DESC");
-            break;
+                break;
             default:
                 $dql->orderBy("es.codBarras");
         }
@@ -650,46 +650,27 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->leftJoin('es.pedido', 'p')
+            ->leftJoin('p.itinerario', 'i')
             ->leftJoin('es.produto', 'prod')
             ->leftJoin('p.carga', 'c')
             ->leftJoin('c.expedicao', 'e')
             ->leftJoin('es.status', 's')
             ->leftJoin('es.produtoEmbalagem', 'pe')
-            ->leftJoin('p.itinerario', 'i')
+            ->setMaxResults(5000)
+            ->orderBy("es.id" , "DESC")
             ->distinct(true);
-
-        if (!empty($parametros['dataInicio']) && !empty($parametros['dataFim'])) {
-            /*
-            $data1 = new \DateTime($parametros['dataInicio']);
-            $data2 = new \DateTime($parametros['dataFim']);
-
-            $source
-                ->where('e.fecha BETWEEN :monday AND :sunday')
-                ->setParameter('monday', $data1->format('Y-m-d'))
-                ->setParameter('sunday', $data2->format('Y-m-d'));
-            */
-        }
 
         if (!empty($parametros['etiqueta'])) {
             $source
                 ->where('es.id = :idEtiqueta')
-                ->setParameter('idEtiqueta', $parametros['etiqueta'])
-                ->orderBy("es.id" , "DESC");
+                ->setParameter('idEtiqueta', $parametros['etiqueta']);
         }
 
-        if (!empty($parametros['grade'])) {
+        if (!empty($parametros['codCarga'])) {
             $source
-                ->where('c.codCargaExterno = :grade')
-                ->setParameter('grade', $parametros['etiqueta']);
+                ->where('c.codCargaExterno = :codCarga')
+                ->setParameter('codCarga', $parametros['codCarga']);
         }
-
-        /*
-        if (!empty($parametros['itinerario'])) {
-            $source
-                ->where('i.id = :itinerario')
-                ->setParameter('itinerario', $parametros['itinerario']);
-        }
-        */
 
         if (!empty($parametros['codProduto'])) {
             $source
@@ -699,9 +680,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if ($parametros['reimpresso'] == 'S') {
             $reimpresso = $parametros['reimpresso'];
-            $source->where("es.reimpressao = '$reimpresso'");
+            $source->where("es.reimpressao is not null");
         } else {
-            $source->where("es.reimpressao = ''");
+            $reimpresso = $parametros['reimpresso'];
+            $source->where("es.reimpressao is null");
         }
 
         if (!empty($parametros['pedido'])) {
@@ -721,6 +703,42 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->setParameter('idExpedicao', $parametros['codExpedicao'])
                 ->andWhere('e.id = :idExpedicao');
         }
+
+        if (!empty($parametros['grade'])) {
+            $source
+                ->setParameter('grade', $parametros['grade'])
+                ->andWhere('es.dscGrade = :grade');
+        }
+
+        if (!empty($parametros['centralEstoque'])) {
+            $source
+                ->setParameter('centralEstoque', $parametros['centralEstoque'])
+                ->andWhere('p.centralEntrega = :centralEstoque');
+        }
+
+        if (!empty($parametros['centralTransbordo'])) {
+            $source
+                ->setParameter('centralTransbordo', $parametros['centralTransbordo'])
+                ->andWhere('p.pontoTransbordo = :centralTransbordo');
+        }
+
+        if (!empty($parametros['itinerario'])) {
+            $source
+                ->where('i.id = :itinerario')
+                ->setParameter('itinerario', $parametros['itinerario']);
+        }
+
+        /*
+        if (!empty($parametros['dataInicio']) && !empty($parametros['dataFim'])) {
+            $data1 = new \DateTime($parametros['dataInicio']);
+            //$data2 = new \DateTime($parametros['dataFim']);
+
+            $source
+                ->where('e.dataInicio BETWEEN :dataInicio AND :dataInicio')
+                ->setParameter('dataInicio', $data1->format('Y-m-d'))
+                ->setParameter('dataInicio', "2015/02/12");
+        }
+        */
 
         return $source->getQuery()->getResult();
     }
