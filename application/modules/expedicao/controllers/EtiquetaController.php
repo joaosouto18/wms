@@ -190,7 +190,6 @@ class Expedicao_EtiquetaController  extends Action
 
     public function dadosEtiquetaAction()
     {
-        $form = new \Wms\Module\Expedicao\Form\ConsultaEtiqueta();
         $params = $this->_getAllParams();
         $idEtiqueta = $params['id'];
         unset($params['module']);
@@ -198,15 +197,11 @@ class Expedicao_EtiquetaController  extends Action
         unset($params['action']);
         unset($params['submit']);
 
-        //$form->populate($params);
-        //$this->view->form = $form;
-
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
         $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $result = $etiquetaSeparacaoRepo->getDadosEtiquetaByEtiquetaId($idEtiqueta);
 
         $this->view->expedicoes = $result;
-
     }
 
 }

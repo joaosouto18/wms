@@ -19,10 +19,13 @@ class ConsultaEtiqueta extends Grid
 
     public function init(array $params = array())
     {
-
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
-        $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $result = $etiquetaSeparacaoRepo->buscarEtiqueta($params);
+        if (empty($params)) {
+            $result = array();
+        } else {
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
+            $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $result = $etiquetaSeparacaoRepo->buscarEtiqueta($params);
+        }
 
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->setId('consulta-etiqueta-index-grid')
@@ -65,7 +68,6 @@ class ConsultaEtiqueta extends Grid
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
                 'actionName' => 'dados-etiqueta',
-                'params' => array('urlAction' => 'dados-etiqueta', 'urlController' => 'etiqueta'),
                 'cssClass' => 'dialogAjax pdf',
                 'pkIndex' => 'id'
             ))
