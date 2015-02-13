@@ -1,4 +1,91 @@
-<?php
-echo $this->form;
-echo $this->grid;
-?>
+<div id="quantidade-grid">
+    <?php if ($this->expedicoes) : ?>
+        <?php foreach ($this->expedicoes as $expedicao) : ;?>
+            <table class="gTable">
+                <caption>Dados</caption>
+                <tbody>
+                <tr>
+                    <td>Cód. Expedição</td>
+                    <td>Dt. Expedição</td>
+                    <td>Situação Expedição</td>
+                    <td>Cód. Carga</td>
+                    <td>Cód. Pedido</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $expedicao['idExpedicao']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['dataInicio']->format('d/m/Y'); ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['dataInicio']->format('d/m/Y'); ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['tipoCarga']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['pedido']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Cód. Cliente</td>
+                    <td>Cliente</td>
+                    <td>Itinerário</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $expedicao['codClienteExterno']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['clienteNome']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['itinerario']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Cód. Barras</td>
+                    <td>C. Estoque</td>
+                    <td>C. Transbordo</td>
+                    <td>Situação</td>
+                    <td>Reimpressão</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $expedicao['id']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['centralEntrega']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['pontoTransbordo']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['sigla']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['reimpressao']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Cód. Prod.</td>
+                    <td>Grade</td>
+                    <td>Produto</td>
+                    <td>Embalagem</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $expedicao['produto']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['dscGrade']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['descricao']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $expedicao['embalagem']; ?>" disabled/></td>
+                </tr>
+                </tbody>
+            </table>
+            <fieldset>
+                <legend>Conferência</legend>
+                <table class="gTable">
+                    <tr>
+                        <td>OS</td>
+                        <td>Usuário</td>
+                        <td>Dt. Conferência</td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" value="<?php echo $expedicao['codOS']; ?>" disabled/></td>
+                        <td><input type="text" value="<?php echo $expedicao['codOS']; ?>" disabled/></td>
+                        <td><input type="text" value="<?php echo (is_object($expedicao['dataConferencia'])) ? $expedicao['dataConferencia']->format('d/m/Y') : null;?>" disabled/></td>
+                    </tr>
+                </table>
+            </fieldset>
+            <fieldset>
+                <legend>Conferência de Transbordo</legend>
+                <table class="gTable">
+                    <tr>
+                        <td>OS</td>
+                        <td>Usuário</td>
+                        <td>Dt. Conferência</td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" value="<?php echo $expedicao['codOSTransbordo']; ?>" disabled/></td>
+                        <td><input type="text" value="<?php echo $expedicao['codOSTransbordo']; ?>" disabled/></td>
+                        <td><input type="text" value="<?php echo (is_object($expedicao['dataConferenciaTransbordo'])) ? $expedicao['dataConferenciaTransbordo']->format('d/m/Y') : null;?>" disabled/></td>
+                    </tr>
+                </table>
+            </fieldset>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <div>

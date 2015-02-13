@@ -647,7 +647,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function buscarEtiqueta($parametros)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
+            ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao,
+             c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->leftJoin('es.pedido', 'p')
             ->leftJoin('p.itinerario', 'i')
@@ -656,76 +657,83 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('c.expedicao', 'e')
             ->leftJoin('es.status', 's')
             ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('p.pessoa', 'cli')
             ->setMaxResults(5000)
             ->orderBy("es.id" , "DESC")
             ->distinct(true);
 
         if (!empty($parametros['etiqueta'])) {
             $source
-                ->where('es.id = :idEtiqueta')
-                ->setParameter('idEtiqueta', $parametros['etiqueta']);
+                ->setParameter('idEtiqueta', $parametros['etiqueta'])
+                ->where('es.id = :idEtiqueta');
+        }
+
+        if (!empty($parametros['codCliente'])) {
+            $source
+                ->setParameter('codCliente', $parametros['codCliente'])
+                ->where('cli.id = :codCliente');
         }
 
         if (!empty($parametros['codCarga'])) {
             $source
-                ->where('c.codCargaExterno = :codCarga')
-                ->setParameter('codCarga', $parametros['codCarga']);
+                ->setParameter('codCarga', $parametros['codCarga'])
+                ->where('c.codCargaExterno = :codCarga');
         }
 
         if (!empty($parametros['codProduto'])) {
             $source
-                ->andWhere('es.produto = :codProduto')
-                ->setParameter('codProduto', $parametros['codProduto']);
+                ->setParameter('codProduto', $parametros['codProduto'])
+                ->where('es.produto = :codProduto');
         }
 
-        if ($parametros['reimpresso'] == 'S') {
-            $reimpresso = $parametros['reimpresso'];
-            $source->where("es.reimpressao is not null");
-        } else {
-            $reimpresso = $parametros['reimpresso'];
-            $source->where("es.reimpressao is null");
+        if ($parametros['reimpresso'] != "") {
+            if ($parametros['reimpresso'] == 'S') {
+                $source->where("es.reimpressao is not null");
+            } else {
+                $source->where("es.reimpressao is null");
+            }
         }
 
         if (!empty($parametros['pedido'])) {
             $source
                 ->setParameter('codPedido', $parametros['pedido'])
-                ->andWhere('es.pedido = :codPedido');
+                ->where('es.pedido = :codPedido');
         }
 
         if (!empty($parametros['situacao'])) {
             $source
                 ->setParameter('situacao', $parametros['situacao'])
-                ->andWhere('es.status = :situacao');
+                ->where('es.status = :situacao');
         }
 
         if (!empty($parametros['codExpedicao'])) {
             $source
                 ->setParameter('idExpedicao', $parametros['codExpedicao'])
-                ->andWhere('e.id = :idExpedicao');
+                ->where('e.id = :idExpedicao');
         }
 
         if (!empty($parametros['grade'])) {
             $source
                 ->setParameter('grade', $parametros['grade'])
-                ->andWhere('es.dscGrade = :grade');
+                ->where('es.dscGrade = :grade');
         }
 
         if (!empty($parametros['centralEstoque'])) {
             $source
                 ->setParameter('centralEstoque', $parametros['centralEstoque'])
-                ->andWhere('p.centralEntrega = :centralEstoque');
+                ->where('p.centralEntrega = :centralEstoque');
         }
 
         if (!empty($parametros['centralTransbordo'])) {
             $source
                 ->setParameter('centralTransbordo', $parametros['centralTransbordo'])
-                ->andWhere('p.pontoTransbordo = :centralTransbordo');
+                ->where('p.pontoTransbordo = :centralTransbordo');
         }
 
         if (!empty($parametros['itinerario'])) {
             $source
-                ->where('i.id = :itinerario')
-                ->setParameter('itinerario', $parametros['itinerario']);
+                ->setParameter('itinerario', $parametros['itinerario'])
+                ->where('i.id = :itinerario');
         }
 
         /*
@@ -739,6 +747,30 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->setParameter('dataInicio', "2015/02/12");
         }
         */
+
+        return $source->getQuery()->getResult();
+    }
+
+    public function getDadosEtiquetaByEtiquetaId($idEtiqueta)
+    {
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('es.id, es.codProduto, p.id as pedido, es.codOS, p.centralEntrega, p.pontoTransbordo, es.reimpressao,
+            es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, e.dataInicio, c.codCargaExterno as tipoCarga,
+            prod.id as produto, prod.descricao, pe.descricao as embalagem, i.descricao as itinerario, pess.nome as clienteNome,
+            es.dataConferencia, es.dataConferenciaTransbordo, es.codOSTransbordo, cli.codClienteExterno')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->innerJoin('es.pedido', 'p')
+            ->innerJoin('p.itinerario', 'i')
+            ->innerJoin('p.pessoa', 'cli')
+            ->innerJoin('cli.pessoa', 'pess')
+            ->leftJoin('es.produto', 'prod')
+            ->leftJoin('p.carga', 'c')
+            ->leftJoin('c.expedicao', 'e')
+            ->leftJoin('es.status', 's')
+            ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->where('es.id = :idEtiqueta')
+            ->setParameter('idEtiqueta', $idEtiqueta)
+            ->distinct(true);
 
         return $source->getQuery()->getResult();
     }

@@ -64,7 +64,8 @@ class ConsultaEtiqueta extends Grid
                 'target' => '_blank',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
-                'actionName' => 'buscar-etiqueta',
+                'actionName' => 'dados-etiqueta',
+                'params' => array('urlAction' => 'dados-etiqueta', 'urlController' => 'etiqueta'),
                 'cssClass' => 'dialogAjax pdf',
                 'pkIndex' => 'id'
             ))
