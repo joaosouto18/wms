@@ -187,6 +187,13 @@ class Recebimento extends Grid
                     'controllerName' => "produto",
                     'pkIndex' => 'id'
                 ))
+                ->addAction(array(
+                    'label' => 'Forçar Correção',
+                    'moduleName' => 'web',
+                    'actionName' => 'forcar-correcao',
+                    'controllerName' => 'recebimento',
+                    'pkIndex' => 'id'
+                ))
                 ->setShowExport(true)
                 ->setShowMassActions($params);
 
