@@ -1,5 +1,18 @@
 <?php
 
+class fabricante {
+    /** @var string */
+    public $idFabricante;
+    /** @var string */
+    public $nome;
+}
+
+class fabricantes {
+
+    /** @var fabricante[] */
+    public $fabricantes = array();
+}
+
 /**
  * 
  */
@@ -10,7 +23,7 @@ class Wms_WebService_Fabricante extends Wms_WebService
      * Retorna uma matriz contendo os dados de um Fabricante específico no WMS
      *
      * @param string $idFabricante ID do Fabricante a ser consultado
-     * @return array|Exception
+     * @return fabricante
      */
     public function buscar($idFabricante)
     {
@@ -19,10 +32,10 @@ class Wms_WebService_Fabricante extends Wms_WebService
         if ($fabricanteEntity == null)
             throw new \Exception('Fabricante não encontrado');
 
-        return array(
-            'idFabricante' => $idFabricante,
-            'nome' => $fabricanteEntity->getNome(),
-        );
+        $fabricante = new fabricante();
+        $fabricante->idFabricante = $idFabricante;
+        $fabricante->nome = $fabricanteEntity->getNome();
+        return $fabricante;
     }
 
     /**
@@ -142,7 +155,7 @@ class Wms_WebService_Fabricante extends Wms_WebService
     /**
      * Retorna uma matriz com todos os fabricantes cadastrados no WMS
      * 
-     * @return array|Exception
+     * @return fabricantes|Exception
      */
     public function listar()
     {
@@ -155,7 +168,17 @@ class Wms_WebService_Fabricante extends Wms_WebService
                 ->getQuery()
                 ->getArrayResult();
 
-        return $result;
+        $fabricantes = new fabricantes();
+        $arrayFabricantes = array();
+        foreach ($result as $line) {
+            $fabricante = new fabricante();
+            $fabricante->idFabricante = $line['idFabricante'];
+            $fabricante->nome = $line['nome'];
+            $arrayFabricantes[] = $fabricante;
+        }
+        $fabricantes->fabricantes = $arrayFabricantes;
+
+        return $fabricantes;
     }
 
 }
