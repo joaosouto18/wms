@@ -2,6 +2,60 @@
 
 use Wms\Domain\Entity\Produto as ProdutoEntity;
 
+class fabricante {
+    /** @var string */
+    public $idFabricante;
+    /** @var string */
+    public $nome;
+}
+
+class classe {
+    /** @var string */
+    public $idClasse;
+    /** @var string */
+    public $nome;
+    /** @var string */
+    public $idClassePai;
+
+}
+
+class classes {
+    /** @var classe[] */
+    public $classes = array();
+}
+
+class produto {
+    /** @var string */
+    public $idProduto;
+    /** @var string */
+    public $descricao;
+    /** @var string */
+    public $grade;
+    /** @var string */
+    public $idFabricante;
+    /** @var string */
+    public $tipo;
+    /** @var string */
+    public $idClasse;
+    /** @var string */
+    public $nomeFabricante;
+}
+
+class produtos {
+    /** @var produto[] */
+    public $produtos = array();
+}
+
+class grade {
+    /** @var string */
+    public $grade;
+}
+
+class grades {
+    /** @var grade[] */
+    public $grades = array();
+}
+
 class Wms_WebService_Produto extends Wms_WebService {
 
     /**
@@ -9,7 +63,7 @@ class Wms_WebService_Produto extends Wms_WebService {
      *
      * @param string $idProduto ID do Produto
      * @param string $grade Grade do Produto
-     * @return array|Exception
+     * @return produto|Exception
      */
     public function buscar($idProduto, $grade) {
 
@@ -20,15 +74,15 @@ class Wms_WebService_Produto extends Wms_WebService {
             throw new \Exception('Produto não encontrado');
         }
 
-        return array(
-            'idProduto' => $idProduto,
-            'descricao' => $produto->getDescricao(),
-            'grade' => $produto->getGrade(),
-            'idFabricante' => $produto->getFabricante()->getId(),
-            'tipo' => $produto->getTipoComercializacao()->getId(),
-            'idClasse' => $produto->getClasse()->getId(),
-            'nomeFabricante' => $produto->getFabricante()->getNome(),
-        );
+        $prod = new produto();
+        $prod->idProduto = $idProduto;
+        $prod->descricao = $produto->getDescricao();
+        $prod->grade = $produto->getGrade();
+        $prod->idFabricante = $produto->getFabricante()->getId();
+        $prod->tipo = $produto->getTipoComercializacao()->getId();
+        $prod->idClasse = $produto->getClasse()->getId();
+        $prod->nomeFabricante = $produto->getFabricante()->getNome();
+        return $prod;
     }
 
     /**
@@ -159,22 +213,37 @@ class Wms_WebService_Produto extends Wms_WebService {
 
     /**
      * Lista todos os Produtos cadastrados no sistema
-     * 
-     * @return array|Exception
+     *
+     * @return produtos|Exception
      */
     public function listar() {
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $result = $em->createQueryBuilder()
-                ->select('p.id as idProduto, p.descricao, p.grade, f.id as idFabricante, p.tipo, c.id as idClasse, f.nome as nomeFabricante')
+                ->select('p.id as idProduto, p.descricao, p.grade, f.id as idFabricante, t.id as tipo, c.id as idClasse, f.nome as nomeFabricante')
                 ->from('wms:Produto', 'p')
                 ->innerJoin('p.fabricante', 'f')
                 ->innerJoin('p.classe', 'c')
-                ->orderBy('p.descricao')
-                ->getQuery()
+                ->innerJoin('p.tipoComercializacao', 't')
+                ->orderBy('p.descricao')->getQuery()
                 ->getArrayResult();
+        $produtos = new produtos();
+        $arrayProdutos = array();
 
-        return $result;
+        foreach ($result as $line) {
+            $produto = new produto();
+            $produto->idProduto = $line['idProduto'];
+            $produto->descricao = $line['descricao'];
+            $produto->grade = $line['grade'];
+            $produto->idFabricante = $line['idFabricante'];
+            $produto->tipo = $line['tipo'];
+            $produto->idClasse = $line['idClasse'];
+            $produto->nomeFabricante = $line['nomeFabricante'];
+            $arrayProdutos[] = $produto;
+        }
+        $produtos->produtos = $arrayProdutos;
+
+        return $produtos;
     }
 
     /**
@@ -186,7 +255,7 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param array $grades
      * @param array $classes
      * @param array $fabricante
-     * @return boolean
+     * @return array
      */
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
