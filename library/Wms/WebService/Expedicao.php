@@ -3,6 +3,35 @@
 use Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 
+class produto {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var string */
+    public $qtdePedido;
+    /** @var string */
+    public $qtdeAtendido;
+}
+
+class pedido {
+    /** @var string */
+    public $codPedido;
+    /** @var produto[] */
+    public $produtos = array();
+}
+
+class carga {
+    /** @var string */
+    public $carga;
+    /** @var string */
+    public $tipo;
+    /** @var string */
+    public $situacao;
+    /** @var pedido[] */
+    public $pedidos = array();
+}
+
 class Wms_WebService_Expedicao extends Wms_WebService
 {
 
@@ -19,8 +48,27 @@ class Wms_WebService_Expedicao extends Wms_WebService
      *  Se existir retorna código da expedição senão Insere na tabela expedição
      *  Insere na tabela de carga com o numero da expedição
      *
-     * @param array cargas informacoes das cargas com os pedidos
-     * @return boolean Se as cargas foram salvas com sucesso
+     * @param string cargas informacoes das cargas com os pedidos
+     * @return array Se as cargas foram salvas com sucesso
+     */
+    public function enviarJson ($cargas){
+        try {
+            $array = json_decode($cargas, true);
+            $arrayCargas = $array['cargas'];
+            return $this->enviar($arrayCargas);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     *  Recebe Carga com Placa da Expedição
+     *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
+     *  Se existir retorna código da expedição senão Insere na tabela expedição
+     *  Insere na tabela de carga com o numero da expedição
+     *
+     * @param string cargas informacoes das cargas com os pedidos
+     * @return array Se as cargas foram salvas com sucesso
      */
     public function enviar($cargas)
     {
@@ -48,6 +96,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function fechar($idCargaExterno,$tipoCarga)
     {
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
         $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
@@ -146,8 +196,65 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $etiquetas;
     }
 
+    /**
+     * @param integer $idCarga
+     * @param string $tipoCarga
+     * @return carga Com informações das etiquetas
+     */
+    public function consultarCarga($idCargaExterno,$tipoCarga){
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
+
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+
+        $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
+        $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));
+        if ($cargaEn == null) {
+            throw new \Exception($tipoCarga . " " . $idCargaExterno . " não encontrado");
+        }
+
+        $carga = new carga();
+        $carga->carga = $idCargaExterno;
+        $carga->tipo = $tipoCarga;
+        $carga->situacao = $cargaEn->getExpedicao()->getStatus()->getSigla();
+        $carga->pedidos = array();
+        $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+        foreach ($pedidosEn as $pedidoEn) {
+            $pedido = new pedido();
+            $pedido->codPedido = $pedidoEn->getId();
+            $pedido->produtos = array();
+
+            $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+            foreach ($produtos as $item) {
+                $produto = new produto();
+                $produto->codProduto = $item['COD_PRODUTO'];
+                $produto->grade = $item['DSC_GRADE'];
+                $produto->qtdePedido = $item['QTD_PEDIDO'];
+                $produto->qtdeAtendido = $item['QTD_ATENDIDO'];
+                $pedido->produtos[] = $produto;
+            }
+            $carga->pedidos[] = $pedido;
+        }
+
+        return $carga;
+    }
+
     protected function saveCarga($carga)
     {
+        //CASO OS CAMPOS SEJAM OMITIDOS, PREENCHO COM O VALOR PADRÃO
+        if (!isset($carga['tipoCarga']) or $carga['tipoCarga'] == "") {
+            $carga['tipoCarga'] = "C";
+        }
+        if (!isset($carga['centralEntrega']) or $carga['centralEntrega'] == "") {
+            $carga['centralEntrega'] = "1";
+        }
+        if (!isset($carga['placaExpedicao']) or $carga['placaExpedicao'] == "") {
+            $carga['placaExpedicao'] = $carga['idCarga'];
+        }
+        if (!isset($carga['placa']) or $carga['placa'] == "") {
+            $carga['placa'] = $carga['placaExpedicao'];
+        }
+
         $arrayCarga = array(
             'codCargaExterno' => $carga['idCarga'],
             'codTipoCarga' => $carga['tipoCarga'],
@@ -175,7 +282,33 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     protected function savePedido (array $pedido, $entityCarga) {
+        if (!isset($pedido['tipoPedido']) or $pedido['tipoPedido'] == "") {
+            $pedido['tipoPedido'] = "ENTREGA";
+        }
+        if (!isset($pedido['linhaEntrega']) or $pedido['linhaEntrega'] == "") {
+            $pedido['linhaEntrega'] = "(PADRAO)";
+        }
+        if (!isset($pedido['centralEntrega']) or $pedido['centralEntrega'] == "") {
+            $pedido['centralEntrega'] = "1";
+        }
+        if (!isset($pedido['pontoTransbordo']) or $pedido['pontoTransbordo'] == "") {
+            $pedido['pontoTransbordo'] = "1";
+        }
+        if (!isset($pedido['pontoTransbordo']) or $pedido['pontoTransbordo'] == "") {
+            $pedido['pontoTransbordo'] = "1";
+        }
+        if (!isset($pedido['itinerario']) or $pedido['itinerario'] == "") {
+            $itinerario = array();
+            $itinerario['idItinerario'] = "";
+            $itinerario['nomeItinerario'] = "";
+            $pedido['itinerario'] = $itinerario;
+        }
+
         $cliente = $pedido['cliente'];
+        if (is_array($cliente[0])) {
+            $cliente = $cliente[0];
+        }
+
         $entityCliente          = $this->findClienteByCodigoExterno($cliente);
         $entityItinerario       = $this->findItinerarioById($pedido['itinerario']);
 

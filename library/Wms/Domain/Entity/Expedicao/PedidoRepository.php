@@ -51,6 +51,32 @@ class PedidoRepository extends EntityRepository
         return $enPedido;
     }
 
+    public function getQtdPedidaAtendidaByPedido ($codPedido) {
+        $statusConferido = EtiquetaSeparacao::STATUS_CONFERIDO;
+        $statusExpedidoTransbordo = EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
+        $statusRecebidoTransbordo = EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
+        $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO,
+                       NVL(TRUNC (ETQ.QTD_ETIQUETAS/V.NUM_VOLUMES),0) as QTD_ATENDIDO
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN (SELECT COUNT(ES.COD_ETIQUETA_SEPARACAO) as QTD_ETIQUETAS,
+                                    ES.COD_PRODUTO,
+                                    ES.DSC_GRADE,
+                                    ES.COD_PEDIDO
+                               FROM ETIQUETA_SEPARACAO ES
+                              WHERE ES.COD_STATUS IN ($statusConferido, $statusExpedidoTransbordo, $statusRecebidoTransbordo)
+                              GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE, ES.COD_PEDIDO) ETQ
+                    ON ETQ.COD_PEDIDO = PP.COD_PEDIDO AND ETQ.COD_PRODUTO = PP.COD_PRODUTO AND ETQ.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN (SELECT COUNT(VOLUMES) as NUM_VOLUMES, COD_PRODUTO, DSC_GRADE, COD_PEDIDO
+                               FROM (SELECT DISTINCT NVL(COD_PRODUTO_VOLUME, COD_PRODUTO_EMBALAGEM) as VOLUMES,
+                                            COD_PRODUTO, DSC_GRADE, COD_PEDIDO
+                                       FROM ETIQUETA_SEPARACAO)
+                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_PEDIDO) V
+                    ON V.COD_PEDIDO = PP.COD_PEDIDO AND V.COD_PRODUTO = PP.COD_PRODUTO AND V.DSC_GRADE = PP.DSC_GRADE
+                 WHERE PP.COD_PEDIDO = '$codPedido'";
+        $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $array;
+    }
+
     public function finalizaPedidosByCentral ($PontoTransbordo, $Expedicao)
     {
         $query = "SELECT ped
