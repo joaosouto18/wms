@@ -77,6 +77,13 @@ class Produtos extends Grid
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => array('codigo','grade')
                 ))
+            ->addAction(array(
+                    'label' => 'Trocar U.M.As',
+                    'controllerName' => 'produto',
+                    'actionName' => 'trocar',
+                    'cssClass' => 'dialogAjax',
+                    'pkIndex' => array('codigo','grade')
+                ))
 
             ->setShowExport(false);
 

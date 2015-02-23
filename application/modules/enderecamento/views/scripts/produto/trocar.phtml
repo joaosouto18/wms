@@ -1,0 +1,13 @@
+<form>
+    <label for="recebimento">Informe um novo Recebimento</label><br />
+    <input type="text" name="recebimento"/>
+    <button type="submit">Confirmar</button>
+</form>
+
+<?php if ($this->ajaxFilter != true) : ?>
+    <?php echo $this->partial('palete/form-trocar.phtml') ?>
+<?php endif; ?>
+
+<div id="grid-filtro-recebimento">
+    <?php echo $this->grid ?>
+</div>

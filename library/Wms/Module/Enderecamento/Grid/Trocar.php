@@ -11,10 +11,8 @@ class Trocar extends Grid
     {
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-
         $recebimento = isset($params['recebimento']) ? $params['recebimento'] : null;
-
-        $result = $paleteRepo->getByRecebimentoAndStatus($recebimento);
+        $result = $paleteRepo->getPaletesByProdutoAndGrade($params);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
@@ -43,7 +41,7 @@ class Trocar extends Grid
                 ));
 
         $this->setShowExport(false)
-            ->addMassAction('trocar', 'Realizar troca');
+            ->addMassAction('enderecamento/produto/trocar', 'Realizar troca');
 
         return $this;
     }
