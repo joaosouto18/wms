@@ -170,23 +170,18 @@ class Enderecamento_ProdutoController extends Action
 
     public function trocarAction()
     {
-        $trocaUma = $this->_getParam('massaction-select', null);
+        $trocaUma = $this->_getParam('massaction-select');
         if (!is_null($trocaUma)) {
             $this->confirmaTroca();
         }
         $params = $this->_getAllParams();
         $recebimento = $params['id'];
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
         $this->view->grid = $grid->init($params);
 
         if (!is_null($params)) {
             $this->view->ajaxFilter = true;
         }
-
-        $url = '/enderecamento/produto/index/id/' . $recebimento;
-        $this->_redirect($url);
     }
 
     public function confirmaTroca()

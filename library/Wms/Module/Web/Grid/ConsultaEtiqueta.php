@@ -68,7 +68,7 @@ class ConsultaEtiqueta extends Grid
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
                 'actionName' => 'dados-etiqueta',
-                'cssClass' => 'dialogAjax pdf',
+                'cssClass' => 'dialogAjax',
                 'pkIndex' => 'id'
             ))
             ->setShowExport(true)
