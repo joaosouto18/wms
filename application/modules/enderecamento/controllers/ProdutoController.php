@@ -10,7 +10,13 @@ class Enderecamento_ProdutoController extends Action
      */
     public function indexAction()
     {
+        $trocaUma = $this->_getParam('massaction-select', null);
+        if (!is_null($trocaUma)) {
+            $this->confirmaTroca();
+        }
+
         $codRecebimento  = $this->getRequest()->getParam('COD_RECEBIMENTO');
+
         if (isset($codRecebimento)) {
             $idRecebimento = $codRecebimento;
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
@@ -170,18 +176,10 @@ class Enderecamento_ProdutoController extends Action
 
     public function trocarAction()
     {
-        $trocaUma = $this->_getParam('massaction-select');
-        if (!is_null($trocaUma)) {
-            $this->confirmaTroca();
-        }
         $params = $this->_getAllParams();
         $recebimento = $params['id'];
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
         $this->view->grid = $grid->init($params);
-
-        if (!is_null($params)) {
-            $this->view->ajaxFilter = true;
-        }
     }
 
     public function confirmaTroca()
