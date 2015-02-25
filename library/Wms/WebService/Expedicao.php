@@ -3,27 +3,70 @@
 use Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 
+class cliente {
+    /** @var string */
+    public $codCliente;
+    /** @var string */
+    public $nome;
+    /** @var string */
+    public $cpf_cnpj;
+    /** @var string */
+    public $tipoPessoa;
+    /** @var string */
+    public $logradouro;
+    /** @var string */
+    public $numero;
+    /** @var string */
+    public $bairro;
+    /** @var string */
+    public $cidade;
+    /** @var string */
+    public $uf;
+    /** @var string */
+    public $complemento;
+    /** @var string */
+    public $referencia;
+}
+
+class itinerario {
+    /** @var string */
+    public $idItinerario;
+    /** @var string */
+    public $nomeItinerario;
+}
+
 class produto {
     /** @var string */
     public $codProduto;
     /** @var string */
     public $grade;
     /** @var string */
-    public $qtdePedido;
+    public $quantidade;
     /** @var string */
-    public $qtdeAtendido;
+    public $quantidadeAtendida;
 }
 
 class pedido {
     /** @var string */
     public $codPedido;
+    /** @var string */
+    public $linhaEntrega;
+    /** @var itinerario */
+    public $itinerario;
+    /** @var cliente */
+    public $cliente;
     /** @var produto[] */
     public $produtos = array();
 }
 
+class pedidos {
+    /** @var pedido[] */
+    public $pedidos = array();
+}
+
 class carga {
     /** @var string */
-    public $carga;
+    public $codCarga;
     /** @var string */
     public $tipo;
     /** @var string */
@@ -49,7 +92,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      *  Insere na tabela de carga com o numero da expedição
      *
      * @param string cargas informacoes das cargas com os pedidos
-     * @return array Se as cargas foram salvas com sucesso
+     * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviarJson ($cargas){
         try {
@@ -67,16 +110,39 @@ class Wms_WebService_Expedicao extends Wms_WebService
      *  Se existir retorna código da expedição senão Insere na tabela expedição
      *  Insere na tabela de carga com o numero da expedição
      *
-     * @param string cargas informacoes das cargas com os pedidos
-     * @return array Se as cargas foram salvas com sucesso
+     * @param string codCarga informacoes das cargas com os pedidos
+     * @param string placa informacoes das cargas com os pedidos
+     * @param pedidos pedidos informacoes das cargas com os pedidos
+     * @return boolean Se as cargas foram salvas com sucesso
+     */
+    public function enviarPedidos ($codCarga, $placa, $pedidos) {
+
+        $carga = array();
+        $carga['idCarga'] = $codCarga;
+        $carga['placaExpedicao'] = $placa;
+        $carga['placa'] = $placa;
+        $carga['pedidos'] = $pedidos;
+        $cargas = array();
+        $cargas[] = $carga;
+        return $this->enviar($cargas);
+    }
+
+    /**
+     *  Recebe Carga com Placa da Expedição
+     *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
+     *  Se existir retorna código da expedição senão Insere na tabela expedição
+     *  Insere na tabela de carga com o numero da expedição
+     *
+     * @param array cargas informacoes das cargas com os pedidos
+     * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviar($cargas)
     {
         ini_set('max_execution_time', 300);
         try {
+
             $this->_em->beginTransaction();
             foreach($cargas as $carga) {
-
                 $this->checkProductsExists($carga['pedidos']);
                 $this->checkPedidosExists($carga['pedidos']);
                 $this->saveCarga($carga);
@@ -214,22 +280,51 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         $carga = new carga();
-        $carga->carga = $idCargaExterno;
+        $carga->codCarga = $idCargaExterno;
         $carga->tipo = $tipoCarga;
         $carga->situacao = $cargaEn->getExpedicao()->getStatus()->getSigla();
         $carga->pedidos = array();
         $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+        /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         foreach ($pedidosEn as $pedidoEn) {
+            $itinerario = new itinerario();
+            $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
+            $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
+
+            $cliente = new cliente();
+            $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
+            $cliente->nome = $pedidoEn->getPessoa()->getPessoa()->getNome();
+            if (get_class($pedidoEn->getPessoa()->getPessoa()) == "Wms\Domain\Entity\Pessoa\Fisica"){
+                $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCpf();
+                $cliente->tipoPessoa = "F";
+            } else {
+                $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCnpj();
+                $cliente->tipoPessoa = "J";
+            }
+            $enderecos = $pedidoEn->getPessoa()->getPessoa()->getEnderecos();
+            if (count($enderecos) >0) {
+                $cliente->logradouro = $enderecos[0]->getDescricao();
+                $cliente->numero = $enderecos[0]->getNumero();
+                $cliente->bairro = $enderecos[0]->getBairro();
+                $cliente->complemento = $enderecos[0]->getComplemento();
+                $cliente->cidade = $enderecos[0]->getLocalidade();
+                $cliente->referencia = $enderecos[0]->getPontoReferencia();
+                $cliente->uf = $enderecos[0]->getUf()->getReferencia();
+
+            }
+
             $pedido = new pedido();
             $pedido->codPedido = $pedidoEn->getId();
             $pedido->produtos = array();
-
+            $pedido->linhaEntrega = $pedidoEn->getLinhaEntrega();
+            $pedido->itinerario = $itinerario;
+            $pedido->cliente = $cliente;
             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
             foreach ($produtos as $item) {
                 $produto = new produto();
                 $produto->codProduto = $item['COD_PRODUTO'];
                 $produto->grade = $item['DSC_GRADE'];
-                $produto->qtdePedido = $item['QTD_PEDIDO'];
+                $produto->quantidade = $item['QTD_PEDIDO'];
                 $produto->qtdeAtendido = $item['QTD_ATENDIDO'];
                 $pedido->produtos[] = $produto;
             }
@@ -452,6 +547,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $this->_em->persist($entityCliente);
             $this->_em->flush();
+
+
+
         }
 
         return $entityCliente;
