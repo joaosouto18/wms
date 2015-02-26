@@ -245,12 +245,13 @@ class Enderecamento_PaleteController extends Action
     public function trocarAction()
     {
         $idFiltroRecebimento = $this->_getParam('filtro-recebimento', null);
+        $params = $this->_getAllParams();
 
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
         if (!is_null($idFiltroRecebimento)) {
             $this->view->ajaxFilter = true;
         }
-        $this->view->grid = $grid->init(array('recebimento' => $idFiltroRecebimento));
+        $this->view->grid = $grid->init($params);
     }
 
     public function confirmaTroca()

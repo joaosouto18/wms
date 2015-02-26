@@ -10,6 +10,12 @@ class Enderecamento_ProdutoController extends Action
      */
     public function indexAction()
     {
+        $trocaUma = $this->_getParam('massaction-select');
+
+        if (!is_null($trocaUma)) {
+            $this->confirmaTroca();
+        }
+
         $codRecebimento  = $this->getRequest()->getParam('COD_RECEBIMENTO');
         if (isset($codRecebimento)) {
             $idRecebimento = $codRecebimento;
@@ -171,6 +177,7 @@ class Enderecamento_ProdutoController extends Action
     public function trocarAction()
     {
         $trocaUma = $this->_getParam('massaction-select');
+
         if (!is_null($trocaUma)) {
             $this->confirmaTroca();
         }

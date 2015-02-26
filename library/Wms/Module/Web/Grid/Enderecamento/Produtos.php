@@ -79,9 +79,9 @@ class Produtos extends Grid
                 ))
             ->addAction(array(
                     'label' => 'Trocar U.M.As',
-                    'controllerName' => 'produto',
+                    'controllerName' => 'palete',
                     'actionName' => 'trocar',
-                    'cssClass' => 'dialogAjax',
+
                     'pkIndex' => array('codigo','grade')
                 ))
 

@@ -41,7 +41,7 @@ class Trocar extends Grid
                 ));
 
         $this->setShowExport(false)
-            ->addMassAction('enderecamento/produto/trocar', 'Realizar troca');
+            ->addMassAction('trocar', 'Realizar troca');
 
         return $this;
     }

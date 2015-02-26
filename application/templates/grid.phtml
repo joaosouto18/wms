@@ -56,28 +56,7 @@ $attribs = $grid->getAttribs();
         }
         
         // button mass action
-        $('button.massaction-button').click(function() {
-            // check selected action
-            var select = $('select[name="massaction-select"]');
-            
-            if(select.val() == "") {
-                alert('Por favor, selecione uma opção');
-                select.focus();
-                return false;
-            }
-            
-            // check selected records
-            if($('input.massaction-check-opt:checked').size() == 0) {
-                alert('Selecione ao menos um registro');
-                return false;
-            }
-  
-            // submit
-            $('#formGrid')
-                .attr('action', '/' + select.val())
-                .attr('target', '_self')
-                .submit();
-        });
+
     });
     -->
 </script>
