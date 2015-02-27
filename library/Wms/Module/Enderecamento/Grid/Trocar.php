@@ -42,7 +42,7 @@ class Trocar extends Grid
         if (isset($params['id']) && isset($params['codigo']) && isset($params['grade'])) {
             $this->setShowExport(false)
                 ->addMassAction(
-                    'enderecamento/palete/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']),
+                    'enderecamento/palete/trocar/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']),
                     'Realizar troca');
         }
 

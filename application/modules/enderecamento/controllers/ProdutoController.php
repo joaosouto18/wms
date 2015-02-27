@@ -10,13 +10,13 @@ class Enderecamento_ProdutoController extends Action
      */
     public function indexAction()
     {
+        $idRecebimento   = $this->getRequest()->getParam('id');
         $codRecebimento  = $this->getRequest()->getParam('COD_RECEBIMENTO');
+
         if (isset($codRecebimento)) {
             $idRecebimento = $codRecebimento;
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
-
-        $idRecebimento   = $this->getRequest()->getParam('id');
 
         $buttons[] =  array(
             'label' => 'Voltar para Busca de Recebimentos',

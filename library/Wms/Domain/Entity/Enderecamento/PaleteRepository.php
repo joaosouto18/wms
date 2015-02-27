@@ -635,13 +635,6 @@ class PaleteRepository extends EntityRepository
             $entity = $this->find($uma);
             $entRecebimento = $this->_em->getReference('wms:Recebimento', $recebimento);
 
-            if ($entity->getDepositoEndereco() != null) {
-                $entStatus = $this->_em->getReference('wms:Util\Sigla', Palete::STATUS_ENDERECADO);
-            } else {
-                $entStatus = $this->_em->getReference('wms:Util\Sigla', Palete::STATUS_EM_ENDERECAMENTO);
-            }
-
-            $entity->setStatus($entStatus);
             $entity->setRecebimento($entRecebimento);
             $this->_em->persist($entity);
         }
