@@ -10,12 +10,6 @@ class Enderecamento_ProdutoController extends Action
      */
     public function indexAction()
     {
-        $trocaUma = $this->_getParam('massaction-select');
-
-        if (!is_null($trocaUma)) {
-            $this->confirmaTroca();
-        }
-
         $codRecebimento  = $this->getRequest()->getParam('COD_RECEBIMENTO');
         if (isset($codRecebimento)) {
             $idRecebimento = $codRecebimento;
@@ -53,7 +47,7 @@ class Enderecamento_ProdutoController extends Action
         $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
 
         $Grid = new ProdutosGrid();
-        $this->view->grid = $Grid->init($idRecebimento)
+        $this->view->grid = $Grid->init($idRecebimento, $recebimento->getStatus())
             ->render();
     }
 
@@ -172,37 +166,6 @@ class Enderecamento_ProdutoController extends Action
 			$this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
         
-    }
-
-    public function trocarAction()
-    {
-        $trocaUma = $this->_getParam('massaction-select');
-
-        if (!is_null($trocaUma)) {
-            $this->confirmaTroca();
-        }
-        $params = $this->_getAllParams();
-        $recebimento = $params['id'];
-        $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
-        $this->view->grid = $grid->init($params);
-
-        if (!is_null($params)) {
-            $this->view->ajaxFilter = true;
-        }
-    }
-
-    public function confirmaTroca()
-    {
-        $params = $this->_getAllParams();
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-        $recebimento = $params['id'];
-        if ($paleteRepo->realizaTroca($recebimento, $params['mass-id'])) {
-            $this->addFlashMessage('success', 'Troca realizada com sucesso');
-        }
-        $url = '/enderecamento/produto/index/id/' . $recebimento;
-        $this->_redirect($url);
-        exit;
     }
 
 } 

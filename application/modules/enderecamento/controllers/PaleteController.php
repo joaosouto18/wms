@@ -10,14 +10,31 @@ class Enderecamento_PaleteController extends Action
      */
     public function indexAction()
     {
-        $trocaUma = $this->_getParam('massaction-select', null);
-        if (!is_null($trocaUma)) {
-            $this->confirmaTroca();
-        }
-
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
+        $trocaUma = $this->_getParam('massaction-select', null);
+        $params = $this->_getAllParams();
+
+        if (!is_null($trocaUma)) {
+            // verificar se novo recebimento possui o produto selecionado
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto);
+
+            if ($result) {
+                $this->addFlashMessage('info', 'Este produto já consta no novo recebimento!');
+                $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+            } else {
+                // realizar trocas de U.M.As para novo recebimento
+                $result = $this->confirmaTroca();
+
+                if ($result) {
+                    $this->addFlashMessage('info', $result);
+                    $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+                }
+            }
+        }
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
@@ -244,28 +261,38 @@ class Enderecamento_PaleteController extends Action
 
     public function trocarAction()
     {
-        $idFiltroRecebimento = $this->_getParam('filtro-recebimento', null);
         $params = $this->_getAllParams();
 
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
-        if (!is_null($idFiltroRecebimento)) {
+
+        if (isset($params['filtro-recebimento'])) {
             $this->view->ajaxFilter = true;
         }
+
         $this->view->grid = $grid->init($params);
     }
 
     public function confirmaTroca()
     {
         $params = $this->_getAllParams();
+        $recebimento = $params['novo-recebimento-id'];
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-        $recebimento = $params['id'];
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+        $existeRecebimento = $recebimentoRepo->find($recebimento);
+
+        if ($existeRecebimento == null) {
+            return 'Recebimento inexistente!';
+        }
+
         if ($paleteRepo->realizaTroca($recebimento, $params['mass-id'])) {
             $this->addFlashMessage('success', 'Troca realizada com sucesso');
         }
-        $url = '/enderecamento/palete/index/id/'.$recebimento.'/codigo/'.$params['codigo'].'/grade/'.urlencode($params['grade']);
+
+        $url = '/enderecamento/produto/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']);
         $this->_redirect($url);
         exit;
     }
 
-} 
+}

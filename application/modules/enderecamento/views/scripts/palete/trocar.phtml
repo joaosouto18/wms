@@ -1,10 +1,29 @@
-<?php
-if ($this->ajaxFilter != true) : ?>
-
-    <?php echo $this->partial('palete/form-trocar.phtml') ?>
-
-<?php endif; ?>
+<div>
+    <form>
+        <label for="recebimento">Informe um novo Recebimento</label><br />
+        <input type="text" name="novo-recebimento" id="novo-recebimento"/>
+    </form>
+</div>
 
 <div id="grid-filtro-recebimento">
     <?php echo $this->grid ?>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#novo-recebimento').keyup(function(){
+            if ($('#novo-recebimento-id').length == 0) {
+                $('#formGrid').append( $("<input type='hidden' name='novo-recebimento-id' id='novo-recebimento-id' value="+ $('#novo-recebimento').val() +">"));
+            }
+
+            $('#novo-recebimento-id').val($('#novo-recebimento').val());
+        });
+
+        $(".massaction-button").mouseenter(function () {
+            if ($('#novo-recebimento').val() == '') {
+                alert('É necessário informar um novo recebimento!');
+                return false;
+            }
+        });
+    });
+</script>
