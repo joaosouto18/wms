@@ -275,18 +275,18 @@ class Enderecamento_PaleteController extends Action
     public function confirmaTroca()
     {
         $params = $this->_getAllParams();
-        $recebimento = $params['novo-recebimento-id'];
+        $novoRecebimento = $params['novo-recebimento-id'];
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
-        $existeRecebimento = $recebimentoRepo->find($recebimento);
+        $existeRecebimento = $recebimentoRepo->find($novoRecebimento);
 
         if ($existeRecebimento == null) {
             return 'Recebimento inexistente!';
         }
 
-        if ($paleteRepo->realizaTroca($recebimento, $params['mass-id'])) {
+        if ($paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'])) {
             $this->addFlashMessage('success', 'Troca realizada com sucesso');
         }
 

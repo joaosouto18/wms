@@ -661,19 +661,11 @@ class PaleteRepository extends EntityRepository
             ->innerJoin('pa.unitizador', 'u')
             ->innerJoin('pa.recebimento', 'receb')
             ->innerJoin('receb.status', 'sigla')
-            ->leftJoin('pa.depositoEndereco', 'de');
-
-        if (isset($params['grade']) && !empty($params['grade']) && isset($params['codigo']) && !empty($params['codigo'])) {
-            $query
-                ->setParameter('grade', $params['grade'])
-                ->andWhere('pa.grade = :grade')
-                ->andWhere('pa.codProduto = :produto')
-                ->setParameter('produto', $params['codigo']);
-        } else {
-            $query
-                ->andWhere('pa.recebimento = :recebimento')
-                ->setParameter('recebimento', $params['filtro-recebimento']);
-        }
+            ->leftJoin('pa.depositoEndereco', 'de')
+            ->setParameter('recebimento', $params['id'])
+            ->setParameter('produto', $params['codigo'])
+            ->andWhere('pa.codProduto = :produto')
+            ->andWhere('pa.recebimento = :recebimento');
 
         return $query->getQuery()->getResult();
     }
