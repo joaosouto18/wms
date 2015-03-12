@@ -10,19 +10,13 @@ class Enderecamento_ProdutoController extends Action
      */
     public function indexAction()
     {
-        $trocaUma = $this->_getParam('massaction-select', null);
-        if (!is_null($trocaUma)) {
-            $this->confirmaTroca();
-        }
-
+        $idRecebimento   = $this->getRequest()->getParam('id');
         $codRecebimento  = $this->getRequest()->getParam('COD_RECEBIMENTO');
 
         if (isset($codRecebimento)) {
             $idRecebimento = $codRecebimento;
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
-
-        $idRecebimento   = $this->getRequest()->getParam('id');
 
         $buttons[] =  array(
             'label' => 'Voltar para Busca de Recebimentos',
@@ -53,7 +47,7 @@ class Enderecamento_ProdutoController extends Action
         $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
 
         $Grid = new ProdutosGrid();
-        $this->view->grid = $Grid->init($idRecebimento)
+        $this->view->grid = $Grid->init($idRecebimento, $recebimento->getStatus())
             ->render();
     }
 
@@ -172,28 +166,6 @@ class Enderecamento_ProdutoController extends Action
 			$this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
         
-    }
-
-    public function trocarAction()
-    {
-        $params = $this->_getAllParams();
-        $recebimento = $params['id'];
-        $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
-        $this->view->grid = $grid->init($params);
-    }
-
-    public function confirmaTroca()
-    {
-        $params = $this->_getAllParams();
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-        $recebimento = $params['id'];
-        if ($paleteRepo->realizaTroca($recebimento, $params['mass-id'])) {
-            $this->addFlashMessage('success', 'Troca realizada com sucesso');
-        }
-        $url = '/enderecamento/produto/index/id/' . $recebimento;
-        $this->_redirect($url);
-        exit;
     }
 
 } 

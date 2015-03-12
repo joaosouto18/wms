@@ -39,8 +39,12 @@ class Trocar extends Grid
                     'index' => 'impresso',
                 ));
 
-        $this->setShowExport(false)
-            ->addMassAction('trocar', 'Realizar troca');
+        if (isset($params['id']) && isset($params['codigo']) && isset($params['grade'])) {
+            $this->setShowExport(false)
+                ->addMassAction(
+                    'enderecamento/palete/trocar/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']),
+                    'Realizar troca');
+        }
 
         return $this;
     }

@@ -634,12 +634,7 @@ class PaleteRepository extends EntityRepository
         {
             $entity = $this->find($uma);
             $entRecebimento = $this->_em->getReference('wms:Recebimento', $recebimento);
-            if ($entity->getDepositoEndereco() != null) {
-                $entStatus = $this->_em->getReference('wms:Util\Sigla', Palete::STATUS_ENDERECADO);
-            } else {
-                $entStatus = $this->_em->getReference('wms:Util\Sigla', Palete::STATUS_EM_ENDERECAMENTO);
-            }
-            $entity->setStatus($entStatus);
+
             $entity->setRecebimento($entRecebimento);
             $this->_em->persist($entity);
         }
@@ -651,7 +646,7 @@ class PaleteRepository extends EntityRepository
         }
     }
 
-    public function getPaletesByProdutoAndGrade($params, $status = \Wms\Domain\Entity\Recebimento::STATUS_DESFEITO)
+    public function getPaletesByProdutoAndGrade($params)
     {
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select("pa.id, u.descricao unitizador, pa.qtd, sigla.sigla status, de.descricao endereco, pa.impresso")
@@ -660,12 +655,10 @@ class PaleteRepository extends EntityRepository
             ->innerJoin('pa.recebimento', 'receb')
             ->innerJoin('receb.status', 'sigla')
             ->leftJoin('pa.depositoEndereco', 'de')
-            ->setParameter('grade', $params['grade'])
+            ->setParameter('recebimento', $params['id'])
             ->setParameter('produto', $params['codigo'])
-            ->setParameter('status', $status)
-            ->where('pa.codProduto = :produto')
-            ->andWhere('pa.grade = :grade')
-            ->andWhere('receb.status = :status');
+            ->andWhere('pa.codProduto = :produto')
+            ->andWhere('pa.recebimento = :recebimento');
 
         return $query->getQuery()->getResult();
     }

@@ -14,7 +14,7 @@ class Produtos extends Grid
     /**
      * @param int $idRecebimento
      */
-    public function init ($idRecebimento)
+    public function init ($idRecebimento, $status = null)
     {
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
@@ -77,15 +77,16 @@ class Produtos extends Grid
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => array('codigo','grade')
                 ))
-            ->addAction(array(
-                    'label' => 'Trocar U.M.As',
-                    'controllerName' => 'produto',
-                    'actionName' => 'trocar',
-                    'cssClass' => 'dialogAjax',
-                    'pkIndex' => array('codigo','grade')
-                ))
-
             ->setShowExport(false);
+
+        if ($status->getSigla() == 'DESFEITO' ) {
+            $this->addAction(array(
+                'label' => 'Trocar U.M.As',
+                'controllerName' => 'palete',
+                'actionName' => 'trocar',
+                'pkIndex' => array('codigo','grade')
+            ));
+        }
 
         return $this;
     }
