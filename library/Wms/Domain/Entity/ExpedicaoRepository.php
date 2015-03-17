@@ -889,13 +889,18 @@ class ExpedicaoRepository extends EntityRepository
      * @param $parametros
      * @return \Doctrine\ORM\QueryBuilder
      */
-    public function buscar($parametros)
+    public function buscar($parametros, $idDepositoLogado = null)
     {
         $where="";
         $whereSubQuery="";
         $and="";
         $andSub="";
         $cond="";
+
+        if (isset($idDepositoLogado)) {
+            $andWhere = "PV.";
+        }
+
         if (is_array($parametros['centrais'])) {
             $central = implode(',',$parametros['centrais']);
             $where.=$and."( PED.CENTRAL_ENTREGA in(".$central.")";
@@ -1074,7 +1079,7 @@ class ExpedicaoRepository extends EntityRepository
                       E.COD_EXPEDICAO DESC
                      ';
 
-        //print "<pre>"; print_r($sql); die();
+        print "<pre>"; print_r($sql); die();
        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
