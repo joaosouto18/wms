@@ -13,9 +13,10 @@ class Inventario extends Pdf
         $this->Cell(20, 20, utf8_decode("RELATÓRIO DE INVENTARIO POR RUA" ), 0, 1);
 
         $this->SetFont('Arial', 'B', 8);
-        $this->Cell(22,  5, utf8_decode("Endereço")  ,1, 0);
-        $this->Cell(18,  5, utf8_decode("Código")   ,1, 0);
-        $this->Cell(100, 5, utf8_decode("Descrição") ,1, 0);
+        $this->Cell(20,  5, utf8_decode("Endereço")  ,1, 0);
+        $this->Cell(15,  5, utf8_decode("Código")   ,1, 0);
+        $this->Cell(70, 5, utf8_decode("Descrição") ,1, 0);
+        $this->Cell(35, 5, utf8_decode("Volume") ,1, 0);
 		$this->Cell(43, 5, utf8_decode("Unitizador") ,1, 0);
         $this->Cell(12,  5, "Qtde" ,1, 1);
     }
@@ -57,10 +58,11 @@ class Inventario extends Pdf
         foreach ($saldo as $estoque) {
 
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(22, 5, $estoque['dscEndereco'] ,1, 0);
-            $this->Cell(18, 5, $estoque['codProduto']      ,1, 0);
-            $this->Cell(100, 5, $estoque['descricao'] ,1, 0);
-			
+            $this->Cell(20, 5, $estoque['dscEndereco'] ,1, 0);
+            $this->Cell(15, 5, $estoque['codProduto']      ,1, 0);
+            $this->Cell(70, 5, $estoque['descricao'] ,1, 0);
+            $this->Cell(35, 5, $estoque['volume'] ,1, 0);
+
 			$qtd = "";
 			if ($exibirEstoque == true) {
 				$qtd = $estoque['qtd'];

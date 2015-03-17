@@ -118,7 +118,7 @@ class Web_ProdutoController extends Crud {
      */
     public function editAction() {
         //adding default buttons to the page
-        Page::configure(array(
+            Page::configure(array(
             'buttons' => array(
                 array(
                     'label' => 'Voltar',
@@ -259,6 +259,8 @@ class Web_ProdutoController extends Crud {
                     'CBInterno' => ($embalagem->getCBInterno() == 'S') ? 'Sim' : 'Não',
                     'imprimirCB' => ($embalagem->getImprimirCB() == 'S') ? 'Sim' : 'Não',
                     'codigoBarras' => $embalagem->getCodigoBarras(),
+                    'capacidadePicking' => $embalagem->getCapacidadePicking(),
+                    'pontoReposicao' => $embalagem->getPontoReposicao(),
                     'endereco' => ($embalagem->getEndereco()) ? $embalagem->getEndereco()->getDescricao() : '',
                 );
             }

@@ -24,8 +24,8 @@ $attribs = $grid->getAttribs();
             select.val('');
             
             return false;
-        });
-
+        })
+        
         // button apply filter
         $('#btnAddFilter').click(function() {
             $('#formGrid')
@@ -59,19 +59,19 @@ $attribs = $grid->getAttribs();
         $('button.massaction-button').click(function() {
             // check selected action
             var select = $('select[name="massaction-select"]');
-
+            
             if(select.val() == "") {
                 alert('Por favor, selecione uma opção');
                 select.focus();
                 return false;
             }
-
+            
             // check selected records
             if($('input.massaction-check-opt:checked').size() == 0) {
                 alert('Selecione ao menos um registro');
                 return false;
             }
-
+  
             // submit
             $('#formGrid')
                 .attr('action', URL + '/' + select.val())
@@ -135,6 +135,7 @@ $attribs = $grid->getAttribs();
                         <?php endforeach; ?>
                     </select>
                     <button type="button" class="massaction-button"><span>Executar</span></button>
+                    <input type="hidden" value="<?php echo $grid->getHiddenId() ?>" name="hiddenId"/>
                 </div>
                 <form class="massaction-form" method="post">
                     <input type="hidden" value="" class="massaction-values"/>

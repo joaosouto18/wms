@@ -19,15 +19,60 @@
     </div>
     <br>
 
-    <div>
-        <b><label style="font-size:17px">U.M.A.</label></b>
-        <input class="focus" type="text" name="codigoBarrasUma" id="codigoBarrasUma" value="" />
-    </div>
+    <table>
+        <tr>
+            <td colspan="2">
+                <b><label style="font-size:17px">U.M.A.</label></b>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input class="focus" type="text" name="codigoBarrasUma" id="codigoBarrasUma" value="" />
+            </td>
+            <td>
+                <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'selecionar-produto', 'idOnda' => $this->idOnda)); ?>">Alternar para Produto</a>
+            </td>
+        </tr>
+    </table>
 
     <div>
         <input type="submit" name="submit" id="submit" value="Buscar" />
     </div>
-    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'selecionar-produto', 'idOnda' => $this->idOnda)); ?>">Alternar para Produto</a>
+
+    <?php if ($this->produtos[0]->getCodProdutoVolume() !=NULL) {?>
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable" style="width: 70%; margin-left: 5%; margin-right: 5%; margin-top: 3%; margin-bottom:  3%">
+            <tbody>
+            <tr class ="gTTitle">
+                <td><b>Volumes</b></td>
+                <td><b>Quantidade</b></td>
+            </tr>
+            <?php
+            foreach ($this->produtos as $produto): $this->color = !($this->color);?>
+                <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><?php
+                        /** @var \Doctrine\ORM\EntityManager $em */
+                        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+                        if ($produto->getCodProdutoEmbalagem() == NULL) {
+                            $volumeEn = $em->getRepository("wms:Produto\Volume")->findOneBy(array('id'=>$produto->getCodProdutoVolume()));
+                            echo $volumeEn->getDescricao() ;
+                        } else {
+                            $embalagemEn = $em->getRepository("wms:Produto\Embalagem")->findOneBy(array('id'=>$produto->getCodProdutoEmbalagem()));
+                            echo $embalagemEn->getDescricao() ;
+                        }
+
+                        ?></td>
+                    <td><?php echo $produto->getQtd() ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <div class = "gPager">
+    <?php }?>
+
 </form>
+
+
 
 <div class = "gPager">

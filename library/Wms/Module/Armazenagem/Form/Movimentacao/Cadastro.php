@@ -27,6 +27,9 @@ class Cadastro extends Form
                 'size' => 12,
                 'label' => 'Grade',
             ))
+            ->addElement('select', 'volumes', array(
+                'label' => 'Volumes',
+            ))
             ->addElement('text', 'rua', array(
                 'size' => 3,
                 'label' => 'Rua',
@@ -75,7 +78,7 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
             );
 
     }

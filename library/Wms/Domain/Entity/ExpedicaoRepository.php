@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity;
 
+use Core\Grid\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao as ExpedicaoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
@@ -45,34 +46,25 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function getProdutosSemOnda($expedicoes)
+    public function getProdutosSemOnda($expedicoes,$filialExterno)
     {
-        $sessao = new \Zend_Session_Namespace('deposito');
-        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-        $central = $deposito->getFilial()->getCodExterno();
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
-                         SUM (PP.QUANTIDADE) as QTD,
-                         P.CAPACIDADE_PICKING,
-                         P.PONTO_REPOSICAO
+                         SUM (PP.QUANTIDADE) as QTD
                     FROM PEDIDO P
                     LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                     LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                    LEFT JOIN PRODUTO        P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
-                          AND P.CENTRAL_ENTREGA = $central
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE,P.CAPACIDADE_PICKING, P.PONTO_REPOSICAO";
+                          AND P.CENTRAL_ENTREGA = $filialExterno
+                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function getProdutosSemOndaByExpedicao($expedicoes)
+    public function getProdutosSemOndaByExpedicao($expedicoes, $filialExterno)
     {
-        $sessao = new \Zend_Session_Namespace('deposito');
-        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-        $central = $deposito->getFilial()->getCodExterno();
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
                          SUM (PP.QUANTIDADE) as QTD,
@@ -84,17 +76,14 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN PRODUTO        P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
-                          AND P.CENTRAL_ENTREGA = $central
+                          AND P.CENTRAL_ENTREGA = $filialExterno
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE,E.COD_EXPEDICAO";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function getPedidoProdutoSemOnda($expedicoes)
+    public function getPedidoProdutoSemOnda($expedicoes,$filialExterno)
     {
-        $sessao = new \Zend_Session_Namespace('deposito');
-        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-        $central = $deposito->getFilial()->getCodExterno();
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
                          PP.QUANTIDADE as QTD,
@@ -105,11 +94,77 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
-                          AND P.CENTRAL_ENTREGA = $central
+                          AND P.CENTRAL_ENTREGA = $filialExterno
                           ";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+    }
+
+    private function validaPickingProdutosByExpedicao ( $produtosRessuprir) {
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+
+        foreach ($produtosRessuprir as $produto){
+            $codProduto = $produto['COD_PRODUTO'];
+            $grade = $produto['DSC_GRADE'];
+
+            $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+            $volumes = $produtoEn->getVolumes();
+            $embalagens = $produtoEn->getEmbalagens();
+
+            if ((count($volumes) == 0) && (count($embalagens)==0)) {
+                $resultado = array();
+                $resultado['observacao'] = "Existem produtos sem picking nesta(s) expedição(ões)";
+                $resultado['resultado'] = false;
+                return $resultado;
+            }
+
+            if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+                if (count($embalagens) == 0) {
+                    throw new \Exception("O Produto cód. $codProduto - $grade não possui nenhuma embalagem cadastrada" );
+                }
+            } else {
+                if (count($volumes) == 0) {
+                    throw new \Exception("O Produto cód. $codProduto - $grade não possui nenhum volume cadastrado" );
+                }
+            }
+
+            foreach($volumes as $volume) {
+                if ($volume->getCapacidadePicking() == 0) {
+                    throw new \Exception("O Produto cód. $codProduto - $grade possui volumes sem capacidade de picking definida" );
+                }
+                if ($volume->getPontoReposicao() >= $volume->getCapacidadePicking()) {
+                    throw new \Exception("O Produto cód. $codProduto - $grade possui volumes com o ponto de reposição definido incorretamente" );
+                }
+
+                if ($volume->getEndereco() == null) {
+                    $resultado = array();
+                    $resultado['observacao'] = "Existem produtos sem picking nesta(s) expedição(ões)";
+                    $resultado['resultado'] = false;
+                    return $resultado;
+                }
+            }
+            foreach($embalagens as $embalagem) {
+                if ($embalagem->getCapacidadePicking() == 0) {
+                    throw new \Exception("O Produto cód. $codProduto - $grade possui volumes sem capacidade de picking definida" );
+                }
+                if ($embalagem->getPontoReposicao() >= $embalagem->getCapacidadePicking()) {
+                    throw new \Exception("O Produto cód. $codProduto - $grade possui volumes com o ponto de reposição definido incorretamente" );
+                }
+
+                if ($embalagem->getEndereco() == null) {
+                    $resultado = array();
+                    $resultado['observacao'] = "Existem produtos sem picking nesta(s) expedição(ões)";
+                    $resultado['resultado'] = false;
+                    return $resultado;
+                }
+            }
+        }
+        $resultado = array();
+        $resultado['observacao'] = "";
+        $resultado['resultado'] = true;
+        return $resultado;
     }
 
     public function gerarOnda($expedicoes)
@@ -122,160 +177,40 @@ class ExpedicaoRepository extends EntityRepository
                 if ($expedicao != end($expedicoes)) $strExpedicao = $strExpedicao . ",";
             }
 
-            $produtosRessuprir = $this->getProdutosSemOnda($strExpedicao);
-            $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao);
-            $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao);
+            $sessao = new \Zend_Session_Namespace('deposito');
+            $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+            $central = $deposito->getFilial()->getCodExterno();
+            if ($deposito->getFilial()->getIndUtilizaRessuprimento() == "N"){
+                throw new \Exception("A Filial " . $deposito->getFilial()->getPessoa()->getNomeFantasia() . " não utiliza ressuprimento");
+            }
+
+            $produtosRessuprir = $this->getProdutosSemOnda($strExpedicao,$central);
+            $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
+            $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
 
             if (count($produtosRessuprir) <=0) {
                 throw new \Exception("Nenhuma expedição Selecionada");
             }
 
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-            $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
-            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
-            /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
-            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
-            $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
 
-            //VALIDO SE TODOS OS PRODUTOS TEM ENDERECO DE PICKING
-            foreach ($produtosRessuprir as $produto){
-                $codProduto = $produto['COD_PRODUTO'];
-                $grade = $produto['DSC_GRADE'];
+                $result = $this->validaPickingProdutosByExpedicao( $produtosRessuprir);
+                if ($result['resultado'] != true) return $result;
+                $ondaEn = $ondaRepo->geraNovaOnda();
+                $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
+                $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
+                    $this->getEntityManager()->flush();
+                $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
+                $this->getEntityManager()->flush();
+                $ondaRepo->sequenciaOndasOs();
+                    $this->getEntityManager()->commit();
 
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-                $idPicking = $produtoRepo->getEnderecoPicking($produtoEn,"ID");
-                if ($idPicking == NULL) {
-                    throw new \Exception("O Produto $codProduto - $grade não possuí picking cadastrado");
-                }
-            }
+            $resultado = array();
+            $resultado['observacao'] = "Ondas Geradas com sucesso";
+            $resultado['resultado'] = true;
 
-            //CRIO A ONDA DE SEPARACAO
-            $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
-            $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-            $usuarioEn = $usuarioRepo->find($idUsuario);
-
-            $ondaEn = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimento();
-            $ondaEn->setDataCriacao(new \DateTime());
-            $ondaEn->setDscObservacao("");
-            $ondaEn->setUsuario($usuarioEn);
-            $this->getEntityManager()->persist($ondaEn);
-
-            //FAÇO A RESERVA DE SAIDA DO PICKING REFERENTE A EXPEDICAO
-            foreach ($produtosReservaSaida as $produto) {
-                $codExpedicao = $produto['COD_EXPEDICAO'];
-                $codProduto = $produto['COD_PRODUTO'];
-                $grade = $produto['DSC_GRADE'];
-                $qtd = $produto['QTD'];
-
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-                $idPicking = $produtoRepo->getEnderecoPicking($produtoEn,"ID");
-
-                $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$codProduto,$grade,$qtd,"S","E",$codExpedicao);
-            }
-
-            //RELACIONO A ONDA AOS PEDIDOS DE EXPEDICAO NA TABELA ONDA_RESSUPRIMENTO_PEDIDO
-            foreach ($pedidosProdutosRessuprir as $pedidoProduto){
-
-                $codPedido = $pedidoProduto['COD_PEDIDO'];
-                $codProduto = $pedidoProduto['COD_PRODUTO'];
-                $grade = $pedidoProduto['DSC_GRADE'];
-                $qtd = $pedidoProduto['QTD'];
-
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-                $pedidoEn = $pedidoRepo->findOneBy(array('id'=>$codPedido));
-
-                $ondaPedido = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedido();
-                $ondaPedido->setOndaRessuprimento($ondaEn);
-                $ondaPedido->setPedido($pedidoEn);
-                $ondaPedido->setProduto($produtoEn);
-                $ondaPedido->setQtd($qtd);
-                $this->getEntityManager()->persist($ondaPedido);
-            }
-
-            //GERO AS ORDENS DE SERVIÇO REFERENTE A ONDA
-            $statusEn = $siglaRepo->findOneBy(array('id'=>\Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA));
-            foreach ($produtosRessuprir as $produto){
-                $codProduto = $produto['COD_PRODUTO'];
-                $grade = $produto['DSC_GRADE'];
-                $pontoReposicao = $produto['PONTO_REPOSICAO'];
-                $capacidadePicking = $produto['CAPACIDADE_PICKING'];
-
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-                $idPicking = $produtoRepo->getEnderecoPicking($produtoEn,"ID");
-
-                $qtdPickingReal = $estoqueRepo->getQtdEstoqueByProdutoAndEndereco($codProduto,$grade,$idPicking);
-                $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idPicking,"E");
-                $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idPicking,"S");
-                $saldo = $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking;
-
-                if ($saldo <= $pontoReposicao) {
-                    $qtdRessuprir = $saldo * -1;
-                    $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
-
-                    //GERO AS OS DE ACORDO COM OS ENDEREÇOS DE PULMAO
-                    $estoquePulmao = $estoqueRepo->getEstoquePulmaoByProduto($codProduto, $grade,false);
-                    foreach ($estoquePulmao as $estoque) {
-                        $qtdEstoque = $estoque['qtd'];
-                        $idPulmao = $estoque['id'];
-
-                        $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
-
-                        //CALCULO A QUANTIDADE DO PALETE
-                        if ($qtdRessuprirMax >= $qtdEstoque) {
-                            $qtdOnda = $qtdEstoque;
-                        }else {
-                            if ($capacidadePicking >= $qtdRessuprir){
-                                $qtdOnda = $capacidadePicking;
-                            } else {
-                                $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking))* $capacidadePicking;
-                            }
-                            if ($qtdOnda > $qtdEstoque)
-                                $qtdOnda = $qtdEstoque;
-                        }
-
-                        if ($qtdOnda > 0) {
-                            //CRIA A ORDEM DE SERVICO
-                            $idOrdemServico = $ordemServicoRepo->save(new OrdemServicoEntity, array(
-                                'identificacao' => array(
-                                    'tipoOrdem' => 'ressuprimento',
-                                    'idAtividade' => AtividadeEntity::RESSUPRIMENTO,
-                                    'formaConferencia' => OrdemServicoEntity::COLETOR,
-                                ),
-                            ));
-                            $osEn = $ordemServicoRepo->findOneBy(array('id'=>$idOrdemServico));
-
-                            //RELACIONO A ORDEM DE SERVICO A ONDA DE RESSUPRIMENTO NA TABELA ONDA_RESSUPRIMENTO_OS
-                            $ondaRessuprimentoOs = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs();
-                            $ondaRessuprimentoOs->setQtd($qtdOnda);
-                            $ondaRessuprimentoOs->setProduto($produtoEn);
-                            $ondaRessuprimentoOs->setOndaRessuprimento($ondaEn);
-                            $ondaRessuprimentoOs->setEndereco($enderecoPulmaoEn);
-                            $ondaRessuprimentoOs->setStatus($statusEn);
-                            $ondaRessuprimentoOs->setOs($osEn);
-                            $this->getEntityManager()->persist($ondaRessuprimentoOs);
-                            $this->getEntityManager()->flush();
-
-                            //ADICIONA AS RESERVAS DE ESTOQUE
-                            $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$codProduto,$grade,$qtdOnda,"E","O",$ondaRessuprimentoOs->getId(),$idOrdemServico);
-                            $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$codProduto,$grade,$qtdOnda * -1,"S","O",$ondaRessuprimentoOs->getId(),$idOrdemServico);
-                        }
-                        $qtdRessuprir = $qtdRessuprir - $qtdOnda;
-                        $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                        if ($qtdRessuprir <= 0) break;
-                    }
-                }
-            }
-            $this->getEntityManager()->flush();
-            $this->getEntityManager()->commit();
-            return true;
+            return $resultado;
         } catch(\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
@@ -284,9 +219,17 @@ class ExpedicaoRepository extends EntityRepository
     }
 
 
-    public function findPedidosProdutosSemEtiquetaById($idExpedicao) {
+    public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) {
 
         $sequencia = $this->getSystemParameterValue("SEQUENCIA_ETIQUETA_SEPARACAO");
+
+        $whereCargas = null;
+        if(!is_null($cargas) && is_array($cargas)) {
+            $cargas = implode(',',$cargas);
+            $whereCargas = " AND c.codCargaExterno in ($cargas) ";
+        } else if (!is_null($cargas)) {
+            $whereCargas = " AND c.codCargaExterno = $cargas ";
+        }
 
         $query = "SELECT pp
                         FROM wms:Expedicao\PedidoProduto pp
@@ -297,13 +240,15 @@ class ExpedicaoRepository extends EntityRepository
                          WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
                         WHERE c.expedicao = $idExpedicao
-                        AND ped.id NOT IN (
-                          SELECT pp2.codPedido
-                            FROM wms:Expedicao\EtiquetaSeparacao ep
-                            INNER JOIN wms:Expedicao\PedidoProduto pp2
-                            WITH pp2.pedido = ep.pedido
-                            INNER JOIN ep.produto p2
-                            INNER JOIN ep.pedido ped2
+                          $whereCargas
+                          AND ped.centralEntrega = '$central'
+                          AND ped.id NOT IN (
+                             SELECT pp2.codPedido
+                               FROM wms:Expedicao\EtiquetaSeparacao ep
+                              INNER JOIN wms:Expedicao\PedidoProduto pp2
+                               WITH pp2.pedido = ep.pedido
+                              INNER JOIN ep.produto p2
+                              INNER JOIN ep.pedido ped2
                         )";
 
         switch ($sequencia) {
@@ -484,22 +429,30 @@ class ExpedicaoRepository extends EntityRepository
         if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
             return 'Existem etiquetas pendentes de corte nesta expedição';
         }
+        ini_set('max_execution_time', 3000);
+        Try {
+            $this->getEntityManager()->beginTransaction();
+            if ($validaStatusEtiqueta == true) {
+                $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
+                if (is_string($result)) {
+                    return $result;
+                }
+                $result = $this->validaVolumesPatrimonio($idExpedicao);
+                if (is_string($result)) {
+                    return $result;
+                }
+            } else {
+                if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
+                $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
+            }
 
-        if ($validaStatusEtiqueta == true) {
-            $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
-            if (is_string($result)) {
-                return $result;
-            }
-            $result = $this->validaVolumesPatrimonio($idExpedicao);
-            if (is_string($result)) {
-                return $result;
-            }
-        } else {
-            if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
-            $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
+            $result = $this->finalizar($idExpedicao,$central);
+            $this->getEntityManager()->commit();
+            return $result;
+        } catch(\Exception $e) {
+            $this->getEntityManager()->rollback();
+            return $e->getMessage();
         }
-
-        return $this->finalizar($idExpedicao,$central);
     }
 
     public function validaVolumesPatrimonio($idExpedicao){
@@ -540,18 +493,22 @@ class ExpedicaoRepository extends EntityRepository
     {
         if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
 
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
         $expedicaoEntity->setDataFinalizacao(new \DateTime());
 
         $this->finalizeOSByExpedicao($expedicaoEntity->getId());
-
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-        $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
         $pedidoRepo->finalizaPedidosByCentral($centralEntrega,$expedicaoEntity->getId());
-
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $pedidosNaoConferidos = $pedidoRepo->findPedidosNaoConferidos($expedicaoEntity->getId());
         if ($pedidosNaoConferidos == null) {
@@ -565,20 +522,21 @@ class ExpedicaoRepository extends EntityRepository
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
         $this->alteraStatus($expedicaoEntity,$novoStatus);
 
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
         $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
         $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $expedicaoEntity->getId()));
+
+
+        $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuarioEn = $usuarioRepo->find($idUsuario);
+
         foreach ($reservaEstoqueArray as $re) {
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoque $reservaEstoqueEn */
-            $reservaEstoqueEn = $re['reservaEstoque'];
-            $codProduto = $reservaEstoqueEn->getProduto()->getId();
-            $grade = $reservaEstoqueEn->getProduto()->getGrade();
-            $reservaEstoqueRepo->efetivaReservaEstoque(Null,$codProduto,$grade,-1,"S","E",$idExpedicao);
+            $reservaEstoqueEn = $re->getReservaEstoque();
+            if ($reservaEstoqueEn->getAtendida() == 'N') {
+                $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,"E",$idExpedicao,$usuarioEn);
+            }
         }
-
+        $this->getEntityManager()->flush();
         return true;
-
     }
 
     public function liberarVolumePatrimonioByExpedicao($idExpedicao){
@@ -1222,14 +1180,33 @@ class ExpedicaoRepository extends EntityRepository
      */
     public function getResumoConferenciaByID ($idExpedicao){
         $source = $this->_em->createQueryBuilder()
-            ->select('e.id, e.dataInicio, e.dataFinalizacao, s.id codSigla, s.sigla, COUNT(e.id) qtdEtiquetas, COUNT(e.id) qtdConferidas')
+            ->select('e.id,
+                      e.dataInicio,
+                      e.dataFinalizacao,
+                      s.id as codSigla,
+                      s.sigla')
             ->from('wms:Expedicao', 'e')
-            ->leftJoin('wms:Expedicao\Carga', 'c', 'WITH', 'c.expedicao = e.id')
-            ->leftJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.carga = c.id')
-            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.pedido = p.id')
-            ->leftJoin('wms:Util\Sigla', 's', 'WITH', 's.id = e.status')
-            ->where("e.id = $idExpedicao")
-            ->groupBy('e.id, e.dataInicio, e.dataFinalizacao, s.id, s.sigla');
+            ->leftJoin("e.status", "s")
+            ->addSelect("(
+                         SELECT COUNT(es1.id)
+                           FROM wms:Expedicao\EtiquetaSeparacao es1
+                          LEFT JOIN es1.pedido ped1
+                          LEFT JOIN ped1.carga c1
+                          WHERE c1.codExpedicao = e.id
+                            AND es1.codStatus NOT IN(524,525)
+                          GROUP BY c1.codExpedicao
+                          ) as qtdEtiquetas")
+            ->addSelect("(
+                         SELECT COUNT(es2.id)
+                           FROM wms:Expedicao\EtiquetaSeparacao es2
+                          LEFT JOIN es2.pedido ped2
+                          LEFT JOIN ped2.carga c2
+                          WHERE c2.codExpedicao = e.id
+                            AND es2.codStatus in ( 526, 531, 532 )
+                          GROUP BY c2.codExpedicao
+                          ) as qtdConferidas")
+            ->where('e.id = :idExpedicao')
+            ->setParameter('idExpedicao', $idExpedicao);
 
         $result = $source->getQuery()->getResult();
 
@@ -1334,15 +1311,11 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutosEmbalado($idExpedicao)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select("count(DISTINCT exp.id) as nEmbalados")
-            ->from("wms:Expedicao\EtiquetaSeparacao","es")
+            ->select("count(es.codExpedicao) as nEmbalados")
+            ->from("wms:Expedicao\VEtiquetaSeparacao","es")
             ->innerJoin('wms:Produto', 'p', 'WITH', 'es.codProduto = p.id')
             ->innerJoin('p.embalagens', 'pe')
-            ->innerJoin("wms:Expedicao\PedidoProduto", 'pp', 'WITH', 'pp.codProduto = p.id')
-            ->innerJoin('pp.pedido', 'ped')
-            ->innerJoin('ped.carga', 'c')
-            ->innerJoin('c.expedicao', 'exp')
-            ->where('exp.id = :idExpedicao')
+            ->where('es.codExpedicao = :idExpedicao')
             ->andWhere("pe.embalado = 'S' ")
             ->setParameter("idExpedicao", $idExpedicao);
 
@@ -1491,6 +1464,63 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         return $source->getQuery()->getResult();
+    }
+
+    public function getProdutosSemEstoqueByExpedicao($idExpedicao) {
+
+        $sql = "SELECT EXP.COD_PRODUTO,
+                       EXP.DSC_GRADE,
+                       P.DSC_PRODUTO,
+                       EXP.QTD_EXP,
+                       NVL(EST.QTD_ESTOQUE,0) as QTD_ESTOQUE,
+                       NVL(RES.QTD_RESERVADA,0) as QTD_RESERV,
+                       (NVL(EST.QTD_ESTOQUE,0) - NVL(RES.QTD_RESERVADA,0)) as SALDO_FINAL,
+                       CASE WHEN (EXP.VOLUME = 0) THEN 'PRODUTO UNITARIO'
+                            WHEN (PV.COD_PRODUTO_VOLUME IS NOT NULL) THEN PV.DSC_VOLUME
+                      END as VOLUME
+                  FROM (SELECT SUM(PP.QUANTIDADE) as QTD_EXP, PP.COD_PRODUTO, PP.DSC_GRADE ,NVL(PV.COD_PRODUTO_VOLUME, '0') as VOLUME
+                          FROM EXPEDICAO E
+                          LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                          LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                          LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                          LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
+                         WHERE E.COD_EXPEDICAO IN (".$idExpedicao.")
+                         GROUP BY  PP.COD_PRODUTO, PP.DSC_GRADE, PV.COD_PRODUTO_VOLUME
+                         ) EXP
+                LEFT JOIN (SELECT SUM(E.QTD) as QTD_ESTOQUE, COD_PRODUTO, DSC_GRADE, VOLUME
+                             FROM (SELECT E.COD_PRODUTO,
+                                          E.DSC_GRADE,
+                                          E.COD_DEPOSITO_ENDERECO,
+                                          NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME,
+                                          CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = 37 THEN NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
+                                               ELSE E.COD_DEPOSITO_ENDERECO
+                                          END AS COD_DEPOSITO_ENDERECO_CORRETO,
+                                          E.QTD
+                                     FROM ESTOQUE E
+                                     LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                                     LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = E.COD_PRODUTO_EMBALAGEM
+                                     LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME) E
+                            WHERE E.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO_CORRETO
+                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.VOLUME) EST
+                      ON EST.COD_PRODUTO = EXP.COD_PRODUTO
+                     AND EST.DSC_GRADE = EXP.DSC_GRADE
+                     AND EST.VOLUME = EXP.VOLUME
+                LEFT JOIN (SELECT SUM(REP.QTD_RESERVADA) as QTD_RESERVADA, NVL(COD_PRODUTO_VOLUME, '0') as VOLUME, COD_PRODUTO, DSC_GRADE
+                             FROM RESERVA_ESTOQUE RE
+                            INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                            WHERE RE.IND_ATENDIDA = 'N'
+                            GROUP BY COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME) RES
+                       ON RES.COD_PRODUTO = EXP.COD_PRODUTO
+                      AND RES.DSC_GRADE = EXP.DSC_GRADE
+                      AND RES.VOLUME = EXP.VOLUME
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = EXP.COD_PRODUTO
+                                     AND P.DSC_GRADE = EXP.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = EXP.VOLUME
+                  WHERE        (NVL(EST.QTD_ESTOQUE,0) - NVL(RES.QTD_RESERVADA,0)) <0";
+
+        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
     }
 
 }

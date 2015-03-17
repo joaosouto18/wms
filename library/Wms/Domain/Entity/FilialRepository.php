@@ -23,6 +23,7 @@ class FilialRepository extends AtorRepository
 	$filial->setIdExterno($values['pessoa']['juridica']['idExterno']);
     $filial->setCodExterno($values['pessoa']['juridica']['codExterno']);
     $filial->setIndLeitEtqProdTransbObg($values['pessoa']['juridica']['indLeitEtqProdTransbObg']);
+    $filial->setIndUtilizaRessuprimento($values['pessoa']['juridica']['indRessuprimento']);
     $filial->setIndRecTransbObg($values['pessoa']['juridica']['indRecTransbObg']);
     $filial->setIsAtivo($values['pessoa']['juridica']['isAtivo']);
 	$this->persistirAtor($filial, $values);
@@ -70,16 +71,6 @@ class FilialRepository extends AtorRepository
 
         foreach ($this->findAll() as $filial)
             $filiais[$filial->getCodExterno()] = $filial->getPessoa()->getNomeFantasia();
-
-        return $filiais;
-    }
-
-    public function getIdAndDescriptionExternoValue()
-    {
-        $filiais = array();
-
-        foreach ($this->findAll() as $filial)
-            $filiais[$filial->getCodExterno()] = $filial->getPessoa()->getNomeFantasia() . ' - ' . $filial->getCodExterno();
 
         return $filiais;
     }

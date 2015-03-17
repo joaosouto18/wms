@@ -79,8 +79,10 @@ class Enderecamento_EnderecoController extends Action
                     $paleteEn = $paleteRepo->find($idPalete);
                     $larguraPalete = $paleteEn->getUnitizador()->getLargura(false)* 100;
                     $idRecebimento = $paleteEn->getRecebimento()->getId();
-                    $codProduto = $paleteEn->getCodProduto();
-                    $grade = $paleteEn->getGrade();
+
+                    $produtosEn = $paleteEn->getProdutos();
+                    $codProduto = $produtosEn[0]->getCodProduto();
+                    $grade      = $produtosEn[0]->getGrade();
 
                     $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($idEndereco,$larguraPalete);
 

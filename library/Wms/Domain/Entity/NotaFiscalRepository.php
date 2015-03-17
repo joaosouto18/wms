@@ -738,39 +738,5 @@ class NotaFiscalRepository extends EntityRepository
 
     }
 
-    public function buscarItensPorNovoRecebimento($idRecebimento, $idProduto)
-    {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id produto, nfi.grade, nf.id AS notaFiscal, IDENTITY(nf.recebimento) AS recebimento, p.descricao')
-            ->from('wms:NotaFiscal', 'nf')
-            ->innerJoin('nf.itens', 'nfi')
-            ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
-            ->where("nf.recebimento = $idRecebimento")
-            ->andWhere("p.id = $idProduto");
-        return $dql->getQuery()->getResult();
-    }
-
-    public function buscarItensPorRecebimentoDesfeito($idRecebimento, $idProduto)
-    {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id produto, nfi.grade, nf.id AS notaFiscal, IDENTITY(nf.recebimento) AS recebimento, p.descricao')
-            ->from('wms:NotaFiscal', 'nf')
-            ->innerJoin('nf.itens', 'nfi')
-            ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
-            ->where("nf.recebimento = $idRecebimento")
-            ->andWhere("p.id = $idProduto");
-        return $dql->getQuery()->getResult();
-    }
-
-    public function atualizaRecebimentoUma($recebimento)
-    {
-        $entity = $this->em->getReference('wms:NotaFiscal', $recebimento['notaFiscal']);
-        $entity->setRecebimento($recebimento['recebimento']);
-
-        $this->em->persist($entity);
-        $this->em->flush();
-
-        return $entity;
-    }
 
 }

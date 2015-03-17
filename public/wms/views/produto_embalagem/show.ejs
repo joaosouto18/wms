@@ -32,11 +32,15 @@
             <td>Cód. Barras</td>
             <td>Endereço</td>
             <td>Embalado</td>
+            <td>P.Reposição</td>
+            <td>C.Picking</td>
         </tr>
         <tr>
             <td><span class="codigoBarras"><%=this.codigoBarras%><span></td>
             <td><span class="endereco"><%=this.endereco%><span></td>
             <td><span class="endereco"><%=this.lblEmbalado%><span></td>
+            <td><span class="endereco"><%=this.pontoReposicao%><span></td>
+            <td><span class="endereco"><%=this.capacidadePicking%><span></td>
         </tr>
 
     </table>
@@ -51,4 +55,6 @@
     <input type="hidden" name="embalagens[<%=this.id%>][codigoBarras]" class="codigoBarras" value="<%=this.codigoBarras%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][endereco]" class="endereco" value="<%=this.endereco%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][embalado]" class="embalado" value="<%=this.embalado%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][capacidadePicking]" class="capacidadePicking" value="<%=this.capacidadePicking%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][pontoReposicao]" class="pontoReposicao" value="<%=this.pontoReposicao%>"/>
 </div>

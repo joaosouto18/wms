@@ -86,6 +86,8 @@ class Web_ProdutoVolumeController extends Crud
                     'descricao' => $volume->getDescricao(),
                     'normaPaletizacao' => $volume->getNormaPaletizacao()->getId(),
                     'CBInterno' => $volume->getCBInterno(),
+                    'capacidadePicking' => $volume->getCapacidadePicking(),
+                    'pontoReposicao' => $volume->getPontoReposicao(),
                     'lblCBInterno' => ($volume->getCBInterno() == 'S') ? 'SIM' : 'NÃO',
                     'imprimirCB' => $volume->getImprimirCB(),
                     'lblImprimirCB' => ($volume->getImprimirCB() == 'S') ? 'SIM' : 'NÃO',

@@ -56,7 +56,7 @@ class Expedicao_IndexController  extends Action
         } else {
             $dataI1 = new \DateTime;
             $dataI2 = new \DateTime;
-            $dataI1->sub(new DateInterval('P01D'));
+//            $dataI1->sub(new DateInterval('P01D'));
 
             $params = array(
                 'dataInicial1' => $dataI1->format('d/m/Y'),
@@ -182,6 +182,14 @@ class Expedicao_IndexController  extends Action
             $this->_helper->messenger('error', $e->getMessage());
         }
         $this->redirect("index",'index','expedicao');
+    }
+
+    public function semEstoqueReportAction(){
+        $idExpedicao = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $result = $ExpedicaoRepo->getProdutosSemEstoqueByExpedicao($idExpedicao);
+        $this->exportPDF($result,'semEstoque.pdf','Produtos sem estoque na expedição','L');
     }
 
 }

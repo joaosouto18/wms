@@ -1,0 +1,368 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="92E2B0B5-70B3-C612-FBDD-7EF296E85B94" name="DEPOSITO_ENDERECO">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>DEPOSITO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Cadastra os Endereços (Endereço é o local físico onde a mercadoria será armazenada).</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="NUM_RUA" id="8194FC4A-3EC2-0C1F-B0A4-C25E56CE7FA3">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>NUM_RUA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Número rua (é a rua representada por um número)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>5</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO_ENDERECO" id="3E705AC8-243E-7450-F92E-718B54019707">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>COD_DEPOSITO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Código do Endereço (código sequêncial para o  endereço)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_PREDIO" id="B68252B0-E646-35C7-2D42-D864E6499978">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>NUM_PREDIO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Número prédio (é o prédio representado por um número)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>5</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_NIVEL" id="836B3CB2-8225-2A46-2220-CB6D1B981D05">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>NUM_NIVEL</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Número nível (é um nível representado por um número)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>5</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="NUM_APARTAMENTO" id="34E764D7-B31D-504A-837B-1C1D3FED9369">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>NUM_APARTAMENTO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Núemro apartamento (é um apartamento representado por um número)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>5</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="IND_SITUACAO" id="FC73C809-5DF5-EC2A-76F1-7433FA74AA46">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>IND_SITUACAO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Indicador situação (B - bloqueado | D - debloqueado)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_TIPO_EST_ARMAZ" id="F5DC3AEC-54AE-533D-05EB-0558E7E3B559">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>COD_TIPO_EST_ARMAZ</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Código do Tipo da Estrutura de Armazenagem</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_TIPO_ENDERECO" id="24E47F0F-9D5B-2D55-85EB-4CFE7F50D2B0">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>COD_TIPO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Código do Tipo de Endereço</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_CARACTERISTICA_ENDERECO" id="9D0ECF49-A84B-D5A3-D276-15383A42DDB0">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>COD_CARACTERISTICA_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Código da Característica de Endereço</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO" id="F9287966-959E-3B1D-7483-D00F551E7387">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>COD_DEPOSITO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Código do Depósito</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="IND_STATUS" id="12892C97-9D46-AA0E-0E7F-69161EF5DEAC">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>IND_STATUS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Indicador Status (O - ocupado, D - disponivel)</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_AREA_ARMAZENAGEM" id="D79458CB-A28A-A3FD-454C-AB686007031F">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>COD_AREA_ARMAZENAGEM</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Código da Área de Armazenagem</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="DSC_DEPOSITO_ENDERECO" id="5FFE83F5-D7A3-24F7-A151-3FEB977AC8FF">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>DSC_DEPOSITO_ENDERECO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<commentInRDBMS>Descricao do Endereco, composto por Rua, Predio, Nivel e Apartamento</commentInRDBMS>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>30 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="IND_DISPONIVEL" id="09F21703-4B72-3C96-D70B-E031C5D6B42E">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>IND_DISPONIVEL</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>&apos;S&apos;</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="IND_ATIVO" id="F97400AF-616A-86B6-6CA2-A79CADA7FD89">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>DEPOSITO_ENDERECO</sourceObjSchema>
+<sourceObjName>IND_ATIVO</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<defaultValue>&apos;S&apos;</defaultValue>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1 BYTE</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="63DB3406-70B7-F2A9-CB35-755C254F5A99" name="PK_DEPEN">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>PK_DEPEN</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="3E705AC8-243E-7450-F92E-718B54019707"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="AE7B53A3-D04D-A161-9AD7-B47253465350" name="IX_DEPEN_01">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>IX_DEPEN_01</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Unique Plain Index</indexState>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="F9287966-959E-3B1D-7483-D00F551E7387"/>
+<colUsage columnID="8194FC4A-3EC2-0C1F-B0A4-C25E56CE7FA3"/>
+<colUsage columnID="B68252B0-E646-35C7-2D42-D864E6499978"/>
+<colUsage columnID="836B3CB2-8225-2A46-2220-CB6D1B981D05"/>
+<colUsage columnID="34E764D7-B31D-504A-837B-1C1D3FED9369"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="6D948E88-A584-5AAB-9ECA-2E1822C79B2C" name="FK_DEPEN_DEPOS">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>FK_DEPEN_DEPOS</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="F9287966-959E-3B1D-7483-D00F551E7387"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="E63E77C9-BBF6-2107-2C54-B41893165AE5" name="FK_DEPEN_TPEND">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>FK_DEPEN_TPEND</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="24E47F0F-9D5B-2D55-85EB-4CFE7F50D2B0"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="385F80B7-C0BD-793F-B9D9-E9BA412D21C9" name="DBA_GEOVANI_DEPOSITO_END_IDX01">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>DBA_GEOVANI_DEPOSITO_END_IDX01</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="3E705AC8-243E-7450-F92E-718B54019707"/>
+<colUsage columnID="5FFE83F5-D7A3-24F7-A151-3FEB977AC8FF"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="B28F4682-B0A4-A078-38E1-2B7EB592981B" name="FK_DEPEN_CARAC">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>FK_DEPEN_CARAC</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="9D0ECF49-A84B-D5A3-D276-15383A42DDB0"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="50AB11AB-A54D-C9E6-BFF1-0D2A1513488A" name="FK_DEPEN_TPESA">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>FK_DEPEN_TPESA</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="F5DC3AEC-54AE-533D-05EB-0558E7E3B559"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="0E0B1709-C891-C437-E6D9-CF0D9EDA5CF8" name="FK_DEPEN_ARARM">
+<sourceConnName>localhost+-+wms_develop</sourceConnName>
+<sourceObjSchema>WMS_DEVELOP</sourceObjSchema>
+<sourceObjName>FK_DEPEN_ARARM</sourceObjName>
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:30 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<schemaObject>1E7AF0BD-3251-B1BC-695A-8A324347A8E9</schemaObject>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="D79458CB-A28A-A3FD-454C-AB686007031F"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

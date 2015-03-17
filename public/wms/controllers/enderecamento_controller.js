@@ -95,16 +95,35 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 
         grade.autocomplete({
             source: "/enderecamento/movimentacao/filtrar/idproduto/",
-            minLength: 3
+            minLength: 0
         });
 
-        grade.keyup(function(){
+        $('#volumes').parent().hide();
+
+        grade.keyup(function(e){
             if ($("#idProduto").val() == '') {
                 return false;
             }
-            grade.autocomplete( "option", "source", "/enderecamento/movimentacao/filtrar/idproduto/"+$("#idProduto").val());
+            var produtoVal  = $("#idProduto").val();
+            grade.autocomplete({
+                source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal,
+                select: function( event, ui ) {
+                    $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+produtoVal+"/grade/"+encodeURIComponent(ui['item']['value']),function(dataReturn){
+                        if (dataReturn.length > 0) {
+                            var options = '<option value="">Selecione um agrupador de volumes...</option>';
+                            for (var i = 0; i < dataReturn.length; i++) {
+                                options += '<option value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
+                            }
+                            $('#volumes').html(options);
+                            $('#volumes').parent().show();
+                        } else {
+                            $('#volumes').empty();
+                            $('#volumes').parent().hide();
+                        }
+                    })
+                }
+            });
         });
-
 
         $("#buscarestoque").click(function(){
 
@@ -112,8 +131,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
             }
             else {
-
-
                 if ($("#idProduto").val() == '') {
                     alert("Preencha o código do produto");
                     return false;
@@ -134,6 +151,14 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             }
         });
 
+
+        $('.limparMovimentacao').click(function(){
+            $('#volumes').parent().hide();
+            $('#volumes').empty();
+            $('#cadastro-movimentacao').trigger("reset");
+            $('#idProduto').focus();
+            return false;
+        });
 
         $("#cadastro-movimentacao #submit").click(function(){
             if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {

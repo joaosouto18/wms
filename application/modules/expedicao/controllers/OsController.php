@@ -155,6 +155,7 @@ class Expedicao_OsController extends Action
         $GridPendencias = new CortesPendentesGrid();
         $this->view->gridPendencias = $GridPendencias->init($idExpedicao)
             ->render();
+
     }
 
     public function relatorioAction()

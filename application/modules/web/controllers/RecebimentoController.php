@@ -1107,24 +1107,4 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     {
         parent::__call($methodName, $args);
     }
-
-    public function forcarCorrecaoAction()
-    {
-        $idRecebimento = $this->getRequest()->getParam('id');
-
-        $repository = $this->em->getRepository('wms:OrdemServico');
-        $result = $repository->forcarCorrecao($idRecebimento);
-        $idOS = $result[0][2];
-
-        if ($result[0][1] == 2) {
-            $data = new \DateTime;
-            $repository->atualizarDataFinal($idOS, $data);
-            $this->_helper->messenger('info', 'A Ordem de Serviço foi finalizada com sucesso.');
-            $this->redirect('index', 'recebimento', null);
-        } else {
-            $this->_helper->messenger('info', 'Essa correção não pode ser usada, pois existe apenas uma Ordem de Serviço.');
-            $this->redirect('index', 'recebimento', null);
-        }
-
-    }
 }

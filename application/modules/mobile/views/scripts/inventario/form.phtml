@@ -1,0 +1,21 @@
+﻿<?php echo $this->form; ?>
+
+<?php if ($this->botoes) : ?>
+
+    <div id="footer">
+        <a href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem ?> class="btn button finalizar mudar">Finalizar</a>
+    </div>
+
+<?php endif; ?>
+
+    <div>
+        <?php if ($this->enderecos) : ?>
+            <ul>
+                <?php foreach($this->enderecos as $endereco) : ?>
+                     <li><?php echo $endereco['descricao'] ?> - <?php echo $endereco['codProduto'].'-'.$endereco['grade'] ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+
+

@@ -140,6 +140,11 @@ class Grid
     protected $buttonForm;
 
     /**
+     * Guarda id em input hidden
+     */
+    protected $hiddenId;
+
+    /**
      * Constructor of the class
      * @param Core\Grid\Source\ISource $source
      * @param array $options 
@@ -420,6 +425,12 @@ class Grid
         return (count($this->getActions()) && $this->showActions);
     }
 
+    public function setShowActions($option)
+    {
+        $this->showActions = $option;
+        return $this;
+    }
+
     /**
      * @param mixed $buttonForm
      */
@@ -436,6 +447,22 @@ class Grid
         if (!is_null($this->buttonForm)) {
             return $this->buttonForm;
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHiddenId()
+    {
+        return $this->hiddenId;
+    }
+
+    /**
+     * @param mixed $hiddenId
+     */
+    public function setHiddenId($hiddenId)
+    {
+        $this->hiddenId = $hiddenId;
     }
 
     /**
