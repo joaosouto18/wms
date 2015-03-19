@@ -244,5 +244,5 @@ $(document).ready(function(){
     $('#filtro-nota-fiscal').filtroNotaFiscal();
     $('#recebimento-divergencia-form, #form-recebimento-conferencia, #recebimento-index-grid').recebimento();
     $('#filtro-expedicao-mercadoria-form').expedicao();
-    $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv ').enderecamento();
+    $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv, #relatorio-movimentacao_produto, #produto-regra-form, #filtro-produtos-conferidos-form, #filtro-movimentacao, #filtro-saida-produtos ').enderecamento();
 });
