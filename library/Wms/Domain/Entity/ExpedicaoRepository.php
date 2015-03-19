@@ -898,7 +898,9 @@ class ExpedicaoRepository extends EntityRepository
         $cond="";
 
         if (isset($idDepositoLogado)) {
-            $andWhere = "PV.";
+            $andWhere = 'WHERE P.CENTRAL_ENTREGA = ' . $idDepositoLogado;
+        } else {
+            $andWhere = '';
         }
 
         if (is_array($parametros['centrais'])) {
@@ -1020,6 +1022,7 @@ class ExpedicaoRepository extends EntityRepository
                                            GROUP BY PV.COD_PRODUTO,
                                                     PV.DSC_GRADE) PROD
                                  ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                                 '.$andWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
                  WHERE '.$where.'
                  GROUP BY E.COD_EXPEDICAO,
@@ -1035,7 +1038,6 @@ class ExpedicaoRepository extends EntityRepository
                  ORDER BY E.COD_EXPEDICAO DESC
                      ';
 
-        print "<pre>"; print_r($sql); die();
        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;

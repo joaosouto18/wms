@@ -26,7 +26,7 @@ class Expedicao extends Grid
         $sessao = new \Zend_Session_Namespace('deposito');
         $params['centrais'] = $sessao->centraisPermitidas;
 
-        $result = $expedicaoRepo->buscar($params, $sessao->idDepositoLogado);
+        $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-index-grid')
