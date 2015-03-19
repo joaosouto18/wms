@@ -954,129 +954,85 @@ class ExpedicaoRepository extends EntityRepository
             $cond=" WHERE ";
 
 
-        $sql='  SELECT
-                    E.COD_EXPEDICAO AS "id",
-                    E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
-                    to_char(E.DTH_INICIO,\'dd/mm/yyyy hh:mi:ss\') AS "dataInicio",
-                    to_char(E.DTH_FINALIZACAO,\'dd/mm/yyyy hh:mi:ss\') AS "dataFinalizacao",
-                    C.CARGAS AS "carga",
-                    S.DSC_SIGLA AS "status",
-                    P.QTD AS "prodSemEtiqueta",
-                    PESO.NUM_PESO as "peso",
-                    PESO.NUM_CUBAGEM as "cubagem",
-                    I.ITINERARIOS AS "itinerario"
-                  FROM
-                    EXPEDICAO E
-                  LEFT JOIN
-                    SIGLA S ON S.COD_SIGLA = E.COD_STATUS
-                    LEFT JOIN
-                      (
-                            SELECT
-                                C.COD_EXPEDICAO,
-                                LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
-                            FROM
-                              CARGA C
-                            '.$cond.'
-                              '.$whereSubQuery.'
-                            GROUP BY
-                              COD_EXPEDICAO
-                      ) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    LEFT JOIN
-                      (
-                            SELECT COD_EXPEDICAO,
-                                   LISTAGG (DSC_ITINERARIO,\', \') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
-                            FROM (
-                                  SELECT DISTINCT
-                                              C.COD_EXPEDICAO,
-                                              I.DSC_ITINERARIO,
-                                              COD_CARGA_EXTERNO
-                                  FROM
-                                    CARGA C
-                                  INNER JOIN
-                                    PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                                  INNER JOIN
-                                    ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
-                                    '.$cond.'
-                                      '.$whereSubQuery.'
-                                )
-                            GROUP BY
-                              COD_EXPEDICAO
-                      ) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    LEFT JOIN
-                      (
-                                SELECT
-                                  COUNT(DISTINCT PP.COD_PRODUTO||PP.DSC_GRADE) as QTD,
-                                  C.COD_EXPEDICAO
-                                FROM
-                                  PEDIDO_PRODUTO PP
-                                INNER JOIN
-                                  PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
-                                INNER JOIN
-                                  CARGA C ON C.COD_CARGA = P.COD_CARGA
-                                LEFT JOIN
-                                  ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = PP.COD_PEDIDO AND ES.COD_PRODUTO = PP.COD_PRODUTO AND ES.DSC_GRADE = PP.DSC_GRADE
-                                LEFT JOIN
-                                  EXPEDICAO EX ON EX.COD_EXPEDICAO=C.COD_EXPEDICAO
-                                WHERE
-                                  ( (ES.COD_ETIQUETA_SEPARACAO IS NULL OR ES.COD_STATUS = 522) '.$andSub.$whereSubQuery.'  )
-                                GROUP BY
-                                  C.COD_EXPEDICAO
-                      ) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    LEFT JOIN
-                      CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
-                    LEFT JOIN
-                      PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
-                    LEFT JOIN
-                    (SELECT C.COD_EXPEDICAO,
-       SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
-       SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
-  FROM CARGA C
-  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-  LEFT JOIN (SELECT P.COD_PRODUTO,
-                    P.DSC_GRADE,
-                    PDL.NUM_PESO,
-                    PDL.NUM_CUBAGEM
-               FROM (SELECT PE.COD_PRODUTO,
-                            PE.DSC_GRADE,
-                            MIN(PDL.COD_PRODUTO_DADO_LOGISTICO) as COD_PRODUTO_DADO_LOGISTICO
-                       FROM (SELECT MIN(COD_PRODUTO_EMBALAGEM) AS COD_PRODUTO_EMBALAGEM,
-                                    PE.COD_PRODUTO,
-                                    PE.DSC_GRADE
-                               FROM PRODUTO_EMBALAGEM PE
-                         INNER JOIN (SELECT MIN(QTD_EMBALAGEM) AS FATOR, COD_PRODUTO, DSC_GRADE
-                                       FROM PRODUTO_EMBALAGEM PE
-                                      GROUP BY COD_PRODUTO,DSC_GRADE) PEM
-                                 ON (PEM.COD_PRODUTO = PE.COD_PRODUTO) AND (PEM.DSC_GRADE = PE.DSC_GRADE) AND (PEM.FATOR = PE.QTD_EMBALAGEM)
-                              GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE) PE
-                      INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
-                      GROUP BY COD_PRODUTO, DSC_GRADE) P
-         INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_DADO_LOGISTICO = P.COD_PRODUTO_DADO_LOGISTICO
-              UNION
-             SELECT PV.COD_PRODUTO,
-                    PV.DSC_GRADE,
-                    SUM(PV.NUM_PESO) as NUM_PESO,
-                    SUM(PV.NUM_CUBAGEM) as NUM_CUBAGEM
-               FROM PRODUTO_VOLUME PV
-              GROUP BY PV.COD_PRODUTO,
-                       PV.DSC_GRADE) PROD
-                       ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-    GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    WHERE
-                      '.$where.'
-                    GROUP BY
-                        E.COD_EXPEDICAO,
-                        E.DSC_PLACA_EXPEDICAO,
-                        E.DTH_INICIO,
-                        E.DTH_FINALIZACAO,
-                        C.CARGAS,
-                        S.DSC_SIGLA,
-                        P.QTD,
-                        PESO.NUM_PESO,
-                        PESO.NUM_CUBAGEM,
-                        I.ITINERARIOS
-                    ORDER BY
-                      E.COD_EXPEDICAO DESC
+        $sql='  SELECT E.COD_EXPEDICAO AS "id",
+                       E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
+                       to_char(E.DTH_INICIO,\'dd/mm/yyyy hh:mi:ss\') AS "dataInicio",
+                       to_char(E.DTH_FINALIZACAO,\'dd/mm/yyyy hh:mi:ss\') AS "dataFinalizacao",
+                       C.CARGAS AS "carga",
+                       S.DSC_SIGLA AS "status",
+                       P.QTD AS "prodSemEtiqueta",
+                       PESO.NUM_PESO as "peso",
+                       PESO.NUM_CUBAGEM as "cubagem",
+                       I.ITINERARIOS AS "itinerario"
+                  FROM EXPEDICAO E
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
+                               FROM CARGA C '.$cond.' '.$whereSubQuery.'
+                              GROUP BY COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT COD_EXPEDICAO,
+                                    LISTAGG (DSC_ITINERARIO,\', \') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
+                               FROM (SELECT DISTINCT C.COD_EXPEDICAO,
+                                            I.DSC_ITINERARIO,
+                                            COD_CARGA_EXTERNO
+                                       FROM CARGA C
+                                      INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                                      INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO '.$cond.' '.$whereSubQuery.')
+                              GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT COUNT(DISTINCT PP.COD_PRODUTO||PP.DSC_GRADE) as QTD,
+                                    C.COD_EXPEDICAO
+                               FROM PEDIDO_PRODUTO PP
+                              INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                              INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                               LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = PP.COD_PEDIDO AND ES.COD_PRODUTO = PP.COD_PRODUTO AND ES.DSC_GRADE = PP.DSC_GRADE
+                               LEFT JOIN EXPEDICAO EX ON EX.COD_EXPEDICAO=C.COD_EXPEDICAO
+                              WHERE ((ES.COD_ETIQUETA_SEPARACAO IS NULL OR ES.COD_STATUS = 522) '.$andSub.$whereSubQuery.'  )
+                              GROUP BY C.COD_EXPEDICAO) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
+                  LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
+                                    SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
+                               FROM CARGA C
+                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                               LEFT JOIN (SELECT P.COD_PRODUTO,
+                                                 P.DSC_GRADE,
+                                                 PDL.NUM_PESO,
+                                                 PDL.NUM_CUBAGEM
+                                            FROM (SELECT PE.COD_PRODUTO, PE.DSC_GRADE, MIN(PDL.COD_PRODUTO_DADO_LOGISTICO) as COD_PRODUTO_DADO_LOGISTICO
+                                                   FROM (SELECT MIN(COD_PRODUTO_EMBALAGEM) AS COD_PRODUTO_EMBALAGEM, PE.COD_PRODUTO,PE.DSC_GRADE
+                                                           FROM PRODUTO_EMBALAGEM PE
+                                                          INNER JOIN (SELECT MIN(QTD_EMBALAGEM) AS FATOR, COD_PRODUTO, DSC_GRADE
+                                                                        FROM PRODUTO_EMBALAGEM PE
+                                                                       GROUP BY COD_PRODUTO,DSC_GRADE) PEM
+                                                             ON (PEM.COD_PRODUTO = PE.COD_PRODUTO) AND (PEM.DSC_GRADE = PE.DSC_GRADE) AND (PEM.FATOR = PE.QTD_EMBALAGEM)
+                                                          GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE) PE
+                                                  INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                                                  GROUP BY COD_PRODUTO, DSC_GRADE) P
+                                           INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_DADO_LOGISTICO = P.COD_PRODUTO_DADO_LOGISTICO
+                                          UNION
+                                          SELECT PV.COD_PRODUTO,
+                                                 PV.DSC_GRADE,
+                                                 SUM(PV.NUM_PESO) as NUM_PESO,
+                                                 SUM(PV.NUM_CUBAGEM) as NUM_CUBAGEM
+                                            FROM PRODUTO_VOLUME PV
+                                           GROUP BY PV.COD_PRODUTO,
+                                                    PV.DSC_GRADE) PROD
+                                 ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                              GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                 WHERE '.$where.'
+                 GROUP BY E.COD_EXPEDICAO,
+                          E.DSC_PLACA_EXPEDICAO,
+                          E.DTH_INICIO,
+                          E.DTH_FINALIZACAO,
+                          C.CARGAS,
+                          S.DSC_SIGLA,
+                          P.QTD,
+                          PESO.NUM_PESO,
+                          PESO.NUM_CUBAGEM,
+                          I.ITINERARIOS
+                 ORDER BY E.COD_EXPEDICAO DESC
                      ';
 
         print "<pre>"; print_r($sql); die();
