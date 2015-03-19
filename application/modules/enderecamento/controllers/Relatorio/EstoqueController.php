@@ -6,7 +6,6 @@ class Enderecamento_Relatorio_EstoqueController extends Action
 {
     public function indexAction()
     {
-
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\FiltroRelatorio();
         $values = $form->getParams();
 

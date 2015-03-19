@@ -101,10 +101,13 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
         $('#volumes').parent().hide();
 
         grade.keyup(function(e){
-            if ($("#idProduto").val() == '') {
+            if ($("#idProduto").val() == '' || $("#id").val() == '') {
                 return false;
             }
             var produtoVal  = $("#idProduto").val();
+            if (typeof  produtoVal == 'undefined') {
+                var produtoVal  = $("#id").val();
+            }
             grade.autocomplete({
                 source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal,
                 select: function( event, ui ) {
