@@ -73,27 +73,36 @@ class Expedicao_OndaRessuprimentoController  extends Action
     public function gerenciarOsAction(){
         $form = new FiltroDadosOnda;
         $actionParams= $this->_getParam('actionParams',false);
+
         if ($form->getParams() or $actionParams){
-            if ($actionParams){
+            if ($actionParams) {
                 $dataInicial    = $this->_getParam('dataInicial',null);
                 $dataFinal      = $this->_getParam('dataFinal',null);
                 $status         = $this->_getParam('status',null);
+                $idExpedicao    = $this->_getParam('expedicao',null);
+                $operador       = $this->_getParam('operador',null);
+                $idProduto      = $this->_getParam('idProduto',null);
                 $values=array('status'=>$status,
                               'dataInicial'=>$dataInicial,
                               'dataFinal'=>$dataFinal);
             }
+
             if ($form->getParams()){
                 $values = $form->getParams();
                 $dataInicial    = $values['dataInicial'];
                 $dataFinal      = $values['dataFinal'];
                 $status         = $values['status'];
+                $idExpedicao    = $values['expedicao'];
+                $operador       = $values['operador'];
+                $idProduto      = $values['idProduto'];
             }
             /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
             $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
-            $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial,$dataFinal,$status,true);
+            $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador);
             $Grid = new OsGrid();
             $this->view->grid = $Grid->init($result,$values)->render();
         }
+
         $this->view->form = $form;
     }
 

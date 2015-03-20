@@ -56,17 +56,31 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
 
-    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false)
+    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null)
     {
         $SqlWhere = "  WHERE RES.TIPO_RESERVA = 'E'";
         $osId = "";
         $siglaId = "";
+
         if ($showOsId == true) {
             $osId = "O.COD_ONDA_RESSUPRIMENTO_OS as ID,";
             $siglaId = "SIGLA.COD_SIGLA as COD_STATUS,";
         }
+
         if (!empty($status)) {
             $SqlWhere .= " AND O.COD_STATUS = $status";
+        }
+
+        if (!empty($idProduto)) {
+            $SqlWhere .= " AND P.COD_PRODUTO = $idProduto";
+        }
+
+        if (!empty($idExpedicao)) {
+            $SqlWhere .= " AND OS.COD_EXPEDICAO = $idExpedicao";
+        }
+
+        if (!empty($operador)) {
+            $SqlWhere .= " AND OS.COD_PESSOA = $operador";
         }
 
         $SqlOrderBy = " ORDER BY OND.COD_ONDA_RESSUPRIMENTO, DE1.DSC_DEPOSITO_ENDERECO,  DE2.DSC_DEPOSITO_ENDERECO";
@@ -88,6 +102,7 @@ class OndaRessuprimentoRepository extends EntityRepository
 
           FROM ONDA_RESSUPRIMENTO_OS O
           INNER JOIN SIGLA ON SIGLA.COD_SIGLA = O.COD_STATUS
+          LEFT JOIN ORDEM_SERVICO OS ON O.COD_OS = OS.COD_OS
           LEFT JOIN ONDA_RESSUPRIMENTO OND ON OND.COD_ONDA_RESSUPRIMENTO = O.COD_ONDA_RESSUPRIMENTO
           LEFT JOIN ONDA_RESSUPRIMENTO_OS_PRODUTO PRODS ON PRODS.COD_ONDA_RESSUPRIMENTO_OS = O.COD_ONDA_RESSUPRIMENTO_OS
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PRODS.COD_PRODUTO AND P.DSC_GRADE = PRODS.DSC_GRADE
@@ -116,6 +131,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         }
 
         $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+
         return $result;
     }
 

@@ -222,7 +222,42 @@ $(document).ready(function(){
     $('textarea.lower').Setcase({
         caseValue: 'lower'
     });
-    
+
+    grade = $("#grade");
+
+    grade.autocomplete({
+        source: "/enderecamento/movimentacao/filtrar/idproduto/",
+        minLength: 0
+    });
+
+    grade.keyup(function(e){
+        if ($("#idProduto").val() == '' || $("#id").val() == '') {
+            return false;
+        }
+        var produtoVal  = $("#idProduto").val();
+        if (typeof  produtoVal == 'undefined') {
+            var produtoVal  = $("#id").val();
+        }
+        grade.autocomplete({
+            source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal,
+            select: function( event, ui ) {
+                $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+produtoVal+"/grade/"+encodeURIComponent(ui['item']['value']),function(dataReturn){
+                    if (dataReturn.length > 0) {
+                        var options = '<option value="">Selecione um agrupador de volumes...</option>';
+                        for (var i = 0; i < dataReturn.length; i++) {
+                            options += '<option value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
+                        }
+                        $('#volumes').html(options);
+                        $('#volumes').parent().show();
+                    } else {
+                        $('#volumes').empty();
+                        $('#volumes').parent().hide();
+                    }
+                })
+            }
+        });
+    });
+
     /***************************************
      JMVC plugins
     ***************************************/
@@ -244,5 +279,5 @@ $(document).ready(function(){
     $('#filtro-nota-fiscal').filtroNotaFiscal();
     $('#recebimento-divergencia-form, #form-recebimento-conferencia, #recebimento-index-grid').recebimento();
     $('#filtro-expedicao-mercadoria-form').expedicao();
-    $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv, #relatorio-movimentacao_produto, #produto-regra-form, #filtro-produtos-conferidos-form, #filtro-movimentacao, #filtro-saida-produtos ').enderecamento();
+    $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv').enderecamento();
 });

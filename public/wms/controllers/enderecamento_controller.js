@@ -91,42 +91,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             $('#umas').val(umas);
         });
 
-        grade = $("#grade");
-
-        grade.autocomplete({
-            source: "/enderecamento/movimentacao/filtrar/idproduto/",
-            minLength: 0
-        });
-
         $('#volumes').parent().hide();
-
-        grade.keyup(function(e){
-            if ($("#idProduto").val() == '' || $("#id").val() == '') {
-                return false;
-            }
-            var produtoVal  = $("#idProduto").val();
-            if (typeof  produtoVal == 'undefined') {
-                var produtoVal  = $("#id").val();
-            }
-            grade.autocomplete({
-                source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal,
-                select: function( event, ui ) {
-                    $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+produtoVal+"/grade/"+encodeURIComponent(ui['item']['value']),function(dataReturn){
-                        if (dataReturn.length > 0) {
-                            var options = '<option value="">Selecione um agrupador de volumes...</option>';
-                            for (var i = 0; i < dataReturn.length; i++) {
-                                options += '<option value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
-                            }
-                            $('#volumes').html(options);
-                            $('#volumes').parent().show();
-                        } else {
-                            $('#volumes').empty();
-                            $('#volumes').parent().hide();
-                        }
-                    })
-                }
-            });
-        });
 
         $("#buscarestoque").click(function(){
 
