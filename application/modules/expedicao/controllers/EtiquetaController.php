@@ -1,6 +1,7 @@
 <?php
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
+    Wms\Module\Expedicao\ModeloSeparacao,
     Wms\Module\Web\Page,
     Wms\Module\Expedicao\Report\Produtos,
     Wms\Service\Recebimento as LeituraColetor,
@@ -160,6 +161,19 @@ class Expedicao_EtiquetaController  extends Action
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao);
 
+
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $ModeloSeparacaoRepo */
+        $ModeloSeparacaoRepo = $this->em->getRepository('wms:Expedicao\ModeloSeparacao');
+        $modelos = $ModeloSeparacaoRepo->getModelos();
+
+        if ( !empty($modelos[0]['id']) ){
+            $quebras = $ModeloSeparacaoRepo->getQuebras($modelos);
+        }
+
+
+
+        print_r($modelos);
+        die();
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         if ($EtiquetaRepo->gerarEtiquetas($pedidosProdutos) > 0) {

@@ -115,6 +115,22 @@ class EtiquetaSeparacao
      */
     protected $volumePatrimonio;
 
+    /**
+     * @Column(name="QTD_PRODUTO", type="integer", nullable=true)
+     */
+    protected $qtdProduto;
+
+    /**
+     * @Column(name="COD_ETIQUETA_MAE", type="integer", nullable=true)
+     */
+    protected $codEtiquetaMae;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\EtiquetaMae")
+     * @JoinColumn(name="COD_ETIQUETA_MAE", referencedColumnName="COD_ETIQUETA_MAE")
+     */
+    protected $etiquetaMae;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -278,6 +294,54 @@ class EtiquetaSeparacao
     public function getDataConferenciaTransbordo()
     {
         return $this->dataConferenciaTransbordo;
+    }
+
+    /**
+ * @param mixed $qtdProduto
+ */
+    public function setQtdProduto($qtdProduto)
+    {
+        $this->qtdProduto = $qtdProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdProduto()
+    {
+        return $this->qtdProduto;
+    }
+
+    /**
+     * @param mixed $codEtiquetaMae
+     */
+    public function setCodEtiquetaMae($codEtiquetaMae)
+    {
+        $this->codEtiquetaMae = $codEtiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodEtiquetaMae()
+    {
+        return $this->codEtiquetaMae;
+    }
+
+    /**
+     * @param mixed $etiquetaMae
+     */
+    public function setEtiquetaMae($etiquetaMae)
+    {
+        $this->etiquetaMae = $etiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEtiquetaMae()
+    {
+        return $this->etiquetaMae;
     }
 
 }

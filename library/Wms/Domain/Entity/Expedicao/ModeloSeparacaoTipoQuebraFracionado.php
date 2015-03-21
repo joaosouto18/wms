@@ -9,8 +9,15 @@ namespace Wms\Domain\Entity\Expedicao;
  */
 class ModeloSeparacaoTipoQuebraFracionado
 {
+
     /**
      * @Id
+     * @Column(name="COD_MODELO_SEPARACAO", type="integer", nullable=false)
+     * @var string Código do produto
+     */
+    protected $id;
+
+    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacao")
      * @JoinColumn(name="COD_MODELO_SEPARACAO", referencedColumnName="COD_MODELO_SEPARACAO")
      */
