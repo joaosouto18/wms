@@ -13,7 +13,7 @@ class EtiquetaPulmaoDocaProduto
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
      * @Column(name="COD_ETIQUETA_PULMAO_DOCA_PRODUTO", type="integer", nullable=false)
-     * @SequenceGenerator(sequenceName="SQ_ETIQUETA_PULMAO_DOCA_PRODUTO_01", initialValue=1, allocationSize=1)
+     * @SequenceGenerator(sequenceName="SQ_ETIQUETA_PULMAO_DOCA_PR_01", initialValue=1, allocationSize=1)
      */
     protected $id;
 
@@ -138,6 +138,16 @@ class EtiquetaPulmaoDocaProduto
     public function getQtdProduto()
     {
         return $this->qtdProduto;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId()
+    {
+        return $this->id;
     }
 
 }

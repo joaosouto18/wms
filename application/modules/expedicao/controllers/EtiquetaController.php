@@ -162,17 +162,22 @@ class Expedicao_EtiquetaController  extends Action
         $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao);
 
 
-        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $ModeloSeparacaoRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $ModeloSeparacaoRepo */
         $ModeloSeparacaoRepo = $this->em->getRepository('wms:Expedicao\ModeloSeparacao');
         $modelos = $ModeloSeparacaoRepo->getModelos();
 
         if ( !empty($modelos[0]['id']) ){
             $quebras = $ModeloSeparacaoRepo->getQuebras($modelos);
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMaeRepository $EtiquetaMaeRepo */
+            $EtiquetaMaeRepo = $this->em->getRepository('wms:Expedicao\EtiquetaMae');
+
+            $EtiquetaMaeRepo->gerarEtiquetasMae($quebras,$idExpedicao);
         }
 
 
 
-        print_r($modelos);
+        print_r($quebras);
         die();
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');

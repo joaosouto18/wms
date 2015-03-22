@@ -44,7 +44,7 @@ class ModeloSeparacaoRepository extends EntityRepository
             $cont++;
         }
 
-        return $source->getQuery()->getArrayResult();
+        return $resultado;
         // print_r($source->getQuery()->getArrayResult());die();
     }
 

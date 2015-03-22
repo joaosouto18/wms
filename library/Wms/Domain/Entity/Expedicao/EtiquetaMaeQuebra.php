@@ -69,5 +69,24 @@ class EtiquetaMaeQuebra
         return $this->codEtiquetaMae;
     }
 
+    public function setEtiquetaMae($etiquetaMae)
+    {
+        $this->etiquetaMae = $etiquetaMae;
+    }
+
+    public function getEtiquetaMae()
+    {
+        return $this->etiquetaMae;
+    }
+
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
 
 }

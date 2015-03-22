@@ -24,7 +24,7 @@ class EtiquetaMae
     protected $dscQuebra;
 
     /**
-     * @Column(name="COD_ETIQUETA_MAE", type="integer", nullable=true)
+     * @Column(name="COD_EXPEDICAO", type="integer", nullable=true)
      */
     protected $codExpedicao;
 
@@ -64,4 +64,13 @@ class EtiquetaMae
         return $this->codExpedicao;
     }
 
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
 }
