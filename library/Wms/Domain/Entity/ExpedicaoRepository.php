@@ -328,6 +328,158 @@ class ExpedicaoRepository extends EntityRepository
         return  $this->getEntityManager()->createQuery($query.$order)->getResult();
     }
 
+    public function separarTipoFracionados($pedidosProdutos) {
+
+        $arrayFracionado=array();
+        $arrayNFracionado=array();
+        $qtdFracionado=0;
+        $qtdNFracionado=0;
+
+        foreach($pedidosProdutos as $pedidoProduto) {
+            /** @var \Wms\Domain\Entity\Produto $produtoEntity */
+            $pedidoEntity   = $pedidoProduto->getPedido();
+            $produtoEntity  = $pedidoProduto->getProduto();
+            $quantidade     = $pedidoProduto->getQuantidade();
+
+            if ($produtoEntity->getVolumes()->count() > 0) {
+                $arrayVolumes = $produtoEntity->getVolumes()->toArray();
+
+
+                for($i=0;$i<$quantidade;$i++) {
+                    $codReferencia = null;
+                    foreach ($arrayVolumes as $volumeEntity) {
+                        $arrayNFracionado[$qtdNFracionado]['codPedido']=$pedidoEntity->getId();
+                        $arrayNFracionado[$qtdNFracionado]['codProduto']=$produtoEntity->getId();
+                        $arrayNFracionado[$qtdNFracionado]['codEmbalagem']=null;
+                        $arrayNFracionado[$qtdNFracionado]['codVolume']=$volumeEntity->getId();
+                        $arrayNFracionado[$qtdNFracionado]['qtd']=$quantidade;
+                        $qtdNFracionado++;
+                    }
+                }
+            }
+            else if ($produtoEntity->getEmbalagens()->count() > 0) {
+
+                $codProduto=$produtoEntity->getId();
+                $dscGrade=$produtoEntity->getGrade();
+
+                $arrayEmbalagens = $this->_em->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$dscGrade),array('quantidade'=>'DESC'));
+
+                $padraoEmbalagem = null;
+
+                $arrayQtdEmbalagens=array();
+                $arrayPadrao=array();
+                $cont=0;
+                $getPadrao=false;
+                foreach($arrayEmbalagens as $embalagemEn) {
+                   $quantidadeProduto=$embalagemEn->getQuantidade();
+                   $isPadrao=$embalagemEn->getIsPadrao();
+                    $codEmbalagem=$embalagemEn->getId();
+
+                    if ($isPadrao=="S" && !$getPadrao){
+                        $arrayPadrao['qtd']=$quantidadeProduto;
+                        $arrayPadrao['cod']=$codEmbalagem;
+                        $getPadrao=true;
+                    }
+
+                    $arrayQtdEmbalagens[$cont]['cod']=$codEmbalagem;
+                    $arrayQtdEmbalagens[$cont]['qtd']=$quantidadeProduto;
+                    $arrayQtdEmbalagens[$cont]['pad']=$isPadrao;
+                    $cont++;
+                }
+
+                $embalagensOrdenadas=$arrayQtdEmbalagens;
+
+                while ($quantidade>0  ){
+                    for ($i=0; $i<$cont; $i++){
+                        $qtd=$embalagensOrdenadas[$i]['qtd'];
+                        if ($quantidade > 0 && $qtd>0 ){
+                            $qtdFracao=floor($quantidade/$qtd);
+
+                            if ($qtdFracao>0){
+                                if ( (         ($embalagensOrdenadas[$i]['cod']==$arrayPadrao['cod'])
+                                            || ($embalagensOrdenadas[$i]['qtd']!=$arrayPadrao['qtd'])
+                                    )  ){
+                                    $qtdDescartada=$qtdFracao*$qtd;
+
+                                    if ( $embalagensOrdenadas[$i]['cod']==$arrayPadrao['cod'] ){
+                                        $arrayNFracionado[$qtdNFracionado]['codPedido']=$pedidoEntity->getId();
+                                        $arrayNFracionado[$qtdNFracionado]['codProduto']=$produtoEntity->getId();
+                                        $arrayNFracionado[$qtdNFracionado]['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
+                                        $arrayNFracionado[$qtdNFracionado]['codVolume']=null;
+                                        $arrayNFracionado[$qtdNFracionado]['qtd']=$qtdFracao;
+                                        $qtdNFracionado++;
+
+                                    } else if ( $embalagensOrdenadas[$i]['qtd']<$arrayPadrao['qtd'] ) {
+                                        $arrayFracionado[$qtdFracionado]['codPedido']=$pedidoEntity->getId();
+                                        $arrayFracionado[$qtdFracionado]['codProduto']=$produtoEntity->getId();
+                                        $arrayFracionado[$qtdFracionado]['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
+                                        $arrayFracionado[$qtdFracionado]['codVolume']=null;
+                                        $arrayFracionado[$qtdFracionado]['qtd']=$qtdFracao;
+                                        $qtdFracionado++;
+                                    } else  {
+                                        $arrayNFracionado[$qtdNFracionado]['codPedido']=$pedidoEntity->getId();
+                                        $arrayNFracionado[$qtdNFracionado]['codProduto']=$produtoEntity->getId();
+                                        $arrayNFracionado[$qtdNFracionado]['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
+                                        $arrayNFracionado[$qtdNFracionado]['codVolume']=null;
+                                        $arrayNFracionado[$qtdNFracionado]['qtd']=$qtdFracao;
+                                        $qtdNFracionado++;
+                                    }
+                                    $quantidade=$quantidade-$qtdDescartada;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        $resultado['fracionado']=$arrayFracionado;
+        $resultado['nfracionado']=$arrayNFracionado;
+
+
+        return $resultado;
+
+    }
+
+
+    public function buscarProdutosSemSeparacao($idExpedicao){
+
+        $sequencia = $this->getSystemParameterValue("SEQUENCIA_ETIQUETA_SEPARACAO");
+
+        $query = "SELECT pp
+                        FROM wms:Expedicao\PedidoProduto pp
+                        INNER JOIN pp.produto p
+                         LEFT JOIN p.linhaSeparacao ls
+                        INNER JOIN pp.pedido ped
+                        INNER JOIN wms:Expedicao\VProdutoEndereco e
+                         WITH p.id = e.codProduto AND p.grade = e.grade
+                        INNER JOIN ped.carga c
+                        WHERE c.expedicao = $idExpedicao and ( ped.indEtiquetaMapaGerado='N' )
+                       ";
+
+        switch ($sequencia) {
+            case 2:
+                $order = " ORDER BY c.placaExpedicao,
+                                    ls.descricao,
+                                    e.rua,
+                                    e.predio,
+                                    e.nivel,
+                                    e.apartamento,
+                                    p.descricao";
+                break;
+            default;
+                $order = " ORDER BY c.placaExpedicao,
+                                    e.rua,
+                                    e.predio,
+                                    e.nivel,
+                                    e.apartamento,
+                                    p.id";
+        }
+
+        return  $this->getEntityManager()->createQuery($query.$order)->getResult();
+    }
+
     /**
      * @param $idExpedicao
      * @return mixed

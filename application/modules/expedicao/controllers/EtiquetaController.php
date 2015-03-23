@@ -159,26 +159,29 @@ class Expedicao_EtiquetaController  extends Action
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-        $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao);
+        $pedidosProdutos = $ExpedicaoRepo->buscarProdutosSemSeparacao($idExpedicao);
 
 
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $ModeloSeparacaoRepo */
         $ModeloSeparacaoRepo = $this->em->getRepository('wms:Expedicao\ModeloSeparacao');
         $modelos = $ModeloSeparacaoRepo->getModelos();
 
+        $quebras="";
         if ( !empty($modelos[0]['id']) ){
             $quebras = $ModeloSeparacaoRepo->getQuebras($modelos);
 
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMaeRepository $EtiquetaMaeRepo */
-            $EtiquetaMaeRepo = $this->em->getRepository('wms:Expedicao\EtiquetaMae');
+            /*$EtiquetaMaeRepo = $this->em->getRepository('wms:Expedicao\EtiquetaMae');
 
-            $EtiquetaMaeRepo->gerarEtiquetasMae($quebras,$idExpedicao);
+            $EtiquetaMaeRepo->gerarEtiquetasMae($quebras,$idExpedicao);*/
         }
 
+        $arrayTipoFracionados=$ExpedicaoRepo->separarTipoFracionados($pedidosProdutos);
 
-
-        print_r($quebras);
+        print "<pre>";
+        print_r($arrayTipoFracionados);
         die();
+        
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         if ($EtiquetaRepo->gerarEtiquetas($pedidosProdutos) > 0) {
@@ -190,5 +193,8 @@ class Expedicao_EtiquetaController  extends Action
             $this->_redirect('/expedicao');
         }
     }
+
+
+
 
 }

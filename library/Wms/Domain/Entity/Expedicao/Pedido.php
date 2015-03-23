@@ -80,6 +80,11 @@ class Pedido
     protected $dataCancelamento;
 
     /**
+     * @Column(name="IND_ETIQUETA_MAPA_GERADO", type="integer", nullable=true)
+     */
+    protected $indEtiquetaMapaGerado;
+
+    /**
      * @param mixed $sequencia
      */
     public function setSequencia($sequencia)
