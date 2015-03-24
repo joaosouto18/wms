@@ -22,10 +22,6 @@ class ContagemEnderecoRepository extends EntityRepository
             throw new \Exception("idInventarioEnd não pode ser vazio");
         }
 
-        if (empty($params['codProduto'])) {
-            throw new \Exception("codProduto não pode ser vazio");
-        }
-
         $em = $this->getEntityManager();
         $em->beginTransaction();
         try {
@@ -35,10 +31,15 @@ class ContagemEnderecoRepository extends EntityRepository
             if ($params['codProdutoVolume'] != null) {
                 $enProdutoVolume = $this->getEntityManager()->getReference('wms:Produto\Volume', $params['codProdutoVolume']);
                 $contagemEndEn->setProdutoVolume($enProdutoVolume);
+                $contagemEndEn->setCodProdutoVolume($params['codProdutoVolume']);
             }
 
-            $enProduto = $this->getEntityManager()->getReference('wms:Produto', array('id' => $params['codProduto'], 'grade' => $params['grade']));
-            $contagemEndEn->setProduto($enProduto);
+            if ($params['codProduto'] != null) {
+                $enProduto = $this->getEntityManager()->getReference('wms:Produto', array('id' => $params['codProduto'], 'grade' => $params['grade']));
+                $contagemEndEn->setProduto($enProduto);
+            }
+
+            $contagemEndEn->setCodProdutoEmbalagem($params['codProdutoEmbalagem']);
 
             $contagemEndEn->setQtdContada($params['qtd']);
             $contagemEndEn->setNumContagem($params['numContagem']);
@@ -46,15 +47,12 @@ class ContagemEnderecoRepository extends EntityRepository
             $contagemEndEn->setQtdAvaria($params['qtdAvaria']);
             $contagemEndEn->setCodProduto($params['codProduto']);
             $contagemEndEn->setGrade($params['grade']);
-            $contagemEndEn->setCodProdutoEmbalagem($params['codProdutoEmbalagem']);
-            $contagemEndEn->setCodProdutoVolume($params['codProdutoVolume']);
 
             $contagemOsEn = $em->getReference('wms:Inventario\ContagemOs',$params['idContagemOs']);
             $contagemEndEn->setContagemOs($contagemOsEn);
 
             $inventarioEn = $em->getReference('wms:Inventario\Endereco',$params['idInventarioEnd']);
             $contagemEndEn->setInventarioEndereco($inventarioEn);
-
 
             $em->persist($contagemEndEn);
             $em->commit();
@@ -70,20 +68,18 @@ class ContagemEnderecoRepository extends EntityRepository
 
     public function getContagens($params)
     {
-        $query = $this->_em->createQueryBuilder()
-            ->select('ce.numContagem')
-            ->from("wms:Inventario\Endereco","ie")
-            ->innerJoin("wms:Inventario\ContagemEndereco", 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
-            ->andWhere("ie.inventario = :idInventario")
-            ->setParameter('idInventario', $params['idInventario'])
-            ->groupBy('ce.numContagem');
+        $idInventario   = $params['idInventario'];
 
-        if (isset($params['divergencia']) && $params['divergencia'] == 1) {
-            $query->andWhere('ce.divergencia = 1');
-        }  else {
-            $query->andWhere('(ie.divergencia is null or ie.inventariado is null)');
-        }
-        return $query->getQuery()->getResult();
+        $sql = "SELECT DISTINCT IE.DIVERGENCIA, NVL(MAXCONT.ULTCONT,1) as CONTAGEM
+                  FROM INVENTARIO_ENDERECO IE
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO
+                               FROM INVENTARIO_CONTAGEM_ENDERECO
+                              GROUP BY COD_INVENTARIO_ENDERECO) MAXCONT
+                    ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                WHERE IE.COD_INVENTARIO = ".$idInventario."
+         ";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

@@ -33,7 +33,7 @@ class Mobile_InventarioController extends Action
         $idContagemOs = $this->_service->criarOS($idInventario);
 
         $enderecos                  = $this->_service->getEnderecos($idInventario, $numContagem, $divergencia);
-        $this->view->enderecos      = $enderecos['enderecos'];
+        $this->view->enderecos      = $enderecos;
         $this->view->botoes         = false;
 
         $form = new \Wms\Module\Mobile\Form\Endereco();
@@ -126,7 +126,10 @@ class Mobile_InventarioController extends Action
                     $this->addFlashMessage('success', 'Endereço vazio invetariado com sucesso');
                 }
 
-                $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $this->_getParam('idInventario')));
+                $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $this->_getParam('idInventario'),
+                    'numContagem' => $params['numContagem'],
+                    'divergencia' => $divergencia
+                ));
             } else {
 
                 $result = $this->_service->consultarProduto($params);
@@ -186,7 +189,7 @@ class Mobile_InventarioController extends Action
     {
         if (isset($result['status']) && $result['status'] == 'error') {
             $this->addFlashMessage("error",$result['msg']);
-            $this->_redirect($result['url']);
+            $this->redirect($result['url']);
         }
     }
 

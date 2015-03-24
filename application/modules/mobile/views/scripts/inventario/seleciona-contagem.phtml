@@ -1,26 +1,18 @@
-﻿<?php if (count($this->numContagens['numContagem']) > 0) : ?>
+﻿<?php if (count($this->numContagens) > 0) : ?>
 
     <h3>Contagens</h3>
     <ul class="menu">
-        <?php for($i=1;$i < $this->numContagens['numContagem']+1; $i++) : ?>
-            <li>
-
-                <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'consulta-endereco', 'idInventario' => $this->idInventario, 'numContagem' => $i )); ?>" title="<?php echo $this->idInventario ?>" > <?php echo $i ?> Contagem </a>
-            </li>
-        <?php endfor; ?>
-    </ul>
-
-<?php endif; ?>
-
-<?php if (count($this->numContagens['numContagensDivergencia']) > 0) : ?>
-
-    <h3>Contagens de divergência</h3>
-    <ul class="menu">
-        <?php for($i2=1;$i2 < $this->numContagens['numContagensDivergencia']+1; $i2++) : ?>
-            <li>
-                <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'consulta-endereco', 'idInventario' => $this->idInventario, 'numContagem' => $i2+1, 'divergencia' => 1 )); ?>" title="<?php echo $this->idInventario ?>" ><?php echo $i2 ?> Contagem divergência </a>
-            </li>
-        <?php endfor; ?>
+        <?php foreach($this->numContagens as $numContagem) : ?>
+            <?php if ($numContagem['DIVERGENCIA'] != 1) : ?>
+                <li>
+                    <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'consulta-endereco', 'idInventario' => $this->idInventario, 'numContagem' => $numContagem['CONTAGEM'] )); ?>" title="<?php echo $this->idInventario ?>" > <?php echo $numContagem['CONTAGEM'] ?> Contagem</a>
+                </li>
+                <?php else : ?>
+                    <li>
+                        <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'consulta-endereco', 'idInventario' => $this->idInventario, 'numContagem' => $numContagem['CONTAGEM'], 'divergencia' => 1 )); ?>" title="<?php echo $this->idInventario ?>" > <?php echo $numContagem['CONTAGEM'] ?> Contagem Divergência</a>
+                    </li>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </ul>
 
 <?php endif; ?>
