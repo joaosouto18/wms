@@ -21,18 +21,20 @@ abstract class Crud extends \Wms\Module\Web\Controller\Action {
         $this->repository = $this->em->getRepository('wms:' . $this->entityName);
 
         //adding default buttons to the page
-        Page::configure(array(
-            'buttons' => array(
-                array(
-                    'label' => 'Adicionar novo',
-                    'cssClass' => 'btnAdd',
-                    'urlParams' => array(
-                        'action' => 'add'
-                    ),
-                    'tag' => 'a'
+        if ($this->entityName != 'Armazenagem\Estrutura\Tipo') {
+            Page::configure(array(
+                'buttons' => array(
+                    array(
+                        'label' => 'Adicionar novo',
+                        'cssClass' => 'btnAdd',
+                        'urlParams' => array(
+                            'action' => 'add'
+                        ),
+                        'tag' => 'a'
+                    )
                 )
-            )
-        ));
+            ));
+        }
     }
 
     /**
