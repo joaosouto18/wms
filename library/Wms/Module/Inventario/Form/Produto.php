@@ -46,8 +46,9 @@ class Produto extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addElement('select', 'idLinhaSeparacao', array(
+            ->addElement('multiselect', 'idLinhaSeparacao', array(
                 'label' => 'Linha de Separação',
+                'style' => 'height:auto; width:100%',
                 'multiOptions' => $linhasSeparacao,
             ))
             ->addElement('checkbox', 'picking', array(
