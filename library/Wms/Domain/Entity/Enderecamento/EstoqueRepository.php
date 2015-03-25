@@ -23,7 +23,7 @@ class EstoqueRepository extends EntityRepository
      $params['usuario'];      - entidade de usuario - wms:Usuario
      $params['estoqueRepo'];  - Estoque Repository - wms:Deposito\EnderecoRepository
      */
-    public function movimentaEstoque($params, $runFlush = true)
+    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false)
     {
         $em = $this->getEntityManager();
 
@@ -40,7 +40,23 @@ class EstoqueRepository extends EntityRepository
 
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
+        $endereco = $enderecoEn->getId();
 
+        if ($saidaProduto == true) {
+            $dql = "SELECT sum(ES.QTD), sum(REP.QTD_RESERVADA), sum(ES.QTD) + sum(REP.QTD_RESERVADA) as soma
+                    FROM RESERVA_ESTOQUE RE
+                    INNER JOIN DEPOSITO_ENDERECO DE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                    INNER JOIN ESTOQUE ES ON ES.COD_PRODUTO = REP.COD_PRODUTO
+                    WHERE REP.COD_PRODUTO = '$codProduto' AND ES.COD_DEPOSITO_ENDERECO = '$endereco'
+                    ORDER BY RE.COD_RESERVA_ESTOQUE DESC";
+
+            $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
+
+            if ($params['qtd'] > $resultado[0]['SOMA']) {
+                throw new \Exception("A movimentação não pode ser maior que a quantidade em estoque");
+            }
+        }
 
         if (isset($params['estoqueRepo']) and !is_null($params['estoqueRepo'])) {
             $estoqueRepo = $params['estoqueRepo'];

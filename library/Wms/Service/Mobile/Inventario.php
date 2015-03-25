@@ -48,15 +48,16 @@ class Inventario
         $params['idInventario'] = $idInventario;
         $params['divergencia']  = $divergencia;
         $params['numContagem']  = $numContagem;
-        if ($params['numContagem'] == 1) {
-            $params['numContagem'] = null;
-        }
-        if ($params['numContagem'] > 1 && $params['divergencia'] == 1) {
-            $params['numContagem']--;
+        if ($params['numContagem'] == 1 && $params['divergencia'] != 1) {
+            $params['numContagem'] = 0;
         }
 
         $return['enderecos'] = $invEndRepo->getByInventario($params);
-        return $return;
+        $enderecos = array();
+        foreach($return['enderecos'] as $endereco) {
+            $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+        }
+        return $enderecos;
     }
 
     public function consultaVinculoEndereco($idInventario, $idEndereco)
@@ -523,20 +524,13 @@ class Inventario
     public function getContagens($params)
     {
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo                    = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $result['numContagem']             = $contagemEndRepo->getContagens($params);
-        $params['divergencia']              = 1;
-        $result['numContagensDivergencia']  = $contagemEndRepo->getContagens($params);
-        if (count($result['numContagem']) == 0) {
-            $result['numContagem'] = $params['regraContagem'];
-        } else {
-            if (count($result['numContagensDivergencia']) > 0) {
-                $result['numContagensDivergencia'] = count($result['numContagensDivergencia']);
-            }
-            if (count($result['numContagem']) > 0) {
-                $result['numContagem'] = $result['numContagem'][0]['numContagem'];
-            }
-            //$result['numContagem'] = count($result['numContagem'])-count($result['numContagensDivergencia']);
+        $contagemEndRepo   = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $result            = $contagemEndRepo->getContagens($params);
+
+        if ($params['regraContagem'] == 2) {
+            $posicaoArray = count($result['contagens']);
+            $result[$posicaoArray]['CONTAGEM'] = 2;
+            $result[$posicaoArray]['DIVERGENCIA'] = null;
         }
 
         return $result;

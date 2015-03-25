@@ -12,7 +12,7 @@
         <?php if ($this->enderecos) : ?>
             <ul>
                 <?php foreach($this->enderecos as $endereco) : ?>
-                     <li><?php echo $endereco['descricao'] ?> - <?php echo $endereco['codProduto'].'-'.$endereco['grade'] ?></li>
+                     <li><?php echo $endereco ?></li>
                 <?php endforeach; ?>
             </ul>
         <?php endif; ?>

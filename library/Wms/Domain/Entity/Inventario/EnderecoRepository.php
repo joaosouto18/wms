@@ -51,44 +51,28 @@ class EnderecoRepository extends EntityRepository
      */
     public function getByInventario($params)
     {
-        if (empty($params['idInventario'])) {
-            throw new \Exception('idInventario não pode ser vazio');
-        }
-        if (empty($params['limit'])) {
-            $params['limit'] = 10;
-        }
+        $idInventario   = $params['idInventario'];
+        $numContagem    = $params['numContagem'];
+        $divergencia    = $params['divergencia'];
 
-        $query = $this->getEntityManager()->createQueryBuilder()
-            ->select("de.descricao, ie.divergencia, NVL(pe.codProduto, pv.codProduto) codProduto, NVL(pe.grade, pv.grade) grade")
-            ->from("wms:Inventario\Endereco","ie")
-            ->innerJoin('ie.depositoEndereco', 'de')
-            ->leftJoin("wms:Inventario\ContagemEndereco", 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
-            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'ce.codProdutoEmbalagem = pe.id')
-            ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'ce.codProdutoVolume = pv.id')
-            ->andWhere("ie.inventario = :idInventario")
-            ->setParameter('idInventario', $params['idInventario'])
-            ->orderBy('de.descricao')
-            ->distinct(true)
-            ->setMaxResults($params['limit']);
-
-        if (isset($params['rua']) && !empty($params['rua'])) {
-            $query->andWhere("de.rua = :rua");
-            $query->setParameter('rua', $params['rua']);
+        $andDivergencia = null;
+        if ($divergencia != null) {
+            $andDivergencia = " AND IE.DIVERGENCIA = 1";
         }
 
-        if (isset($params['numContagem']) && !empty($params['numContagem'])) {
-            $query->andWhere("ce.numContagem = :numContagem");
-            $query->setParameter('numContagem', $params['numContagem']);
-        }
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM
+          FROM INVENTARIO_ENDERECO IE
+          LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO
+                       FROM INVENTARIO_CONTAGEM_ENDERECO
+                      GROUP BY COD_INVENTARIO_ENDERECO) MAXCONT
+            ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+         WHERE IE.COD_INVENTARIO = ".$idInventario."
+         AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem."
+         $andDivergencia
+         ";
 
-        if (isset($params['divergencia']) && !empty($params['divergencia'])) {
-            $query->andWhere("ie.divergencia = 1");
-        } else {
-            $query->andWhere("ie.divergencia is null");
-            $query->andWhere("ie.inventariado is null");
-        }
-
-        return $query->getQuery()->getResult();
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getRuasInventario($idInventario)

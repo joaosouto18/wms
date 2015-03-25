@@ -74,7 +74,7 @@ class Enderecamento_MovimentacaoController extends Action
                             throw new Exception("Este produto não possui nenhuma embalagem cadastrada.");
                         }
                         $params['embalagem'] = $embalagensEn[0];
-                        $EstoqueRepository->movimentaEstoque($params);
+                        $EstoqueRepository->movimentaEstoque($params, true, true);
                     } else {
                         if ($data['volumes'] == "") {
                             throw new Exception("Selecione um grupo de volumes");
@@ -82,7 +82,7 @@ class Enderecamento_MovimentacaoController extends Action
                         $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
                         foreach ($volumes as $volume) {
                             $params['volume'] = $volume;
-                            $EstoqueRepository->movimentaEstoque($params);
+                            $EstoqueRepository->movimentaEstoque($params, true, true);
                         }
                     }
 
