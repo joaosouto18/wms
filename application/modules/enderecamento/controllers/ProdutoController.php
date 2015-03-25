@@ -47,7 +47,7 @@ class Enderecamento_ProdutoController extends Action
         $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
 
         $Grid = new ProdutosGrid();
-        $this->view->grid = $Grid->init($idRecebimento)
+        $this->view->grid = $Grid->init($idRecebimento, $recebimento->getStatus())
             ->render();
     }
 
