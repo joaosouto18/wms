@@ -14,9 +14,8 @@ class Produtos extends Grid
     /**
      * @param int $idRecebimento
      */
-    public function init ($idRecebimento)
+    public function init ($idRecebimento, $status = null)
     {
-
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo    = $this->getEntityManager()->getRepository('wms:Recebimento');
         $result = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
@@ -79,6 +78,15 @@ class Produtos extends Grid
                 ))
 
             ->setShowExport(false);
+
+        if ($status->getSigla() == 'DESFEITO' ) {
+            $this->addAction(array(
+                'label' => 'Trocar U.M.As',
+                'controllerName' => 'palete',
+                'actionName' => 'trocar',
+                'pkIndex' => array('codigo','grade')
+            ));
+        }
 
         return $this;
     }
