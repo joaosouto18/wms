@@ -24,9 +24,9 @@ class PaleteRepository extends EntityRepository
                    NF.COD_FORNECEDOR,
                    FORNECEDOR.NOM_PESSOA FORNECEDOR,
                    NVL(QTD.QTD,0) as QTD_TOTAL,
-                   NVL(QE.QTD_ENDERECAMENTO,0) as QTD_ENDERECAMENTO,
-                   NVL(QF.QTD_ENDERECADO,0) as QTD_ENDERECADO,
-                   NVL(QTD.QTD,0) - NVL(QE.QTD_ENDERECAMENTO,0) - NVL(QF.QTD_ENDERECADO,0) as QTD_RECEBIMENTO
+                   NVL(PRQ.QTD_ENDERECAMENTO,0) as QTD_ENDERECAMENTO,
+                   NVL(PRE.QTD_ENDERECADO,0) as QTD_ENDERECADO,
+                   NVL(QTD.QTD,0) - NVL(PRQ.QTD_ENDERECAMENTO,0) - NVL(PRE.QTD_ENDERECADO,0) as QTD_RECEBIMENTO
               FROM RECEBIMENTO R
               LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
               LEFT JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
@@ -37,16 +37,18 @@ class PaleteRepository extends EntityRepository
                                 COD_RECEBIMENTO
                            FROM V_QTD_RECEBIMENTO
                           GROUP BY COD_RECEBIMENTO) QTD ON QTD.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-              LEFT JOIN (SELECT SUM(QTD) as QTD_ENDERECAMENTO,
-                        COD_RECEBIMENTO
+              LEFT JOIN (SELECT COD_RECEBIMENTO
                    FROM PALETE
                   WHERE COD_STATUS = 535
                   GROUP BY COD_RECEBIMENTO) QE ON R.COD_RECEBIMENTO = QE.COD_RECEBIMENTO
-              LEFT JOIN (SELECT SUM(QTD) as QTD_ENDERECADO,
-                        COD_RECEBIMENTO
+              LEFT JOIN SELECT SUM(QTD) as QTD_ENDERECAMENTO
+                   FROM PALETE_PRODUTO PRQ ON PRQ.UMA = QE.UMA
+              LEFT JOIN (SELECT COD_RECEBIMENTO
                    FROM PALETE
                   WHERE COD_STATUS = 536
                   GROUP BY COD_RECEBIMENTO) QF ON R.COD_RECEBIMENTO = QF.COD_RECEBIMENTO
+              LEFT JOIN SELECT SUM(QTD) as QTD_ENDERECADO
+                   FROM PALETE_PRODUTO PRE ON PRE.UMA = QF.UMA
               LEFT JOIN SIGLA S ON R.COD_STATUS = S.COD_SIGLA
               LEFT JOIN PALETE PA ON R.COD_RECEBIMENTO = PA.COD_RECEBIMENTO
         ";
@@ -284,10 +286,10 @@ class PaleteRepository extends EntityRepository
     }
 
     /** EXEMPLO DE USO DA FUNÇÃO ENDERECAPICKING
-      $paletesMock = array('116','117');
-      $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
-      $paleteRepo->enderecaPicking($paletesMock);
-    */
+    $paletesMock = array('116','117');
+    $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
+    $paleteRepo->enderecaPicking($paletesMock);
+     */
     public function enderecaPicking ($paletes = array())
     {
         if ($paletes == NULL) {

@@ -192,4 +192,36 @@ class Expedicao_EtiquetaController  extends Action
         }
     }
 
+    public function consultarAction()
+    {
+        $form = new \Wms\Module\Expedicao\Form\ConsultaEtiqueta();
+        $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        unset($params['submit']);
+
+        $form->populate($params);
+        $this->view->form = $form;
+
+        $Grid = new \Wms\Module\Web\Grid\ConsultaEtiqueta();
+        $this->view->grid = $Grid->init($params)->render();
+    }
+
+    public function dadosEtiquetaAction()
+    {
+        $params = $this->_getAllParams();
+        $idEtiqueta = $params['id'];
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        unset($params['submit']);
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
+        $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $result = $etiquetaSeparacaoRepo->getDadosEtiquetaByEtiquetaId($idEtiqueta);
+
+        $this->view->expedicoes = $result;
+    }
+
 }
