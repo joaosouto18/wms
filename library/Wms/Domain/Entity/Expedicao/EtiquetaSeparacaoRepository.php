@@ -687,4 +687,140 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
+    public function buscarEtiqueta($parametros)
+    {
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao,
+             c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->leftJoin('es.pedido', 'p')
+            ->leftJoin('p.itinerario', 'i')
+            ->leftJoin('es.produto', 'prod')
+            ->leftJoin('p.carga', 'c')
+            ->leftJoin('c.expedicao', 'e')
+            ->leftJoin('es.status', 's')
+            ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('p.pessoa', 'cli')
+            ->setMaxResults(5000)
+            ->orderBy("es.id" , "DESC")
+            ->distinct(true);
+
+        if (!empty($parametros['etiqueta'])) {
+            $source
+                ->setParameter('idEtiqueta', $parametros['etiqueta'])
+                ->andWhere('es.id = :idEtiqueta');
+        }
+
+        if (!empty($parametros['codCliente'])) {
+            $source
+                ->setParameter('codCliente', $parametros['codCliente'])
+                ->andWhere('cli.id = :codCliente');
+        }
+
+        if (!empty($parametros['codCarga'])) {
+            $source
+                ->setParameter('codCarga', $parametros['codCarga'])
+                ->andWhere('c.codCargaExterno = :codCarga');
+        }
+
+        if (!empty($parametros['codProduto'])) {
+            $source
+                ->setParameter('codProduto', $parametros['codProduto'])
+                ->andWhere('es.codProduto = :codProduto');
+        }
+
+        if ($parametros['reimpresso'] != "") {
+            if ($parametros['reimpresso'] == 'S') {
+                $source->andWhere("es.reimpressao is not null");
+            } else {
+                $source->andWhere("es.reimpressao is null");
+            }
+        }
+
+        if (!empty($parametros['pedido'])) {
+            $source
+                ->setParameter('codPedido', $parametros['pedido'])
+                ->andWhere('es.pedido = :codPedido');
+        }
+
+        if (!empty($parametros['situacao'])) {
+            $source
+                ->setParameter('situacao', $parametros['situacao'])
+                ->andWhere('es.status = :situacao');
+        }
+
+        if (!empty($parametros['codExpedicao'])) {
+            $source
+                ->setParameter('idExpedicao', $parametros['codExpedicao'])
+                ->andWhere('e.id = :idExpedicao');
+        }
+
+        if (!empty($parametros['grade'])) {
+            $source
+                ->setParameter('grade', $parametros['grade'])
+                ->andWhere('es.dscGrade = :grade');
+        }
+
+        if (!empty($parametros['centralEstoque'])) {
+            $source
+                ->setParameter('centralEstoque', $parametros['centralEstoque'])
+                ->andWhere('p.centralEntrega = :centralEstoque');
+        }
+
+        if (!empty($parametros['centralTransbordo'])) {
+            $source
+                ->setParameter('centralTransbordo', $parametros['centralTransbordo'])
+                ->andWhere('p.pontoTransbordo = :centralTransbordo');
+        }
+
+        if (!empty($parametros['itinerario'])) {
+            $source
+                ->setParameter('itinerario', $parametros['itinerario'])
+                ->andWhere('i.id = :itinerario');
+        }
+
+        if (!empty($parametros['dataInicio']) && !empty($parametros['dataFim'])) {
+            $dataInicial1 = str_replace("/", "-", $parametros['dataInicio']);
+            $dataI1 = new \DateTime($dataInicial1);
+
+            $dataInicial2 = str_replace("/", "-", $parametros['dataFim']);
+            $dataI2 = new \DateTime($dataInicial2);
+
+            $source
+                ->setParameter('dataInicio', $dataI1->format('Y-m-d'))
+                ->setParameter('dataFim', $dataI2->format('Y-m-d'))
+                ->andWhere('e.dataInicio BETWEEN :dataInicio AND :dataFim');
+        }
+
+        return $source->getQuery()->getResult();
+    }
+
+    public function getDadosEtiquetaByEtiquetaId($idEtiqueta)
+    {
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('es.id, es.codProduto, p.id as pedido, es.codOS, p.centralEntrega, p.pontoTransbordo, es.reimpressao,
+            es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, e.dataInicio, c.codCargaExterno as tipoCarga,
+            prod.id as produto, prod.descricao, pe.descricao as embalagem, i.descricao as itinerario, pess.nome as clienteNome,
+            es.dataConferencia, es.dataConferenciaTransbordo, es.codOSTransbordo, cli.codClienteExterno, usuarioPessoa.login,
+            siglaEpx.sigla as siglaEpxedicao')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->innerJoin('es.pedido', 'p')
+            ->innerJoin('p.itinerario', 'i')
+            ->innerJoin('p.pessoa', 'cli')
+            ->innerJoin('cli.pessoa', 'pess')
+            ->leftJoin('wms:OrdemServico', 'os', 'WITH', 'es.codOS = os.id')
+            ->leftJoin('wms:Usuario', 'usuarioPessoa', 'WITH', 'os.pessoa = usuarioPessoa.pessoa')
+            ->leftJoin('es.produto', 'prod')
+            ->leftJoin('p.carga', 'c')
+            ->leftJoin('c.expedicao', 'e')
+            ->leftJoin('es.status', 's')
+            ->leftJoin('wms:Util\Sigla', 'siglaEpx', 'WITH', 'e.status = siglaEpx.id')
+            ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->where('es.id = :idEtiqueta')
+            ->setParameter('idEtiqueta', $idEtiqueta)
+            ->distinct(true);
+
+        return $source->getQuery()->getResult();
+    }
+
 }

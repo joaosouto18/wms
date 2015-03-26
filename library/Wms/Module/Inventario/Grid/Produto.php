@@ -24,6 +24,7 @@ class Produto extends DadoLogistico
 
         if (!empty($params['idLinhaSeparacao'])) {
             $grandeza = $params['idLinhaSeparacao'];
+            $grandeza = implode(',',$grandeza);
             $source->andWhere("s.codLinhaSeparacao in ($grandeza)");
         }
 
