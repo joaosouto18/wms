@@ -1,4 +1,5 @@
 <table class="gTable ">
+
     <caption>Estoque do produto - Picking cadastrado: <?php echo $this->endPicking; ?></caption>
     <tbody>
     <?php
@@ -9,28 +10,16 @@
     $qtdEstoque = 0;
     $qtdReservaEntrada = 0;
     $qtdReservaSaida = 0;
+    $qtdEstoqueFinal = 0;
+    $arrayEnderecos = array();
 
     foreach($this->enderecos as $endereco) {
-        if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE'])) {
-
-            if ($codProdutoAnterior != NULL) {
-                ?><tr >
-                <td colspan="3"><b>Total</b></td>
-                <td><b><?php echo $qtdReservaEntrada?></b></td>
-                <td><b><?php echo $qtdReservaSaida?></b></td>
-                <td><b><?php echo $qtdEstoque?></b></td>
-                </tr>
-            <?php
-            }
-            $qtdEstoque = 0;
-            $qtdReservaEntrada = 0;
-            $qtdReservaSaida = 0;
-            ?>
+        if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE'])) { ?>
 
             <tr class ="gTTitle">
-                <td><b><?php echo "CÓDIGO: ".$endereco['COD_PRODUTO']?></b></td>
-                <td><b><?php echo "GRADE: ". $endereco['DSC_GRADE']?></b></td>
-                <td><b><?php echo "PRODUTO: ".$endereco['DSC_PRODUTO']?></b></td>
+                <td><b><?php echo "CÓDIGO: " . $endereco['COD_PRODUTO']?></b></td>
+                <td><b><?php echo "GRADE: " . $endereco['DSC_GRADE']?></b></td>
+                <td><b><?php echo "PRODUTO: " . $endereco['DSC_PRODUTO']?></b></td>
                 <td colspan="3"></td>
             </tr>
 
@@ -43,44 +32,58 @@
                 <td><b>Qtd.Estoque</b></td>
             </tr>
 
-        <?php
-        }
-        ?>
+            <?php foreach ($arrayEnderecos as $key => $endereco) : ?>
+                <tr>
+                    <td><?php echo $key ?></td>
+                    <td><?php echo $endereco['ENDERECO']['TIPO'] ?></td>
+                    <td><?php echo $endereco['DTH_PRIMEIRA_MOVIMENTACAO'] ?></td>
+                    <td><?php echo $endereco['ENDERECO']['RESERVA_ENTRADA'] ?></td>
+                    <td><?php echo $endereco['ENDERECO']['RESERVA_ENTRADA'] ?></td>
+                    <td><?php echo $endereco['ENDERECO']['QTD'] ?></td>
+                </tr>
+            <?php endforeach; ?>
 
-        <?php if ($enderecoAnterior == $endereco['ENDERECO']) {
+            <?php if ($codProdutoAnterior != NULL) { ?>
+                <tr >
+                    <td colspan="3"><b>Total</b></td>
+                    <td><b><?php echo $qtdReservaEntrada?></b></td>
+                    <td><b><?php echo $qtdReservaSaida?></b></td>
+                    <td><b><?php echo $qtdEstoqueFinal?></b></td>
+                </tr>
+            <?php
+            }
 
+            $arrayEnderecos = null;
+            $qtdEstoqueFinal = 0;
+            $qtdReservaEntrada = 0;
+            $qtdReservaSaida = 0;
+            ?>
+
+        <?php } ?>
+
+        <?php if (array_key_exists($endereco['ENDERECO'], $arrayEnderecos)) {
+            $arrayEnderecos[$endereco['ENDERECO']]['QTD'] = $arrayEnderecos[$endereco['ENDERECO']]['QTD'] + $endereco['QTD'];
+            $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_ENTRADA'] = $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_ENTRADA'] + $endereco['RESERVA_ENTRADA'];
+            $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_SAIDA'] = $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_SAIDA'] + $endereco['RESERVA_SAIDA'];
         } else {
+            $arrayEnderecos[$endereco['ENDERECO']]['COD_PRODUTO'] = $endereco['COD_PRODUTO'];
+            $arrayEnderecos[$endereco['ENDERECO']]['DSC_GRADE'] = $endereco['DSC_GRADE'];
+            $arrayEnderecos[$endereco['ENDERECO']]['DSC_PRODUTO'] =  $endereco['DSC_PRODUTO'];
+            $arrayEnderecos[$endereco['ENDERECO']]['ENDERECO'] = $endereco['ENDERECO'];
+            $arrayEnderecos[$endereco['ENDERECO']]['DTH_PRIMEIRA_MOVIMENTACAO'] = $endereco['DTH_PRIMEIRA_MOVIMENTACAO'];
+            $arrayEnderecos[$endereco['ENDERECO']]['TIPO'] = $endereco['TIPO'];
+            $arrayEnderecos[$endereco['ENDERECO']]['QTD']  = $arrayEnderecos[$endereco['ENDERECO']]['QTD'] + $endereco['QTD'];
+            $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_ENTRADA'] = $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_ENTRADA'] + $endereco['RESERVA_ENTRADA'];
+            $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_SAIDA'] = $arrayEnderecos[$endereco['ENDERECO']]['RESERVA_SAIDA'] + $endereco['RESERVA_SAIDA'];
+        } ?>
 
-        }?>
-        <tr>
-            <td><?php echo $endereco['ENDERECO']?></td>
-            <td><?php echo $endereco['TIPO']?></td>
-            <td><?php echo $endereco['DTH_PRIMEIRA_MOVIMENTACAO']?></td>
-            <td><?php echo $endereco['RESERVA_ENTRADA']?></td>
-            <td><?php echo $endereco['RESERVA_SAIDA']?></td>
-            <td><?php echo $endereco['QTD']?></td>
 
-        </tr>
         <?php
-        $enderecoAnterior = $endereco['ENDERECO'];
-        $qtdEstoque = $qtdEstoque + $endereco['QTD'];
-        $qtdReservaEntrada = $qtdReservaEntrada + $endereco['RESERVA_ENTRADA'];
-        $qtdReservaSaida   = $qtdReservaSaida   + $endereco['RESERVA_SAIDA'];
         $codProdutoAnterior = $endereco['COD_PRODUTO'];
         $gradeAnterior = $endereco['DSC_GRADE'];
-        $codVolumeAnterior = $endereco['COD_VOLUME'];
+        $qtdEstoqueFinal = $qtdEstoqueFinal + $qtdEstoque;
+        ?>
+    <?php } ?>
 
-        if ($endereco == $this->enderecos[count($this->enderecos)-1]) {
-            ?>
-            <tr>
-                <td colspan="3"><b>Total</b></td>
-                <td><b><?php echo $qtdReservaEntrada?></b></td>
-                <td><b><?php echo $qtdReservaSaida?></b></td>
-                <td><b><?php echo $qtdEstoque?></b></td>
-            </tr>
-        <?php
-        }
-    }
-    ?>
 </table>
 
