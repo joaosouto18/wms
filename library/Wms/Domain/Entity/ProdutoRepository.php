@@ -728,7 +728,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
   private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
 	$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -744,7 +744,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	
 	if (empty($dadosLogisticosEmbalagens)) {
 	  $dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -773,12 +773,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  'cubagem' => $embalagem['cubagem'],
 		  'peso' => $embalagem['peso'],
 		  'descricao' => $embalagem['descricao'],
+          'quantidade' => $embalagem['quantidade'],
 	  );
 
 	  $i++;
 	}
 
-	//var_dump($dadosLogisticos);die;
 	return $client->salvar((string) $produtoEntity->getId(), $dadosLogisticos);
   }
 
@@ -790,7 +790,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	  return false;
 
 	$client = $this->getSoapClient();
-
 
 	$dadosLogisticosVolume = array();
 
@@ -804,7 +803,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  'profundidade' => \Core\Util\Converter::brToEn($profundidade, 3),
 		  'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
 		  'peso' => \Core\Util\Converter::brToEn($peso, 3),
-		  'descricao' => $descricao
+		  'descricao' => $descricao,
+          'quantidade' => 1
 	  );
 	  $i++;
 	}
