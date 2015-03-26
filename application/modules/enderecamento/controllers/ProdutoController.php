@@ -110,8 +110,8 @@ class Enderecamento_ProdutoController extends Action
         $grade         = $this->_getParam("grade");
 
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
-		$conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
-		
+        $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
+
         $result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade);
         $idNorma = $result['idNorma'];
 
@@ -122,33 +122,33 @@ class Enderecamento_ProdutoController extends Action
 
         /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimento $recebimentoEn */
         $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento\VQtdRecebimento")->findOneBy(array('codRecebimento' => $idRecebimento, 'codProduto'=>$codProduto, 'grade'=>$grade));
-		$conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento'=> $idRecebimento,'codProduto'=>$codProduto,'grade'=>$grade));
-				
+        $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento'=> $idRecebimento,'codProduto'=>$codProduto,'grade'=>$grade));
+
         if (($recebimentoEn == NULL) && ($conferenciaEn == NULL)){
             $this->addFlashMessage('error',"Nenhuma quantidade conferida para o produto $codProduto, grade $grade");
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
-		
+
         try {
             /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimento $recebimentoEn */
 
-			if ($recebimentoEn == null) {
-				$idOs = $conferenciaRepo->getLastOsConferencia($idRecebimento,$codProduto,$grade);
-				$idNormaAntiga = 'Nenhuma Norma';
-				$qtdNormaAntiga = 0; 
-			} else {
-				$normaAntigaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id'=>$recebimentoEn->getCodNormaPaletizacao()));
-				if ($normaAntigaEn == null) {
-					$idNormaAntiga = "";
-					$qtdNormaAntiga = "SEM NORMA ANTIGA";
-				} else {
-					$idNormaAntiga = $normaAntigaEn->getId();
-					$qtdNormaAntiga = $normaAntigaEn->getNumNorma();
-				}
+            if ($recebimentoEn == null) {
+                $idOs = $conferenciaRepo->getLastOsConferencia($idRecebimento,$codProduto,$grade);
+                $idNormaAntiga = 'Nenhuma Norma';
+                $qtdNormaAntiga = 0;
+            } else {
+                $normaAntigaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id'=>$recebimentoEn->getCodNormaPaletizacao()));
+                if ($normaAntigaEn == null) {
+                    $idNormaAntiga = "";
+                    $qtdNormaAntiga = "SEM NORMA ANTIGA";
+                } else {
+                    $idNormaAntiga = $normaAntigaEn->getId();
+                    $qtdNormaAntiga = $normaAntigaEn->getNumNorma();
+                }
 
-				$idOs = $recebimentoEn->getCodOs();
-			}
-            			
+                $idOs = $recebimentoEn->getCodOs();
+            }
+
             $recebimentoRepo->alteraNormaPaletizacaoRecebimento($idRecebimento,$codProduto,$grade,$idOs, $idNorma);
 
             /** @var \Wms\Domain\Entity\Enderecamento\AndamentoRepository $andamentoRepo */
@@ -160,12 +160,12 @@ class Enderecamento_ProdutoController extends Action
             $paleteRepo  = $this->_em->getRepository('wms:Enderecamento\Palete');
             $paleteRepo->deletaPaletesRecebidos($idRecebimento,$codProduto, $grade);
             $this->addFlashMessage('success',"Norma de paletização para o produto $codProduto, grade $grade alterada com sucesso neste recebimento");
-			$this->_redirect('enderecamento/palete/index/id/'.$idRecebimento . '/codigo/'. $codProduto . '/grade/'. $grade);
+            $this->_redirect('enderecamento/palete/index/id/'.$idRecebimento . '/codigo/'. $codProduto . '/grade/'. $grade);
         } catch (\Exception $ex) {
             $this->addFlashMessage('error',$ex->getMessage());
-			$this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
+            $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
-        
+
     }
 
 } 
