@@ -45,7 +45,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 quantidadeUma--;
             }
 
-            if (numEndSelecionados >= quantidadeUma) {
+            if (numEndSelecionados >= quantidadeUma && $(this).parent().parent().find('.area-armazenagem').text() == 'PORTA PALETE') {
                 alert('Número de endereços máximo atigindo');
                 return false;
             }
