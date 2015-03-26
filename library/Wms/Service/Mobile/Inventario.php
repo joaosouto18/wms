@@ -147,6 +147,11 @@ class Inventario
         $codProdutoVolume       = $params['codProdutoVolume'];
         $contagemEndId          = $params['contagemEndId'];
         $numContagem            = $params['numContagem'];
+        $divergencia            = $params['divergencia'];
+
+        if ($divergencia == 1) {
+            $numContagem++;
+        }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
@@ -480,7 +485,7 @@ class Inventario
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'numContagem' => $params['numContagem']));
+        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
 
         if (count($contagemEndEntities) == 0) {
             return false;

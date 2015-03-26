@@ -69,6 +69,7 @@ class EnderecoRepository extends EntityRepository
             ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
          WHERE IE.COD_INVENTARIO = ".$idInventario."
          AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem."
+         AND IE.INVENTARIADO IS NULL
          $andDivergencia
          ";
 

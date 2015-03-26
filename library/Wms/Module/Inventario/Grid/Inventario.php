@@ -97,7 +97,7 @@ class Inventario extends Grid
                 'cssClass' => '',
                 'pkIndex' => 'id',
                 'condition' => function ($row) {
-                    return $row['status'] == "LIBERADO" && $row['qtdInvetariado'] > 0;
+                    return $row['status'] == "LIBERADO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
                 },
             ))
             ->addAction(array(
