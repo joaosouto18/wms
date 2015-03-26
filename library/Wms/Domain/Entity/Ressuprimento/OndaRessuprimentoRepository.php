@@ -282,14 +282,13 @@ class OndaRessuprimentoRepository extends EntityRepository
         $statusEn = $siglaRepo->findOneBy(array('id'=>\Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA));
 
         //CRIA A ORDEM DE SERVICO
-        $idOrdemServico = $ordemServicoRepo->save(new OrdemServicoEntity, array(
+        $osEn = $ordemServicoRepo->save(new OrdemServicoEntity, array(
             'identificacao' => array(
                 'tipoOrdem' => 'ressuprimento',
                 'idAtividade' => AtividadeEntity::RESSUPRIMENTO,
                 'formaConferencia' => OrdemServicoEntity::COLETOR,
             ),
-        ));
-        $osEn = $ordemServicoRepo->findOneBy(array('id'=>$idOrdemServico));
+        ), false, "Object");
 
         //RELACIONO A ORDEM DE SERVICO A ONDA DE RESSUPRIMENTO NA TABELA ONDA_RESSUPRIMENTO_OS
         $ondaRessuprimentoOs = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs();
@@ -345,11 +344,11 @@ class OndaRessuprimentoRepository extends EntityRepository
             $produtosSaida[] = $produtoArray;
         }
 
-        $this->getEntityManager()->flush();
+        //$this->getEntityManager()->flush();
 
         //ADICIONA AS RESERVAS DE ESTOQUE
-        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosEntrada,"E","O",$ondaRessuprimentoOs->getId(),$idOrdemServico);
-        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(),$produtosSaida,"S","O",$ondaRessuprimentoOs->getId(),$idOrdemServico);
+        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosEntrada,"E","O",$ondaRessuprimentoOs,$osEn);
+        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(),$produtosSaida,"S","O",$ondaRessuprimentoOs,$osEn);
     }
 
     private function geraOsByPicking ($picking,$ondaEn) {

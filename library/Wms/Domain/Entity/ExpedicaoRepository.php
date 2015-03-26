@@ -200,7 +200,6 @@ class ExpedicaoRepository extends EntityRepository
                 $ondaEn = $ondaRepo->geraNovaOnda();
                 $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
                 $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
-                    $this->getEntityManager()->flush();
                 $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
                 $this->getEntityManager()->flush();
                 $ondaRepo->sequenciaOndasOs();
@@ -213,7 +212,12 @@ class ExpedicaoRepository extends EntityRepository
             return $resultado;
         } catch(\Exception $e) {
             $this->getEntityManager()->rollback();
-            throw new \Exception($e->getMessage());
+
+            $resultado = array();
+            $resultado['observacao'] = $e->getMessage();
+            $resultado['resultado'] = false;
+
+            return $resultado;
         }
 
     }
