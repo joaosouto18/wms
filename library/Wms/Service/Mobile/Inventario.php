@@ -427,6 +427,11 @@ class Inventario
             $codProdutoEmbalagem  = $params['codProdutoEmbalagem'];
         }
 
+        $divergencia            = $params['divergencia'];
+        if ($divergencia == 1) {
+            $numContagem++;
+        }
+
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
 
