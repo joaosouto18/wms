@@ -4,7 +4,7 @@ namespace Wms\Module\Inventario\Grid;
 
 use Wms\Module\Web\Grid;
 
-class Inventario extends Grid
+class Acompanhamento extends Grid
 {
 
     public function init()
