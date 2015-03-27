@@ -258,6 +258,38 @@ $(document).ready(function(){
         });
     });
 
+    $('.inside-modal').live('click', function() {
+        //url
+        var url = this.href;
+        // show a spinner or something via css
+        var dialog = $('<div id="inside-modal-dialog" style="display:none"></div>').appendTo('body');
+
+        // open the dialog
+        dialog.dialog({
+            width : 750,
+            height : 450,
+            resizable: true,
+            title : '',
+            // add a close listener to prevent adding multiple divs to the document
+            close: function(event, ui) {
+                // remove div with all data and events
+                dialog.remove();
+            },
+            modal: true
+        });
+        // load remote content
+        dialog.load(
+            url,
+            {}, // omit this param object to issue a GET request instead a POST request, otherwise you may provide post parameters within the object
+            function (responseText, textStatus, XMLHttpRequest) {
+                // remove the loading class
+                dialog.removeClass('loading');
+            }
+        );
+        //prevent the browser to follow the link
+        return false;
+    });
+
     /***************************************
      JMVC plugins
     ***************************************/

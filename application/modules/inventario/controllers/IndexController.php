@@ -58,7 +58,14 @@ class Inventario_IndexController  extends Action
 
     public function viewAndamentoAjaxAction()
     {
-        $grid =  new \Wms\Module\Inventario\Grid\Inventario();
-        $this->view->grid = $grid->init();
+        $grid =  new \Wms\Module\Inventario\Grid\Andamento();
+        $this->view->grid = $grid->init($this->_getAllParams());
     }
+
+    public function viewRuaAjaxAction()
+    {
+        $grid =  new \Wms\Module\Inventario\Grid\Rua();
+        $this->view->grid = $grid->init($this->_getAllParams());
+    }
+
 }

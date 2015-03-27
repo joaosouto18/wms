@@ -35,7 +35,8 @@ class Inventario extends Grid
             ->groupBy('i, s.sigla')
             ->orderBy('i.id', 'DESC');
 
-        $this->setSource(new \Core\Grid\Source\Doctrine($source));
+        $this->setSource(new \Core\Grid\Source\Doctrine($source))
+            ->setId('monitoramento-inventario');
         $this->setShowExport(false);
         $this->addColumn(array(
                 'label' => 'Inventário',

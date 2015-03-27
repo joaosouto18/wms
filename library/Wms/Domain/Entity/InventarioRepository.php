@@ -299,5 +299,31 @@ class InventarioRepository extends EntityRepository
         return $serviceEstoque->movimentaEstoque();
     }
 
+    public function getSumarioByRua($params)
+    {
+        $idInventario   = $params['id'];
+
+        $sql = "
+        SELECT
+              F.NUM_RUA RUA,
+              COUNT(G.COD_INVENTARIO) QTD_ENDERECOS,
+              COUNT(G.DIVERGENCIA) QTD_DIVERGENTE,
+              COUNT(G.INVENTARIADO) QTD_INVENTARIADO,
+              COUNT(PENDENTES.CONT) as QTD_PENDENTE
+            FROM INVENTARIO_ENDERECO G
+            INNER JOIN  DEPOSITO_ENDERECO F  ON F.COD_DEPOSITO_ENDERECO = G.COD_DEPOSITO_ENDERECO
+            LEFT JOIN (SELECT IE.COD_INVENTARIO_ENDERECO as CONT, IE.COD_INVENTARIO_ENDERECO FROM INVENTARIO_ENDERECO IE
+                  INNER JOIN DEPOSITO_ENDERECO DE ON IE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                  WHERE INVENTARIADO IS NULL AND DIVERGENCIA IS NULL
+                  GROUP BY IE.COD_INVENTARIO_ENDERECO) PENDENTES
+              ON PENDENTES.COD_INVENTARIO_ENDERECO = G.COD_INVENTARIO_ENDERECO
+            WHERE
+             G.COD_INVENTARIO = ".$idInventario."
+            GROUP BY F.NUM_RUA
+            ORDER BY F.NUM_RUA
+        ";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
 }

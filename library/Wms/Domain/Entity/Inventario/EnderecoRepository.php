@@ -51,16 +51,27 @@ class EnderecoRepository extends EntityRepository
      */
     public function getByInventario($params)
     {
-        $idInventario   = $params['idInventario'];
-        $numContagem    = $params['numContagem'];
-        $divergencia    = $params['divergencia'];
+        $idInventario   = isset($params['idInventario']) ? $params['idInventario'] : null;
+        $numContagem    = isset($params['numContagem']) ? $params['numContagem'] : null;
+        $divergencia    = isset($params['divergencia']) ? $params['divergencia'] : null;
+        $rua            = isset($params['rua']) ? $params['rua'] : null;
 
         $andDivergencia = null;
         if ($divergencia != null) {
-            $andDivergencia = " AND IE.DIVERGENCIA = 1";
+            $andDivergencia = " AND IE.DIVERGENCIA = 1 ";
         }
 
-        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM
+        $andRua = null;
+        if ($rua != null) {
+            $andRua = " AND DE.NUM_RUA = ".$rua." ";
+        }
+
+        $andContagem = null;
+        if ($numContagem != null) {
+            $andContagem = " AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem." AND IE.INVENTARIADO IS NULL ";
+        }
+
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM, IE.DIVERGENCIA
           FROM INVENTARIO_ENDERECO IE
           LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
           LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO
@@ -68,9 +79,9 @@ class EnderecoRepository extends EntityRepository
                       GROUP BY COD_INVENTARIO_ENDERECO) MAXCONT
             ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
          WHERE IE.COD_INVENTARIO = ".$idInventario."
-         AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem."
-         AND IE.INVENTARIADO IS NULL
+         $andContagem
          $andDivergencia
+         $andRua
          ";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
