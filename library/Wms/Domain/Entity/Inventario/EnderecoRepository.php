@@ -82,6 +82,7 @@ class EnderecoRepository extends EntityRepository
          $andContagem
          $andDivergencia
          $andRua
+         ORDER BY DE.DSC_DEPOSITO_ENDERECO
          ";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
