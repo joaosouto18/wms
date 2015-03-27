@@ -247,7 +247,7 @@ class Inventario
     {
         if (($estoqueEn->getCodProduto() == $contagemEndEn->getCodProduto()) &&  ($estoqueEn->getGrade() == $contagemEndEn->getGrade())) {
 
-            if ($estoqueEn->getProdutoEmbalagem() == null) {
+            if (($estoqueEn->getProdutoEmbalagem() == null)  && ($estoqueEn->getProdutoVolume() != null)) {
                 if ($estoqueEn->getProdutoVolume()->getId() == $contagemEndEn->getCodProdutoVolume()) {
                     return true;
                 }
