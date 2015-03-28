@@ -49,13 +49,15 @@ class InventarioRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
-        foreach($codEnderecos as $endereco) {
-            $enDepositoEnd = $depositoEnderecoRepo->find($endereco);
+        $enderecosSalvos = array();
+        foreach($codEnderecos as $codEndereco) {
+            $enDepositoEnd = $depositoEnderecoRepo->find($codEndereco);
             if (!is_null($enDepositoEnd)) {
                 $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $enDepositoEnd->getId()));
                 //não adiciona 2x o mesmo endereço
-                if (count($enderecoEn) == 0) {
-                    $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $enDepositoEnd->getId()));
+                if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos)) {
+                    $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
+                    $enderecosSalvos[] = $codEndereco;
                 }
             }
         }
@@ -216,6 +218,10 @@ class InventarioRepository extends EntityRepository
             $enderecoEn         = $invEnderecoEn->getDepositoEndereco();
             $idDepositoEndereco = $enderecoEn->getId();
 
+            if ($enderecoEn->getId() == 2469){
+                $entra = true;
+            }
+
             foreach($contagemEndEnds as $contagemEndEn) {
                 //Endereco tem estoque?
 
@@ -265,16 +271,17 @@ class InventarioRepository extends EntityRepository
 
     public function entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo)
     {
-        $params['produto']      = $contagemEndEn->getProduto();
-        $params['endereco']     = $invEnderecoEn->getDepositoEndereco();
-        $params['qtd']          = $qtd;
-        $params['volume']       = $contagemEndEn->getProdutoVolume();
-        $params['embalagem']    = $contagemEndEn->getCodProdutoEmbalagem();
-        $params['tipo']         = 'I';
-        $params['observacoes']  = 'Mov. correção inventário';
-        $params['os']           = $osEn;
-        $params['usuario']      = $usuarioEn;
-        $params['estoqueRepo']  = $estoqueRepo;
+        $params['contagemEndEn'] = $contagemEndEn;
+        $params['produto']       = $contagemEndEn->getProduto();
+        $params['endereco']      = $invEnderecoEn->getDepositoEndereco();
+        $params['qtd']           = $qtd;
+        $params['volume']        = $contagemEndEn->getProdutoVolume();
+        $params['embalagem']     = $contagemEndEn->getCodProdutoEmbalagem();
+        $params['tipo']          = 'I';
+        $params['observacoes']   = 'Mov. correção inventário';
+        $params['os']            = $osEn;
+        $params['usuario']       = $usuarioEn;
+        $params['estoqueRepo']   = $estoqueRepo;
 
         $serviceEstoque = new Estoque($this->getEntityManager(), $params);
         return $serviceEstoque->movimentaEstoque();

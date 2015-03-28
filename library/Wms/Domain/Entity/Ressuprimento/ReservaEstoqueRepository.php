@@ -18,7 +18,7 @@ class ReservaEstoqueRepository extends EntityRepository
      * produtos[0]['grade'] = 'Grade do Produto'
      * produtos[0]['qtd'] = '10' ou '-10'
     */
-    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $idOs = null, $idUsuario = null, $observacao = "" )
+    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "" )
     {
         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
@@ -40,7 +40,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         if ($origemReserva == "O") {
-            return $this->addReservaEstoqueOnda($enderecoEn,$produtos,$tipoReserva,$idOrigem,$idOs,$usuarioEn,$observacao);
+            return $this->addReservaEstoqueOnda($enderecoEn,$produtos,$tipoReserva,$idOrigem,$Os,$usuarioEn,$observacao);
         } else if ($origemReserva == "U") {
             return $this->addReservaEstoqueUma($enderecoEn,$produtos,$tipoReserva,$idOrigem,$usuarioEn,$observacao);
         } else if ($origemReserva == "E") {
@@ -343,15 +343,9 @@ class ReservaEstoqueRepository extends EntityRepository
         return $reservaEstoqueEn;
     }
 
-    private function addReservaEstoqueOnda ($enderecoEn, $produtos, $tipoReserva, $idOndaOs,$idOs, $usuarioReserva, $observacoes)
+    private function addReservaEstoqueOnda ($enderecoEn, $produtos, $tipoReserva, $ondaOsEn,$osEn, $usuarioReserva, $observacoes)
     {
         $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,$tipoReserva,$usuarioReserva,$observacoes);
-
-        $ordemServicoRepo = $this->getEntityManager()->getRepository("wms:OrdemServico");
-        $ondaOsRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs");
-
-        $osEn = $ordemServicoRepo->findOneBy(array('id'=>$idOs));
-        $ondaOsEn = $ondaOsRepo->findOneBy(array('id'=>$idOndaOs));
 
         $reservaEstoqueOnda = new \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueOnda();
             $reservaEstoqueOnda->setReservaEstoque($reservaEstoqueEn);

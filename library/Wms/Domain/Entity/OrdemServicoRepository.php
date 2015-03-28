@@ -18,7 +18,7 @@ class OrdemServicoRepository extends EntityRepository
      * @param array $values
      * @return int Id da entidade 
      */
-    public function save(OrdemServicoEntity $ordemServicoEntity, array $values)
+    public function save(OrdemServicoEntity $ordemServicoEntity, array $values, $runFlush = true , $returnType = "Id")
     {
         extract($values['identificacao']);
         $em = $this->getEntityManager();
@@ -56,9 +56,14 @@ class OrdemServicoRepository extends EntityRepository
                 ->setFormaConferencia($formaConferencia);
 
         $em->persist($ordemServicoEntity);
-        $em->flush();
 
-        return $ordemServicoEntity->getId();
+        if ($runFlush == true) $em->flush();
+
+        if ($returnType == "Id") {
+            return $ordemServicoEntity->getId();
+        } else {
+            return $ordemServicoEntity;
+        }
     }
 
 
