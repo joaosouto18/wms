@@ -80,6 +80,7 @@ class Mobile_InventarioController extends Action
                 $populateForm   = array('idEndereco' => $enderecoId, 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem);
                 $this->view->idInventarioEnd = $result['idInventarioEnd'];
                 $this->view->numContagem     = $numContagem;
+                $this->view->divergencia     = $divergencia;
                 $this->view->botoes          = true;
             }
 
@@ -144,8 +145,9 @@ class Mobile_InventarioController extends Action
                 $result = $this->_service->consultarProduto($params);
                 $this->checkErrors($result);
                 $result['populateForm']['numContagem']  =  $params['numContagem'];
+                $result['populateForm']['divergencia']  =  $divergencia;
                 //Verifica se existe contagem endereco
-                $result['populateForm']['contagemEndId'] = $this->_service->verificaContagemEnd($result['populateForm']);
+                $result['populateForm']['contagemEndId'] = $inventarioService->verificaContagemEnd($result['populateForm']);
 
                 $form->populate($result['populateForm']);
             }
@@ -160,15 +162,18 @@ class Mobile_InventarioController extends Action
     {
         $params = $this->_getAllParams();
         $divergencia  = $this->_getParam('divergencia', null);
-        $result = $this->_service->contagemEndereco($params);
+        /** @var \Wms\Service\Mobile\Inventario $inventarioService */
+        $inventarioService = $this->_service;
+        $result = $inventarioService->contagemEndereco($params);
         $this->checkErrors($result);
 
         $populateForm = array('idEndereco' => $params['idEndereco'], 'idContagemOs' => $params['idContagemOs'],
             'idInventarioEnd' => $params['idInventarioEnd'], 'numContagem' => $params['numContagem'], 'contagemEndId' => $result['contagemEndId']);
-        $this->view->form = $this->_service->formProduto($populateForm);
+        $this->view->form = $inventarioService->formProduto($populateForm);
         $this->view->idInventarioEnd = $params['idInventarioEnd'];
         $this->view->idInventario    = $params['idInventario'];
         $this->view->numContagem     = $params['numContagem'];
+        $this->view->divergencia     = $divergencia;
         $this->view->botoes          = true;
         $this->view->urlVoltar       = '/mobile/inventario/consulta-endereco/idInventario/'.$params['idInventario'].'/numContagem/'.$params['numContagem'].'/divergencia/'.$divergencia;
         $this->render('form');
@@ -179,8 +184,10 @@ class Mobile_InventarioController extends Action
         $params = $this->_getAllParams();
         $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
         $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
+        /** @var \Wms\Service\Mobile\Inventario $inventarioService */
+        $inventarioService = $this->_service;
 
-        if ($this->_service->finalizaContagemEndereco($params,$paramsSystem)) {
+        if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
             $this->addFlashMessage('success', 'Contagem de endereço finalizada');
         } else {
             $this->addFlashMessage('warning', 'Contagem de endereço finalizada com divergência');

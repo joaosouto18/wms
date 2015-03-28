@@ -35,7 +35,8 @@ class Inventario extends Grid
             ->groupBy('i, s.sigla')
             ->orderBy('i.id', 'DESC');
 
-        $this->setSource(new \Core\Grid\Source\Doctrine($source));
+        $this->setSource(new \Core\Grid\Source\Doctrine($source))
+            ->setId('monitoramento-inventario');
         $this->setShowExport(false);
         $this->addColumn(array(
                 'label' => 'Inventário',
@@ -132,6 +133,13 @@ class Inventario extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO" && $row['status'] != "CANCELADO";
                 },
+            ))
+            ->addAction(array(
+                'label' => 'Visualizar Andamento',
+                'title' => 'Andamento do Inventário',
+                'actionName' => 'view-andamento-ajax',
+                'cssClass' => 'view-andamento dialogAjax',
+                'pkIndex' => 'id'
             ));
 
         return $this;

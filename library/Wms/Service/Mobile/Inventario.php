@@ -247,7 +247,7 @@ class Inventario
     {
         if (($estoqueEn->getCodProduto() == $contagemEndEn->getCodProduto()) &&  ($estoqueEn->getGrade() == $contagemEndEn->getGrade())) {
 
-            if ($estoqueEn->getProdutoEmbalagem() == null) {
+            if (($estoqueEn->getProdutoEmbalagem() == null)  && ($estoqueEn->getProdutoVolume() != null)) {
                 if ($estoqueEn->getProdutoVolume()->getId() == $contagemEndEn->getCodProdutoVolume()) {
                     return true;
                 }
@@ -425,6 +425,11 @@ class Inventario
         $codProdutoVolume       = !empty($params['codProdutoVolume']) ? $params['codProdutoVolume'] : null;
         if (isset($params['codProdutoEmbalagem'])) {
             $codProdutoEmbalagem  = $params['codProdutoEmbalagem'];
+        }
+
+        $divergencia            = $params['divergencia'];
+        if ($divergencia == 1) {
+            $numContagem++;
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
