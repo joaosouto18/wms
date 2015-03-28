@@ -85,8 +85,8 @@ class Enderecamento_EnderecoController extends Action
                 $grade      = $produtosEn[0]->getGrade();
 
                 $tipoEstruturaArmazenamento = $enderecoRepo->getTipoArmazenamentoByEndereco($idEndereco);
-
-                //nb$tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] = Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
+//var_dump($tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ']); exit;
+                //$tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] = Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
                 if ($tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
                     foreach ($paletes as $palete) {
@@ -94,7 +94,6 @@ class Enderecamento_EnderecoController extends Action
                     }
 
                 } elseif ($idPalete != 'on') {
-
                     $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($idEndereco,$larguraPalete);
 
                     if ($permiteEnderecar == false) {
@@ -113,4 +112,4 @@ class Enderecamento_EnderecoController extends Action
         $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
     }
 
-} 
+}
