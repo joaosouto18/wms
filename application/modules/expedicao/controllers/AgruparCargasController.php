@@ -36,16 +36,22 @@ class Expedicao_AgruparCargasController  extends Action
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $AndamentoRepo */
         $AndamentoRepo   = $this->_em->getRepository('wms:Expedicao\Andamento');
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
+        $cargaRepo   = $this->_em->getRepository('wms:Expedicao\Carga');
+        $ultimaCarga = $cargaRepo->getSequenciaUltimaCarga($idExpedicaoMae);
+        $sequenciaUltimaCarga = $ultimaCarga[0]['sequencia'];
         try {
             $statusCancelado = $this->_em->getRepository("wms:Util\Sigla")->findOneBy(array('id'=>\Wms\Domain\Entity\Expedicao::STATUS_CANCELADO));
             foreach ($expedicoes as $idExpedicaoFilha) {
                 $expedicaoMaeEn = $this->_em->getReference('wms:Expedicao', $idExpedicaoMae);
                 $expedicaoFilhaEN = $this->_em->getRepository("wms:Expedicao")->findOneBy(array('id'=>$idExpedicaoFilha));
-                $cargas=$ExpedicaoRepo->getCargas($idExpedicaoFilha);
-                foreach ($cargas as $c){
-                    $codCarga=$c->getId();
+                $cargas = $ExpedicaoRepo->getCargas($idExpedicaoFilha);
+                foreach ($cargas as $c) {
+                    $sequenciaUltimaCarga = $sequenciaUltimaCarga + 1;
+                    $codCarga = $c->getId();
                     $entityCarga = $this->_em->getReference('wms:Expedicao\Carga', $codCarga);
                     $entityCarga->setExpedicao($expedicaoMaeEn);
+                    $entityCarga->setSequencia($sequenciaUltimaCarga);
                     $this->_em->persist($entityCarga);
                     $AndamentoRepo->save("Carga ". $c->getCodCargaExterno(). " transferida da expedição $idExpedicaoFilha pelo agrupamento de cargas", $idExpedicaoMae);
                 }
