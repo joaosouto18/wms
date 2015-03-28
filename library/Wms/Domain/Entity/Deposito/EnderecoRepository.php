@@ -614,6 +614,16 @@ class EnderecoRepository extends EntityRepository
         return $result;
     }
 
+    public function getTipoArmazenamentoByEndereco($endereco)
+    {
+        $sql = "SELECT DE.COD_DEPOSITO_ENDERECO, EA.COD_TIPO_EST_ARMAZ FROM DEPOSITO_ENDERECO DE
+                INNER JOIN TIPO_EST_ARMAZ EA ON DE.COD_TIPO_EST_ARMAZ = EA.COD_TIPO_EST_ARMAZ
+                WHERE DE.COD_DEPOSITO_ENDERECO = $endereco";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
     public function getValidaTamanhoEndereco($idEndereco, $larguraPalete) {
         $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoLongarina");
         $estoqueRepo     = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
