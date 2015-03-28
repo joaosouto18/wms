@@ -168,6 +168,7 @@ class Expedicao_IndexController  extends Action
             $expedicaoAntiga = $cargaEn->getCodExpedicao();
             $expedicaoEn = $ExpedicaoRepo->save($cargaEn->getCodCargaExterno());
             $cargaEn->setExpedicao($expedicaoEn);
+            $cargaEn->setSequencia(1);
             $this->_em->persist($cargaEn);
 
             if ($countCortadas >0) {
