@@ -70,4 +70,15 @@ class CargaRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    public function getSequenciaUltimaCarga($idExpedicao)
+    {
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder()
+            ->select('MAX(c.sequencia) as sequencia')
+            ->from('wms:Expedicao\Carga', 'c')
+            ->where('c.codExpedicao = :expedicao')
+            ->setParameter('expedicao', $idExpedicao);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }
