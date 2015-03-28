@@ -69,20 +69,31 @@ class Enderecamento_EnderecoController extends Action
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 
         $contador = 0;
+
         foreach($enderecos as $key => $endereco) {
             if ($paletes[$contador]) {
                 $idPalete   = $paletes[$contador];
                 $idEndereco = $key;
-                if ($idPalete != 'on') {
 
-                    /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
-                    $paleteEn = $paleteRepo->find($idPalete);
-                    $larguraPalete = $paleteEn->getUnitizador()->getLargura(false)* 100;
-                    $idRecebimento = $paleteEn->getRecebimento()->getId();
+                /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
+                $paleteEn = $paleteRepo->find($idPalete);
+                $larguraPalete = $paleteEn->getUnitizador()->getLargura(false)* 100;
+                $idRecebimento = $paleteEn->getRecebimento()->getId();
 
-                    $produtosEn = $paleteEn->getProdutos();
-                    $codProduto = $produtosEn[0]->getCodProduto();
-                    $grade      = $produtosEn[0]->getGrade();
+                $produtosEn = $paleteEn->getProdutos();
+                $codProduto = $produtosEn[0]->getCodProduto();
+                $grade      = $produtosEn[0]->getGrade();
+
+                $tipoEstruturaArmazenamento = $enderecoRepo->getTipoArmazenamentoByEndereco($idEndereco);
+
+                //nb$tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] = Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
+
+                if ($tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
+                    foreach ($paletes as $palete) {
+                        $paleteRepo->alocaEnderecoPaleteByBlocado($palete, $idEndereco);
+                    }
+
+                } elseif ($idPalete != 'on') {
 
                     $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($idEndereco,$larguraPalete);
 
@@ -98,6 +109,7 @@ class Enderecamento_EnderecoController extends Action
         }
 
         $this->em->flush();
+
         $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
     }
 

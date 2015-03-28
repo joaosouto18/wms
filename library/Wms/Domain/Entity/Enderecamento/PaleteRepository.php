@@ -600,6 +600,35 @@ class PaleteRepository extends EntityRepository
         );
     }
 
+    public function alocaEnderecoPaleteByBlocado($idPalete, $idEndereco)
+    {
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+        $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
+        $paleteEn = $paleteRepo->find($idPalete);
+
+        if ($paleteEn == NULL) {
+            throw new \Exception("Palete $idPalete não encontrado");
+        }
+
+        if ($paleteEn->getCodStatus() == $paleteEn::STATUS_ENDERECADO) {
+            throw new \Exception("Palete $idPalete já endereçado");
+        }
+
+        if ($paleteEn->getCodStatus() == $paleteEn::STATUS_CANCELADO) {
+            throw new \Exception("Palete $idPalete cancelado");
+        }
+
+        $endereco = $this->_em->getReference("wms:Deposito\Endereco", $idEndereco);
+
+        $paleteEn->setDepositoEndereco($endereco);
+        $paleteEn->setCodStatus($paleteEn::STATUS_EM_ENDERECAMENTO);
+        $paleteEn->setImpresso("N");
+
+        $this->getEntityManager()->persist($paleteEn);
+    }
+
     public function alocaEnderecoPalete($idPalete, $idEndereco) {
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
