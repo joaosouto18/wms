@@ -387,8 +387,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param int $status
      * @return int
      */
-    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null)
+    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null,$arrayTipoFracionados=null,$modelos=null,$quebras=null)
     {
+        if ( empty($status) ){
+            $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
+        }
+
         $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $status);
         $prodSemdados = 0;
 
