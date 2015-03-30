@@ -231,6 +231,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true){
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                       DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
                        E.COD_PRODUTO,
                        E.DSC_GRADE,
