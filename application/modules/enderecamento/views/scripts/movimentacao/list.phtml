@@ -1,5 +1,4 @@
 <table class="gTable ">
-
     <caption>Estoque do produto - Picking cadastrado: <?php echo $this->endPicking; ?></caption>
     <tbody>
     <?php
@@ -12,10 +11,9 @@
     $qtdReservaSaida = 0;
     $qtdEstoqueFinal = 0;
     $arrayEnderecos = array();
-    $arrayQtds = array();
+    $arrayQtdsEstoque = array();
     $arrayVolumes = array();
     $arrayVolumesPorEndereco = array();
-    $volumes = null;
 
     foreach($this->enderecos as $endereco) {
         if (($codProdutoAnterior != null && $codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != null && $gradeAnterior != $endereco['DSC_GRADE'])) { ?>
@@ -46,7 +44,7 @@
                         <td><?php echo $dados['RESERVA_ENTRADA'] ?></td>
                         <td><?php echo $dados['RESERVA_ENTRADA'] ?></td>
                         <td><?php echo $dados['QTD'] ?></td>
-                        <td><?php echo $dados['VOLUME'] ?></td>
+                        <td><?php echo implode('; ', $arrayVolumesPorEndereco[$key]); ?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php endforeach; ?>
@@ -61,12 +59,11 @@
             <?php endif; ?>
 
             <?php
-            $volumes = null;
+            $dados = null;
             $arrayVolumesPorEndereco = array();
-            $arrayQtds = array();
+            $arrayQtdsEstoque = array();
             $arrayVolumes = array();
             $arrayEnderecos = array();
-            $dados = null;
             $qtdEstoqueFinal = 0;
             $qtdReservaEntrada = 0;
             $qtdReservaSaida = 0;
@@ -79,12 +76,11 @@
                 $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['RESERVA_ENTRADA'] = $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['RESERVA_ENTRADA'] + $endereco['RESERVA_ENTRADA'];
                 $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['RESERVA_SAIDA'] = $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['RESERVA_SAIDA'] + $endereco['RESERVA_SAIDA'];
 
-                array_push($arrayQtds, $endereco['QTD']);
+                array_push($arrayQtdsEstoque, $endereco['QTD']);
                 array_push($arrayVolumes, $endereco['VOLUME']);
 
                 for ($i = 0; $i < count($arrayVolumes); $i++) {
-                    if ($endereco['QTD'] != $arrayQtds[$i] && $endereco['VOLUME'] != $arrayVolumes[$i]) {
-                        $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['ENDERECO'] = $endereco['ENDERECO'];
+                    if ($endereco['QTD'] != $arrayQtdsEstoque[$i] && $endereco['VOLUME'] != $arrayVolumes[$i]) {
                         $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['DTH_PRIMEIRA_MOVIMENTACAO'] = $endereco['DTH_PRIMEIRA_MOVIMENTACAO'];
                         $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['TIPO'] = $endereco['TIPO'];
                         $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['QTD'] = $endereco['QTD'];
@@ -96,15 +92,21 @@
                             $arrayVolumesPorEndereco[$endereco['ENDERECO']] = array();
                             array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
                         } else {
-                            array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
+                            if (!in_array($endereco['VOLUME'], $arrayVolumesPorEndereco[$endereco['ENDERECO']])) {
+                                array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
+                            }
                         }
+
                         $i = count($arrayVolumes);
-                    } elseif ($endereco['QTD'] == $arrayQtds[$i] && $endereco['VOLUME'] != $arrayVolumes[$i]) {
+                    } elseif ($endereco['QTD'] == $arrayQtdsEstoque[$i] && $endereco['VOLUME'] != $arrayVolumes[$i]) {
                         if (!in_array($endereco['ENDERECO'], $arrayVolumesPorEndereco[$endereco['ENDERECO']])) {
-                            $arrayVolumesPorEndereco[$endereco['ENDERECO']] = array();
-                            $result = array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
+                            if (!in_array($endereco['VOLUME'], $arrayVolumesPorEndereco[$endereco['ENDERECO']])) {
+                                array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
+                            }
                         } else {
-                            array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
+                            if (!in_array($endereco['VOLUME'], $arrayVolumesPorEndereco[$endereco['ENDERECO']])) {
+                                array_push($arrayVolumesPorEndereco[$endereco['ENDERECO']], $endereco['VOLUME']);
+                            }
                         }
 
                         $i = count($arrayVolumes);
@@ -112,7 +114,6 @@
                 }
             }
         } else {
-            $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['ENDERECO'] = $endereco['ENDERECO'];
             $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['DTH_PRIMEIRA_MOVIMENTACAO'] = $endereco['DTH_PRIMEIRA_MOVIMENTACAO'];
             $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['TIPO'] = $endereco['TIPO'];
             $arrayEnderecos[$endereco['ENDERECO']][$endereco['DTH_PRIMEIRA_MOVIMENTACAO']]['QTD']  = $endereco['QTD'];
@@ -126,7 +127,6 @@
             }
         } ?>
 
-
         <?php
         $codProdutoAnterior = $endereco['COD_PRODUTO'];
         $descricaoProdutoAnterior = $endereco['DSC_PRODUTO'];
@@ -137,5 +137,4 @@
         $qtdReservaEntrada = $qtdReservaEntrada + $endereco['RESERVA_ENTRADA'];
         ?>
     <?php } ?>
-
 </table>
