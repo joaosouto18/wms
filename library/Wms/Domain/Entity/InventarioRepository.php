@@ -163,10 +163,11 @@ class InventarioRepository extends EntityRepository
     public function getDivergencias($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, ce.qtdContada Qtde_Contada, ce.qtdDivergencia Qtde_Divergencia, ce.numContagem')
+            ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, ce.qtdContada Qtde_Contada, ce.qtdDivergencia Qtde_Divergencia, ce.numContagem, p.descricao')
             ->from('wms:Inventario', 'i')
             ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
             ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
+            ->innerJoin('ce.produto', 'p')
             ->innerJoin('ie.depositoEndereco','de')
             ->where('i.id = :idInventario')
             ->andWhere('ce.divergencia is not null')
