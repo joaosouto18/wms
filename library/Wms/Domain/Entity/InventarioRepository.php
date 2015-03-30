@@ -219,10 +219,6 @@ class InventarioRepository extends EntityRepository
             $enderecoEn         = $invEnderecoEn->getDepositoEndereco();
             $idDepositoEndereco = $enderecoEn->getId();
 
-            if ($enderecoEn->getId() == 2469){
-                $entra = true;
-            }
-
             foreach($contagemEndEnds as $contagemEndEn) {
                 //Endereco tem estoque?
 
