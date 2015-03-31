@@ -810,4 +810,68 @@ class EstoqueRepository extends EntityRepository
 
     }
 
+    public function getProdutosArmazenadosPickingErrado($params) {
+        $SQLWhere = " WHERE ";
+        $SQLOrder = " ORDER BY DE.DSC_DEPOSITO_ENDERECO ";
+        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                       PK.COD_PRODUTO as PRODUTO_PICKING,
+                       PK.DSC_GRADE as GRADE_PICKING,
+                       PK.VOLUMES as VOLUME_PICKING,
+                       E.COD_PRODUTO as PRODUTO_ESTOQUE,
+                       E.DSC_GRADE as GRADE_ESTOQUE,
+                       E.VOLUMES as VOLUMES_ESTOQUE,
+                       E.QTD,
+                       E.PK_CORRETO as PICKING_CORRETO
+                  FROM (SELECT E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.QTD, E.PK_CORRETO,
+                               LISTAGG(E.VOLUME,',') WITHIN GROUP (ORDER BY E.VOLUME) VOLUMES
+                          FROM (SELECT E.QTD,
+                                       NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) as COD_PRODUTO,
+                                       NVL(PE.DSC_GRADE, PV.DSC_GRADE) as DSC_GRADE,
+                                       NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
+                                       E.COD_DEPOSITO_ENDERECO,
+                                       DE2.DSC_DEPOSITO_ENDERECO AS PK_CORRETO
+                                  FROM ESTOQUE E
+                                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME
+                                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = E.COD_PRODUTO_EMBALAGEM
+                                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                                  LEFT JOIN DEPOSITO_ENDERECO DE2 ON (DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO OR DE2.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO)
+                                 WHERE DE.COD_CARACTERISTICA_ENDERECO = 37
+                                   AND (E.COD_DEPOSITO_ENDERECO <> PE.COD_DEPOSITO_ENDERECO
+                                     OR E.COD_DEPOSITO_ENDERECO <> PV.COD_DEPOSITO_ENDERECO))E
+                         GROUP BY E.QTD, E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.PK_CORRETO) E
+                  LEFT JOIN (SELECT COD_PRODUTO,
+                                    DSC_GRADE,
+                                    COD_DEPOSITO_ENDERECO,
+                                    LISTAGG (VOLUME,';') WITHIN GROUP (ORDER BY VOLUME) VOLUMES
+                               FROM (SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO
+                                       FROM PRODUTO P
+                                       LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+                                       LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE)
+                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_DEPOSITO_ENDERECO) PK
+                         ON PK.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = E.COD_PRODUTO AND PROD.DSC_GRADE = E.DSC_GRADE
+                   ";
+
+        if (isset($params['inicioRua']) && ($params['inicioRua'] != "")) {
+            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            $SQLWhere .= " DE.NUM_RUA >= " . $params['inicioRua'];
+        }
+
+        if (isset($params['fimRua']) && ($params['fimRua'] != "")) {
+            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            $SQLWhere .= " DE.NUM_RUA <= " . $params['fimRua'];
+        }
+
+        if (isset($params['grandeza']) && (count($params['grandeza']) >0)) {
+            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            $grandezas = implode(",",$params['grandeza']);
+            $SQLWhere .= " PROD.COD_LINHA_SEPARACAO IN ($grandezas)";
+        }
+
+        $array = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
+        return $array;
+
+    }
+
 }
