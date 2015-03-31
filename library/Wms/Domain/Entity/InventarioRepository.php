@@ -245,7 +245,7 @@ class InventarioRepository extends EntityRepository
                     } else {
                         if ($enderecoVazio) {
                             $qtdRetirar = $estoqueEn->getQtd();
-                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, $qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
+                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
                         } else {
                             $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
@@ -290,7 +290,7 @@ class InventarioRepository extends EntityRepository
         $params['endereco']     = $invEnderecoEn->getDepositoEndereco();
         $params['qtd']          = $qtd;
         $params['volume']       = $estoqueEn->getProdutoVolume();
-        $params['embalagem']    = $estoqueEn->getCodProdutoEmbalagem();
+        $params['embalagem']    = 0;
         $params['tipo']         = 'I';
         $params['observacoes']  = 'Mov. correção inventário';
         $params['os']           = $osEn;

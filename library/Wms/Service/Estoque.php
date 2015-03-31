@@ -74,7 +74,11 @@ class Estoque
         if ($embalagem == "0") {
             $contagemEndEn = $this->getContagemEndEn();
             if ($contagemEndEn == null) {
-                return false;
+                $embalagensEn = $this->_em->getRepository("wms:Produto\Embalagem")->findBy(
+                    array('codProduto' => $this->getProduto()->getId(), 'grade' => $this->getProduto()->getGrade()), array('quantidade' => 'ASC')
+                );
+                $this->_embalagem = $embalagensEn[0];
+                return true;
             }
             $embalagensEn = $this->_em->getRepository("wms:Produto\Embalagem")->findBy(
                 array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC')
