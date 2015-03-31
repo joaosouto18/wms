@@ -267,5 +267,32 @@ class Enderecamento_MovimentacaoController extends Action
         $EstoqueRepository->imprimeMovimentacaoAvulsa($idProduto ,$grade,$quantidade,$dscEndereco);
     }
 
+    public function consultarAction() {
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo   = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
+        $reservas = $reservaEstoqueRepo->getResumoReservasNaoAtendidasByParams($this->_getAllParams());
+
+        $this->view->reservas = $reservas;
+
+        $idVolume = $this->_getParam('idVolume');
+        $idProduto = $this->_getParam('idProduto');
+        $grade = $this->_getParam('grade');
+        $idEndereco = $this->_getParam('idEndereco');
+
+        if ($idVolume == "0") {
+            $this->view->volume = "PRODUTO UNITÁRIO";
+        } else {
+            $volumeEn = $this->getEntityManager()->getReference("wms:Produto\Volume",$idVolume);
+            $this->view->volume = $volumeEn->getDescricao();
+        }
+
+        $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
+        $this->view->idProduto = $idProduto;
+        $this->view->grade = $grade;
+        $this->view->produto = $produtoEn->getDescricao();
+
+        $enderecoEn = $this->getEntityManager()->getReference("wms:Deposito\Endereco",$idEndereco);
+        $this->view->endereco = $enderecoEn->getDescricao();
+    }
 
 } 

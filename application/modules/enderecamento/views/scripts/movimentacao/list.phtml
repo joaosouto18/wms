@@ -1,3 +1,17 @@
+<script>
+    $(document).ready(function() {
+        $("a[rel=modal]").click (function(a){
+            a.preventDefault();
+            $.wmsDialogAjax({
+                width: 800,
+                height: 500,
+                url: this.href,
+                title: $(this).html()
+            })
+        });
+    });
+</script>
+
 <table class="gTable ">
     <caption>Estoque do produto - Picking cadastrado: <?php echo $this->endPicking; ?></caption>
     <tbody>
@@ -29,7 +43,7 @@
             <td><b><?php echo "CÓDIGO: ".$endereco['COD_PRODUTO']?></b></td>
             <td><b><?php echo "GRADE: ". $endereco['DSC_GRADE']?></b></td>
             <td><b><?php echo "PRODUTO: ".$endereco['DSC_PRODUTO']?></b></td>
-            <td colspan="3"><b><?php echo "VOLUME: ". $endereco['VOLUME']?></b></td>
+            <td colspan="4"><b><?php echo "VOLUME: ". $endereco['VOLUME']?></b></td>
             </tr>
 
             <tr>
@@ -49,7 +63,9 @@
         <td><?php echo $endereco['RESERVA_ENTRADA']?></td>
         <td><?php echo $endereco['RESERVA_SAIDA']?></td>
         <td><?php echo $endereco['QTD']?></td>
-
+        <td><?php if (($endereco['RESERVA_SAIDA'] != 0) || ($endereco['RESERVA_ENTRADA'] != 0)) {?>
+                <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/'.$endereco['COD_VOLUME'].'/idProduto/'.$endereco['COD_PRODUTO'].'/grade/'.$endereco['DSC_GRADE'].'/idEndereco/'.$endereco['COD_ENDERECO'].'"';?> >Mais</a>
+            <?php }?></td>
         </tr>
         <?php
         $qtdEstoque = $qtdEstoque + $endereco['QTD'];

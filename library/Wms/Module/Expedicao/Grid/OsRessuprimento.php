@@ -19,7 +19,6 @@ class OsRessuprimento extends Grid
      */
     public function init(array $gridValues = array(), array $formParamas = array())
     {
-        $em = $this->getEntityManager();
         $this->setSource(new \Core\Grid\Source\ArraySource($gridValues))
                 ->setId('expedicao-os-grid')
                 ->setAttrib('class', 'grid-expedicao')
@@ -91,6 +90,7 @@ class OsRessuprimento extends Grid
                             return $row['COD_STATUS'] == OndaRessuprimentoOs::STATUS_DIVERGENTE;
                         }
                 ))
+
                 ->setShowExport(true);
 
         return $this;

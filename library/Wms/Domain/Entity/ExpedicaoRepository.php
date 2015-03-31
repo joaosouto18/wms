@@ -199,6 +199,7 @@ class ExpedicaoRepository extends EntityRepository
                 if ($result['resultado'] != true) return $result;
                 $ondaEn = $ondaRepo->geraNovaOnda();
                 $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
+                $this->getEntityManager()->flush();
                 $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
                 $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
                 $this->getEntityManager()->flush();
@@ -617,6 +618,7 @@ class ExpedicaoRepository extends EntityRepository
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
+        $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
                                   TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY') as DTH_INICIO,
@@ -638,7 +640,7 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $Query = $Query . " AND E.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'];
+            $Query = $Query . " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'];
         }
 
         if (isset($parametros['placa']) && !empty($parametros['placa'])) {
@@ -661,7 +663,7 @@ class ExpedicaoRepository extends EntityRepository
             $Query = $Query . " AND E.COD_STATUS = " . $parametros['status'];
         }
 
-        $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($Query . $SQLOrder)-> fetchAll(\PDO::FETCH_ASSOC);
 
         $colItinerario = array();
         $colCarga = array();

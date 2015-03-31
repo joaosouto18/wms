@@ -374,4 +374,38 @@ class ReservaEstoqueRepository extends EntityRepository
         return $result[0]['QTD'];
     }
 
+    public function getResumoReservasNaoAtendidasByParams($params) {
+        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO
+                            WHEN REOND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'OS de Ressuprimento: '  || REOND.COD_ONDA_RESSUPRIMENTO_OS
+                            WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA
+                       END AS ORIGEM,
+                       TO_CHAR(RE.DTH_RESERVA,'DD/MM/YYYY HH24:MI:SS') as DTH_RESERVA,
+                       CASE WHEN REP.QTD_RESERVADA >= 0 THEN 'ENTRADA'
+                            ELSE 'SAÍDA'
+                       END AS TIPO,
+                       REP.QTD_RESERVADA
+                  FROM RESERVA_ESTOQUE RE
+                 INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN RESERVA_ESTOQUE_ENDERECAMENTO REEND ON REEND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN RESERVA_ESTOQUE_ONDA_RESSUP REOND ON REOND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REEXP ON REEXP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                 WHERE RE.IND_ATENDIDA = 'N'";
+
+        $idVolume = $params['idVolume'];
+        $idProduto = $params['idProduto'];
+        $grade = $params['grade'];
+        $idEndereco = $params['idEndereco'];
+
+        if ($idVolume == "0") {
+            $SQL .= " AND REP.COD_PRODUTO = '" . $idProduto. "' ";
+            $SQL .= " AND REP.DSC_GRADE = '" . $grade. "' ";
+        }else {
+            $SQL .= " AND REP.COD_PRODUTO_VOLUME = '" . $idVolume. "' ";
+        }
+        $SQL .= " AND RE.COD_DEPOSITO_ENDERECO = '" . $idEndereco. "' ";
+        $result = $this->getEntityManager()->getConnection()->query($SQL . " ORDER BY RE.DTH_RESERVA ")->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
+    }
+
 }
