@@ -101,7 +101,30 @@ class PaleteRepository extends EntityRepository
         if ($filter == true) {$query = $query . $queryWhere . " ORDER BY R.COD_RECEBIMENTO";}
 
         $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-        return $array;
+        $resultadoFinal = array();
+
+        foreach ($array as $recebimento) {
+            if (!array_key_exists($recebimento['COD_RECEBIMENTO'], $resultadoFinal)) {
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']] = array();
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['COD_RECEBIMENTO'] = $recebimento['COD_RECEBIMENTO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DTH_INICIO_RECEB'] = $recebimento['DTH_INICIO_RECEB'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DTH_FINAL_RECEB'] = $recebimento['DTH_FINAL_RECEB'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DSC_SIGLA'] = $recebimento['DSC_SIGLA'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['COD_FORNECEDOR'] = $recebimento['COD_FORNECEDOR'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['FORNECEDOR'] = $recebimento['FORNECEDOR'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] = $recebimento['QTD_TOTAL'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] = $recebimento['QTD_ENDERECAMENTO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] = $recebimento['QTD_ENDERECADO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] = $recebimento['QTD_RECEBIMENTO'];
+            } else {
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] + $recebimento['QTD_TOTAL'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] + $recebimento['QTD_ENDERECAMENTO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] + $recebimento['QTD_ENDERECADO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] + $recebimento['QTD_RECEBIMENTO'];
+            }
+        }
+
+        return $resultadoFinal;
 
     }
 
