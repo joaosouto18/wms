@@ -195,6 +195,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.codCargaExterno,
                       es.grade,
                       es.codEstoque,
+                      es.pontoTransbordo,
                       CASE WHEN es.codStatus = 522 THEN 'PENDENTE DE IMPRESSÃO'
                            WHEN es.codStatus = 523 THEN 'PENDENTE DE CONFERENCIA'
                            ELSE 'Consulte o admnistrador do sistema'
@@ -231,7 +232,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('es.codCargaExterno, p.descricao, es.codProduto, es.grade');
+            ->orderBy('es.codBarras, es.codCargaExterno, p.descricao, es.codProduto, es.grade');
 
         if ($tipoResult == "Array") {
             $result = $dql->getQuery()->getResult();
