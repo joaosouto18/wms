@@ -199,6 +199,7 @@ class ExpedicaoRepository extends EntityRepository
                 if ($result['resultado'] != true) return $result;
                 $ondaEn = $ondaRepo->geraNovaOnda();
                 $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
+                $this->getEntityManager()->flush();
                 $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
                 $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
                 $this->getEntityManager()->flush();
