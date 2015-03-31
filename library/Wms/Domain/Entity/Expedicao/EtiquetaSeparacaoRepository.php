@@ -375,6 +375,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $enEtiquetaSeparacao = new EtiquetaSeparacao();
         $enEtiquetaSeparacao->setStatus($statusEntity);
 
+        if ( !empty($dadosEtiqueta['codEtiquetaMae']) ){
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMae $EtiquetaMaeRepo */
+            $EtiquetaMaeRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaMae');
+            $etiquetaMae=$EtiquetaMaeRepo->find($dadosEtiqueta['codEtiquetaMae']);
+            $enEtiquetaSeparacao->setEtiquetaMae($etiquetaMae);
+        }
+
+
         \Zend\Stdlib\Configurator::configure($enEtiquetaSeparacao, $dadosEtiqueta);
 
         $this->_em->persist($enEtiquetaSeparacao);
@@ -387,7 +395,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param int $status
      * @return int
      */
-    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null,$arrayTipoFracionados=null,$modelos=null,$quebras=null)
+    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null,$arrayTipoFracionados=null,$modelos=null,$quebras=null,$idExpedicao=null)
     {
         if ( empty($status) ){
             $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
@@ -396,7 +404,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $status);
         $prodSemdados = 0;
 
-        foreach($pedidosProdutos as $pedidoProduto) {
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo = $this->_em->getRepository('wms:Expedicao');
+
+        $utilizaEtiquetaMae=false;
+        if ( $modelos[0]['utilizaEtiquetaMae'])
+            $utilizaEtiquetaMae=true;
+
+        foreach($pedidosProdutos as $pedidoProduto1) {
+            $pedidoProduto=$pedidoProduto1[0];
             /** @var \Wms\Domain\Entity\Produto $produtoEntity */
             $pedidoEntity   = $pedidoProduto->getPedido();
             $produtoEntity  = $pedidoProduto->getProduto();
@@ -419,12 +435,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $arrayEtiqueta['produto']           = $produtoEntity;
                         $arrayEtiqueta['grade']             = $produtoEntity;
                         $arrayEtiqueta['pedido']            = $pedidoEntity;
+                        $arrayEtiqueta['qtdProduto']            = $quantidade;
 
                         if ($codReferencia != null) {
                             $arrayEtiqueta['codReferencia'] = $codReferencia;
-                            $this->save($arrayEtiqueta,$statusEntity);
+
+                            if ($utilizaEtiquetaMae){
+                                $etiquetaMae=$ExpedicaoRepo->getEtiquetaMae($quebras,$modelos,$arrayEtiqueta,$idExpedicao);
+                                $arrayEtiqueta['codEtiquetaMae'] = $etiquetaMae;
+                            } else {
+                                $arrayEtiqueta['codEtiquetaMae'] = null;
+                            }
+
+                           $this->save($arrayEtiqueta,$statusEntity);
                         } else {
-                            $codReferencia = $this->save($arrayEtiqueta,$statusEntity);
+                          $codReferencia = $this->save($arrayEtiqueta,$statusEntity);
                         }
 
                         unset($arrayEtiqueta);
@@ -452,6 +477,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $arrayEtiqueta['produto']           = $produtoEntity;
                     $arrayEtiqueta['grade']             = $produtoEntity;
                     $arrayEtiqueta['pedido']            = $pedidoEntity;
+                    $arrayEtiqueta['qtdProduto']            = $quantidade;
+
+                    if ($utilizaEtiquetaMae){
+                        $etiquetaMae=$ExpedicaoRepo->getEtiquetaMae($quebras,$modelos,$arrayEtiqueta,$idExpedicao);
+                        $arrayEtiqueta['codEtiquetaMae'] = $etiquetaMae;
+                    } else {
+                        $arrayEtiqueta['codEtiquetaMae'] = null;
+                    }
+
                     $this->save($arrayEtiqueta,$statusEntity);
                     unset($arrayEtiqueta);
                 }
@@ -461,6 +495,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
         }
+
         $this->_em->flush();
         $this->_em->clear();
         return $prodSemdados;

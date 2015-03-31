@@ -1,10 +1,10 @@
 <?php
 
-namespace Wms\Domain\Entity\Expedicao;
+namespace Wms\Domain\Entity\MapaSeparacao;
 
 /**
  *
- * @Table(name="V_ETIQUETA_SEPARACAO")
+ * @Table(name="TIPO_FRACIONADO")
  * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\VEtiquetaSeparacaoRepository")
  */
 class VEtiquetaSeparacao

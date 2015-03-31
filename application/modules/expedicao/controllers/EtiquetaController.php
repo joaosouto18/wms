@@ -169,22 +169,13 @@ class Expedicao_EtiquetaController  extends Action
         $quebras="";
         if ( !empty($modelos[0]['id']) ){
             $quebras = $ModeloSeparacaoRepo->getQuebras($modelos);
-
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMaeRepository $EtiquetaMaeRepo */
-            /*$EtiquetaMaeRepo = $this->em->getRepository('wms:Expedicao\EtiquetaMae');
-
-            $EtiquetaMaeRepo->gerarEtiquetasMae($quebras,$idExpedicao);*/
         }
 
-        $arrayTipoFracionados=$ExpedicaoRepo->separarTipoFracionados($pedidosProdutos);
-
-        print "<pre>";
-        print_r($modelos);
-        die();
+        $arrayTipoFracionados=$ExpedicaoRepo->separarTipoFracionados($pedidosProdutos,$idExpedicao);
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        if ($EtiquetaRepo->gerarEtiquetas($pedidosProdutos,null,null,$arrayTipoFracionados,$modelos,$quebras) > 0) {
+        if ($EtiquetaRepo->gerarEtiquetas($pedidosProdutos,null,null,$arrayTipoFracionados,$modelos,$quebras,$idExpedicao) > 0) {
 
             $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
             $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;

@@ -328,7 +328,63 @@ class ExpedicaoRepository extends EntityRepository
         return  $this->getEntityManager()->createQuery($query.$order)->getResult();
     }
 
-    public function separarTipoFracionados($pedidosProdutos) {
+    public function criarTemporariaFracionados($conn,$idExpedicao){
+
+        $sqlRemove="DELETE FROM TEMP_PEDIDOS_FRACIONADOS WHERE COD_EXPEDICAO=".$idExpedicao;
+        $result = $conn->query($sqlRemove);
+
+        return $result;
+    }
+
+    public function selecionarFracionados($conn,$idExpedicao){
+        $sql="select * from TEMP_PEDIDOS_FRACIONADOS WHERE COD_EXPEDICAO=".$idExpedicao;
+        $result = $conn->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
+    public function inserirFracionado($arrayInsert,$conn,$idExpedicao){
+        $sql="
+            INSERT INTO TEMP_PEDIDOS_FRACIONADOS
+                (
+                    COD_PEDIDO ,
+                    COD_PRODUTO ,
+                    COD_EMBALAGEM ,
+                    COD_VOLUME ,
+                    QTD ,
+                    RUA ,
+                    COD_CLIENTE ,
+                    COD_PRACA ,
+                    COD_LINHASEPARACAO,
+                    TIPO,
+                    COD_EXPEDICAO
+                 )
+                 VALUES (
+                  ".$arrayInsert['codPedido'].",
+                  ".$arrayInsert['codProduto'].",
+                  ".$arrayInsert['codEmbalagem'].",
+                  ".$arrayInsert['codVolume'].",
+                  ".$arrayInsert['qtd'].",
+                  ".$arrayInsert['rua'].",
+                  ".$arrayInsert['codCliente'].",
+                  ".$arrayInsert['codPraca'].",
+                  ".$arrayInsert['codLinhaSeparacao'].",
+                  ".$arrayInsert['tipo'].",
+                  ".$idExpedicao."
+                 )
+                 ";
+        $result = $conn->query($sql);
+
+        return $result;
+    }
+
+    public function separarTipoFracionados($pedidosProdutos,$idExpedicao) {
+       // $em = $this->getEntityManager();
+        // This lets us introspect Doctrine entities
+       // $cmf = new DisconnectedClassMetadataFactory();
+        //$cmf->setEntityManager($em);
+        $conn=$this->getEntityManager()->getConnection();
+        $result=$this->criarTemporariaFracionados($conn,$idExpedicao);
 
         $arrayFracionado=array();
         $arrayNFracionado=array();
@@ -336,10 +392,26 @@ class ExpedicaoRepository extends EntityRepository
         $qtdNFracionado=0;
 
         foreach($pedidosProdutos as $pedidoProduto) {
+            /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEntity */
+            $pedidoEntity   = $pedidoProduto[0]->getPedido();
+
             /** @var \Wms\Domain\Entity\Produto $produtoEntity */
-            $pedidoEntity   = $pedidoProduto->getPedido();
-            $produtoEntity  = $pedidoProduto->getProduto();
-            $quantidade     = $pedidoProduto->getQuantidade();
+            $produtoEntity  = $pedidoProduto[0]->getProduto();
+            $quantidade     = $pedidoProduto[0]->getQuantidade();
+
+            $linhaSeparacao=$produtoEntity->getLinhaSeparacao()->getId();
+            $cliente=$pedidoEntity->getPessoa()->getId();
+            $rua=$pedidoProduto['rua'];
+
+            if ( empty ($linhaSeparacao) )
+                $linhaSeparacao="NULL";
+
+            if ( empty ($rua) )
+                $rua="NULL";
+
+            //$cliente=$pedidoEntity->getPessoa();
+
+
 
             if ($produtoEntity->getVolumes()->count() > 0) {
                 $arrayVolumes = $produtoEntity->getVolumes()->toArray();
@@ -348,12 +420,19 @@ class ExpedicaoRepository extends EntityRepository
                 for($i=0;$i<$quantidade;$i++) {
                     $codReferencia = null;
                     foreach ($arrayVolumes as $volumeEntity) {
-                        $arrayNFracionado[$qtdNFracionado]['codPedido']=$pedidoEntity->getId();
-                        $arrayNFracionado[$qtdNFracionado]['codProduto']=$produtoEntity->getId();
-                        $arrayNFracionado[$qtdNFracionado]['codEmbalagem']=null;
-                        $arrayNFracionado[$qtdNFracionado]['codVolume']=$volumeEntity->getId();
-                        $arrayNFracionado[$qtdNFracionado]['qtd']=$quantidade;
-                        $qtdNFracionado++;
+                        $arrayInsert['codPedido']=$pedidoEntity->getId();
+                        $arrayInsert['codProduto']=$produtoEntity->getId();
+                        $arrayInsert['codEmbalagem']='NULL';
+                        $arrayInsert['codVolume']=$volumeEntity->getId();
+                        $arrayInsert['qtd']=$quantidade;
+                        $arrayInsert['codCliente']=$cliente;
+                        $arrayInsert['codLinhaSeparacao']=$linhaSeparacao;
+                        $arrayInsert['rua']=$rua;
+                        $arrayInsert['codPraca']='NULL';
+                        // tipo 2 => não fracionado
+                        $arrayInsert['tipo']='2';
+
+                        $this->inserirFracionado($arrayInsert,$conn,$idExpedicao);
                     }
                 }
             }
@@ -402,27 +481,45 @@ class ExpedicaoRepository extends EntityRepository
                                     $qtdDescartada=$qtdFracao*$qtd;
 
                                     if ( $embalagensOrdenadas[$i]['cod']==$arrayPadrao['cod'] ){
-                                        $arrayNFracionado[$qtdNFracionado]['codPedido']=$pedidoEntity->getId();
-                                        $arrayNFracionado[$qtdNFracionado]['codProduto']=$produtoEntity->getId();
-                                        $arrayNFracionado[$qtdNFracionado]['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
-                                        $arrayNFracionado[$qtdNFracionado]['codVolume']=null;
-                                        $arrayNFracionado[$qtdNFracionado]['qtd']=$qtdFracao;
-                                        $qtdNFracionado++;
+                                        $arrayInsert['codPedido']=$pedidoEntity->getId();
+                                        $arrayInsert['codProduto']=$produtoEntity->getId();
+                                        $arrayInsert['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
+                                        $arrayInsert['codVolume']="NULL";
+                                        $arrayInsert['qtd']=$qtdFracao;
+                                        $arrayInsert['codCliente']=$cliente;
+                                        $arrayInsert['codLinhaSeparacao']=$linhaSeparacao;
+                                        $arrayInsert['rua']=$rua;
+                                        $arrayInsert['codPraca']='NULL';
+                                        // tipo 2 => não fracionado
+                                        $arrayInsert['tipo']='2';
+                                        $this->inserirFracionado($arrayInsert,$conn,$idExpedicao);
 
                                     } else if ( $embalagensOrdenadas[$i]['qtd']<$arrayPadrao['qtd'] ) {
-                                        $arrayFracionado[$qtdFracionado]['codPedido']=$pedidoEntity->getId();
-                                        $arrayFracionado[$qtdFracionado]['codProduto']=$produtoEntity->getId();
-                                        $arrayFracionado[$qtdFracionado]['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
-                                        $arrayFracionado[$qtdFracionado]['codVolume']=null;
-                                        $arrayFracionado[$qtdFracionado]['qtd']=$qtdFracao;
-                                        $qtdFracionado++;
+                                        $arrayInsert['codPedido']=$pedidoEntity->getId();
+                                        $arrayInsert['codProduto']=$produtoEntity->getId();
+                                        $arrayInsert['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
+                                        $arrayInsert['codVolume']="NULL";
+                                        $arrayInsert['qtd']=$qtdFracao;
+                                        $arrayInsert['codCliente']=$cliente;
+                                        $arrayInsert['codLinhaSeparacao']=$linhaSeparacao;
+                                        $arrayInsert['rua']=$rua;
+                                        $arrayInsert['codPraca']='NULL';
+                                        // tipo 1 => fracionado
+                                        $arrayInsert['tipo']='1';
+                                        $this->inserirFracionado($arrayInsert,$conn,$idExpedicao);
                                     } else  {
-                                        $arrayNFracionado[$qtdNFracionado]['codPedido']=$pedidoEntity->getId();
-                                        $arrayNFracionado[$qtdNFracionado]['codProduto']=$produtoEntity->getId();
-                                        $arrayNFracionado[$qtdNFracionado]['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
-                                        $arrayNFracionado[$qtdNFracionado]['codVolume']=null;
-                                        $arrayNFracionado[$qtdNFracionado]['qtd']=$qtdFracao;
-                                        $qtdNFracionado++;
+                                        $arrayInsert['codPedido']=$pedidoEntity->getId();
+                                        $arrayInsert['codProduto']=$produtoEntity->getId();
+                                        $arrayInsert['codEmbalagem']=$embalagensOrdenadas[$i]['cod'];
+                                        $arrayInsert['codVolume']="NULL";
+                                        $arrayInsert['qtd']=$qtdFracao;
+                                        $arrayInsert['codCliente']=$cliente;
+                                        $arrayInsert['codLinhaSeparacao']=$linhaSeparacao;
+                                        $arrayInsert['rua']=$rua;
+                                        $arrayInsert['codPraca']='NULL';
+                                        // tipo 2 => não fracionado
+                                        $arrayInsert['tipo']='2';
+                                        $this->inserirFracionado($arrayInsert,$conn,$idExpedicao);
                                     }
                                     $quantidade=$quantidade-$qtdDescartada;
                                 }
@@ -434,12 +531,142 @@ class ExpedicaoRepository extends EntityRepository
             }
         }
 
-        $resultado['fracionado']=$arrayFracionado;
-        $resultado['nfracionado']=$arrayNFracionado;
+        $resultado=$this->selecionarFracionados($conn,$idExpedicao);
 
 
         return $resultado;
 
+    }
+
+    public function getTipoFracao($arrayEtiqueta,$idExpedicao,$tipo=null){
+        $sql="select TIPO,RUA,COD_CLIENTE,COD_PRACA,COD_LINHASEPARACAO from TEMP_PEDIDOS_FRACIONADOS WHERE COD_EXPEDICAO=".$idExpedicao." AND COD_PEDIDO=".$arrayEtiqueta['pedido']->getId();
+        $where="";
+        if ( !empty($arrayEtiqueta['produtoVolume']) )
+            $where=" AND COD_VOLUME=".$arrayEtiqueta['produtoVolume']->getId();
+        else if ( !empty($arrayEtiqueta['produtoEmbalagem']) )
+            $where=" AND COD_EMBALAGEM=".$arrayEtiqueta['produtoEmbalagem']->getId();
+        $sql.=$where;
+
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($tipo==1)
+            return $sql;
+
+        return $result;
+    }
+
+    public function getCodQuebra($tipoFracao,$vlrFrac){
+        if ($vlrFrac=="R")
+            $cod=$tipoFracao[0]["RUA"];
+        else if ($vlrFrac=="C")
+            $cod=$tipoFracao[0]["COD_CLIENTE"];
+        else if ($vlrFrac=="L")
+            $cod=$tipoFracao[0]["COD_LINHA_SEPARACAO"];
+        else if ($vlrFrac=="P")
+            $cod=$tipoFracao[0]["COD_PRACA"];
+       else
+           $cod=-1;
+
+        if ( empty($cod) )
+            $cod="NULL";
+
+        return $cod;
+    }
+
+    public function getEtiquetaMae($quebras,$modelos,$arrayEtiqueta,$idExpedicao){
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMaeRepository $EtiquetaMaeRepo */
+        $EtiquetaMaeRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaMae');
+        $tipoFracao=$this->getTipoFracao($arrayEtiqueta,$idExpedicao);
+
+        if ( !empty($tipoFracao[0]["TIPO"]) ){
+            $dscEtiqueta=$tipoFracao[0]["TIPO"].";";
+
+            foreach ($quebras as $chv => $vlr){
+                if ( !empty($tipoFracao[0]["TIPO"]) && $tipoFracao[0]["TIPO"]=="1" ) {
+                    $fracionados=$vlr['frac'];
+
+                    foreach ($fracionados as $chvFrac => $vlrFrac){
+                        $verificaFrac=false;
+
+                        $sql="select E.COD_ETIQUETA_MAE from
+                                ETIQUETA_MAE E
+                                INNER JOIN ETIQUETA_MAE_QUEBRA EQ ON (E.COD_ETIQUETA_MAE=EQ.COD_ETIQUETA_MAE)
+                            WHERE E.COD_EXPEDICAO=".$idExpedicao;
+
+                        $codQuebra=$this->getCodQuebra($tipoFracao,$vlrFrac['tipoQuebra']);
+                        if ( empty($codQuebra) ){
+                            $codQuebra=" is NULL";
+                        } else if ($codQuebra=="NULL") {
+                            $codQuebra=" is NULL";
+                        } else {
+                            $codQuebra="=".$codQuebra;
+                        }
+
+                        $where=" AND EQ.TIPO_FRACAO='FRACIONADOS' AND EQ.COD_QUEBRA".$codQuebra." AND EQ.IND_TIPO_QUEBRA='".$vlrFrac['tipoQuebra']."'";
+
+                        $sql.=$where;
+                        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        $dscEtiqueta.=$vlrFrac['tipoQuebra']."|".$this->getCodQuebra($tipoFracao,$vlrFrac['tipoQuebra']).";";
+
+                        if ( !empty($result[0]['COD_ETIQUETA_MAE']) )
+                            $verificaFrac=true;
+                        else
+                            break;
+                    }
+
+                    if ($verificaFrac)
+                        $codEtiquetaMae=$result[0]['COD_ETIQUETA_MAE'];
+                    else
+                        $codEtiquetaMae=$EtiquetaMaeRepo->gerarEtiquetaMae($quebras,$tipoFracao,$idExpedicao,$dscEtiqueta);
+                } else {
+                    $naofracionados=$vlr['frac'];
+
+                    foreach ($naofracionados as $chvNFrac => $vlrNFrac){
+                        $verificaNFrac=false;
+
+                        $sql="select E.COD_ETIQUETA_MAE from
+                                ETIQUETA_MAE E
+                                INNER JOIN ETIQUETA_MAE_QUEBRA EQ ON (E.COD_ETIQUETA_MAE=EQ.COD_ETIQUETA_MAE)
+                            WHERE E.COD_EXPEDICAO=".$idExpedicao;
+
+                        $codQuebra=$this->getCodQuebra($tipoFracao,$vlrNFrac['tipoQuebra']);
+                        if ( empty($codQuebra) ){
+                            $codQuebra=" is NULL";
+                        } else if ($codQuebra=="NULL") {
+                            $codQuebra=" is NULL";
+                        } else {
+                            $codQuebra="=".$codQuebra;
+                        }
+
+                        $where=" AND EQ.TIPO_FRACAO='NAOFRACIONADOS' AND EQ.COD_QUEBRA".$codQuebra." AND EQ.IND_TIPO_QUEBRA='".$vlrNFrac['tipoQuebra']."'";
+
+                        $sql.=$where;
+                        $dscEtiqueta.=$vlrNFrac['tipoQuebra']."|".$this->getCodQuebra($tipoFracao,$vlrNFrac['tipoQuebra']).";";
+
+                        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        if ( !empty($result[0]['COD_ETIQUETA_MAE']) )
+                            $verificaNFrac=true;
+                        else
+                            break;
+                    }
+
+                    if ($verificaNFrac)
+                        $codEtiquetaMae=$result[0]['COD_ETIQUETA_MAE'];
+                    else
+                        $codEtiquetaMae=$EtiquetaMaeRepo->gerarEtiquetaMae($quebras,$tipoFracao,$idExpedicao,$dscEtiqueta);
+                }
+
+
+            }
+        } else {
+            $codEtiquetaMae=null;
+        }
+
+        return $codEtiquetaMae;
     }
 
 
@@ -447,7 +674,7 @@ class ExpedicaoRepository extends EntityRepository
 
         $sequencia = $this->getSystemParameterValue("SEQUENCIA_ETIQUETA_SEPARACAO");
 
-        $query = "SELECT pp
+        $query = "SELECT pp,e.rua
                         FROM wms:Expedicao\PedidoProduto pp
                         INNER JOIN pp.produto p
                          LEFT JOIN p.linhaSeparacao ls
