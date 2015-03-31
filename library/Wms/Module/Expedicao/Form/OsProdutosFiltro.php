@@ -8,10 +8,8 @@ class OsProdutosFiltro extends Form
 
     public function init($volumes = array())
     {
-        $this->setAttribs(array('id' => 'deposito-endereco-filtro-form', 'class' => 'saveForm'))
+        $this->setAttribs(array('id' => 'os-volume-filtro-form', 'class' => 'saveForm'))
             ->setMethod('get');
-
-
         $this->addElement('select', 'volumes', array(
                 'label' => 'Volume Patrimonio',
                 'multiOptions' => $volumes,
