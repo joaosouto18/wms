@@ -104,6 +104,42 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
     }
 
+    public function exportaLog ($codCarga, $placa, $pedidos) {
+        $filename = $_SERVER['DOCUMENT_ROOT'] . "../log/WSExpedicao.txt";
+        $texto = "";
+        $texto .= "Método: Enviar Pedidos";
+        $texto .= "\r\n";
+        $texto .= "--------------------------------------------------------------";
+        $texto .= "\r\n";
+        $texto .= "Parametro: codCarga";
+        $texto .= "\r\n";
+        $texto .= "Tipo: " . gettype($codCarga);
+        $texto .= "\r\n";
+        $texto .= print_r($codCarga,true);
+        $texto .= "\r\n";
+        $texto .= "--------------------------------------------------------------";
+        $texto .= "\r\n";
+        $texto .= "Parametro: placa";
+        $texto .= "\r\n";
+        $texto .= "Tipo: " . gettype($placa);
+        $texto .= "\r\n";
+        $texto .= print_r($placa,true);
+        $texto .= "\r\n";
+        $texto .= "--------------------------------------------------------------";
+        $texto .= "\r\n";
+        $texto .= "Parametro: pedidos";
+        $texto .= "\r\n";
+        $texto .= "Tipo: " . gettype($pedidos);
+        $texto .= "\r\n";
+        $texto .= print_r($pedidos,true);
+        $texto .= "\r\n";
+        $texto .= "--------------------------------------------------------------";
+
+        $handle = fopen($filename, 'w+');
+        fwrite($handle, $texto);
+    }
+
+
     /**
      *  Recebe Carga com Placa da Expedição
      *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
@@ -116,7 +152,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviarPedidos ($codCarga, $placa, $pedidos) {
-
+        $this->exportaLog($codCarga,$placa,$pedidos);
         $carga = array();
         $carga['idCarga'] = $codCarga;
         $carga['placaExpedicao'] = $placa;
