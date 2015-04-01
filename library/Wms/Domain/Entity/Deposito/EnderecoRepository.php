@@ -735,8 +735,6 @@ class EnderecoRepository extends EntityRepository
     }
 
     public function getPickingSemProdutos($params){
-        $tipoPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
-
         $SQLWhere = "";
         if ($params['ruaInicial'] != "") {
             $SQLWhere = $SQLWhere . " AND DE.NUM_RUA >= ". $params['ruaInicial'];
@@ -745,20 +743,22 @@ class EnderecoRepository extends EntityRepository
             $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= ". $params['ruaFinal'];
         }
 
-        $SQL = " SELECT DSC_DEPOSITO_ENDERECO
-                   FROM DEPOSITO_ENDERECO DE
-                  WHERE DE.COD_CARACTERISTICA_ENDERECO = $tipoPicking $SQLWhere
-                    AND DE.COD_DEPOSITO_ENDERECO NOT IN (SELECT DISTINCT COD_DEPOSITO_ENDERECO
-                                                           FROM PRODUTO_EMBALAGEM
-                                                          WHERE COD_DEPOSITO_ENDERECO IS NOT NULL)
-                    AND DE.COD_DEPOSITO_ENDERECO NOT IN (SELECT DISTINCT COD_DEPOSITO_ENDERECO
-                                                           FROM PRODUTO_VOLUME
-                                                          WHERE COD_DEPOSITO_ENDERECO IS NOT NULL)
-                    AND DE.IND_ATIVO = 'S'
-                  ORDER BY DSC_DEPOSITO_ENDERECO
-        ";
+        $SQL = " SELECT DISTINCT
+                        DE.DSC_DEPOSITO_ENDERECO,
+                        U.DSC_UNITIZADOR
+                   FROM V_PALETE_DISPONIVEL_PICKING V
+                  INNER JOIN (SELECT MAX(TAMANHO_UNITIZADOR) as TAMANHO_UNITIZADOR,
+                                         COD_DEPOSITO_ENDERECO
+                                FROM V_PALETE_DISPONIVEL_PICKING
+                               GROUP BY COD_DEPOSITO_ENDERECO) MAXP
+                         ON MAXP.TAMANHO_UNITIZADOR = V.TAMANHO_UNITIZADOR
+                        AND MAXP.COD_DEPOSITO_ENDERECO = V.COD_DEPOSITO_ENDERECO
+                   LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = V.COD_UNITIZADOR
+                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = V.COD_DEPOSITO_ENDERECO
+                   WHERE 1 = 1";
 
-        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        $SQLOrder = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
     public function getPickingMultiplosProdutos($params){

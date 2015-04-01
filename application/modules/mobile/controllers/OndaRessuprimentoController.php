@@ -211,8 +211,10 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 $LeituraColetor = new \Wms\Service\Coletor();
 
+                $result = null;
                 if ($codigoBarrasUMA)
                 {
+                    $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
                     $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
 
                     $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $estoqueEn->getId());
@@ -224,6 +226,7 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 if ($etiquetaProduto)
                 {
+                    $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
                     $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto);
 
                     $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $estoqueEn->getId());
@@ -233,21 +236,22 @@ class Mobile_OndaRessuprimentoController extends Action
                     }
                 }
 
+                if ($result == null) {
+                    throw new \Exception("error","Ocorreu um erro tentando finalizar a OS");
+                }
+
                 $codProduto = $result[0]['id'];
                 $grade = $result[0]['grade'];
                 $ondaOsEn = $ondaOsEn->getProdutos();
 
                 if (($codProduto != $ondaOsEn[0]->getProduto()->getId()) || ($grade != $ondaOsEn[0]->getProduto()->getGrade())){
-                    if ($codigoBarrasUMA) {
-                        $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
-                    }else {
-                        $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
-                    }
                     throw new \Exception("error","Produto diferente do indicado na onda");
                 }
 
                 $ondaRepo->finalizaOnda($ondaOsEn2);
             $this->getEntityManager()->commit();
+            $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
+
             $this->addFlashMessage("success","Os Finalizada com sucesso");
 
         } catch (\Exception $e) {

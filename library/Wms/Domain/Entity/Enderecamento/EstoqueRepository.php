@@ -207,7 +207,7 @@ class EstoqueRepository extends EntityRepository
                     AND ESTQ.DSC_GRADE = '$grade'
                     AND ESTQ.COD_PRODUTO = '$codProduto'";
 
-        $SqlOrder = " ORDER BY ESTQ.DTH_PRIMEIRA_MOVIMENTACAO ASC";
+        $SqlOrder = " ORDER BY TO_DATE(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy'), ESTQ.QTD";
 
         $SqlWhere = "";
         if ($volume != null) {
@@ -242,9 +242,10 @@ class EstoqueRepository extends EntityRepository
                        E.RESERVA_SAIDA,
                        E.QTD,
                        TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
-                       P.DSC_PRODUTO
-                  FROM (SELECT
-                               NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
+                       P.DSC_PRODUTO,
+                       E.UMA,
+                       E.UNITIZADOR
+                  FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                                NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),E.COD_PRODUTO) as COD_PRODUTO,
                                NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),E.DSC_GRADE) as DSC_GRADE,
                                CASE WHEN (E.VOLUME = '0' OR RE.VOLUME = '0' OR RS.VOLUME = '0') THEN 'PRODUTO UNITÁRIO'
@@ -255,9 +256,12 @@ class EstoqueRepository extends EntityRepository
                                NVL(RS.QTD_RESERVADA,0) as RESERVA_SAIDA,
                                NVL(E.QTD,0) as QTD,
                                NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
-                               E.DTH_PRIMEIRA_MOVIMENTACAO
-                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD,
+                               E.DTH_PRIMEIRA_MOVIMENTACAO,
+                               E.UMA,
+                               UN.DSC_UNITIZADOR AS UNITIZADOR
+                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR,
                                        E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE E) E
+                          LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = E.COD_UNITIZADOR
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
                                              FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                                      FROM RESERVA_ESTOQUE RE
