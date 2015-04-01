@@ -315,7 +315,7 @@ class PaleteRepository extends EntityRepository
      */
     public function enderecaPicking ($paletes = array())
     {
-
+        $Resultado = "";
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
@@ -360,13 +360,14 @@ class PaleteRepository extends EntityRepository
                 $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $pickingEn->getId(),"S");
 
                 if (($qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking + $quantidadePalete) > $capacidadePicking) {
-                    throw new \Exception("Quantidade nos paletes superior a capacidade do picking");
+                    $resultado = "Quantidade nos paletes superior a capacidade do picking";
                 }
 
                 $this->alocaEnderecoPalete($paleteEn->getId(),$embalagem->getEndereco()->getId());
             }
             $this->getEntityManager()->flush();
         }
+        return $Resultado;
     }
 
     public function deletaPaletesRecebidos ($idRecebimento, $idProduto, $grade) {
