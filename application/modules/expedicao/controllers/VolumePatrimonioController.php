@@ -11,6 +11,27 @@ class Expedicao_VolumePatrimonioController  extends  Crud
 
     public function indexAction()
     {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Imprimir Relatório',
+                    'cssClass' => 'btnAdd',
+                    'urlParams' => array(
+                        'action' => 'imprimir-relatorio'
+                    ),
+                    'tag' => 'a'
+                ),
+                array(
+                    'label' => 'Adicionar novo',
+                    'cssClass' => 'btnAdd',
+                    'urlParams' => array(
+                        'action' => 'add'
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
+
         $form = new Wms\Module\Expedicao\Form\VolumePatrimonioFiltro();
         $form->setAttrib('class', 'filtro')->setAttrib('method', 'post');
         $form->init('Buscar','Busca',false, true);
@@ -131,6 +152,14 @@ class Expedicao_VolumePatrimonioController  extends  Crud
 
         $this->addFlashMessage('success', 'Volumes desocupado com sucesso');
         $this->_redirect('/expedicao/volume-patrimonio');
+    }
+
+    public function imprimirRelatorioAction()
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\VolumePatrimonioRepository $volumePatrimonioRepository */
+        $volumePatrimonioRepository = $this->em->getRepository("wms:Expedicao\VolumePatrimonio");
+        $getRelatorio = $volumePatrimonioRepository->imprimirRelatorio();
+        $this->exportPDF($getRelatorio,'imprimir-relatorio','Caixas Expedidas','P');
     }
 
 }
