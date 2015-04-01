@@ -13,7 +13,7 @@ use Wms\Domain\Entity\Recebimento,
 class FiltroProdutoRecebido extends Form
 {
 
-    public function init()
+    public function init($utilizaGrade = 'S')
     {
         $em = $this->getEm();
 
@@ -27,12 +27,19 @@ class FiltroProdutoRecebido extends Form
                     'size' => 12,
                     'label' => 'Cod. produto',
                     'class' => 'focus',
-                ))
-                ->addElement('text', 'grade', array(
-                    'size' => 12,
-                    'label' => 'Grade',
-                ))
-                ->addElement('text', 'descricao', array(
+                ));
+                if ($utilizaGrade == "S") {
+                    $this->addElement('text', 'grade', array(
+                        'size' => 12,
+                        'label' => 'Grade',
+                    ));
+                } else {
+                    $this->addElement('hidden', 'grade', array(
+                        'label' => 'Grade',
+                        'value' => 'UNICA'
+                    ));
+                }
+                $this->addElement('text', 'descricao', array(
                     'size' => 30,
                     'label' => 'Descrição',
                 ))

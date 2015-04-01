@@ -9,8 +9,10 @@ class Enderecamento_MovimentacaoController extends Action
     public function indexAction()
     {
 		$this->configurePage();
-        $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();	
-		
+
+        $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+        $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
+		$form->init($utilizaGrade);
         $request = $this->getRequest();
         $data = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */

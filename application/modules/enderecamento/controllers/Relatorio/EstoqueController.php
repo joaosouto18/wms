@@ -6,7 +6,9 @@ class Enderecamento_Relatorio_EstoqueController extends Action
 {
     public function indexAction()
     {
+        $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\FiltroRelatorio();
+        $form->init($utilizaGrade);
         $values = $form->getParams();
 
         if ($values)
