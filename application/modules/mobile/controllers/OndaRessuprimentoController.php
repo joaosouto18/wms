@@ -250,6 +250,8 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 $ondaRepo->finalizaOnda($ondaOsEn2);
             $this->getEntityManager()->commit();
+            $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
+
             $this->addFlashMessage("success","Os Finalizada com sucesso");
 
         } catch (\Exception $e) {
