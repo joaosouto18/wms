@@ -315,6 +315,12 @@ class PaleteRepository extends EntityRepository
      */
     public function enderecaPicking ($paletes = array())
     {
+
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
         if ($paletes == NULL) {
             throw new \Exception("Nenhum Palete Selecionado");
         }
@@ -326,17 +332,41 @@ class PaleteRepository extends EntityRepository
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
                 throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
-            $embalagem = $paleteEn->getProdutos();
-            if ($embalagem) {
-                $embalagem = $embalagem[0]->getEmbalagemEn();
-                if ($embalagem->getEndereco() == Null) {
+
+            $produtos = $paleteEn->getProdutos();
+            if ($produtos) {
+                $embalagem   = $produtos[0]->getEmbalagemEn();
+                $pickingEn   = $embalagem->getEndereco();
+                $codProduto  = $produtos[0]->getCodProduto();
+                $grade       = $produtos[0]->getGrade();
+                $capacidadePicking = $embalagem->getCapacidadePicking();
+                $quantidadePalete = $produtos[0]->getQtd();
+
+                if ($pickingEn == Null) {
                     throw new \Exception("Não existe endereço de picking para o produto " . $embalagem[0]->getCodProduto() . " / " . $embalagem[0]->getGrade());
                 }
+
+                $idVolume = null;
+                $volumes = array();
+                if ($produtos[0]->getCodProdutoVolume() != NULL) {
+                    $idVolume = $produtos[0]->getCodProdutoVolume();
+                    foreach ($produtos as $volume){
+                        $volumes[] = $volume->getCodProdutoVolume();
+                    }
+                }
+
+                $qtdPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto,$grade,$pickingEn->getId(), $volumes);
+                $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume,$pickingEn->getId(),"E");
+                $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $pickingEn->getId(),"S");
+
+                if (($qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking + $quantidadePalete) > $capacidadePicking) {
+                    throw new \Exception("Quantidade nos paletes superior a capacidade do picking");
+                }
+
                 $this->alocaEnderecoPalete($paleteEn->getId(),$embalagem->getEndereco()->getId());
             }
-
+            $this->getEntityManager()->flush();
         }
-        $this->getEntityManager()->flush();
     }
 
     public function deletaPaletesRecebidos ($idRecebimento, $idProduto, $grade) {

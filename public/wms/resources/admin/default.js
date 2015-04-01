@@ -152,8 +152,12 @@ $(document).ready(function(){
     });
     
     //Confirmação de uma operação qualquer
-    $('.btnConfirm, a.confirm').click(function() {
-        return confirm('Tem certeza que deseja executar essa ação?') ? true : false;
+    $('.btnConfirm, a.confirm, a.confirmee').click(function(a) {
+        var Alerta = "Tem certeza que deseja executar esta ação?";
+        if ((a.delegateTarget.title != null) && (a.delegateTarget.title != "")){
+            Alerta = a.delegateTarget.title;
+        }
+        return confirm(Alerta) ? true : false;
     });
 
     //Fechar as mensagens
