@@ -116,7 +116,9 @@ class VolumePatrimonioRepository extends EntityRepository
                    VP.DSC_VOLUME_PATRIMONIO,
                    EVP.COD_EXPEDICAO,
                    ULTSAIDA.QTD_SAIDAS,
-                   TO_CHAR(EVP.DTH_FECHAMENTO,'DD/MM/YYYY HH24:MI:SS') as DATA_SAIDA
+                   TO_CHAR(EVP.DTH_FECHAMENTO,'DD/MM/YYYY HH24:MI:SS') as DATA_SAIDA,
+                   TO_CHAR(EVP.DTH_CONFERIDO,'DD/MM/YYYY HH24:MI:SS') as DATA_CONFERENCIA
+
               FROM EXPEDICAO_VOLUME_PATRIMONIO EVP
              INNER JOIN (SELECT MAX(DTH_FECHAMENTO) as ULTIMA_SAIDA,
                                 COUNT(DISTINCT (COD_EXPEDICAO)) as QTD_SAIDAS,
