@@ -111,12 +111,22 @@ class VolumePatrimonioRepository extends EntityRepository
 
     public function imprimirRelatorio()
     {
-
-        $dql = "SELECT v0_.COD_VOLUME_PATRIMONIO, v0_.DSC_VOLUME_PATRIMONIO, MAX(e1_.COD_EXPEDICAO) AS CodExpedicao, (select MAX(e2_.DTH_FECHAMENTO) from EXPEDICAO_VOLUME_PATRIMONIO e2_ where e2_.COD_EXPEDICAO = e1_.COD_EXPEDICAO) AS data
-                FROM VOLUME_PATRIMONIO v0_
-                INNER JOIN EXPEDICAO_VOLUME_PATRIMONIO e1_ ON (e1_.COD_VOLUME_PATRIMONIO = v0_.COD_VOLUME_PATRIMONIO)
-                GROUP BY v0_.COD_VOLUME_PATRIMONIO, v0_.DSC_VOLUME_PATRIMONIO, e1_.COD_EXPEDICAO
-                ORDER BY v0_.COD_VOLUME_PATRIMONIO DESC";
+        $dql = "SELECT DISTINCT
+                   EVP.COD_VOLUME_PATRIMONIO,
+                   VP.DSC_VOLUME_PATRIMONIO,
+                   EVP.COD_EXPEDICAO,
+                   ULTSAIDA.QTD_SAIDAS,
+                   TO_CHAR(EVP.DTH_FECHAMENTO,'DD/MM/YYYY HH24:MI:SS') as DATA_SAIDA
+              FROM EXPEDICAO_VOLUME_PATRIMONIO EVP
+             INNER JOIN (SELECT MAX(DTH_FECHAMENTO) as ULTIMA_SAIDA,
+                                COUNT(DISTINCT (COD_EXPEDICAO)) as QTD_SAIDAS,
+                                COD_VOLUME_PATRIMONIO
+                           FROM EXPEDICAO_VOLUME_PATRIMONIO
+                          GROUP BY COD_VOLUME_PATRIMONIO) ULTSAIDA
+                ON ULTSAIDA.COD_VOLUME_PATRIMONIO = EVP.COD_VOLUME_PATRIMONIO
+               AND ULTSAIDA.ULTIMA_SAIDA = DTH_FECHAMENTO
+              LEFT JOIN VOLUME_PATRIMONIO VP ON VP.COD_VOLUME_PATRIMONIO = EVP.COD_VOLUME_PATRIMONIO
+              ORDER BY EVP.COD_VOLUME_PATRIMONIO";
 
         $array = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
 

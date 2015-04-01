@@ -15,7 +15,7 @@ class Expedicao_VolumePatrimonioController  extends  Crud
             'buttons' => array(
                 array(
                     'label' => 'Imprimir Relatório',
-                    'cssClass' => 'btnAdd',
+                    'cssClass' => '',
                     'urlParams' => array(
                         'action' => 'imprimir-relatorio'
                     ),
