@@ -59,7 +59,7 @@ class VolumePatrimonioRepository extends EntityRepository
         }
     }
 
-    public function getVolumes($codigoInicial, $codigoFinal, $descricao, $showExpedicao = false) {
+    public function getVolumes($codigoInicial = null, $codigoFinal = null, $descricao = null, $showExpedicao = false) {
         $source = $this->getEntityManager()->createQueryBuilder()
         ->select('v.id , v.descricao, v.ocupado')
         ->from('wms:Expedicao\VolumePatrimonio', 'v')
@@ -106,6 +106,21 @@ class VolumePatrimonioRepository extends EntityRepository
         $values = $this->getVolumes($codigoInicial,$codigoFinal,null);
         $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
         $result = $gerarEtiqueta->init($values);
+
+    }
+
+    public function imprimirRelatorio()
+    {
+
+        $dql = "SELECT v0_.COD_VOLUME_PATRIMONIO, v0_.DSC_VOLUME_PATRIMONIO, MAX(e1_.COD_EXPEDICAO) AS CodExpedicao, (select MAX(e2_.DTH_FECHAMENTO) from EXPEDICAO_VOLUME_PATRIMONIO e2_ where e2_.COD_EXPEDICAO = e1_.COD_EXPEDICAO) AS data
+                FROM VOLUME_PATRIMONIO v0_
+                INNER JOIN EXPEDICAO_VOLUME_PATRIMONIO e1_ ON (e1_.COD_VOLUME_PATRIMONIO = v0_.COD_VOLUME_PATRIMONIO)
+                GROUP BY v0_.COD_VOLUME_PATRIMONIO, v0_.DSC_VOLUME_PATRIMONIO, e1_.COD_EXPEDICAO
+                ORDER BY v0_.COD_VOLUME_PATRIMONIO DESC";
+
+        $array = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $array;
 
     }
 
