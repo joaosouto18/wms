@@ -132,6 +132,7 @@ class EnderecoRepository extends EntityRepository
             ->select('ie')
             ->from("wms:Inventario\Endereco","ie")
             ->andWhere("ie.inventariado = 1")
+            ->andWhere("ie.atualizaEstoque = 1")
             ->andWhere("ie.inventario = $idInventario");
 
         return $query->getQuery()->getResult();
