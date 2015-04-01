@@ -127,7 +127,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $SqlWhere .= " AND OND.DTH_CRIACAO >= TO_DATE('$dataInicial 00:00','DD-MM-YYYY HH24:MI')";
         }
         if (isset($dataFinal) && (!empty($dataFinal))) {
-            $SqlWhere .= " AND OND.DTH_CRIACAO <= TO_DATE('$dataInicial 23:59','DD-MM-YYYY HH24:MI')";
+            $SqlWhere .= " AND OND.DTH_CRIACAO <= TO_DATE('$dataFinal 23:59','DD-MM-YYYY HH24:MI')";
         }
 
         $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrderBy)->fetchAll(\PDO::FETCH_ASSOC);

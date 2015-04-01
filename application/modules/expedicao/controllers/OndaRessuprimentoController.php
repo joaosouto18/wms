@@ -28,7 +28,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $this->view->expedicoes = $expedicoes;
     }
 
-    public function semDadosAction(){
+    public function semDadosAction()
+    {
         $strExpedicao = $this->_getParam("expedicoes");
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
@@ -70,7 +71,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
     }
 
-    public function gerenciarOsAction(){
+    public function gerenciarOsAction()
+    {
         $form = new FiltroDadosOnda;
         $actionParams= $this->_getParam('actionParams',false);
 
@@ -112,7 +114,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $this->view->form = $form;
     }
 
-    public function liberarAction() {
+    public function liberarAction()
+    {
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
@@ -137,7 +140,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
     }
 
-    public function cancelarAction() {
+    public function cancelarAction()
+    {
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
