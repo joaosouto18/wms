@@ -243,6 +243,7 @@ $(document).ready(function(){
                 }
                 $('#volumes').html(options);
                 $('#volumes').parent().show();
+                $('#volumes').focus();
             } else {
                 $('#volumes').empty();
                 $('#volumes').parent().hide();
