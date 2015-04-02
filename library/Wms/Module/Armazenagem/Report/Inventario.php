@@ -2,6 +2,7 @@
 namespace Wms\Module\Armazenagem\Report;
 
 use Core\Pdf;
+use Wms\Module\Web\Form\Deposito\Endereco;
 
 class Inventario extends Pdf
 {
@@ -15,8 +16,8 @@ class Inventario extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(20,  5, utf8_decode("Endereço")  ,1, 0);
         $this->Cell(15,  5, utf8_decode("Código")   ,1, 0);
-        $this->Cell(70, 5, utf8_decode("Descrição") ,1, 0);
-        $this->Cell(35, 5, utf8_decode("Volume") ,1, 0);
+        $this->Cell(90, 5, utf8_decode("Descrição") ,1, 0);
+        $this->Cell(105, 5, utf8_decode("Volume") ,1, 0);
 		$this->Cell(43, 5, utf8_decode("Unitizador") ,1, 0);
         $this->Cell(12,  5, "Qtde" ,1, 1);
     }
@@ -42,36 +43,83 @@ class Inventario extends Pdf
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = \Zend_Registry::get('doctrine')->getEntityManager();
-
         $this->SetMargins(7, 0, 0);
         $this->SetFont('Arial', 'B', 8);
         $this->AddPage();
 
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepository */
-//        $EstoqueRepository   = $em->getRepository('wms:Enderecamento\Estoque');
+        $this->SetFont('Arial', 'B', 8);
 
+        $enderecoAnterior = null;
+        $codProdutoAnterior = null;
+        $gradeAnterior = null;
+        $descricaoVolume = null;
+        $unitizadorAnterior = null;
+        $qtdAnterior = null;
+        $dscVolumes = "";
+        $dscProdutoAnterior = "";
 
- //       $listaEstoque = $EstoqueRepository->getEstoqueByRua($params['inicioRua'], $params['fimRua'], $params['grandeza'], $params['picking'],$params['pulmao']);
 
         foreach ($saldo as $estoque) {
+            $endereco = $estoque['dscEndereco'];
+            $codProduto = $estoque['codProduto'];
+            $descricaoProduto = $estoque['descricao'];
+            $descricaoVolume = str_replace(";CADASTRO","",$estoque['volume']);
+            $unitizador = $estoque['unitizador'];
+            $grade= $estoque['grade'];
+            $qtd = "";
+            if ($exibirEstoque == true) {
+                $qtd = $estoque['qtd'];
+            }
 
-            $this->SetFont('Arial', 'B', 8);
-            $this->Cell(20, 5, $estoque['dscEndereco'] ,1, 0);
-            $this->Cell(15, 5, $estoque['codProduto']      ,1, 0);
-            $this->Cell(70, 5, $estoque['descricao'] ,1, 0);
-            $this->Cell(35, 5, $estoque['volume'] ,1, 0);
+            if ($qtdAnterior == null) $qtdAnterior = $qtd;
+            if ($codProdutoAnterior == null) $codProdutoAnterior = $codProduto;
+            if ($gradeAnterior == null) $gradeAnterior = $grade;
+            if ($unitizadorAnterior == null) $unitizadorAnterior = $unitizador;
+            if ($enderecoAnterior == null) $enderecoAnterior = $endereco;
 
-			$qtd = "";
-			if ($exibirEstoque == true) {
-				$qtd = $estoque['qtd'];
-			}
+            if (($endereco != $enderecoAnterior) ||
+                ($codProduto != $codProdutoAnterior) ||
+                ($grade != $gradeAnterior) ||
+                ($qtd != $qtdAnterior) ||
+                ($unitizadorAnterior != $unitizador)){
 
-			$this->Cell(43, 5, $estoque['unitizador'] ,1, 0);
-            $this->Cell(12, 5, $qtd ,1, 1);
+                if (strlen($dscVolumes) >=63) {
+                    $dscVolumes = substr($dscVolumes,0,59) . "...";
+                }
 
-            //$this->Ln();
+                $this->Cell(20,5,$enderecoAnterior ,1, 0);
+                $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
+                $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
+                $this->Cell(105, 5, $dscVolumes ,1, 0);
+                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                $this->Cell(12, 5, $qtdAnterior ,1, 1);
+
+                $dscVolumes = "";
+            }
+
+            if ($dscVolumes != "") $dscVolumes.=";";
+            $dscVolumes .= $descricaoVolume;
+
+            $enderecoAnterior = $endereco;
+            $codProdutoAnterior = $codProduto;
+            $gradeAnterior = $grade;
+            $dscProdutoAnterior = $descricaoProduto;
+            $unitizadorAnterior = $unitizador;
+            $qtdAnterior = $qtd;
+
+            if ($estoque == $saldo[count($saldo)-1]){
+
+                if (strlen($dscVolumes) >=63) {
+                    $dscVolumes = substr($dscVolumes,0,59) . "...";
+                }
+
+                $this->Cell(20,5,$enderecoAnterior ,1, 0);
+                $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
+                $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
+                $this->Cell(105, 5, $dscVolumes ,1, 0);
+                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                $this->Cell(12, 5, $qtdAnterior ,1, 1);
+            }
         }
         $this->Output('Inventario-Por-Rua.pdf','D');
     }

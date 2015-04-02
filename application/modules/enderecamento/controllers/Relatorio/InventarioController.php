@@ -20,7 +20,7 @@ class Enderecamento_Relatorio_InventarioController extends Action
             $form->populate($params);
 
 			if($params['tipo'] == "C") {
-				/** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
+				/** @var \Wms\Domain\Entity\Enderecamento\VSaldoCompletoRepository $SaldoCompletoRepository */
 				$SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
 				$saldo = $SaldoCompletoRepository->saldo($params);
 			} else {
@@ -29,7 +29,7 @@ class Enderecamento_Relatorio_InventarioController extends Action
 				$saldo = $SaldoRepository->saldo($params);
 			}
 
-            $Report = new \Wms\Module\Armazenagem\Report\Inventario();
+            $Report = new \Wms\Module\Armazenagem\Report\Inventario("L");
 			
             if ($Report->init($saldo,$params['mostraEstoque'])) {
                 $this->addFlashMessage('error', 'Produto não encontrado');

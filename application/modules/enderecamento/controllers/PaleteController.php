@@ -224,7 +224,11 @@ class Enderecamento_PaleteController extends Action
 
         $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
         try {
-            $paleteRepo->enderecaPicking($paletes);
+            $result = $paleteRepo->enderecaPicking($paletes);
+
+            if ($result != "") {
+                $this->addFlashMessage("info",$result);
+            }
         } catch(Exception $e) {
             $this->addFlashMessage('error',$e->getMessage());
         }
