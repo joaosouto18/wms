@@ -57,32 +57,39 @@ class RelatorioPaletes extends Pdf
 
     protected function layout($palete, $paleteRepo)
     {
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        $embalagemRepo = $em->getRepository("wms:Produto\Embalagem");
+        $volumeRepo = $em->getRepository("wms:Produto\Volume");
+
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($palete);
         $enderecoEn = $paleteEn->getDepositoEndereco();
         $enderecoPicking = "";
         $enderecoSelecionado = "";
 
-        /** @var \Wms\Domain\Entity\Produto $produtoEn */
-        $produtoEn = $paleteEn->getProduto();
-        if (count($produtoEn->getEmbalagens()) > 0) {
-            $embalagemEn = $produtoEn->getEmbalagens();
+        $produtosEn = $paleteEn->getProdutos();
+
+        if (($produtosEn[0]->getCodProdutoEmbalagem() == NULL)) {
+            $embalagemEn = $volumeRepo->findOneBy(array('id'=> $produtosEn[0]->getCodProdutoVolume()));
         } else {
-            $embalagemEn = $produtoEn->getVolumes();
+            $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $produtosEn[0]->getCodProdutoEmbalagem()));
         }
-        if ($embalagemEn[0]->getEndereco() != null) {
-            $enderecoPicking = $embalagemEn[0]->getEndereco()->getDescricao();
+
+        if ($embalagemEn->getEndereco() != null) {
+            $enderecoPicking = $embalagemEn->getEndereco()->getDescricao();
         }
+
         if ($enderecoEn != NULL) {
             $enderecoSelecionado = $enderecoEn->getDescricao();
         }
 
         $this->Cell(18,5,$palete,0,0);
-        $this->Cell(18,5,$paleteEn->getCodProduto(),0,0);
-        $this->Cell(30,5,$paleteEn->getGrade(),0,0);
-        $this->Cell(105,5,$paleteEn->getProduto()->getDescricao(),0,0);
+        $this->Cell(18,5,$embalagemEn->getProduto()->getId(),0,0);
+        $this->Cell(30,5,$embalagemEn->getProduto()->getGrade(),0,0);
+        $this->Cell(105,5,$embalagemEn->getProduto()->getDescricao(),0,0);
         $this->Cell(25,5,$enderecoSelecionado,0,0);
-        $this->Cell(13,5,$paleteEn->getQtd(),0,0);
+        $this->Cell(13,5,$produtosEn[0]->getQtd(),0,0);
         $this->Cell(25,5,$enderecoPicking,0,0);
         $this->Cell(45,5,$paleteEn->getUnitizador()->getDescricao(),0,1);
     }

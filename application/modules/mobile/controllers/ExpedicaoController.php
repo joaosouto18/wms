@@ -7,6 +7,9 @@ use Wms\Controller\Action,
 
 class Mobile_ExpedicaoController extends Action
 {
+
+    protected $bloquearOs = 'S';
+
     public function indexAction()
     {
         $menu = array(
@@ -21,6 +24,10 @@ class Mobile_ExpedicaoController extends Action
             3 => array (
                 'url' => 'ordem-servico/recebimento-transbordo',
                 'label' => 'RECB. TRANSBORDO',
+            ),
+            4 => array (
+                'url' => 'onda-ressuprimento/listar-ondas',
+                'label' => 'ONDA DE RESSUPRIMENTO',
             )
         );
         $this->view->menu = $menu;

@@ -18,7 +18,9 @@ class Web_Relatorio_ProdutoRecebidoController extends Action
      */
     public function indexAction()
     {
+        $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
         $form = new FiltroProdutoRecebido;
+        $form->init($utilizaGrade);
 
         $params = $form->getParams();
 

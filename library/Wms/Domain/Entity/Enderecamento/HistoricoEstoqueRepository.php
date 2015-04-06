@@ -10,13 +10,34 @@ class HistoricoEstoqueRepository extends EntityRepository
      public function getMovimentacaoProduto($parametros)
      {
          $query = $this->getEntityManager()->createQueryBuilder()
-             ->select('hist.codProduto, hist.grade, hist.observacao, hist.qtd, hist.data data, dep.descricao, prod.descricao nomeProduto, pes.nome nomePessoa, un.id as Unitizador, un.descricao as Norma')
+             ->select("hist.codProduto,
+                       hist.grade,
+                       hist.observacao,
+                       hist.qtd,
+                       hist.data data,
+                       dep.descricao,
+                       prod.descricao nomeProduto,
+                       usu.login nomePessoa,
+                       un.id as Unitizador,
+                       NVL(vol.descricao, 'PRODUTO UNITÁRIO') as volume,
+                       un.descricao as Norma")
              ->from("wms:Enderecamento\HistoricoEstoque",'hist')
              ->innerJoin("hist.produto", "prod")
              ->innerJoin("hist.depositoEndereco", "dep")
-             ->innerJoin("hist.pessoa", "pes")
+             ->innerJoin("hist.usuario", "usu")
              ->leftJoin("hist.unitizador", "un")
-             ->groupBy("hist.codProduto, hist.grade, hist.observacao, hist.qtd, hist.data, dep.descricao, prod.descricao, pes.nome, un.id, un.descricao");
+             ->leftJoin("hist.produtoVolume","vol")
+             ->groupBy("hist.codProduto,
+                        hist.grade,
+                        hist.observacao,
+                        hist.qtd,
+                        hist.data,
+                        dep.descricao,
+                        prod.descricao,
+                        usu.login,
+                        un.id,
+                        vol.descricao,
+                        un.descricao");
 
          if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
              $query->andWhere("hist.codProduto = " . $parametros['idProduto']);
@@ -34,7 +55,7 @@ class HistoricoEstoqueRepository extends EntityRepository
              $query->andWhere("dep.predio = " . $parametros['predio']);
          }
          if (isset($parametros['apto']) && !empty($parametros['apto'])) {
-             $query->andWhere("dep.apto = " . $parametros['apto']);
+             $query->andWhere("dep.apartamento = " . $parametros['apto']);
          }
          if (isset($parametros['dataInicial']) && (!empty($parametros['dataInicial'])) && (!empty($parametros['dataFim'])))
          {
@@ -49,7 +70,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                  ->setParameter(2, $dataF);
          }
 
-         $query->orderBy("hist.codProduto, hist.grade, hist.data");
+         $query->orderBy("hist.codProduto, hist.grade, vol.descricao, hist.data");
 
          $resultado = $query->getQuery()->getResult();
 

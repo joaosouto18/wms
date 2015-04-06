@@ -6,7 +6,7 @@ use Wms\Module\Web\Form;
 class SaidaProduto extends Form
 {
 
-    public function init()
+    public function init($utilizaGrade = 'S')
     {
         $this->setAction($this->getView()->url(array('module' =>'expedicao', 'controller' => 'relatorio_saida', 'action' => 'index')))
                 ->setAttribs(array(
@@ -18,12 +18,19 @@ class SaidaProduto extends Form
                     'size' => 12,
                     'label' => 'Cod. produto',
                     'class' => 'focus',
-                ))
-                ->addElement('text', 'grade', array(
-                    'size' => 12,
-                    'label' => 'Grade',
-                ))
-                ->addElement('submit', 'submit', array(
+                ));
+                if ($utilizaGrade == "S") {
+                    $this->addElement('text', 'grade', array(
+                        'size' => 12,
+                        'label' => 'Grade',
+                    ));
+                } else {
+                    $this->addElement('hidden', 'grade', array(
+                        'label' => 'Grade',
+                        'value' => 'UNICA'
+                    ));
+                }
+                $this->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),

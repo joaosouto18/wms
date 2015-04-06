@@ -8,26 +8,72 @@
             <tr>
                 <td><B>Cod:</B> <?php echo $this->codProduto?></td>
                 <td><B>Grade:</B> <?php echo $this->grade?></td>
-                <td><B>Qtd:</B> <?php echo $this->qtd?></td>
+                <td style="font-size: 175%"><B>Qtd:</B> <?php echo $this->qtd?></td>
             </tr>
             <tr>
-                <td colspan="3"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
-                <td colspan="3"><B>Picking:</B> <?php echo $this->endPicking?></td>
+                <td colspan="1" style="font-size: 145%"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
+                <td colspan="2" style="font-size: 145%"><B>Picking:</B> <?php echo $this->endPicking?></td>
             </tr>
             </tbody>
         </table>
     </div>
     <br>
 
-    <div>
-        <b><label style="font-size:17px">Produto</label></b>
-        <input class="focus" type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
-    </div>
 
-    <div>
-        <input type="submit" name="submit" id="submit" value="Buscar" />
-    </div>
-    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'selecionar-uma', 'idOnda' => $this->idOnda)); ?>">Alternar para U.M.A.</a>
+<table>
+    <tr>
+        <td colspan="2">
+            <b><label style="font-size:17px">Produto</label></b>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input class="focus" type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+        </td>
+        <td>
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'selecionar-uma', 'idOnda' => $this->idOnda)); ?>">Alternar para U.M.A.</a>
+        </td>
+    </tr>
+</table>
+
+<div>
+    <input type="submit" name="submit" id="submit" value="Buscar" />
+</div>
+
+    <?php if ($this->produtos[0]->getCodProdutoVolume() !=NULL) {?>
+        <div id="quantidade-grid" class="grid">
+        <table class="gTable" style="width: 70%; margin-left: 5%; margin-right: 5%; margin-top: 3%; margin-bottom:  3%">
+            <tbody>
+            <tr class ="gTTitle">
+                <td><b>Volumes</b></td>
+                <td><b>Quantidade</b></td>
+            </tr>
+            <?php
+            foreach ($this->produtos as $produto): $this->color = !($this->color);?>
+                <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><?php
+                        /** @var \Doctrine\ORM\EntityManager $em */
+                        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+                        if ($produto->getCodProdutoEmbalagem() == NULL) {
+                            $volumeEn = $em->getRepository("wms:Produto\Volume")->findOneBy(array('id'=>$produto->getCodProdutoVolume()));
+                            echo $volumeEn->getDescricao() ;
+                        } else {
+                            $embalagemEn = $em->getRepository("wms:Produto\Embalagem")->findOneBy(array('id'=>$produto->getCodProdutoEmbalagem()));
+                            echo $embalagemEn->getDescricao() ;
+                        }
+
+                        ?></td>
+                    <td><?php echo $produto->getQtd() ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <div class = "gPager">
+    <?php }?>
+
+
 </form>
+
 
 <div class = "gPager">

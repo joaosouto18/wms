@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
+   <object objectType="TSpace" objectID="6392170F-974F-1284-BCDF-C41E96283454" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
+   <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
+   <object objectType="User" objectID="3ECB7B3F-EFBA-7A80-FA6E-CC917AACFE4B" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="SType" objectID="47E390DE-0671-C4B1-8428-0F45CBEE18F8" name="SDO_GEOMETRY" seqName="seg_0"/>
+   <object objectType="SType" objectID="F72C39E0-D1CA-8821-2AD7-A1E95A37D3D1" name="XMLTYPE" seqName="seg_0"/>
+   <object objectType="Table" objectID="21BB6E28-2F53-3600-9418-2C4FC3766ED4" name="INVENTARIO" seqName="seg_0"/>
+   <object objectType="Table" objectID="2EB7CE67-9740-5326-0FD9-31FDF74A8DD7" name="INVENTARIO_CONTAGEM_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="5023A7FC-005D-1AC9-5B3B-EDD9B19F5449" name="INVENTARIO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="87B69F49-02D8-E158-60BD-78728E08312E" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Table" objectID="92E2B0B5-70B3-C612-FBDD-7EF296E85B94" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="F9E244AA-C200-61EA-2B1D-A435A2F597E9" name="INVENTARIO_CONTAGEM_OS" seqName="seg_0"/>
+   <object objectType="Segment" objectID="6B163EC4-0E37-16C6-A944-9BD46DEAC424" name="Storage2" seqName="seg_0"/>
+   <object objectType="Segment" objectID="135604D8-735A-C6BE-8E20-7E28F27F4993" name="Storage4" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>

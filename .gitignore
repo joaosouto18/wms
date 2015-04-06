@@ -1,7 +1,6 @@
-﻿*.svn
+﻿﻿*.svn
 *~
 nbproject/
-cache/
 library/Wms/Domain/Proxy/
 library/Core/Pdf/font/unifont/*.mtx.php
 library/Core/Pdf/font/unifont/*.cw.dat
@@ -16,3 +15,8 @@ data/profiler
 .DS_Store
 data/log
 application.ini
+webservices.ini
+library/zendframework
+library/composer
+library/autoload.php
+zend_cache*

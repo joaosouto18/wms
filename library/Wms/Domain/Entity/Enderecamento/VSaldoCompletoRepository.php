@@ -10,11 +10,14 @@ class VSaldoCompletoRepository extends EntityRepository
     {
         $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
         $query = $this->getEntityManager()->createQueryBuilder()
-        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador')
+        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume')
         ->from("wms:Enderecamento\VSaldoCompleto","s")
         ->leftJoin("s.produto","p")
         ->leftJoin("s.depositoEndereco", "e")
-        ->orderBy("e.rua,lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade");
+        ->leftJoin("wms:Armazenagem\Unitizador","u","WITH","u.id=s.codUnitizador")
+        ->orderBy("e.rua,lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade,s.volume");
+
+        $query->andWhere('e.ativo <> \'N\' ');
 
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];
@@ -39,6 +42,7 @@ class VSaldoCompletoRepository extends EntityRepository
         if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
             $query->andWhere("e.idCaracteristica = '$tipoPicking'");
         }
+        
 		$result = $query->getQuery()->getResult();
         return $result;
     }

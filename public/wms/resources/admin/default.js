@@ -152,8 +152,12 @@ $(document).ready(function(){
     });
     
     //Confirmação de uma operação qualquer
-    $('.btnConfirm, a.confirm').click(function() {
-        return confirm('Tem certeza que deseja executar essa ação?') ? true : false;
+    $('.btnConfirm, a.confirm, a.confirmee').click(function(a) {
+        var Alerta = "Tem certeza que deseja executar esta ação?";
+        if ((a.delegateTarget.title != null) && (a.delegateTarget.title != "")){
+            Alerta = a.delegateTarget.title;
+        }
+        return confirm(Alerta) ? true : false;
     });
 
     //Fechar as mensagens
@@ -222,7 +226,84 @@ $(document).ready(function(){
     $('textarea.lower').Setcase({
         caseValue: 'lower'
     });
-    
+
+    grade = $("#grade");
+    idProduto = $("#idProduto");
+
+    idProduto.focusout(function(){
+        getVolumes(idProduto.val(),grade.val());
+    });
+
+    function getVolumes(idProduto,grade){
+        $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
+            if (dataReturn.length > 0) {
+                var options = '<option value="">Selecione um agrupador de volumes...</option>';
+                for (var i = 0; i < dataReturn.length; i++) {
+                    options += '<option value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
+                }
+                $('#volumes').html(options);
+                $('#volumes').parent().show();
+                $('#volumes').focus();
+            } else {
+                $('#volumes').empty();
+                $('#volumes').parent().hide();
+            }
+        })
+    }
+    grade.autocomplete({
+        source: "/enderecamento/movimentacao/filtrar/idproduto/",
+        minLength: 0
+    });
+
+    grade.keyup(function(e){
+
+        if ($("#idProduto").val() == '' || $("#id").val() == '') {
+            return false;
+        }
+        var produtoVal  = $("#idProduto").val();
+        if (typeof  produtoVal == 'undefined') {
+            var produtoVal  = $("#id").val();
+        }
+        grade.autocomplete({
+            source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal,
+            select: function( event, ui ) {
+                getVolumes(produtoVal,ui['item']['value'])
+            }
+        });
+    });
+
+    $('.inside-modal').live('click', function() {
+        //url
+        var url = this.href;
+        // show a spinner or something via css
+        var dialog = $('<div id="inside-modal-dialog" style="display:none"></div>').appendTo('body');
+
+        // open the dialog
+        dialog.dialog({
+            width : 750,
+            height : 450,
+            resizable: true,
+            title : '',
+            // add a close listener to prevent adding multiple divs to the document
+            close: function(event, ui) {
+                // remove div with all data and events
+                dialog.remove();
+            },
+            modal: true
+        });
+        // load remote content
+        dialog.load(
+            url,
+            {}, // omit this param object to issue a GET request instead a POST request, otherwise you may provide post parameters within the object
+            function (responseText, textStatus, XMLHttpRequest) {
+                // remove the loading class
+                dialog.removeClass('loading');
+            }
+        );
+        //prevent the browser to follow the link
+        return false;
+    });
+
     /***************************************
      JMVC plugins
     ***************************************/
@@ -244,5 +325,5 @@ $(document).ready(function(){
     $('#filtro-nota-fiscal').filtroNotaFiscal();
     $('#recebimento-divergencia-form, #form-recebimento-conferencia, #recebimento-index-grid').recebimento();
     $('#filtro-expedicao-mercadoria-form').expedicao();
-    $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv ').enderecamento();
+    $('#enderecamento-form, #deposito-endereco-filtro-form, #cadastro-movimentacao, .exportar-saldo-csv').enderecamento();
 });

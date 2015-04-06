@@ -9,7 +9,8 @@ class OndaRessuprimentoOs
 {
     const STATUS_ONDA_GERADA = 540;
     const STATUS_FINALIZADO = 541;
-
+    const STATUS_DIVERGENTE = 546;
+    const STATUS_CANCELADO = 547;
     /**
      * @Id
      * @Column(name="COD_ONDA_RESSUPRIMENTO_OS", type="integer", nullable=false)
@@ -25,24 +26,10 @@ class OndaRessuprimentoOs
     protected $ondaRessuprimento;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumns({
-     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
-     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
-     * })
-     */
-    protected $produto;
-
-    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
     protected $endereco;
-
-    /**
-     * @Column(name="QTD", type="integer", nullable=false)
-     */
-    protected $qtd;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
@@ -55,6 +42,17 @@ class OndaRessuprimentoOs
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
      */
     protected $os;
+
+    /**
+     * @Column(name="SEQUENCIA", type="integer", nullable=false)
+     */
+    protected $sequencia;
+
+    /**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOsProduto", mappedBy="ondaRessuprimentoOs", cascade={"persist", "remove"})
+     * @var ArrayCollection volumes que compoem este produto
+     */
+    protected $produtos;
 
     public function setEndereco($endereco)
     {
@@ -96,26 +94,6 @@ class OndaRessuprimentoOs
         return $this->os;
     }
 
-    public function setProduto($produto)
-    {
-        $this->produto = $produto;
-    }
-
-    public function getProduto()
-    {
-        return $this->produto;
-    }
-
-    public function setQtd($qtd)
-    {
-        $this->qtd = $qtd;
-    }
-
-    public function getQtd()
-    {
-        return $this->qtd;
-    }
-
     public function setStatus($status)
     {
         $this->status = $status;
@@ -124,6 +102,48 @@ class OndaRessuprimentoOs
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * @param \Wms\Domain\Entity\Ressuprimento\ArrayCollection $produtos
+     */
+    public function setProdutos($produtos)
+    {
+        $this->produtos = $produtos;
+    }
+
+    /**
+     * @return \Wms\Domain\Entity\Ressuprimento\ArrayCollection
+     */
+    public function getProdutos()
+    {
+        return $this->produtos;
+    }
+
+    /**
+     * @param mixed $sequencia
+     */
+    public function setSequencia($sequencia)
+    {
+        $this->sequencia = $sequencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSequencia()
+    {
+        return $this->sequencia;
+    }
+
+    public function getNextSequenciaSQ(){
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        $SQL = "SELECT SQ_SEQUENCIA_ONDA_OS.NEXTVAL FROM DUAL";
+        $resultado = $em->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado[0]['NEXTVAL'];
+
     }
 
 }

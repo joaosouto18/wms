@@ -1,0 +1,122 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="5023A7FC-005D-1AC9-5B3B-EDD9B19F5449" name="INVENTARIO_ENDERECO">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:27:26 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_INVENTARIO_ENDERECO" id="432675EF-DF22-8F40-F412-5DC9973E1D75">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:22 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_DEPOSITO_ENDERECO" id="BE34C57D-7443-7293-822B-3831F70A5772">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:29:20 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>3E705AC8-243E-7450-F92E-718B54019707</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="10134D1E-3CC4-3A30-230A-1DA387CA360F" referredColumn="3E705AC8-243E-7450-F92E-718B54019707"/>
+</associations>
+</Column>
+<Column name="COD_INVENTARIO" id="102E8EB5-7708-F6AF-7F8E-A68EE4B479A2">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:30:01 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>9CE49CA6-FBE1-9273-A98F-486A8ABB1160</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="A86415CB-82C1-E6EC-80A6-C5C9AE8C051C" referredColumn="9CE49CA6-FBE1-9273-A98F-486A8ABB1160"/>
+</associations>
+</Column>
+<Column name="DIVERGENCIA" id="88606852-8B41-084D-51CE-A78AC6724B1B">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-10 19:37:29 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<dataTypeSize>1</dataTypeSize>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="INVENTARIADO" id="981ED0BE-9E9B-8F41-5CD8-D62F9940DC05">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-12 17:11:58 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="ATUALIZA_ESTOQUE" id="FDDDBBED-5FB7-EAA3-B8AC-926D56EEC513">
+<createdBy>mateus</createdBy>
+<createdTime>2015-03-02 14:30:16 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT025</logicalDatatype>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="CC9099E4-C9CB-D090-A3CF-A2A23E8F9B89" name="INVENTARIO_ENDERECO_PK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:22 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="432675EF-DF22-8F40-F412-5DC9973E1D75"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="AAF4DD4F-D467-AF60-E471-8C5A7C49BED6" name="INVENTARIO_ENDERECO_DEPOSITO_ENDERECO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:29:25 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="BE34C57D-7443-7293-822B-3831F70A5772"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="45F14670-4CAF-2363-DF85-1FC9B16C4368" name="INVENTARIO_ENDERECO_INVENTARIO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:30:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="102E8EB5-7708-F6AF-7F8E-A68EE4B479A2"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

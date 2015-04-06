@@ -42,6 +42,10 @@ class Filtro extends Form {
                 'label' => 'Exibir endereços ocupados',
                 'checked' => false
         ))
+        ->addElement('checkbox', 'mostrarPicking', array(
+                'label' => 'Somente Picking',
+                'checked' => false
+        ))
         ->addElement('submit', 'imprimir', array(
                 'class' => 'btn',
                 'label' => 'Imprimir',
@@ -58,6 +62,7 @@ class Filtro extends Form {
             'nivel',
             'apartamento',
             'mostraOcupado',
+            'mostrarPicking',
             'buscar',
             'imprimir'), 'endereco', array('legend' => 'Endereço'));
     }

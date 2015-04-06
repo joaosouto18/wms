@@ -149,16 +149,45 @@ class Mobile_RessuprimentoController extends Action
         try {
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $estoqueRepo->movimentaEstoque($idProduto,$grade,$idEndereco,$qtd * -1,$idUsuario,"Mov. efetuada no coletor");
+            $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
 
-             /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
-            $ProdutoRepository   = $this->_em->getRepository('wms:Produto');
-            $produtoEn = $ProdutoRepository->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+            foreach ($embalagens as $volEstoque) {
+                $params = array();
+                $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
+                $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idEndereco));
 
-            $endPicking=$ProdutoRepository->getEnderecoPicking($produtoEn, "COD");
-            if ($endPicking != null) {
-                //REMOVIDO TEMPORARIAMENTE PARA NÂO POPULAR o PICKING ENQUANTO RESSUPRIMENTO NÂO ESTA NO AR
-                //$estoqueRepo->movimentaEstoque($idProduto,$grade,$endPicking,$qtd ,$idUsuario,"Mov. efetuada no coletor");
+                $idPicking = null;
+                    if ($volEstoque->getProdutoVolume() != NULL) {
+                        $params['volume'] = $volEstoque->getProdutoVolume();
+                        $idVolume = $volEstoque->getProdutoVolume()->getId();
+                        if ($volEstoque->getProdutoVolume()->getEndereco() != NULL) {
+                            $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
+                        }
+                    } else{
+                        $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
+                        $idEmbalagem = $volEstoque->getProdutoEmbalagem()->getId();
+                        if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
+                            $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
+                        }
+                    }
+
+                    if ($idPicking == NULL){
+                        throw new \Exception("Não foi encontrado endereço de picking para o produto");
+                    }
+
+                    $params['produto'] = $produtoEn;
+                    $params['endereco'] = $enderecoEn;
+                    $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
+                    $params['estoqueRepo'] = $estoqueRepo;
+                    $params['qtd'] = $qtd * -1;
+                    $estoqueRepo->movimentaEstoque($params);
+
+                if ($idPicking != NULL) {
+                    $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));
+                    $params['endereco'] = $enderecoEn;
+                    $params['qtd'] = $qtd;
+                    $estoqueRepo->movimentaEstoque($params);
+                }
             }
 
             $this->addFlashMessage("success","Movimentação efetivada com sucesso");

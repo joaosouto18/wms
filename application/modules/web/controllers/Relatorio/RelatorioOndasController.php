@@ -1,29 +1,26 @@
 <?php
 
 use Wms\Domain\Entity\Recebimento as RecebimentoEntity,
-    Wms\Module\Web\Page,
-    Wms\Module\Web\Controller\Action\Crud,
     Wms\Controller\Action,
     Wms\Module\Web\Form\Relatorio\Ressuprimento\FiltroDadosOnda;
 
-/**
- * Description of Web_Relatorio_RelatorioOndasController
- *
- * @author Michel Castro <mlagaurdia@gmail.com>
- */
 class Web_Relatorio_RelatorioOndasController extends Action
 {
 
-
-    /**
-     *
-     * @return type 
-     */
     public function indexAction()
     {
         $form = new FiltroDadosOnda;
 
-        $params = $form->getParams();
+        if ($form->getParams()){
+            $values = $form->getParams();
+            $dataInicial    = $values['dataInicial'];
+            $dataFinal      = $values['dataFinal'];
+            $status         = $values['status'];
+            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
+            $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
+            $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial,$dataFinal,$status);
+            $this->exportPDF($result,'relatorio-Onda','Ondas de Ressuprimento Abertas - '.count($result).' ondas','L');
+        }
 
         $this->view->form = $form;
     }

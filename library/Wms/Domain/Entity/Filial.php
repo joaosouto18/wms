@@ -46,6 +46,12 @@ class Filial implements AtorInterface
     protected $indLeitEtqProdTransbObg;
 
     /**
+     * @var string Parametro indicando se a etiqueta do produto deve ser bipada na expedição de transbordo
+     * @Column(name="IND_UTILIZA_RESSUPRIMENTO", type="string", nullable=false)
+     */
+    protected $indUtilizaRessuprimento;
+
+    /**
      * @OneToMany(targetEntity="Wms\Domain\Entity\Deposito", mappedBy="Wms\Domain\Entity\Filial")
      */
     protected $depositos;
@@ -152,5 +158,20 @@ class Filial implements AtorInterface
         return $this->indRecTransbObg;
     }
 
+    /**
+     * @param string $indUtilizaRessuprimento
+     */
+    public function setIndUtilizaRessuprimento($indUtilizaRessuprimento)
+    {
+        $this->indUtilizaRessuprimento = $indUtilizaRessuprimento;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndUtilizaRessuprimento()
+    {
+        return $this->indUtilizaRessuprimento;
+    }
 
 }

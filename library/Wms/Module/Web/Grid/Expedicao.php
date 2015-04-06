@@ -26,7 +26,7 @@ class Expedicao extends Grid
         $sessao = new \Zend_Session_Namespace('deposito');
         $params['centrais'] = $sessao->centraisPermitidas;
 
-        $result = $expedicaoRepo->buscar($params);
+        $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-index-grid')
@@ -70,7 +70,7 @@ class Expedicao extends Grid
                     'modelName' => 'expedicao',
                     'controllerName' => 'etiqueta',
                     'actionName' => 'index',
-                    'params' => array('urlAction' => 'imprimir', 'urlController' => 'etiqueta'),
+                    'params' => array('urlAction' => 'imprimir', 'urlController' => 'etiqueta', 'sc' => true),
                     'cssClass' => 'dialogAjax pdf',
                     'condition' => function ($row) {
                         return $row['status'] != "FINALIZADO";
@@ -97,6 +97,15 @@ class Expedicao extends Grid
                     'actionName' => 'index',
                     'params' => array('urlAction' => 'index', 'urlController' => 'relatorio_produtos-expedicao', 'sc' => true),
                     'cssClass' => 'dialogAjax pdf',
+                    'pkIndex' => 'id'
+                ))
+                ->addAction(array(
+                    'label' => 'Relatório de Produtos sem Estoque',
+                    'target' => '_blank',
+                    'modelName' => 'expedicao',
+                    'controllerName' => 'index',
+                    'actionName' => 'sem-estoque-report',
+                    'cssClass' => 'pdf',
                     'pkIndex' => 'id'
                 ))
                 ->addAction(array(

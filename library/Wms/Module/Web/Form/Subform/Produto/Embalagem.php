@@ -68,6 +68,16 @@ class Embalagem extends SubForm
                     'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
                     'value' => 'N',
                 ))
+               ->addElement('numeric', 'pontoReposicao', array(
+                    'label' => 'Ponto de Reposição',
+                    'size' => 10,
+                    'value' => 0
+                ))
+                ->addElement('numeric', 'capacidadePicking', array(
+                    'label' => 'Capacidade do Picking',
+                    'size' => 10,
+                    'value' => 0
+                ))
                 ->addElement('hidden', 'acao', array(
                     'value' => 'incluir',
                 ))

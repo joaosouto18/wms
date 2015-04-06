@@ -1,0 +1,71 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="INVENTARIO_CONTAGEM_ENDERECO" directorySegmentName="seg_0" id="2EB7CE67-9740-5326-0FD9-31FDF74A8DD7">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:31:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<temporaryChanged>false</temporaryChanged>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="QTD_CONTADA" id="3B9437D6-343B-E053-45B6-E50A49D212EB">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:35:10 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="QTD_AVARIA" id="5A3029EA-B1F4-4D2E-FCA8-C6B2DC0EABAD">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:34:48 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_INV_CONT_END" id="6BA528F5-A828-42E3-9C63-0ED70227F7AA">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:31:57 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_INVENTARIO_ENDERECO" id="6FCD4DB6-A8AA-C0C5-5473-A2C10CD6C864">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:37:31 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_INVENTARIO_CONTAGEM_OS" id="F341610B-6298-08C2-3714-7CC65C55B3FB">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:36:08 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="NUM_CONTAGEM" id="FE592FBD-22F3-CDE3-9069-CFB41B59D5A5">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:35:21 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<foreignKeys>
+<ForeignKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.FKProxyOraclev10g" name="INVENTARIO_CONTAGEM_ENDERECO_INVENTARIO_ENDERECO_FK" id="5EFFF39D-1591-3720-FF29-773BE4438684">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:37:36 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ForeignKey>
+<ForeignKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.FKProxyOraclev10g" name="INVENTARIO_CONTAGEM_ENDERECO_INVENTARIO_CONTAGEM_OS_FK" id="DE7F345E-2666-6611-132C-D678DD29A734">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:36:12 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ForeignKey>
+</foreignKeys>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="INVENTARIO_CONTAGEM_ENDERECO_PK" id="2B07EC7F-ADDA-7150-C47C-0E8F92BE0116">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:31:57 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexSort>SORTED</indexSort>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

@@ -70,12 +70,13 @@ class MovimentacaoProduto extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $codProdutoAnterior = "";
         $gradeAnterior = "";
+        $volumeAnterior = "";
         $qtde = 0;
         $primeiroProduto = true;
         foreach($historicoReport as $produto)
         {
 
-            if (($codProdutoAnterior != $produto['codProduto']) || ($gradeAnterior != $produto['grade'])) {
+            if (($codProdutoAnterior != $produto['codProduto']) || ($gradeAnterior != $produto['grade']) || ($volumeAnterior != $produto['volume'])) {
 
                 if ($primeiroProduto == false) {
                     $this->Cell(198, 5, utf8_decode("Quantidade movimentada no período: $qtde"), 0, 1, "R");
@@ -83,10 +84,12 @@ class MovimentacaoProduto extends Pdf
                 }
 
                 $this->Cell(198,5,utf8_decode($produto['codProduto'] . '/'. $produto['grade']. ' - '. $produto['nomeProduto']),1,1);
+                $this->Cell(198,5,utf8_decode("Volume Movimentado:  - ". $produto['volume']),1,1);
 
                 $qtde = 0;
                 $codProdutoAnterior = $produto['codProduto'];
                 $gradeAnterior = $produto['grade'];
+                $volumeAnterior = $produto['volume'];
                 $primeiroProduto = false;
             }
 
@@ -100,7 +103,7 @@ class MovimentacaoProduto extends Pdf
             $this->Cell(19, 5, utf8_decode($tipomovim), 1, 0);
             $this->Cell(20, 5, utf8_decode($produto['descricao']), 1, 0);
             $this->Cell(38, 5, substr(utf8_decode($produto['nomePessoa']),0,20), 1, 0);
-            $this->Cell(80, 5, substr(utf8_decode($produto['observacao']),0,40), 1, 0);
+            $this->Cell(80, 5, substr(utf8_decode($produto['observacao']),0,60), 1, 0);
             $this->Cell(12, 5, $produto['qtd'], 1, 1,"C");
 
             $qtde = $qtde + $produto['qtd'];

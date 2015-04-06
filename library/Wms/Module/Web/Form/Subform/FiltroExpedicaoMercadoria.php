@@ -2,8 +2,6 @@
 
 namespace Wms\Module\Web\Form\Subform;
 
-//use Wms\Domain\Entity\Recebimento;
-
 /**
  * Description of FiltroRecebimentoMercadoria
  *
@@ -12,8 +10,12 @@ namespace Wms\Module\Web\Form\Subform;
 class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
 {
 
-    public function init()
+    public function init($action = "/expedicao")
     {
+        //$s = new Zend_Session_Namespace('sessionUrl');
+        $label=$action;
+       //if ( !empty($s->action))
+           //$label=$s->action;
         $em = $this->getEm();
         $repoSigla = $em->getRepository('wms:Util\Sigla');
 
@@ -22,7 +24,7 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
             'class' => 'filtro',
             'id' => 'filtro-expedicao-mercadoria-form',
         ));
-        
+
         $this->addElement('text', 'idExpedicao', array(
                     'size' => 10,
                     'label' => 'Código da Expedicao',
@@ -64,6 +66,7 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
                 ))
                 ->addElement('hidden', 'control', array(
                     'value' => 'roll',
+                    'label' => $label,
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('submit', 'submit', array(

@@ -51,24 +51,31 @@ class AbastecimentoPicking extends Pdf
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $em->getRepository("wms:Deposito\Endereco");
 
-        $deposito = $em->getRepository("wms:Deposito\Endereco");
-
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
 
        $limite = 49;
        foreach ($enderecos as $endereco) {
-            $produtos = $enderecoRepo->getProdutoByEndereco($endereco['DESCRICAO'],false);
+            $produtos = $enderecoRepo->getVolumesByPicking($endereco['COD_DEPOSITO_ENDERECO'],false);
 
             $dscPicking = $endereco['DESCRICAO'];
-
+            $dscVolume = "";
+            foreach ($produtos as $produto) {
+                if ($dscVolume != "") $dscVolume .= "; ";
+                $dscVolume .= $produto['descricao'];
+            }
             foreach ($produtos as $produto) {
 
                 $codProduto = $produto['codProduto'];
                 $grade = $produto['grade'];
-                $dscProduto = $produto['descricao'];
+                $dscProduto = $produto['produto'];
 
-                $enderecosPulmao = $estoqueRepo->getEstoquePulmaoByProduto($codProduto,$grade);
+                $params = array();
+                $params['idProduto'] = $codProduto;
+                $params['grade'] = $grade;
+                $params['volume'] = $produto['codVolume'];
+
+                $enderecosPulmao = $estoqueRepo->getEstoqueAndVolumeByParams ($params,5,false);
                 $c = count($enderecosPulmao);
 
                 if ((($limite - $c) - 2 ) <= 0 )
@@ -85,30 +92,38 @@ class AbastecimentoPicking extends Pdf
 
                 $limite = $limite -1;
 
-                $this->Cell(120, 5, "" , 0);
+                $this->Cell(10, 5, "" , 0);
+                $this->Cell(30, 5, "Dth Armazenagem" ,"TB");
                 $this->Cell(30, 5, utf8_decode("End.Pulmão") ,"TB");
+                $this->Cell(15, 5, "Res. Ent." ,"TB");
+                $this->Cell(15, 5, "Res. Sai." ,"TB");
                 $this->Cell(15, 5, "Qtd" ,"TB");
-                $this->Cell(30, 5, "Dth Armazenagem" ,"TB",  1);
+                $this->Cell(75, 5, utf8_decode("Volume") ,"TB",1);
 
                 $limite = $limite -1;
 
                 foreach($enderecosPulmao as $pulmao) {
                     $this->SetFont('Arial', '', 8);
+                    $qtdReservaEntrada = $pulmao["RESERVA_ENTRADA"];
+                    $qtdReservaSaida = $pulmao["RESERVA_SAIDA"];
+                    $qtdEndereco = $pulmao["QTD"];
+                    $dscEndereco = $pulmao['ENDERECO'];
+                    $dthUltimaEntrada = $pulmao['DTH_PRIMEIRA_MOVIMENTACAO'];
 
-                    $qtdEndereco = $pulmao["qtd"];
-                    $dscEndereco = $pulmao['descricao'];
-                    $dthUltimaEntrada = $pulmao['dtPrimeiraEntrada'];
-
-                    $this->Cell(120, 5, "" , 0, 0);
+                    $this->Cell(10, 5, "" , 0, 0);
+                    $this->Cell(30, 5, $dthUltimaEntrada ,0,  0);
                     $this->Cell(30, 5, utf8_decode($dscEndereco) ,0, 0);
+                    $this->Cell(15, 5, utf8_decode($qtdReservaEntrada) ,0,  0);
+                    $this->Cell(15, 5, utf8_decode($qtdReservaSaida) ,0,  0);
                     $this->Cell(15, 5, utf8_decode($qtdEndereco) ,0,  0);
-                    $this->Cell(15, 5, $dthUltimaEntrada->format("d/m/Y H:i:s") ,0,  1);
+                    $this->Cell(75, 5, utf8_decode($dscVolume) ,0, 1);
 
                     $limite = $limite -1;
 
                 }
                 $this->Ln();
                 $limite = $limite -1;
+                break;
             }
             $this->Ln();
            $limite = $limite -1;

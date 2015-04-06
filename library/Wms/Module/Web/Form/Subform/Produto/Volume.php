@@ -81,6 +81,16 @@ class Volume extends SubForm
                     'size' => 20,
                     'placeholder' => '00.000.00.00',
                 ))
+                ->addElement('numeric', 'pontoReposicao', array(
+                    'label' => 'Ponto de Reposição',
+                    'size' => 10,
+                    'value' => 0
+                ))
+                ->addElement('numeric', 'capacidadePicking', array(
+                    'label' => 'Capacidade do Picking',
+                    'size' => 10,
+                    'value' => 0
+                ))
                 ->addElement('hidden', 'idProduto')
                 ->addElement('hidden', 'grade')
                 ->addElement('hidden', 'acao')

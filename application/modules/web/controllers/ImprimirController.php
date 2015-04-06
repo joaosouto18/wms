@@ -21,7 +21,7 @@ class Web_ImprimirController extends Action
         if ($values) {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
             $EnderecoRepository   = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-            $endereco = $EnderecoRepository->getEnderecoPicking($values);
+            $endereco = $EnderecoRepository->getEnderecosByParam($values);
 
             $this->view->endereco = $endereco;
 

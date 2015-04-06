@@ -48,6 +48,11 @@ class ProdutosParaConferencia extends Grid
                 ))
                 ->addColumn(array (
                     'label' => 'Data Conferencia',
+                    'index' =>  'dataConferencia',
+                    'render' => 'DataTime'
+                ))
+                ->addColumn(array (
+                    'label' => 'Data Conferencia Transbordo',
                     'index' =>  'dataConferenciaTransbordo',
                     'render' => 'DataTime'
                 ))

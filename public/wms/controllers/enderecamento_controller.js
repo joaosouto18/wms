@@ -91,20 +91,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             $('#umas').val(umas);
         });
 
-        grade = $("#grade");
-
-        grade.autocomplete({
-            source: "/enderecamento/movimentacao/filtrar/idproduto/",
-            minLength: 3
-        });
-
-        grade.keyup(function(){
-            if ($("#idProduto").val() == '') {
-                return false;
-            }
-            grade.autocomplete( "option", "source", "/enderecamento/movimentacao/filtrar/idproduto/"+$("#idProduto").val());
-        });
-
+        $('#volumes').parent().hide();
 
         $("#buscarestoque").click(function(){
 
@@ -112,8 +99,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
             }
             else {
-
-
                 if ($("#idProduto").val() == '') {
                     alert("Preencha o código do produto");
                     return false;
@@ -134,6 +119,14 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             }
         });
 
+
+        $('.limparMovimentacao').click(function(){
+            $('#volumes').parent().hide();
+            $('#volumes').empty();
+            $('#cadastro-movimentacao').trigger("reset");
+            $('#idProduto').focus();
+            return false;
+        });
 
         $("#cadastro-movimentacao #submit").click(function(){
             if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {

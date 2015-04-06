@@ -171,6 +171,15 @@ class Bootstrap extends \Zend_Application_Bootstrap_Bootstrap //BaseBootstrap
             ->registerPlugin(new \Wms\Plugin\Deposito);
     }
 
+    public function inventarioInitFunction()
+    {
+        $front = Zend_Controller_Front::getInstance();
+        $front->registerPlugin(new \Core\Plugin\Auth)
+            ->registerPlugin(new \Core\Plugin\SenhaProvisoria)
+            ->registerPlugin(new \Core\Plugin\NavigationTitle)
+            ->registerPlugin(new \Core\Plugin\Defaults)
+            ->registerPlugin(new \Wms\Plugin\Deposito);
+    }
 
     protected function _initConfig() {
         Zend_Registry::set('config', new Zend_Config($this->getOptions()));

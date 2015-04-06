@@ -1,0 +1,88 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="F9E244AA-C200-61EA-2B1D-A435A2F597E9" name="INVENTARIO_CONTAGEM_OS">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:56:13 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COD_INVENTARIO_CONTAGEM_OS" id="952F4C3A-A09B-AE5F-6465-4641B9CF1E82">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:56:43 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="COD_OS" id="904BB50C-09FC-1B47-753D-06254C37AFD4">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:58:07 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>3ABF8AA1-4311-8F15-739E-4C573E34C7D6</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="33479F23-6317-2C8D-0DC7-EC05036931AC" referredColumn="3ABF8AA1-4311-8F15-739E-4C573E34C7D6"/>
+</associations>
+</Column>
+<Column name="COD_INVENTARIO" id="18896EF0-9AD0-5290-F5D6-D54FD15AD2BE">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:40:46 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>8</dataTypePrecision>
+<delegate>9CE49CA6-FBE1-9273-A98F-486A8ABB1160</delegate>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="23FC0C4E-ADB8-BA5A-7CFF-8C6954B1F52B" referredColumn="9CE49CA6-FBE1-9273-A98F-486A8ABB1160"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="BD511EA3-8A3B-59CD-2FF8-A1EE7066B51E" name="INVENTARIO_CONTAGEM_OS_PK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:56:43 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="952F4C3A-A09B-AE5F-6465-4641B9CF1E82"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="E8DC266C-636C-ED1F-F010-4CA642126DBE" name="INVENTARIO_CONTAGEM_OS_ORDEM_SERVICO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:26:20 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="904BB50C-09FC-1B47-753D-06254C37AFD4"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="5F066C42-6015-6AF8-1DB6-719423B9E4B9" name="INVENTARIO_CONTAGEM_OS_INVENTARIO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-08 00:40:50 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="18896EF0-9AD0-5290-F5D6-D54FD15AD2BE"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

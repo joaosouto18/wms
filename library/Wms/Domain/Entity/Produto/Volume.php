@@ -128,6 +128,16 @@ class Volume
      */
     protected $recebimentoVolumes;
 
+    /**
+     * @Column(name="PONTO_REPOSICAO", type="integer", nullable=false)
+     */
+    protected $pontoReposicao;
+
+    /**
+     * @Column(name="CAPACIDADE_PICKING", type="integer", nullable=false)
+     */
+    protected $capacidadePicking;
+
     public function __construct()
     {
         $this->recebimentoVolumes = new ArrayCollection;
@@ -378,5 +388,39 @@ class Volume
         $this->imprimirCB = $imprimirCB;
         return $this;
     }
+
+    /**
+     * @param mixed $capacidadePicking
+     */
+    public function setCapacidadePicking($capacidadePicking)
+    {
+        $this->capacidadePicking = $capacidadePicking;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCapacidadePicking()
+    {
+        return $this->capacidadePicking;
+    }
+
+    /**
+     * @param mixed $pontoReposicao
+     */
+    public function setPontoReposicao($pontoReposicao)
+    {
+        $this->pontoReposicao = $pontoReposicao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPontoReposicao()
+    {
+        return $this->pontoReposicao;
+    }
+
+
 
 }

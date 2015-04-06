@@ -90,5 +90,12 @@ class Mobile_OrdemServicoController extends Action
         return $idCentral;
     }
 
+    public function conferenciaInventarioAction()
+    {
+        /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
+        $inventarioRepo = $this->em->getRepository('wms:Inventario');
+        $this->view->inventarios = $inventarioRepo->getByStatus(\Wms\Domain\Entity\Inventario::STATUS_LIBERADO);
+    }
+
 }
 
