@@ -7,9 +7,16 @@ class Mobile_OndaRessuprimentoController extends Action
 
     public function listarOndasAction()
     {
+
+        $codProduto = null;
+        if (isset($this->_getParam('codProduto'))) {
+            $codProduto = $this->_getParam('codProduto');
+        }
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-        $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        //$ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $ondas = $ondaRepo->getOndasEmAberto();
+        $ondas = array();
+        var_dump($this->_getAllParams());
 
         $menu = array();
         $enderecoAnterior = null;

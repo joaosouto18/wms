@@ -19,13 +19,18 @@ class Mobile_IndexController  extends Action
                 'label' => 'ARMAZENAGEM',
             ),
             4 => array(
+                'url' => '/mobile/ordem-servico/conferencia-inventario',
+                'label' => 'INVENTÁRIO'
+            ),
+            5 => array(
                 'url' => '/mobile/consulta-produto',
                 'label' => 'CONSULTA PRODUTO',
             ),
-            5 => array(
-                'url' => '/mobile/ordem-servico/conferencia-inventario',
-                'label' => 'INVENTÁRIO'
-            )
+            6 => array(
+                'url' => '/mobile/consulta-ressuprimento',
+                'label' => 'CONSULTA RESSUP.',
+            ),
+
         );
         $this->view->menu = $menu;
         $this->renderScript('menu.phtml');
