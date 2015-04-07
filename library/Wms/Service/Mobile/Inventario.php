@@ -405,6 +405,16 @@ class Inventario
             $contagemEndEn->setDivergencia(null);
             $this->getEm()->persist($contagemEndEn);
         }
+
+        $contagemEndEntitiesZero    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
+        if (count($contagemEndEntitiesZero) > 0) {
+            foreach($contagemEndEntitiesZero as $contagemEndEn) {
+                $contagemEndEn->setDivergencia(null);
+                $this->getEm()->persist($contagemEndEn);
+            }
+        }
+
+
         $this->getEm()->flush();
 
         return true;

@@ -59,6 +59,8 @@ class EnderecoRepository extends EntityRepository
         $andDivergencia = null;
         if ($divergencia != null) {
             $andDivergencia = " AND IE.DIVERGENCIA = 1 ";
+        } else {
+            $andDivergencia = " AND IE.DIVERGENCIA IS NULL ";
         }
 
         $andRua = null;
