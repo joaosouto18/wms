@@ -436,6 +436,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $arrayEtiqueta['grade']             = $produtoEntity;
                         $arrayEtiqueta['pedido']            = $pedidoEntity;
                         $arrayEtiqueta['qtdProduto']            = $quantidade;
+                        $arrayEtiqueta['tipo']            = "V";
 
                         if ($codReferencia != null) {
                             $arrayEtiqueta['codReferencia'] = $codReferencia;
@@ -478,6 +479,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $arrayEtiqueta['grade']             = $produtoEntity;
                     $arrayEtiqueta['pedido']            = $pedidoEntity;
                     $arrayEtiqueta['qtdProduto']            = $quantidade;
+                    $arrayEtiqueta['tipo']            = "E";
 
                     if ($utilizaEtiquetaMae){
                         $etiquetaMae=$ExpedicaoRepo->getEtiquetaMae($quebras,$modelos,$arrayEtiqueta,$idExpedicao);

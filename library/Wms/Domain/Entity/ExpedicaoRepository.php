@@ -541,9 +541,9 @@ class ExpedicaoRepository extends EntityRepository
     public function getTipoFracao($arrayEtiqueta,$idExpedicao,$tipo=null){
         $sql="select TIPO,RUA,COD_CLIENTE,COD_PRACA,COD_LINHASEPARACAO from TEMP_PEDIDOS_FRACIONADOS WHERE COD_EXPEDICAO=".$idExpedicao." AND COD_PEDIDO=".$arrayEtiqueta['pedido']->getId();
         $where="";
-        if ( !empty($arrayEtiqueta['produtoVolume']) )
+        if ( !empty($arrayEtiqueta['tipo']) && $arrayEtiqueta['tipo']=="V" )
             $where=" AND COD_VOLUME=".$arrayEtiqueta['produtoVolume']->getId();
-        else if ( !empty($arrayEtiqueta['produtoEmbalagem']) )
+        else if ( !empty($arrayEtiqueta['tipo']) && $arrayEtiqueta['tipo']=="E" )
             $where=" AND COD_EMBALAGEM=".$arrayEtiqueta['produtoEmbalagem']->getId();
         $sql.=$where;
 
