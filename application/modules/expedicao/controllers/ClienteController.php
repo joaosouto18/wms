@@ -25,4 +25,15 @@ class Expedicao_ClienteController  extends Action
         $this->view->form = $form;
     }
 
+    public function consultarAction() {
+        $params = $this->_getAllParams();
+        // $idCliente = $params['id'];
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        unset($params['submit']);
+
+        $this->view->dadosCliente = true;
+    }
+
 }

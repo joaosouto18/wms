@@ -1,13 +1,15 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <oracle.dbtools.crest.model.design.relational.RelationalDesign>
    <object objectType="SchemaObject" objectID="5FFE1416-9038-A2D1-290B-D106533CEB1E" name="WMS_ADM" seqName="seg_0"/>
-   <object objectType="Table" objectID="C49BF9BC-92D9-4257-4E75-1207870656A0" name="ATIVIDADE" seqName="seg_0"/>
-   <object objectType="Table" objectID="ABA33033-195C-DB2E-E05C-19A2CCB22F08" name="ETIQUETA_SEPARACAO" seqName="seg_0"/>
-   <object objectType="Table" objectID="3317D70F-AEFB-B2BB-BB78-89B5F1FFB31B" name="EXPEDICAO" seqName="seg_0"/>
    <object objectType="Table" objectID="267EE13A-6E28-D2D5-315A-533C86EA792B" name="EXPEDICAO_ANDAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="3317D70F-AEFB-B2BB-BB78-89B5F1FFB31B" name="EXPEDICAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="ABA33033-195C-DB2E-E05C-19A2CCB22F08" name="ETIQUETA_SEPARACAO" seqName="seg_0"/>
    <object objectType="Table" objectID="AFCD5773-3943-CECA-C6AF-0C849C23BD2C" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Table" objectID="B8D31765-4DA8-3C24-413B-3ED941128954" name="" seqName="seg_0"/>
+   <object objectType="Table" objectID="C49BF9BC-92D9-4257-4E75-1207870656A0" name="ATIVIDADE" seqName="seg_0"/>
+   <object objectType="Table" objectID="FCA81822-CA63-73F2-CB58-F0266C20B4A5" name="" seqName="seg_0"/>
    <object objectType="FKIndexAssociation" objectID="8E71E2C3-F82E-F212-7886-F47DE05E5145" name="ETQ_SEPAR_OS" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="C385E593-CC4D-71A5-D8D0-352DAC14ED0E" name="EXPEDICAO_ANDAMENTO_EXPEDICAO_FK" seqName="seg_0"/>
    <object objectType="FKIndexAssociation" objectID="AD1F04EE-4DF4-7514-7CF1-F77BE7C8E614" name="FK_ORDSE_ATIVI" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="C385E593-CC4D-71A5-D8D0-352DAC14ED0E" name="EXPEDICAO_ANDAMENTO_EXPEDICAO_FK" seqName="seg_0"/>
    <object objectType="FKIndexAssociation" objectID="E1F1698D-4E43-C3D8-E4EF-96DD2779AE97" name="FK_ORDSE_EXPED" seqName="seg_0"/>
 </oracle.dbtools.crest.model.design.relational.RelationalDesign>

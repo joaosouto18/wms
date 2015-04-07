@@ -1,0 +1,54 @@
+<?php if ($this->dadosCliente) : ?>
+    <div id="quantidade-grid">
+        <fieldset>
+            <legend>Dados do Cliente</legend>
+            <table class="gTable">
+                <tr>
+                    <td>Cód. Cliente</td>
+                    <td>Nome</td>
+                    <td>CPF/CNPJ</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['codCliente']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['nome']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['registro']; ?>" disabled/></td>
+                </tr>
+            </table>
+        </fieldset>
+        <fieldset>
+            <legend>Endereço de Cliente</legend>
+            <table class="gTable">
+                <tr>
+                    <td>CEP</td>
+                    <td>Cidade</td>
+                    <td>Bairro</td>
+                    <td>UF</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['cep']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['cidade']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['bairro']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['estado']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Endereço</td>
+                    <td>Número</td>
+                    <td>Complemento</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['endereco']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['numero']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['complemento']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Estado</td>
+                    <td>Praça</td>
+                </tr>
+                <tr>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['numero']; ?>" disabled/></td>
+                    <td><input type="text" value="<?php echo $this->dadosCliente['complemento']; ?>" disabled/></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+<?php endif; ?>
