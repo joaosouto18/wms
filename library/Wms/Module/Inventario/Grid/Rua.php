@@ -22,8 +22,12 @@ class Rua extends Grid
                 'index' => 'DSC_DEPOSITO_ENDERECO'
              ))
             ->addColumn(array(
-                'label' => 'Num.Contagem',
+                'label' => 'Números de Contagens',
                 'index' => 'ULTIMACONTAGEM',
+            ))
+            ->addColumn(array(
+                'label' => 'Situação',
+                'index' => 'SITUACAO',
             ))
             ->addAction(array(
                 'label' => 'Visualizar Detalhe Contagem',
