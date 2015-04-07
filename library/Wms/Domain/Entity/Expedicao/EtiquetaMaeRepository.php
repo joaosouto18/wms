@@ -59,44 +59,93 @@ class EtiquetaMaeRepository extends EntityRepository
     /**
      * @param array $quebras
      * @param $idExpedicao COD_EXPEDICAO
-     * @DEF CodQuebra 1 -> Fracionado CodQuebra 2 -> Não Fracionado
+     * @DEF Tipo 1 -> Fracionado CodQuebra 2 -> Não Fracionado
      * @return int
      */
-    public function gerarEtiquetasMae(array $quebras,$idExpedicao)
-    {
-        $cont=0;
+    public function gerarEtiquetaMae($quebras,$tipoFracao,$idExpedicao,$dscEtiqueta){
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo = $this->_em->getRepository('wms:Expedicao');
 
-        foreach ($quebras as $chvQuebras =>$vlrQuebras ){
+        $sql="
+            INSERT INTO ETIQUETA_MAE
+                (
+                    COD_ETIQUETA_MAE,
+                    COD_EXPEDICAO,
+                    DSC_QUEBRA
+                 )
+                 VALUES (
+                 SQ_ETIQUETA_MAE_01.NEXTVAL,
+                  ".$idExpedicao.",
+                  '".$dscEtiqueta."'
+                 )
+                 ";
+        $result = $this->getEntityManager()->getConnection()->query($sql);
 
-            $dadosEtiquetaMae['dscQuebra']="Etiqueta Mae ".$cont;
-            $dadosEtiquetaMae['codExpedicao']=$idExpedicao;
+        $sql="
+            SELECT COD_ETIQUETA_MAE FROM ETIQUETA_MAE WHERE COD_EXPEDICAO=".$idExpedicao." AND DSC_QUEBRA='".$dscEtiqueta."'
+                 ";
 
-            $etiquetaMae=$this->save($dadosEtiquetaMae,$idExpedicao);
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchall(\PDO::FETCH_ASSOC);
+        $codEtiquetaMae=$result[0]['COD_ETIQUETA_MAE'];
 
-            //fracionados
-            foreach ($vlrQuebras['frac'] as $vlrFracionado){
+        foreach ($quebras as $chv => $vlr){
+            if ( !empty($tipoFracao[0]["TIPO"]) && $tipoFracao[0]["TIPO"]=="1" ) {
+                $fracionados=$vlr['frac'];
 
-                $dadosEtiquetaQuebra['tipoQuebra']=$vlrFracionado['tipoQuebra'];
-                $dadosEtiquetaQuebra['codQuebra']=1;
-                $dadosEtiquetaQuebra['codEtiquetaMae']=$etiquetaMae;
-                $fracionado=$this->saveQuebra($dadosEtiquetaQuebra,$etiquetaMae);
+                foreach ($fracionados as $chvFrac => $vlrFrac){
+
+                    $sql="INSERT INTO ETIQUETA_MAE_QUEBRA
+                          (
+                              COD_ETIQUETA_MAE_QUEBRA,
+                              IND_TIPO_QUEBRA,
+                              COD_QUEBRA,
+                              COD_ETIQUETA_MAE,
+                              TIPO_FRACAO
+                          )
+                           VALUES (
+                                SQ_ETIQUETA_MAE_QUEBRA_01.NEXTVAL,
+                               '".$vlrFrac['tipoQuebra']."',
+                               ".$ExpedicaoRepo->getCodQuebra($tipoFracao,$vlrFrac['tipoQuebra']).",
+                               ".$codEtiquetaMae.",
+                               'FRACIONADOS'
+
+                           )";
+
+                    $result = $this->getEntityManager()->getConnection()->query($sql);
+                }
+
+
+            } else {
+                $naofracionados=$vlr['nfrac'];
+
+                foreach ($naofracionados as $chvNFrac => $vlrNFrac){
+
+                    $sql="INSERT INTO ETIQUETA_MAE_QUEBRA
+                          (
+                          COD_ETIQUETA_MAE_QUEBRA,
+                          IND_TIPO_QUEBRA,
+                          COD_QUEBRA,
+                          COD_ETIQUETA_MAE,
+                          TIPO_FRACAO
+                          )
+                           VALUES (
+                                SQ_ETIQUETA_MAE_QUEBRA_01.NEXTVAL,
+                               '".$vlrNFrac['tipoQuebra']."',
+                               ".$ExpedicaoRepo->getCodQuebra($tipoFracao,$vlrNFrac['tipoQuebra']).",
+                               ".$codEtiquetaMae.",
+                               'NAOFRACIONADOS'
+
+                           )";
+
+                    $result = $this->getEntityManager()->getConnection()->query($sql);
+                }
+
             }
 
-            //não fracionados
-            foreach ($vlrQuebras['nfrac'] as $vlrNFracionado){
-                $dadosEtiquetaQuebra['tipoQuebra']=$vlrNFracionado['tipoQuebra'];
-                $dadosEtiquetaQuebra['codQuebra']=2;
-                $dadosEtiquetaQuebra['codEtiquetaMae']=$etiquetaMae;
-                $nfracionado=$this->saveQuebra($dadosEtiquetaQuebra,$etiquetaMae);
-            }
 
         }
 
-        $this->_em->flush();
-        $this->_em->clear();
-
-        return true;
-
+        return $codEtiquetaMae;
     }
 
 }

@@ -39,6 +39,12 @@ class EtiquetaMaeQuebra
      */
     protected $codEtiquetaMae;
 
+
+    /**
+     * @Column(name="TIPO_FRACAO", type="string", nullable=true)
+     */
+    protected $tipoFracao;
+
     public function setIndTipoQuebra($indTipoQuebra)
     {
         $this->indTipoQuebra = $indTipoQuebra;
@@ -87,6 +93,17 @@ class EtiquetaMaeQuebra
     public function getId()
     {
         return $this->id;
+    }
+
+
+    public function setTipoFracao($tipoFracao)
+    {
+        $this->tipoFracao = $tipoFracao;
+    }
+
+    public function getTipoFracao()
+    {
+        return $this->tipoFracao;
     }
 
 }
