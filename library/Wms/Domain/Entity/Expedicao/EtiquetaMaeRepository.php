@@ -116,7 +116,7 @@ class EtiquetaMaeRepository extends EntityRepository
 
 
             } else {
-                $naofracionados=$vlr['frac'];
+                $naofracionados=$vlr['nfrac'];
 
                 foreach ($naofracionados as $chvNFrac => $vlrNFrac){
 
