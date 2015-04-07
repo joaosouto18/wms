@@ -65,4 +65,14 @@ class SiglaRepository extends EntityRepository
 
 	return $rows;
     }
+
+    public function getEstados($idTipo = 32)
+    {
+        $result = $this->findBy(array('tipo' => $idTipo));
+
+        foreach ($result as $row)
+            $rows[$row->getReferencia()] = $row->getSigla();
+
+        return $rows;
+    }
 }

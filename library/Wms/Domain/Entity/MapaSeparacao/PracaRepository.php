@@ -2,7 +2,8 @@
 
 namespace Wms\Domain\Entity\MapaSeparacao;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\EntityRepository,
+    \Wms\Domain\Entity\MapaSeparacao\Praca as PracaEntity;
 
 
 class PracaRepository extends EntityRepository
@@ -76,6 +77,18 @@ class PracaRepository extends EntityRepository
         $result = $this->getEntityManager()->createQuery($query)->getResult();
         return $result;
 
+    }
+
+    public function getIdValue()
+    {
+        $rows = array();
+        $result = $this->findAll();
+
+        foreach ($result as $row) {
+            $rows[$row->getId()] = $row->getNomePraca();
+        }
+
+        return $rows;
     }
 
 }
