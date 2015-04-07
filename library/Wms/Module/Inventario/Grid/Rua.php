@@ -24,6 +24,12 @@ class Rua extends Grid
             ->addColumn(array(
                 'label' => 'Num.Contagem',
                 'index' => 'ULTIMACONTAGEM',
+            ))
+            ->addAction(array(
+                'label' => 'Visualizar Detalhe Contagem',
+                'actionName' => 'view-detalhe-contagem-ajax',
+                'cssClass' => 'inside-modal',
+                'pkIndex' => 'CODINVENDERECO'
             ));
 
         return $this;

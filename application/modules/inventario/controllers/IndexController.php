@@ -68,4 +68,10 @@ class Inventario_IndexController  extends Action
         $this->view->grid = $grid->init($this->_getAllParams());
     }
 
+    public function viewDetalheContagemAjaxAction()
+    {
+        $grid =  new \Wms\Module\Inventario\Grid\DetalheContagem();
+        $this->view->grid = $grid->init($this->_getAllParams());
+    }
+
 }
