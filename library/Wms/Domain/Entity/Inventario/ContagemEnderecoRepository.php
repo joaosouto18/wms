@@ -85,4 +85,20 @@ class ContagemEnderecoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getDetalhesByInventarioEndereco($codInvEndereco)
+    {
+        $query = $this->_em->createQueryBuilder()
+            ->select('ice.numContagem, pessoa.nome, p.id, p.grade, p.descricao, ice.qtdContada, ice.qtdDivergencia')
+            ->from("wms:Inventario\ContagemEndereco","ice")
+            ->innerJoin("ice.inventarioEndereco",'ie')
+            ->innerJoin("ice.contagemOs",'co')
+            ->innerJoin("co.os",'o')
+            ->leftJoin("o.pessoa",'pessoa')
+            ->innerJoin("ice.produto",'p')
+            ->andWhere("ie.id = $codInvEndereco")
+            ->orderBy('ice.numContagem');
+
+        return $query->getQuery()->getResult();
+    }
+
 }
