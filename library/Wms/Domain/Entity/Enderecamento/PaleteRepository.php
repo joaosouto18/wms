@@ -37,18 +37,18 @@ class PaleteRepository extends EntityRepository
                                 COD_RECEBIMENTO
                            FROM V_QTD_RECEBIMENTO
                           GROUP BY COD_RECEBIMENTO) QTD ON QTD.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-              LEFT JOIN (SELECT COD_RECEBIMENTO
+              LEFT JOIN (SELECT COD_RECEBIMENTO, UMA
                    FROM PALETE
                   WHERE COD_STATUS = 535
-                  GROUP BY COD_RECEBIMENTO) QE ON R.COD_RECEBIMENTO = QE.COD_RECEBIMENTO
-              LEFT JOIN SELECT SUM(QTD) as QTD_ENDERECAMENTO
-                   FROM PALETE_PRODUTO PRQ ON PRQ.UMA = QE.UMA
-              LEFT JOIN (SELECT COD_RECEBIMENTO
+                  GROUP BY COD_RECEBIMENTO, UMA) QE ON R.COD_RECEBIMENTO = QE.COD_RECEBIMENTO
+              LEFT JOIN (SELECT SUM(QTD) as QTD_ENDERECAMENTO, UMA
+                   FROM PALETE_PRODUTO GROUP BY UMA) PRQ ON PRQ.UMA = QE.UMA
+              LEFT JOIN (SELECT COD_RECEBIMENTO, UMA
                    FROM PALETE
                   WHERE COD_STATUS = 536
-                  GROUP BY COD_RECEBIMENTO) QF ON R.COD_RECEBIMENTO = QF.COD_RECEBIMENTO
-              LEFT JOIN SELECT SUM(QTD) as QTD_ENDERECADO
-                   FROM PALETE_PRODUTO PRE ON PRE.UMA = QF.UMA
+                  GROUP BY COD_RECEBIMENTO, UMA) QF ON R.COD_RECEBIMENTO = QF.COD_RECEBIMENTO
+              LEFT JOIN (SELECT SUM(QTD) as QTD_ENDERECADO, UMA
+                   FROM PALETE_PRODUTO GROUP BY UMA) PRE ON PRE.UMA = QF.UMA
               LEFT JOIN SIGLA S ON R.COD_STATUS = S.COD_SIGLA
               LEFT JOIN PALETE PA ON R.COD_RECEBIMENTO = PA.COD_RECEBIMENTO
         ";
@@ -101,7 +101,30 @@ class PaleteRepository extends EntityRepository
         if ($filter == true) {$query = $query . $queryWhere . " ORDER BY R.COD_RECEBIMENTO";}
 
         $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-        return $array;
+        $resultadoFinal = array();
+
+        foreach ($array as $recebimento) {
+            if (!array_key_exists($recebimento['COD_RECEBIMENTO'], $resultadoFinal)) {
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']] = array();
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['COD_RECEBIMENTO'] = $recebimento['COD_RECEBIMENTO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DTH_INICIO_RECEB'] = $recebimento['DTH_INICIO_RECEB'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DTH_FINAL_RECEB'] = $recebimento['DTH_FINAL_RECEB'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DSC_SIGLA'] = $recebimento['DSC_SIGLA'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['COD_FORNECEDOR'] = $recebimento['COD_FORNECEDOR'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['FORNECEDOR'] = $recebimento['FORNECEDOR'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] = $recebimento['QTD_TOTAL'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] = $recebimento['QTD_ENDERECAMENTO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] = $recebimento['QTD_ENDERECADO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] = $recebimento['QTD_RECEBIMENTO'];
+            } else {
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] + $recebimento['QTD_TOTAL'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] + $recebimento['QTD_ENDERECAMENTO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] + $recebimento['QTD_ENDERECADO'];
+                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] + $recebimento['QTD_RECEBIMENTO'];
+            }
+        }
+
+        return $resultadoFinal;
 
     }
 
