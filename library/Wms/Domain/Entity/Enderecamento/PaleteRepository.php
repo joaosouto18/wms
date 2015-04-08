@@ -966,4 +966,23 @@ class PaleteRepository extends EntityRepository
         }
     }
 
+    public function getPaletesByProdutoAndGrade($params)
+    {
+        $query = $this->getEntityManager()->createQueryBuilder()
+            ->select("pa.id, u.descricao unitizador, pp.qtd, sigla.sigla status, de.descricao endereco, pa.impresso")
+            ->from("wms:Enderecamento\Palete", "pa")
+            ->innerJoin('pa.unitizador', 'u')
+            ->innerJoin('pa.recebimento', 'receb')
+            ->innerJoin('receb.status', 'sigla')
+            ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = pa.id')
+            ->leftJoin('pa.depositoEndereco', 'de')
+            ->setParameter('recebimento', $params['id'])
+            ->setParameter('produto', $params['codigo'])
+            ->andWhere('pp.codProduto = :produto')
+            ->andWhere('pa.recebimento = :recebimento')
+            ->distinct(true);
+
+        return $query->getQuery()->getResult();
+    }
+
 }

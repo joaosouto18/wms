@@ -35,6 +35,10 @@ class Andamento extends Grid
                 'label' => 'Qtd Pendente',
                 'index' => 'QTD_PENDENTE',
             ))
+            ->addColumn(array(
+                'label' => '% Concluido',
+                'index' => 'CONCLUIDO',
+            ))
             ->addAction(array(
                 'label' => 'Visualizar Conferência',
                 'actionName' => 'view-rua-ajax',
