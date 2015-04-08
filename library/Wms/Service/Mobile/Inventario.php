@@ -55,7 +55,11 @@ class Inventario
         $return['enderecos'] = $invEndRepo->getByInventario($params);
         $enderecos = array();
         foreach($return['enderecos'] as $endereco) {
-            $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+            if ($params['divergencia'] == 1) {
+                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'].' - '.$endereco['DSC_PRODUTO'].' - '.$endereco['DSC_GRADE'].' - '.$endereco['COMERCIALIZACAO'];
+            } else {
+                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+            }
         }
         return $enderecos;
     }
