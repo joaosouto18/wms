@@ -1,5 +1,7 @@
 <?php
-use Wms\Controller\Action;
+use Wms\Controller\Action,
+    Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
+    Wms\Service\Recebimento as LeituraColetor;
 
 
 class Mobile_OndaRessuprimentoController extends Action
@@ -9,14 +11,21 @@ class Mobile_OndaRessuprimentoController extends Action
     {
 
         $codProduto = null;
-        if (isset($this->_getParam('codProduto'))) {
+        $grade = null;
+        $html = '
+         <a  class="finalizar" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
+        ';
+
+        if ($this->_getParam('codProduto') != null) {
             $codProduto = $this->_getParam('codProduto');
+            $grade = $this->_getParam('grade');
+            $html .= '
+         <a  class="finalizar" href="/mobile/onda-ressuprimento/listar-ondas/" style="background-image: -moz-linear-gradient(center top , #e5c062, #e5c062); border: 1px solid #e5c062" href="teste" title="Filtrar" >Mostrar Todas</a>
+        ';
         }
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-        //$ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-        $ondas = $ondaRepo->getOndasEmAberto();
-        $ondas = array();
-        var_dump($this->_getAllParams());
+        $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $ondas = $ondaRepo->getOndasEmAberto($codProduto,$grade);
 
         $menu = array();
         $enderecoAnterior = null;
@@ -33,8 +42,55 @@ class Mobile_OndaRessuprimentoController extends Action
             $menu[] = $botao;
         }
         $this->view->menu = $menu;
+
+        $this->view->bottom = $html;
         $this->view->showQuantidade = true;
         $this->renderScript('menu.phtml');
+    }
+
+    public function filtrarAction(){
+        $LeituraColetor = new LeituraColetor();
+
+        $form = new PickingLeitura();
+        $form->setControllerUrl("onda-ressuprimento");
+        $form->setActionUrl("filtrar");
+        $form->setLabel("Busca de Produto/Picking");
+        $form->setLabelElement("Código de Barras do Produto");
+
+        $codigoBarras = $this->_getParam('codigoBarras');
+        if ($codigoBarras != NULL) {
+
+            //VERIFICA SE FOI DIGITADO O CÓDIGO DE UM PRODUTO
+                $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codigoBarras));
+                if ($produtoEn != null) {
+                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
+                }
+
+            //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM PRODUTO
+                $recebimentoService = new \Wms\Service\Recebimento;
+                $codBarrasProduto = $recebimentoService->analisarCodigoBarras($codigoBarras);
+                $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+                $info = $produtoRepo->getProdutoByCodBarras($codBarrasProduto);
+                if ($info!= null) {
+                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$info[0]['idProduto'], 'grade'=>$info[0]['grade']));
+                }
+
+            //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM ENDEREÇO DE PICKING
+                $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+                $codBarrasEndereco = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+                $result = $enderecoRepo->getProdutoByEndereco($codBarrasEndereco,false);
+                if (count($result) > 0){
+                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$result[0]['codProduto'], 'grade'=>$result[0]['grade']));
+                }
+
+            $this->addFlashMessage("error","Nenhum Produto ou Endereço encontrado no código de barras");
+            $this->_redirect('/mobile/onda-ressuprimento/filtrar');
+        }
+
+
+        $this->view->form = $form;
+        $form->init();
     }
 
     public function selecionarEnderecoAction(){

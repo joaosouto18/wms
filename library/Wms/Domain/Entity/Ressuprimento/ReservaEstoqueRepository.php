@@ -366,7 +366,7 @@ class ReservaEstoqueRepository extends EntityRepository
                    AND REP.DSC_GRADE = '$grade'
                    AND RE.COD_DEPOSITO_ENDERECO = '$idEndereco'
                    AND RE.TIPO_RESERVA = '$tipo'
-                   AND RE.DTH_ATENDIMENTO IS NULL";
+                   AND RE.IND_ATENDIDA = 'N'";
         if ($volume != NULL) {
             $SQL .= " AND REP.COD_PRODUTO_VOLUME = '$volume' ";
         }
