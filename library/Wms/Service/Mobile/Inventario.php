@@ -417,7 +417,16 @@ class Inventario
                 $this->getEm()->persist($contagemEndEn);
             }
         }
-
+        /**
+         * Caso tenha duas contagens vazio o endereço esta vazio e se ja tiver alguma contagem de outro produto retirar divergência do mesmo
+         */
+        if (count($contagemEndEntitiesZero) >= 2) {
+            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
+            foreach($contagemEndEntities as $contagemEndEn) {
+                $contagemEndEn->setDivergencia(null);
+                $this->getEm()->persist($contagemEndEn);
+            }
+        }
 
         $this->getEm()->flush();
 
