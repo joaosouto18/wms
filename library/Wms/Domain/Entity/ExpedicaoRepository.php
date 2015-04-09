@@ -1443,7 +1443,7 @@ class ExpedicaoRepository extends EntityRepository
                        EXP.QTD_EXP,
                        NVL(EST.QTD_ESTOQUE,0) as QTD_ESTOQUE,
                        NVL(RES.QTD_RESERVADA,0) as QTD_RESERV,
-                       (NVL(EST.QTD_ESTOQUE,0) - NVL(RES.QTD_RESERVADA,0)) as SALDO_FINAL,
+                       (NVL(EST.QTD_ESTOQUE,0) + NVL(RES.QTD_RESERVADA,0)) as SALDO_FINAL,
                        CASE WHEN (EXP.VOLUME = 0) THEN 'PRODUTO UNITARIO'
                             WHEN (PV.COD_PRODUTO_VOLUME IS NOT NULL) THEN PV.DSC_VOLUME
                       END as VOLUME
@@ -1484,8 +1484,7 @@ class ExpedicaoRepository extends EntityRepository
                       AND RES.VOLUME = EXP.VOLUME
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = EXP.COD_PRODUTO
                                      AND P.DSC_GRADE = EXP.DSC_GRADE
-                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = EXP.VOLUME
-                  WHERE        (NVL(EST.QTD_ESTOQUE,0) - NVL(RES.QTD_RESERVADA,0)) <0";
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = EXP.VOLUME";
 
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

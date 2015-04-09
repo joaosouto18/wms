@@ -9,18 +9,26 @@ use Doctrine\ORM\EntityRepository,
 
 class OndaRessuprimentoRepository extends EntityRepository
 {
-    public function getOndasEmAberto(){
+    public function getOndasEmAberto($codProduto, $grade){
             $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("os.id as OS,
                           w.id as Onda,
                           e.descricao as Endereco,
-                          wos.id as OndaOsId")
+                          wos.id as OndaOsId,
+                          wos.sequencia")
                 ->from("wms:Ressuprimento\OndaRessuprimentoOs",'wos')
+                ->leftJoin("wos.produtos",'osp')
+                ->leftJoin('osp.produto','prod')
                 ->leftJoin("wos.os","os")
                 ->leftJoin("wos.endereco", 'e')
                 ->leftJoin("wos.ondaRessuprimento","w")
                 ->where("wos.status = ". \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA)
-                ->orderBy("wos.sequencia");
+                ->orderBy("wos.sequencia")
+                ->distinct(true);
+
+            if ($codProduto != null) {
+                $query->andWhere("prod.id = $codProduto AND prod.grade ='$grade'");
+            }
         $result = $query->getQuery()->getArrayResult();
         return $result;
     }
