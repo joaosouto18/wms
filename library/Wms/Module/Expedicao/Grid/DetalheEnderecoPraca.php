@@ -14,6 +14,10 @@ class DetalheEnderecoPraca extends Grid
      */
     public function init($params)
     {
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
+        $clienteRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Papel\Cliente');
+        $listClientes = $clienteRepo->getCliente($params);
+
         $gridValues = array(
             0 => array(
                 'codCliente' => 1,
@@ -24,7 +28,7 @@ class DetalheEnderecoPraca extends Grid
                 'estado' => 'MG'
             ));
 
-        $this->setSource(new \Core\Grid\Source\ArraySource($gridValues))
+        $this->setSource(new \Core\Grid\Source\ArraySource($listClientes))
             ->setId('detalhe-endereco-praca')
             ->setAttrib('class', 'grid-expedicao')
             ->addColumn(array(
