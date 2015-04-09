@@ -128,7 +128,7 @@ class UMA extends Pdf
 
 
         if (strlen($descricaoProduto) >= 42) {
-            $font_size = 50;
+            $font_size = 38;
         }
         
         $this->SetFont('Arial', 'B', $font_size);
