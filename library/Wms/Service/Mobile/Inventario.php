@@ -513,7 +513,7 @@ class Inventario
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
+        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
 
         if (count($contagemEndEntities) == 0) {
             return false;
