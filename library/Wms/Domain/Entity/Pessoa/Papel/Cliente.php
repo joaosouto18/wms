@@ -31,6 +31,13 @@ class Cliente implements Ator {
      */
     protected $codClienteExterno;
 
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\MapaSeparacao\Praca", cascade={"persist"})
+     * @JoinColumn(name="COD_PRACA", referencedColumnName="COD_PRACA")
+     * @var Wms\Domain\Entity\MapaSeparacao\Praca Praça do Cliente
+     */
+    protected $praca;
+
     public function setCodClienteExterno($codClienteExterno)
     {
         $this->codClienteExterno = $codClienteExterno;

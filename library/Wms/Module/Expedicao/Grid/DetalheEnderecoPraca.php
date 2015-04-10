@@ -18,6 +18,9 @@ class DetalheEnderecoPraca extends Grid
         $clienteRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Papel\Cliente');
         $listClientes = $clienteRepo->getCliente($params);
 
+        /** @var \Wms\Domain\Entity\MapaSeparacao\PracaRepository $repoPraca */
+        $repoPraca = $this->getEntityManager()->getRepository('wms:MapaSeparacao\Praca');
+
         $gridValues = array(
             0 => array(
                 'codCliente' => 1,
@@ -50,6 +53,9 @@ class DetalheEnderecoPraca extends Grid
             ->addColumn(array(
                 'label' => 'Praça',
                 'index' => 'praca',
+                'render'=> 'Select',
+                'row'=> $repoPraca->getIdValue(),
+
             ))
             ->addColumn(array(
                 'label' => 'UF',

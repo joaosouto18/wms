@@ -7,19 +7,14 @@ class Expedicao_ClienteController  extends Action
     public function associarPracaAction() {
         $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
         $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
 
-        /*
-        try {
-            // lógica para associar praça ao cliente
-            $this->_helper->messenger('success', 'Mensagem!');
+        if ($params != null) {
+            $Grid = new \Wms\Module\Expedicao\Grid\DetalheEnderecoPraca();
+            $this->view->grid = $Grid->init($params)->render();
         }
-        catch (\Exception $e) {
-            $this->addFlashMessage('error',$e->getMessage());
-        }
-        */
-
-        $Grid = new \Wms\Module\Expedicao\Grid\DetalheEnderecoPraca();
-        $this->view->grid = $Grid->init($params)->render();
 
         $form->populate($params);
         $this->view->form = $form;
