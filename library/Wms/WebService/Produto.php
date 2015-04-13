@@ -58,6 +58,10 @@ class grades {
 
 class Wms_WebService_Produto extends Wms_WebService {
 
+    private function removeCaracteres($value) {
+        return strtr(utf8_decode($value), utf8_decode('ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ'),'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
+    }
+
     /**
      * Retorna um Produto específico no WMS pelo seu ID
      *
@@ -76,12 +80,12 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $prod = new produto();
         $prod->idProduto = $idProduto;
-        $prod->descricao = $produto->getDescricao();
+        $prod->descricao = $this->removeCaracteres($produto->getDescricao());
         $prod->grade = $produto->getGrade();
         $prod->idFabricante = $produto->getFabricante()->getId();
         $prod->tipo = $produto->getTipoComercializacao()->getId();
         $prod->idClasse = $produto->getClasse()->getId();
-        $prod->nomeFabricante = $produto->getFabricante()->getNome();
+        $prod->nomeFabricante = $this->removeCaracteres($produto->getFabricante()->getNome());
         return $prod;
     }
 
@@ -233,12 +237,12 @@ class Wms_WebService_Produto extends Wms_WebService {
         foreach ($result as $line) {
             $produto = new produto();
             $produto->idProduto = $line['idProduto'];
-            $produto->descricao = $line['descricao'];
+            $produto->descricao = $this->removeCaracteres($line['descricao']);
             $produto->grade = $line['grade'];
             $produto->idFabricante = $line['idFabricante'];
             $produto->tipo = $line['tipo'];
             $produto->idClasse = $line['idClasse'];
-            $produto->nomeFabricante = $line['nomeFabricante'];
+            $produto->nomeFabricante = $this->removeCaracteres($line['nomeFabricante']);
             $arrayProdutos[] = $produto;
         }
         $produtos->produtos = $arrayProdutos;
