@@ -199,6 +199,18 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $em->beginTransaction();
 
+        //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+        if (gettype($itens) != "array") {
+            $itensNf = array();
+            foreach ($itens->itens as $itemNf){
+                $itemWs['idProduto'] = $itemNf->idProduto;
+                $itemWs['grade'] = $itemNf->grade;
+                $itemWs['quantidade'] = $itemNf->quantidade;
+                $itensNf[] = $itemWs;
+            }
+            $itens = $itensNf;
+        }
+
         try {
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
