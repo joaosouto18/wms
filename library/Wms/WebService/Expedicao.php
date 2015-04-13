@@ -152,16 +152,55 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviarPedidos ($codCarga, $placa, $pedidos) {
-        $this->exportaLog($codCarga,$placa,$pedidos);
+        $pedidosArray = array();
+        foreach ($pedidos->pedidos as $pedidoWs) {
+            $cliente = array();
+            $cliente['codCliente'] = $pedidoWs->cliente->codCliente;
+            $cliente['bairro'] = $pedidoWs->cliente->bairro;
+            $cliente['cidade'] = $pedidoWs->cliente->cidade;
+            $cliente['complemento'] = $pedidoWs->cliente->complemento;
+            $cliente['cpf_cnpj'] = $pedidoWs->cliente->cpf_cnpj;
+            $cliente['logradouro'] = $pedidoWs->cliente->logradouro;
+            $cliente['nome'] = $pedidoWs->cliente->nome;
+            $cliente['numero'] = $pedidoWs->cliente->numero;
+            $cliente['referencia'] = $pedidoWs->cliente->referencia;
+            $cliente['tipoPessoa'] = $pedidoWs->cliente->tipoPessoa;
+            $cliente['uf'] = $pedidoWs->cliente->uf;
+
+            $itinerario = array();
+            $itinerario['idItinerario'] = $pedidoWs->itinerario->idItinerario;
+            $itinerario['nomeItinerario'] = $pedidoWs->itinerario->nomeItinerario;
+
+            $produtos = array();
+            foreach ($pedidoWs->produtos as $produtoWs) {
+                $produto['codProduto'] = $produtoWs->codProduto;
+                $produto['grade'] = $produtoWs->grade;
+                $produto['quantidade'] = $produtoWs->quantidade;
+                $produtos[] = $produto;
+            }
+
+            $pedido = array();
+            $pedido['codPedido'] = $pedidoWs->codPedido;
+            $pedido['cliente'] = $cliente;
+            $pedido['itinerario'] = $itinerario;
+            $pedido['produtos'] = $produtos;
+            $pedido['linhaEntrega'] = $pedidoWs->linhaEntrega;
+
+            $pedidosArray[] = $pedido;
+        }
+
         $carga = array();
         $carga['idCarga'] = $codCarga;
         $carga['placaExpedicao'] = $placa;
         $carga['placa'] = $placa;
-        $carga['pedidos'] = $pedidos;
+        $carga['pedidos'] = $pedidosArray;
+
         $cargas = array();
         $cargas[] = $carga;
+
         return $this->enviar($cargas);
     }
+
 
     /**
      *  Recebe Carga com Placa da Expedição
