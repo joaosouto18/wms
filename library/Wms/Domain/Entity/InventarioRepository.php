@@ -329,4 +329,28 @@ class InventarioRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function verificaReservas($idInventario)
+    {
+        $source = $this->_em->createQueryBuilder()
+            ->select('d.id')
+            ->from("wms:Ressuprimento\ReservaEstoque","re")
+            ->innerJoin('re.endereco', 'd')
+            ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
+            ->andWhere("re.atendida = 'N'")
+            ->andWhere("ie.inventario = $idInventario")
+            ->groupBy('d.id');
+        return $source->getQuery()->getResult();
+    }
+
+    public function removeEnderecos(array $enderecos, $id)
+    {
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+        foreach($enderecos as $endereco) {
+            $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
+            $this->_em->remove($inventarioEndEn);
+            $this->_em->flush();
+        }
+    }
+
 }
