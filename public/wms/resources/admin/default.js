@@ -230,8 +230,37 @@ $(document).ready(function(){
     grade = $("#grade");
     idProduto = $("#idProduto");
 
+    $(document).mousedown(function(e) {
+        clicky = $(e.target);
+    });
+    $(document).mouseup(function(e) {
+        clicky = null;
+    });
+
     idProduto.focusout(function(){
         getVolumes(idProduto.val(),grade.val());
+
+        var id = clicky.attr('id');
+        var value = clicky.attr('value');
+
+        if (id == 'buscarestoque') {
+            if ($('#rua').val() != '' || $('#uma').val() != '') {
+                Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
+            }
+            else {
+                if ($("#idProduto").val() == '') {
+                    alert("Preencha o código do produto");
+                } else {
+                    Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
+                }
+            }
+        } else if ((id =='submit') && (value =='Movimentar')) {
+            if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
+                alert("Preencha o endereço e a quantidade");
+            } else {
+                var alerta = Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
+            }
+        }
     });
 
     function getVolumes(idProduto,grade){
@@ -262,7 +291,7 @@ $(document).ready(function(){
         }
         var produtoVal  = $("#idProduto").val();
         if (typeof  produtoVal == 'undefined') {
-            var produtoVal  = $("#id").val();
+            var produtoVal  = $("   #id").val();
         }
         grade.autocomplete({
             source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal,

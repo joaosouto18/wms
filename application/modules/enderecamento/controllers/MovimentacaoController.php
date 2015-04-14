@@ -78,20 +78,24 @@ class Enderecamento_MovimentacaoController extends Action
                         $params['embalagem'] = $embalagensEn[0];
                         $EstoqueRepository->movimentaEstoque($params, true);
                     } else {
-                        if ($data['volumes'] == "") {
-                            throw new Exception("Selecione um grupo de volumes");
-                        }
-                        $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
-                        foreach ($volumes as $volume) {
-                            $params['volume'] = $volume;
-                            $EstoqueRepository->movimentaEstoque($params, true);
+                        if (isset($data['volumes']) && ($data['volumes'] != "")) {
+                            $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
+                            if (count($volumes) <= 0) {
+                                throw new \Exception("Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
+                            }
+                            foreach ($volumes as $volume) {
+                                $params['volume'] = $volume;
+                                $EstoqueRepository->movimentaEstoque($params, true);
+                            }
+                        } else {
+                            throw new \Exception("Selecione um grupo de volumes");
                         }
                     }
 
                     $link = '/enderecamento/movimentacao/imprimir/endereco/'.$result[0]['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
                     if($request->isXmlHttpRequest()) {
                         if ($data['quantidade'] > 0) {
-                           echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso', 'link' => $link));
+                            echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso', 'link' => $link));
                         } else {
                             echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso'));
                         }
