@@ -28,9 +28,16 @@
                     <td>Ação</td>
                 </tr>
                 <?php
-                foreach ($this->paletes as $palete): $this->color = !($this->color);?>
-                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                        <td><input name="palete[]" value="<?php echo $palete['UMA'] ?>" type="checkbox" /> </td>
+                foreach ($this->paletes as $palete):
+                    $fontColor = "black";
+                    $liberado = true;
+                    if ($palete['QTD_VOL_TOTAL'] > $palete['QTD_VOL_CONFERIDO']) {
+                        $fontColor = "gray";
+                        $liberado = false;
+                    }
+                    $this->color = !($this->color);?>
+                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td><?php if ($liberado == true) {?><input name="palete[]" value="<?php echo $palete['UMA'] ?>" type="checkbox" /> <?php }?></td>
                         <td><?php echo $palete['UMA'] ?></td>
                         <td><?php echo $palete['UNITIZADOR'] ?></td>
                         <td><?php echo $palete['VOLUMES'] ?></td>

@@ -25,11 +25,7 @@ class Mobile_IndexController  extends Action
             5 => array(
                 'url' => '/mobile/consulta-produto',
                 'label' => 'CONSULTA PRODUTO',
-            ),
-            6 => array(
-                'url' => '/mobile/consulta-ressuprimento',
-                'label' => 'CONSULTA RESSUP.',
-            ),
+            )
 
         );
         $this->view->menu = $menu;
