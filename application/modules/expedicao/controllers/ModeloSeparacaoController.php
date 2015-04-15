@@ -63,8 +63,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $params = $this->getRequest()->getParams();
 
             if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-                $entity = $this->montarModeloSeparacao($params['identificacao']);
-                $this->em->persist($entity);
+                $this->montarModeloSeparacao($params);
                 $this->em->flush();
                 $this->_helper->messenger('success', 'Modelo de Separação inserido com sucesso.');
                 return $this->redirect('index');
@@ -77,30 +76,90 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
     }
 
     private function montarModeloSeparacao($params) {
+
         $entity = new Expedicao\ModeloSeparacao();
         $entity->setDescricao($params['descricao']);
-        $entity->setUtilizaCaixaMaster($this->getBooleanValue($params['utilizaConversaoParaCaixaMaster']));
+        $entity->setUtilizaCaixaMaster($this->getBooleanValue($params['utilizaCaixaMaster']));
         $entity->setUtilizaEtiquetaMae($this->getBooleanValue($params['utilizaEtiquetaMae']));
-        $entity->setUtilizaQuebraColetor($this->getBooleanValue($params['utilizaQuebraNaConferenciaDoColetor']));
-        $entity->setQuebraPulmaDoca($params['quebraNoProcessoPulmaoDoca']);
-        $entity->setTipoQuebraVolume($params['tipoDeQuebraNoVolume']);
-        $entity->setTipoDefaultEmbalado($params['tipoDefaultDeEmbalados']);
-        $entity->setTipoConferenciaEmbalado($params['tipoDeConferenciaParaEmbalados']);
-        $entity->setTipoConferenciaNaoEmbalado($params['tipoDeConferenciaParaNaoEmbalados']);
-        $entity->setTipoSeparacaoFracionado($params['tipoDeSeparacaoFracionados']);
-        $entity->setTipoSeparacaoNaoFracionado($params['tipoDeSeparacaoNaoFracionados']);
+        $entity->setUtilizaQuebraColetor($this->getBooleanValue($params['utilizaQuebraColetor']));
+        $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
+        $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
+        $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
+        $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
 
-        $entity->setTiposQuebraFracionado(array());
-        $this->adicionarTipoQuebra($entity->getTiposQuebraFracionado(), $params['ruaFracionados']);
-        $this->adicionarTipoQuebra($entity->getTiposQuebraFracionado(), $params['linhaDeSeparacaoFracionados']);
-        $this->adicionarTipoQuebra($entity->getTiposQuebraFracionado(), $params['pracaFracionados']);
-        $this->adicionarTipoQuebra($entity->getTiposQuebraFracionado(), $params['clienteFracionados']);
 
-        $entity->setTiposQuebraNaoFracionado(array());
-        $this->adicionarTipoQuebra($entity->getTiposQuebraNaoFracionado(), $params['ruaNaoFracionados']);
-        $this->adicionarTipoQuebra($entity->getTiposQuebraNaoFracionado(), $params['linhaDeSeparacaoNaoFracionados']);
-        $this->adicionarTipoQuebra($entity->getTiposQuebraNaoFracionado(), $params['pracaNaoFracionados']);
-        $this->adicionarTipoQuebra($entity->getTiposQuebraNaoFracionado(), $params['clienteNaoFracionados']);
+        $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);
+        $entity->setTipoSeparacaoFracionado($params['tipoSeparacaoFracionado']);
+        $entity->setTipoSeparacaoNaoFracionado($params['tipoSeparacaoNaoFracionado']);
+
+        $this->em->persist($entity);
+        $this->em->flush();
+
+
+//        $entityModeloSeparacaoTipoQuebraFracionado = new Expedicao\ModeloSeparacaoTipoQuebraFracionado();
+
+
+        $id = $this->em->getReference("wms:Expedicao\ModeloSeparacao", $entity->getId());
+
+        if (isset($params['ruaFracionados']) && $params['ruaFracionados'] != '0') {
+            $entityModeloSeparacaoTipoQuebraFracionado = new Expedicao\ModeloSeparacaoTipoQuebraFracionado();
+            $entityModeloSeparacaoTipoQuebraFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoTipoQuebraFracionado->setTipoQuebra($params['ruaFracionados']);
+            $this->em->persist($entityModeloSeparacaoTipoQuebraFracionado);
+            $this->em->flush();
+        }
+        if (isset($params['linhaDeSeparacaoFracionados']) && $params['linhaDeSeparacaoFracionados'] != '0') {
+            $entityModeloSeparacaoTipoQuebraFracionado = new Expedicao\ModeloSeparacaoTipoQuebraFracionado();
+            $entityModeloSeparacaoTipoQuebraFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoTipoQuebraFracionado->setTipoQuebra($params['linhaDeSeparacaoFracionados']);
+            $this->em->persist($entityModeloSeparacaoTipoQuebraFracionado);
+            $this->em->flush();
+        }
+        if (isset($params['pracaFracionados']) && $params['pracaFracionados'] != '0') {
+            $entityModeloSeparacaoTipoQuebraFracionado = new Expedicao\ModeloSeparacaoTipoQuebraFracionado();
+            $entityModeloSeparacaoTipoQuebraFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoTipoQuebraFracionado->setTipoQuebra($params['pracaFracionados']);
+            $this->em->persist($entityModeloSeparacaoTipoQuebraFracionado);
+            $this->em->flush();
+        }
+        if (isset($params['clienteFracionados']) && $params['clienteFracionados'] != '0') {
+            $entityModeloSeparacaoTipoQuebraFracionado = new Expedicao\ModeloSeparacaoTipoQuebraFracionado();
+            $entityModeloSeparacaoTipoQuebraFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoTipoQuebraFracionado->setTipoQuebra($params['clienteFracionados']);
+            $this->em->persist($entityModeloSeparacaoTipoQuebraFracionado);
+            $this->em->flush();
+        }
+
+        $entityModeloSeparacaoNaoFracionado = new Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado();
+
+        if (isset($params['ruaNaoFracionados']) && $params['ruaNaoFracionados'] != '0') {
+            $entityModeloSeparacaoNaoFracionado = new Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado();
+            $entityModeloSeparacaoNaoFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoNaoFracionado->setTipoQuebra($params['ruaNaoFracionados']);
+            $this->em->persist($entityModeloSeparacaoNaoFracionado);
+            $this->em->flush();
+        }
+        if (isset($params['linhaDeSeparacaoNaoFracionados']) && $params['linhaDeSeparacaoNaoFracionados'] != '0') {
+            $entityModeloSeparacaoNaoFracionado = new Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado();
+            $entityModeloSeparacaoNaoFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoNaoFracionado->setTipoQuebra($params['linhaDeSeparacaoNaoFracionados']);
+            $this->em->persist($entityModeloSeparacaoNaoFracionado);
+            $this->em->flush();
+        }
+        if (isset($params['pracaNaoFracionados']) && $params['pracaNaoFracionados'] != '0') {
+            $entityModeloSeparacaoNaoFracionado = new Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado();
+            $entityModeloSeparacaoNaoFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoNaoFracionado->setTipoQuebra($params['pracaNaoFracionados']);
+            $this->em->persist($entityModeloSeparacaoNaoFracionado);
+            $this->em->flush();
+        }
+        if (isset($params['clienteNaoFracionados']) && $params['clienteNaoFracionados'] != '0') {
+            $entityModeloSeparacaoNaoFracionado = new Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado();
+            $entityModeloSeparacaoNaoFracionado->setModeloSeparacao($id);
+            $entityModeloSeparacaoNaoFracionado->setTipoQuebra($params['clienteNaoFracionados']);
+            $this->em->persist($entityModeloSeparacaoNaoFracionado);
+            $this->em->flush();
+        }
 
         return $entity;
     }

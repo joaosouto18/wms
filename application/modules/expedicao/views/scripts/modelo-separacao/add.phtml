@@ -60,19 +60,19 @@
         <div class="fieldsets">
             <div class="fieldset-left">
                 <div class="checkboxes">
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaConversaoParaCaixaMaster'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaQuebraNaConferenciaDoColetor'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaCaixaMaster'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaQuebraColetor'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaEtiquetaMae'); ?><br /><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('quebraNoProcessoPulmaoDoca'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('quebraPulmaDoca'); ?>
                 </div>
 
                 <fieldset>
                     <legend>Processo com Embalados</legend>
 
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDeQuebraNoVolume'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultDeEmbalados'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDeConferenciaParaEmbalados'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDeConferenciaParaNaoEmbalados'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoQuebraVolume'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultEmbalado'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaEmbalado'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaNaoEmbalado'); ?>
                 </fieldset>
             </div>
 
@@ -80,7 +80,7 @@
                 <fieldset>
                     <legend>Separação para Fracionados</legend>
 
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDeSeparacaoFracionados'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoFracionado'); ?>
                     <fieldset>
                         <legend>Quebras</legend>
                         <?php echo $this->form->getSubForm('identificacao')->getElement('ruaFracionados'); ?><br />
@@ -93,7 +93,7 @@
                 <fieldset>
                     <legend>Separação para não Fracionados</legend>
 
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDeSeparacaoNaoFracionados'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoNaoFracionado'); ?>
                     <fieldset>
                         <legend>Quebras</legend>
                         <?php echo $this->form->getSubForm('identificacao')->getElement('ruaNaoFracionados'); ?><br />
