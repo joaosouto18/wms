@@ -5,8 +5,24 @@ use Wms\Module\Web\Controller\Action,
 class Expedicao_ClienteController  extends Action
 {
     public function associarPracaAction() {
-        $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
+        $clientes = $this->_getParam('massaction-select', null);
         $params = $this->_getAllParams();
+
+        if (!is_null($clientes)) {
+            /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
+            $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
+            $result = $clienteRepo->atualizarPracaPorCliente($clientes);
+
+            if ($result) {
+                $this->addFlashMessage('info', $result);
+            } else {
+                $this->addFlashMessage('info', 'Houve um erro! Tente novamente!');
+            }
+
+            $this->_redirect('/expedicao/cliente/associar-praca');
+        }
+
+        $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);

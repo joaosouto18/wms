@@ -74,5 +74,20 @@ class Cliente implements Ator {
         return $this->pessoa;
     }
 
+    /**
+     * @return Wms\Domain\Entity\MapaSeparacao\Praca
+     */
+    public function getPraca()
+    {
+        return $this->praca;
+    }
+
+    /**
+     * @param Wms\Domain\Entity\MapaSeparacao\Praca $praca
+     */
+    public function setPraca($praca)
+    {
+        $this->praca = $praca;
+    }
 
 }
