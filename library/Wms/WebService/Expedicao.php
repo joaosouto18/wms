@@ -256,6 +256,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     protected function findClienteByCodigoExterno ($cliente) {
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
         $ClienteRepo    = $this->_em->getRepository('wms:Pessoa\Papel\Cliente');
         $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
 
@@ -294,6 +295,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $SiglaRepo      = $this->_em->getRepository('wms:Util\Sigla');
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
 
+            $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
+
             $cliente['enderecos'][0] = array (
                 'acao' => 'incluir',
                 'idTipo' => \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA,
@@ -303,7 +306,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'pontoReferencia' => $cliente['referencia'],
                 'bairro' => $cliente['bairro'],
                 'localidade' => $cliente['cidade'],
-                'numero' => $cliente['numero']
+                'numero' => $cliente['numero'],
+                'cep' => $cliente['cep'],
             );
 
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
