@@ -84,6 +84,7 @@ class PracaRepository extends EntityRepository
         $rows = array();
         $result = $this->findAll();
 
+        $rows[''] = '- Selecione -';
         foreach ($result as $row) {
             $rows[$row->getId()] = $row->getNomePraca();
         }

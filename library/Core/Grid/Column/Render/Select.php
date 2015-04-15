@@ -18,18 +18,14 @@ class Select extends Render\ARender implements Render\IRender
     {
         $row = $this->getRow();
         $index = $this->getColumn()->getIndex();
+        $values = $this->getColumn()->getValues();
         $name = strtolower($index);
-
-        $options = array(
-            '0' => 'Centro', '2',
-            '1' => 'Bairro', '3',
-        );
 
         $pracas = array(
             0 => "<select name='" . $name . "' id='" . $name . "'>"
         );
 
-        foreach ($options as $key => $praca) {
+        foreach ($values as $key => $praca) {
             $option = null;
             $option = "<option value='$key'>$praca</option>";
             array_push($pracas, $option);

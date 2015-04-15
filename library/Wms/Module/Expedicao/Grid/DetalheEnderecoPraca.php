@@ -36,7 +36,7 @@ class DetalheEnderecoPraca extends Grid
             ->setAttrib('class', 'grid-expedicao')
             ->addColumn(array(
                 'label' => 'Código',
-                'index' => 'codCliente',
+                'index' => 'id',
             ))
             ->addColumn(array(
                 'label' => 'Nome',
@@ -54,7 +54,7 @@ class DetalheEnderecoPraca extends Grid
                 'label' => 'Praça',
                 'index' => 'praca',
                 'render'=> 'Select',
-                'row'=> $repoPraca->getIdValue(),
+                'values'=> $repoPraca->getIdValue(),
 
             ))
             ->addColumn(array(
@@ -70,8 +70,8 @@ class DetalheEnderecoPraca extends Grid
                 'pkIndex' => 'codCliente',
                 'cssClass' => 'dialogAjax',
             ))
-
-            ->setShowExport(true);
+            ->setShowExport(false)
+            ->addMassAction('expedicao/cliente/associar-praca', 'Atualizar Dados');
 
         return $this;
     }

@@ -17,7 +17,7 @@ class ClienteRepository extends AtorRepository
         $estado = $params['estado'];
 
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select("p.nome, c.id as codCliente, e.localidade as cidade, e.bairro, s.referencia as estado, pc.id as praca")
+            ->select("p.nome, c.id, e.localidade as cidade, e.bairro, s.referencia as estado, pc.id as praca")
             ->from("wms:Pessoa\Papel\Cliente", "c")
             ->leftJoin("wms:Pessoa", 'p' , 'WITH', 'c.pessoa = p.id')
             ->leftJoin("wms:Pessoa\Endereco", 'e', 'WITH', 'p.id = e.pessoa')
@@ -50,5 +50,23 @@ class ClienteRepository extends AtorRepository
         $result =  $source->getQuery()->getResult();
 
         return $result;
+    }
+
+    public function atualizarPracaPorCliente($clientes)
+    {
+        foreach($clientes as $cliente)
+        {
+            $entity = $this->find($cliente);
+
+            $entity->setPraca($cliente['praca']);
+            $this->_em->persist($entity);
+        }
+        try {
+            $this->_em->flush();
+
+            return "Praça atualizada com sucesso!";
+        } catch(Exception $e) {
+            throw new $e->getMessage();
+        }
     }
 }

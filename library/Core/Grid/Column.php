@@ -21,7 +21,7 @@ class Column
     protected $hasFilter = false;
     /**
      * if the column should order results
-     * @var boolean 
+     * @var boolean
      */
     protected $hasOrdering = null;
     /**
@@ -29,6 +29,11 @@ class Column
      * @var string
      */
     protected $index;
+    /**
+     * main value option
+     * @var array
+     */
+    protected $values;
     /**
      * width of the column
      * @var string
@@ -46,42 +51,42 @@ class Column
     protected $filter = null;
     /**
      * order's direction
-     * @var type 
+     * @var type
      */
     protected $dirOrder = 'ASC';
     /**
      * Class default of the column
-     * @var type 
+     * @var type
      */
     protected $class = 'sort';
-    
+
     /**
      * Align the values of the field: L-Left | C-Center | R-Right
-     * @var string 
+     * @var string
      */
     protected $align = 'L';
-    
+
     /**
      * Defines whether the column has total
-     * @var boolean 
+     * @var boolean
      */
     protected $hasTotal = false;
-    
+
     /**
      * Defines whether the column should appear at the report
-     * @var type 
+     * @var type
      */
     protected $isReportColumn = true;
 
     /**
      * contructor of the grid
      * @param array $options
-     * @return Column 
+     * @return Column
      */
     public function __construct(array $options = array())
     {
-	$this->setOptions($options);
-	return $this;
+        $this->setOptions($options);
+        return $this;
     }
 
     /**
@@ -93,39 +98,39 @@ class Column
     public function setOptions(array $options)
     {
 
-	foreach ($options as $key => $value) {
+        foreach ($options as $key => $value) {
 
-	    $method = 'set' . ucfirst($key);
+            $method = 'set' . ucfirst($key);
 
-	    //forbiden options
-	    if (in_array($method, array()))
-		if (!is_object($value))
-		    continue;
+            //forbiden options
+            if (in_array($method, array()))
+                if (!is_object($value))
+                    continue;
 
-	    if (method_exists($this, $method))
-	    // Setter exists; use it
-		$this->$method($value);
-	    else
-		throw new Grid\Exception("Unknown option {$method}");
-	}
-	return $this;
+            if (method_exists($this, $method))
+                // Setter exists; use it
+                $this->$method($value);
+            else
+                throw new Grid\Exception("Unknown option {$method}");
+        }
+        return $this;
     }
 
     /**
      * sets or returns if the column uses ordering
      * @param bool $value
-     * @return Column|bool 
+     * @return Column|bool
      */
     public function hasOrdering()
     {
-	return $this->getHasOrdering();
+        return $this->getHasOrdering();
     }
 
     /**
      * Set the render
      *
      * $render may be either an array column options, or an object of type
-     * Grid\Column\Render. 
+     * Grid\Column\Render.
      *
      * @param  array|Grid\Column\Render\ARender $render
      * @throws \Exception on invalid element
@@ -133,28 +138,28 @@ class Column
      */
     public function setRender($render)
     {
-	if (is_array($render)) {
-	    if (isset($render['type'])) {
-		$type = ucfirst($render['type']);
-		$className = "\Core\Grid\Column\Render\\{$type}";
-		$options = isset($render['options']) ? $render['options'] : array();
-		$render = new $className($options);
-	    } else {
-		throw new \Exception("Renders specified by array must have a 'type' index");
-	    }
-	} elseif (is_object($render) && $render instanceof \Core\Grid\Column\Render\IRender) {
-	    $render = $render;
-	} elseif (is_string($render)) {
-	    $render = ucfirst($render);
-	    $className = "\Core\Grid\Column\Render\\{$render}";
-	    $render = new $className;
-	} else {
-	    throw new \Exception('Invalid render');
-	}
+        if (is_array($render)) {
+            if (isset($render['type'])) {
+                $type = ucfirst($render['type']);
+                $className = "\Core\Grid\Column\Render\\{$type}";
+                $options = isset($render['options']) ? $render['options'] : array();
+                $render = new $className($options);
+            } else {
+                throw new \Exception("Renders specified by array must have a 'type' index");
+            }
+        } elseif (is_object($render) && $render instanceof \Core\Grid\Column\Render\IRender) {
+            $render = $render;
+        } elseif (is_string($render)) {
+            $render = ucfirst($render);
+            $className = "\Core\Grid\Column\Render\\{$render}";
+            $render = new $className;
+        } else {
+            throw new \Exception('Invalid render');
+        }
 
-	$render->setColumn($this);
-	$this->render = $render;
-	return $this;
+        $render->setColumn($this);
+        $this->render = $render;
+        return $this;
     }
 
     /**
@@ -163,34 +168,34 @@ class Column
      */
     public function getLabel()
     {
-	return (string) $this->label;
+        return (string) $this->label;
     }
 
     /**
      * Sets the label
      * @param string $label
-     * @return Column 
+     * @return Column
      */
     public function setLabel($label)
     {
-	$this->label = (string) $label;
-	return $this;
+        $this->label = (string) $label;
+        return $this;
     }
 
     /**
      *
      * @param string|Grid\Column\Filter $filter
      * @param array $options
-     * @return Column 
+     * @return Column
      */
     public function setFilter(array $options = array())
     {
-	$this->setHasFilter(true);
-	$filter = new Column\Filter($options);
+        $this->setHasFilter(true);
+        $filter = new Column\Filter($options);
         $filter->setColumn($this);
-	$this->filter = $filter;
-        
-	return $this;
+        $this->filter = $filter;
+
+        return $this;
     }
 
     /**
@@ -199,7 +204,7 @@ class Column
      */
     public function getFilter()
     {
-	return $this->filter;
+        return $this->filter;
     }
 
     /**
@@ -208,7 +213,7 @@ class Column
      */
     public function getHasFilter()
     {
-	return $this->hasFilter;
+        return $this->hasFilter;
     }
 
     /**
@@ -217,7 +222,7 @@ class Column
      */
     public function hasFilter()
     {
-	return $this->getHasFilter();
+        return $this->getHasFilter();
     }
 
     /**
@@ -226,8 +231,8 @@ class Column
      */
     public function setHasFilter($hasFilter)
     {
-	$this->hasFilter = (bool) $hasFilter;
-	return $this;
+        $this->hasFilter = (bool) $hasFilter;
+        return $this;
     }
 
     /**
@@ -236,7 +241,7 @@ class Column
      */
     public function getHasOrdering()
     {
-	return $this->hasOrdering;
+        return $this->hasOrdering;
     }
 
     /**
@@ -245,15 +250,15 @@ class Column
      */
     public function setHasOrdering($hasOrdering)
     {
-	$this->hasOrdering = (bool) $hasOrdering;
-	return $this;
+        $this->hasOrdering = (bool) $hasOrdering;
+        return $this;
     }
-    
+
     public function getOrdering()
     {
         return $this;
     }
-    
+
     public function getDirOrder()
     {
         return $this->dirOrder;
@@ -264,13 +269,13 @@ class Column
         $this->class .= ($dirOrder == 'ASC') ? ' sortArrowAsc' : ' sortArrowDesc';
         $this->dirOrder = $dirOrder;
     }
-    
+
     public function getHref()
     {
         $params = \Zend_Controller_Front::getInstance()->getRequest()->getParams();
         return '/' . $params['module'] . '/' . $params['controller'] . '/' . $params['action'] . '?' . 'grid[colOrder]=' . $this->getIndex() . '&grid[dirOrder]=' . $this->getDirOrder();
     }
-    
+
     public function getClass()
     {
         return $this->class;
@@ -282,18 +287,38 @@ class Column
      */
     public function getIndex()
     {
-	return $this->index;
+        return $this->index;
     }
 
     /**
      * Sets the index used by column
      * @param string $index
-     * @return Column 
+     * @return Column
      */
     public function setIndex($index)
     {
-	$this->index = (string) $index;
-	return $this;
+        $this->index = (string) $index;
+        return $this;
+    }
+
+    /**
+     * Gets data values used by column
+     * @return array
+     */
+    public function getValues()
+    {
+        return $this->values;
+    }
+
+    /**
+     * Sets values used by column
+     * @param string $values
+     * @return Column
+     */
+    public function setValues($values)
+    {
+        $this->values = $values;
+        return $this;
     }
 
     /**
@@ -302,18 +327,18 @@ class Column
      */
     public function getWidth()
     {
-	return $this->width;
+        return $this->width;
     }
 
     /**
      * Sets the width
      * @param string $width
-     * @return Column 
+     * @return Column
      */
     public function setWidth($width)
     {
-	$this->width = $width;
-	return $this;
+        $this->width = $width;
+        return $this;
     }
 
     /**
@@ -322,21 +347,21 @@ class Column
      */
     public function getRender(array $row)
     {
-	if (null === $this->render) {
-	    $render = new Column\Render\Text;
-	    $render->setColumn($this);
-	} else {
-	    $render = $this->render;
-	}
+        if (null === $this->render) {
+            $render = new Column\Render\Text;
+            $render->setColumn($this);
+        } else {
+            $render = $this->render;
+        }
 
-	$render->setRow($row);
-	return $render;
+        $render->setRow($row);
+        return $render;
     }
 
     /**
      * Returns the align value
      * @param boolean $abbreviated
-     * @return string 
+     * @return string
      */
     public function getAlign($abbreviated = true)
     {
@@ -362,14 +387,14 @@ class Column
     /**
      *
      * @param string $align
-     * @return \Core\Grid\Column 
+     * @return \Core\Grid\Column
      */
     public function setAlign($align)
     {
         $this->align = $align;
         return $this;
     }
-    
+
     public function getHasTotal()
     {
         return $this->hasTotal;
@@ -378,7 +403,7 @@ class Column
     /**
      *
      * @param boolean $hasTotal
-     * @return \Core\Grid\Column 
+     * @return \Core\Grid\Column
      */
     public function setHasTotal($hasTotal)
     {
@@ -394,7 +419,7 @@ class Column
     /**
      *
      * @param boolean $isReportColumn
-     * @return \Core\Grid\Column 
+     * @return \Core\Grid\Column
      */
     public function setIsReportColumn($isReportColumn)
     {
