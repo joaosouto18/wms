@@ -882,4 +882,18 @@ class EnderecoRepository extends EntityRepository
         return false;
     }
 
+    /**
+     * @param $codDepositoEndereco
+     * @param string $opcao | S or N
+     */
+    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true)
+    {
+        $enderecoEn = $this->find($codDepositoEndereco);
+        $enderecoEn->setinventarioBloqueado($opcao);
+        $this->_em->persist($enderecoEn);
+        if ($flush == true) {
+            $this->_em->flush();
+        }
+    }
+
 }
