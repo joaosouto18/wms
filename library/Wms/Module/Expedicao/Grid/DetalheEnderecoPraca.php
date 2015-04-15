@@ -12,7 +12,7 @@ class DetalheEnderecoPraca extends Grid
      *
      * @param array $params
      */
-    public function init($params)
+    public function init(array $params = array())
     {
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
         $clienteRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Papel\Cliente');
@@ -20,16 +20,6 @@ class DetalheEnderecoPraca extends Grid
 
         /** @var \Wms\Domain\Entity\MapaSeparacao\PracaRepository $repoPraca */
         $repoPraca = $this->getEntityManager()->getRepository('wms:MapaSeparacao\Praca');
-
-        $gridValues = array(
-            0 => array(
-                'codCliente' => 1,
-                'nome' => 'Renato',
-                'cidade' => 'Contagem',
-                'bairro' => 'Canadá',
-                'praca' => 'Todas',
-                'estado' => 'MG'
-            ));
 
         $this->setSource(new \Core\Grid\Source\ArraySource($listClientes))
             ->setId('detalhe-endereco-praca')
@@ -67,7 +57,7 @@ class DetalheEnderecoPraca extends Grid
                 'modelName' => 'expedicao',
                 'controllerName' => 'cliente',
                 'actionName' => 'consultar',
-                'pkIndex' => 'codCliente',
+                'pkIndex' => array('id', 'praca'),
                 'cssClass' => 'dialogAjax',
             ))
             ->setShowExport(false)

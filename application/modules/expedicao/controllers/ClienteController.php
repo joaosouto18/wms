@@ -7,6 +7,9 @@ class Expedicao_ClienteController  extends Action
     public function associarPracaAction() {
         $clientes = $this->_getParam('massaction-select', null);
         $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
 
         if (!is_null($clientes)) {
             /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
@@ -23,9 +26,7 @@ class Expedicao_ClienteController  extends Action
         }
 
         $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
-        unset($params['module']);
-        unset($params['controller']);
-        unset($params['action']);
+
 
         if ($params != null) {
             $Grid = new \Wms\Module\Expedicao\Grid\DetalheEnderecoPraca();
