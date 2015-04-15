@@ -17,36 +17,38 @@ class ModeloSeparacao extends Form
         $form->addElement('text', 'descricao', array(
             'label' => 'Descrição',
             'size' => 50,
-        ))->addElement('checkbox', 'utilizaConversaoParaCaixaMaster', array(
+        ))->addElement('checkbox', 'utilizaCaixaMaster', array(
             'label' => 'Utiliza Conversão para Caixa Master',
             'checkedValue' => 'S'
-        ))->addElement('checkbox', 'utilizaQuebraNaConferenciaDoColetor', array(
+        ))->addElement('checkbox', 'utilizaQuebraColetor', array(
             'label' => 'Utiliza Quebra na conferência do Coletor',
             'checkedValue' => 'S'
         ))->addElement('checkbox', 'utilizaEtiquetaMae', array(
             'label' => 'Utiliza Etiqueta Mãe',
             'checkedValue' => 'S'
-        ))->addElement('select', 'quebraNoProcessoPulmaoDoca', array(
+        ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
             'multiOptions' => array('N' => 'Não utiliza', 'C' => 'Por Cliente', 'P' => 'Por Praça'),
-        ))->addElement('select', 'tipoDeQuebraNoVolume', array(
+        ))->addElement('select', 'tipoQuebraVolume', array(
             'label' => 'Tipo de Quebra no Volume',
             'multiOptions' => array('C' => 'Por Cliente', 'A' => 'Por Carga'),
-        ))->addElement('select', 'tipoDefaultDeEmbalados', array(
+        ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
             'multiOptions' => array('P' => 'Por Produto', 'F' => 'Todos os fracionados'),
-        ))->addElement('select', 'tipoDeConferenciaParaEmbalados', array(
+        ))->addElement('select', 'tipoConferenciaEmbalado', array(
             'label' => 'Tipo de Conferência para Embalados',
             'multiOptions' => array('I' => 'Item a Item', 'Q' => 'Informando a quantidade'),
-        ))->addElement('select', 'tipoDeConferenciaParaNaoEmbalados', array(
+        ))->addElement('select', 'tipoConferenciaNaoEmbalado', array(
             'label' => 'Tipo de Conferência para Não Embalados',
             'multiOptions' => array('I' => 'Item a Item', 'Q' => 'Informando a quantidade'),
-        ))->addElement('select', 'tipoDeSeparacaoFracionados', array(
+        ))->addElement('select', 'tipoSeparacaoFracionado', array(
             'label' => 'Tipo de Separação',
             'multiOptions' => array('M' => 'Mapa de Separação', 'E' => 'Etiqueta de Separação'),
-        ))->addElement('select', 'tipoDeSeparacaoNaoFracionados', array(
+        ))->addElement('select', 'tipoSeparacaoNaoFracionado', array(
             'label' => 'Tipo de Separação',
             'multiOptions' => array('M' => 'Mapa de Separação', 'E' => 'Etiqueta de Separação'),
+
+
         ))->addElement('checkbox', 'ruaFracionados', array(
             'label' => 'Rua',
             'checkedValue' => 'R'
@@ -74,16 +76,16 @@ class ModeloSeparacao extends Form
         ));
 
         $form->addDisplayGroup(array('descricao',
-            'utilizaConversaoParaCaixaMaster',
-            'utilizaQuebraNaConferenciaDoColetor',
+            'utilizaCaixaMaster',
+            'utilizaQuebraColetor',
             'utilizaEtiquetaMae',
-            'quebraNoProcessoPulmaoDoca',
-            'tipoDeQuebraNoVolume',
-            'tipoDefaultDeEmbalados',
-            'tipoDeConferenciaParaEmbalados',
-            'tipoDeConferenciaParaNaoEmbalados',
-            'tipoDeSeparacaoFracionados',
-            'tipoDeSeparacaoNaoFracionados',
+            'quebraPulmaDoca',
+            'tipoQuebraVolume',
+            'tipoDefaultEmbalado',
+            'tipoConferenciaEmbalado',
+            'tipoConferenciaNaoEmbalado',
+            'tipoSeparacaoFracionado',
+            'tipoSeparacaoNaoFracionado',
             'ruaFracionados',
             'linhaDeSeparacaoFracionados',
             'pracaFracionados',

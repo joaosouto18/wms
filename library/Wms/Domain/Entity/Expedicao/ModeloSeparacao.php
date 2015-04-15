@@ -83,122 +83,193 @@ class ModeloSeparacao
      */
     protected $tiposQuebraNaoFracionado;
 
-
-    public function setDescricao($descricao)
-    {
-        $this->descricao = $descricao;
-    }
-
-    public function getDescricao()
-    {
-        return $this->descricao;
-    }
-
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
+    /**
+     * @return mixed
+     */
     public function getId()
     {
         return $this->id;
     }
 
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDescricao()
+    {
+        return $this->descricao;
+    }
+
+    /**
+     * @param mixed $descricao
+     */
+    public function setDescricao($descricao)
+    {
+        $this->descricao = $descricao;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getTipoSeparacaoFracionado()
     {
         return $this->tipoSeparacaoFracionado;
     }
 
+    /**
+     * @param mixed $tipoSeparacaoFracionado
+     */
     public function setTipoSeparacaoFracionado($tipoSeparacaoFracionado)
     {
         $this->tipoSeparacaoFracionado = $tipoSeparacaoFracionado;
     }
 
+    /**
+     * @return mixed
+     */
     public function getTipoSeparacaoNaoFracionado()
     {
         return $this->tipoSeparacaoNaoFracionado;
     }
 
+    /**
+     * @param mixed $tipoSeparacaoNaoFracionado
+     */
     public function setTipoSeparacaoNaoFracionado($tipoSeparacaoNaoFracionado)
     {
         $this->tipoSeparacaoNaoFracionado = $tipoSeparacaoNaoFracionado;
     }
 
+    /**
+     * @return mixed
+     */
     public function getUtilizaQuebraColetor()
     {
         return $this->utilizaQuebraColetor;
     }
 
+    /**
+     * @param mixed $utilizaQuebraColetor
+     */
     public function setUtilizaQuebraColetor($utilizaQuebraColetor)
     {
         $this->utilizaQuebraColetor = $utilizaQuebraColetor;
     }
 
+    /**
+     * @return mixed
+     */
     public function getUtilizaEtiquetaMae()
     {
         return $this->utilizaEtiquetaMae;
     }
 
+    /**
+     * @param mixed $utilizaEtiquetaMae
+     */
     public function setUtilizaEtiquetaMae($utilizaEtiquetaMae)
     {
         $this->utilizaEtiquetaMae = $utilizaEtiquetaMae;
     }
 
+    /**
+     * @return mixed
+     */
     public function getUtilizaCaixaMaster()
     {
         return $this->utilizaCaixaMaster;
     }
 
+    /**
+     * @param mixed $utilizaCaixaMaster
+     */
     public function setUtilizaCaixaMaster($utilizaCaixaMaster)
     {
         $this->utilizaCaixaMaster = $utilizaCaixaMaster;
     }
 
+    /**
+     * @return mixed
+     */
     public function getQuebraPulmaDoca()
     {
         return $this->quebraPulmaDoca;
     }
 
+    /**
+     * @param mixed $quebraPulmaDoca
+     */
     public function setQuebraPulmaDoca($quebraPulmaDoca)
     {
         $this->quebraPulmaDoca = $quebraPulmaDoca;
     }
 
+    /**
+     * @return mixed
+     */
     public function getTipoQuebraVolume()
     {
         return $this->tipoQuebraVolume;
     }
 
+    /**
+     * @param mixed $tipoQuebraVolume
+     */
     public function setTipoQuebraVolume($tipoQuebraVolume)
     {
         $this->tipoQuebraVolume = $tipoQuebraVolume;
     }
 
+    /**
+     * @return mixed
+     */
     public function getTipoDefaultEmbalado()
     {
         return $this->tipoDefaultEmbalado;
     }
 
+    /**
+     * @param mixed $tipoDefaultEmbalado
+     */
     public function setTipoDefaultEmbalado($tipoDefaultEmbalado)
     {
         $this->tipoDefaultEmbalado = $tipoDefaultEmbalado;
     }
 
+    /**
+     * @return mixed
+     */
     public function getTipoConferenciaEmbalado()
     {
         return $this->tipoConferenciaEmbalado;
     }
 
+    /**
+     * @param mixed $tipoConferenciaEmbalado
+     */
     public function setTipoConferenciaEmbalado($tipoConferenciaEmbalado)
     {
         $this->tipoConferenciaEmbalado = $tipoConferenciaEmbalado;
     }
 
+    /**
+     * @return mixed
+     */
     public function getTipoConferenciaNaoEmbalado()
     {
         return $this->tipoConferenciaNaoEmbalado;
     }
 
+    /**
+     * @param mixed $tipoConferenciaNaoEmbalado
+     */
     public function setTipoConferenciaNaoEmbalado($tipoConferenciaNaoEmbalado)
     {
         $this->tipoConferenciaNaoEmbalado = $tipoConferenciaNaoEmbalado;
@@ -235,6 +306,9 @@ class ModeloSeparacao
     {
         $this->tiposQuebraNaoFracionado = $tiposQuebraNaoFracionado;
     }
+
+
+
 
 
 

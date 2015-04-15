@@ -10,13 +10,6 @@ namespace Wms\Domain\Entity\Expedicao;
 class ModeloSeparacaoTipoQuebraNaoFracionado
 {
     /**
-     * @Id
-     * @Column(name="COD_MODELO_SEPARACAO", type="integer", nullable=false)
-     * @var string Código do produto
-     */
-    protected $id;
-
-    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacao")
      * @JoinColumn(name="COD_MODELO_SEPARACAO", referencedColumnName="COD_MODELO_SEPARACAO")
      */
@@ -31,18 +24,19 @@ class ModeloSeparacaoTipoQuebraNaoFracionado
     /**
      * @return mixed
      */
-    public function getId()
+    public function getModeloSeparacao()
     {
-        return $this->id;
+        return $this->modeloSeparacao;
     }
 
     /**
-     * @param mixed $id
+     * @param mixed $modeloSeparacao
      */
-    public function setId($id)
+    public function setModeloSeparacao($modeloSeparacao)
     {
-        $this->id = $id;
+        $this->modeloSeparacao = $modeloSeparacao;
     }
+
 
     /**
      * @return mixed
