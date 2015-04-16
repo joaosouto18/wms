@@ -224,7 +224,7 @@ class EstoqueRepository extends EntityRepository
             }
             $result = $arrayResult;
         } else {
-            $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlWhere)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrder)->fetchAll(\PDO::FETCH_ASSOC);
         }
         return $result;
     }
