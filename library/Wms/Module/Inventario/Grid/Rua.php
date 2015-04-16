@@ -13,6 +13,7 @@ class Rua extends Grid
         $invEnderecoRepo = $this->getEntityManager()->getRepository("wms:Inventario\Endereco");
         $params['idInventario'] = $params['id'];
         $params['rua']          = $params['RUA'];
+        $params['divergencia']  = 'todos';
         $detalheByRua = $invEnderecoRepo->getByInventario($params);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($detalheByRua));
