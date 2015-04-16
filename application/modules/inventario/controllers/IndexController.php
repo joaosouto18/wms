@@ -68,6 +68,7 @@ class Inventario_IndexController  extends Action
             $inventarioEn = $inventarioRepo->find($id);
             if ($inventarioEn) {
                 $inventarioRepo->cancelar($inventarioEn);
+                $inventarioRepo->desbloqueiaEnderecos($id);
                 return $this->redirect('index');
             }
         }
