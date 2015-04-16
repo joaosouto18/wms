@@ -13,8 +13,21 @@ class ReservaEstoque extends Grid
         $this->setShowExport(false);
         $this
             ->addColumn(array(
-                'label' => 'Endereço com reserva de estoque',
+                'label' => 'Codigo',
                 'index' => 'id',
+            ))
+            ->addColumn(array(
+                'label' => 'Endereço com reserva de estoque',
+                'index' => 'descricao',
+            ))
+            ->addColumn(array(
+                'label' => 'Tipo reserva',
+                'index' => 'tipoReserva',
+            ))
+            ->addColumn(array(
+                'label' => 'Data reserva',
+                'index' => 'dataReserva',
+                'render'=> 'DataTime'
             ))
             ->addMassAction('mass-select', 'Remover endereço do inventário');
 

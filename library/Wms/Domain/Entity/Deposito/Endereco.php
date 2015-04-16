@@ -153,7 +153,10 @@ class Endereco
      */
     protected $ativo;
 
-
+    /**
+     * @Column(name="IND_INVENTARIO_BLOQUEADO", type="string")
+     */
+    protected $inventarioBloqueado;
 
     /**
      * @param string $ativo
@@ -418,6 +421,22 @@ class Endereco
     public function getVolumes()
     {
         return $this->volumes;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getInventarioBloqueado()
+    {
+        return $this->inventarioBloqueado;
+    }
+
+    /**
+     * @param mixed $inventarioBloqueado
+     */
+    public function setInventarioBloqueado($inventarioBloqueado)
+    {
+        $this->inventarioBloqueado = $inventarioBloqueado;
     }
 
 }

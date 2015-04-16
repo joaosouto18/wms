@@ -102,8 +102,6 @@ class Enderecamento_PaleteController extends Action
 
     public function enderecarAction()
     {
-        $conferenteRepo = $this->em->getRepository('wms:Pessoa\Fisica\Conferente');
-
         $usuarioRepo = $this->em->getRepository('wms:Usuario');
         $perfilParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_PERFIL_OPERADOR_EMPILHADEIRA'));
 

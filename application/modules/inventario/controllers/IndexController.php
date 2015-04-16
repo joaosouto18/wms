@@ -15,7 +15,7 @@ class Inventario_IndexController  extends Action
         $values = $this->_getAllParams();
         if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
             $inventarioRepo->removeEnderecos($values['mass-id'], $id);
-            $this->_helper->messenger('success', 'Endereços removidos com sucesso');
+            $this->_helper->messenger('success', 'Endereços removidos do inventario '.$id.' com sucesso');
             return false;
         }
 
@@ -27,6 +27,7 @@ class Inventario_IndexController  extends Action
             } else {
                 $inventarioEn = $inventarioRepo->find($id);
                 $inventarioRepo->alteraStatus($inventarioEn, \Wms\Domain\Entity\Inventario::STATUS_LIBERADO);
+                $inventarioRepo->bloqueiaEnderecos($id);
                 $this->_helper->messenger('success', 'Inventário liberado com sucesso');
             }
         }
@@ -45,6 +46,7 @@ class Inventario_IndexController  extends Action
                 try {
                     $this->em->beginTransaction();
                     $inventarioRepo->atualizarEstoque($inventarioEn);
+                    $inventarioRepo->desbloqueiaEnderecos($id);
                     $this->em->commit();
                 }catch(\Exception $e) {
                     $this->em->rollback();

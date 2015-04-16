@@ -332,13 +332,13 @@ class InventarioRepository extends EntityRepository
     public function verificaReservas($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('d.id')
+            ->select('d.id, re.tipoReserva, re.dataReserva, d.descricao')
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
             ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
             ->andWhere("re.atendida = 'N'")
             ->andWhere("ie.inventario = $idInventario")
-            ->groupBy('d.id');
+            ->groupBy('d.id, re.tipoReserva, re.dataReserva, d.descricao');
         return $source->getQuery()->getResult();
     }
 
@@ -348,9 +348,39 @@ class InventarioRepository extends EntityRepository
         $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
         foreach($enderecos as $endereco) {
             $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
-            $this->_em->remove($inventarioEndEn);
-            $this->_em->flush();
+            if ($inventarioEndEn) {
+                $this->_em->remove($inventarioEndEn);
+                $this->_em->flush();
+            }
         }
+    }
+
+    public function bloqueiaEnderecos($id)
+    {
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+
+        $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
+        foreach($inventarioEndsEn as $invEndEn) {
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'S');
+        }
+        $this->_em->flush();
+    }
+
+    public function desbloqueiaEnderecos($id)
+    {
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+
+        $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
+        foreach($inventarioEndsEn as $invEndEn) {
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'N');
+        }
+        $this->_em->flush();
     }
 
 }

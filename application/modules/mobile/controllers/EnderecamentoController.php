@@ -263,6 +263,13 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
+
+        if($enderecoRepo->verificaBloqueioInventario($enderecoEn->getId())) {
+            $this->createXml('error','Endereço bloqueado por inventário');
+        }
+
         if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
             $this->createXml('error','Endereço já ocupado');
         }
