@@ -229,22 +229,30 @@ class PaleteRepository extends EntityRepository
                         PRODUTO.DSC_PRODUTO,
                         R.COD_RECEBIMENTO,
                         S.COD_SIGLA as COD_SIGLA,
-                        PROD.VOLUMES
-                  FROM PALETE P
-                  LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
-                  LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
-                  LEFT JOIN DEPOSITO_ENDERECO DE ON P.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
-                 INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
-                 INNER JOIN PRODUTO ON PRODUTO.COD_PRODUTO = PP.COD_PRODUTO AND PP.DSC_GRADE = PRODUTO.DSC_GRADE
-                 INNER JOIN (SELECT MIN(PP.QTD) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
-                 INNER JOIN (SELECT PP.UMA,
-                                    LISTAGG(NVL(PV.DSC_VOLUME,PE.DSC_EMBALAGEM), ', ') WITHIN GROUP (ORDER BY PP.UMA) VOLUMES
-                               FROM PALETE_PRODUTO PP
-                               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
-                               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PP.COD_PRODUTO_EMBALAGEM
-                              GROUP BY PP.UMA) PROD ON PROD.UMA = P.UMA
-                 WHERE 1 = 1 ";
+                        PROD.VOLUMES,
+                        NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
+                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO
+                   FROM PALETE P
+                   LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
+                   LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
+                   LEFT JOIN DEPOSITO_ENDERECO DE ON P.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                   LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
+                   INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                   INNER JOIN PRODUTO ON PRODUTO.COD_PRODUTO = PP.COD_PRODUTO AND PP.DSC_GRADE = PRODUTO.DSC_GRADE
+                   INNER JOIN (SELECT MIN(PP.QTD) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
+                    LEFT JOIN (SELECT COUNT(COD_PRODUTO_VOLUME) QTD, COD_NORMA_PALETIZACAO
+                                 FROM PRODUTO_VOLUME
+                                GROUP BY COD_NORMA_PALETIZACAO) QTD_VOL ON QTD_VOL.COD_NORMA_PALETIZACAO = PP.COD_NORMA_PALETIZACAO
+                   INNER JOIN (SELECT COUNT(COD_PALETE_PRODUTO) QTD, UMA
+                                 FROM PALETE_PRODUTO
+                                GROUP BY UMA) QTD_VOL_CONFERIDO ON QTD_VOL_CONFERIDO.UMA = P.UMA
+                   INNER JOIN (SELECT PP.UMA,
+                                      LISTAGG(NVL(PV.DSC_VOLUME,PE.DSC_EMBALAGEM), ', ') WITHIN GROUP (ORDER BY PP.UMA) VOLUMES
+                                 FROM PALETE_PRODUTO PP
+                                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
+                                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PP.COD_PRODUTO_EMBALAGEM
+                                GROUP BY PP.UMA) PROD ON PROD.UMA = P.UMA
+                   WHERE 1 = 1 ";
         if (($idProduto != NULL) && ($idProduto != "")) {
             $SQL .= " AND PRODUTO.COD_PRODUTO = '$idProduto'";
         }
@@ -855,12 +863,12 @@ class PaleteRepository extends EntityRepository
             throw new \Exception ("Palete $idUma não encontrado");
         }
 
-        $idEndereco = $paleteEn->getDepositoEndereco()->getId();
         $idUma = $paleteEn->getId();
-
         try{
             switch ($paleteEn->getCodStatus()){
                 case Palete::STATUS_ENDERECADO:
+                    $idEndereco = $paleteEn->getDepositoEndereco()->getId();
+
                     $reservaEstoqueRepo->reabrirReservaEstoque($idEndereco,$paleteEn->getProdutosArray(),"E","U",$idUma);
                     $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO);
                     $this->getEntityManager()->persist($paleteEn);
@@ -874,6 +882,8 @@ class PaleteRepository extends EntityRepository
                     }
                     break;
                 case Palete::STATUS_EM_ENDERECAMENTO:
+                    $idEndereco = $paleteEn->getDepositoEndereco()->getId();
+
                     if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
                         $codStatus = \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO;
                     } else {
@@ -974,12 +984,13 @@ class PaleteRepository extends EntityRepository
             ->innerJoin('pa.unitizador', 'u')
             ->innerJoin('pa.recebimento', 'receb')
             ->innerJoin('receb.status', 'sigla')
+            ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = pa.id')
             ->leftJoin('pa.depositoEndereco', 'de')
-            ->leftJoin("wms:Enderecamento\PaleteProduto", "pp",'WITH', 'pa.id = pp.uma')
             ->setParameter('recebimento', $params['id'])
             ->setParameter('produto', $params['codigo'])
             ->andWhere('pp.codProduto = :produto')
-            ->andWhere('pa.recebimento = :recebimento');
+            ->andWhere('pa.recebimento = :recebimento')
+            ->distinct(true);
 
         return $query->getQuery()->getResult();
     }

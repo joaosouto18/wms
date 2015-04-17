@@ -885,16 +885,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             return null;
         }
 
-        if ($embalagemEn[0]->getEndereco() != null) {
-            if ($tipoRetorno == "DSC"){
-                $enderecoPicking = $embalagemEn[0]->getEndereco()->getDescricao();
-            } else {
-                $enderecoPicking = $embalagemEn[0]->getEndereco()->getId();
+        $enderecoPicking = null;
+        foreach($embalagemEn as $embalagem) {
+            if ($embalagem->getEndereco() != null) {
+                if ($tipoRetorno == "DSC"){
+                    $enderecoPicking = $embalagem->getEndereco()->getDescricao();
+                } else {
+                    $enderecoPicking = $embalagem->getEndereco()->getId();
+                }
+            } else{
+                $enderecoPicking = null;
+                break;
             }
-            return $enderecoPicking;
-        } else{
-            return null;
         }
+        return $enderecoPicking;
     }
 
     public function getNormaPaletizacaoPadrao($codProduto, $grade) {

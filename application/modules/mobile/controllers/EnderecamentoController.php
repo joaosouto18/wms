@@ -235,9 +235,12 @@ class Mobile_EnderecamentoController extends Action
         $nivel      = $endereco[4].$endereco[5];
         //Se for picking do produto entao o nivel poderá ser escolhido
         if ($nivel == '00') {
-            $produto = $paleteEn->getProdutos()[0];
+
+            $produtosEn = $paleteEn->getProdutos();
+            $produto = $produtosEn[0];
             $codProduto = $produto->getCodProduto();
             $grade      = $produto->getGrade();
+
             /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
             $ProdutoRepository   = $this->em->getRepository('wms:Produto');
             $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
@@ -259,6 +262,13 @@ class Mobile_EnderecamentoController extends Action
     {
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
+
+        if($enderecoRepo->verificaBloqueioInventario($enderecoEn->getId())) {
+            $this->createXml('error','Endereço bloqueado por inventário');
+        }
 
         if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
             $this->createXml('error','Endereço já ocupado');

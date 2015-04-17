@@ -79,7 +79,7 @@ class Produtos extends Grid
 
             ->setShowExport(false);
 
-        if ($status->getSigla() == 'DESFEITO' ) {
+        if ($status->getSigla() == 'DESFEITO' || $status->getSigla() == 'CANCELADO') {
             $this->addAction(array(
                 'label' => 'Trocar U.M.As',
                 'controllerName' => 'palete',
