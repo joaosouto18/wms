@@ -1,4 +1,50 @@
 <?php
 echo $this->form;
-echo $this->grid;
 ?>
+
+<form action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'cliente', 'action' =>'associar-praca' ))?>" method="post" id="frm-associar-praca">
+    <table class="tabContainer" border="1px" style="width: 100%; ">
+        <tr>
+            <th>Ação</th>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Cidade</th>
+            <th>Bairro</th>
+            <th>Praça</th>
+            <th>UF</th>
+        </tr>
+        <?php if(isset($this->clientes)) : ?>
+
+            <?php foreach($this->clientes as $cliente) : ?>
+                <tr>
+                    <td>V</td>
+                    <td><?php echo $cliente['id']; ?></td>
+                    <td><?php echo $cliente['nome']; ?></td>
+                    <td><?php echo $cliente['cidade']; ?></td>
+                    <td><?php echo $cliente['bairro']; ?></td>
+                    <td>
+                        <select id="pracaId" style="width: 100%">
+                            <?php foreach($this->pracas as $key => $praca) : ?>
+
+                                <?php if($cliente['praca'] == $key) : ?>
+                                    <option value="<?php echo $key; ?>" selected><?php echo $praca; ?></option>
+                                    <?php else : ?>
+                                    <option value="<?php echo $key; ?>" ><?php echo $praca; ?></option>
+                                <?php endif; ?>
+
+                            <?php endforeach; ?>
+                        </select>
+
+                    </td>
+                    <td><?php echo $cliente['estado']; ?></td>
+                </tr>
+
+                <input type="text" name="<?php echo $cliente['id'] ?>[id]" value="<?php echo $cliente['id']; ?>"/>
+                <input type="text" name="<?php echo $cliente['id'] ?>[pracaId]" value="<?php echo $cliente['praca']; ?>"/>
+            <?php endforeach; ?>
+
+        <?php endif; ?>
+    </table>
+    <br />
+    <button type="submit">Salvar</button>
+</form>

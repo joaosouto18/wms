@@ -5,16 +5,15 @@ use Wms\Module\Web\Controller\Action,
 class Expedicao_ClienteController  extends Action
 {
     public function associarPracaAction() {
-        $clientes = $this->_getParam('massaction-select', null);
         $params = $this->_getAllParams();
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
+        $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
 
-        if (!is_null($clientes)) {
+        if ($this->_request->isPost()) {
             /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
-            $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
-            $result = $clienteRepo->atualizarPracaPorCliente($clientes);
+            $result = $clienteRepo->atualizarPracaPorCliente($params);
 
             if ($result) {
                 $this->addFlashMessage('info', $result);
@@ -25,15 +24,16 @@ class Expedicao_ClienteController  extends Action
             $this->_redirect('/expedicao/cliente/associar-praca');
         }
 
-        $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
-
-
         if ($params != null) {
-            $Grid = new \Wms\Module\Expedicao\Grid\DetalheEnderecoPraca();
-            $this->view->grid = $Grid->init($params)->render();
+            /** @var \Wms\Domain\Entity\MapaSeparacao\PracaRepository $repoPraca */
+            $repoPraca = $this->getEntityManager()->getRepository('wms:MapaSeparacao\Praca');
+            $this->view->pracas = $repoPraca->getIdValue();
+            $this->view->clientes = $clienteRepo->getCliente($params);
         }
 
-        $form->populate($params);
+        $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
+
+        //$form->populate($params);
         $this->view->form = $form;
     }
 
