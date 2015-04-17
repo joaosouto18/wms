@@ -9,7 +9,6 @@ class Enderecamento_MovimentacaoController extends Action
     public function indexAction()
     {
 		$this->configurePage();
-
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
 		$form->init($utilizaGrade);

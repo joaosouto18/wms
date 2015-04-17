@@ -1446,54 +1446,27 @@ class ExpedicaoRepository extends EntityRepository
 
     public function getProdutosSemEstoqueByExpedicao($idExpedicao) {
 
-        $sql = "SELECT EXP.COD_PRODUTO,
-                       EXP.DSC_GRADE,
-                       P.DSC_PRODUTO,
-                       EXP.QTD_EXP,
-                       NVL(EST.QTD_ESTOQUE,0) as QTD_ESTOQUE,
-                       NVL(RES.QTD_RESERVADA,0) as QTD_RESERV,
-                       (NVL(EST.QTD_ESTOQUE,0) + NVL(RES.QTD_RESERVADA,0)) as SALDO_FINAL,
-                       CASE WHEN (EXP.VOLUME = 0) THEN 'PRODUTO UNITARIO'
-                            WHEN (PV.COD_PRODUTO_VOLUME IS NOT NULL) THEN PV.DSC_VOLUME
-                      END as VOLUME
-                  FROM (SELECT SUM(PP.QUANTIDADE) as QTD_EXP, PP.COD_PRODUTO, PP.DSC_GRADE ,NVL(PV.COD_PRODUTO_VOLUME, '0') as VOLUME
-                          FROM EXPEDICAO E
-                          LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
-                          LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                          LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                          LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
-                         WHERE E.COD_EXPEDICAO IN (".$idExpedicao.")
-                         GROUP BY  PP.COD_PRODUTO, PP.DSC_GRADE, PV.COD_PRODUTO_VOLUME
-                         ) EXP
-                LEFT JOIN (SELECT SUM(E.QTD) as QTD_ESTOQUE, COD_PRODUTO, DSC_GRADE, VOLUME
-                             FROM (SELECT E.COD_PRODUTO,
-                                          E.DSC_GRADE,
-                                          E.COD_DEPOSITO_ENDERECO,
-                                          NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME,
-                                          CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = 37 THEN NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
-                                               ELSE E.COD_DEPOSITO_ENDERECO
-                                          END AS COD_DEPOSITO_ENDERECO_CORRETO,
-                                          E.QTD
-                                     FROM ESTOQUE E
-                                     LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
-                                     LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = E.COD_PRODUTO_EMBALAGEM
-                                     LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME) E
-                            WHERE E.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO_CORRETO
-                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.VOLUME) EST
-                      ON EST.COD_PRODUTO = EXP.COD_PRODUTO
-                     AND EST.DSC_GRADE = EXP.DSC_GRADE
-                     AND EST.VOLUME = EXP.VOLUME
-                LEFT JOIN (SELECT SUM(REP.QTD_RESERVADA) as QTD_RESERVADA, NVL(COD_PRODUTO_VOLUME, '0') as VOLUME, COD_PRODUTO, DSC_GRADE
-                             FROM RESERVA_ESTOQUE RE
-                            INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
-                            WHERE RE.IND_ATENDIDA = 'N'
-                            GROUP BY COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME) RES
-                       ON RES.COD_PRODUTO = EXP.COD_PRODUTO
-                      AND RES.DSC_GRADE = EXP.DSC_GRADE
-                      AND RES.VOLUME = EXP.VOLUME
-                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = EXP.COD_PRODUTO
-                                     AND P.DSC_GRADE = EXP.DSC_GRADE
-                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = EXP.VOLUME";
+            $sql = "SELECT * FROM (
+                      SELECT P.COD_PRODUTO as CODIGO,
+                             P.DSC_GRADE as GRADE,
+                             P.DSC_PRODUTO as PRODUTO,
+                             NVL (PV.DSC_VOLUME, 'PRODUTO UNITARIO') as VOLUME,
+                             NVL(E.QTD,0) + SUM(REP.QTD_RESERVADA) as SALDO_NEGATIVO
+                      FROM RESERVA_ESTOQUE_EXPEDICAO REEXP
+                      LEFT JOIN RESERVA_ESTOQUE RE ON REEXP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                      LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                      LEFT JOIN ESTOQUE E ON E.COD_PRODUTO = REP.COD_PRODUTO
+                                         AND E.DSC_GRADE = REP.DSC_GRADE
+                                         AND E.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+                                         AND ((REP.COD_PRODUTO_EMBALAGEM IS NOT NULL AND E.COD_PRODUTO_EMBALAGEM IS NOT NULL)
+                                          OR (REP.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME))
+                      LEFT JOIN PRODUTO P ON P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE
+                      LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = REP.COD_PRODUTO AND PV.DSC_GRADE = REP.DSC_GRADE
+                     WHERE REEXP.COD_EXPEDICAO = " . $idExpedicao . "
+                       AND RE.IND_ATENDIDA = 'N'
+                     GROUP BY P.COD_PRODUTO, P.DSC_GRADE, PV.COD_PRODUTO_VOLUME, PV.DSC_VOLUME,E.QTD,P.DSC_PRODUTO
+                     ORDER BY P.COD_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME)
+                     WHERE SALDO_NEGATIVO <0";
 
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
