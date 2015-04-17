@@ -201,12 +201,21 @@ class ExpedicaoRepository extends EntityRepository
                 $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
                 $this->getEntityManager()->flush();
                 $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
-                $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
+                $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
+
                 $this->getEntityManager()->flush();
                 $ondaRepo->sequenciaOndasOs();
                     $this->getEntityManager()->commit();
 
             $resultado = array();
+
+            if ($qtdOsGerada == 0) {
+                $resultado['observacao'] = "Nenhuma Os gerada";
+                $resultado['resultado'] = true;
+
+                return $resultado;
+            }
+
             $resultado['observacao'] = "Ondas Geradas com sucesso";
             $resultado['resultado'] = true;
 

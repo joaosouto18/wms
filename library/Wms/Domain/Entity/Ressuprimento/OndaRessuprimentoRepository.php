@@ -365,6 +365,7 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
     private function geraOsByPicking ($picking,$ondaEn) {
+        $qtdOsGerada = 0;
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
         $idPicking = $picking['idPicking'];
@@ -426,6 +427,7 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking);
+                    $qtdOsGerada ++;
                 }
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
@@ -444,6 +446,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             }
 
         }
+        return $qtdOsGerada;
 
     }
 
@@ -458,6 +461,7 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
     public function geraOsRessuprimento($produtosRessuprir, $ondaEn){
+        $totalOsGerada = 0;
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
 
@@ -503,10 +507,13 @@ class OndaRessuprimentoRepository extends EntityRepository
             }
 
             foreach ($pickings as $picking) {
-                $this->geraOsByPicking($picking, $ondaEn);
+                $qtdOsGerada = $this->geraOsByPicking($picking, $ondaEn);
+                $totalOsGerada = $totalOsGerada + $qtdOsGerada;
+
             }
 
         }
+        return $totalOsGerada;
     }
 
     private function getOndasNaoSequenciadas (){
