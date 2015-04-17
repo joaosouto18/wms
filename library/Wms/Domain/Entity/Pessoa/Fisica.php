@@ -10,6 +10,28 @@ use Wms\Domain\Entity\Pessoa;
 class Fisica extends Pessoa
 {
     /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @var integer $id
+     * @Column(name="COD_PESSOA", type="integer", nullable=false)
+     * @Id
+     */
+    protected $id;
+    /**
      * @var string $sexo
      * @Column(name="COD_SEXO", type="string", length=1, nullable=true)
      */

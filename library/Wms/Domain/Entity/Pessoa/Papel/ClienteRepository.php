@@ -9,20 +9,22 @@ class ClienteRepository extends AtorRepository
 {
     public function getCliente($params)
     {
-        $codCliente = $params['codCliente'];
-        $nome = $params['nomeCliente'];
-        $praca = $params['praca'];
-        $cidade = $params['cidade'];
-        $bairro = $params['bairro'];
-        $estado = $params['estado'];
+        $codCliente = (isset($params['codCliente']) ? $params['codCliente'] : null);
+        $nome = (isset($params['nomeCliente']) ? $params['nomeCliente'] : null);
+        $praca = (isset($params['praca']) ? $params['praca'] : null);
+        $cidade = (isset($params['cidade']) ? $params['cidade'] : null);
+        $bairro = (isset($params['bairro']) ? $params['bairro'] : null);
+        $estado = (isset($params['estado']) ? $params['estado'] : null);
 
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select("p.nome, c.id, e.localidade as cidade, e.bairro, s.referencia as estado, pc.id as praca")
+            ->select("p.nome, c.id, e.localidade as cidade, e.bairro, s.referencia as estado, pc.id as praca, e.cep, e.pontoReferencia, e.descricao, e.numero, e.complemento, pc.nomePraca, pf.cpf, pj.cnpj")
             ->from("wms:Pessoa\Papel\Cliente", "c")
             ->leftJoin("wms:Pessoa", 'p' , 'WITH', 'c.pessoa = p.id')
             ->leftJoin("wms:Pessoa\Endereco", 'e', 'WITH', 'p.id = e.pessoa')
             ->leftJoin("wms:Util\Sigla", 's', 'WITH', 'e.uf = s.id')
             ->leftJoin("wms:MapaSeparacao\Praca", 'pc', 'WITH', 'c.praca = pc.id')
+            ->leftJoin("wms:Pessoa\Fisica", 'pf', 'WITH', 'pf.id = p.id')
+            ->leftJoin("wms:Pessoa\Juridica", 'pj', 'WITH', 'pj.id = p.id')
             ->setMaxResults(50);
 
         if ($codCliente != null) {
@@ -61,7 +63,6 @@ class ClienteRepository extends AtorRepository
         foreach($clientes as $cliente)
         {
             $entity = $this->find($cliente['id']);
-            $cliente['pracaId'] = 2;
             $praca = $this->_em->getRepository('wms:MapaSeparacao\Praca')->findOneBy(array('id' => $cliente['pracaId']));
 
             $entity->setPraca($praca);
@@ -74,5 +75,10 @@ class ClienteRepository extends AtorRepository
         } catch(Exception $e) {
             throw new $e->getMessage();
         }
+    }
+
+    public function getDadosByCliente($idCliente)
+    {
+
     }
 }

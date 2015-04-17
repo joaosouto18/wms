@@ -9,10 +9,10 @@ class Expedicao_ClienteController  extends Action
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
         $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
 
         if ($this->_request->isPost()) {
-            /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
             $result = $clienteRepo->atualizarPracaPorCliente($params);
 
             if ($result) {
@@ -33,19 +33,20 @@ class Expedicao_ClienteController  extends Action
 
         $form = new \Wms\Module\Expedicao\Form\AssociarPraca();
 
-        //$form->populate($params);
+        $form->populate($params);
         $this->view->form = $form;
     }
 
     public function consultarAction() {
         $params = $this->_getAllParams();
-        // $idCliente = $params['id'];
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
         unset($params['submit']);
 
-        $this->view->dadosCliente = true;
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
+        $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
+        $this->view->dadosCliente = $clienteRepo->getCliente($params);
     }
 
 }
