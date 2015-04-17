@@ -223,9 +223,10 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
                 $embalagem = $embalagensEn[0];
                 $idPicking = $embalagem->getEndereco()->getId();
+                /*
                 if ($enderecoRepo->verificaBloqueioInventario($idPicking) == true) {
                     throw new \Exception("Não foi possível continuar pois existem endereços sendo inventariados");
-                }
+                }*/
 
                 $produtosArray = array();
                     $produtoArray = array();
@@ -404,10 +405,11 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $qtdEstoque = $estoque['SALDO'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
 
+                /*
                 if ($enderecoRepo->verificaBloqueioInventario($idPulmao) == true) {
                     $quantidadeBloqueadoInventario = $qtdEstoque + $quantidadeBloqueadoInventario;
                     continue;
-                }
+                }*/
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
 
@@ -436,12 +438,13 @@ class OndaRessuprimentoRepository extends EntityRepository
                 }
             }
 
+            /*
             if ($saldo != $pontoReposicao) {
                 //Verificar se atendeu corretamente ao ressuprimento devido ao inventario
                 if (($quantidadeBloqueadoInventario >= $qtdRessuprir) && ($qtdRessuprir > 0)) {
                     throw new \Exception('Existem endereços de pulmão sendo bloqueados por inventario.');
                 }
-            }
+            }*/
 
         }
 
