@@ -1492,4 +1492,99 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+    public function getEtiquetaMae($quebras,$modelos,$arrayEtiqueta,$idExpedicao){
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMaeRepository $EtiquetaMaeRepo */
+        $EtiquetaMaeRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaMae');
+        $tipoFracao=$this->getTipoFracao($arrayEtiqueta,$idExpedicao);
+
+        if ( !empty($tipoFracao[0]["TIPO"]) ){
+            $dscEtiqueta=$tipoFracao[0]["TIPO"].";";
+
+            foreach ($quebras as $chv => $vlr){
+                if ( !empty($tipoFracao[0]["TIPO"]) && $tipoFracao[0]["TIPO"]=="1" ) {
+                    $fracionados=$vlr['frac'];
+
+                    foreach ($fracionados as $chvFrac => $vlrFrac){
+                        $verificaFrac=false;
+
+                        $sql="select E.COD_ETIQUETA_MAE from
+                                ETIQUETA_MAE E
+                                INNER JOIN ETIQUETA_MAE_QUEBRA EQ ON (E.COD_ETIQUETA_MAE=EQ.COD_ETIQUETA_MAE)
+                            WHERE E.COD_EXPEDICAO=".$idExpedicao;
+
+                        $codQuebra=$this->getCodQuebra($tipoFracao,$vlrFrac['tipoQuebra']);
+                        if ( empty($codQuebra) ){
+                            $codQuebra=" is NULL";
+                        } else if ($codQuebra=="NULL") {
+                            $codQuebra=" is NULL";
+                        } else {
+                            $codQuebra="=".$codQuebra;
+                        }
+
+                        $where=" AND EQ.TIPO_FRACAO='FRACIONADOS' AND EQ.COD_QUEBRA".$codQuebra." AND EQ.IND_TIPO_QUEBRA='".$vlrFrac['tipoQuebra']."'";
+
+                        $sql.=$where;
+                        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        $dscEtiqueta.=$vlrFrac['tipoQuebra']."|".$this->getCodQuebra($tipoFracao,$vlrFrac['tipoQuebra']).";";
+
+                        if ( !empty($result[0]['COD_ETIQUETA_MAE']) )
+                            $verificaFrac=true;
+                        else
+                            break;
+                    }
+
+                    if ($verificaFrac)
+                        $codEtiquetaMae=$result[0]['COD_ETIQUETA_MAE'];
+                    else
+                        $codEtiquetaMae=$EtiquetaMaeRepo->gerarEtiquetaMae($quebras,$tipoFracao,$idExpedicao,$dscEtiqueta);
+                } else {
+                    $naofracionados=$vlr['frac'];
+
+                    foreach ($naofracionados as $chvNFrac => $vlrNFrac){
+                        $verificaNFrac=false;
+
+                        $sql="select E.COD_ETIQUETA_MAE from
+                                ETIQUETA_MAE E
+                                INNER JOIN ETIQUETA_MAE_QUEBRA EQ ON (E.COD_ETIQUETA_MAE=EQ.COD_ETIQUETA_MAE)
+                            WHERE E.COD_EXPEDICAO=".$idExpedicao;
+
+                        $codQuebra=$this->getCodQuebra($tipoFracao,$vlrNFrac['tipoQuebra']);
+                        if ( empty($codQuebra) ){
+                            $codQuebra=" is NULL";
+                        } else if ($codQuebra=="NULL") {
+                            $codQuebra=" is NULL";
+                        } else {
+                            $codQuebra="=".$codQuebra;
+                        }
+
+                        $where=" AND EQ.TIPO_FRACAO='NAOFRACIONADOS' AND EQ.COD_QUEBRA".$codQuebra." AND EQ.IND_TIPO_QUEBRA='".$vlrNFrac['tipoQuebra']."'";
+
+                        $sql.=$where;
+                        $dscEtiqueta.=$vlrNFrac['tipoQuebra']."|".$this->getCodQuebra($tipoFracao,$vlrNFrac['tipoQuebra']).";";
+
+                        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        if ( !empty($result[0]['COD_ETIQUETA_MAE']) )
+                            $verificaNFrac=true;
+                        else
+                            break;
+                    }
+
+                    if ($verificaNFrac)
+                        $codEtiquetaMae=$result[0]['COD_ETIQUETA_MAE'];
+                    else
+                        $codEtiquetaMae=$EtiquetaMaeRepo->gerarEtiquetaMae($quebras,$tipoFracao,$idExpedicao,$dscEtiqueta);
+                }
+
+
+            }
+        } else {
+            $codEtiquetaMae=null;
+        }
+
+        return $codEtiquetaMae;
+    }
+
 }
