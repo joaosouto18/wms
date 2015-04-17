@@ -32,6 +32,7 @@ class AssociarPraca extends Form
             ->addElement('select', 'praca', array(
                 'label' => 'Praça',
                 'multiOptions' => $repoPraca->getIdValue(),
+                'class' => 'pracas',
             ))
             ->addElement('text', 'cidade', array(
                 'label' => 'Cidade',

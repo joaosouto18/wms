@@ -23,7 +23,7 @@ class ClienteRepository extends AtorRepository
             ->leftJoin("wms:Pessoa\Endereco", 'e', 'WITH', 'p.id = e.pessoa')
             ->leftJoin("wms:Util\Sigla", 's', 'WITH', 'e.uf = s.id')
             ->leftJoin("wms:MapaSeparacao\Praca", 'pc', 'WITH', 'c.praca = pc.id')
-            ->setMaxResults(3000);
+            ->setMaxResults(50);
 
         if ($codCliente != null) {
             $source->andWhere("c.id = $codCliente");
@@ -60,9 +60,11 @@ class ClienteRepository extends AtorRepository
     {
         foreach($clientes as $cliente)
         {
-            $entity = $this->find($cliente);
+            $entity = $this->find($cliente['id']);
+            $cliente['pracaId'] = 2;
+            $praca = $this->_em->getRepository('wms:MapaSeparacao\Praca')->findOneBy(array('id' => $cliente['pracaId']));
 
-            $entity->setPraca($cliente['praca']);
+            $entity->setPraca($praca);
             $this->_em->persist($entity);
         }
         try {
