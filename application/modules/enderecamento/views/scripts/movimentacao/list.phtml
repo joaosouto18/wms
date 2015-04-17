@@ -68,7 +68,7 @@
         <td><?php echo $endereco['RESERVA_SAIDA']?></td>
         <td><?php echo $endereco['QTD']?></td>
         <td><?php if (($endereco['RESERVA_SAIDA'] != 0) || ($endereco['RESERVA_ENTRADA'] != 0)) {?>
-                <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/'.$endereco['COD_VOLUME'].'/idProduto/'.$endereco['COD_PRODUTO'].'/grade/'.$endereco['DSC_GRADE'].'/idEndereco/'.$endereco['COD_ENDERECO'].'"';?> >Mais</a>
+                <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/'.$endereco['COD_VOLUME'].'/idProduto/'.$endereco['COD_PRODUTO'].'/grade/'. urlencode ($endereco['DSC_GRADE']). '/idEndereco/'.$endereco['COD_ENDERECO'].'"';?> >Mais</a>
             <?php }?></td>
         </tr>
         <?php

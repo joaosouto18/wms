@@ -863,12 +863,12 @@ class PaleteRepository extends EntityRepository
             throw new \Exception ("Palete $idUma não encontrado");
         }
 
-        $idEndereco = $paleteEn->getDepositoEndereco()->getId();
         $idUma = $paleteEn->getId();
-
         try{
             switch ($paleteEn->getCodStatus()){
                 case Palete::STATUS_ENDERECADO:
+                    $idEndereco = $paleteEn->getDepositoEndereco()->getId();
+
                     $reservaEstoqueRepo->reabrirReservaEstoque($idEndereco,$paleteEn->getProdutosArray(),"E","U",$idUma);
                     $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO);
                     $this->getEntityManager()->persist($paleteEn);
@@ -882,6 +882,8 @@ class PaleteRepository extends EntityRepository
                     }
                     break;
                 case Palete::STATUS_EM_ENDERECAMENTO:
+                    $idEndereco = $paleteEn->getDepositoEndereco()->getId();
+
                     if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
                         $codStatus = \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO;
                     } else {
