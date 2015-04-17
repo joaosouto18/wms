@@ -77,20 +77,6 @@ class Recebimento extends Grid
                     }
                 ));
 
-
-            $this
-                    ->addAction(array(
-                            'label' => 'Descarga Recebimento',
-                            'actionName' => 'index',
-                            'moduleName' => 'produtividade',
-                            'controllerName' => 'descarga',
-                            'pkIndex' => 'id',
-                            'condition' => function ($row) {
-                                return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA) && $row['idOrdemServicoManual']);
-                            }
-                        ));
-
-
             $this
                 ->addAction(array(
                             'label' => 'Descarga Recebimento',

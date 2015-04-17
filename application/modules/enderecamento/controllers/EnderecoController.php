@@ -84,9 +84,13 @@ class Enderecamento_EnderecoController extends Action
                 $codProduto = $produtosEn[0]->getCodProduto();
                 $grade      = $produtosEn[0]->getGrade();
 
+                if($enderecoRepo->verificaBloqueioInventario($idEndereco)) {
+                    $this->addFlashMessage('error',"Endereço(s) bloqueado(s) por inventário");
+                    $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
+                    return false;
+                }
+
                 $tipoEstruturaArmazenamento = $enderecoRepo->getTipoArmazenamentoByEndereco($idEndereco);
-//var_dump($tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ']); exit;
-                //$tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] = Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
                 if ($tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
                     foreach ($paletes as $palete) {

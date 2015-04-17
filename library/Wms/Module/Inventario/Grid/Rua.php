@@ -13,6 +13,7 @@ class Rua extends Grid
         $invEnderecoRepo = $this->getEntityManager()->getRepository("wms:Inventario\Endereco");
         $params['idInventario'] = $params['id'];
         $params['rua']          = $params['RUA'];
+        $params['divergencia']  = 'todos';
         $detalheByRua = $invEnderecoRepo->getByInventario($params);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($detalheByRua));
@@ -22,8 +23,18 @@ class Rua extends Grid
                 'index' => 'DSC_DEPOSITO_ENDERECO'
              ))
             ->addColumn(array(
-                'label' => 'Num.Contagem',
+                'label' => 'Números de Contagens',
                 'index' => 'ULTIMACONTAGEM',
+            ))
+            ->addColumn(array(
+                'label' => 'Situação',
+                'index' => 'SITUACAO',
+            ))
+            ->addAction(array(
+                'label' => 'Visualizar Detalhe Contagem',
+                'actionName' => 'view-detalhe-contagem-ajax',
+                'cssClass' => 'inside-modal',
+                'pkIndex' => 'CODINVENDERECO'
             ));
 
         return $this;

@@ -55,7 +55,11 @@ class Inventario
         $return['enderecos'] = $invEndRepo->getByInventario($params);
         $enderecos = array();
         foreach($return['enderecos'] as $endereco) {
-            $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+            if ($params['divergencia'] == 1) {
+                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'].' - '.$endereco['DSC_PRODUTO'].' - '.$endereco['DSC_GRADE'].' - '.$endereco['COMERCIALIZACAO'];
+            } else {
+                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+            }
         }
         return $enderecos;
     }
@@ -405,6 +409,25 @@ class Inventario
             $contagemEndEn->setDivergencia(null);
             $this->getEm()->persist($contagemEndEn);
         }
+
+        $contagemEndEntitiesZero    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
+        if (count($contagemEndEntitiesZero) > 0) {
+            foreach($contagemEndEntitiesZero as $contagemEndEn) {
+                $contagemEndEn->setDivergencia(null);
+                $this->getEm()->persist($contagemEndEn);
+            }
+        }
+        /**
+         * Caso tenha duas contagens vazio o endereço esta vazio e se ja tiver alguma contagem de outro produto retirar divergência do mesmo
+         */
+        if (count($contagemEndEntitiesZero) >= 2) {
+            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
+            foreach($contagemEndEntities as $contagemEndEn) {
+                $contagemEndEn->setDivergencia(null);
+                $this->getEm()->persist($contagemEndEn);
+            }
+        }
+
         $this->getEm()->flush();
 
         return true;
@@ -490,7 +513,7 @@ class Inventario
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
+        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
 
         if (count($contagemEndEntities) == 0) {
             return false;

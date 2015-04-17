@@ -867,4 +867,33 @@ class EnderecoRepository extends EntityRepository
         return $result;
     }
 
+    public function verificaBloqueioInventario($idDepositoEndereco)
+    {
+        if (!isset($idDepositoEndereco) || empty($idDepositoEndereco)) {
+            throw new \Exception('E necessario informar idDepositoEndereco');
+        }
+
+        $depositoEnderecoEn = $this->find($idDepositoEndereco);
+        if ($idDepositoEndereco != null) {
+            if ($depositoEnderecoEn->getInventarioBloqueado() == 'S') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param $codDepositoEndereco
+     * @param string $opcao | S or N
+     */
+    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true)
+    {
+        $enderecoEn = $this->find($codDepositoEndereco);
+        $enderecoEn->setinventarioBloqueado($opcao);
+        $this->_em->persist($enderecoEn);
+        if ($flush == true) {
+            $this->_em->flush();
+        }
+    }
+
 }
