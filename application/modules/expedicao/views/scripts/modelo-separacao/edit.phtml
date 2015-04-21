@@ -1,0 +1,108 @@
+<style>
+    <!--
+    fieldset#fieldset-modelo{
+        display: inline;
+        width: 947px;
+    }
+
+    div.checkboxes {
+        margin-bottom: 10px;
+    }
+
+    div.fieldsets {
+        width: 650px;
+    }
+
+    div.fieldset-left {
+        width: 320px;
+        float: left;
+    }
+
+    div.fieldset-right {
+        width: 320px;
+        float: right;
+    }
+
+    #fieldset-modelo input.error {
+        border-color: #F00;
+    }
+    #fieldset-modelo select.error {
+        border-color: #F00;
+    }
+    #fieldset-modelo label.error {
+        display:none !important;
+    }
+
+    form fieldset div.field {
+        display: block;
+        float: none;
+        margin-right: 20px;
+        min-height: 55px;
+    }
+
+    form fieldset div.checkbox {
+        display: inline-block;
+        float: none;
+    }
+
+    form fieldset div.checkbox label {
+        margin: 0 0 0 5px;
+    }
+    -->
+</style>
+<form id="modelo-separacao-form" class="saveForm" method="post" action="" enctype="application/x-www-form-urlencoded" novalidate="novalidate">
+    <fieldset id="fieldset-modelo">
+        <legend>Cadastro</legend>
+        <div>
+            <?php echo $this->form->getSubForm('identificacao')->getElement('descricao'); ?>
+        </div>
+
+        <div class="fieldsets">
+            <div class="fieldset-left">
+                <div class="checkboxes">
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaCaixaMaster'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaQuebraColetor'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaEtiquetaMae'); ?><br /><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('quebraPulmaDoca'); ?>
+                </div>
+
+                <fieldset>
+                    <legend>Processo com Embalados</legend>
+
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoQuebraVolume'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultEmbalado'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaEmbalado'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaNaoEmbalado'); ?>
+                </fieldset>
+            </div>
+
+            <div class="fieldset-right">
+                <fieldset>
+                    <legend>Separação para Fracionados</legend>
+
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoFracionado'); ?>
+                    <fieldset>
+                        <legend>Quebras</legend>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('ruaFracionados'); ?><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('linhaDeSeparacaoFracionados'); ?><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('pracaFracionados'); ?><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('clienteFracionados'); ?>
+                    </fieldset>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Separação para não Fracionados</legend>
+
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoNaoFracionado'); ?>
+                    <fieldset>
+                        <legend>Quebras</legend>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('ruaNaoFracionados'); ?><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('linhaDeSeparacaoNaoFracionados'); ?><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('pracaNaoFracionados'); ?><br />
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('clienteNaoFracionados'); ?>
+                    </fieldset>
+                </fieldset>
+            </div>
+        </div>
+    </fieldset>
+</form>
