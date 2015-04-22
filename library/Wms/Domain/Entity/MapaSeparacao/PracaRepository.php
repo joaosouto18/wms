@@ -71,7 +71,6 @@ class PracaRepository extends EntityRepository
                 INNER JOIN wms:MapaSeparacao\RotaPraca rp WITH (p.id=rp.codPraca)
                 WHERE rp.codPraca = ".$idPraca."
                 group by rp.id
-                order by p.nomePraca
             ";
 
         $result = $this->getEntityManager()->createQuery($query)->getResult();

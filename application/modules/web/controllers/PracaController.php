@@ -192,6 +192,8 @@ class Web_PracaController extends Crud
         $formClass = '\\Wms\Module\Web\Form\\' . $this->entityName;
         $form = new $formClass;
 
+        $idPraca = $this->_getParam('id');
+
         try {
             /** @var \Wms\Domain\Entity\MapaSeparacao\ModeloSeparacao $modeloSeparacaoRepo */
             $pracaRepo = $this->getEntityManager()->getRepository("wms:".$this->entityName);
