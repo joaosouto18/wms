@@ -104,42 +104,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
     }
 
-    public function exportaLog ($codCarga, $placa, $pedidos) {
-        $filename = $_SERVER['DOCUMENT_ROOT'] . "../log/WSExpedicao.txt";
-        $texto = "";
-        $texto .= "Método: Enviar Pedidos";
-        $texto .= "\r\n";
-        $texto .= "--------------------------------------------------------------";
-        $texto .= "\r\n";
-        $texto .= "Parametro: codCarga";
-        $texto .= "\r\n";
-        $texto .= "Tipo: " . gettype($codCarga);
-        $texto .= "\r\n";
-        $texto .= print_r($codCarga,true);
-        $texto .= "\r\n";
-        $texto .= "--------------------------------------------------------------";
-        $texto .= "\r\n";
-        $texto .= "Parametro: placa";
-        $texto .= "\r\n";
-        $texto .= "Tipo: " . gettype($placa);
-        $texto .= "\r\n";
-        $texto .= print_r($placa,true);
-        $texto .= "\r\n";
-        $texto .= "--------------------------------------------------------------";
-        $texto .= "\r\n";
-        $texto .= "Parametro: pedidos";
-        $texto .= "\r\n";
-        $texto .= "Tipo: " . gettype($pedidos);
-        $texto .= "\r\n";
-        $texto .= print_r($pedidos,true);
-        $texto .= "\r\n";
-        $texto .= "--------------------------------------------------------------";
-
-        $handle = fopen($filename, 'w+');
-        fwrite($handle, $texto);
-    }
-
-
     /**
      *  Recebe Carga com Placa da Expedição
      *  Verifica se existe expedição aberta(Integrado, Em Separação ou Em Conferencia) com a placa da carga,
@@ -213,6 +177,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas)
     {
+        $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
 
@@ -237,7 +202,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function fechar($idCargaExterno,$tipoCarga)
     {
+        $idCargaExterno = trim ($idCargaExterno);
         if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
@@ -260,6 +227,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarCarga($idCargaExterno, $tipoCarga)
     {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
@@ -277,6 +248,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+        $tipoPedido = trim($tipoPedido);
+        $idPedido = trim($idPedido);
+
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
         $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
 
@@ -297,6 +274,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return array Se a carga está finalizada ou nâo
      */
     public function checarStatus($idCargaExterno,$tipoCarga) {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
@@ -327,6 +307,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function consultarEtiquetas($idCargaExterno, $tipoCarga)
     {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo     = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -343,10 +327,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return carga Com informações das etiquetas
      */
     public function consultarCarga($idCargaExterno,$tipoCarga){
+
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
-
-        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));

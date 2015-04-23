@@ -71,6 +71,13 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus)
     {
+
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao  = trim($dataEmissao);
+        $idStatus = trim($idStatus);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
@@ -133,6 +140,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
     {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
@@ -196,6 +208,13 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao)
     {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+        $placa = trim($placa);
+        $bonificacao = trim ($bonificacao);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $em->beginTransaction();
 
@@ -210,6 +229,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
             $itens = $itensNf;
         }
+        $itens = $this->trimArray($itens);
 
         try {
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
@@ -321,6 +341,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function status($idFornecedor, $numero, $serie, $dataEmissao)
     {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
@@ -353,6 +377,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function descartar($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
+        $idFornecedor = trim ($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+        $observacao = trim($observacao);
+
         $dataEmissao = \DateTime::createFromFormat('d/m/Y', $dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -386,6 +416,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function desfazer($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+        $observacao = trim($observacao);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 

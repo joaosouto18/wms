@@ -27,6 +27,8 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
      */
     public function buscar($idClasse)
     {
+        $idClasse = trim($idClasse);
+
         $classeEntity = $this->__getServiceLocator()->getService('Produto\Classe')->get($idClasse);
 
         if ($classeEntity == null)
@@ -134,6 +136,13 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
      */
     public function salvar($idClasse, $nome, $idClassePai = null)
     {
+        $idClasse = trim($idClasse);
+        $nome = trim ($nome);
+        if ($idClassePai != null){
+            $idClassePai = trim($idClassePai);
+            if (strlen($idClassePai) == 0) $idClassePai = null;
+        }
+
         $service = $this->__getServiceLocator()->getService('Produto\Classe');
         $entity = $service->get($idClasse);
 
@@ -155,6 +164,9 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
      */
     public function excluir($idClasse)
     {
+
+        $idClasse = trim ($idClasse);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $em->beginTransaction();
         

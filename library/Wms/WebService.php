@@ -26,4 +26,11 @@ class Wms_WebService
     {
 	return \Zend_Registry::get('serviceLocator');
     }
+
+    public function trimArray(&$array)
+    {
+        foreach($array as &$value)
+            is_array($value) ? multiDim($value):$value=trim($value);
+        unset($value);
+    }
 }

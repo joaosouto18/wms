@@ -28,6 +28,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     public function buscar($idFornecedor)
     {
+        $idFornecedor = trim($idFornecedor);
+
         $fornecedorEntity = $this->__getServiceLocator()->getService('Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
         if ($fornecedorEntity == null)
@@ -119,6 +121,11 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     public function salvar($idFornecedor, $cnpj, $insc, $nome)
     {
+        $idFornecedor = trim($idFornecedor);
+        $cnpj = trim($cnpj);
+        $insc = trim($insc);
+        $nome = trim($nome);
+
         $service = $this->__getServiceLocator()->getService('Fornecedor');
         $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
 
@@ -140,6 +147,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     public function excluir($idFornecedor)
     {
+        $idFornecedor = trim($idFornecedor);
+
         $service = $this->__getServiceLocator()->getService('Fornecedor');
         $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
 

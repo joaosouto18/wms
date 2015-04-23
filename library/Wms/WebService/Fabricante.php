@@ -27,6 +27,8 @@ class Wms_WebService_Fabricante extends Wms_WebService
      */
     public function buscar($idFabricante)
     {
+        $idFabricante = trim($idFabricante);
+
         $fabricanteEntity = $this->__getServiceLocator()->getService('Fabricante')->get($idFabricante);
 
         if ($fabricanteEntity == null)
@@ -108,6 +110,9 @@ class Wms_WebService_Fabricante extends Wms_WebService
      */
     public function salvar($idFabricante, $nome)
     {
+        $idFabricante = trim($idFabricante);
+        $nome = trim($nome);
+
         $service = $this->__getServiceLocator()->getService('Fabricante');
         $entity = $service->get($idFabricante);
         //novo Fabricante
@@ -128,6 +133,8 @@ class Wms_WebService_Fabricante extends Wms_WebService
      */
     public function excluir($idFabricante)
     {
+        $idFabricante = trim($idFabricante);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $em->beginTransaction();
         

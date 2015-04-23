@@ -71,6 +71,9 @@ class Wms_WebService_Produto extends Wms_WebService {
      */
     public function buscar($idProduto, $grade) {
 
+        $idProduto = trim ($idProduto);
+        $grade = trim ($grade);
+
         $produtoService = $this->__getServiceLocator()->getService('Produto');
         $produto = $produtoService->findOneBy(array('id' => $idProduto, 'grade'=> $grade));
 
@@ -130,6 +133,14 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @return boolean Se o produto foi inserido com sucesso ou não
      */
     public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse) {
+
+        $idProduto = trim ($idProduto);
+        $descricao = trim ($descricao);
+        $grade = trim ($grade);
+        $idFabricante = trim ($idFabricante);
+        $tipo = trim ($tipo);
+        $idClasse = trim($idClasse);
+
         $service = $this->__getServiceLocator()->getService('Produto');
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
@@ -193,6 +204,10 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @return boolean|Exception
      */
     public function excluir($idProduto, $grade) {
+
+        $idProduto = trim ($idProduto);
+        $grade = trim ($grade);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $service = $this->__getServiceLocator()->getService('Produto');
         $em->beginTransaction();
@@ -263,6 +278,14 @@ class Wms_WebService_Produto extends Wms_WebService {
      */
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
+        $idProduto = trim ($idProduto);
+        $descricao = trim ($descricao);
+        $idFabricante = trim($idFabricante);
+        $tipo = trim($tipo);
+        $grades = $this->trimArray($grades);
+        $classes = $this->trimArray($classes);
+        $fabricante = $this->trimArray($fabricante);
+
         $wsClasse = new Wms_WebService_ProdutoClasse();
         foreach($classes as $classe)
             $wsClasse->salvar($classe['idClasse'], $classe['nome'], $classe['idClassePai']);
