@@ -63,6 +63,11 @@ class Carga
      */
     protected $codExpedicao;
 
+    /**
+     * @Column(name="SEQUENCIA", type="integer",nullable=false)
+     */
+    protected $sequencia;
+
     public function setCentralEntrega($centralEntrega)
     {
         $this->centralEntrega = $centralEntrega;
@@ -154,6 +159,22 @@ class Carga
     public function getCodExpedicao()
     {
         return $this->codExpedicao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSequencia()
+    {
+        return $this->sequencia;
+    }
+
+    /**
+     * @param mixed $sequencia
+     */
+    public function setSequencia($sequencia)
+    {
+        $this->sequencia = $sequencia;
     }
 
 }
