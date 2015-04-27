@@ -15,7 +15,7 @@ class Expedicao_EtiquetaController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $repository */
         $repository = $this->em->getRepository('wms:Expedicao\Pedido');
-        $cancelar = $repository->cancelar(31824421);
+        $cancelar = $repository->cancelar(30994661);
         exit;
 
 

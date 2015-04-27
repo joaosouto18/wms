@@ -261,12 +261,12 @@ class PedidoRepository extends EntityRepository
                 //atualiza a tabela RESERVA_ESTOQUE_PRODUTO que tiver o COD_RESERVA_ESTOQUE da consulta acima
                 $reservaEstoqueProdutoRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
 
-                foreach ($arrayReservaEstoqueId as $reservaEstoqueId) {
+                foreach ($arrayReservaEstoqueId as $key => $reservaEstoqueId) {
                     $arrayReservaProdutoEntity = $reservaEstoqueProdutoRepository->findBy(array('reservaEstoque' => $reservaEstoqueId['reservaEstoque']));
 
                     foreach ($arrayReservaProdutoEntity as $reservaProdutoEntity) {
                         $reservaProdutoEntity->setQtd($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']);
-                        $this->_em->persist($reservaProdutoEntity);
+                        $this->_em->persist($arrayReservaProdutoEntity[$key]);
                     }
                 }
             }

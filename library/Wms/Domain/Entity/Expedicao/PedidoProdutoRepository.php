@@ -56,7 +56,8 @@ class PedidoProdutoRepository extends EntityRepository
             ->innerJoin('rep.reservaEstoque', 're')
             ->innerJoin('wms:Ressuprimento\ReservaEstoqueExpedicao', 'ree', 'WITH', 'ree.reservaEstoque = re.id')
             ->innerJoin('ree.expedicao', 'ex')
-            ->where("p.id = $produto AND p.grade = '$grade' AND ex.id = $expedicao");
+            ->where("p.id = $produto AND p.grade = '$grade' AND ex.id = $expedicao")
+            ->groupBy('re.id');
 
         return $dql->getQuery()->getResult();
     }
