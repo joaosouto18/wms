@@ -266,7 +266,7 @@ class PedidoRepository extends EntityRepository
 
                     foreach ($arrayReservaProdutoEntity as $reservaProdutoEntity) {
                         $reservaProdutoEntity->setQtd($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']);
-                        $this->_em->persist($arrayReservaProdutoEntity[$key]);
+                        $this->_em->persist($reservaProdutoEntity);
                     }
                 }
             }
