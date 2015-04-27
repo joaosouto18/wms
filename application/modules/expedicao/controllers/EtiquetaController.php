@@ -12,13 +12,6 @@ class Expedicao_EtiquetaController  extends Action
 
     public function indexAction()
     {
-
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $repository */
-        $repository = $this->em->getRepository('wms:Expedicao\Pedido');
-        $cancelar = $repository->cancelar(30994661);
-        exit;
-
-
         $idExpedicao    = $this->getRequest()->getParam('id');
         $action         = $this->getRequest()->getParam('urlAction');
         $controller     = $this->getRequest()->getParam('urlController');
