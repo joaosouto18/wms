@@ -32,7 +32,7 @@ class PedidoProdutoRepository extends EntityRepository
     public function getFilialByProduto($idPedido)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('f.codExterno', 'f.indUtilizaRessuprimento', 'prod.id produto', 'prod.grade', 'ex.id expedicao')
+            ->select('f.codExterno', 'f.indUtilizaRessuprimento', 'prod.id produto', 'prod.grade', 'ex.id expedicao', 'pp.quantidade')
             ->from('wms:Expedicao\PedidoProduto', 'pp')
             ->innerJoin('pp.pedido', 'p')
             ->innerJoin('wms:Filial', 'f', 'WITH', 'f.codExterno = p.centralEntrega')
