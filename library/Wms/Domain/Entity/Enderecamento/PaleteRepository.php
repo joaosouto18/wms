@@ -368,7 +368,7 @@ class PaleteRepository extends EntityRepository
                 $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $pickingEn->getId(),"S");
 
                 if (($qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking + $quantidadePalete) > $capacidadePicking) {
-                    $resultado = "Quantidade nos paletes superior a capacidade do picking";
+                    $Resultado = "Quantidade nos paletes superior a capacidade do picking";
                 }
 
                 $this->alocaEnderecoPalete($paleteEn->getId(),$embalagem->getEndereco()->getId());
