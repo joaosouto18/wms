@@ -5,8 +5,17 @@ use Wms\Module\Web\Controller\Action,
 class Expedicao_CorteController  extends Action
 {
 
-    public function indexAction() {
-        $this->view->codBarras = $this->getRequest()->getParam('codBarras');
+    public function indexAction()
+    {
+        $id = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+        $etiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $codEtiqueta = $etiquetaRepo->getEtiquetasByExpedicao($id, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, null);
+
+        if (isset($codEtiqueta) && !empty($codEtiqueta)) {
+            $this->view->codBarras = $codEtiqueta[0]['codBarras'];
+        }
+        //$this->view->codBarras = $codEtiqueta[0]['codBarras'];
     }
 
     public function salvarAction()
