@@ -148,7 +148,7 @@ class OrdemServicoRepository extends EntityRepository
             ->where('os.idExpedicao = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
 
-        $result = $queryBuilder->getQuery()->getResult();
+        //$result = $queryBuilder->getQuery()->getResult();
 
         return $queryBuilder;
 
