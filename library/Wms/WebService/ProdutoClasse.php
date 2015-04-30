@@ -138,10 +138,6 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
     {
         $idClasse = trim($idClasse);
         $nome = trim ($nome);
-        if ($idClassePai != null){
-            $idClassePai = trim($idClassePai);
-            if (strlen($idClassePai) == 0) $idClassePai = null;
-        }
 
         $service = $this->__getServiceLocator()->getService('Produto\Classe');
         $entity = $service->get($idClasse);
