@@ -34,6 +34,7 @@ class Expedicao_ConferenciaController extends Action
 
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
+                    $expedicaoRepo->finalizacarga($idExpedicao);
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false);
                 } else {
                     $result = 'Senha informada não é válida';
