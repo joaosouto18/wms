@@ -1478,4 +1478,20 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+    public function finalizacarga($codExpedicao)
+    {
+
+        $cargaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        $getCargaByExpedicao = $cargaRepo->findBy(array('expedicao' => $codExpedicao));
+
+        foreach ($getCargaByExpedicao as $cargas) {
+            if ($cargas->getDataFechamento() == null || $cargas->getDataFechamento() == '') {
+                $cargas->setDataFechamento(new \DateTime());
+                $this->_em->persist($cargas);
+            }
+        }
+        $this->getEntityManager()->flush();
+
+    }
+
 }
