@@ -31,6 +31,7 @@ class Enderecamento_MovimentacaoController extends Action
         } else {
             if ($request->isPost()) {
                 try {
+                    $this->getEntityManager()->beginTransaction();
                     $result = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
                     if ($result == null) {
                         throw new Exception("Endereço não encontrado.");
@@ -91,6 +92,8 @@ class Enderecamento_MovimentacaoController extends Action
                         }
                     }
 
+                    $this->getEntityManager()->commit();
+
                     $link = '/enderecamento/movimentacao/imprimir/endereco/'.$result[0]['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
                     if($request->isXmlHttpRequest()) {
                         if ($data['quantidade'] > 0) {
@@ -102,8 +105,8 @@ class Enderecamento_MovimentacaoController extends Action
                         $this->addFlashMessage('success','Movimentação realizada com sucesso');
                         $form->populate($data);
                     }
-
                 } catch(Exception $e) {
+                    $this->getEntityManager()->rollback();
                     if($request->isXmlHttpRequest()) {
                         echo $this->_helper->json(array('status' => 'error', 'msg' =>  $e->getMessage()));
                     } else {
