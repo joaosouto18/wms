@@ -292,6 +292,7 @@ class EnderecoRepository extends EntityRepository
             ->InnerJoin("pv.endereco", "e")
             ->InnerJoin("pv.produto", "p")
             ->where("e.id = $idEndereco");
+
         if ($unico == true) {
             $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
         } else {
@@ -300,12 +301,13 @@ class EnderecoRepository extends EntityRepository
 
         if (count($produto) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select("p.id as codProduto, p.grade, p.descricao as produto, 0 as codVolume, 'PRODUTO UNITARIO' as descricao, e.descricao as endereco    ")
+                ->select("p.id as codProduto, p.grade, p.descricao as produto, 0 as codVolume, 'PRODUTO UNITARIO' as descricao, e.descricao as endereco")
                 ->distinct(true)
                 ->from("wms:Produto\Embalagem", "pe")
                 ->leftJoin("pe.endereco", "e")
                 ->leftJoin("pe.produto", "p")
                 ->where("e.id = $idEndereco");
+
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
             } else {
