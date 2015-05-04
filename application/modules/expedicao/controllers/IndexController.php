@@ -193,4 +193,13 @@ class Expedicao_IndexController  extends Action
         $this->exportPDF($result,'semEstoque.pdf','Produtos sem estoque na expedição','L');
     }
 
+    public function imprimirAction(){
+        $idExpedicao = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $result = $ExpedicaoRepo->getProdutosSemEstoqueByExpedicao($idExpedicao);
+        $this->exportPDF($result,'semEstoque.pdf','Produtos sem estoque na expedição','L');
+    }
+
 }
