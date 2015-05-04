@@ -1158,33 +1158,14 @@ class ExpedicaoRepository extends EntityRepository
      */
     public function getResumoConferenciaByID ($idExpedicao){
         $source = $this->_em->createQueryBuilder()
-            ->select('e.id,
-                      e.dataInicio,
-                      e.dataFinalizacao,
-                      s.id as codSigla,
-                      s.sigla')
+            ->select('e.id, e.dataInicio, e.dataFinalizacao, s.id codSigla, s.sigla, COUNT(e.id) qtdEtiquetas, COUNT(e.id) qtdConferidas')
             ->from('wms:Expedicao', 'e')
-            ->leftJoin("e.status", "s")
-            ->addSelect("(
-                         SELECT COUNT(es1.id)
-                           FROM wms:Expedicao\EtiquetaSeparacao es1
-                          LEFT JOIN es1.pedido ped1
-                          LEFT JOIN ped1.carga c1
-                          WHERE c1.codExpedicao = e.id
-                            AND es1.codStatus NOT IN(524,525)
-                          GROUP BY c1.codExpedicao
-                          ) as qtdEtiquetas")
-            ->addSelect("(
-                         SELECT COUNT(es2.id)
-                           FROM wms:Expedicao\EtiquetaSeparacao es2
-                          LEFT JOIN es2.pedido ped2
-                          LEFT JOIN ped2.carga c2
-                          WHERE c2.codExpedicao = e.id
-                            AND es2.codStatus in ( 526, 531, 532 )
-                          GROUP BY c2.codExpedicao
-                          ) as qtdConferidas")
-            ->where('e.id = :idExpedicao')
-            ->setParameter('idExpedicao', $idExpedicao);
+            ->leftJoin('wms:Expedicao\Carga', 'c', 'WITH', 'c.expedicao = e.id')
+            ->leftJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.carga = c.id')
+            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.pedido = p.id')
+            ->leftJoin('wms:Util\Sigla', 's', 'WITH', 's.id = e.status')
+            ->where("e.id = $idExpedicao")
+            ->groupBy('e.id, e.dataInicio, e.dataFinalizacao, s.id, s.sigla');
 
         $result = $source->getQuery()->getResult();
 
@@ -1289,11 +1270,15 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutosEmbalado($idExpedicao)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select("count(es.codExpedicao) as nEmbalados")
-            ->from("wms:Expedicao\VEtiquetaSeparacao","es")
+            ->select("count(DISTINCT exp.id) as nEmbalados")
+            ->from("wms:Expedicao\EtiquetaSeparacao","es")
             ->innerJoin('wms:Produto', 'p', 'WITH', 'es.codProduto = p.id')
             ->innerJoin('p.embalagens', 'pe')
-            ->where('es.codExpedicao = :idExpedicao')
+            ->innerJoin("wms:Expedicao\PedidoProduto", 'pp', 'WITH', 'pp.codProduto = p.id')
+            ->innerJoin('pp.pedido', 'ped')
+            ->innerJoin('ped.carga', 'c')
+            ->innerJoin('c.expedicao', 'exp')
+            ->where('exp.id = :idExpedicao')
             ->andWhere("pe.embalado = 'S' ")
             ->setParameter("idExpedicao", $idExpedicao);
 

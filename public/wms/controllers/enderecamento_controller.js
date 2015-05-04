@@ -10,6 +10,13 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 {
     '{window} load' : function() {
         $('.imprimir').click(function(){
+            tamCheckboxSelecionado = $('[name="palete[]"]:checked').length;
+
+            if (tamCheckboxSelecionado == 0 && tamCheckboxSelecionado != undefined) {
+                alert('É necessário selecionar no mínimo uma U.M.A!');
+                return false;
+            }
+
             var urlImpressao = $(this).attr('href');
             urlImpressao = urlImpressao+'?'+$('#quantidade-grid input:checked').serialize();
             window.location.href = urlImpressao;

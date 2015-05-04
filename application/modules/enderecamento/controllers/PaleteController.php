@@ -270,7 +270,7 @@ class Enderecamento_PaleteController extends Action
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
             $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto);
 
-            if ($result) {
+            if (count($result) == 0) {
                 // realizar trocas de U.M.As para novo recebimento
                 $result = $this->confirmaTroca();
 

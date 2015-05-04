@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
+use Zend\Stdlib\Configurator;
 
 class PedidoRepository extends EntityRepository
 {
@@ -179,6 +180,8 @@ class PedidoRepository extends EntityRepository
                 $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
             }
 
+            $this->removeReservaEstoque($idPedido);
+
         } catch (Exception $e) {
             echo $e->getMessage();
         }
@@ -204,6 +207,7 @@ class PedidoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $etiquetas = $EtiquetaRepo->findBy(array('pedido'=>$pedidoEntity));
+
         foreach($etiquetas as $etiqueta) {
             $this->_em->remove($etiqueta);
             $this->_em->flush();
@@ -212,6 +216,7 @@ class PedidoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
         $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
         $pedidosProduto = $PedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity->getId()));
+
         foreach ($pedidosProduto as $pedidoProduto) {
             $this->_em->remove($pedidoProduto);
             $this->_em->flush();
@@ -236,6 +241,37 @@ class PedidoRepository extends EntityRepository
        if ($this->_em->flush()) {
            return true;
        }
+    }
+
+    public function removeReservaEstoque($idPedido)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
+        $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+
+        $getCentralEntrega = $PedidoProdutoRepo->getFilialByProduto($idPedido);
+
+        foreach ($getCentralEntrega as $centralEntrega) {
+            if ($centralEntrega['indUtilizaRessuprimento'] == 'S') {
+                $dados['produto'] = $centralEntrega['produto'];
+                $dados['grade'] = $centralEntrega['grade'];
+                $dados['expedicao'] = $centralEntrega['expedicao'];
+
+                $arrayReservaEstoqueId = $PedidoProdutoRepo->identificaExpedicaoPedido($dados);
+
+                //atualiza a tabela RESERVA_ESTOQUE_PRODUTO que tiver o COD_RESERVA_ESTOQUE da consulta acima
+                $reservaEstoqueProdutoRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+
+                foreach ($arrayReservaEstoqueId as $key => $reservaEstoqueId) {
+                    $arrayReservaProdutoEntity = $reservaEstoqueProdutoRepository->findBy(array('reservaEstoque' => $reservaEstoqueId['reservaEstoque']));
+
+                    foreach ($arrayReservaProdutoEntity as $reservaProdutoEntity) {
+                        $reservaProdutoEntity->setQtd($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']);
+                        $this->_em->persist($reservaProdutoEntity);
+                    }
+                }
+            }
+        }
+        $this->_em->flush();
     }
 
 }

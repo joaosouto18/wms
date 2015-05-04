@@ -148,7 +148,7 @@ class OrdemServicoRepository extends EntityRepository
             ->where('os.idExpedicao = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
 
-        $result = $queryBuilder->getQuery()->getResult();
+        //$result = $queryBuilder->getQuery()->getResult();
 
         return $queryBuilder;
 
@@ -199,6 +199,29 @@ class OrdemServicoRepository extends EntityRepository
         $queryBuilder->setParameter('idOS', $idOS);
 
         return $queryBuilder;
+    }
+
+    public function forcarCorrecao($idRecebimento)
+    {
+
+        $entity = $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(os.id), MIN(os.id)')
+            ->from('wms:OrdemServico', 'os')
+            ->where("os.dataFinal is null and os.idRecebimento = $idRecebimento");
+
+        return $entity->getQuery()->getResult();
+    }
+
+    public function atualizarDataFinal($idOrdemServico, $data)
+    {
+        $ordemServicoEntity = $this->find($idOrdemServico);
+
+        $ordemServicoEntity->setDataFinal($data);
+
+        $this->getEntityManager()->persist($ordemServicoEntity);
+        $this->getEntityManager()->flush();
+
+        return true;
     }
 
 }
