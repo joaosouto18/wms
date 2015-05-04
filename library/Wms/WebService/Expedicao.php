@@ -491,6 +491,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         foreach ($produtos as $produto) {
             $enProduto = $ProdutoRepo->find(array('id' => $produto['codProduto'], 'grade' => $produto['grade']));
+            if (isset($produto['quantidade'])) {
+                $produto['qtde'] = $produto['quantidade'];
+            }
+
             $prod = array(
                 'codPedido' => $enPedido->getId(),
                 'pedido' => $enPedido,
