@@ -30,7 +30,7 @@ class Wms_WebService
     public function trimArray(&$array)
     {
         foreach($array as &$value)
-            is_array($value) ? multiDim($value):$value=trim($value);
+            is_array($value) ? $this->trimArray($value):$value=trim($value);
         unset($value);
     }
 }
