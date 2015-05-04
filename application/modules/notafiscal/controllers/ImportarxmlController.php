@@ -17,6 +17,7 @@ use \Wms\Domain\Entity\NotaFiscal,
 class Notafiscal_ImportarxmlController extends Crud
 {
 
+    private $_falhas = array();
     protected $entityName = 'NotaFiscal';
     //@isValid: Boolean variável isValid = true, caso encontre divergências valor = false
     private $isValid = true;
@@ -63,6 +64,8 @@ class Notafiscal_ImportarxmlController extends Crud
             try {
                 // Recebe o arquivo de upload
                 $upload->receive();
+                $this->_falhas = array();
+                $this->isValid = true;
                 $valida=$this->validarNota($upload);
 
                 //Nota Fiscal Válida?
@@ -74,7 +77,6 @@ class Notafiscal_ImportarxmlController extends Crud
                     print "<pre>";
                     print_r($valida['NotValid']);
                 }
-
 
             } catch (Zend_File_Transfer_Exception $e) {
                 echo $e->message();
@@ -130,7 +132,6 @@ class Notafiscal_ImportarxmlController extends Crud
                 }
             }
 
-
             return $arrayRetorno;
     }
 
@@ -151,6 +152,7 @@ class Notafiscal_ImportarxmlController extends Crud
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='serie';
             $arrayRetorno['NotValid']['valores']['serie']=$dados["NFe"]["infNFe"]['ide']['serie'];
+            $this->_falhas[] = "Série inválida - " . $dados["NFe"]["infNFe"]['ide']['serie'];
         }
 
         if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ){
@@ -161,6 +163,7 @@ class Notafiscal_ImportarxmlController extends Crud
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='dEmi';
             $arrayRetorno['NotValid']['valores']['dEmi']=$dados["NFe"]["infNFe"]['ide']['dEmi'];
+            $this->_falhas[] = "Data de Emissão Inválida - " . $dados["NFe"]["infNFe"]['ide']['dEmi'];
         }
 
         $arrayRetorno['NotaFiscal']['COD_STATUS']=NotaFiscal::STATUS_INTEGRADA;
@@ -185,12 +188,14 @@ class Notafiscal_ImportarxmlController extends Crud
                 $this->isValid=false;
                 $arrayRetorno['NotValid']['tags'][]='CNPJ';
                 $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['emit']['CNPJ'];
+                $this->_falhas[] = "Não encontrado nenhum fornecedor com este CNPJ - " . $dados["NFe"]["infNFe"]['emit']['CNPJ'];
             }
 
         } else {
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='CNPJ';
             $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['emit']['CNPJ'];
+            $this->_falhas[] = "CNPJ inválido - " . $dados["NFe"]["infNFe"]['emit']['CNPJ'];
         }
 
         $arrayRetorno['NotaFiscal']['NUM_NOTA_FISCAL']=$dados["NFe"]["infNFe"]['ide']['nNF'];
@@ -266,6 +271,8 @@ class Notafiscal_ImportarxmlController extends Crud
                     $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
                     $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
                     $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $EAN = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $this->_falhas[]
                 }
             }
             else {
@@ -275,6 +282,7 @@ class Notafiscal_ImportarxmlController extends Crud
                 $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
                 $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
                 $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                return $arrayRetorno;
             }
 
 
