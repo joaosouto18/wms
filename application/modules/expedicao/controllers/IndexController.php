@@ -198,8 +198,8 @@ class Expedicao_IndexController  extends Action
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
-        $result = $ExpedicaoRepo->getProdutosSemEstoqueByExpedicao($idExpedicao);
-        $this->exportPDF($result,'semEstoque.pdf','Produtos sem estoque na expedição','L');
+        $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
+        $this->exportPDF($result,'volume-patrimonio.pdf','Relatório de Volumes Patrimônio da Expedição','L');
     }
 
 }
