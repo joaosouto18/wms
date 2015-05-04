@@ -184,6 +184,15 @@ class Expedicao extends Grid
                         return $row['status'] != "INTEGRADO";
                     }
                 ))
+            ->addAction(array(
+                'label' => 'Relatório de Volumes Patrimônio',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'imprimir',
+                'cssClass' => 'dialogAjax pdf',
+                'pkIndex' => 'id'
+            ))
                 ->setShowExport(true)
                 ->setShowMassActions($params);
 
