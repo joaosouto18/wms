@@ -1097,7 +1097,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $cond=" AND  DE.NUM_RUA = ".$rua." ";
         }
 
-
         $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
@@ -1112,6 +1111,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function verificaSeEProdutoComposto($idProduto)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.numVolumes')
+            ->from('wms:Produto', 'p')
+            ->where('p.id = :codProduto')
+            ->setParameter('codProduto', $idProduto);
+
+        return $dql->getQuery()->getResult();
     }
 
 }

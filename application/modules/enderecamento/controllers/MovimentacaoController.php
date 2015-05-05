@@ -173,7 +173,7 @@ class Enderecamento_MovimentacaoController extends Action
         echo $this->_helper->json(false);
     }
 
-    public function volumesAction(){
+    public function volumesAction() {
         $codProduto = $this->_getParam('idproduto');
         $grade = $this->_getParam('grade');
         $grade = trim($grade);
@@ -301,6 +301,17 @@ class Enderecamento_MovimentacaoController extends Action
 
         $enderecoEn = $this->getEntityManager()->getReference("wms:Deposito\Endereco",$idEndereco);
         $this->view->endereco = $enderecoEn->getDescricao();
+    }
+
+    public function consultarProdutoAction()
+    {
+        $idProduto = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $result = $produtoRepo->verificaSeEProdutoComposto($idProduto);
+
+        echo $this->_helper->json($result);
     }
 
 } 

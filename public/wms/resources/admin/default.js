@@ -266,10 +266,12 @@ $(document).ready(function(){
     function getVolumes(idProduto,grade){
         $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
             if (dataReturn.length > 0) {
-                var options = '<option value="">Selecione um agrupador de volumes...</option>';
+                var options = '<option selected value="">Selecione um agrupador de volumes...</option>';
+
                 for (var i = 0; i < dataReturn.length; i++) {
-                    options += '<option value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
+                    options += '<option selected value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
                 }
+
                 $('#volumes').html(options);
                 $('#volumes').parent().show();
                 $('#volumes').focus();
