@@ -372,7 +372,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $cliente->tipoPessoa = "J";
             }
 
-            throw new \Exception("Chegou aqui 6");
             $enderecos = $pedidoEn->getPessoa()->getPessoa()->getEnderecos();
             if (count($enderecos) >0) {
                 $cliente->logradouro = $enderecos[0]->getDescricao();
@@ -402,6 +401,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
             $carga->pedidos[] = $pedido;
         }
+        throw new \Exception("Chegou aqui 7");
 
         return $carga;
     }
