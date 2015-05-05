@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+    Wms\Domain\Entity\NotaFiscal\Item as ItemNF,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Core\Util\Produto as ProdutoUtil;
 
@@ -753,7 +754,7 @@ class NotaFiscalRepository extends EntityRepository
                 ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
 
             if ($notaFiscalEntity != null)
-                throw new \Exception('Nota fiscal já se encontra cadastrada');
+                throw new \Exception("Nota fiscal $numero / $serie já se encontra cadastrada");
 
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))

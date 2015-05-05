@@ -69,8 +69,6 @@ class Notafiscal_ImportarxmlController extends Crud
                 $result=$this->validarNota($upload);
 
                 if ($this->isValid) {
-
-                    var_dump($result);
                     /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
                     $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
                     $idFornecedor = trim($result['NotaFiscal']['COD_FORNECEDOR']);
@@ -81,7 +79,7 @@ class Notafiscal_ImportarxmlController extends Crud
                     $bonificacao = 'N';
                     $itens = $result['NotaFiscalItem'];
                     $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
-                    $this->addFlashMessage("success","Nota Fiscal $numero/$serie importada com sucesso");
+                    $this->addFlashMessage("success","Nota Fiscal $numero / $serie importada com sucesso");
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage("error",$e->getMessage());
