@@ -352,7 +352,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         foreach ($pedidosEn as $pedidoEn) {
             $itinerario = new itinerario();
             if ($pedidoEn->getItinerario() == null) {
-                throw new \Exception("Chegou aqui--4--");
+                throw new \Exception($pedidoEn->getItinerario());
                 $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
                 $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
             } else {
