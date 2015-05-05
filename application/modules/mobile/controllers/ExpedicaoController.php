@@ -557,7 +557,7 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        $this->confereEtiqueta($etiquetaSeparacao, $volume);
+        $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
 
         if ($this->_request->isXmlHttpRequest()) {
             $this->createXml('success', 'Etiqueta conferida com sucesso');
