@@ -290,6 +290,13 @@ class EtiquetaSeparacao extends Pdf
         $impressao = "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         $this->SetFont('Arial', 'B', 13);
+
+        $tamanhoSringProduto = strlen($etiqueta['produto']);
+        if ($tamanhoSringProduto >= 35) {
+            $this->SetFont('Arial', 'B', 11);
+        } else {
+            $this->SetFont('Arial', 'B', 13);
+        }
         $impressao = substr(trim($etiqueta['produto']),0,70)."\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         $this->SetFont('Arial', 'B', 9);
