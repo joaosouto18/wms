@@ -80,6 +80,8 @@ class Notafiscal_ImportarxmlController extends Crud
                     $itens = $result['NotaFiscalItem'];
                     $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
                     $this->addFlashMessage("success","Nota Fiscal $numero / $serie importada com sucesso");
+                } else {
+                    $this->addFlashMessage("error","Falhas importando nota fiscal");
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage("error",$e->getMessage());
