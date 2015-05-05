@@ -350,8 +350,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         foreach ($pedidosEn as $pedidoEn) {
             $itinerario = new itinerario();
-            $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
-            $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
+            if ($pedidoEn->getItinerario() == null) {
+                $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
+                $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
+            } else {
+                $itinerario->idItinerario = "";
+                $itinerario->nomeItinerario = "";
+            }
 
             $cliente = new cliente();
             $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
