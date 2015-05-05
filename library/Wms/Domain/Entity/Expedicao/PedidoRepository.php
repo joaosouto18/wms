@@ -263,10 +263,16 @@ class PedidoRepository extends EntityRepository
 
                 foreach ($arrayReservaEstoqueId as $key => $reservaEstoqueId) {
                     $arrayReservaProdutoEntity = $reservaEstoqueProdutoRepository->findBy(array('reservaEstoque' => $reservaEstoqueId['reservaEstoque']));
-
                     foreach ($arrayReservaProdutoEntity as $reservaProdutoEntity) {
                         $reservaProdutoEntity->setQtd($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']);
                         $this->_em->persist($reservaProdutoEntity);
+
+                        $reservaEstoqueRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
+                        $reservaId = $reservaEstoqueRepository->findOneBy(array('id' => $reservaProdutoEntity->getReservaEstoque()));
+                        if ($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade'] == 0) {
+                            $reservaId->setAtendida('C');
+                            $this->_em->persist($reservaId);
+                        }
                     }
                 }
             }
