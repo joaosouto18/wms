@@ -396,7 +396,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto->codProduto = $item['COD_PRODUTO'];
                 $produto->grade = $item['DSC_GRADE'];
                 $produto->quantidade = $item['QTD_PEDIDO'];
-                $produto->qtdeAtendido = 1;
+                $produto->quantidadeAtendida = $item['QTD_ATENDIDO'];;
                 $pedido->produtos[] = $produto;
             }
             $carga->pedidos[] = $pedido;
