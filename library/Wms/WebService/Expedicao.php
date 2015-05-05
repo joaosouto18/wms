@@ -347,7 +347,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $carga->situacao = $cargaEn->getExpedicao()->getStatus()->getSigla();
         $carga->pedidos = array();
         $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
-        throw new \Exception("Chegou aqui");
 
         /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         foreach ($pedidosEn as $pedidoEn) {
@@ -359,6 +358,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $itinerario->idItinerario = "";
                 $itinerario->nomeItinerario = "";
             }
+
+            throw new \Exception("Chegou aqui");
 
             $cliente = new cliente();
             $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
