@@ -29,12 +29,14 @@
     $qtdSaida = 0;
 
     foreach($this->reservas as $reserva) {?>
-        <tr>
-            <td><?php echo $reserva['ORIGEM']?></td>
-            <td><?php echo $reserva['DTH_RESERVA']?></td>
-            <td><?php echo $reserva['TIPO']?></td>
-            <td><?php echo $reserva['QTD_RESERVADA']?></td>
-        </tr>
+        <?php if ($reserva['QTD_RESERVADA'] != 0) : ?>
+            <tr>
+                <td><?php echo $reserva['ORIGEM']?></td>
+                <td><?php echo $reserva['DTH_RESERVA']?></td>
+                <td><?php echo $reserva['TIPO']?></td>
+                <td><?php echo $reserva['QTD_RESERVADA']?></td>
+            </tr>
+        <?php endif; ?>
     <?php
         if ($reserva['QTD_RESERVADA'] > 0) {
             $qtdEntrada = $qtdEntrada +$reserva['QTD_RESERVADA'];
