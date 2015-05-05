@@ -172,4 +172,15 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $this->redirect("gerenciar-os","onda-ressuprimento","expedicao",$formParams);
     }
 
+    public function listAction()
+    {
+        $idOndaOs = $this->_getParam("ID");
+
+        /** @var \Wms\Domain\Entity\Ressuprimento\AndamentoRepository $andamentoRepo */
+        $andamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\Andamento");
+        $result = $andamentoRepo->getAndamentoRessuprimento($idOndaOs);
+
+        $this->view->andamentos = $result;
+    }
+
 }
