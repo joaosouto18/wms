@@ -359,7 +359,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $itinerario->nomeItinerario = "";
             }
 
-            throw new \Exception("Chegou aqui");
+            throw new \Exception("Chegou aqui--3--");
 
             $cliente = new cliente();
             $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
