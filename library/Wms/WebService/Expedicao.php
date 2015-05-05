@@ -401,7 +401,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
             $carga->pedidos[] = $pedido;
         }
-        throw new \Exception("Chegou aqui 7");
 
         return $carga;
     }
