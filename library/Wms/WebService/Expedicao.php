@@ -341,13 +341,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
             throw new \Exception($tipoCarga . " " . $idCargaExterno . " não encontrado");
         }
 
-        throw new \Exception("Chegou aqui");
         $carga = new carga();
         $carga->codCarga = $idCargaExterno;
         $carga->tipo = $tipoCarga;
         $carga->situacao = $cargaEn->getExpedicao()->getStatus()->getSigla();
         $carga->pedidos = array();
         $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+        throw new \Exception("Chegou aqui");
+
         /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         foreach ($pedidosEn as $pedidoEn) {
             $itinerario = new itinerario();
