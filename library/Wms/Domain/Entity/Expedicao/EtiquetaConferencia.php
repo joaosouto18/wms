@@ -4,10 +4,10 @@ namespace Wms\Domain\Entity\Expedicao;
 
 /**
  *
- * @Table(name="ETIQUETA_SEPARACAO")
- * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository")
+ * @Table(name="ETIQUETA_CONFERENCIA")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository")
  */
-class EtiquetaSeparacao 
+class EtiquetaConferencia
 {
     const STATUS_PENDENTE_IMPRESSAO = 522;
     const STATUS_ETIQUETA_GERADA = 523;
@@ -16,39 +16,19 @@ class EtiquetaSeparacao
     const STATUS_CONFERIDO = 526;
     const STATUS_RECEBIDO_TRANSBORDO = 532;
     const STATUS_EXPEDIDO_TRANSBORDO = 531;
-    const STATUS_PRIMEIRA_CONFERENCIA = 542;
-    const STATUS_SEGUNDA_CONFERENCIA = 543;
-
 
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @Column(name="COD_ETIQUETA_SEPARACAO", type="integer", nullable=false)
-     * @SequenceGenerator(sequenceName="SQ_ETQ_SEPARACAO_01", initialValue=1, allocationSize=1)
+     * @Column(name="COD_ETIQUETA_CONFERENCIA", type="integer", nullable=false)
+     * @SequenceGenerator(sequenceName="SQ_ETIQUETA_CONFERENCIA_01", initialValue=1, allocationSize=1)
      */
     protected $id;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
-     * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
+     * @Column(name="COD_OS_PRIMEIRA_CONFERENCIA", type="integer", nullable=true)
      */
-    protected $produtoEmbalagem;
-
-    /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
-     * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
-     */
-    protected $produtoVolume;
-
-    /**
-     * @Column(name="DTH_CONFERENCIA", type="datetime", nullable=true)
-     */
-    protected $dataConferencia;
-
-    /**
-     * @Column(name="DTH_CONFERENCIA_TRANSBORDO", type="datetime", nullable=true)
-     */
-    protected $dataConferenciaTransbordo;
+    protected $codOsPrimeiraConferencia;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
@@ -62,9 +42,15 @@ class EtiquetaSeparacao
     protected $codStatus;
 
     /**
-     * @Column(name="COD_REFERENCIA", type="integer", nullable=false)
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao")
+     * @JoinColumn(name="COD_EXPEDICAO", referencedColumnName="COD_EXPEDICAO")
      */
-    protected $codReferencia;
+    protected $expedicao;
+
+    /**
+     * @Column(name="COD_EXPEDICAO", type="integer", nullable=false)
+     */
+    protected $codExpedicao;
 
     /**
      * @Column(name="COD_PRODUTO", type="integer", nullable=false)
@@ -98,14 +84,15 @@ class EtiquetaSeparacao
     protected $pedido;
 
     /**
-     * @Column(name="DSC_REIMPRESSAO", type="string", nullable=true)
+     * @Column(name="COD_PEDIDO", type="integer", nullable=false)
      */
-    protected $reimpressao;
+    protected $codReferencia;
+
 
     /**
-     * @Column(name="COD_OS", type="integer", nullable=true)
+     * @Column(name="COD_ETIQUETA_SEPARACAO", type="integer", nullable=false)
      */
-    protected $codOS;
+    protected $codEtiquetaSeparacao;
 
     /**
      * @Column(name="COD_OS_TRANSBORDO", type="integer", nullable=true)
@@ -117,6 +104,29 @@ class EtiquetaSeparacao
      * @JoinColumn(name="COD_VOLUME_PATRIMONIO", referencedColumnName="COD_VOLUME_PATRIMONIO")
      */
     protected $volumePatrimonio;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
+     * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
+     */
+    protected $produtoEmbalagem;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
+     * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
+     */
+    protected $produtoVolume;
+
+    /**
+     * @Column(name="DTH_CONFERENCIA", type="datetime", nullable=true)
+     */
+    protected $dataConferencia;
+
+    /**
+     * @Column(name="DTH_CONFERENCIA_TRANSBORDO", type="datetime", nullable=true)
+     */
+    protected $dataConferenciaTransbordo;
+
 
     public function setDataConferencia($dataConferencia)
     {
@@ -198,6 +208,37 @@ class EtiquetaSeparacao
         return $this->produto;
     }
 
+    public function setCodEtiquetaSeparacao($codEtiquetaSeparacao)
+    {
+        $this->codEtiquetaSeparacao = $codEtiquetaSeparacao;
+    }
+
+    public function getCodEtiquetaSeparacao()
+    {
+        return $this->codEtiquetaSeparacao;
+    }
+
+
+    public function setCodExpedicao($codExpedicao)
+    {
+        $this->codExpedicao = $codExpedicao;
+    }
+
+    public function getCodExpedicao()
+    {
+        return $this->codExpedicao;
+    }
+
+    public function setExpedicao($expedicao)
+    {
+        $this->expedicao = $expedicao;
+    }
+
+    public function getExpedicao()
+    {
+        return $this->expedicao;
+    }
+
     public function setGrade($grade)
     {
         $this->grade = $grade;
@@ -208,34 +249,14 @@ class EtiquetaSeparacao
         return $this->grade;
     }
 
-    public function setReimpressao($reimpressao)
+    public function setCodOsPrimeiraConferencia($codOsPrimeiraConferencia)
     {
-        $this->reimpressao = $reimpressao;
+        $this->codOsPrimeiraConferencia = $codOsPrimeiraConferencia;
     }
 
-    public function getReimpressao()
+    public function getCodOsPrimeiraConferencia()
     {
-        return $this->reimpressao;
-    }
-
-    public function setCodReferencia($codReferencia)
-    {
-        $this->codReferencia = $codReferencia;
-    }
-
-    public function getCodReferencia()
-    {
-        return $this->codReferencia;
-    }
-
-    public function setCodOS($codOS)
-    {
-        $this->codOS = $codOS;
-    }
-
-    public function getCodOS()
-    {
-        return $this->codOS;
+        return $this->codOsPrimeiraConferencia;
     }
     public function setCodOSTransbordo($codOSTransbordo)
     {

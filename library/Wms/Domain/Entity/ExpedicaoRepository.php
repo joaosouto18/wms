@@ -431,9 +431,41 @@ class ExpedicaoRepository extends EntityRepository
 
     public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true)
     {
+        $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
+
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
+        if ($verificaReconferencia=='S'){
+            $idStatus=$expedicaoEn->getStatus()->getId();
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+            $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
+            if ($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
+                $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO,$idExpedicao);
+
+                if (count($numEtiquetas) > 0) {
+                    return 'Existem etiquetas pendentes de conferência nesta expedição';
+                } else {
+                    /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
+                    $expedicaoEntity = $this->find($idExpedicao);
+
+                    $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
+
+                    return 0;
+                }
+
+            } else {
+                $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA,$idExpedicao);
+                if (count($numEtiquetas) > 0) {
+                    return 'Existem etiquetas pendentes de conferência nesta expedição';
+                }
+            }
+        }
+
+
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
 
         $pedidoProdutoSemEtiquetas = $this->findProdutosSemEtiquetasById($idExpedicao);
         if (count($pedidoProdutoSemEtiquetas) > 0) {

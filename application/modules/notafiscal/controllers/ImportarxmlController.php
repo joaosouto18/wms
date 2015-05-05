@@ -272,7 +272,6 @@ class Notafiscal_ImportarxmlController extends Crud
                     $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
                     $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
                     $EAN = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
-                    $this->_falhas[]
                 }
             }
             else {

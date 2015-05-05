@@ -415,8 +415,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param int $status
      * @return int
      */
-    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null)
+    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null,$idExpedicao = null)
     {
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+        $etiquetaConferenciaRepo=$this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
         $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $status);
         $prodSemdados = 0;
 
@@ -446,9 +449,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($codReferencia != null) {
                             $arrayEtiqueta['codReferencia'] = $codReferencia;
-                            $this->save($arrayEtiqueta,$statusEntity);
+                            $codEtiqueta=$this->save($arrayEtiqueta,$statusEntity);
+
+                            if ($verificaReconferencia=='S'){
+                                $arrayEtiqueta['codEtiquetaSeparacao']=$codEtiqueta;
+                                $arrayEtiqueta['expedicao']=$this->_em->getReference('wms:Expedicao', $idExpedicao);
+                                $etiquetaConferenciaRepo->save($arrayEtiqueta,$statusEntity) ;
+                            }
                         } else {
                             $codReferencia = $this->save($arrayEtiqueta,$statusEntity);
+                            if ($verificaReconferencia=='S'){
+                                unset($arrayEtiqueta['codReferencia']);
+                                $arrayEtiqueta['codEtiquetaSeparacao']=$codReferencia;
+                                $arrayEtiqueta['expedicao']=$this->_em->getReference('wms:Expedicao', $idExpedicao);
+                                $etiquetaConferenciaRepo->save($arrayEtiqueta,$statusEntity) ;
+                            }
                         }
 
                         unset($arrayEtiqueta);
@@ -476,7 +491,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $arrayEtiqueta['produto']           = $produtoEntity;
                     $arrayEtiqueta['grade']             = $produtoEntity;
                     $arrayEtiqueta['pedido']            = $pedidoEntity;
-                    $this->save($arrayEtiqueta,$statusEntity);
+                    $codEtiqueta=$this->save($arrayEtiqueta,$statusEntity);
+                    if ($verificaReconferencia=='S'){
+                        unset($arrayEtiqueta['codReferencia']);
+                        $arrayEtiqueta['codEtiquetaSeparacao']=$codEtiqueta;
+                        $arrayEtiqueta['expedicao']=$this->_em->getReference('wms:Expedicao', $idExpedicao);
+                        $etiquetaConferenciaRepo->save($arrayEtiqueta,$statusEntity) ;
+                    }
                     unset($arrayEtiqueta);
                 }
             }
