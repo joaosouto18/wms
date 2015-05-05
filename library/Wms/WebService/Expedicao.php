@@ -341,6 +341,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             throw new \Exception($tipoCarga . " " . $idCargaExterno . " não encontrado");
         }
 
+        throw new \Exception("Chegou aqui");
         $carga = new carga();
         $carga->codCarga = $idCargaExterno;
         $carga->tipo = $tipoCarga;
