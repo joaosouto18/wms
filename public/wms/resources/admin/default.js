@@ -27,7 +27,16 @@ $(document).ready(function(){
             'url': this.href, 
             'title':$(this).html()
         });
-    });    
+    });
+
+    $('#selectAll').click(function () {
+
+        if($('#selectAll').prop('checked')) {
+            $( ".checkBoxClass" ).prop( "checked", true );
+        } else {
+            $( ".checkBoxClass" ).prop( "checked", false );
+        }
+    });
     
 
     /* Brazilian initialisation for the jQuery UI date picker plugin. */
