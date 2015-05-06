@@ -188,7 +188,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 if(keycode == '13') {
                     $('#buscarestoque').click();
                     getVolumes(prodId, 'UNICA');
-                    //$('#idProduto').focus();
                 } else {
                     return;
                 }
