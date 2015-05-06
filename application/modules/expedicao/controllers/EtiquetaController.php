@@ -176,8 +176,7 @@ class Expedicao_EtiquetaController  extends Action
 
         if (count($pedidosProdutos) == 0) {
             $cargas = implode(',',$cargas);
-            $this->addFlashMessage('error', 'Pedidos não encontrados na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
-            $this->_redirect('/expedicao');
+            $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */

@@ -283,7 +283,7 @@ class PaleteRepository extends EntityRepository
         if (($dtFinalRecebimento2 != NULL) && ($dtFinalRecebimento2 != "")) {
             $SQL .= " AND R.DTH_FINAL_RECEB <= TO_DATE('$dtFinalRecebimento2 23:59','DD-MM-YYYY HH24:MI')";
         }
-        $SQL .= "   ORDER BY PROD.VOLUMES, S.DSC_SIGLA, P.UMA";
+        $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

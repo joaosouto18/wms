@@ -1189,7 +1189,6 @@ class ExpedicaoRepository extends EntityRepository
      * @return mixed
      */
     public function getResumoConferenciaByID ($idExpedicao){
-
         $source = $this->_em->createQueryBuilder()
             ->select('e.id,
                       e.dataInicio,
@@ -1523,6 +1522,27 @@ class ExpedicaoRepository extends EntityRepository
             }
         }
         $this->getEntityManager()->flush();
+
+    }
+
+    public function getVolumesExpedicaoByExpedicao($idExpedicao)
+    {
+        $sql = "SELECT
+                  DISTINCT
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRIÇÃO, i.DSC_ITINERARIO as ITINERÁRIO, pes.NOM_PESSOA as CLIENTE
+                    FROM EXPEDICAO_VOLUME_PATRIMONIO evp
+                INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
+                INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
+                INNER JOIN PEDIDO p ON p.COD_CARGA = C.COD_CARGA
+                INNER JOIN ETIQUETA_SEPARACAO es ON p.COD_PEDIDO = es.COD_PEDIDO AND evp.COD_VOLUME_PATRIMONIO = es.COD_VOLUME_PATRIMONIO
+                INNER JOIN PESSOA pes ON pes.COD_PESSOA = p.COD_PESSOA
+                INNER JOIN ITINERARIO i ON i.COD_ITINERARIO = p.COD_ITINERARIO
+                WHERE evp.COD_EXPEDICAO = $idExpedicao
+                ORDER BY vp.COD_VOLUME_PATRIMONIO ASC";
+
+        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
 
     }
 
