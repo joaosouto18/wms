@@ -58,13 +58,20 @@ class Inventario extends Pdf
         $dscVolumes = "";
         $dscProdutoAnterior = null;
 
-        $this->Cell(20,5, $saldo[0]['dscEndereco'] ,1, 0);
-        $this->Cell(15, 5, $saldo[0]['codProduto'] ,1, 0);
-        $this->Cell(90, 5, substr($saldo[0]['descricao'], 0, 50) ,1, 0);
-        $this->Cell(105, 5, $saldo[0]['volume'] ,1, 0);
-        $this->Cell(43, 5, $saldo[0]['unitizador'] ,1, 0);
-        $this->Cell(12, 5, $saldo[0]['qtd'] ,1, 1);
+        if (count($saldo) >0) {
+            $enderecoAnterior = $saldo[0]['dscEndereco'];
+            $codProdutoAnterior = $saldo[0]['codProduto'];
+            $dscProdutoAnterior = $saldo[0]['descricao'];
+            $unitizadorAnterior = $saldo[0]['unitizador'];
+            $gradeAnterior= $saldo[0]['grade'];
+            $qtdAnterior = "";
 
+            if ($exibirEstoque == true) {
+                $qtdAnterior = $saldo[0]['qtd'];
+            }
+
+        }
+        
         foreach ($saldo as $estoque) {
             $endereco = $estoque['dscEndereco'];
             $codProduto = $estoque['codProduto'];
@@ -78,29 +85,22 @@ class Inventario extends Pdf
                 $qtd = $estoque['qtd'];
             }
 
-            if ($qtdAnterior == null) $qtdAnterior = $qtd;
-            if ($codProdutoAnterior == null) $codProdutoAnterior = $codProduto;
-            if ($gradeAnterior == null) $gradeAnterior = $grade;
-            if ($unitizadorAnterior == null) $unitizadorAnterior = $unitizador;
-            if ($enderecoAnterior == null) $enderecoAnterior = $endereco;
-            if ($dscProdutoAnterior == null) $dscProdutoAnterior = $dscProdutoAnterior;
-
             if (($endereco != $enderecoAnterior) || ($codProduto != $codProdutoAnterior) || ($grade != $gradeAnterior) || ($qtd != $qtdAnterior) || ($unitizadorAnterior != $unitizador || $dscProdutoAnterior != $dscProdutoAnterior)) {
                 if (strlen($dscVolumes) >=63) {
                     $dscVolumes = substr($dscVolumes,0,59) . "...";
                 }
 
-                if ($qtd == 0) {
-                    $dscVolumes = null;
-                    $estoque['unitizador'] = null;
+                if ($qtdAnterior == 0) {
+                    $dscVolumes = "";
+                    $estoque['unitizador'] = "";
                 }
 
-                $this->Cell(20,5, $estoque['dscEndereco'] ,1, 0);
-                $this->Cell(15, 5, $estoque['codProduto'] ,1, 0);
-                $this->Cell(90, 5, substr($estoque['descricao'], 0, 50) ,1, 0);
+                $this->Cell(20,5, $enderecoAnterior ,1, 0);
+                $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
+                $this->Cell(90, 5, substr($dscProdutoAnterior, 0, 50) ,1, 0);
                 $this->Cell(105, 5, $dscVolumes ,1, 0);
-                $this->Cell(43, 5, $estoque['unitizador'] ,1, 0);
-                $this->Cell(12, 5, $estoque['qtd'] ,1, 1);
+                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                $this->Cell(12, 5, $qtdAnterior ,1, 1);
 
                 $dscVolumes = "";
             }
@@ -114,6 +114,7 @@ class Inventario extends Pdf
             $dscProdutoAnterior = $dscProduto;
             $unitizadorAnterior = $unitizador;
             $qtdAnterior = $qtd;
+
 
             if ($estoque == $saldo[count($saldo)-1]){
 
