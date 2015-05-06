@@ -246,29 +246,17 @@ $(document).ready(function(){
         clicky = null;
     });
 
-    idProduto.focusout(function(){
-        getVolumes(idProduto.val(),grade.val());
 
-        var id = clicky.attr('id');
-        var value = clicky.attr('value');
+    $('#idProduto').keypress(function(event) {
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        prodId = $('#idProduto').val();
 
-        if (id == 'buscarestoque') {
-            if ($('#rua').val() != '' || $('#uma').val() != '') {
-                Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
-            }
-            else {
-                if ($("#idProduto").val() == '') {
-                    alert("Preencha o código do produto");
-                } else {
-                    Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
-                }
-            }
-        } else if ((id =='submit') && (value =='Movimentar')) {
-            if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
-                alert("Preencha o endereço e a quantidade");
-            } else {
-                var alerta = Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
-            }
+        if(keycode == '13') {
+            $('#buscarestoque').click();
+            getVolumes(prodId, 'UNICA');
+            //$('#idProduto').focus();
+        } else {
+            return;
         }
     });
 
@@ -293,6 +281,12 @@ $(document).ready(function(){
 
     $('#imprimir').mousedown(function() {
         $('#idProduto').focusin();
+    });
+
+    $('#produtosdivergentes').mouseenter(function () {
+        $(this).click(function () {
+            location.href='/enderecamento/relatorio_estoque/consultar-produto';
+        });
     });
 
     grade.autocomplete({
