@@ -281,6 +281,22 @@ $(document).ready(function(){
             }
         })
     }
+
+
+    $('#idProduto').keypress(function(event) {
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        prodId = $('#idProduto').val();
+
+        if(keycode == '13') {
+            $('#buscarestoque').click();
+            getVolumes(prodId, 'UNICA');
+            //$('#idProduto').focus();
+        } else {
+            return;
+        }
+
+    });
+
     grade.autocomplete({
         source: "/enderecamento/movimentacao/filtrar/idproduto/",
         minLength: 0

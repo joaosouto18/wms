@@ -155,19 +155,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 return false;
             });
 
-            $('#idProduto').keypress(function(event) {
-                var keycode = (event.keyCode ? event.keyCode : event.which);
-                prodId = $('#idProduto').val();
-
-                if(keycode == '13') {
-                    $('#buscarestoque').click();
-                } else {
-                    return;
-                }
-
-                $('#idProduto').focus();
-            });
-
         }
 
     });
