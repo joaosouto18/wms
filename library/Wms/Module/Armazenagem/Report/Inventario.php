@@ -58,67 +58,68 @@ class Inventario extends Pdf
         $dscVolumes = "";
         $dscProdutoAnterior = "";
 
-
         foreach ($saldo as $estoque) {
-            $endereco = $estoque['dscEndereco'];
-            $codProduto = $estoque['codProduto'];
-            $descricaoProduto = $estoque['descricao'];
-            $descricaoVolume = str_replace(";CADASTRO","",$estoque['volume']);
-            $unitizador = $estoque['unitizador'];
-            $grade= $estoque['grade'];
-            $qtd = "";
-            if ($exibirEstoque == true) {
-                $qtd = $estoque['qtd'];
-            }
-
-            if ($qtdAnterior == null) $qtdAnterior = $qtd;
-            if ($codProdutoAnterior == null) $codProdutoAnterior = $codProduto;
-            if ($gradeAnterior == null) $gradeAnterior = $grade;
-            if ($unitizadorAnterior == null) $unitizadorAnterior = $unitizador;
-            if ($enderecoAnterior == null) $enderecoAnterior = $endereco;
-
-            if (($endereco != $enderecoAnterior) ||
-                ($codProduto != $codProdutoAnterior) ||
-                ($grade != $gradeAnterior) ||
-                ($qtd != $qtdAnterior) ||
-                ($unitizadorAnterior != $unitizador)){
-
-                if (strlen($dscVolumes) >=63) {
-                    $dscVolumes = substr($dscVolumes,0,59) . "...";
+            if ($estoque['qtd'] != 0) {
+                $endereco = $estoque['dscEndereco'];
+                $codProduto = $estoque['codProduto'];
+                $descricaoProduto = $estoque['descricao'];
+                $descricaoVolume = str_replace(";CADASTRO","",$estoque['volume']);
+                $unitizador = $estoque['unitizador'];
+                $grade= $estoque['grade'];
+                $qtd = "";
+                if ($exibirEstoque == true) {
+                    $qtd = $estoque['qtd'];
                 }
 
-                $this->Cell(20,5,$enderecoAnterior ,1, 0);
-                $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
-                $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
-                $this->Cell(105, 5, $dscVolumes ,1, 0);
-                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
-                $this->Cell(12, 5, $qtdAnterior ,1, 1);
+                if ($qtdAnterior == null) $qtdAnterior = $qtd;
+                if ($codProdutoAnterior == null) $codProdutoAnterior = $codProduto;
+                if ($gradeAnterior == null) $gradeAnterior = $grade;
+                if ($unitizadorAnterior == null) $unitizadorAnterior = $unitizador;
+                if ($enderecoAnterior == null) $enderecoAnterior = $endereco;
 
-                $dscVolumes = "";
-            }
+                if (($endereco != $enderecoAnterior) ||
+                    ($codProduto != $codProdutoAnterior) ||
+                    ($grade != $gradeAnterior) ||
+                    ($qtd != $qtdAnterior) ||
+                    ($unitizadorAnterior != $unitizador)){
 
-            if ($dscVolumes != "") $dscVolumes.=";";
-            $dscVolumes .= $descricaoVolume;
+                    if (strlen($dscVolumes) >=63) {
+                        $dscVolumes = substr($dscVolumes,0,59) . "...";
+                    }
 
-            $enderecoAnterior = $endereco;
-            $codProdutoAnterior = $codProduto;
-            $gradeAnterior = $grade;
-            $dscProdutoAnterior = $descricaoProduto;
-            $unitizadorAnterior = $unitizador;
-            $qtdAnterior = $qtd;
+                    $this->Cell(20,5,$enderecoAnterior ,1, 0);
+                    $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
+                    $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
+                    $this->Cell(105, 5, $dscVolumes ,1, 0);
+                    $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                    $this->Cell(12, 5, $qtdAnterior ,1, 1);
 
-            if ($estoque == $saldo[count($saldo)-1]){
-
-                if (strlen($dscVolumes) >=63) {
-                    $dscVolumes = substr($dscVolumes,0,59) . "...";
+                    $dscVolumes = "";
                 }
 
-                $this->Cell(20,5,$enderecoAnterior ,1, 0);
-                $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
-                $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
-                $this->Cell(105, 5, $dscVolumes ,1, 0);
-                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
-                $this->Cell(12, 5, $qtdAnterior ,1, 1);
+                if ($dscVolumes != "") $dscVolumes.=";";
+                $dscVolumes .= $descricaoVolume;
+
+                $enderecoAnterior = $endereco;
+                $codProdutoAnterior = $codProduto;
+                $gradeAnterior = $grade;
+                $dscProdutoAnterior = $descricaoProduto;
+                $unitizadorAnterior = $unitizador;
+                $qtdAnterior = $qtd;
+
+                if ($estoque == $saldo[count($saldo)-1]){
+
+                    if (strlen($dscVolumes) >=63) {
+                        $dscVolumes = substr($dscVolumes,0,59) . "...";
+                    }
+
+                    $this->Cell(20,5,$enderecoAnterior ,1, 0);
+                    $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
+                    $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
+                    $this->Cell(105, 5, $dscVolumes ,1, 0);
+                    $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                    $this->Cell(12, 5, $qtdAnterior ,1, 1);
+                }
             }
         }
         $this->Output('Inventario-Por-Rua.pdf','D');
