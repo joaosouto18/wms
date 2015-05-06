@@ -882,14 +882,38 @@ class EstoqueRepository extends EntityRepository
     public function getProdutosVolumesDivergentes()
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id, sum(e.qtd) as qtd, e.produtoVolume')
-            ->from("wms:Enderecamento\Estoque","e")
+            ->select('e.codProduto as Codigo, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
+            ->from("wms:Enderecamento\Estoque", "e")
+            ->innerJoin("e.produto", 'p')
+            ->innerJoin("e.produtoVolume", 'v')
             ->where('e.produtoVolume IS NOT NULL')
-            ->groupBy('p.id, e.produtoVolume');
+            ->groupBy('e.codProduto, p.descricao', 'v.id', 'v.descricao')
+            ->orderBy('e.codProduto', 'ASC');
 
         $result = $dql->getQuery()->getArrayResult();
 
-        return $result;
+        $prodAnterior = "";
+        $prodAtual = "";
+
+        $produtosDivergentes = array();
+
+        foreach ($result as $produto) {
+            $prodAtual = $produto;
+
+            if ($prodAnterior == "") {
+                $prodAnterior = $produto;
+            } else {
+                if ($prodAnterior['Codigo'] == $produto['Codigo']) {
+                    if ($prodAnterior['Qtd'] != $produto['Qtd']) {
+                        array_push($produtosDivergentes, $produto);
+                    }
+                }
+            }
+
+            $prodAnterior = $prodAtual;
+        }
+
+        return $produtosDivergentes;
     }
 
 }

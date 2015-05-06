@@ -1,6 +1,7 @@
 <?php
 use Wms\Module\Web\Controller\Action,
-    Wms\Module\Enderecamento\Report\EstoqueReport;
+    Wms\Module\Enderecamento\Report\EstoqueReport,
+    Wms\Module\Enderecamento\Report\ProdutosVolumesDivergentes;
 
 class Enderecamento_Relatorio_EstoqueController extends Action
 {
@@ -23,13 +24,11 @@ class Enderecamento_Relatorio_EstoqueController extends Action
 
     public function consultarProdutoAction()
     {
-        $idProduto = 10;
-
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-        $produtos = $estoqueRepo->getProdutosVolumesDivergentes($idProduto);
+        $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+        $result = $estoqueRepo->getProdutosVolumesDivergentes();
 
-
+        $this->exportPDF($result, 'ProdutosVolumesDivergentes.pdf', 'Relatório de Produtos com Volumes Divergentes no Estoque', 'P');
     }
 
 }

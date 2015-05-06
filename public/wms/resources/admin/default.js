@@ -295,7 +295,6 @@ $(document).ready(function(){
         $('#idProduto').focusin();
     });
 
-
     grade.autocomplete({
         source: "/enderecamento/movimentacao/filtrar/idproduto/",
         minLength: 0
