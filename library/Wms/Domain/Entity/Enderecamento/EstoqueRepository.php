@@ -879,4 +879,17 @@ class EstoqueRepository extends EntityRepository
 
     }
 
+    public function getProdutosVolumesDivergentes()
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id, sum(e.qtd) as qtd, e.produtoVolume')
+            ->from("wms:Enderecamento\Estoque","e")
+            ->where('e.produtoVolume IS NOT NULL')
+            ->groupBy('p.id, e.produtoVolume');
+
+        $result = $dql->getQuery()->getArrayResult();
+
+        return $result;
+    }
+
 }

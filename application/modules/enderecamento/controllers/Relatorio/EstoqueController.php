@@ -21,4 +21,15 @@ class Enderecamento_Relatorio_EstoqueController extends Action
 
     }
 
+    public function consultarProdutoAction()
+    {
+        $idProduto = 10;
+
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+        $produtos = $estoqueRepo->getProdutosVolumesDivergentes($idProduto);
+
+
+    }
+
 }

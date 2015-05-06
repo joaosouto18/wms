@@ -187,7 +187,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     }
                 })
             }
-
         }
 
     });
