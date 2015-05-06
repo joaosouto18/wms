@@ -146,13 +146,39 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 return false;
             });
 
-            $('#idProduto').focus();
+            //$('#idProduto').focus();
 
             $('.exportar-saldo-csv').click(function(){
                 var urlImpressao = $(this).attr('href');
                 urlImpressao = urlImpressao+'?'+$('#filtro-inventario-por-rua').serialize();
                 window.location.href = urlImpressao;
                 return false;
+            });
+
+            idProduto.focusout(function(){
+                getVolumes(idProduto.val(),grade.val());
+
+                var id = clicky.attr('id');
+                var value = clicky.attr('value');
+
+                if (id == 'buscarestoque') {
+                    if ($('#rua').val() != '' || $('#uma').val() != '') {
+                        Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
+                    }
+                    else {
+                        if ($("#idProduto").val() == '') {
+                            alert("Preencha o código do produto");
+                        } else {
+                            Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
+                        }
+                    }
+                } else if ((id =='submit') && (value =='Movimentar')) {
+                    if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
+                        alert("Preencha o endereço e a quantidade");
+                    } else {
+                        var alerta = Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
+                    }
+                }
             });
 
             $('#idProduto').keypress(function(event) {
@@ -162,11 +188,9 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 if(keycode == '13') {
                     $('#buscarestoque').click();
                     getVolumes(prodId, 'UNICA');
-                    //$('#idProduto').focus();
                 } else {
                     return;
                 }
-
             });
 
             function getVolumes(idProduto,grade){
@@ -187,6 +211,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     }
                 })
             }
+
         }
 
     });

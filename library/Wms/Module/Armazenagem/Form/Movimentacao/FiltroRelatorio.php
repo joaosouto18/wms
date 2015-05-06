@@ -21,21 +21,21 @@ class FiltroRelatorio extends Form
                 'label' => 'Cod. produto',
                 'class' => 'focus',
             ));
-            if ($utilizaGrade == "S") {
-                $this->addElement('text', 'grade', array(
-                    'size' => 12,
-                    'label' => 'Grade',
-                ));
-            } else {
-                $this->addElement('hidden', 'grade', array(
-                    'label' => 'Grade',
-                    'value' => 'UNICA'
-                ));
-            }
-            $this->addElement('text', 'rua', array(
-                'size' => 3,
-                'label' => 'Rua'
-            ))
+        if ($utilizaGrade == "S") {
+            $this->addElement('text', 'grade', array(
+                'size' => 12,
+                'label' => 'Grade',
+            ));
+        } else {
+            $this->addElement('hidden', 'grade', array(
+                'label' => 'Grade',
+                'value' => 'UNICA'
+            ));
+        }
+        $this->addElement('text', 'rua', array(
+            'size' => 3,
+            'label' => 'Rua'
+        ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
                 'label' => 'Prédio',
@@ -50,6 +50,11 @@ class FiltroRelatorio extends Form
             ))
             ->addElement('submit', 'imprimir', array(
                 'label' => 'Imprimir',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper'),
+            ))
+            ->addElement('button', 'produtos-divergentes', array(
+                'label' => 'Imprimir Produtos com Volumes Divergentes',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))

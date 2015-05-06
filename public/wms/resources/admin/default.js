@@ -1,30 +1,30 @@
 //JavaScript
 $(document).ready(function(){
     $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
-    
+
     /***************************************
-    Dialog Ajax windows
-    ***************************************/ 
+     Dialog Ajax windows
+     ***************************************/
     $('.dialogIframe').click(function (ev, el) {
         //stop event    
         ev.preventDefault();
         //load window
         $.wmsDialogFrame({
-            'width':800, 
-            'height':500, 
-            'url': this.href, 
+            'width':800,
+            'height':500,
+            'url': this.href,
             'title':$(this).html()
         });
     });
-    
+
     $('.dialogAjax').click(function (ev, el) {
         //stop event    
         ev.preventDefault();
         //load window
         $.wmsDialogAjax({
-            'width':800, 
-            'height':500, 
-            'url': this.href, 
+            'width':800,
+            'height':500,
+            'url': this.href,
             'title':$(this).html()
         });
     });
@@ -37,7 +37,7 @@ $(document).ready(function(){
             $( ".checkBoxClass" ).prop( "checked", false );
         }
     });
-    
+
 
     /* Brazilian initialisation for the jQuery UI date picker plugin. */
     /* Written by Leonildo Costa Silva (leocsilva@gmail.com). */
@@ -48,9 +48,9 @@ $(document).ready(function(){
             nextText: 'Pr&oacute;ximo&#x3e;',
             currentText: 'Hoje',
             monthNames: ['Janeiro','Fevereiro','Mar&ccedil;o','Abril','Maio','Junho',
-            'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
+                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
             monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun',
-            'Jul','Ago','Set','Out','Nov','Dez'],
+                'Jul','Ago','Set','Out','Nov','Dez'],
             dayNames: ['Domingo','Segunda-feira','Ter&ccedil;a-feira','Quarta-feira','Quinta-feira','Sexta-feira','S&aacute;bado'],
             dayNamesShort: ['Dom','Seg','Ter','Qua','Qui','Sex','S&aacute;b'],
             dayNamesMin: ['Dom','Seg','Ter','Qua','Qui','Sex','S&aacute;b'],
@@ -69,14 +69,14 @@ $(document).ready(function(){
         centsSeparator: ',',
         thousandsSeparator: '.'
     });
-    
+
     /***************************************
-    Botoes
-    ***************************************/
-    /** 
+     Botoes
+     ***************************************/
+    /**
      * Caixa de diálogo de exclusão
      */
-    //Confirmação de exclusão de registros
+        //Confirmação de exclusão de registros
     $('.btnDelete, a.del, a.delete').click(function() {
         targetUrl = $(this).attr("href");
         // a workaround for a flaw in the demo system (http://dev.jqueryui.com/ticket/4375), ignore!
@@ -89,7 +89,7 @@ $(document).ready(function(){
             buttons: {
                 "Deletar registro": function() {
                     window.location.href = targetUrl;
-                //$( this ).dialog( "close" );
+                    //$( this ).dialog( "close" );
                 },
                 'Cancelar' : function() {
                     $( this ).dialog( "close" );
@@ -99,15 +99,15 @@ $(document).ready(function(){
 
         return false;
     });
-    
+
 
     /***************************************
-        Forms
-    ***************************************/
+     Forms
+     ***************************************/
 
-    // masks
+        // masks
     $('input:text').setMask();
-    
+
     // focus
     $('.focus').focus();
 
@@ -115,15 +115,15 @@ $(document).ready(function(){
     $('.btnSave').click(function() {
         $('.saveForm').submit();
     });
-    
+
     // Save Form
-   // $(window).keypress(function(event) {
-   //     if (!(event.which == 115 && event.ctrlKey) && !(event.which == 19)) return true;
+    // $(window).keypress(function(event) {
+    //     if (!(event.which == 115 && event.ctrlKey) && !(event.which == 19)) return true;
     //    $('.saveForm').submit();
     //   event.preventDefault();
-     //   return false;
+    //   return false;
     //}); 
-    
+
     var ctrl_down = false;
     var ctrl_key = 17;
     var s_key = 83;
@@ -141,7 +141,7 @@ $(document).ready(function(){
             return false;
         }
     });
-    
+
 
     $('.gPagerFormSelect').change(function() {
         $(location).attr('href',$(this).val());
@@ -155,11 +155,11 @@ $(document).ready(function(){
     // date
     $("input.date").datepicker({
         dateFormat: 'dd/mm/yy'
-    //showOn: "button",
-    //buttonImage: ADMIN_URL + "../img/icons/calendar.png",
-    //buttonImageOnly: true
+        //showOn: "button",
+        //buttonImage: ADMIN_URL + "../img/icons/calendar.png",
+        //buttonImageOnly: true
     });
-    
+
     //Confirmação de uma operação qualquer
     $('.btnConfirm, a.confirm, a.confirmee').click(function(a) {
         var Alerta = "Tem certeza que deseja executar esta ação?";
@@ -174,17 +174,17 @@ $(document).ready(function(){
         // remove li
         $(this).parent('div').parent('li').fadeOut();
     });
-    
+
     //Mudança de depósito logado
     $('#idDepositoLogado').change(function(){
         if ($(this).val() != 0) {
             window.location = URL_MODULO + '/deposito/mudar-deposito-logado/id/' + $(this).val();
         }
     });
-    
+
     /***************************************
-    Menu
-    ***************************************/
+     Menu
+     ***************************************/
     var options = {
         arrowSrc: URL_SISTEMA + '/img/jquery/menu/arrow_right.png'
     };
@@ -199,8 +199,8 @@ $(document).ready(function(){
 
     $(checks).click(function(){
         counterEl = $('.gMassAction .check-selected-counter');
-        counterVal = counterEl.text();		
-                
+        counterVal = counterEl.text();
+
         if (this.checked) {
             counterVal++;
             counterEl.text(counterVal);
@@ -221,7 +221,7 @@ $(document).ready(function(){
         $('.massaction-values').val(values.join(','));
         $('.massaction-form').submit();
     });
-    
+
     // converte digitacao no sistema para maiusculo
     $('input.upper').Setcase({
         caseValue: 'upper'
@@ -246,53 +246,8 @@ $(document).ready(function(){
         clicky = null;
     });
 
-    idProduto.focusout(function(){
-        getVolumes(idProduto.val(),grade.val());
-
-        var id = clicky.attr('id');
-        var value = clicky.attr('value');
-
-        if (id == 'buscarestoque') {
-            if ($('#rua').val() != '' || $('#uma').val() != '') {
-                Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
-            }
-            else {
-                if ($("#idProduto").val() == '') {
-                    alert("Preencha o código do produto");
-                } else {
-                    Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
-                }
-            }
-        } else if ((id =='submit') && (value =='Movimentar')) {
-            if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
-                alert("Preencha o endereço e a quantidade");
-            } else {
-                var alerta = Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
-            }
-        }
-    });
-
-    function getVolumes(idProduto,grade){
-        $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
-            if (dataReturn.length > 0) {
-                var options = '<option selected value="">Selecione um agrupador de volumes...</option>';
-
-                for (var i = 0; i < dataReturn.length; i++) {
-                    options += '<option selected value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
-                }
-
-                $('#volumes').html(options);
-                $('#volumes').parent().show();
-                $('#volumes').focus();
-            } else {
-                $('#volumes').empty();
-                $('#volumes').parent().hide();
-            }
-        })
-    }
-
-    $('#imprimir').mousedown(function() {
-        $('#idProduto').focusin();
+    $('#produtosdivergentes').click(function () {
+        location.href='/enderecamento/relatorio_estoque/consultar-produto';
     });
 
     grade.autocomplete({
@@ -351,7 +306,7 @@ $(document).ready(function(){
 
     /***************************************
      JMVC plugins
-    ***************************************/
+     ***************************************/
     $('#acesso-perfil-form').perfilUsuario();
     $('#pessoa-dados-pessoais').pessoaDadosPessoais();
     $('#pessoa-endereco').pessoaEndereco();
