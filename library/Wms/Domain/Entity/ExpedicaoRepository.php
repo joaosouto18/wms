@@ -482,6 +482,7 @@ class ExpedicaoRepository extends EntityRepository
                         $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
                         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
                         $this->getEntityManager()->flush();
+                        $this->getEntityManager()->commit();
                         return 0;
                     }
 
