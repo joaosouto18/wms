@@ -190,6 +190,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     public function getPendenciasByExpedicaoAndStatus($idExpedicao,$status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL, $carga = NULL) {
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select("es.codBarras,
                       es.cliente,
@@ -236,6 +237,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $dql->setParameter('idExpedicao', $idExpedicao)
             ->orderBy('es.codBarras, es.codCargaExterno, p.descricao, es.codProduto, es.grade');
+
+        $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->findOneBy(array('id'=>$idExpedicao));
+        if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+            $dql->leftJoin("wms:Expedicao\EtiquetaConferencia",'ec','WITH','ec.codEtiquetaSeparacao = es.codBarras');
+            $dql->andWhere("ec.status = " . Expedicao::STATUS_PRIMEIRA_CONFERENCIA);
+        }
 
         if ($tipoResult == "Array") {
             $result = $dql->getQuery()->getResult();
