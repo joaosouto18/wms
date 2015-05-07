@@ -84,6 +84,18 @@ class Expedicao extends Grid
                 }
             ))
             ->addAction(array(
+                'label' => 'Finalizar Conferência Expedição',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'conferencia',
+                'actionName' => 'index',
+                'cssClass' => 'dialogAjax',
+                'params' => array('origin' => 'expedicao'),
+                'condition' => function ($row) {
+                    return $row['status'] != "FINALIZADO" AND  $row['status'] != "CANCELADO" AND $row['status'] != "INTEGRADO";
+                },
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Consultar Peso',
                 'modelName' => 'expedicao',
                 'controllerName' => 'index',
@@ -97,18 +109,6 @@ class Expedicao extends Grid
                 'controllerName' => 'agrupar-cargas',
                 'actionName' => 'index',
                 'cssClass' => 'dialogAjax',
-                'pkIndex' => 'id'
-            ))
-            ->addAction(array(
-                'label' => 'Finalizar Conferência Expedição',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'conferencia',
-                'actionName' => 'index',
-                'cssClass' => 'dialogAjax',
-                'params' => array('origin' => 'expedicao'),
-                'condition' => function ($row) {
-                    return $row['status'] != "FINALIZADO" AND  $row['status'] != "CANCELADO" AND $row['status'] != "INTEGRADO";
-                },
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
