@@ -13,14 +13,14 @@ class Mobile_OndaRessuprimentoController extends Action
         $codProduto = null;
         $grade = null;
         $html = '
-         <a  class="finalizar" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
+         <a  class="finalizar" style="float: none; margin: 0px 0px 0px 0px" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
         ';
 
         if ($this->_getParam('codProduto') != null) {
             $codProduto = $this->_getParam('codProduto');
             $grade = $this->_getParam('grade');
             $html .= '
-         <a  class="finalizar" href="/mobile/onda-ressuprimento/listar-ondas/" style="background-image: -moz-linear-gradient(center top , #e5c062, #e5c062); border: 1px solid #e5c062" href="teste" title="Filtrar" >Mostrar Todas</a>
+         <a  class="finalizar" href="/mobile/onda-ressuprimento/listar-ondas/" style="background-image: -moz-linear-gradient(center top , #e5c062, #e5c062); border: 1px solid #e5c062; float: none; margin: 0px 0px 0px 0px" href="teste" title="Filtrar" >Mostrar Todas</a>
         ';
         }
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
@@ -43,7 +43,7 @@ class Mobile_OndaRessuprimentoController extends Action
         }
         $this->view->menu = $menu;
 
-        $this->view->bottom = $html;
+        $this->view->header = $html;
         $this->view->showQuantidade = true;
         $this->renderScript('menu.phtml');
     }

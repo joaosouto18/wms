@@ -41,7 +41,7 @@ class Cadastro extends Form
                 'size' => 3,
                 'label' => 'Rua',
                 'maxlength' => '2',
-                'class' => 'focus ctrSize',
+                'class' => 'ctrSize',
             ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
