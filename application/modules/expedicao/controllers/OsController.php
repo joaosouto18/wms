@@ -26,6 +26,8 @@ class Expedicao_OsController extends Action
 
         if (($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA)
            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO)
+           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
+           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA)
            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ){
             $buttons[] = array(
                 'label' => 'Finalizar Conferência',
