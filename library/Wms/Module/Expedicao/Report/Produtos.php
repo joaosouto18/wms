@@ -126,7 +126,7 @@ class Produtos extends Pdf
         $this->layout($modelo);
         $this->formataProduto($produtos,$modelo);
 
-        $this->Output('Produtos-Expedicao-'.$idExpedicao.'-'.$central.'.pdf','D');
+        $this->Output('Produtos-Expedicao.pdf','D');
     }
 
 
