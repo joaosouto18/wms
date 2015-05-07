@@ -1,5 +1,6 @@
 <?php
-use Wms\Module\Web\Controller\Action;
+use Wms\Module\Web\Controller\Action,
+    Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria;
 
 class Expedicao_ConferenciaController extends Action
 {
@@ -18,42 +19,52 @@ class Expedicao_ConferenciaController extends Action
 
     public function finalizarAction()
     {
-        $request = $this->getRequest();
+        $form = new FiltroExpedicaoMercadoria();
+        $params = $this->_getAllParams();
+        exit;
 
+        $request = $this->getRequest();
+        $idExpedicao      = $request->getParam('id');
+
+        /*
         if ($request->isPost()) {
-            $idExpedicao      = $request->getParam('id');
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
             $centrais         = $request->getParam('centrais');
             $origin           = $request->getParam('origin');
             $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 3, 'constante' => 'SENHA_AUTORIZAR_DIVERGENCIA'));
             $senhaAutorizacao = $senhaAutorizacao->getValor();
             $submit           = $request->getParam('btnFinalizar');
-
+/*
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-            $expedicaoRepo    = $this->em->getRepository('wms:Expedicao');
+        $expedicaoRepo    = $this->em->getRepository('wms:Expedicao');
 
-            if ($submit == 'semConferencia') {
-                if ($senhaDigitada == $senhaAutorizacao) {
-                    $expedicaoRepo->finalizacarga($idExpedicao);
-                    $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false);
-                } else {
-                    $result = 'Senha informada não é válida';
-                }
-            } else {
-                $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],true);
-            }
+        /*
 
-            if (is_string($result)) {
-                $this->addFlashMessage('error', $result);
-            } else {
-                $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
-            }
+if ($submit == 'semConferencia') {
+    if ($senhaDigitada == $senhaAutorizacao) {
+        $expedicaoRepo->finalizacarga($idExpedicao);
+        $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false);
+    } else {
+        $result = 'Senha informada não é válida';
+    }
+} else {
+    $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],true);
+}
 
-            if ($origin == "expedicao") {
-                $this->_redirect('/expedicao');
-            } else {
-                $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
-            }
-        }
+if (is_string($result)) {
+    $this->addFlashMessage('error', $result);
+} else {
+    $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
+}
+
+if ($origin == "expedicao") {
+    $this->_redirect('/expedicao');
+} else {
+    $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
+}
+}
+        */
+        $params['idExpedicao'] = $idExpedicao;
+
     }
 }

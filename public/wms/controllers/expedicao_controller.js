@@ -66,21 +66,6 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             minLength: 0
         });
 
-        $('#finaliza-pelo-coletor').click(function() {
-            alert('');
-            dados = $('#filtro-expedicao-mercadoria-form').serializeArray();
-
-            $.ajax({
-                url: 'expedicao/conferencia/finalizar',
-                type: 'POST',
-                data: dados,
-                success: function (result) {
-                    alert("Your bookmark has been saved");
-                }
-            });
-
-        });
-
         grade.keyup(function(e){
             if ($("#idProduto").val() == '' || $("#id").val() == '') {
                 return false;
