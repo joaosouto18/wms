@@ -35,9 +35,10 @@ class EtiquetaConferenciaRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('e.codStatus,e.id')
             ->from('wms:Expedicao\EtiquetaConferencia','e')
-
+            ->leftJoin("wms:Expedicao\EtiquetaSeparacao",'es','WITH','e.codEtiquetaSeparacao = es.id')
             ->where('e.codExpedicao = :idExpedicao')
             ->andwhere('e.codStatus = :status')
+            ->andWhere('es.codStatus NOT IN (' . EtiquetaSeparacao::STATUS_CORTADO . ')')
             ->setParameter('idExpedicao', $idExpedicao)
             ->setParameter('status', $statusEtiqueta);
 
