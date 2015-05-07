@@ -19,14 +19,15 @@ class Expedicao_ConferenciaController extends Action
 
     public function finalizarAction()
     {
+//        var_dump('teste'); exit;
         $form = new FiltroExpedicaoMercadoria();
         $params = $this->_getAllParams();
-        exit;
+//        exit;
 
         $request = $this->getRequest();
         $idExpedicao      = $request->getParam('id');
 
-        /*
+
         if ($request->isPost()) {
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
             $centrais         = $request->getParam('centrais');
@@ -50,21 +51,22 @@ if ($submit == 'semConferencia') {
 } else {
     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],true);
 }
-
-if (is_string($result)) {
+*/
+if (is_string($result = false)) {
     $this->addFlashMessage('error', $result);
 } else {
     $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
 }
 
-if ($origin == "expedicao") {
-    $this->_redirect('/expedicao');
-} else {
+if ($origin != "expedicao") {
     $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
 }
 }
-        */
         $params['idExpedicao'] = $idExpedicao;
+
+        $this->_helper->json(array('msg' => $result));
+
+        echo '<script type="text/javascript">alert("digfhgdhig")</script>'; die();
 
     }
 }

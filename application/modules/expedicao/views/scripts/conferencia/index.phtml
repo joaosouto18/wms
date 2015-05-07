@@ -1,20 +1,20 @@
 <script type="text/javascript">
-    $('#finaliza-pelo-coletor, .finaliza-pelo-coletor').click(function () {
-        dados = $('#filtro-expedicao-mercadoria-form').serializeArray();
+    $('#finaiza-pelo-coletor').click(function () {
 
+        dados = $('#tete').serializeArray();
         $.ajax({
-            url: 'expedicao/conferencia/finalizar',
+            url: URL_MODULO + '/conferencia/finalizar',
             type: 'POST',
             data: dados,
-            success: function (result) {
-                alert();
+            success: function(data){
+                alert(data.msg);
             }
+
         });
 
     });
 </script>
-
-<form id="" class="saveForm">
+<form id="tete" class="saveForm">
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <tbody>
@@ -59,7 +59,7 @@
             </tr>
             <tr>
                 <td colspan="3">
-                    <button name="btnFinalizar" class="finaliza-pelo-coletor" id="finaliza-pelo-coletor" type="submit" value="comConferencia">Finalizar Pelo Coletor</button>
+                    <button name="btnFinalizar" class="finaliza-pelo-coletor" id="finaiza-pelo-coletor" type="button" value="comConferencia">Finalizar Pelo Coletor</button>
                 </td>
             </tr>
             </tbody>
