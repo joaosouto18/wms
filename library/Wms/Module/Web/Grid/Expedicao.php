@@ -101,10 +101,11 @@ class Expedicao extends Grid
             ))
             ->addAction(array(
                 'label' => 'Finalizar Conferência Expedição',
+                'id' => 'finalizar-conferencia',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'conferencia',
                 'actionName' => 'index',
-                'cssClass' => 'dialogAjax',
+                'cssClass' => 'dialogAjax finaliza-conferencia',
                 'params' => array('origin' => 'expedicao'),
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO" AND  $row['status'] != "CANCELADO" AND $row['status'] != "INTEGRADO";
