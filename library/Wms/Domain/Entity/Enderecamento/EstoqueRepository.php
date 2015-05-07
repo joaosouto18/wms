@@ -894,6 +894,7 @@ class EstoqueRepository extends EntityRepository
 
         $prodAnterior = "";
         $prodAtual = "";
+        $qtdVolumes = 1;
 
         $produtosDivergentes = array();
 
@@ -902,11 +903,23 @@ class EstoqueRepository extends EntityRepository
 
             if ($prodAnterior == "") {
                 $prodAnterior = $produto;
+
             } else {
                 if ($prodAnterior['Codigo'] == $produto['Codigo']) {
+                    $qtdVolumes = $qtdVolumes + 1;
                     if ($prodAnterior['Qtd'] != $produto['Qtd']) {
                         array_push($produtosDivergentes, $produto);
                     }
+                } else {
+                    $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $prodAnterior['Codigo']));
+                    if ($produtoEn->getNumVolumes() != $qtdVolumes) {
+                        $produtoFaltante = $prodAnterior;
+                        $produtoFaltante['Volume'] = 'Faltando Volume';
+                        $produtoFaltante['Qtd'] = "-";
+                        array_push($produtosDivergentes, $produtoFaltante);
+                    }
+
+                    $qtdVolumes = 1;
                 }
             }
 
