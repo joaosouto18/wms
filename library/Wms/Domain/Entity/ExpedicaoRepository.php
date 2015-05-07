@@ -1206,17 +1206,33 @@ class ExpedicaoRepository extends EntityRepository
                             AND es1.codStatus NOT IN(524,525)
                           GROUP BY c1.codExpedicao
                           ) as qtdEtiquetas")
-            ->addSelect("(
-                         SELECT COUNT(es2.id)
-                           FROM wms:Expedicao\EtiquetaSeparacao es2
-                          LEFT JOIN es2.pedido ped2
-                          LEFT JOIN ped2.carga c2
-                          WHERE c2.codExpedicao = e.id
-                            AND es2.codStatus in ( 526, 531, 532 )
-                          GROUP BY c2.codExpedicao
-                          ) as qtdConferidas")
             ->where('e.id = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
+
+        $expedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $expedicaoEntity = $expedicaoRepo->find($idExpedicao);
+        if ($expedicaoEntity->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+            $source->addSelect("(
+             SELECT COUNT(es2.id)
+               FROM wms:Expedicao\EtiquetaConferencia es2
+              LEFT JOIN es2.pedido ped2
+              LEFT JOIN ped2.carga c2
+              WHERE c2.codExpedicao = e.id
+                AND es2.codStatus in ( ". Expedicao::STATUS_SEGUNDA_CONFERENCIA . " )
+              GROUP BY c2.codExpedicao
+              ) as qtdConferidas");
+
+        } else {
+            $source->addSelect("(
+             SELECT COUNT(es2.id)
+               FROM wms:Expedicao\EtiquetaSeparacao es2
+              LEFT JOIN es2.pedido ped2
+              LEFT JOIN ped2.carga c2
+              WHERE c2.codExpedicao = e.id
+                AND es2.codStatus in ( 526, 531, 532 )
+              GROUP BY c2.codExpedicao
+              ) as qtdConferidas");
+        }
 
         $result = $source->getQuery()->getResult();
 
