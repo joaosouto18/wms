@@ -432,37 +432,7 @@ class ExpedicaoRepository extends EntityRepository
     public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true)
     {
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
-
-        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
-
-        if ($verificaReconferencia=='S'){
-            $idStatus=$expedicaoEn->getStatus()->getId();
-
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
-            $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
-
-            if ($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
-                $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO,$idExpedicao);
-
-                if (count($numEtiquetas) > 0) {
-                    return 'Existem etiquetas pendentes de conferência nesta expedição';
-                } else {
-                    /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
-                    $expedicaoEntity = $this->find($idExpedicao);
-
-                    $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
-
-                    return 0;
-                }
-
-            } else {
-                $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA,$idExpedicao);
-                if (count($numEtiquetas) > 0) {
-                    return 'Existem etiquetas pendentes de conferência nesta expedição';
-                }
-            }
-        }
-
+        if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -490,6 +460,37 @@ class ExpedicaoRepository extends EntityRepository
             } else {
                 if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
+            }
+
+            $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
+            if ($verificaReconferencia=='S'){
+                $idStatus=$expedicaoEn->getStatus()->getId();
+
+                /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+                $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
+                if ($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO,$idExpedicao);
+
+                    if (count($numEtiquetas) > 0) {
+                        return 'Existem etiquetas pendentes de conferência nesta expedição';
+                    } else {
+                        /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
+                        $expedicaoEntity = $this->find($idExpedicao);
+
+                        $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
+                        $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
+                        $this->getEntityManager()->flush();
+                        return 0;
+                    }
+
+                } else {
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA,$idExpedicao);
+                    if (count($numEtiquetas) > 0) {
+                        return 'Existem etiquetas pendentes de conferência nesta expedição';
+                    }
+                }
             }
 
             $result = $this->finalizar($idExpedicao,$central);
@@ -537,17 +538,11 @@ class ExpedicaoRepository extends EntityRepository
      */
     private function finalizar($idExpedicao, $centralEntrega)
     {
-        if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
         $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
@@ -567,10 +562,21 @@ class ExpedicaoRepository extends EntityRepository
 
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
         $this->alteraStatus($expedicaoEntity,$novoStatus);
+        $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
+        $this->getEntityManager()->flush();
+        return true;
+    }
+
+    public function efetivaReservaEstoqueByExpedicao($idExpedicao){
+        $expedicaoEntity = $this->find($idExpedicao);
+        
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
         $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $expedicaoEntity->getId()));
-
 
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
@@ -581,8 +587,7 @@ class ExpedicaoRepository extends EntityRepository
                 $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,"E",$idExpedicao,$usuarioEn);
             }
         }
-        $this->getEntityManager()->flush();
-        return true;
+
     }
 
     public function liberarVolumePatrimonioByExpedicao($idExpedicao){

@@ -535,8 +535,37 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         } else {
             $novoStatus = EtiquetaSeparacao::STATUS_CONFERIDO;
         }
-
         $this->finalizaEtiquetaByStatus($idExpedicao, EtiquetaSeparacao::STATUS_ETIQUETA_GERADA , $novoStatus, $central);
+        $this->_em->flush();
+
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+        if ($verificaReconferencia=='S'){
+            $idStatus=$expedicao->getStatus()->getId();
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+            $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+            $etiquetas = array();
+            if ($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
+                $novoStatus = Expedicao::STATUS_PRIMEIRA_CONFERENCIA;
+                $etiquetas = $this->getEtiquetasByExpedicao($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, $central);
+                foreach($etiquetas as $etiqueta) {
+                    $etiquetaEntity = $EtiquetaConfRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta['codBarras']));
+                    $this->alteraStatus($etiquetaEntity, $novoStatus);
+                }
+
+            }
+            if ($idStatus==Expedicao::STATUS_SEGUNDA_CONFERENCIA){
+                $novoStatus = Expedicao::STATUS_SEGUNDA_CONFERENCIA;
+                $etiquetas = $this->getEtiquetasByExpedicao($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, $central);
+                foreach($etiquetas as $etiqueta) {
+                    $etiquetaEntity = $EtiquetaConfRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta['codBarras']));
+                    if ($etiquetaEntity->getStatus()->getId() == Expedicao::STATUS_PRIMEIRA_CONFERENCIA) {
+                        $this->alteraStatus($etiquetaEntity, $novoStatus);
+                    }
+                }
+
+            }
+        }
+
         $this->_em->flush();
     }
 
