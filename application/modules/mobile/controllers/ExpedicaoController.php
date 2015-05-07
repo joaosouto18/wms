@@ -584,6 +584,13 @@ class Mobile_ExpedicaoController extends Action
             $this->view->placa = $Expedicao->getPlaca();
             $this->view->idExpedicao = $Expedicao->getIdExpedicao();
 
+            $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->find($Expedicao->getIdExpedicao());
+            if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                $this->view->segundaConferencia = "S";
+            }else {
+                $this->view->segundaConferencia = "N";
+            }
+
             $url="/volume".$this->_getParam('volume', null)."/volume".$this->_getParam('volume', null)."/placa".$this->_getParam('placa', null)."/bloqueiaOS".$this->_getParam('bloqueiaOS', null);
 
             if ( ($Expedicao->validacaoExpedicao() == false) || ( $Expedicao->osLiberada() == false)) {

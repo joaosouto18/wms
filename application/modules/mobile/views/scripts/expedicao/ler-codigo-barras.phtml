@@ -158,9 +158,12 @@
     <?php if (isset($this->placa))  : ?>
         <input name="placa" type="hidden" value="<?php echo $this->placa?>" />
         <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
-        <?php else : ?>
-            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+    <?php else : ?>
+        <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+        <?php if ($this->segundaConferencia != "S") { ?>
             <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+        <?php } ?>
+
     <?php endif; ?>
 
     <input type="submit" name="submit" id="submit" value="Conferir" />
