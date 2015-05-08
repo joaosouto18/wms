@@ -61,7 +61,7 @@ class Notafiscal_ImportarxmlController extends Crud
 
             // Define um método de transporte
             $upload = new Zend_File_Transfer_Adapter_Http();
-            $upload->setDestination(APPLICATION_PATH.'/../data/');
+            $upload->setDestination(APPLICATION_PATH.'/../data/xml/');
 
             try {
                 // Recebe o arquivo de upload
