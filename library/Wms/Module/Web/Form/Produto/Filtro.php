@@ -25,7 +25,7 @@ class Filtro extends Form
 
         $produtoClasses = $em->getRepository('wms:Produto\Classe')->getIdValue();
         
-        $this->addElement('numeric', 'id', array(
+        $this->addElement('text', 'id', array(
                     'label' => 'Código',
                     'size' => 10,
                     'maxlength' => 10,
