@@ -7,6 +7,8 @@ use Wms\Controller\Action,
 
 class Mobile_ExpedicaoController extends Action
 {
+	protected $bloquearOs = null;
+	
     public function indexAction()
     {
         $menu = array(
