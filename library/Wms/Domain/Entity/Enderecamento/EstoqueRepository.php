@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
+    Core\Util\Produto as ProdutoUtil,
     Core\Util\Produto;
 
 class EstoqueRepository extends EntityRepository
@@ -292,7 +293,8 @@ class EstoqueRepository extends EntityRepository
 
         $SQLWhere = " WHERE 1 = 1 ";
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
-            $SQLWhere .= " AND E.COD_PRODUTO = ".$parametros['idProduto'];
+            $parametros['idProduto'] = ProdutoUtil::formatar($parametros['idProduto']);
+            $SQLWhere .= " AND E.COD_PRODUTO = '".$parametros['idProduto'] . "' ";
             if (isset($parametros['grade']) && !empty($parametros['grade'])) {
                 $SQLWhere .= " AND E.DSC_GRADE = '".$parametros['grade']."'";
             } else {

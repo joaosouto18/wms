@@ -38,9 +38,12 @@ class Produto
      */
     public static function formatar($valor)
     {
-        $valor = preg_replace('/\D+/', '', $valor);
-        
-        return self::preencheZerosEsquerda($valor, self::$qtdDigitosCodProduto);
+        $valor = trim($valor);
+        if (strlen(preg_replace('/\D+/', '', $valor)) == strlen($valor)) {
+            return self::preencheZerosEsquerda($valor, self::$qtdDigitosCodProduto);
+        } else {
+            return trim($valor);
+        }
     }
 
 }
