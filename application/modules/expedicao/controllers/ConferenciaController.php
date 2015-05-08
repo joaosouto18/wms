@@ -18,7 +18,9 @@ class Expedicao_ConferenciaController extends Action
 
     public function finalizarAction()
     {
+//        var_dump($this->_getAllParams()); exit;
         $request = $this->getRequest();
+        $params = $this->_getAllParams();
 
         if ($request->isPost()) {
             $idExpedicao      = $request->getParam('id');
@@ -31,6 +33,12 @@ class Expedicao_ConferenciaController extends Action
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo    = $this->em->getRepository('wms:Expedicao');
+
+            if (isset($params['codCargaExterno']) && !empty($params['codCargaExterno'])) {
+                $cargaRepo = $this->em->getRepository('wms:Expedicao\Carga');
+                $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $params['codCargaExterno']));
+                $idExpedicao = $entityCarga->getExpedicao()->getId();
+            }
 
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
@@ -49,11 +57,15 @@ class Expedicao_ConferenciaController extends Action
                 $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
             }
 
-            if ($origin == "expedicao") {
-                $this->_redirect('/expedicao');
-            } else {
-                $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
-            }
+            $this->_helper->json(array('result' => $result));
+
+            //var_dump($result); exit;
+
+//            if ($origin == "expedicao") {
+//                $this->_redirect('/expedicao');
+//            } else {
+//                $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
+//            }
         }
     }
 }
