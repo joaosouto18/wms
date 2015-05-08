@@ -1,13 +1,12 @@
 ﻿*.svn
 *~
 nbproject/
+cache/
 library/Wms/Domain/Proxy/
 library/Core/Pdf/font/unifont/*.mtx.php
 library/Core/Pdf/font/unifont/*.cw.dat
 library/Core/Pdf/font/unifont/*.cw127.php
 data/CodigoBarras/
-data/log/
-data/xml/
 data/profiler
 .project
 .buildpath
@@ -22,3 +21,5 @@ library/zendframework
 library/composer
 library/autoload.php
 zend_cache*
+autoload.php
+library/composer
