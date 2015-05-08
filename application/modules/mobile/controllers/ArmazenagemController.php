@@ -17,10 +17,6 @@ class Mobile_ArmazenagemController  extends Action
             3 => array (
                 'url' => 'ressuprimento/listar-picking',
                 'label' => 'RESSUPRIMENTO PREVENTIVO',
-            ),
-            4 => array (
-                'url' => 'onda-ressuprimento/listar-ondas',
-                'label' => 'ONDA DE RESSUPRIMENTO',
             )
 
         );

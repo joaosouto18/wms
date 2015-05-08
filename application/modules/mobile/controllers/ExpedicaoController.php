@@ -7,6 +7,8 @@ use Wms\Controller\Action,
 
 class Mobile_ExpedicaoController extends Action
 {
+    protected $bloquearOs = null;
+    
     public function indexAction()
     {
         $menu = array(
@@ -21,7 +23,12 @@ class Mobile_ExpedicaoController extends Action
             3 => array (
                 'url' => 'ordem-servico/recebimento-transbordo',
                 'label' => 'RECB. TRANSBORDO',
+            ),
+            4 => array (
+                'url' => 'onda-ressuprimento/listar-ondas',
+                'label' => 'ONDA DE RESSUPRIMENTO',
             )
+            
         );
         $this->view->menu = $menu;
         $this->renderScript('menu.phtml');
@@ -97,6 +104,7 @@ class Mobile_ExpedicaoController extends Action
 
     protected function validacaoEtiqueta($codigoBarras)
     {
+        $this->bloquearOs();
         $idExpedicao        = $this->getRequest()->getParam('idExpedicao');
         $placa              = $this->getRequest()->getParam('placa', null);
         $tipoConferencia    = $this->getRequest()->getParam('tipo-conferencia', null);
@@ -111,7 +119,7 @@ class Mobile_ExpedicaoController extends Action
         $etiqueta = $etiquetaRepo->getEtiquetaByExpedicaoAndId($codigoBarras);
 
         if (count($etiqueta) == 0) {
-
+            $msg = 'Etiqueta '.$codigoBarras.' não encontrada'; 
             if ($this->bloquearOs=='S') {
                 $this->createXml('error', 'Etiqueta '.$codigoBarras.' não encontrada');
             } else {
@@ -123,16 +131,18 @@ class Mobile_ExpedicaoController extends Action
         } else {
             if ($etiqueta[0]['codExpedicao'] != $idExpedicao) {
                 $msg='Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
-                if ($this->bloquearOs=='S'){
+
+                if ($this->bloquearOs=='S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
+
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
                     } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                         die();
                     }
                 } else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                    $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                     die();
                 }
 
@@ -228,14 +238,12 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-
         return $etiqueta;
     }
 
     public function validaStatusEtiqueta($idExpedicao, $status, $sessaoColetor)
     {
-
-
+        $this->bloquearOs();
         $tipoConferencia    = $this->getRequest()->getParam('tipo-conferencia', null);
         $idTipoVolume       = $this->getRequest()->getParam('idTipoVolume', null);
 
@@ -298,6 +306,7 @@ class Mobile_ExpedicaoController extends Action
 
     protected function bloqueioOs($idExpedicao, $motivo, $render = true)
     {
+        $this->bloquearOs();
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo  = $this->em->getRepository('wms:Expedicao');
         $osEntity = $expedicaoRepo->verificaOSUsuario($idExpedicao);
@@ -414,6 +423,7 @@ class Mobile_ExpedicaoController extends Action
 
     public function buscarEtiquetasAction()
     {
+        $this->bloquearOs();
         $idTipoVolume       = $this->getRequest()->getParam('idTipoVolume', null);
 
         $sessaoColetor = new \Zend_Session_Namespace('coletor');
@@ -429,7 +439,7 @@ class Mobile_ExpedicaoController extends Action
 
         if ($etiqueta == false) {
             if ($this->bloquearOs=='S'){
-                 return false;
+                return false;
             } else {
                 $this->createXml("error","",'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
             }
@@ -515,9 +525,7 @@ class Mobile_ExpedicaoController extends Action
 
     public function lerCodigoBarrasAction()
     {
-        $this->view->bloqueiaOS = $this->_getParam('bloqueiaOS', null);
         try {
-
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->setLayout();
 
@@ -590,6 +598,13 @@ class Mobile_ExpedicaoController extends Action
         } else {
             $this->createXml('success','Todos os produtos já foram recebidos');
         }
+    }
+
+    public function bloquearOs()
+    {
+        $this->bloquearOs = $this->getSystemParameterValue('BLOQUEIO_OS');
+
+        return $this->bloquearOs;
     }
 
 }

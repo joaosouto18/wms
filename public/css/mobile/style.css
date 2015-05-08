@@ -194,6 +194,20 @@ button.alert, .btnAlert {
     float: right;
 }
 
+.mudar {
+    background-color: #4D90FE;
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#739E39),to(#739E39));
+    background-image: -webkit-linear-gradient(top,#739E39,#739E39);
+    background-image: -moz-linear-gradient(top,#739E39,#739E39);
+    background-image: -ms-linear-gradient(top,#739E39,#739E39);
+    background-image: -o-linear-gradient(top,#739E39,#739E39);
+    background-image: linear-gradient(top,#739E39,#739E39);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#4d90fe',EndColorStr='#4787ed');
+    border: 1px solid #739E39;
+    color:black;
+    width: auto;
+}
+
 /*********************
   Tables
 *********************/
@@ -217,3 +231,7 @@ table.info td {
 table tr.title td {
     font-weight: bold;
 }
+
+#enderecos ul li { font-size:35px; }
+
+#enderecos .divergencia { color: #e0ce06; font-weight: bold }

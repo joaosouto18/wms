@@ -59,7 +59,7 @@ class VolumePatrimonioRepository extends EntityRepository
         }
     }
 
-    public function getVolumes($codigoInicial, $codigoFinal, $descricao, $showExpedicao = false) {
+    public function getVolumes($codigoInicial = null, $codigoFinal = null, $descricao = null, $showExpedicao = false) {
         $source = $this->getEntityManager()->createQueryBuilder()
         ->select('v.id , v.descricao, v.ocupado')
         ->from('wms:Expedicao\VolumePatrimonio', 'v')
@@ -106,6 +106,33 @@ class VolumePatrimonioRepository extends EntityRepository
         $values = $this->getVolumes($codigoInicial,$codigoFinal,null);
         $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
         $result = $gerarEtiqueta->init($values);
+
+    }
+
+    public function imprimirRelatorio()
+    {
+        $dql = "SELECT DISTINCT
+                   EVP.COD_VOLUME_PATRIMONIO,
+                   VP.DSC_VOLUME_PATRIMONIO,
+                   EVP.COD_EXPEDICAO,
+                   ULTSAIDA.QTD_SAIDAS,
+                   TO_CHAR(EVP.DTH_FECHAMENTO,'DD/MM/YYYY HH24:MI:SS') as DATA_SAIDA,
+                   TO_CHAR(EVP.DTH_CONFERIDO,'DD/MM/YYYY HH24:MI:SS') as DATA_CONFERENCIA
+
+              FROM EXPEDICAO_VOLUME_PATRIMONIO EVP
+             INNER JOIN (SELECT MAX(DTH_FECHAMENTO) as ULTIMA_SAIDA,
+                                COUNT(DISTINCT (COD_EXPEDICAO)) as QTD_SAIDAS,
+                                COD_VOLUME_PATRIMONIO
+                           FROM EXPEDICAO_VOLUME_PATRIMONIO
+                          GROUP BY COD_VOLUME_PATRIMONIO) ULTSAIDA
+                ON ULTSAIDA.COD_VOLUME_PATRIMONIO = EVP.COD_VOLUME_PATRIMONIO
+               AND ULTSAIDA.ULTIMA_SAIDA = DTH_FECHAMENTO
+              LEFT JOIN VOLUME_PATRIMONIO VP ON VP.COD_VOLUME_PATRIMONIO = EVP.COD_VOLUME_PATRIMONIO
+              ORDER BY EVP.COD_VOLUME_PATRIMONIO";
+
+        $array = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $array;
 
     }
 

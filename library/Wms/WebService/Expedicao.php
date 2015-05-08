@@ -116,16 +116,55 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviarPedidos ($codCarga, $placa, $pedidos) {
+        $pedidosArray = array();
+        foreach ($pedidos->pedidos as $pedidoWs) {
+            $cliente = array();
+            $cliente['codCliente'] = $pedidoWs->cliente->codCliente;
+            $cliente['bairro'] = $pedidoWs->cliente->bairro;
+            $cliente['cidade'] = $pedidoWs->cliente->cidade;
+            $cliente['complemento'] = $pedidoWs->cliente->complemento;
+            $cliente['cpf_cnpj'] = $pedidoWs->cliente->cpf_cnpj;
+            $cliente['logradouro'] = $pedidoWs->cliente->logradouro;
+            $cliente['nome'] = $pedidoWs->cliente->nome;
+            $cliente['numero'] = $pedidoWs->cliente->numero;
+            $cliente['referencia'] = $pedidoWs->cliente->referencia;
+            $cliente['tipoPessoa'] = $pedidoWs->cliente->tipoPessoa;
+            $cliente['uf'] = $pedidoWs->cliente->uf;
+
+            $itinerario = array();
+            $itinerario['idItinerario'] = $pedidoWs->itinerario->idItinerario;
+            $itinerario['nomeItinerario'] = $pedidoWs->itinerario->nomeItinerario;
+
+            $produtos = array();
+            foreach ($pedidoWs->produtos as $produtoWs) {
+                $produto['codProduto'] = $produtoWs->codProduto;
+                $produto['grade'] = $produtoWs->grade;
+                $produto['quantidade'] = $produtoWs->quantidade;
+                $produtos[] = $produto;
+            }
+
+            $pedido = array();
+            $pedido['codPedido'] = $pedidoWs->codPedido;
+            $pedido['cliente'] = $cliente;
+            $pedido['itinerario'] = $itinerario;
+            $pedido['produtos'] = $produtos;
+            $pedido['linhaEntrega'] = $pedidoWs->linhaEntrega;
+
+            $pedidosArray[] = $pedido;
+        }
 
         $carga = array();
         $carga['idCarga'] = $codCarga;
         $carga['placaExpedicao'] = $placa;
         $carga['placa'] = $placa;
-        $carga['pedidos'] = $pedidos;
+        $carga['pedidos'] = $pedidosArray;
+
         $cargas = array();
         $cargas[] = $carga;
+
         return $this->enviar($cargas);
     }
+
 
     /**
      *  Recebe Carga com Placa da Expedição
@@ -138,6 +177,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas)
     {
+        $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
 
@@ -162,7 +202,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function fechar($idCargaExterno,$tipoCarga)
     {
+        $idCargaExterno = trim ($idCargaExterno);
         if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
@@ -185,6 +227,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarCarga($idCargaExterno, $tipoCarga)
     {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
@@ -202,6 +248,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+        $tipoPedido = trim($tipoPedido);
+        $idPedido = trim($idPedido);
+
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
         $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
 
@@ -222,6 +274,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return array Se a carga está finalizada ou nâo
      */
     public function checarStatus($idCargaExterno,$tipoCarga) {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
@@ -252,6 +307,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function consultarEtiquetas($idCargaExterno, $tipoCarga)
     {
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo     = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -268,10 +327,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return carga Com informações das etiquetas
      */
     public function consultarCarga($idCargaExterno,$tipoCarga){
+
+        $idCargaExterno = trim ($idCargaExterno);
+        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+        $tipoCarga = trim($tipoCarga);
+
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
-
-        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));
@@ -285,11 +347,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $carga->situacao = $cargaEn->getExpedicao()->getStatus()->getSigla();
         $carga->pedidos = array();
         $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+
         /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         foreach ($pedidosEn as $pedidoEn) {
             $itinerario = new itinerario();
-            $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
-            $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
+            if ($pedidoEn->getItinerario() == null) {
+                $itinerario->idItinerario = "";
+                $itinerario->nomeItinerario = "";
+            } else {
+                $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
+                $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
+            }
+
+
 
             $cliente = new cliente();
             $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
@@ -301,6 +371,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCnpj();
                 $cliente->tipoPessoa = "J";
             }
+
             $enderecos = $pedidoEn->getPessoa()->getPessoa()->getEnderecos();
             if (count($enderecos) >0) {
                 $cliente->logradouro = $enderecos[0]->getDescricao();
@@ -325,7 +396,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto->codProduto = $item['COD_PRODUTO'];
                 $produto->grade = $item['DSC_GRADE'];
                 $produto->quantidade = $item['QTD_PEDIDO'];
-                $produto->qtdeAtendido = $item['QTD_ATENDIDO'];
+                $produto->quantidadeAtendida = $item['QTD_ATENDIDO'];;
                 $pedido->produtos[] = $produto;
             }
             $carga->pedidos[] = $pedido;
@@ -429,6 +500,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         foreach ($produtos as $produto) {
             $enProduto = $ProdutoRepo->find(array('id' => $produto['codProduto'], 'grade' => $produto['grade']));
+            if (isset($produto['quantidade'])) {
+                $produto['qtde'] = $produto['quantidade'];
+            }
+
             $prod = array(
                 'codPedido' => $enPedido->getId(),
                 'pedido' => $enPedido,

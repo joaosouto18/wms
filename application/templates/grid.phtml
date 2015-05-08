@@ -135,6 +135,7 @@ $attribs = $grid->getAttribs();
                         <?php endforeach; ?>
                     </select>
                     <button type="button" class="massaction-button"><span>Executar</span></button>
+                    <input type="hidden" value="<?php echo $grid->getHiddenId() ?>" name="hiddenId"/>
                 </div>
                 <form class="massaction-form" method="post">
                     <input type="hidden" value="" class="massaction-values"/>

@@ -5,7 +5,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 /* @Static */
 {
     pluginName: 'produtoEmbalagem'
-    
+
 },
 /* @Prototype */
 {
@@ -146,7 +146,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         $('#fieldset-embalagem #embalagem-endereco').val(produto_embalagem.endereco);
         $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
         $('#fieldset-embalagem #embalagem-embalado').val(produto_embalagem.embalado);
-        
+        $('#fieldset-embalagem #embalagem-capacidadePicking').val(produto_embalagem.capacidadePicking);
+        $('#fieldset-embalagem #embalagem-pontoReposicao').val(produto_embalagem.pontoReposicao);
+
         // checa opcoes de Codigo de Barras Interno
         this.checarCBInterno();
         
@@ -254,9 +256,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             $('#embalagem-isPadrao').val('N');
         
         $('#embalagem-quantidade').attr('disabled', false);
-        $('#embalagem-descricao, #embalagem-quantidade, #embalagem-id, #embalagem-codigoBarras, #embalagem-codigoBarrasAntigo, #embalagem-endereco, #embalagem-enderecoAntigo').val('');
+        $('#embalagem-descricao,#embalagem-pontoReposicao, #embalagem-capacidadePicking, #embalagem-quantidade, #embalagem-id, #embalagem-codigoBarras, #embalagem-codigoBarrasAntigo, #embalagem-endereco, #embalagem-enderecoAntigo').val('');
+        $('#embalagem-pontoReposicao, #embalagem-capacidadePicking').val('0');
         $('#embalagem-isPadrao').val('N').attr('disabled', false);
         $('#embalagem-codigoBarras').attr('disabled', false);
+        $('#embalagem-capacidadePicking').attr('disabled', false);
+        $('#embalagem-pontoReposicao').attr('disabled', false);
         $('#embalagem-acao').val('incluir');
         
         $('#embalagem-CBInterno, #embalagem-imprimirCB, #embalagem-embalado').val('N');

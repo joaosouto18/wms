@@ -7,10 +7,11 @@ echo $this->form;
             <table class="gTable ">
                 <caption>Endereços de Picking</caption>
                 <tbody>
-                <tr class ="gTTitle"><td>Endereço</td></tr>
+                <tr class ="gTTitle"><td>Endereço</td><td>Unitizador</td></tr>
                     <?php foreach ($this->enderecos as $endereco): $this->color = !($this->color);?>
                         <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
                             <td><?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?></td>
+                            <td><?php echo $endereco['DSC_UNITIZADOR'] ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

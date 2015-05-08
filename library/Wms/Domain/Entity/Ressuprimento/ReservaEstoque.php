@@ -23,21 +23,6 @@ class ReservaEstoque
     protected $endereco;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumns({
-     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
-     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
-     * })
-     */
-    protected $produto;
-
-    /**
-     * Qtd Reservada (Positivo para Reserva de Entrada, Negativo para Reserva de Saida)
-     * @Column(name="QTD_RESERVADA", type="integer", nullable=false)
-     */
-    protected $qtd;
-
-    /**
      * Tipo de Reserva (E - Entrada, S - Saida)
      * @Column(name="TIPO_RESERVA", type="string", nullable=false)
      */
@@ -75,6 +60,12 @@ class ReservaEstoque
      * @Column(name="DSC_OBSERVACAO", type="string", nullable=false)
      */
     protected $dscObservacao;
+
+    /**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto", mappedBy="reservaEstoque", cascade={"persist", "remove"})
+     * @var ArrayCollection volumes que compoem este produto
+     */
+    protected $produtos;
 
     public function setAtendida($atendida)
     {
@@ -136,26 +127,6 @@ class ReservaEstoque
         return $this->id;
     }
 
-    public function setProduto($produto)
-    {
-        $this->produto = $produto;
-    }
-
-    public function getProduto()
-    {
-        return $this->produto;
-    }
-
-    public function setQtd($qtd)
-    {
-        $this->qtd = $qtd;
-    }
-
-    public function getQtd()
-    {
-        return $this->qtd;
-    }
-
     public function setTipoReserva($tipoReserva)
     {
         $this->tipoReserva = $tipoReserva;
@@ -185,4 +156,21 @@ class ReservaEstoque
     {
         return $this->usuarioAtendimento;
     }
+
+    /**
+     * @param \Wms\Domain\Entity\Ressuprimento\ArrayCollection $produtos
+     */
+    public function setProdutos($produtos)
+    {
+        $this->produtos = $produtos;
+    }
+
+    /**
+     * @return \Wms\Domain\Entity\Ressuprimento\ArrayCollection
+     */
+    public function getProdutos()
+    {
+        return $this->produtos;
+    }
+
 }

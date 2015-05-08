@@ -1,0 +1,45 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="INVENTARIO" directorySegmentName="seg_0" id="21BB6E28-2F53-3600-9418-2C4FC3766ED4">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<logging>YES</logging>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<temporaryChanged>false</temporaryChanged>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="DTH_INICIO" id="92FEC0E9-7885-B17B-E284-5AFD018D7B64">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="DTH_FINALIZACAO" id="962DBC42-5D17-BB37-F2A2-083CFFF22149">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_INVENTARIO" id="9CE49CA6-FBE1-9273-A98F-486A8ABB1160">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="COD_STATUS" id="D666E3E3-0FFA-17E5-98AE-52D5FA2B1A36">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<primaryKeys>
+<PrimaryKey class="oracle.dbtools.crest.model.design.storage.oracle.v10g.PKProxyOraclev10g" name="Inventario_PK" id="CC90D2CB-BB9C-90F9-3A60-E1E62EBB078E">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:28:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<indexSort>SORTED</indexSort>
+</PrimaryKey>
+</primaryKeys>
+</TableProxyOraclev11g>

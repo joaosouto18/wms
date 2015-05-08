@@ -42,12 +42,16 @@
         <tr style="font-weight: bold">
             <td colspan="2">Cód. Barras</td>
             <td colspan="1">Endereço</td>
+            <td colspan="1">P. Reposição</td>
+            <td colspan="1">C. Picking</td>
         </tr>
         <tr>
             <td colspan="2" class="codigoBarrasExibicao"><%=this.codigoBarras%></td>
             <td colspan="1"><span class="endereco"><%=this.endereco%><span></td>
+            <td colspan="1" class="pontoReposicao"><%=this.pontoReposicao%></td>
+            <td colspan="1"><span class="capacidadePicking"><%=this.capacidadePicking%><span></td>
         </tr>
-        
+
     </table>
     
     <input type="hidden" name="volumes[<%=this.id%>][acao]" value="<%=this.acao%>"/>
@@ -63,4 +67,6 @@
     <input type="hidden" name="volumes[<%=this.id%>][imprimirCB]" class="imprimirCB" value="<%=this.imprimirCB%>"/>
     <input type="hidden" name="volumes[<%=this.id%>][codigoBarras]" class="codigoBarras" value="<%=this.codigoBarras%>"/>
     <input type="hidden" name="volumes[<%=this.id%>][endereco]" class="endereco" value="<%=this.endereco%>"/>
+    <input type="hidden" name="volumes[<%=this.id%>][pontoReposicao]" class="pontoReposicao" value="<%=this.pontoReposicao%>"/>
+    <input type="hidden" name="volumes[<%=this.id%>][capacidadePicking]" class="capacidadePicking" value="<%=this.capacidadePicking%>"/>
 </div>

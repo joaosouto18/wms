@@ -77,20 +77,6 @@ class Recebimento extends Grid
                     }
                 ));
 
-
-            $this
-                    ->addAction(array(
-                            'label' => 'Descarga Recebimento',
-                            'actionName' => 'index',
-                            'moduleName' => 'produtividade',
-                            'controllerName' => 'descarga',
-                            'pkIndex' => 'id',
-                            'condition' => function ($row) {
-                                return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA) && $row['idOrdemServicoManual']);
-                            }
-                        ));
-
-
             $this
                 ->addAction(array(
                             'label' => 'Descarga Recebimento',
@@ -105,6 +91,8 @@ class Recebimento extends Grid
                     'label' => 'Finalizar Conferência Coletor',
                     'actionName' => 'conferencia-coletor-ajax',
                     'pkIndex' => 'idOrdemServico',
+                    'cssClass' => 'edit confirm',
+                    'title' => 'Confirma finalizar a conferencia?',
                     'condition' => function ($row) {
                         return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR) && $row['idOrdemServicoColetor']);
                     }
@@ -171,6 +159,8 @@ class Recebimento extends Grid
                     'label' => 'Desfazer Recebimento',
                     'actionName' => 'desfazer',
                     'pkIndex' => 'id',
+                    'cssClass' => 'edit confirmee',
+                    'title' => 'Confirma desfazer o recebimento?',
                     'condition' => function ($row) {
                         return (!in_array($row['idStatus'], array(
                                     RecebimentoEntity::STATUS_CANCELADO,
@@ -187,6 +177,14 @@ class Recebimento extends Grid
                     'controllerName' => "produto",
                     'pkIndex' => 'id'
                 ))
+                ->addAction(array(
+                    'label' => 'Forçar Correção',
+                    'moduleName' => 'web',
+                    'actionName' => 'forcar-correcao',
+                    'controllerName' => 'recebimento',
+                    'pkIndex' => 'id'
+                ))
+
                 ->setShowExport(true)
                 ->setShowMassActions($params);
 

@@ -17,5 +17,9 @@ data/profiler
 data/log
 application.ini
 webservices.ini
+library/zendframework
+library/composer
+library/autoload.php
+zend_cache*
 autoload.php
 library/composer

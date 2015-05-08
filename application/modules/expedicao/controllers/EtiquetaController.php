@@ -33,6 +33,8 @@ class Expedicao_EtiquetaController  extends Action
         ini_set('max_execution_time', 3000);
         $idExpedicao    = $this->getRequest()->getParam('id');
         $central        = $this->getRequest()->getParam('central');
+        $cargas         = $this->getRequest()->getParam('cargas');
+
         if (empty($idExpedicao) || empty($central)) {
             $this->_redirect('/');
         }
@@ -40,6 +42,18 @@ class Expedicao_EtiquetaController  extends Action
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
+
+        //verifica se vai utilizar Ressuprimento
+        $filialEn = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('codExterno'=>$central));
+        if ($filialEn->getIndUtilizaRessuprimento() == "S") {
+            $pedidosSemOnda = $ExpedicaoRepo->getPedidoProdutoSemOnda($idExpedicao,$central);
+            if (count($pedidosSemOnda)) {
+                $mensagem = 'Existem pedidos sem onda de ressuprimento gerada na expedição ' . $idExpedicao;
+                $this->addFlashMessage('error', $mensagem );
+                $this->_redirect('/expedicao');
+            }
+        }
+
         if (count($ExpedicaoRepo->getProdutosSemDadosByExpedicao($idExpedicao)) > 0) {
             $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
             $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
@@ -47,7 +61,7 @@ class Expedicao_EtiquetaController  extends Action
             $this->addFlashMessage('error', $mensagem );
             $this->_redirect('/expedicao');
         } else {
-            $this->gerarEtiquetas($idExpedicao);
+            $this->gerarEtiquetas($idExpedicao,$central,$cargas);
 
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta("L", 'mm');
@@ -154,11 +168,16 @@ class Expedicao_EtiquetaController  extends Action
     /**
      * @param $idExpedicao
      */
-    protected function gerarEtiquetas($idExpedicao) {
+    protected function gerarEtiquetas($idExpedicao, $central, $cargas) {
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-        $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao);
+        $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
+
+        if (count($pedidosProdutos) == 0) {
+            $cargas = implode(',',$cargas);
+            $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
+        }
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -170,6 +189,38 @@ class Expedicao_EtiquetaController  extends Action
             $this->addFlashMessage('error', $mensagem );
             $this->_redirect('/expedicao');
         }
+    }
+
+    public function consultarAction()
+    {
+        $form = new \Wms\Module\Expedicao\Form\ConsultaEtiqueta();
+        $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        unset($params['submit']);
+
+        $form->populate($params);
+        $this->view->form = $form;
+
+        $Grid = new \Wms\Module\Web\Grid\ConsultaEtiqueta();
+        $this->view->grid = $Grid->init($params)->render();
+    }
+
+    public function dadosEtiquetaAction()
+    {
+        $params = $this->_getAllParams();
+        $idEtiqueta = $params['id'];
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        unset($params['submit']);
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
+        $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $result = $etiquetaSeparacaoRepo->getDadosEtiquetaByEtiquetaId($idEtiqueta);
+
+        $this->view->expedicoes = $result;
     }
 
 }

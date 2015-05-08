@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+    Wms\Domain\Entity\NotaFiscal\Item as ItemNF,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Core\Util\Produto as ProdutoUtil;
 
@@ -738,5 +739,103 @@ class NotaFiscalRepository extends EntityRepository
 
     }
 
+    public function buscarItensPorNovoRecebimento($idRecebimento, $idProduto)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id produto, nfi.grade, nf.id AS notaFiscal, IDENTITY(nf.recebimento) AS recebimento, p.descricao')
+            ->from('wms:NotaFiscal', 'nf')
+            ->innerJoin('nf.itens', 'nfi')
+            ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
+            ->where("nf.recebimento = $idRecebimento")
+            ->andWhere("p.id = $idProduto");
+        return $dql->getQuery()->getResult();
+    }
+
+    public function buscarItensPorRecebimentoDesfeito($idRecebimento, $idProduto)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id produto, nfi.grade, nf.id AS notaFiscal, IDENTITY(nf.recebimento) AS recebimento, p.descricao')
+            ->from('wms:NotaFiscal', 'nf')
+            ->innerJoin('nf.itens', 'nfi')
+            ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
+            ->where("nf.recebimento = $idRecebimento")
+            ->andWhere("p.id = $idProduto");
+        return $dql->getQuery()->getResult();
+    }
+
+    public function atualizaRecebimentoUma($recebimento)
+    {
+        $entity = $this->em->getReference('wms:NotaFiscal', $recebimento['notaFiscal']);
+        $entity->setRecebimento($recebimento['recebimento']);
+
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        return $entity;
+    }
+    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao) {
+
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+
+            if ($fornecedorEntity == null)
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+
+            $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
+                ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
+
+            if ($notaFiscalEntity != null)
+                throw new \Exception("Nota fiscal $numero / $serie já se encontra cadastrada");
+
+            // caso haja um veiculo vinculado a placa
+            if (empty($placa) || (strlen($placa) != 7))
+                $placa = $em->getRepository('wms:Sistema\Parametro')->getValor(5, 'PLACA_PADRAO_NOTAFISCAL');
+
+            if (!in_array($bonificacao, array('S', 'N')))
+                throw new \Exception('Indicação de bonificação inválida. Deve ser N para não ou S para sim.');
+
+            $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
+
+            //inserção de nova NF
+            $notaFiscalEntity = new NotaFiscalEntity;
+            $notaFiscalEntity->setNumero($numero)
+                ->setSerie($serie)
+                ->setDataEntrada(new \DateTime)
+                ->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao))
+                ->setFornecedor($fornecedorEntity)
+                ->setBonificacao($bonificacao)
+                ->setStatus($statusEntity)
+                ->setPlaca($placa);
+
+            if (count($itens) > 0) {
+                //itera nos itens das notas
+                foreach ($itens as $item) {
+                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $item['idProduto'], 'grade' => $item['grade']));
+
+                    if ($produtoEntity == null)
+                        throw new \Exception('Produto de código  ' . $item['idProduto'] . ' e grade ' . $item['grade'] . ' não encontrado');
+
+                    $itemEntity = new ItemNF;
+                    $itemEntity->setNotaFiscal($notaFiscalEntity)
+                        ->setProduto($produtoEntity)
+                        ->setGrade($item['grade'])
+                        ->setQuantidade($item['quantidade']);
+
+                    $notaFiscalEntity->getItens()->add($itemEntity);
+                }
+            }
+
+            $em->persist($notaFiscalEntity);
+            $em->flush();
+
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw $e;
+        }
+    }
 
 }

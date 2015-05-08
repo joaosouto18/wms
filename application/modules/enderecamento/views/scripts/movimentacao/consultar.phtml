@@ -1,0 +1,56 @@
+<table style="width: 100%; margin-bottom: 10px; margin-top: 10px; margin-right: 5px; margin-left: 5px">
+    <tr>
+        <td><b>Código</b></td>
+        <td><b>Grade</b></td>
+        <td><b>Produto</b></td>
+        <td><b>Volume</b></td>
+        <td><b>Endereço</b></td>
+    </tr>
+    <tr>
+        <td><?php echo $this->idProduto?></td>
+        <td><?php echo $this->grade?></td>
+        <td><?php echo $this->produto?></td>
+        <td><?php echo $this->volume?></td>
+        <td><?php echo $this->endereco?></td>
+    </tr>
+</table>
+
+<table class="gTable ">
+    <tbody>
+    <tr class ="gTTitle">
+        <td><b>Origem</b></td>
+        <td><b>Data Reserva</b></td>
+        <td><b>Tipo</b></td>
+        <td><b>Qtd Reservada</b></td>
+    </tr>
+
+    <?php
+    $qtdEntrada = 0;
+    $qtdSaida = 0;
+
+    foreach($this->reservas as $reserva) {?>
+        <tr>
+            <td><?php echo $reserva['ORIGEM']?></td>
+            <td><?php echo $reserva['DTH_RESERVA']?></td>
+            <td><?php echo $reserva['TIPO']?></td>
+            <td><?php echo $reserva['QTD_RESERVADA']?></td>
+        </tr>
+    <?php
+        if ($reserva['QTD_RESERVADA'] > 0) {
+            $qtdEntrada = $qtdEntrada +$reserva['QTD_RESERVADA'];
+        } else {
+            $qtdSaida = $qtdSaida +$reserva['QTD_RESERVADA'];
+        }
+    } ?>
+
+    <tr class="bottom">
+        <td colspan="2" style="padding-top: 20px"></td>
+        <td style="padding-top: 20px"><b>Total Entradas</b></td>
+        <td style="padding-top: 20px"><b><?php echo $qtdEntrada?></b></td>
+    </tr>
+    <tr>
+        <td colspan="2"></td>
+        <td><b>Total Saídas</b></td>
+        <td><b><?php echo $qtdSaida?></b></td>
+    </tr>
+</table>

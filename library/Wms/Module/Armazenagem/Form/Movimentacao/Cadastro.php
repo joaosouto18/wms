@@ -7,7 +7,7 @@ use Wms\Module\Web\Form;
 class Cadastro extends Form
 {
 
-    public function init()
+    public function init($utilizaGrade = "S")
     {
 
         $normasPaletizacao = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdValue(true);
@@ -22,16 +22,26 @@ class Cadastro extends Form
                 'size' => 10,
                 'label' => 'Cod. produto',
                 'class' => 'focus',
-            ))
-            ->addElement('text', 'grade', array(
-                'size' => 12,
-                'label' => 'Grade',
+            ));
+            if ($utilizaGrade == "S") {
+                $this->addElement('text', 'grade', array(
+                    'size' => 12,
+                    'label' => 'Grade',
+                ));
+            } else {
+                $this->addElement('hidden', 'grade', array(
+                    'label' => 'Grade',
+                    'value' => 'UNICA'
+                ));
+            }
+            $this->addElement('select', 'volumes', array(
+                'label' => 'Volumes',
             ))
             ->addElement('text', 'rua', array(
                 'size' => 3,
                 'label' => 'Rua',
                 'maxlength' => '2',
-                'class' => 'focus ctrSize',
+                'class' => 'ctrSize',
             ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
@@ -75,7 +85,8 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
+
             );
 
     }

@@ -39,31 +39,6 @@ class Palete
     protected $unitizador;
 
     /**
-     * @Column(name="COD_NORMA_PALETIZACAO", type="integer",  nullable=true)
-     */
-    protected $codNormaPaletizacao;
-
-    /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumns({
-     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
-     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
-     * })
-     */
-    protected $produto;
-
-
-    /**
-     * @Column(name="COD_PRODUTO", type="string", nullable=false)
-     */
-    protected $codProduto;
-
-    /**
-     * @Column(name="DSC_GRADE", type="string", nullable=false)
-     */
-    protected $grade;
-
-    /**
      * @Column(name="IND_IMPRESSO", type="string", nullable=false)
      */
     protected $impresso;
@@ -73,16 +48,6 @@ class Palete
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
     protected $depositoEndereco;
-
-    /**
-     * @Column(name="QTD", type="integer", nullable=false)
-     */
-    protected $qtd;
-
-    /**
-     * @Column(name="QTD_ENDERECADA", type="integer", nullable=false)
-     */
-    protected $qtdEnderecada;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
@@ -96,36 +61,10 @@ class Palete
     protected $codStatus;
 
     /**
-     * @param mixed $codNormaPaletizacao
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Enderecamento\PaleteProduto", mappedBy="uma", cascade={"persist", "remove"})
+     * @var ArrayCollection volumes que compoem este produto
      */
-    public function setCodNormaPaletizacao($codNormaPaletizacao)
-    {
-        $this->codNormaPaletizacao = $codNormaPaletizacao;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCodNormaPaletizacao()
-    {
-        return $this->codNormaPaletizacao;
-    }
-
-    /**
-     * @param mixed $codProduto
-     */
-    public function setCodProduto($codProduto)
-    {
-        $this->codProduto = $codProduto;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCodProduto()
-    {
-        return $this->codProduto;
-    }
+    protected $produtos;
 
     /**
      * @param mixed $codStatus
@@ -160,22 +99,6 @@ class Palete
     }
 
     /**
-     * @param mixed $grade
-     */
-    public function setGrade($grade)
-    {
-        $this->grade = $grade;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getGrade()
-    {
-        return $this->grade;
-    }
-
-    /**
      * @param mixed $id
      */
     public function setId($id)
@@ -189,38 +112,6 @@ class Palete
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @param mixed $produto
-     */
-    public function setProduto($produto)
-    {
-        $this->produto = $produto;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProduto()
-    {
-        return $this->produto;
-    }
-
-    /**
-     * @param mixed $qtd
-     */
-    public function setQtd($qtd)
-    {
-        $this->qtd = $qtd;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getQtd()
-    {
-        return $this->qtd;
     }
 
     /**
@@ -288,19 +179,34 @@ class Palete
     }
 
     /**
-     * @param mixed $qtdEnderecada
+     * @param \Wms\Domain\Entity\Enderecamento\ArrayCollection $produtos
      */
-    public function setQtdEnderecada($qtdEnderecada)
+    public function setProdutos($produtos)
     {
-        $this->qtdEnderecada = $qtdEnderecada;
+        $this->produtos = $produtos;
     }
 
     /**
-     * @return mixed
+     * @return \Wms\Domain\Entity\Enderecamento\ArrayCollection
      */
-    public function getQtdEnderecada()
+    public function getProdutos()
     {
-        return $this->qtdEnderecada;
+        return $this->produtos;
+    }
+
+    public function getProdutosArray() {
+        $arrayProdutos = array();
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $produto */
+        foreach($this->getProdutos() as $produto) {
+            $arrayProduto = array();
+            $arrayProduto['codProduto'] = $produto->getCodProduto();
+            $arrayProduto['grade'] = $produto->getGrade();
+            $arrayProduto['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem() ;
+            $arrayProduto['codProdutoVolume']  = $produto->getCodProdutoVolume();
+            $arrayProduto['qtd'] = $produto->getQtd();
+            $arrayProdutos[] = $arrayProduto;
+        }
+        return $arrayProdutos;
     }
 
 }

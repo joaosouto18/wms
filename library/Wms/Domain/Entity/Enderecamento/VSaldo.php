@@ -79,6 +79,12 @@ class VSaldo
     protected $depositoEndereco;
 
     /**
+     * @Column (name="VOLUME", type="string", nullable=false)
+     * @id
+     */
+    protected $volume;
+
+    /**
      * @param mixed $codEndereco
      */
     public function setCodEndereco($codEndereco)
@@ -220,6 +226,54 @@ class VSaldo
     public function getQtd()
     {
         return $this->qtd;
+    }
+
+    /**
+     * @param mixed $codUnitizador
+     */
+    public function setCodUnitizador($codUnitizador)
+    {
+        $this->codUnitizador = $codUnitizador;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodUnitizador()
+    {
+        return $this->codUnitizador;
+    }
+
+    /**
+     * @param mixed $unitizador
+     */
+    public function setUnitizador($unitizador)
+    {
+        $this->unitizador = $unitizador;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUnitizador()
+    {
+        return $this->unitizador;
+    }
+
+    /**
+     * @param mixed $volume
+     */
+    public function setVolume($volume)
+    {
+        $this->volume = $volume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getVolume()
+    {
+        return $this->volume;
     }
 
 }

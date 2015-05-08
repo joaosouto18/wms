@@ -17,28 +17,36 @@ class Imprimir extends Form
             'id' => 'imprimir'
         ));
             $this->addElement('text', 'rua', array(
-                'size' => 10,
+                'size' => 4,
                 'label' => 'Rua Inicial',
             ))
             ->addElement('text', 'ruafinal', array(
-                'size' => 10,
+                'size' => 4,
                 'label' => 'Rua Final',
             ))
             ->addElement('text', 'predio', array(
                 'label' => 'Prédio Inicial',
-                'size' => 10,
+                'size' => 4,
             ))
             ->addElement('text', 'prediofinal', array(
                 'label' => 'Prédio Final',
-                'size' => 10,
+                'size' => 4,
+            ))
+            ->addElement('text', 'nivel', array(
+                'label' => 'Nivel Inicial',
+                'size' => 4,
+            ))
+            ->addElement('text', 'nivelfinal', array(
+                'label' => 'Nivel Final',
+                'size' => 4,
             ))
             ->addElement('text', 'apartamento', array(
-                    'label' => 'Apartamento Inicial',
-                    'size' => 10,
+                    'label' => 'Apto Inicial',
+                    'size' => 4,
             ))
             ->addElement('text', 'apartamentofinal', array(
-                'label' => 'Apartamento Final',
-                'size' => 10,
+                'label' => 'Apto Final',
+                'size' => 4,
             ))
             ->addElement('submit', 'buscar', array(
                 'label' => 'Buscar',

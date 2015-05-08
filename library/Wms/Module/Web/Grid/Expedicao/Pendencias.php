@@ -57,6 +57,10 @@ class Pendencias extends Grid
                     'index' => 'codEstoque',
                 ))
                 ->addColumn(array(
+                    'label' => 'Transbordo',
+                    'index' => 'pontoTransbordo',
+                ))
+                ->addColumn(array(
                     'label' => 'Carga',
                     'index' => 'codCargaExterno',
                 ))
