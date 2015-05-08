@@ -1,7 +1,7 @@
 <?php
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Page,
-    Core\Util\Produto as ProdutoUtil;;
+    Core\Util\Produto as ProdutoUtil;
 
 class Enderecamento_MovimentacaoController extends Action
 {
