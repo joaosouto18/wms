@@ -67,6 +67,18 @@ class Estoque
     protected $uma;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
+     * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
+     */
+    protected $produtoEmbalagem;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
+     * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
+     */
+    protected $produtoVolume;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -208,6 +220,38 @@ class Estoque
     public function getUma()
     {
         return $this->uma;
+    }
+
+    /**
+     * @param mixed $produtoEmbalagem
+     */
+    public function setProdutoEmbalagem($produtoEmbalagem)
+    {
+        $this->produtoEmbalagem = $produtoEmbalagem;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProdutoEmbalagem()
+    {
+        return $this->produtoEmbalagem;
+    }
+
+    /**
+     * @param mixed $produtoVolume
+     */
+    public function setProdutoVolume($produtoVolume)
+    {
+        $this->produtoVolume = $produtoVolume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProdutoVolume()
+    {
+        return $this->produtoVolume;
     }
 
 }

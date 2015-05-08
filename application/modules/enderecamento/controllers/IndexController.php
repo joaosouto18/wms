@@ -9,7 +9,6 @@ class Enderecamento_IndexController extends Action
     public function indexAction()
     {
         $form = new FiltroRecebimentoMercadoria;
-
         $values = $form->getParams();
 
         //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje

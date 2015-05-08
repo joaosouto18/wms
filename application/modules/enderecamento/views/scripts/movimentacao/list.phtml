@@ -1,53 +1,93 @@
-<?php if (isset($this->enderecoPicking)) : ?>
-<p>
-    Endereço de picking: <?php echo $this->enderecoPicking; ?>
-</p>
-<?php endif;
-$total = 0;
-?>
+<script>
+    $(document).ready(function() {
+        $("a[rel=modal]").click (function(a){
+            a.preventDefault();
+            $.wmsDialogAjax({
+                width: 800,
+                height: 500,
+                url: this.href,
+                title: $(this).html()
+            })
+        });
+    });
+</script>
 
-<?php foreach($this->endsPulmao as $produtosAgrupados) : ?>
+<table class="gTable ">
+    <caption>Estoque do produto - Picking cadastrado: <?php echo $this->endPicking; ?></caption>
+    <tbody>
+    <?php $codProdutoAnterior = null;
+    $gradeAnterior = null;
+    $codVolumeAnterior = null;
 
-    <table class="gTable ">
-        <caption>Estoque do produto</caption>
-        <tbody>
-        <tr class ="gTTitle">
-            <td>Código Produto</td>
-            <td>Grade</td>
-            <td>Descrição</td>
-            <td>Picking</td>
-            <td>Pulmão</td>
-            <td>Dt. Entrada</td>
-            <td>Unitizador</td>
-            <td>Qtde</td>
-        </tr>
-        <tr>
-            <td><?php echo $produtosAgrupados[0]['codProduto'] ?></td>
-            <td><?php echo $produtosAgrupados[0]['grade'] ?></td>
-            <td><?php echo $produtosAgrupados[0]['produto'] ?></td>
-            <td><?php echo $this->enderecoPicking; ?></td>
-            <td></td>
-            <td></td>
-            <td></td>
+    $qtdEstoque = 0;
+    $qtdReservaEntrada = 0;
+    $qtdReservaSaida = 0;
+    foreach($this->enderecos as $endereco) {
+        if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
+
+            if ($codProdutoAnterior != NULL) {
+                ?><tr >
+                <td colspan="3"><b>Total</b></td>
+                <td><b><?php echo $qtdReservaEntrada?></b></td>
+                <td><b><?php echo $qtdReservaSaida?></b></td>
+                <td><b><?php echo $qtdEstoque?></b></td>
+                </tr>
+            <?php
+            }
+
+            $qtdEstoque = 0;
+            $qtdReservaEntrada = 0;
+            $qtdReservaSaida = 0;
+
+            ?><tr class ="gTTitle">
+            <td><b><?php echo "CÓDIGO: ".$endereco['COD_PRODUTO']?></b></td>
+            <td><b><?php echo "GRADE: ". $endereco['DSC_GRADE']?></b></td>
+            <td colspan="3"><b><?php echo "PRODUTO: ".$endereco['DSC_PRODUTO']?></b></td>
+            <td colspan="4"><b><?php echo "VOLUME: ". $endereco['VOLUME']?></b></td>
+            </tr>
+
+            <tr>
+                <td><b>Endereço</b></td>
+                <td><b>Tipo</b></td>
+                <td><b>Data de Entrada</b></td>
+                <td><b>U.M.A.</b></td>
+                <td><b>Unitizador</b></td>
+                <td><b>Reserva Entrada</b></td>
+                <td><b>Reserva Saida</b></td>
+                <td><b>Qtd.Estoque</b></td>
+            </tr>
+        <?php
+        }
+        ?><tr>
+        <td><?php echo $endereco['ENDERECO']?></td>
+        <td><?php echo $endereco['TIPO']?></td>
+        <td><?php echo $endereco['DTH_PRIMEIRA_MOVIMENTACAO']?></td>
+        <td><?php echo $endereco['UMA']?></td>
+        <td><?php echo $endereco['UNITIZADOR']?></td>
+        <td><?php echo $endereco['RESERVA_ENTRADA']?></td>
+        <td><?php echo $endereco['RESERVA_SAIDA']?></td>
+        <td><?php echo $endereco['QTD']?></td>
+        <td><?php if (($endereco['RESERVA_SAIDA'] != 0) || ($endereco['RESERVA_ENTRADA'] != 0)) {?>
+                <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/'.$endereco['COD_VOLUME'].'/idProduto/'.$endereco['COD_PRODUTO'].'/grade/'. urlencode ($endereco['DSC_GRADE']). '/idEndereco/'.$endereco['COD_ENDERECO'].'"';?> >Mais</a>
+            <?php }?></td>
         </tr>
         <?php
-        foreach($produtosAgrupados as $end) : ?>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><?php echo $end['descricao'] ?></td>
-            <td><?php echo $end['dtPrimeiraEntrada']->format('d/m/Y H:i:s') ?></td>
-            <td><?php echo $end['unitizador'] ?></td>
-            <td style="text-align:right"><?php echo $end['qtd']; $total = $total+$end['qtd'] ?></td>
-        </tbody>
-        <?php endforeach ?>
-        <tr>
-            <td colspan="8" style="text-align:right">Total:<?php echo $total ?></td>
-        </tr>
-    </table>
+        $qtdEstoque = $qtdEstoque + $endereco['QTD'];
+        $qtdReservaEntrada = $qtdReservaEntrada + $endereco['RESERVA_ENTRADA'];
+        $qtdReservaSaida   = $qtdReservaSaida   + $endereco['RESERVA_SAIDA'];
+        $codProdutoAnterior = $endereco['COD_PRODUTO'];
+        $gradeAnterior = $endereco['DSC_GRADE'];
+        $codVolumeAnterior = $endereco['COD_VOLUME'];
 
-    <?php
-    unset($total);
-endforeach; ?>
+        if ($endereco == $this->enderecos[count($this->enderecos)-1]) {
+            ?><tr>
+            <td colspan="5"><b>Total</b></td>
+            <td><b><?php echo $qtdReservaEntrada?></b></td>
+            <td><b><?php echo $qtdReservaSaida?></b></td>
+            <td><b><?php echo $qtdEstoque?></b></td>
+            </tr><?php
+        }
+    }
+    ?>
+</table>
+

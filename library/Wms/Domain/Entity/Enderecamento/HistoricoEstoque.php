@@ -77,11 +77,11 @@ class HistoricoEstoque
     protected $ordemServico;
 
     /**
-     * @var Wms\Domain\Entity\Pessoa $pessoa
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa")
-     * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_PESSOA")
+     * @var Wms\Domain\Entity\Usuario $usuario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
+     * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_USUARIO")
      */
-    protected $pessoa;
+    protected $usuario;
 
     /**
      * @Column(name="IND_TIPO", type="string", length=1)
@@ -95,6 +95,23 @@ class HistoricoEstoque
      */
 
     protected $unitizador;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
+     * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
+     */
+    protected $produtoEmbalagem;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
+     * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
+     */
+    protected $produtoVolume;
+
+    /**
+     * @Column(name="UMA", type="integer", nullable=false)
+     */
+    protected $uma;
 
     /**
      * @param mixed $codProduto
@@ -257,22 +274,6 @@ class HistoricoEstoque
     }
 
     /**
-     * @param \Wms\Domain\Entity\Enderecamento\Wms\Domain\Entity\Pessoa $pessoa
-     */
-    public function setPessoa($pessoa)
-    {
-        $this->pessoa = $pessoa;
-    }
-
-    /**
-     * @return \Wms\Domain\Entity\Enderecamento\Wms\Domain\Entity\Pessoa
-     */
-    public function getPessoa()
-    {
-        return $this->pessoa;
-    }
-
-    /**
      * @param string $tipo
      */
     public function setTipo($tipo)
@@ -287,8 +288,6 @@ class HistoricoEstoque
     {
         return $this->tipo;
     }
-
-
 
     /**
      * @param mixed $unitizador
@@ -306,6 +305,69 @@ class HistoricoEstoque
         return $this->unitizador;
     }
 
+    /**
+     * @param mixed $produtoEmbalagem
+     */
+    public function setProdutoEmbalagem($produtoEmbalagem)
+    {
+        $this->produtoEmbalagem = $produtoEmbalagem;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProdutoEmbalagem()
+    {
+        return $this->produtoEmbalagem;
+    }
+
+    /**
+     * @param mixed $produtoVolume
+     */
+    public function setProdutoVolume($produtoVolume)
+    {
+        $this->produtoVolume = $produtoVolume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProdutoVolume()
+    {
+        return $this->produtoVolume;
+    }
+
+    /**
+     * @param mixed $uma
+     */
+    public function setUma($uma)
+    {
+        $this->uma = $uma;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUma()
+    {
+        return $this->uma;
+    }
+
+    /**
+     * @param \Wms\Domain\Entity\Enderecamento\Wms\Domain\Entity\Usuario $usuario
+     */
+    public function setUsuario($usuario)
+    {
+        $this->usuario = $usuario;
+    }
+
+    /**
+     * @return \Wms\Domain\Entity\Enderecamento\Wms\Domain\Entity\Usuario
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
 
 
 }

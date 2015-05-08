@@ -95,18 +95,8 @@ class Identificacao extends SubForm
                     'readonly' => 'readonly',
                     'alt' => 'centesimal',
                 ))                             
-                ->addElement('text', 'pontoReposicao', array(
-                    'label' => 'Ponto de Reposição',
-                    'size' => 20,
-                    'class' => 'focus',
-                ))                             
-                ->addElement('text', 'capacidadePicking', array(
-                    'label' => 'Capacidade de Picking',
-                    'size' => 15,
-                    'class' => 'focus',
-                ))
                 ->addDisplayGroup(
-                        array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem','pontoReposicao','capacidadePicking'), 'logistico', array('legend' => 'Dados Logisticos')
+                        array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
         );
     }
 
@@ -125,8 +115,6 @@ class Identificacao extends SubForm
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
-            'pontoReposicao' => $produto->getPontoReposicao(),
-            'capacidadePicking' => $produto->getCapacidadePicking(),
         );
 
         $this->setDefaults($values);

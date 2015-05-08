@@ -8,6 +8,32 @@ use Core\Controller\Action,
 class Web_IndexController extends Wms\Module\Web\Controller\Action {
 
     public function indexAction() {
+
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
+        $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto(null, null, \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_DIVERGENTE);
+        if (count($result) > 0) {
+            $link = '<a href="/relatorio_relatorio-ondas?idProduto=&grade=&=operador=&expedicao=&dataInicial=&dataFinal=&status=546&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+            $this->addFlashMessage("info","Existe(m) " . count ($result) . " Os de Ressuprimento Marcadas para Análise " . $link);
+        }
+
+        $params = array(
+            'idRecebimento'=>'',
+            'classe'=>'',
+            'idLinhaSeparacao'=>'',
+            'idTipoComercializacao'=>'',
+            'indDadosLogisticos'=>'',
+            'codigoBarras'=>'',
+            'normaPaletizacao'=>'',
+            'enderecoPicking'=>'N',
+            'estoquePulmao'=>'S',
+            'submit'=>'Buscar'
+        );
+        $produtos = $this->getEntityManager()->getRepository('wms:NotaFiscal')->relatorioProdutoDadosLogisticos($params);
+        if (count($produtos) >0) {
+            $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+            $this->addFlashMessage("info","Existe(m) produto(s) no pulmão sem picking cadastrado " . $link);
+        }
         /*
          * INICIO COMENTARIO
 

@@ -24,6 +24,34 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
    * @param Produto $produtoEntity 
    * @param array $values valores vindo de um formulário
    */
+
+  public function getProdutosSemPickingByExpedicoes($expedicoes) {
+      $sessao = new \Zend_Session_Namespace('deposito');
+      $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+      $central = $deposito->getFilial()->getCodExterno();
+
+      $produtosRessuprir = $this->getEntityManager()->getRepository("wms:Expedicao")->getProdutosSemOnda($expedicoes, $central);
+      $produtosSemPicking = array();
+
+      foreach ($produtosRessuprir as $produto){
+          $codProduto = $produto['COD_PRODUTO'];
+          $grade = $produto['DSC_GRADE'];
+
+          $produtoEn = $this->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+          $idPicking = $this->getEnderecoPicking($produtoEn,"ID");
+          if ($idPicking == NULL) {
+              $produtoSp = array();
+              $produtoSp['Codigo'] = $codProduto;
+              $produtoSp['Grade'] = $grade;
+              $produtoSp['Produto'] = $produtoEn->getDescricao();
+              $produtoSp['Quantidade'] = $produto['QTD'];
+              $produtosSemPicking[] = $produtoSp;
+          }
+      }
+
+      return $produtosSemPicking;
+  }
+
   public function save(ProdutoEntity $produtoEntity, array $values) {
 
 	extract($values['produto']);
@@ -40,8 +68,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       $produtoEntity->setNumVolumes($numVolumes);
       $produtoEntity->setReferencia($referencia);
       $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
-      $produtoEntity->setCapacidadePicking($capacidadePicking);
-      $produtoEntity->setPontoReposicao($pontoReposicao);
 
 	  $em->persist($produtoEntity);
 
@@ -143,6 +169,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $embalagemEntity->setImprimirCB($imprimirCB);
             $embalagemEntity->setCodigoBarras($codigoBarras);
             $embalagemEntity->setEmbalado($embalado);
+            $embalagemEntity->setCapacidadePicking($capacidadePicking);
+            $embalagemEntity->setPontoReposicao($pontoReposicao);
             $embalagemEntity->setEndereco(null);
 
 		  //valida o endereco informado
@@ -198,6 +226,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$embalagemEntity->setCodigoBarras($codigoBarras);
 		  }
           $embalagemEntity->setEmbalado($embalado);
+          $embalagemEntity->setCapacidadePicking($capacidadePicking);
+          $embalagemEntity->setPontoReposicao($pontoReposicao);
 
 		  $em->persist($embalagemEntity);
 		  break;
@@ -698,7 +728,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
   private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
 	$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -714,7 +744,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	
 	if (empty($dadosLogisticosEmbalagens)) {
 	  $dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -743,12 +773,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  'cubagem' => $embalagem['cubagem'],
 		  'peso' => $embalagem['peso'],
 		  'descricao' => $embalagem['descricao'],
+          'quantidade' => $embalagem['quantidade'],
 	  );
 
 	  $i++;
 	}
 
-	//var_dump($dadosLogisticos);die;
 	return $client->salvar((string) $produtoEntity->getId(), $dadosLogisticos);
   }
 
@@ -760,7 +790,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	  return false;
 
 	$client = $this->getSoapClient();
-
 
 	$dadosLogisticosVolume = array();
 
@@ -774,7 +803,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  'profundidade' => \Core\Util\Converter::brToEn($profundidade, 3),
 		  'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
 		  'peso' => \Core\Util\Converter::brToEn($peso, 3),
-		  'descricao' => $descricao
+		  'descricao' => $descricao,
+          'quantidade' => 1
 	  );
 	  $i++;
 	}
@@ -855,16 +885,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             return null;
         }
 
-        if ($embalagemEn[0]->getEndereco() != null) {
-            if ($tipoRetorno == "DSC"){
-                $enderecoPicking = $embalagemEn[0]->getEndereco()->getDescricao();
-            } else {
-                $enderecoPicking = $embalagemEn[0]->getEndereco()->getId();
+        $enderecoPicking = null;
+        foreach($embalagemEn as $embalagem) {
+            if ($embalagem->getEndereco() != null) {
+                if ($tipoRetorno == "DSC"){
+                    $enderecoPicking = $embalagem->getEndereco()->getDescricao();
+                } else {
+                    $enderecoPicking = $embalagem->getEndereco()->getId();
+                }
+            } else{
+                $enderecoPicking = null;
+                break;
             }
-            return $enderecoPicking;
-        } else{
-            return null;
         }
+        return $enderecoPicking;
     }
 
     public function getNormaPaletizacaoPadrao($codProduto, $grade) {
@@ -954,6 +988,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                  NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO) \"LASTRO\",
                  NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS) \"CAMADAS\",
                  NVL(NP1.NUM_NORMA, NP2.NUM_NORMA) as \"NORMA DE PALETIZACAO\",
+                 NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) as \"CAPACIDADE DE PICKING\",
+                 NVL(PE.PONTO_REPOSICAO, PV.PONTO_REPOSICAO) as \"PONTO REPOSICAO\",
                  CASE WHEN (PV.COD_NORMA_PALETIZACAO IS NULL AND PDL.COD_NORMA_PALETIZACAO IS NULL) THEN 'SEM NORMA DE PALETIZACAO CADASTRADA'
                       WHEN (PE.COD_BARRAS IS NULL AND PV.COD_BARRAS IS NULL) THEN 'SEM CODIGO DE BARRAS'
                       WHEN (NP1.NUM_NORMA = 0 OR NP2.NUM_NORMA = 0) THEN 'SEM LASTRO OU CAMADAS DEFINIDOS'
@@ -1061,7 +1097,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $cond=" AND  DE.NUM_RUA = ".$rua." ";
         }
 
-
         $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
@@ -1076,6 +1111,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function verificaSeEProdutoComposto($idProduto)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.numVolumes')
+            ->from('wms:Produto', 'p')
+            ->where('p.id = :codProduto')
+            ->setParameter('codProduto', $idProduto);
+
+        return $dql->getQuery()->getResult();
     }
 
 }

@@ -195,6 +195,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         //reseta valores
         //$("#fieldset-volume input[type=hidden]").val('');
         $('#volume-altura, #volume-largura, #volume-profundidade, #volume-cubagem, #volume-peso').val('0,000');
+        $('#embalagem-pontoReposicao, #embalagem-capacidadePicking').val('0');
         $('#volume-id, #volume-descricao, #volume-codigoBarras, #volume-codigoBarrasAntigo, #volume-endereco, #volume-enderecoAntigo').val('');
         $('#volume-CBInterno, #volume-imprimirCB').val('N');
         
@@ -305,7 +306,8 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         $('#volume-idNormaPaletizacao').val(produto_volume.idNormaPaletizacao);
         $('#volume-endereco').val(produto_volume.endereco);
         $('#volume-enderecoAntigo').val(produto_volume.endereco);
-        
+        $('#volume-capacidadePicking').val(produto_volume.capacidadePicking);
+        $('#volume-pontoReposicao').val(produto_volume.pontoReposicao);
         $('#btn-salvar-volume').val('Editar Volume');
         
         // checa opcoes de Codigo de Barras Interno

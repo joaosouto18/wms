@@ -13,12 +13,13 @@ class UMA extends Pdf
         $this->Cell(20, 20, utf8_decode("RELATÓRIO DE UMA's" ), 0, 1);
 
         $this->SetFont('Arial', 'B', 8);
-        $this->Cell(26,  5, utf8_decode("Cód. Recebimento")  ,1, 0);
-        $this->Cell(15,  5, utf8_decode("Cód. Uma")   ,1, 0);
-        $this->Cell(20, 5, utf8_decode("Cód. Produto") ,1, 0);
+        $this->Cell(16,  5, utf8_decode("Receb.")  ,1, 0);
+        $this->Cell(15,  5, utf8_decode("U.M.A.")   ,1, 0);
+        $this->Cell(16, 5, utf8_decode("Prod.") ,1, 0);
         $this->Cell(66, 5, utf8_decode("Descrição Produto") ,1, 0);
-        $this->Cell(18, 5, utf8_decode("Quantidade") ,1, 0);
-        $this->Cell(37, 5, "Status" ,1, 0);
+        $this->Cell(110, 5, utf8_decode("Embalagem/Volume") ,1, 0);
+        $this->Cell(12, 5, utf8_decode("Qtde.") ,1, 0);
+        $this->Cell(30, 5, "Status" ,1, 0);
         $this->Cell(18,  5, utf8_decode("End. Uma") ,1, 1);
     }
 
@@ -64,18 +65,23 @@ class UMA extends Pdf
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $PaleteRepo */
         $PaleteRepo = $em->getRepository('wms:Enderecamento\Palete');
 
-        $listaUMA = $PaleteRepo->getPaletesReport($params);
+        $listaUMA = $PaleteRepo->getPaletesAndVolumes($params['idRecebimento'],null,null,null,$params['status'],$params['dataInicial1'],$params['dataInicial2'], $params['dataFinal1'], $params['dataFinal2'],$params['uma']);
 
         foreach ($listaUMA as $uma) {
 
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(26, 5, $uma['codrecebimento'], 1, 0);
-            $this->Cell(15, 5, $uma['coduma'], 1, 0);
-            $this->Cell(20, 5, $uma['codproduto'], 1, 0);
-            $this->Cell(66, 5, $uma['nomeproduto'], 1, 0);
-            $this->Cell(18, 5, $uma['quantidade'], 1, 0);
-            $this->Cell(37, 5, $uma['status'], 1, 0);
-            $this->Cell(18, 5, $uma['endereco'], 1, 1);
+            $this->Cell(16, 5, $uma['COD_RECEBIMENTO'], 1, 0);
+            $this->Cell(15, 5, $uma['UMA'], 1, 0);
+            $this->Cell(16, 5, $uma['COD_PRODUTO'], 1, 0);
+            $this->Cell(66, 5, $uma['DSC_PRODUTO'], 1, 0);
+            if (strlen($uma['VOLUMES']) >= 70) {
+                $this->Cell(110, 5, substr($uma['VOLUMES'],0,63) . "...", 1, 0);
+            } else {
+                $this->Cell(110, 5, $uma['VOLUMES'], 1, 0);
+            }
+            $this->Cell(12, 5, $uma['QTD'], 1, 0);
+            $this->Cell(30, 5, $uma['STATUS'], 1, 0);
+            $this->Cell(18, 5, $uma['ENDERECO'], 1, 1);
 
         }
 

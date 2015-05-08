@@ -1,0 +1,32 @@
+<div id="andamento-grid" class="grid">
+    <table class="gTable ">
+        <caption>Andamento Ressuprimento</caption>
+        <tbody>
+        <tr class ="gTTitle">
+            <td>#</td>
+            <td>Nome</td>
+            <td>Observação</td>
+            <td>Dt. Andamento</td>
+            <td>Status</td>
+        </tr>
+        <?php if ($this->andamentos) : ?>
+            <?php
+            foreach ($this->andamentos as $andamento): $this->color = !($this->color);?>
+                <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><?php echo $andamento['CODIGO']?></td>
+                    <td><?php echo $andamento['NOME'] ?></td>
+                    <td><?php echo $andamento['OBS'] ?></td>
+                    <td>
+                        <?php
+                        $date = new DateTime($andamento['DATA']);
+                        $data = $date->format('d-m-Y H:i:s');
+                        echo $data;
+                        ?>
+                    </td>
+                    <td><?php echo $andamento['SIGLA'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>

@@ -10,10 +10,10 @@ namespace Wms\Module\Web\Form\Subform;
 class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
 {
 
-    public function init()
+    public function init($action = "/expedicao")
     {
         //$s = new Zend_Session_Namespace('sessionUrl');
-        $label="/expedicao";
+        $label=$action;
        //if ( !empty($s->action))
            //$label=$s->action;
         $em = $this->getEm();

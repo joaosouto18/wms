@@ -15,7 +15,7 @@ class Enderecamento_Relatorio_UmaController extends Action
 
         if ($values)
         {
-            $relatorio = new UMA();
+            $relatorio = new UMA("L");
             $relatorio->init($values);
         }
 

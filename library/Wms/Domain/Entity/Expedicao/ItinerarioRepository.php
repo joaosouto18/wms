@@ -29,4 +29,15 @@ class ItinerarioRepository extends EntityRepository
         return $enItinerario;
     }
 
+    public function getIdValue()
+    {
+        $itinerarios = array();
+
+        foreach ($this->findAll() as $itinerario) {
+            $itinerarios[$itinerario->getId()] = $itinerario->getDescricao();
+        }
+
+        return $itinerarios;
+    }
+
 }

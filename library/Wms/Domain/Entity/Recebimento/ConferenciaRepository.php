@@ -36,6 +36,54 @@ class ConferenciaRepository extends EntityRepository
 		}
 	}
 
+    public function getLastOsRecebimentoEmbalagem ($idRecebimento, $idProduto, $grade)
+    {
+        $query = "
+            SELECT COD_OS
+              FROM (SELECT DISTINCT
+                           CASE WHEN OS.DTH_FINAL_ATIVIDADE IS NULL THEN TO_DATE('31/12/9999','dd/mm/yyyy')
+                                                ELSE OS.DTH_FINAL_ATIVIDADE END AS DTH_FINAL_ATIVIDADE,
+                           OS.COD_OS
+                      FROM ORDEM_SERVICO OS
+                     INNER JOIN RECEBIMENTO_EMBALAGEM RE ON RE.COD_OS = OS.COD_OS
+                     INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                     WHERE OS.COD_RECEBIMENTO = '$idRecebimento'
+                       AND COD_PRODUTO = '$idProduto'
+                       AND DSC_GRADE = '$grade') QTD
+             ORDER BY DTH_FINAL_ATIVIDADE DESC";
+        $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($result == NULL) {
+            return 0;
+        } else {
+            return $result[0]['COD_OS'];
+        }
+    }
+
+    public function getLastOsRecebimentoVolume ($idRecebimento, $idProduto, $grade)
+    {
+        $query = "
+            SELECT COD_OS
+              FROM (SELECT DISTINCT
+                           CASE WHEN OS.DTH_FINAL_ATIVIDADE IS NULL THEN TO_DATE('31/12/9999','dd/mm/yyyy')
+                                                ELSE OS.DTH_FINAL_ATIVIDADE END AS DTH_FINAL_ATIVIDADE,
+                           OS.COD_OS
+                      FROM ORDEM_SERVICO OS
+                     INNER JOIN RECEBIMENTO_VOLUME RV ON RV.COD_OS = OS.COD_OS
+                     INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                     WHERE OS.COD_RECEBIMENTO = '$idRecebimento'
+                       AND COD_PRODUTO = '$idProduto'
+                       AND DSC_GRADE = '$grade') QTD
+             ORDER BY DTH_FINAL_ATIVIDADE DESC";
+        $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($result == NULL) {
+            return 0;
+        } else {
+            return $result[0]['COD_OS'];
+        }
+    }
+
     public function getOsConferida ($idRecebimento, $idProduto, $grade)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
@@ -53,6 +101,34 @@ class ConferenciaRepository extends EntityRepository
         } else{
             return $conferencia[0]['id'];
         }
+    }
+
+    public function getQtdByRecebimentoVolumeAndNorma ($idOs, $codProduto, $grade){
+        $SQL = "SELECT MIN (QTD) as QTD, COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR
+                  FROM (SELECT SUM(QTD_CONFERIDA) as QTD, RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR
+                          FROM RECEBIMENTO_VOLUME RV
+                         INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                         INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = RV.COD_NORMA_PALETIZACAO
+                         WHERE COD_OS = '$idOs'
+                           AND PV.COD_PRODUTO = '$codProduto'
+                           AND PV.DSC_GRADE = '$grade'
+                         GROUP BY RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, COD_UNITIZADOR)
+                 GROUP BY COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getQtdByRecebimentoEmbalagemAndNorma ($idOs, $codProduto, $grade){
+        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * PE.QTD_EMBALAGEM) as QTD, RE.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR
+                  FROM RECEBIMENTO_EMBALAGEM RE
+                 INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                 INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = RE.COD_NORMA_PALETIZACAO
+                 WHERE COD_OS = '$idOs'
+                   AND PE.COD_PRODUTO = '$codProduto'
+                   AND PE.DSC_GRADE = '$grade'
+                 GROUP BY RE.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     public function getQtdByRecebimento ($idRecebimento, $idProduto, $grade)

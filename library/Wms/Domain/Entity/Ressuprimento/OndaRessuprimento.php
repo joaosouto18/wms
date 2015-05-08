@@ -22,12 +22,6 @@ class OndaRessuprimento
     protected $usuario;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedido")
-     * @JoinColumn(name="COD_ONDA_RESSUPRIMENTO", referencedColumnName="COD_ONDA_RESSUPRIMENTO")
-     */
-    protected $ondaRessuprimentoPedido;
-
-    /**
      * @Column(name="DTH_CRIACAO", type="datetime", nullable=false)
      */
     protected $dataCriacao;

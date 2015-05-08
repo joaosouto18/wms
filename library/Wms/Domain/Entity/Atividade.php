@@ -17,6 +17,7 @@ class Atividade
     const CONFERIR_EXPEDICAO = 11;
     const ENDERECAMENTO = 12;
     const RESSUPRIMENTO = 13;
+    const INVENTARIO = 14;
 
     /**
      * @Column(name="COD_ATIVIDADE", type="integer", nullable=false)

@@ -39,6 +39,8 @@ class Web_ProdutoEmbalagemController extends Crud
                 'codigoBarras' => $embalagem->getCodigoBarras(),
                 'endereco' => ($embalagem->getEndereco()) ? $embalagem->getEndereco()->getDescricao() : '',
                 'embalado' => $embalagem->getEmbalado(),
+                'capacidadePicking' => $embalagem->getCapacidadePicking(),
+                'pontoReposicao' => $embalagem->getPontoReposicao(),
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
             );
         }

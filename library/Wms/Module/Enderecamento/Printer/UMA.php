@@ -46,11 +46,16 @@ class UMA extends Pdf
         $line_width = 300;
 
         foreach($paletes as $palete) {
+            if (isset($palete['picking'])) {
+                $picking = $palete['picking'];
+            } else {
+                $picking = $this->getPicking($produtoEn);
+            }
 
             if ($modelo == 1) {
-                $this->layout01($palete,$produtoEn,$font_size,$line_width);
+                $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking);
             }else{
-                $this->layout02($palete,$produtoEn,$font_size,$line_width);
+                $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking);
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
@@ -75,7 +80,7 @@ class UMA extends Pdf
         $this->Cell(0,10,utf8_decode('Página ').$this->PageNo(),0,0,'C');
     }
 
-    public function layout02($palete, $produtoEn, $font_size, $line_width){
+    public function layout02($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
         $this->AddPage();
 
         $codigoProduto = $produtoEn->getId();
@@ -89,27 +94,6 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', $font_size);
 
         $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
-
-        $enderecoPicking = null;
-
-        if (count($produtoEn->getVolumes()) > 0) {
-            $volumes = $produtoEn->getVolumes();
-            if (isset($volumes[0])) {
-                if ($volumes[0]->getEndereco() != null) {
-                    $enderecoPicking = $volumes[0]->getEndereco()->getDescricao();
-                }
-            }
-        }
-        if (count($produtoEn->getEmbalagens()) > 0) {
-            $embalagens = $produtoEn->getEmbalagens();
-            if ($embalagens[0]->getEndereco() != null) {
-                $enderecoPicking = $embalagens[0]->getEndereco()->getDescricao();
-            }
-        }
-
-        if ($enderecoPicking == NULL) {
-            $enderecoPicking = "Não Cadastrado";
-        }
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
@@ -137,40 +121,19 @@ class UMA extends Pdf
 
     }
 
-    public function layout01($palete, $produtoEn, $font_size, $line_width){
+    public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
         $this->AddPage();
 
         $descricaoProduto = $produtoEn->getId().'-'.$produtoEn->getDescricao();
 
 
         if (strlen($descricaoProduto) >= 42) {
-            $font_size = 50;
+            $font_size = 38;
         }
         
         $this->SetFont('Arial', 'B', $font_size);
 
         $this->MultiCell($line_width, 20, $descricaoProduto, 0, 'C');
-
-        $enderecoPicking = null;
-
-        if (count($produtoEn->getVolumes()) > 0) {
-            $volumes = $produtoEn->getVolumes();
-            if (isset($volumes[0])) {
-                if ($volumes[0]->getEndereco() != null) {
-                    $enderecoPicking = $volumes[0]->getEndereco()->getDescricao();
-                }
-            }
-        }
-        if (count($produtoEn->getEmbalagens()) > 0) {
-            $embalagens = $produtoEn->getEmbalagens();
-            if ($embalagens[0]->getEndereco() != null) {
-                $enderecoPicking = $embalagens[0]->getEndereco()->getDescricao();
-            }
-        }
-
-        if ($enderecoPicking == NULL) {
-            $enderecoPicking = "Não Cadastrado";
-        }
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
@@ -193,4 +156,29 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', 72);
         $this->Cell(95,40,$palete['endereco'],0,1);
     }
+
+    private function getPicking($produtoEn){
+        $enderecoPicking = null;
+
+        if (count($produtoEn->getVolumes()) > 0) {
+            $volumes = $produtoEn->getVolumes();
+            if (isset($volumes[0])) {
+                if ($volumes[0]->getEndereco() != null) {
+                    $enderecoPicking = $volumes[0]->getEndereco()->getDescricao();
+                }
+            }
+        }
+        if (count($produtoEn->getEmbalagens()) > 0) {
+            $embalagens = $produtoEn->getEmbalagens();
+            if ($embalagens[0]->getEndereco() != null) {
+                $enderecoPicking = $embalagens[0]->getEndereco()->getDescricao();
+            }
+        }
+
+        if ($enderecoPicking == NULL) {
+            $enderecoPicking = "Não Cadastrado";
+        }
+        return $enderecoPicking;
+    }
+
 }

@@ -1,9 +1,26 @@
+<?php
+if (isset($this->header)) {?>
+    <div><p><?php echo $this->header;?></label></p></div>
+<?php }?>
+<div>
+
 <ul class="menu">
-    <?php foreach($this->menu as $menu): ?>
+    <?php
+    foreach($this->menu as $menu): ?>
         <li>
             <a href="<?php echo $menu['url'] ?>" title="<?php echo $menu['label'] ?>" ><?php echo $menu['label'] ?></a>
         </li>
-    <?php endforeach; ?>
+    <?php endforeach;?>
 </ul>
+</div>
 
+<?php
+if (isset($this->bottom)) {?>
+    <p><label style="font-size:17px"><?php echo $this->bottom;?></label></p>
+<?php }?>
+<div>
+
+<?php if ($this->showQuantidade) : ?>
+    <h3>Quantidade total: <?php echo count($this->menu) ?></h3>
+<?php endif; ?>
 

@@ -30,23 +30,22 @@ class VolumeRepository extends EntityRepository
         if (!$volumeEntity)
             throw new \Exception('Id de volume inválido');
 
-        
+        $volumeEntity->setProduto($produtoEntity);
+        $volumeEntity->setGrade($produtoEntity->getGrade());
+        $volumeEntity->setLargura($largura);
+        $volumeEntity->setProfundidade($profundidade);
+        $volumeEntity->setCubagem($cubagem);
+        $volumeEntity->setPeso($peso);
+        $volumeEntity->setAltura($altura);
+        $volumeEntity->setCodigoSequencial($codigoSequencial);
+        $volumeEntity->setDescricao($descricao);
+        $volumeEntity->setCBInterno($CBInterno);
+        $volumeEntity->setImprimirCB($imprimirCB);
+        $volumeEntity->setCodigoBarras($codigoBarras);
+        $volumeEntity->setCapacidadePicking($capacidadePicking);
+        $volumeEntity->setPontoReposicao($pontoReposicao);
+        $volumeEntity->setEndereco(null);
 
-        $volumeEntity->setProduto($produtoEntity)
-                ->setGrade($produtoEntity->getGrade())
-                ->setLargura($largura)
-                ->setProfundidade($profundidade)
-                ->setCubagem($cubagem)
-                ->setPeso($peso)
-                ->setAltura($altura)
-                ->setCodigoSequencial($codigoSequencial)
-                ->setDescricao($descricao)
-                ->setCBInterno($CBInterno)
-                ->setImprimirCB($imprimirCB)
-                ->setCodigoBarras($codigoBarras)
-                ->setEndereco(null);
-
-        
         //valida o endereco informado
         if (!empty($endereco)) {
             $endereco = EnderecoUtil::separar($endereco);
@@ -76,6 +75,36 @@ class VolumeRepository extends EntityRepository
             $volumeEntity->setCodigoBarras($codigoBarras);
         }
         
+    }
+
+    public function getNormasByProduto($codProduto, $grade) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select("np.id")
+            ->from("wms:Produto\Volume",'v')
+            ->innerJoin("v.normaPaletizacao",'np')
+            ->where("v.codProduto = " . $codProduto)
+            ->andWhere("v.grade = '$grade'")
+            ->distinct(true);
+        $normasId = $dql->getQuery()->getResult();
+
+        $result = array();
+        foreach ($normasId as $normaId){
+            $result[] = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id'=>$normaId));
+        }
+
+        return $result;
+    }
+
+    public function getVolumesByNorma($codNormaPaletizacao, $codProduto, $grade) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select("v")
+            ->from("wms:Produto\Volume",'v')
+            ->innerJoin("v.normaPaletizacao",'np')
+            ->where("v.codProduto = " . $codProduto)
+            ->andWhere("v.grade = '$grade'")
+            ->andWhere("np.id = '$codNormaPaletizacao'");
+        $result = $dql->getQuery()->getResult();
+        return $result;
     }
 
     /**

@@ -359,7 +359,7 @@ class RecebimentoRepository extends EntityRepository
     {
         $em = $this->getEntityManager();
         $em->beginTransaction();
-
+        ini_set('max_execution_time', 300);
         $recebimentoEntity = $this->find($idRecebimento);
 
         if (!$this->checarConferenciaComDivergencia($idRecebimento)) {
@@ -392,7 +392,7 @@ class RecebimentoRepository extends EntityRepository
                 foreach ($paletes as $key => $palete) {
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento'=>$palete->getId()));
-                    $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(),$palete->getCodProduto(),$palete->getGrade(),$palete->getQtd(),"E","U",$palete->getId(),$osEn->getPessoa()->getId(),$osEn->getId(),$palete->getUnitizador()->getId());
+                    $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(),$palete->getProdutosArray(),"E","U",$palete->getId(),$osEn->getPessoa()->getId(),$osEn->getId(),$palete->getUnitizador()->getId());
                 }
 
                 $em->commit();

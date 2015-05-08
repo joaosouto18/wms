@@ -1,0 +1,14 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="A86415CB-82C1-E6EC-80A6-C5C9AE8C051C" name="INVENTARIO_ENDERECO_INVENTARIO_FK">
+<createdBy>mateus</createdBy>
+<createdTime>2015-02-07 23:30:28 UTC</createdTime>
+<generatorID>Gerado pelo usuário</generatorID>
+<ownerDesignName>expedicaoMercadoriaSincronizado</ownerDesignName>
+<containerWithKeyObject>5023A7FC-005D-1AC9-5B3B-EDD9B19F5449</containerWithKeyObject>
+<deleteRule>NO ACTION</deleteRule>
+<localFKIndex>45F14670-4CAF-2363-DF85-1FC9B16C4368</localFKIndex>
+<keyObject>CC90D2CB-BB9C-90F9-3A60-E1E62EBB078E</keyObject>
+<mandatory>true</mandatory>
+<transferable>true</transferable>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>

@@ -1,0 +1,16 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="1E7AF0BD-3251-B1BC-695A-8A324347A8E9" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="Table" objectID="21BB6E28-2F53-3600-9418-2C4FC3766ED4" name="INVENTARIO" seqName="seg_0"/>
+   <object objectType="Table" objectID="2EB7CE67-9740-5326-0FD9-31FDF74A8DD7" name="INVENTARIO_CONTAGEM_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="5023A7FC-005D-1AC9-5B3B-EDD9B19F5449" name="INVENTARIO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="87B69F49-02D8-E158-60BD-78728E08312E" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Table" objectID="92E2B0B5-70B3-C612-FBDD-7EF296E85B94" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="F9E244AA-C200-61EA-2B1D-A435A2F597E9" name="INVENTARIO_CONTAGEM_OS" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="10134D1E-3CC4-3A30-230A-1DA387CA360F" name="INVENTARIO_ENDERECO_DEPOSITO_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="23FC0C4E-ADB8-BA5A-7CFF-8C6954B1F52B" name="INVENTARIO_CONTAGEM_OS_INVENTARIO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="33479F23-6317-2C8D-0DC7-EC05036931AC" name="INVENTARIO_CONTAGEM_OS_ORDEM_SERVICO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="443909C3-22CD-6BF0-C939-B38EB1743237" name="INVENTARIO_CONTAGEM_ENDERECO_INVENTARIO_CONTAGEM_OS_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="45724D03-024F-DAF8-AB7A-968CA1C6E45A" name="INVENTARIO_CONTAGEM_ENDERECO_INVENTARIO_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="A86415CB-82C1-E6EC-80A6-C5C9AE8C051C" name="INVENTARIO_ENDERECO_INVENTARIO_FK" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

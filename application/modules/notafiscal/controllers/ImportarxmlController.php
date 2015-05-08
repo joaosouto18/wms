@@ -83,8 +83,8 @@ class Notafiscal_ImportarxmlController extends Crud
                 } else {
                     $this->addFlashMessage("error","Falhas importando nota fiscal");
                 }
-            } catch (\Exception $e) {
-                $this->addFlashMessage("error",$e->getMessage());
+            } catch (Zend_File_Transfer_Exception $e) {
+                echo $e->message();
             }
         }
         $this->view->isValid = $this->isValid;
@@ -295,7 +295,6 @@ class Notafiscal_ImportarxmlController extends Crud
                 $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
                 $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
                 $this->falhas[] = "Dados do Produto Inválidos | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
-
             }
 
             if ( !empty($dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom']) )

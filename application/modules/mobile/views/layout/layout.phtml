@@ -41,7 +41,11 @@ echo $this->doctype();
             <div id="top">
                 <div id="userInfo">
                     <a href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" >Inicio</a>
-                    <a href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" >Voltar</a>
+                    <?php if ($this->urlVoltar) : ?>
+                        <a href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" >Voltar</a>
+                            <?php else : ?>
+                            <a href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" >Voltar</a>
+                    <?php endif; ?>
                     <a href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" >Sair</a>
                 </div>
                 <h1><a href="#" title="Wms-MS">Wms-MS</a></h1>
@@ -51,7 +55,6 @@ echo $this->doctype();
                 <div class="contentPadding">
                     <?php $this->messenger(); ?>
                     <?php echo $this->layout()->content; ?>
-                    <?php echo $this->totalTimePage ?> segundos
                 </div>
             </div>
         </div>

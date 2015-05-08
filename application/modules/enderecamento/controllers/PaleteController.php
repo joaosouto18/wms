@@ -10,11 +10,6 @@ class Enderecamento_PaleteController extends Action
      */
     public function indexAction()
     {
-        $trocaUma = $this->_getParam('massaction-select', null);
-        if (!is_null($trocaUma)) {
-            $this->confirmaTroca();
-        }
-
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
@@ -29,7 +24,7 @@ class Enderecamento_PaleteController extends Action
         try {
             $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade);
         } catch(Exception $e) {
-            $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error',$e->getMessage());
             $this->_redirect('/enderecamento/produto/index/id/'.$idRecebimento);
         }
 
@@ -46,6 +41,9 @@ class Enderecamento_PaleteController extends Action
      */
     public function imprimirAction()
     {
+        $embalagemRepo = $this->_em->getRepository("wms:Produto\Embalagem");
+        $volumeRepo = $this->_em->getRepository("wms:Produto\Volume");
+
         $params = $this->_getAllParams();
         $paletes = $params['palete'];
 
@@ -63,7 +61,19 @@ class Enderecamento_PaleteController extends Action
             } else {
                 $dadosPalete['endereco'] = "";
             }
-            $dadosPalete['qtd'] = $paleteEn->getQtd();
+
+            $paleteEn = $paleteEn->getProdutos();
+
+            $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+            if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
+                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
+            } else {
+                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
+            }
+            if ($embalagemEn->getEndereco() != null) {
+                $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
+            }
+
             $paletesArray[] = $dadosPalete;
         }
 
@@ -81,17 +91,17 @@ class Enderecamento_PaleteController extends Action
         $paletes = $this->_getParam('palete');
         $idRecebimento = $this->_getParam('id');
         $relatorio = new \Wms\Module\Enderecamento\Printer\RelatorioPaletes('L');
+
         if ($paletes == null) {
             $this->addFlashMessage('error','Nenhum palete selecionado para imprimir');
             $this->_redirect('/enderecamento/produto/index/id/'.$idRecebimento);
         }
-            $relatorio->imprimir($paletes, $idRecebimento);
+
+        $relatorio->imprimir($paletes, $idRecebimento);
     }
 
     public function enderecarAction()
     {
-        $conferenteRepo = $this->em->getRepository('wms:Pessoa\Fisica\Conferente');
-
         $usuarioRepo = $this->em->getRepository('wms:Usuario');
         $perfilParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_PERFIL_OPERADOR_EMPILHADEIRA'));
 
@@ -99,7 +109,7 @@ class Enderecamento_PaleteController extends Action
 
         $this->view->id      = $id         = $this->_getParam('id');
         $this->view->codigo  = $codigo     = $this->_getParam('codigo');
-        $this->view->grade   = $grade      = $this->_getParam('grade');
+        $this->view->grade   = $grade      = urldecode($this->_getParam('grade'));
 
         $paletes = $this->_getParam('palete', null);
         if ($paletes != null) {
@@ -135,7 +145,7 @@ class Enderecamento_PaleteController extends Action
         $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento")->findOneBy(array('id'=>$idRecebimento));
         $cancelarPaletesParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CANCELA_PALETES_DESFAZER_RECEBIMENTO'));
 
-        if ((($recebimentoEn->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_DESFEITO) && ($cancelarPaletesParam->getValor() != "S")) || ($recebimentoEn->getStatus()->getId() != \Wms\Domain\Entity\Recebimento::STATUS_DESFEITO)){
+        if ((($recebimentoEn->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_DESFEITO) && ($cancelarPaletesParam->getValor() != "S")) || (($recebimentoEn->getStatus()->getId() != \Wms\Domain\Entity\Recebimento::STATUS_DESFEITO) && ($recebimentoEn->getStatus()->getId() != \Wms\Domain\Entity\Recebimento::STATUS_CANCELADO))){
             $buttons[] = array(
                 'label' => 'Endereçar no Picking',
                 'cssClass' => 'button imprimir',
@@ -212,7 +222,11 @@ class Enderecamento_PaleteController extends Action
 
         $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
         try {
-            $paleteRepo->enderecaPicking($paletes);
+            $result = $paleteRepo->enderecaPicking($paletes);
+
+            if ($result != "") {
+                $this->addFlashMessage("info",$result);
+            }
         } catch(Exception $e) {
             $this->addFlashMessage('error',$e->getMessage());
         }
@@ -229,8 +243,9 @@ class Enderecamento_PaleteController extends Action
 
         $paleteEn = $paleteRepo->findOneBy(array('id'=> $idPalete));
         $idRecebimento = $paleteEn->getRecebimento()->getId();
-        $codProduto = $paleteEn->getCodProduto();
-        $grade = $paleteEn->getGrade();
+        $produtosEn = $paleteEn->getProdutos();
+        $codProduto = $produtosEn[0]->getCodProduto();
+        $grade      = $produtosEn[0]->getGrade();
 
         try{
             $paleteRepo->desfazerPalete($idPalete);
@@ -244,25 +259,59 @@ class Enderecamento_PaleteController extends Action
 
     public function trocarAction()
     {
-        $idFiltroRecebimento = $this->_getParam('filtro-recebimento', null);
+        $trocaUma = $this->_getParam('massaction-select', null);
+        $params = $this->_getAllParams();
+        $idRecebimento  = $this->getRequest()->getParam('id');
+        $codProduto     = $this->getRequest()->getParam('codigo');
+
+        if (!is_null($trocaUma)) {
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            // verifica se novo recebimento possui o produto selecionado
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto);
+
+            if (count($result) == 0) {
+                // realizar trocas de U.M.As para novo recebimento
+                $result = $this->confirmaTroca();
+
+                if ($result) {
+                    $this->addFlashMessage('info', $result);
+                    $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+                }
+            } else {
+                $this->addFlashMessage('info', 'Este produto já consta no novo recebimento!');
+                $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+            }
+        }
 
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
-        if (!is_null($idFiltroRecebimento)) {
+
+        if (isset($params['filtro-recebimento'])) {
             $this->view->ajaxFilter = true;
         }
-        $this->view->grid = $grid->init(array('recebimento' => $idFiltroRecebimento));
+
+        $this->view->grid = $grid->init($params);
     }
 
     public function confirmaTroca()
     {
         $params = $this->_getAllParams();
+        $novoRecebimento = $params['novo-recebimento-id'];
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-        $recebimento = $params['id'];
-        if ($paleteRepo->realizaTroca($recebimento, $params['mass-id'])) {
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+        $existeRecebimento = $recebimentoRepo->find($novoRecebimento);
+
+        if ($existeRecebimento == null) {
+            return 'Recebimento inexistente!';
+        }
+
+        if ($paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'])) {
             $this->addFlashMessage('success', 'Troca realizada com sucesso');
         }
-        $url = '/enderecamento/palete/index/id/'.$recebimento.'/codigo/'.$params['codigo'].'/grade/'.urlencode($params['grade']);
+
+        $url = '/enderecamento/produto/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']);
         $this->_redirect($url);
         exit;
     }

@@ -20,33 +20,42 @@
                     <td>Selecione</td>
                     <td>U.M.A.</td>
                     <td>Unitizador</td>
-                    <td>Qtd.Produtos</td>
+                    <td>Embalagem/Volume</td>
+                    <td>Qtd.Unitária</td>
                     <td>Situacao</td>
                     <td>Endereço</td>
                     <td>Impresso</td>
                     <td>Ação</td>
                 </tr>
                 <?php
-                foreach ($this->paletes as $palete): $this->color = !($this->color);?>
-                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                        <td><input name="palete[]" value="<?php echo $palete->getId() ?>" type="checkbox" /> </td>
-                        <td><?php echo $palete->getId() ?></td>
-                        <td><?php echo $palete->getUnitizador()->getDescricao() ?></td>
-                        <td><?php echo $palete->getQtd()  ?></td>
-                        <td><?php echo $palete->getStatus()->getSigla() ?></td>
+                foreach ($this->paletes as $palete):
+                    $fontColor = "black";
+                    $liberado = true;
+                    if ($palete['QTD_VOL_TOTAL'] > $palete['QTD_VOL_CONFERIDO']) {
+                        $fontColor = "gray";
+                        $liberado = false;
+                    }
+                    $this->color = !($this->color);?>
+                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td><?php if ($liberado == true) {?><input name="palete[]" value="<?php echo $palete['UMA'] ?>" type="checkbox" /> <?php }?></td>
+                        <td><?php echo $palete['UMA'] ?></td>
+                        <td><?php echo $palete['UNITIZADOR'] ?></td>
+                        <td><?php echo $palete['VOLUMES'] ?></td>
+                        <td><?php echo $palete['QTD']  ?></td>
+                        <td><?php echo $palete['STATUS'] ?></td>
                         <td>
-                            <?php if ($palete->getDepositoEndereco() == NULL) {echo "";} else { echo $palete->getDepositoEndereco()->getDescricao();} ?>
+                            <?php if ($palete['ENDERECO'] == NULL) {echo "";} else { echo $palete['ENDERECO'];} ?>
                         </td>
                         <td>
-                            <?php if ($palete->getImpresso() == 'S') {echo "SIM";} else { echo "NÃO";} ?>
+                            <?php if ($palete['IND_IMPRESSO'] == 'S') {echo "SIM";} else { echo "NÃO";} ?>
                         </td>
-                        <td><?php if (($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) ||
-                                      ($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO)) {?>
-                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete->getId()?>">Retornar Status</a>
+                        <td><?php if (($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) ||
+                                      ($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO)) {?>
+                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete['UMA']?>">Retornar Status</a>
                                 <?php
-                            } else if (($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO) ||
-                                       ($palete->getStatus()->getId() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO)) {?>
-                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete->getId()?>">Excluir</a>
+                            } else if (($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO) ||
+                                       ($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO)) {?>
+                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete['UMA']?>">Excluir</a>
                             <?php }?>
                         </td>
                     </tr>

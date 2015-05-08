@@ -1,0 +1,18 @@
+﻿<?php if (count($this->numContagens) > 0) : ?>
+
+    <h3>Contagens</h3>
+    <ul class="menu">
+        <?php foreach($this->numContagens as $numContagem) : ?>
+            <?php if ($numContagem['DIVERGENCIA'] != 1) : ?>
+                <li>
+                    <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'consulta-endereco', 'idInventario' => $this->idInventario, 'numContagem' => $numContagem['CONTAGEM'] )); ?>" title="<?php echo $this->idInventario ?>" > <?php echo $numContagem['CONTAGEM'] ?> Contagem</a>
+                </li>
+                <?php else : ?>
+                    <li>
+                        <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'consulta-endereco', 'idInventario' => $this->idInventario, 'numContagem' => $numContagem['CONTAGEM'], 'divergencia' => 1 )); ?>" title="<?php echo $this->idInventario ?>" > <?php echo $numContagem['CONTAGEM'] ?> Contagem Divergência</a>
+                    </li>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </ul>
+
+<?php endif; ?>
