@@ -17,3 +17,5 @@ data/profiler
 data/log
 application.ini
 webservices.ini
+autoload.php
+library/composer

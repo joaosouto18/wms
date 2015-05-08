@@ -50,7 +50,7 @@ class Expedicao_EtiquetaController  extends Action
             $this->gerarEtiquetas($idExpedicao);
 
             if ($modelo == '1') {
-                $Etiqueta = new Etiqueta("L", 'mm', array(110, 40));
+                $Etiqueta = new Etiqueta("L", 'mm');
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }

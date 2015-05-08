@@ -163,7 +163,6 @@ class EtiquetaSeparacao extends Pdf
         $strReimpressao = "";
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
 
-        $this->AddPage();
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
