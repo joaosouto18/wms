@@ -77,7 +77,7 @@ class VEtiquetaSeparacao
     protected $cliente;
 
     /**
-     * @Column(name="CODPRODUTO", type="integer", nullable=false)
+     * @Column(name="CODPRODUTO", type="string", nullable=false)
      */
     protected $codProduto;
 

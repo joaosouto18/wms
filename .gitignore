@@ -23,3 +23,5 @@ library/autoload.php
 zend_cache*
 autoload.php
 library/composer
+*.xml
+*.XML
