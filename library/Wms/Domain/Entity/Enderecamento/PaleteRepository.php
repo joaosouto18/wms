@@ -828,7 +828,7 @@ class PaleteRepository extends EntityRepository
                 foreach($paleteEn->getProdutos() as $produto){
                     $params['produto'] = $produto->getProduto();
                     $params['endereco'] = $enderecoEn;
-                    $params['qtd'] = $paleteEn->getQtd() * -1;
+                    $params['qtd'] = $produto->getQtd() * -1;
                     $params['observacoes'] = "Mov. ref. cancelamento do Palete ". $idUma;
 
                     if ($produto->getCodProdutoEmbalagem()) {
