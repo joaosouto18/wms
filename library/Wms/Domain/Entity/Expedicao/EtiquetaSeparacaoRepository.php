@@ -544,7 +544,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
             $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
 
-            if ($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
+            if (($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA) || ($idStatus==Expedicao::STATUS_EM_SEPARACAO)){
                 $novoStatus = Expedicao::STATUS_PRIMEIRA_CONFERENCIA;
                 $etiquetas = $this->getEtiquetasByExpedicao($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, $central);
                 foreach($etiquetas as $etiqueta) {
