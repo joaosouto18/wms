@@ -420,6 +420,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $status);
         $prodSemdados = 0;
 
+        $batchSize = 20;
+        $contador = 1;
+
         foreach($pedidosProdutos as $pedidoProduto) {
             /** @var \Wms\Domain\Entity\Produto $produtoEntity */
             $pedidoEntity   = $pedidoProduto->getPedido();
@@ -484,6 +487,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $prodSemdados++;
             }
 
+            if (($contador % $batchSize) === 0) {
+                $this->_em->flush();
+                $this->_em->clear();
+            }
+            $contador++;
         }
         $this->_em->flush();
         $this->_em->clear();
