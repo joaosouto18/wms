@@ -248,9 +248,6 @@ class Notafiscal_ImportarxmlController extends Crud
 
             if ( !empty($dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN']) ){
 
-                //teste com existente
-                $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN']=7892509061056;
-
                 //pega o produto pelo código de barras
                 $sql = "
                 SELECT prd.COD_PRODUTO,prd.DSC_GRADE
@@ -283,6 +280,33 @@ class Notafiscal_ImportarxmlController extends Crud
                     $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
                 }
             }
+            else if ($this->filialInterna($dados) == true) {
+
+                $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
+                $sql = "
+                SELECT COD_PRODUTO, DSC_GRADE
+                    FROM PRODUTO P
+                    WHERE P.COD_PRODUTO = '$codigoProdutoNF'
+                ";
+                $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if ( !empty($array[0]['COD_PRODUTO']) ){
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                } else {
+                    $this->isValid=false;
+                    $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $qtd = (int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $arrayRetorno['NotValid']['tags'][]='cEAN';
+                    $arrayRetorno['NotValid']['valores']['cEAN'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
+                    $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
+                }
+
+            }
             else {
                 $this->isValid=false;
                 $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
@@ -310,4 +334,21 @@ class Notafiscal_ImportarxmlController extends Crud
 
         return $arrayRetorno;
     }
+
+    public function filialInterna($dados)
+    {
+        //se o CNPJ do emitente da nota fiscal for uma das filiais do sistema, pegar pelo código referente do sistema
+        $cnpjEmitenteNF = $dados["NFe"]["infNFe"]['emit']['CNPJ'];
+        $sql = "
+                SELECT COD_FILIAL
+                    FROM FILIAL F INNER JOIN PESSOA_JURIDICA PJ ON F.COD_FILIAL = PJ.COD_PESSOA
+                    WHERE PJ.NUM_CNPJ = '$cnpjEmitenteNF'
+           ";
+        $resultado = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($resultado) > 0) {
+            return true;
+        }
+        return false;
+    }
+
 }
