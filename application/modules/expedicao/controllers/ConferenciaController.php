@@ -20,7 +20,7 @@ class Expedicao_ConferenciaController extends Action
     {
         $request = $this->getRequest();
         $params = $this->_getAllParams();
-var_dump($params['codCargaExterno']); exit;
+
         if ($request->isPost()) {
             $idExpedicao      = $request->getParam('id');
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
