@@ -17,7 +17,7 @@ class ReservaEstoqueRepository extends EntityRepository
      * produtos[0]['codProduto'] = 'Nome do Produto'
      * produtos[0]['grade'] = 'Grade do Produto'
      * produtos[0]['qtd'] = '10' ou '-10'
-     */
+    */
     public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "" )
     {
         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
@@ -307,8 +307,8 @@ class ReservaEstoqueRepository extends EntityRepository
 
         $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,$tipoReserva,$usuarioReserva,$observacoes);
         $reservaEstoqueUma = new \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamento();
-        $reservaEstoqueUma->setPalete($paleteEn);
-        $reservaEstoqueUma->setReservaEstoque($reservaEstoqueEn);
+            $reservaEstoqueUma->setPalete($paleteEn);
+            $reservaEstoqueUma->setReservaEstoque($reservaEstoqueEn);
         $this->getEntityManager()->persist($reservaEstoqueUma);
 
         return $reservaEstoqueEn;
@@ -348,9 +348,9 @@ class ReservaEstoqueRepository extends EntityRepository
         $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,$tipoReserva,$usuarioReserva,$observacoes);
 
         $reservaEstoqueOnda = new \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueOnda();
-        $reservaEstoqueOnda->setReservaEstoque($reservaEstoqueEn);
-        $reservaEstoqueOnda->setOs($osEn);
-        $reservaEstoqueOnda->setOndaRessuprimentoOs($ondaOsEn);
+            $reservaEstoqueOnda->setReservaEstoque($reservaEstoqueEn);
+            $reservaEstoqueOnda->setOs($osEn);
+            $reservaEstoqueOnda->setOndaRessuprimentoOs($ondaOsEn);
 
         $this->getEntityManager()->persist($reservaEstoqueOnda);
 
@@ -408,19 +408,6 @@ class ReservaEstoqueRepository extends EntityRepository
         $result = $this->getEntityManager()->getConnection()->query($SQL . " ORDER BY RE.DTH_RESERVA ")->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
 
-    }
-
-    public function cancelaReservaEstoqueByUma($idUma)
-    {
-        $source = $this->getEntityManager()->createQueryBuilder()
-            ->from('wms:Ressuprimento\ReservaEstoqueEnderecamento', 'ree')
-            ->innerJoin('wms:Ressuprimento\ReservaEstoque', 're', 'WITH', 're.id = ree.reservaEstoque')
-            ->where('ree.palete = :uma')
-            ->setParameter('uma', $idUma);
-
-        $reservaEstoque = $source->getQuery()->getResult();
-
-        $ = $em->getReference('wms:Deposito\Box', $idBox);
     }
 
 }
