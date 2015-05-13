@@ -847,6 +847,22 @@ class PaleteRepository extends EntityRepository
 
             $this->getEntityManager()->persist($paleteEn);
             $this->getEntityManager()->flush();
+
+            // lógica para cancelar reservas
+
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+            $reservaEstoqueRepo->cancelaReservaEstoqueByUma($idUma);
+
+            /*
+             *
+             *  INNER JOIN reserva_estoque_enderecamento REE ON ree.uma = p.uma
+                INNER JOIN reserva_estoque RE ON ree.cod_reserva_estoque = re.cod_reserva_estoque
+                WHERE p.cod_recebimento = 5010;
+
+
+UPDATE reserva_estoque r SET r.ind_atendida = 'C' WHERE r.cod_reserva_estoque = 44842;
+             */
         } catch (Exception $e) {
             throw new \Exception ($e->getMessage());
         }
