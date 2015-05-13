@@ -161,15 +161,15 @@ class Notafiscal_ImportarxmlController extends Crud
             $this->falhas[] = "Série da Nota Fiscal inválida | Série:" . $dados["NFe"]["infNFe"]['ide']['serie'];
         }
 
-        if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ){
-            $dataEmissao=new Zend_Date($dados["NFe"]["infNFe"]['ide']['dEmi'], 'dd-mm-yyyy', 'en');
+        if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
+            $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
+            $dataEmissao=new Zend_Date($dEmi, 'dd-mm-yyyy', 'en');
             $arrayRetorno['NotaFiscal']['DAT_EMISSAO']=$dataEmissao->get('dd/mm/YY');
         }
         else {
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='dEmi';
-            $arrayRetorno['NotValid']['valores']['dEmi']=$dados["NFe"]["infNFe"]['ide']['dEmi'];
-            $this->falhas[]['Data de Emissão inválida | Data: '] = $dados["NFe"]["infNFe"]['ide']['dEmi'];
+            $this->falhas[]['Data de Emissão inválida | Data: '] = null;
         }
 
         $arrayRetorno['NotaFiscal']['COD_STATUS']=NotaFiscal::STATUS_INTEGRADA;
