@@ -17,20 +17,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getCountEtiquetasByExpedicao ($idExpedicao)
     {
         $produtos = $this->getEntityManager()->createQueryBuilder()
-                ->select("p.id, p.grade, SUM(pp.quantidade) quantidade")
-                ->from("wms:Expedicao\PedidoProduto", "pp")
-                ->innerJoin("pp.produto", "p")
-                ->innerJoin("pp.pedido", "ped")
-                ->innerJoin("ped.carga", "c")
-                ->leftJoin("p.volumes", "v")
-                ->where("c.expedicao = " . $idExpedicao)
-                ->groupBy("p.id, p.grade")->getQuery()->getResult();
-        
+            ->select("p.id, p.grade, SUM(pp.quantidade) quantidade")
+            ->from("wms:Expedicao\PedidoProduto", "pp")
+            ->innerJoin("pp.produto", "p")
+            ->innerJoin("pp.pedido", "ped")
+            ->innerJoin("ped.carga", "c")
+            ->leftJoin("p.volumes", "v")
+            ->where("c.expedicao = " . $idExpedicao)
+            ->groupBy("p.id, p.grade")->getQuery()->getResult();
+
         $qtdTotal = 0;
         foreach ($produtos as $produto) {
             $qtdTotal = $qtdTotal + $produto['quantidade'];
         }
-        
+
         return $qtdTotal;
     }
 
@@ -88,14 +88,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if ($placaCarga != NULL) {
             $dql->andWhere('c.placaCarga = :placaCarga')
-            ->setParameter('placaCarga', $placaCarga);
+                ->setParameter('placaCarga', $placaCarga);
         }
 
         if ($idCarga != NULL) {
             $dql->andWhere('c.id = :idCarga')
                 ->setParameter('idCarga', $idCarga);
         }
-		
+
         return $dql->getQuery()->getSingleScalarResult();
     }
 
@@ -281,7 +281,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         switch ($sequencia) {
             case 2:
                 $dql->orderBy("es.codBarras","DESC");
-            break;
+                break;
             default:
                 $dql->orderBy("es.codBarras");
         }
@@ -420,9 +420,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $status);
         $prodSemdados = 0;
 
-        $batchSize = 20;
-        $contador = 1;
-
         foreach($pedidosProdutos as $pedidoProduto) {
             /** @var \Wms\Domain\Entity\Produto $produtoEntity */
             $pedidoEntity   = $pedidoProduto->getPedido();
@@ -487,11 +484,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $prodSemdados++;
             }
 
-            if (($contador % $batchSize) === 0) {
-                $this->_em->flush();
-                $this->_em->clear();
-            }
-            $contador++;
         }
         $this->_em->flush();
         $this->_em->clear();
