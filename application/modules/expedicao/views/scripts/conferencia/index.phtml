@@ -1,4 +1,4 @@
-<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' ))?>">
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' )); ?>">
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <tbody>
@@ -7,7 +7,7 @@
                     <div>
                         <p><b>Cargas da expedição:</b></p>
                         <?php foreach($this->cargas as $carga) : ?>
-                            <?php echo $carga->getCodCargaExterno() ?>
+                            <?php echo $carga->getCodCargaExterno(); ?>
                         <?php endforeach; ?>
                     </div>
                 </td>
@@ -25,7 +25,7 @@
                                         checked="true">
                                     Central de Entrega <?php echo $central['centralEntrega']?>
                                 </li>
-                            <? endforeach ?>
+                            <?php endforeach; ?>
                         </ul>
                     </div></td>
             </tr>
@@ -43,7 +43,7 @@
             </tr>
             <tr>
                 <td colspan="3">
-                    <button name="btnFinalizar" type="submit" value="comConferencia">Finalizar Pelo Coletor</button>
+                    <button name="btnFinalizar" id="finaliza-pelo-coletor" type="submit" value="comConferencia">Finalizar Pelo Coletor</button>
                 </td>
             </tr>
             </tbody>
