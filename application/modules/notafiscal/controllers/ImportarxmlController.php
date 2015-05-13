@@ -246,6 +246,8 @@ class Notafiscal_ImportarxmlController extends Crud
 
         for ($qtdProduto=0; $qtdProduto<$numProdutos; $qtdProduto++){
 
+            $filiaLInterna = $this->filialInterna($dados);
+
             if ( !empty($dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN']) ){
 
                 //pega o produto pelo código de barras
@@ -280,7 +282,7 @@ class Notafiscal_ImportarxmlController extends Crud
                     $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
                 }
             }
-            else if ($this->filialInterna($dados) == true) {
+            else if ($filiaLInterna == true) {
 
                 $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
                 $sql = "
@@ -306,6 +308,32 @@ class Notafiscal_ImportarxmlController extends Crud
                     $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
                 }
 
+            }
+            else if ($filiaLInterna == false) {
+
+                $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
+                $sql = "
+                SELECT COD_PRODUTO, DSC_GRADE
+                    FROM PRODUTO P
+                    WHERE P.DSC_REFERENCIA = '$codigoProdutoNF'
+                ";
+                $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if ( !empty($array[0]['COD_PRODUTO']) ){
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                } else {
+                    $this->isValid=false;
+                    $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $qtd = (int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $arrayRetorno['NotValid']['tags'][]='cEAN';
+                    $arrayRetorno['NotValid']['valores']['cEAN'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
+                    $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
+                }
             }
             else {
                 $this->isValid=false;
