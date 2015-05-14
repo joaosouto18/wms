@@ -90,6 +90,11 @@ class Expedicao_IndexController  extends Action
 
                     $idAntiga = $this->getRequest()->getParam('idExpedicao');
 
+                    $reservaEstoqueExpedicao = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao")->findBy(array('expedicao'=>$idAntiga));
+                    if (count($reservaEstoqueExpedicao) >0) {
+                        throw new \Exception('Não é possivel agrupar essa expedição pois ela já possui reservas de Estoque');
+                    }
+
                     /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
                     $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
                     /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $AndamentoRepo */
@@ -170,6 +175,13 @@ class Expedicao_IndexController  extends Action
             $cargaEn->setExpedicao($expedicaoEn);
             $cargaEn->setSequencia(1);
             $this->_em->persist($cargaEn);
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+            $pedidos = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+            foreach ($pedidos as $pedido) {
+                $pedidoRepo->removeReservaEstoque($pedido->getId());
+            }
 
             if ($countCortadas >0) {
                 $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);

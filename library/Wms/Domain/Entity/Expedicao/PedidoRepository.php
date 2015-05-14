@@ -250,6 +250,14 @@ class PedidoRepository extends EntityRepository
 
         $getCentralEntrega = $PedidoProdutoRepo->getFilialByProduto($idPedido);
 
+        $ondasPedido = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido')->findBy(array('pedido'=>$idPedido));
+        if (count($ondasPedido) == 0) {
+            return;
+        }
+        foreach ($ondasPedido as $ondaPedido) {
+            $this->getEntityManager()->remove($ondaPedido);
+        }
+
         foreach ($getCentralEntrega as $centralEntrega) {
             if ($centralEntrega['indUtilizaRessuprimento'] == 'S') {
                 $dados['produto'] = $centralEntrega['produto'];
@@ -269,7 +277,7 @@ class PedidoRepository extends EntityRepository
 
                         $reservaEstoqueRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
                         $reservaId = $reservaEstoqueRepository->findOneBy(array('id' => $reservaProdutoEntity->getReservaEstoque()));
-                        if ($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade'] == 0) {
+                        if (($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']) == 0) {
                             $reservaId->setAtendida('C');
                             $this->_em->persist($reservaId);
                         }
@@ -277,6 +285,7 @@ class PedidoRepository extends EntityRepository
                 }
             }
         }
+
         $this->_em->flush();
     }
 
