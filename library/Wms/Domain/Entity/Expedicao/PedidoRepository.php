@@ -250,6 +250,14 @@ class PedidoRepository extends EntityRepository
 
         $getCentralEntrega = $PedidoProdutoRepo->getFilialByProduto($idPedido);
 
+        $ondasPedido = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido')->findBy(array('pedido'=>$idPedido));
+        if (count($ondasPedido) == 0) {
+            return;
+        }
+        foreach ($ondasPedido as $ondaPedido) {
+            $this->getEntityManager()->remove($ondaPedido);
+        }
+
         foreach ($getCentralEntrega as $centralEntrega) {
             if ($centralEntrega['indUtilizaRessuprimento'] == 'S') {
                 $dados['produto'] = $centralEntrega['produto'];
