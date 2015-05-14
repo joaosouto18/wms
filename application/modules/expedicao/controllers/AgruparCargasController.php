@@ -48,7 +48,7 @@ class Expedicao_AgruparCargasController  extends Action
 
                 $reservaEstoqueExpedicao = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao")->findBy(array('expedicao'=>$idExpedicaoFilha));
                 if (count($reservaEstoqueExpedicao) >0) {
-                    throw new \Exception("Não é possivel agrupar as cargas da expedicção $idExpedicaoFilha, pois ela já possui reservas de Estoque");
+                    throw new \Exception("Não é possivel agrupar as cargas da expedição $idExpedicaoFilha, pois ela já possui reservas de Estoque");
                 }
 
                 $cargas = $ExpedicaoRepo->getCargas($idExpedicaoFilha);
