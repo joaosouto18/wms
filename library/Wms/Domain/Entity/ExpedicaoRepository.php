@@ -1514,4 +1514,25 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+    public function qtdTotalVolumePatrimonio($idExpedicao)
+    {
+        $sql = $this->_em->createQueryBuilder()
+            ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdTotal')
+            ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
+            ->where("evp.expedicao = $idExpedicao");
+
+        return $sql->getQuery()->getResult();
+    }
+
+    public function qtdConferidaVolumePatrimonio($idExpedicao)
+    {
+        $sql = $this->_em->createQueryBuilder()
+            ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdConferida')
+            ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
+            ->where("evp.expedicao = $idExpedicao AND evp.dataConferencia != 'NULL'");
+
+        return $sql->getQuery()->getResult();
+
+    }
+
 }
