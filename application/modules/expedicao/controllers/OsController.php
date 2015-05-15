@@ -135,8 +135,6 @@ class Expedicao_OsController extends Action
         $this->view->qtdTotalVolumePatrimonio = $qtdTotalVolumePatrimonio[0]['qtdTotal'];
         $this->view->qtdConferidaVolumePatrimonio = $qtdConferidaVolumePatrimonio[0]['qtdConferida'];
 
-
-
         $resumoByPlacaCarga = $EtiquetaSeparacaoRepo->getCountGroupByCentralPlaca($idExpedicao);
         foreach ($resumoByPlacaCarga as $key => $resumo) {
             $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']);
