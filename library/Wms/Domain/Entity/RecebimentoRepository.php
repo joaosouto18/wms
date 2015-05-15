@@ -490,6 +490,14 @@ class RecebimentoRepository extends EntityRepository
         $em = $this->getEntityManager();
 
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+        $qtdEmbalagem = 1;
+        $embalagens = $produtoEntity->getEmbalagens();
+        foreach ($embalagens as $embalagem) {
+            if ($embalagem->getIsPadrao()=="S") {
+                $qtdEmbalagem = $embalagem->getQuantidade();
+            }
+        }
+        $qtdConferida = $qtdConferida * $qtdEmbalagem;
 
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
