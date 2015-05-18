@@ -18,12 +18,12 @@ class Mobile_ExpedicaoController extends Action
                 'label' => 'CONF. EXPEDIÇÃO',
             ),
             2 => array(
-                'url' => 'ordem-servico/centrais-entrega/transbordo/1',
-                'label' => 'CONF. TRANSBORDO',
-            ),
-            3 => array (
                 'url' => 'ordem-servico/recebimento-transbordo',
                 'label' => 'RECB. TRANSBORDO',
+            ),
+            3 => array (
+                'url' => 'ordem-servico/centrais-entrega/transbordo/1',
+                'label' => 'CONF. TRANSBORDO',
             ),
             4 => array (
                 'url' => 'onda-ressuprimento/listar-ondas',
