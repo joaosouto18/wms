@@ -30,15 +30,18 @@ class EtiquetaConferenciaRepository extends EntityRepository
     }
 
 
-    public function getEtiquetasByStatus($statusEtiqueta,$idExpedicao){
+    public function getEtiquetasByStatus($statusEtiqueta, $idExpedicao, $central){
 
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('e.codStatus,e.id')
             ->from('wms:Expedicao\EtiquetaConferencia','e')
             ->leftJoin("wms:Expedicao\EtiquetaSeparacao",'es','WITH','e.codEtiquetaSeparacao = es.id')
+            ->innerJoin("wms:Expedicao\Pedido",'p','WITH','e.pedido = p.id')
             ->where('e.codExpedicao = :idExpedicao')
             ->andwhere('e.codStatus = :status')
             ->andWhere('es.codStatus NOT IN (' . EtiquetaSeparacao::STATUS_CORTADO . ')')
+            ->andWhere('p.centralEntrega = :central')
+            ->setParameter('central', $central)
             ->setParameter('idExpedicao', $idExpedicao)
             ->setParameter('status', $statusEtiqueta);
 

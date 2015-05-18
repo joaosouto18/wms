@@ -20,7 +20,7 @@ class Mobile_OrdemServicoController extends Action
         $this->view->transbordo = $transbordo;
         $sessao = new \Zend_Session_Namespace('deposito');
 
-        if (count($sessao->centraisPermitidas) == 2) {
+        if (count($sessao->centraisPermitidas) > 1 ) {
             if ($transbordo) {
                 $this->redirect('conferencia-transbordo', 'ordem-servico');
             } else {

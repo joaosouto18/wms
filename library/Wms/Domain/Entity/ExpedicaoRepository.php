@@ -472,7 +472,7 @@ class ExpedicaoRepository extends EntityRepository
 
                 if (($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA) || ($idStatus==Expedicao::STATUS_EM_SEPARACAO))
                 {
-                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO,$idExpedicao);
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idExpedicao, $central);
 
                     if (count($numEtiquetas) > 0) {
                         return 'Existem etiquetas pendentes de conferência nesta expedição';
@@ -488,7 +488,7 @@ class ExpedicaoRepository extends EntityRepository
                     }
 
                 } else {
-                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA,$idExpedicao);
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA, $idExpedicao, $central);
                     if (count($numEtiquetas) > 0) {
                         return 'Existem etiquetas pendentes de conferência nesta expedição';
                     }
