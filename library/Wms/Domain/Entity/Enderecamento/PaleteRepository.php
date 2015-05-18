@@ -689,6 +689,7 @@ class PaleteRepository extends EntityRepository
         $paleteEn->setImpresso("N");
 
         $this->getEntityManager()->persist($paleteEn);
+        $this->_em->flush();
     }
 
     public function alocaEnderecoPalete($idPalete, $idEndereco) {
