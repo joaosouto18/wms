@@ -587,7 +587,7 @@ class Mobile_ExpedicaoController extends Action
 
         if ($obrigaBiparEtiqueta == 'S') {
             $conferido = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_CONFERIDO, "Array", $placa);
-            if ($conferido > 0) {
+            if (count($conferido) > 0) {
                 $result = $conferido;
             } else {
                 $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO, "Array", $placa);
