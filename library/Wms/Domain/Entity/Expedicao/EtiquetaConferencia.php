@@ -31,6 +31,11 @@ class EtiquetaConferencia
     protected $codOsPrimeiraConferencia;
 
     /**
+     * @Column(name="COD_OS_SEGUNDA_CONFERENCIA", type="integer", nullable=true)
+     */
+    protected $codOsSegundaConferencia;
+
+    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
      * @JoinColumn(name="COD_STATUS", referencedColumnName="COD_SIGLA")
      */
@@ -302,6 +307,22 @@ class EtiquetaConferencia
     public function getDataConferenciaTransbordo()
     {
         return $this->dataConferenciaTransbordo;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodOsSegundaConferencia()
+    {
+        return $this->codOsSegundaConferencia;
+    }
+
+    /**
+     * @param mixed $codOsSegundaConferencia
+     */
+    public function setCodOsSegundaConferencia($codOsSegundaConferencia)
+    {
+        $this->codOsSegundaConferencia = $codOsSegundaConferencia;
     }
 
 }

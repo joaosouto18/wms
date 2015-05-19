@@ -14,6 +14,7 @@ class Expedicao_OsController extends Action
     {
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('id');
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
         $EtiquetaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -98,7 +99,7 @@ class Expedicao_OsController extends Action
         $buttons[] =  array(
                         'label' => 'Voltar para Busca de Expedições',
                         'cssClass' => 'btnBack',
-                        'urlParams'=>array_merge($s->url,array('control'=>'roll')),
+                        //'urlParams'=>array_merge($s->url,array('control'=>'roll')),
                         'tag' => 'a'
                     );
 
@@ -147,8 +148,14 @@ class Expedicao_OsController extends Action
         }
 
         $GridOs = new OsGrid();
-        $this->view->gridOS = $GridOs->init($idExpedicao)
+        $this->view->gridOS = $GridOs->init($idExpedicao, null)
             ->render();
+
+        if ($verificaReconferencia == 'S') {
+            $GridOsReconferencia = new OsGrid();
+            $this->view->gridOSReconferencia = $GridOsReconferencia->init($idExpedicao, $verificaReconferencia)
+                ->render();
+        }
 
         $GridAndamento = new AndamentoGrid();
         $this->view->gridAndamento = $GridAndamento->init($idExpedicao)

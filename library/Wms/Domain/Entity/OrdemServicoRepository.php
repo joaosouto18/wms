@@ -126,9 +126,8 @@ class OrdemServicoRepository extends EntityRepository
     }
 
     public function getOsByExpedicao ($idExpedicao) {
-        $_em = $this->getEntityManager();
-
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
+            ->distinct()
             ->select('os.id,
                       os.dataInicial,
                       os.dataFinal,
@@ -137,21 +136,20 @@ class OrdemServicoRepository extends EntityRepository
             ->from('wms:OrdemServico', 'os')
             ->innerJoin("os.pessoa","p")
             ->innerJoin("os.atividade", "atv")
-            ->addSelect("( SELECT COUNT(es) as qtdConferido
-                             FROM wms:Expedicao\EtiquetaSeparacao es
-                            WHERE es.codOS = os.id
+            ->innerJoin("wms:Expedicao\EtiquetaConferencia", "ec", "WITH", 'ec.codExpedicao = os.idExpedicao')
+            ->addSelect("(SELECT COUNT(ec2) as qtdConferido
+                             FROM wms:Expedicao\EtiquetaConferencia ec2
+                            WHERE ec2.codOsPrimeiraConferencia = os.id
                           ) as qtdConferida")
-            ->addSelect("( SELECT COUNT(es2) as qtdConferidoTransbordo
+            ->addSelect("(SELECT COUNT(es2) as qtdConferidoTransbordo
                             FROM wms:Expedicao\EtiquetaSeparacao es2
                             WHERE es2.codOSTransbordo = os.id
                           ) as qtdConferidaTransbordo")
-            ->where('os.idExpedicao = :idExpedicao')
+            ->andWhere('os.id = ec.codOsPrimeiraConferencia')
+            ->andWhere('ec.codExpedicao = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
 
-        //$result = $queryBuilder->getQuery()->getResult();
-
         return $queryBuilder;
-
     }
 
     public function getResumoOsById ($idOS) {
@@ -222,6 +220,35 @@ class OrdemServicoRepository extends EntityRepository
         $this->getEntityManager()->flush();
 
         return true;
+    }
+
+    public function getOsByExpedicaoReconferencia($idExpedicao)
+    {
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder()
+            ->distinct()
+            ->select('os.id,
+                      os.dataInicial,
+                      os.dataFinal,
+                      atv.descricao atividade,
+                      p.nome pessoa')
+            ->from('wms:OrdemServico', 'os')
+            ->innerJoin("os.pessoa","p")
+            ->innerJoin("os.atividade", "atv")
+            ->innerJoin("wms:Expedicao\EtiquetaConferencia", "ec", "WITH", 'ec.codExpedicao = os.idExpedicao')
+            ->addSelect("(SELECT COUNT(es) as qtdConferido
+                             FROM wms:Expedicao\EtiquetaSeparacao es
+                            WHERE es.codOS = os.id
+                          ) as qtdConferida")
+            ->addSelect("(SELECT COUNT(es2) as qtdConferidoTransbordo
+                            FROM wms:Expedicao\EtiquetaSeparacao es2
+                            WHERE es2.codOSTransbordo = os.id
+                          ) as qtdConferidaTransbordo")
+            ->andWhere('os.id = ec.codOsSegundaConferencia')
+            ->andWhere('ec.codExpedicao = :idExpedicao')
+            ->andWhere('ec.codOsSegundaConferencia IS NOT NULL')
+            ->setParameter('idExpedicao', $idExpedicao);
+
+        return $queryBuilder;
     }
 
 }

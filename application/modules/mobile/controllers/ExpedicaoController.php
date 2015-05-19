@@ -445,15 +445,15 @@ class Mobile_ExpedicaoController extends Action
         } else {
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
-            if ($verificaReconferencia=='S'){
+            if ($verificaReconferencia == 'S') {
+                $expedEntity = $this->_em->getReference('wms:Expedicao',$idExpedicao);
+                $statusExped = $expedEntity->getStatus()->getId();
 
-                $expedEntity=$this->_em->getReference('wms:Expedicao',$idExpedicao);
-                $statusExped=$expedEntity->getStatus()->getId();
-                if ( $statusExped==Expedicao::STATUS_PRIMEIRA_CONFERENCIA ){
+                if ($statusExped == Expedicao::STATUS_PRIMEIRA_CONFERENCIA ){
                     $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsPrimeiraConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
                     $q->setParameter('status', EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA);
                 } else {
-                    $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsPrimeiraConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
+                    $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsSegundaConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
                     $q->setParameter('status', EtiquetaSeparacao::STATUS_SEGUNDA_CONFERENCIA);
                 }
 
