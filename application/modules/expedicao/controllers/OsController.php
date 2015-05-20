@@ -26,10 +26,10 @@ class Expedicao_OsController extends Action
         $buttons = array();
 
         if (($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA)
-           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO)
-           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
-           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA)
-           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ){
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO)
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA)
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ){
             $buttons[] = array(
                 'label' => 'Finalizar Conferência',
                 'cssClass' => 'dialogAjax',
@@ -97,11 +97,11 @@ class Expedicao_OsController extends Action
         $s = new Zend_Session_Namespace('sessionUrl');
 
         $buttons[] =  array(
-                        'label' => 'Voltar para Busca de Expedições',
-                        'cssClass' => 'btnBack',
-                        //'urlParams'=>array_merge($s->url,array('control'=>'roll')),
-                        'tag' => 'a'
-                    );
+            'label' => 'Voltar para Busca de Expedições',
+            'cssClass' => 'btnBack',
+            //'urlParams'=>array_merge($s->url,array('control'=>'roll')),
+            'tag' => 'a'
+        );
 
         Page::configure(array('buttons' => $buttons));
 
@@ -148,14 +148,8 @@ class Expedicao_OsController extends Action
         }
 
         $GridOs = new OsGrid();
-        $this->view->gridOS = $GridOs->init($idExpedicao, null)
+        $this->view->gridOS = $GridOs->init($idExpedicao, $verificaReconferencia)
             ->render();
-
-        if ($verificaReconferencia == 'S') {
-            $GridOsReconferencia = new OsGrid();
-            $this->view->gridOSReconferencia = $GridOsReconferencia->init($idExpedicao, $verificaReconferencia)
-                ->render();
-        }
 
         $GridAndamento = new AndamentoGrid();
         $this->view->gridAndamento = $GridAndamento->init($idExpedicao)
@@ -164,6 +158,8 @@ class Expedicao_OsController extends Action
         $GridPendencias = new CortesPendentesGrid();
         $this->view->gridPendencias = $GridPendencias->init($idExpedicao)
             ->render();
+
+        $this->view->verificaReconferencia = $verificaReconferencia;
 
     }
 
@@ -190,7 +186,11 @@ class Expedicao_OsController extends Action
     public function conferenciaAction()
     {
         $request = $this->getRequest();
-        $idOS = $request->getParam('id');
+        $idOS = $request->getParam('OS');
+
+        if ($idOS == null) {
+            $idOS = $request->getParam('id');
+        }
 
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $OsRepo */
         $OsRepo   = $this->_em->getRepository('wms:OrdemServico');
@@ -290,12 +290,12 @@ class Expedicao_OsController extends Action
                 $idVolume = $values['volumes'];
             }
             $result = $expedicaoRepo->getEtiquetasConferidasByVolume($idExpedicao,$idVolume);
-                if (isset($values['exportarpdf'])) {
-                    unset($values);
-                    $form->getElement('exportarpdf')->setValue(null);
-                    $RelProdutosConferidos = new \Wms\Module\Expedicao\Report\ProdutosConferidos("L");
-                    $RelProdutosConferidos->init($result);
-                }
+            if (isset($values['exportarpdf'])) {
+                unset($values);
+                $form->getElement('exportarpdf')->setValue(null);
+                $RelProdutosConferidos = new \Wms\Module\Expedicao\Report\ProdutosConferidos("L");
+                $RelProdutosConferidos->init($result);
+            }
             $Grid = new \Wms\Module\Web\Grid\Expedicao\OsProdutosConferidos();
             $this->view->grid = $Grid->init($result,true)->render();
         }

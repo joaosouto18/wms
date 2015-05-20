@@ -16,7 +16,7 @@ class OrdemServicoRepository extends EntityRepository
      *
      * @param OrdemServicoEntity $ordemServicoEntity
      * @param array $values
-     * @return int Id da entidade 
+     * @return int Id da entidade
      */
     public function save(OrdemServicoEntity $ordemServicoEntity, array $values, $runFlush = true , $returnType = "Id")
     {
@@ -42,7 +42,7 @@ class OrdemServicoRepository extends EntityRepository
             default:
                 $recebimentoEntity = $em->getReference('wms:Recebimento', $idRecebimento);
                 $ordemServicoEntity->osConferencia($recebimentoEntity);
-            break;
+                break;
         }
 
         $atividadeEntity = $em->getReference('wms:Atividade', $idAtividade);
@@ -51,9 +51,9 @@ class OrdemServicoRepository extends EntityRepository
         $pessoaEntity = $em->getReference('wms:Pessoa', $idPessoa);
 
         $ordemServicoEntity->setDataInicial(new \DateTime)
-                ->setAtividade($atividadeEntity)
-                ->setPessoa($pessoaEntity)
-                ->setFormaConferencia($formaConferencia);
+            ->setAtividade($atividadeEntity)
+            ->setPessoa($pessoaEntity)
+            ->setFormaConferencia($formaConferencia);
 
         $em->persist($ordemServicoEntity);
 
@@ -71,8 +71,8 @@ class OrdemServicoRepository extends EntityRepository
      * Grava conferente para ordem de servico
      *
      * @param integer $idOrdemServico
-     * @param integer $idConferente 
-     * @return boolean 
+     * @param integer $idConferente
+     * @return boolean
      */
     public function atualizarConferente($idOrdemServico, $idConferente)
     {
@@ -83,16 +83,16 @@ class OrdemServicoRepository extends EntityRepository
 
         $this->getEntityManager()->persist($ordemServicoEntity);
         $this->getEntityManager()->flush();
-        
+
         return true;
     }
-    
+
     /**
      * Atualiza observacao da ordem de servico
-     * 
+     *
      * @param integer $idOrdemServico
      * @param string $observacao
-     * @return boolean 
+     * @return boolean
      */
     public function atualizarObservacao($idOrdemServico, $observacao)
     {
@@ -102,52 +102,54 @@ class OrdemServicoRepository extends EntityRepository
 
         $this->getEntityManager()->persist($ordemServicoEntity);
         $this->getEntityManager()->flush();
-        
+
         return true;
     }
-    
+
     /**
      * Finaliza uma ordem de serviço setando os parametros
-     * 
+     *
      * @param integer $idOrdemServico
-     * @return boolean 
+     * @return boolean
      */
     public function finalizar($idOrdemServico)
     {
         $ordemServicoEntity = $this->find($idOrdemServico);
-        
+
         $ordemServicoEntity->setDscObservacao('Recebimento Finalizado.')
-                ->setDataFinal(new \DateTime());
+            ->setDataFinal(new \DateTime());
 
         $this->getEntityManager()->persist($ordemServicoEntity);
         $this->getEntityManager()->flush();
-        
+
         return true;
     }
 
-    public function getOsByExpedicao ($idExpedicao) {
+    public function getOsByExpedicao ($idExpedicao)
+    {
+        $_em = $this->getEntityManager();
+
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
-            ->distinct()
             ->select('os.id,
                       os.dataInicial,
                       os.dataFinal,
                       atv.descricao atividade,
                       p.nome pessoa')
             ->from('wms:OrdemServico', 'os')
-            ->innerJoin("os.pessoa","p")
+            ->innerJoin("os.pessoa", "p")
             ->innerJoin("os.atividade", "atv")
-            ->innerJoin("wms:Expedicao\EtiquetaConferencia", "ec", "WITH", 'ec.codExpedicao = os.idExpedicao')
-            ->addSelect("(SELECT COUNT(ec2) as qtdConferido
-                             FROM wms:Expedicao\EtiquetaConferencia ec2
-                            WHERE ec2.codOsPrimeiraConferencia = os.id
+            ->addSelect("( SELECT COUNT(es) as qtdConferido
+                             FROM wms:Expedicao\EtiquetaSeparacao es
+                            WHERE es.codOS = os.id
                           ) as qtdConferida")
-            ->addSelect("(SELECT COUNT(es2) as qtdConferidoTransbordo
+            ->addSelect("( SELECT COUNT(es2) as qtdConferidoTransbordo
                             FROM wms:Expedicao\EtiquetaSeparacao es2
                             WHERE es2.codOSTransbordo = os.id
                           ) as qtdConferidaTransbordo")
-            ->andWhere('os.id = ec.codOsPrimeiraConferencia')
-            ->andWhere('ec.codExpedicao = :idExpedicao')
+            ->where('os.idExpedicao = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
+
+        //$result = $queryBuilder->getQuery()->getResult();
 
         return $queryBuilder;
     }
@@ -183,13 +185,15 @@ class OrdemServicoRepository extends EntityRepository
                       es.dataConferencia,
                       es.dataConferenciaTransbordo
                       ')
-            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->from('wms:Expedicao\EtiquetaConferencia', 'ec')
+            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
             ->innerJoin("es.produto","prod")
             ->leftJoin('es.produtoEmbalagem','emb')
             ->leftJoin('es.produtoVolume','vol');
 
         if ($transbordo == false) {
-            $queryBuilder->where('es.codOS = :idOS');
+            $queryBuilder->where('ec.codOsPrimeiraConferencia = :idOS')
+            ->orWhere('ec.codOsSegundaConferencia = :idOS');
         } else {
             $queryBuilder->where('es.codOSTransbordo = :idOS');
         }
@@ -224,31 +228,46 @@ class OrdemServicoRepository extends EntityRepository
 
     public function getOsByExpedicaoReconferencia($idExpedicao)
     {
-        $queryBuilder = $this->getEntityManager()->createQueryBuilder()
-            ->distinct()
-            ->select('os.id,
-                      os.dataInicial,
-                      os.dataFinal,
-                      atv.descricao atividade,
-                      p.nome pessoa')
-            ->from('wms:OrdemServico', 'os')
-            ->innerJoin("os.pessoa","p")
-            ->innerJoin("os.atividade", "atv")
-            ->innerJoin("wms:Expedicao\EtiquetaConferencia", "ec", "WITH", 'ec.codExpedicao = os.idExpedicao')
-            ->addSelect("(SELECT COUNT(es) as qtdConferido
-                             FROM wms:Expedicao\EtiquetaSeparacao es
-                            WHERE es.codOS = os.id
-                          ) as qtdConferida")
-            ->addSelect("(SELECT COUNT(es2) as qtdConferidoTransbordo
-                            FROM wms:Expedicao\EtiquetaSeparacao es2
-                            WHERE es2.codOSTransbordo = os.id
-                          ) as qtdConferidaTransbordo")
-            ->andWhere('os.id = ec.codOsSegundaConferencia')
-            ->andWhere('ec.codExpedicao = :idExpedicao')
-            ->andWhere('ec.codOsSegundaConferencia IS NOT NULL')
-            ->setParameter('idExpedicao', $idExpedicao);
+        $sql = "
+                SELECT NVL(PRIMEIRA.COD_EXPEDICAO, SEGUNDA.COD_EXPEDICAO) as COD_EXPEDICAO,
+                       NVL(PRIMEIRA.COD_OS, SEGUNDA.COD_OS) as os,
+                       P.NOM_PESSOA as PESSOA,
+                       NVL(PRIMEIRA.QTD_ETIQUETAS,0) as qtdConferida,
+                       NVL(SEGUNDA.QTD_ETIQUETAS,0) as qtdSegundaConferencia,
+                       NVL(TRANSBORDO.QTD_CONFERIDAS_TRANSBORDO,0) as qtdConferidaTransbordo,
+                       TO_CHAR(OS.DTH_INICIO_ATIVIDADE, 'DD/MM/YYYY HH24:MI') as dataInicial,
+                       TO_CHAR(OS.DTH_FINAL_ATIVIDADE, 'DD/MM/YYYY HH24:MI') as dataFinal,
+                       AT.DSC_ATIVIDADE
+                  FROM (SELECT COD_EXPEDICAO,
+                               COD_OS_PRIMEIRA_CONFERENCIA as COD_OS,
+                               COUNT(COD_ETIQUETA_CONFERENCIA) as QTD_ETIQUETAS
+                          FROM ETIQUETA_CONFERENCIA
+                            WHERE COD_OS_PRIMEIRA_CONFERENCIA IS NOT NULL
+                            GROUP BY COD_EXPEDICAO, COD_OS_PRIMEIRA_CONFERENCIA) PRIMEIRA
+                FULL OUTER JOIN (SELECT COD_EXPEDICAO,
+                                        COD_OS_SEGUNDA_CONFERENCIA as COD_OS,
+                                        COUNT(COD_ETIQUETA_CONFERENCIA) as QTD_ETIQUETAS
+                                  FROM ETIQUETA_CONFERENCIA
+                                  WHERE COD_OS_SEGUNDA_CONFERENCIA IS NOT NULL
+                                  GROUP BY COD_EXPEDICAO, COD_OS_SEGUNDA_CONFERENCIA) SEGUNDA
+                                    ON SEGUNDA.COD_EXPEDICAO = PRIMEIRA.COD_EXPEDICAO
+                                    AND SEGUNDA.COD_OS = PRIMEIRA.COD_OS
+                FULL OUTER JOIN (SELECT ES.COD_OS_TRANSBORDO,
+                                        COUNT(COD_ETIQUETA_SEPARACAO) as QTD_CONFERIDAS_TRANSBORDO
+                                  FROM ETIQUETA_SEPARACAO ES
+                                  WHERE COD_OS_TRANSBORDO IS NOT NULL
+                                  GROUP BY ES.COD_OS_TRANSBORDO) TRANSBORDO
+                                    ON COD_OS_TRANSBORDO = SEGUNDA.COD_OS
+                LEFT JOIN ORDEM_SERVICO OS
+                       ON OS.COD_OS = PRIMEIRA.COD_OS
+                       OR OS.COD_OS = SEGUNDA.COD_OS
+                LEFT JOIN ATIVIDADE AT
+                       ON AT.COD_ATIVIDADE = OS.COD_ATIVIDADE
+                LEFT JOIN PESSOA P ON OS.COD_PESSOA = P.COD_PESSOA
+                    WHERE PRIMEIRA.COD_EXPEDICAO = $idExpedicao
+                       OR SEGUNDA.COD_EXPEDICAO = $idExpedicao";
 
-        return $queryBuilder;
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }
