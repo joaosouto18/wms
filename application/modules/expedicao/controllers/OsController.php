@@ -209,14 +209,15 @@ class Expedicao_OsController extends Action
             $this->view->fimOS = $resumoOS['dataFinal']->format('d/m/Y H:i:s');
         }
 
-        $Grid = new ConferenciaGrid();
-
         if ($verificaReconferencia == 'S') {
-            $this->view->gridConferencia = $Grid->init($idOS, false, 'Conferencia')->render();
-            $this->view->gridReconferencia = $Grid->init($idOS, false, 'Reconferencia')->render();
+            $GridConferencia = new ConferenciaGrid();
+            $this->view->gridConferencia = $GridConferencia->init($idOS, false, 'Conferencia')->render();
+
+            $GridReconferencia = new ConferenciaGrid();
+            $this->view->gridReconferencia = $GridReconferencia->init($idOS, false, 'Reconferencia')->render();
         } else {
-            $this->view->grid = $Grid->init($idOS, false, null)
-                ->render();
+            $Grid = new ConferenciaGrid();
+            $this->view->grid = $Grid->init($idOS, false, null)->render();
         }
 
 
@@ -244,7 +245,7 @@ class Expedicao_OsController extends Action
         }
 
         $Grid = new ConferenciaGrid();
-        $this->view->grid = $Grid->init($idOS,true)
+        $this->view->grid = $Grid->init($idOS, true, null)
             ->render();
     }
 
