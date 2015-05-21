@@ -187,14 +187,17 @@ class OrdemServicoRepository extends EntityRepository
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin("es.produto","prod")
             ->leftJoin('es.produtoEmbalagem','emb')
-            ->leftJoin('es.produtoVolume','vol');
+            ->leftJoin('es.produtoVolume','vol')
+            ->setParameter('idOS', $idOS);
 
         if ($transbordo == false) {
             if ($tipoConferencia != null && $tipoConferencia == 'Conferencia') {
-                $queryBuilder->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
+                $queryBuilder
+                    ->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
                     ->andWhere('ec.codOsPrimeiraConferencia = :idOS');
             } elseif ($tipoConferencia != null && $tipoConferencia == 'Reconferencia') {
-                $queryBuilder->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
+                $queryBuilder
+                    ->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
                     ->andWhere('ec.codOsSegundaConferencia = :idOS');
             } else {
                 $queryBuilder->andWhere('es.codOS = :idOS');
@@ -202,8 +205,6 @@ class OrdemServicoRepository extends EntityRepository
         } else {
             $queryBuilder->andWhere('es.codOSTransbordo = :idOS');
         }
-
-        $queryBuilder->setParameter('idOS', $idOS);
 
         return $queryBuilder;
     }
