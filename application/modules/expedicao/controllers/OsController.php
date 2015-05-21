@@ -155,9 +155,13 @@ class Expedicao_OsController extends Action
         $this->view->gridAndamento = $GridAndamento->init($idExpedicao)
             ->render();
 
-        $GridPendencias = new CortesPendentesGrid();
-        $this->view->gridPendencias = $GridPendencias->init($idExpedicao)
-            ->render();
+        $pendencias = $EtiquetaSeparacaoRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_CORTE, "Array");
+
+        if (count($pendencias) > 0) {
+            $GridPendencias = new CortesPendentesGrid();
+            $this->view->gridPendencias = $GridPendencias->init($idExpedicao)
+                ->render();
+        }
 
         $this->view->verificaReconferencia = $verificaReconferencia;
 

@@ -189,7 +189,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
-    public function getPendenciasByExpedicaoAndStatus($idExpedicao,$status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL, $carga = NULL) {
+    public function getPendenciasByExpedicaoAndStatus($idExpedicao, $status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL, $carga = NULL) {
 
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select("es.codBarras,
