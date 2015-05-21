@@ -187,6 +187,7 @@ class Expedicao_OsController extends Action
     {
         $request = $this->getRequest();
         $idOS = $request->getParam('OS');
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
         if ($idOS == null) {
             $idOS = $request->getParam('id');
@@ -209,8 +210,15 @@ class Expedicao_OsController extends Action
         }
 
         $Grid = new ConferenciaGrid();
-        $this->view->grid = $Grid->init($idOS)
-            ->render();
+
+        if ($verificaReconferencia == 'S') {
+            $this->view->gridConferencia = $Grid->init($idOS, false, 'Conferencia')->render();
+            $this->view->gridReconferencia = $Grid->init($idOS, false, 'Reconferencia')->render();
+        } else {
+            $this->view->grid = $Grid->init($idOS, false, null)
+                ->render();
+        }
+
 
     }
 

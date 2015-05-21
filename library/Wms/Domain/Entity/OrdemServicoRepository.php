@@ -174,8 +174,7 @@ class OrdemServicoRepository extends EntityRepository
         return $result[0];
     }
 
-    public function getConferenciaByOs ($idOS, $transbordo = false) {
-        $_em = $this->getEntityManager();
+    public function getConferenciaByOs ($idOS, $transbordo = false, $tipoConferencia) {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
             ->select('es.id,
                       prod.descricao as produto,
@@ -185,17 +184,23 @@ class OrdemServicoRepository extends EntityRepository
                       es.dataConferencia,
                       es.dataConferenciaTransbordo
                       ')
-            ->from('wms:Expedicao\EtiquetaConferencia', 'ec')
-            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin("es.produto","prod")
             ->leftJoin('es.produtoEmbalagem','emb')
             ->leftJoin('es.produtoVolume','vol');
 
         if ($transbordo == false) {
-            $queryBuilder->where('ec.codOsPrimeiraConferencia = :idOS')
-            ->orWhere('ec.codOsSegundaConferencia = :idOS');
+            if ($tipoConferencia != null && $tipoConferencia == 'Conferencia') {
+                $queryBuilder->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
+                    ->andWhere('ec.codOsPrimeiraConferencia = :idOS');
+            } elseif ($tipoConferencia != null && $tipoConferencia == 'Reconferencia') {
+                $queryBuilder->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
+                    ->andWhere('ec.codOsSegundaConferencia = :idOS');
+            } else {
+                $queryBuilder->andWhere('es.codOS = :idOS');
+            }
         } else {
-            $queryBuilder->where('es.codOSTransbordo = :idOS');
+            $queryBuilder->andWhere('es.codOSTransbordo = :idOS');
         }
 
         $queryBuilder->setParameter('idOS', $idOS);
