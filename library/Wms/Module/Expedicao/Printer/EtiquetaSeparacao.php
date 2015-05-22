@@ -283,7 +283,7 @@ class EtiquetaSeparacao extends Pdf
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         $impressao  = substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 9);
+        $this->SetFont('Arial', 'B', 7);
         $impressao = substr(utf8_decode("$etiqueta[tipoPedido]:$etiqueta[codEntrega] - $etiqueta[itinerario]"),0,50) . "\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         $this->SetFont('Arial', 'B', 13);
