@@ -128,6 +128,11 @@ class EtiquetaConferencia
     protected $dataConferencia;
 
     /**
+     * @Column(name="DTH_RECONFERENCIA", type="datetime", nullable=true)
+     */
+    protected $dataReconferencia;
+
+    /**
      * @Column(name="DTH_CONFERENCIA_TRANSBORDO", type="datetime", nullable=true)
      */
     protected $dataConferenciaTransbordo;
@@ -323,6 +328,22 @@ class EtiquetaConferencia
     public function setCodOsSegundaConferencia($codOsSegundaConferencia)
     {
         $this->codOsSegundaConferencia = $codOsSegundaConferencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataReconferencia()
+    {
+        return $this->dataReconferencia;
+    }
+
+    /**
+     * @param mixed $dataReconferencia
+     */
+    public function setDataReconferencia($dataReconferencia)
+    {
+        $this->dataReconferencia = $dataReconferencia;
     }
 
 }

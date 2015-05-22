@@ -176,14 +176,6 @@ class OrdemServicoRepository extends EntityRepository
 
     public function getConferenciaByOs ($idOS, $transbordo = false, $tipoConferencia) {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
-            ->select('es.id,
-                      prod.descricao as produto,
-                      prod.id as codProduto,
-                      prod.grade,
-                      CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
-                      es.dataConferencia,
-                      es.dataConferenciaTransbordo
-                      ')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin("es.produto","prod")
             ->leftJoin('es.produtoEmbalagem','emb')
@@ -193,10 +185,26 @@ class OrdemServicoRepository extends EntityRepository
         if ($transbordo == false) {
             if ($tipoConferencia != null && $tipoConferencia == 'Conferencia') {
                 $queryBuilder
+                    ->select('es.id,
+                      prod.descricao as produto,
+                      prod.id as codProduto,
+                      prod.grade,
+                      CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
+                      es.dataConferenciaTransbordo,
+                      es.dataConferencia
+                      ')
                     ->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
                     ->andWhere('ec.codOsPrimeiraConferencia = :idOS');
             } elseif ($tipoConferencia != null && $tipoConferencia == 'Reconferencia') {
                 $queryBuilder
+                    ->select('es.id,
+                      prod.descricao as produto,
+                      prod.id as codProduto,
+                      prod.grade,
+                      CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
+                      es.dataConferenciaTransbordo,
+                      ec.dataReconferencia as dataConferencia
+                      ')
                     ->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
                     ->andWhere('ec.codOsSegundaConferencia = :idOS');
             } else {

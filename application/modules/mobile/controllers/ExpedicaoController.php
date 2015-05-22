@@ -440,8 +440,8 @@ class Mobile_ExpedicaoController extends Action
         $date = $date->format('Y-m-d H:i:s');
 
         if (isset($sessao->parcialmenteFinalizado) && $sessao->parcialmenteFinalizado == true) {
-            $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
-            $q->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
+            $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+            $q1->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
         } else {
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
@@ -450,29 +450,37 @@ class Mobile_ExpedicaoController extends Action
                 $statusExped = $expedEntity->getStatus()->getId();
 
                 if ($statusExped == Expedicao::STATUS_PRIMEIRA_CONFERENCIA ){
-                    $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsPrimeiraConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
-                    $q->setParameter('status', EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA);
+                    $q2 = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsPrimeiraConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
+                    $q2->setParameter('status', EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA);
+                    $q2->setParameter('dataConferencia', $date);
+
+                    $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+                    $q1->setParameter('dataConferencia', $date);
                 } else {
-                    $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsSegundaConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
-                    $q->setParameter('status', EtiquetaSeparacao::STATUS_SEGUNDA_CONFERENCIA);
+                    $q2 = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsSegundaConferencia = :osID , es.dataReconferencia = :dataReconferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
+                    $q2->setParameter('status', EtiquetaSeparacao::STATUS_SEGUNDA_CONFERENCIA);
+                    $q2->setParameter('dataReconferencia', $date);
+
+                    $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
                 }
 
-                $q->setParameter('dataConferencia', $date);
-                $q->setParameter('osID', $sessao->osID);
-                $q->setParameter('idEtiqueta', $idEtiqueta);
-                $q->setParameter('volumePatrimonio', $volume);
-                $q->execute();
+                $q2->setParameter('osID', $sessao->osID);
+                $q2->setParameter('idEtiqueta', $idEtiqueta);
+                $q2->setParameter('volumePatrimonio', $volume);
+                $q2->execute();
 
+            } else {
+                $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+                $q1->setParameter('dataConferencia', $date);
             }
 
-            $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
-            $q->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
+            $q1->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
         }
-        $q->setParameter('dataConferencia', $date);
-        $q->setParameter('osID', $sessao->osID);
-        $q->setParameter('idEtiqueta', $idEtiqueta);
-        $q->setParameter('volumePatrimonio', $volume);
-        $q->execute();
+
+        $q1->setParameter('osID', $sessao->osID);
+        $q1->setParameter('idEtiqueta', $idEtiqueta);
+        $q1->setParameter('volumePatrimonio', $volume);
+        $q1->execute();
     }
 
     public function buscarEtiquetasAction()

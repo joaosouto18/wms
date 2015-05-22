@@ -49,7 +49,7 @@ class ProdutosParaConferencia extends Grid
                     'index' => 'embalagem',
                 ))
                 ->addColumn(array (
-                    'label' => 'Data Conferencia',
+                    'label' => 'Data ' . $tipoConferencia,
                     'index' =>  'dataConferencia',
                     'render' => 'DataTime'
                 ))
