@@ -513,6 +513,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             );
             $PedidoProdutoRepo->save($prod);
         }
+        $this->_em->flush();
     }
 
     /**
