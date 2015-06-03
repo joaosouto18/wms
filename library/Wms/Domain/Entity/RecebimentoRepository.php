@@ -311,9 +311,8 @@ class RecebimentoRepository extends EntityRepository
                 if ($gravaRecebimentoVolumeEmbalagem == true) {
                     $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico);
                 }
-var_dump($qtdConferida);
+                
                 $qtdConferida = (int) $qtdConferida * $quantidade;
-var_dump($qtdConferida); exit;
                 $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
                 if ($qtdDivergencia != 0) {
                     $divergencia = true;
