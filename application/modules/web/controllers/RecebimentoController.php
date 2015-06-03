@@ -345,6 +345,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             //produtos
             $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
+
+            //unidade Medida
+            $produtoRepo = $this->em->getRepository('wms:Produto');
+            $this->view->unMedida = $produtoRepo->getProdutoEmbalagem();
+
             //salvar produto e quantidade Conferencia
             if ($this->getRequest()->isPost()) {
                 // checando quantidades
@@ -352,9 +357,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdNFs = $this->getRequest()->getParam('qtdNF');
                 $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
+                $unMedida = $this->getRequest()->getParam('unMedida');
 
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];

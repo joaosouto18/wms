@@ -281,7 +281,7 @@ class RecebimentoRepository extends EntityRepository
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida) {
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
 
         // ordem servico
@@ -300,6 +300,10 @@ class RecebimentoRepository extends EntityRepository
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
 
+                $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+                $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
+                $quantidade = $produtoEmbalagemEntity->getQuantidade();
+
                 $qtdNF = (int) $qtdNFs[$idProduto][$grade];
                 $qtdConferida = (int) $qtdConferida;
                 $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
@@ -307,7 +311,9 @@ class RecebimentoRepository extends EntityRepository
                 if ($gravaRecebimentoVolumeEmbalagem == true) {
                     $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico);
                 }
-
+var_dump($qtdConferida);
+                $qtdConferida = (int) $qtdConferida * $quantidade;
+var_dump($qtdConferida); exit;
                 $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
                 if ($qtdDivergencia != 0) {
                     $divergencia = true;
@@ -490,14 +496,14 @@ class RecebimentoRepository extends EntityRepository
         $em = $this->getEntityManager();
 
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-        $qtdEmbalagem = 1;
-        $embalagens = $produtoEntity->getEmbalagens();
-        foreach ($embalagens as $embalagem) {
-            if ($embalagem->getIsPadrao()=="S") {
-                $qtdEmbalagem = $embalagem->getQuantidade();
-            }
-        }
-        $qtdConferida = $qtdConferida * $qtdEmbalagem;
+//        $qtdEmbalagem = 1;
+//       $embalagens = $produtoEntity->getEmbalagens();
+//        foreach ($embalagens as $embalagem) {
+//            if ($embalagem->getIsPadrao()=="S") {
+//                $qtdEmbalagem = $embalagem->getQuantidade();
+//            }
+//        }
+//        $qtdConferida = $qtdConferida * $qtdEmbalagem;
 
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
