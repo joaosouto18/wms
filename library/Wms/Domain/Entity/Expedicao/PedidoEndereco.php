@@ -230,15 +230,20 @@ class PedidoEndereco
         return $this;
     }
 
-    public function getPessoa()
+    /**
+     * @return mixed
+     */
+    public function getPedido()
     {
-	return $this->pessoa;
+        return $this->pedido;
     }
 
-    public function setPessoa($pessoa)
+    /**
+     * @param mixed $pedido
+     */
+    public function setPedido($pedido)
     {
-	$this->pessoa = $pessoa;
-        return $this;
+        $this->pedido = $pedido;
     }
 
     public function setUf($uf)

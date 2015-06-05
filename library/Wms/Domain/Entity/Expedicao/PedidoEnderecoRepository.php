@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 class PedidoEnderecoRepository extends EntityRepository
 {
 
-    public function save($pedido) {
+    public function save($pedidoCliente) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -15,13 +15,11 @@ class PedidoEnderecoRepository extends EntityRepository
             // pegar referência do pedido
             $enPedidoEndereco = new PedidoEndereco();
 
-            \Zend\Stdlib\Configurator::configure($enPedidoEndereco, $pedido);
-
-            // setar pedido
+            $pedidoEntity = $em->getReference('wms:Expedicao\Pedido', $pedidoCliente['codPedido']);
+            $enPedidoEndereco->setPedido($pedidoEntity);
             $em->persist($enPedidoEndereco);
             $em->flush();
             $em->commit();
-
         } catch(\Exception $e) {
             $em->rollback();
             throw new \Exception($e->getMessage());

@@ -195,7 +195,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepo */
         $pedidoEnderecoRepo = $this->_em->getRepository('wms:Expedicao\PedidoEndereco');
-        $pedidoEnderecoRepo->save($pedido);
+        $pedidoEnderecoRepo->save($pedido['cliente']);
 
 
     }
