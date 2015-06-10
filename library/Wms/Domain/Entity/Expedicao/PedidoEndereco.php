@@ -5,7 +5,7 @@ namespace Wms\Domain\Entity\Expedicao;
  * PedidoEndereco
  *
  * @Table(name="PEDIDO_ENDERECO")
- * @Entity
+ * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository")
  */
 class PedidoEndereco
 {
@@ -103,11 +103,6 @@ class PedidoEndereco
     {
 	$this->idPessoa = $idPessoa;
         return $this;
-    }
-
-    public function getIdTipo()
-    {
-	return $this->idTipo;
     }
 
     public function getIdLocalidade()
@@ -250,6 +245,22 @@ class PedidoEndereco
     {
 	$this->uf = $uf;
         return $this;
+    }
+
+    /**
+     * @param int $idTipo
+     */
+    public function setIdTipo($idTipo)
+    {
+        $this->idTipo = $idTipo;
+    }
+
+    /**
+     * @return int
+     */
+    public function getIdTipo()
+    {
+        return $this->idTipo;
     }
 
 }
