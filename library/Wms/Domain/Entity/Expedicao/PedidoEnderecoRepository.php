@@ -1,12 +1,13 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\EntityRepository,
+    Wms\Domain\Entity\Expedicao\PedidoEndereco;
 
 class PedidoEnderecoRepository extends EntityRepository
 {
 
-    public function save($pedidoCliente) {
+    public function save($pedidoEntity, $pedidoCliente) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -15,8 +16,20 @@ class PedidoEnderecoRepository extends EntityRepository
             // pegar referência do pedido
             $enPedidoEndereco = new PedidoEndereco();
 
-            $pedidoEntity = $em->getReference('wms:Expedicao\Pedido', $pedidoCliente['codPedido']);
+            $SiglaRepo      = $this->_em->getRepository('wms:Util\Sigla');
+            $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $pedidoCliente['uf']));
+
             $enPedidoEndereco->setPedido($pedidoEntity);
+            $enPedidoEndereco->setIdTipo(\Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA);
+            $enPedidoEndereco->setUf($entitySigla);
+            $enPedidoEndereco->setComplemento($pedidoCliente['complemento']);
+            $enPedidoEndereco->setDescricao($pedidoCliente['logradouro']);
+            $enPedidoEndereco->setPontoReferencia($pedidoCliente['referencia']);
+            $enPedidoEndereco->setBairro($pedidoCliente['bairro']);
+            $enPedidoEndereco->setLocalidade($pedidoCliente['cidade']);
+            $enPedidoEndereco->setNumero($pedidoCliente['numero']);
+            $enPedidoEndereco->setCep($pedidoCliente['cep']);
+
             $em->persist($enPedidoEndereco);
             $em->flush();
             $em->commit();
@@ -27,38 +40,4 @@ class PedidoEnderecoRepository extends EntityRepository
 
         return $enPedidoEndereco;
     }
-
-    public function getFilialByProduto($idPedido)
-    {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('f.codExterno', 'f.indUtilizaRessuprimento', 'prod.id produto', 'prod.grade', 'ex.id expedicao', 'pp.quantidade')
-            ->from('wms:Expedicao\PedidoProduto', 'pp')
-            ->innerJoin('pp.pedido', 'p')
-            ->innerJoin('wms:Filial', 'f', 'WITH', 'f.codExterno = p.centralEntrega')
-            ->innerJoin('pp.produto', 'prod')
-            ->innerJoin('p.carga', 'c')
-            ->innerJoin('c.expedicao', 'ex')
-            ->where("pp.codPedido = $idPedido");
-
-        return $dql->getQuery()->getResult();
-    }
-
-    public function identificaExpedicaoPedido($dados)
-    {
-        $produto = $dados['produto'];
-        $grade = $dados['grade'];
-        $expedicao = $dados['expedicao'];
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('re.id reservaEstoque')
-            ->from('wms:Ressuprimento\ReservaEstoqueProduto', 'rep')
-            ->innerJoin('rep.produto', 'p')
-            ->innerJoin('rep.reservaEstoque', 're')
-            ->innerJoin('wms:Ressuprimento\ReservaEstoqueExpedicao', 'ree', 'WITH', 'ree.reservaEstoque = re.id')
-            ->innerJoin('ree.expedicao', 'ex')
-            ->where("p.id = $produto AND p.grade = '$grade' AND ex.id = $expedicao")
-            ->groupBy('re.id');
-
-        return $dql->getQuery()->getResult();
-    }
-
 }
