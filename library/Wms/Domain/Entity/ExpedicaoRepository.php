@@ -1529,7 +1529,7 @@ class ExpedicaoRepository extends EntityRepository
         $sql = $this->_em->createQueryBuilder()
             ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdConferida')
             ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
-            ->where("evp.expedicao = $idExpedicao AND evp.dataConferencia != 'NULL'");
+            ->where("evp.expedicao = $idExpedicao AND evp.dataConferencia is not null");
 
         return $sql->getQuery()->getResult();
 
