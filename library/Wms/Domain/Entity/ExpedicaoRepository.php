@@ -965,6 +965,7 @@ class ExpedicaoRepository extends EntityRepository
             $and=" and ";
             $andSub=" and ";
         }
+        $idExpedicao = $parametros['idExpedicao'];
 
 
         if ( $whereSubQuery!="" )
@@ -980,7 +981,18 @@ class ExpedicaoRepository extends EntityRepository
                        P.QTD AS "prodSemEtiqueta",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
-                       I.ITINERARIOS AS "itinerario"
+                       I.ITINERARIOS AS "itinerario",
+                       (SELECT ((SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO)
+                       FROM ETIQUETA_SEPARACAO ES
+                       INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                       INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                       WHERE C.COD_EXPEDICAO = ' . $idExpedicao . ' AND ES.COD_STATUS IN(526, 531, 532)) * SUM(PP.QUANTIDADE) / 100) AS Conferida
+                       FROM PEDIDO_PRODUTO PP
+                       INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                       INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                       INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                       WHERE E.COD_EXPEDICAO = ' . $idExpedicao . '
+                       GROUP BY C.COD_EXPEDICAO)  AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
@@ -1529,7 +1541,7 @@ class ExpedicaoRepository extends EntityRepository
         $sql = $this->_em->createQueryBuilder()
             ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdConferida')
             ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
-            ->where("evp.expedicao = $idExpedicao AND evp.dataConferencia != 'NULL'");
+            ->where("evp.expedicao = $idExpedicao AND evp.dataConferencia is not null");
 
         return $sql->getQuery()->getResult();
 
