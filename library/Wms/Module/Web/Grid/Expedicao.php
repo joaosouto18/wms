@@ -70,6 +70,10 @@ class Expedicao extends Grid
                 'index' => 'prodSemEtiqueta',
             ))
             ->addColumn(array(
+                'label' => 'Percentual Conferencia',
+                'index' => 'PercConferencia',
+            ))
+            ->addColumn(array(
                 'label' => 'Status',
                 'index' => 'status',
             ))
