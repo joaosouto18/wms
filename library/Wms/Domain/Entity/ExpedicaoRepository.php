@@ -965,6 +965,7 @@ class ExpedicaoRepository extends EntityRepository
             $and=" and ";
             $andSub=" and ";
         }
+        $idExpedicao = $parametros['idExpedicao'];
 
 
         if ( $whereSubQuery!="" )
@@ -981,8 +982,17 @@ class ExpedicaoRepository extends EntityRepository
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
                        I.ITINERARIOS AS "itinerario",
---                       SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) AS "PercConferencia"
-                       (100 * (10/100)) AS "PercConferencia"
+                       (SELECT ((SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO)
+                       FROM ETIQUETA_SEPARACAO ES
+                       INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                       INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                       WHERE C.COD_EXPEDICAO = ' . $idExpedicao . ' AND ES.COD_STATUS IN(526, 531, 532)) * SUM(PP.QUANTIDADE) / 100) AS Conferida
+                       FROM PEDIDO_PRODUTO PP
+                       INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                       INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                       INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                       WHERE E.COD_EXPEDICAO = ' . $idExpedicao . '
+                       GROUP BY C.COD_EXPEDICAO)  AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
