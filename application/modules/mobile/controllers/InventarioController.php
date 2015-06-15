@@ -64,7 +64,7 @@ class Mobile_InventarioController extends Action
                     $result = array(
                         'status' => 'error',
                         'msg' => 'Endereço não encontrado',
-                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario
+                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem
                     );
                     $this->checkErrors($result);
                 }
@@ -142,7 +142,7 @@ class Mobile_InventarioController extends Action
                 ));
             } else {
 
-                $result = $this->_service->consultarProduto($params);
+                $result = $inventarioService->consultarProduto($params);
                 $this->checkErrors($result);
                 $result['populateForm']['numContagem']  =  $params['numContagem'];
                 $result['populateForm']['divergencia']  =  $divergencia;
