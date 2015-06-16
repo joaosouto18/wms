@@ -979,9 +979,23 @@ class ExpedicaoRepository extends EntityRepository
                        P.QTD AS "prodSemEtiqueta",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
-                       I.ITINERARIOS AS "itinerario"
+                       I.ITINERARIOS AS "itinerario",
+                       C.CONFERIDA AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN (SELECT
+                  CAST((SUM(PP.QUANTIDADE) / C.Etiqueta * 100) AS NUMBER(6,2)) AS Conferida, C.COD_EXPEDICAO
+                  FROM PEDIDO_PRODUTO PP
+                  INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                  INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                  INNER JOIN (
+                    SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) AS Etiqueta, C.COD_EXPEDICAO
+                    FROM ETIQUETA_SEPARACAO ES
+                    INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                    WHERE ES.COD_STATUS IN(526, 531, 532) GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  GROUP BY C.COD_EXPEDICAO, C.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C '.$cond.' '.$whereSubQuery.'
@@ -1047,6 +1061,7 @@ class ExpedicaoRepository extends EntityRepository
                           S.DSC_SIGLA,
                           P.QTD,
                           PESO.NUM_PESO,
+                          C.CONFERIDA,
                           PESO.NUM_CUBAGEM,
                           I.ITINERARIOS
                  ORDER BY E.COD_EXPEDICAO DESC
