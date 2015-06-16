@@ -211,4 +211,16 @@ class Expedicao_IndexController  extends Action
         $this->exportPDF($result,'volume-patrimonio.pdf','Relatório de Volumes Patrimônio da Expedição','L');
     }
 
+    public function declaracaoAjaxAction(){
+        $idExpedicao = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
+
+        $declaracaoReport = new \Wms\Module\Expedicao\Report\VolumePatrimonio();
+        $declaracaoReport->imprimir($result);
+    }
+
+
 }

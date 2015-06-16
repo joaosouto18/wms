@@ -196,6 +196,15 @@ class Expedicao extends Grid
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
+            ->addAction(array(
+                'label' => 'Declaração dos Volumes Patrimônio',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'declaracao-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
             ->setShowExport(true)
             ->setShowMassActions($params);
 

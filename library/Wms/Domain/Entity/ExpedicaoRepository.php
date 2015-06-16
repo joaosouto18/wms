@@ -966,7 +966,6 @@ class ExpedicaoRepository extends EntityRepository
             $andSub=" and ";
         }
 
-
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
 
@@ -1511,7 +1510,7 @@ class ExpedicaoRepository extends EntityRepository
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRIÇÃO, i.DSC_ITINERARIO as ITINERÁRIO, pes.NOM_PESSOA as CLIENTE
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
                 INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                 INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
