@@ -983,7 +983,8 @@ class ExpedicaoRepository extends EntityRepository
                        C.CONFERIDA AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
-                  LEFT JOIN (SELECT (SUM(PP.QUANTIDADE) / C.Etiqueta * 100) AS Conferida, C.COD_EXPEDICAO
+                  LEFT JOIN (SELECT
+                  CAST((SUM(PP.QUANTIDADE) / C.Etiqueta * 100) AS NUMBER(6,2)) AS Conferida, C.COD_EXPEDICAO
                   FROM PEDIDO_PRODUTO PP
                   INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
