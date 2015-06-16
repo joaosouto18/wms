@@ -64,13 +64,13 @@ class Mobile_InventarioController extends Action
                     $result = array(
                         'status' => 'error',
                         'msg' => 'Endereço não encontrado',
-                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem
+                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
                     );
                     $this->checkErrors($result);
                 }
                 $enderecoId = $enderecoArray[0]['COD_DEPOSITO_ENDERECO'];
 
-                $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoId);
+                $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoId, $numContagem, $divergencia);
                 $this->checkErrors($result);
 
                 $recontagemMesmoUsuario = $this->getSystemParameterValue('RECONTAGEM_MESMO_USUARIO');
@@ -129,6 +129,7 @@ class Mobile_InventarioController extends Action
                 $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
                 $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
 
+                $this->checkErrors($inventarioService->checaSeInventariado($params));
                 $inventarioService->contagemEndereco($params);
                 if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
                     $this->addFlashMessage('success', 'Endereço vazio invetariado com sucesso');
@@ -144,10 +145,11 @@ class Mobile_InventarioController extends Action
 
                 $result = $inventarioService->consultarProduto($params);
                 $this->checkErrors($result);
-                $result['populateForm']['numContagem']  =  $params['numContagem'];
-                $result['populateForm']['divergencia']  =  $divergencia;
+                $result['populateForm']['numContagem']   =  $params['numContagem'];
+                $result['populateForm']['divergencia']   =  $divergencia;
+                $result['populateForm']['idInventario']  =  $params['idInventario'];
                 //Verifica se existe contagem endereco
-                $result['populateForm']['contagemEndId'] = $inventarioService->verificaContagemEnd($result['populateForm']);
+                $result['populateForm']['contagemEndId'] = $this->checkErrors($inventarioService->verificaContagemEnd($result['populateForm']));
 
                 $form->populate($result['populateForm']);
             }
