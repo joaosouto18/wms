@@ -272,6 +272,25 @@ $(document).ready(function(){
         });
     });
 
+    function getVolumes(idProduto,grade){
+        $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
+            if (dataReturn.length > 0) {
+                var options = '<option selected value="">Selecione um agrupador de volumes...</option>';
+
+                for (var i = 0; i < dataReturn.length; i++) {
+                    options += '<option selected value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
+                }
+
+                $('#volumes').html(options);
+                $('#volumes').parent().show();
+                $('#volumes').focus();
+            } else {
+                $('#volumes').empty();
+                $('#volumes').parent().hide();
+            }
+        })
+    }
+
     $('.inside-modal').live('click', function() {
         //url
         var url = this.href;
