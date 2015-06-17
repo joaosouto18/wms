@@ -515,7 +515,6 @@ class ExpedicaoRepository extends EntityRepository
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
