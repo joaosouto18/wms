@@ -58,8 +58,8 @@ class Mobile_InventarioController extends Action
                 return false;
             } else {
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
-                $enderecoArray  = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
+                $enderecoRepo           = $this->em->getRepository("wms:Deposito\Endereco");
+                $enderecoArray          = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
                 if (count($enderecoArray) == 0) {
                     $result = array(
                         'status' => 'error',
@@ -68,6 +68,7 @@ class Mobile_InventarioController extends Action
                     );
                     $this->checkErrors($result);
                 }
+                $produtosEndPicking     = $enderecoRepo->getProdutoByEndereco($codigoBarras, false, true);
                 $enderecoId = $enderecoArray[0]['COD_DEPOSITO_ENDERECO'];
 
                 $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoId, $numContagem, $divergencia);
@@ -82,6 +83,11 @@ class Mobile_InventarioController extends Action
                 $this->view->numContagem     = $numContagem;
                 $this->view->divergencia     = $divergencia;
                 $this->view->botoes          = true;
+                if (count($produtosEndPicking) > 0) {
+                    $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                    $this->view->produtosEndPicking = $produtosEndPicking;
+                    $this->view->enderecoBipado = $this->_getParam('codigoBarras');
+                }
             }
 
             $exigenciaUma = $this->getSystemParameterValue('EXIGENCIA_UMA');
