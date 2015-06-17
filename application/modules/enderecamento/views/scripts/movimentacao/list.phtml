@@ -15,12 +15,14 @@
 <table class="gTable ">
     <?php
     $ends = '';
-    foreach ($this->endPicking as $endsPicking) {
-        $ends .= $endsPicking.' - ';
-    }
+    if (isset($this->endPicking) && !empty($this->endPicking)) :
+        foreach ($this->endPicking as $endsPicking) {
+            $ends .= $endsPicking.' - ';
+        } ?>
 
-    if (isset($this->enderecos) && empty($this->enderecos)) : ?>
-        <caption>Estoque do produto - Picking cadastrado: <?php echo $ends; ?></caption>
+        <?php if (isset($this->enderecos) && empty($this->enderecos)) : ?>
+            <caption>Estoque do produto - Picking cadastrado: <?php echo $ends; ?></caption>
+        <?php endif; ?>
     <?php endif; ?>
 
     <tbody>
