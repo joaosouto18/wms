@@ -51,6 +51,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 'uma' => '',
                 'idRecebimento' => ''
             );
+        } else {
+            if ($values['idRecebimento'] || $values['uma']) {
+                $values['dataInicial1'] = null;
+                $values['dataInicial2'] = null;
+                $values['dataFinal1'] = null;
+                $values['dataFinal2'] = null;
+            }
         }
 
         // grid
