@@ -36,7 +36,10 @@
         <tr height="25">
 		    <td colspan="2" width="80">Picking:</td>
             <td colspan="3" width="100">
-                <?php if(is_array($this->element->picking->getValue())) echo $this->element->picking->getValue()[0] ?>
+                <?php if(is_array($this->element->picking->getValue())) {
+                    $picking = $this->element->picking->getValue();
+                    echo $picking[0];
+                } ?>
             </td>
 
             <td colspan="3" width="80">Norma de Paletização:</td>
