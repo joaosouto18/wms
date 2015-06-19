@@ -7,7 +7,17 @@
             $('#'+idCliente).val(pracaSelecionada);
         });
 
+        $("a[rel=modal]").click (function(a){
+            a.preventDefault();
+            $.wmsDialogAjax({
+                width: 800,
+                height: 500,
+                url: this.href,
+                title: $(this).html()
+            })
+        });
     });
+
 </script>
 
 <?php
@@ -34,7 +44,7 @@ $i = 0;
                 <?php foreach($this->clientes as $cliente) : ?>
                     <?php $i++; ?>
                     <tr class="gTResultSet <?php echo ($i % 2 == 0 ? 'gRowColor' : '')?>">
-                        <td class="gTdOpcRow"><a title="Visualizar detalhes do Endereço" target="_blank" href="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'cliente', 'action' =>'consultar', 'codCliente' =>  $cliente['id']))?>" ><img alt="Opções" src="/img/icons/zoom.png"></li></a></td>
+                        <td class="gTdOpcRow"><a rel="modal" title="Visualizar detalhes do Endereço" href="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'cliente', 'action' =>'consultar', 'codCliente' =>  $cliente['id']))?>"  ><img alt="Opções" src="/img/icons/zoom.png"></a></td>
                         <td class="text-align:left"><?php echo $cliente['id']; ?></td>
                         <td class="text-align:left"><?php echo $cliente['nome']; ?></td>
                         <td class="text-align:left"><?php echo $cliente['cidade']; ?></td>

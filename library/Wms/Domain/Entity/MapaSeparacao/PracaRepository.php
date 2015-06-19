@@ -22,9 +22,13 @@ class PracaRepository extends EntityRepository
 
     }
 
-    public function salvar($valores) {
+    public function salvar($valores, $idPraca = null) {
 
-        $entity= new \Wms\Domain\Entity\MapaSeparacao\Praca();
+        if ($idPraca == null) {
+            $entity= new \Wms\Domain\Entity\MapaSeparacao\Praca();
+        } else {
+            $entity = $this->find($idPraca);
+        }
 
         $entity->setNomePraca($valores['identificacao']['nomePraca']);
         $this->getEntityManager()->persist($entity);

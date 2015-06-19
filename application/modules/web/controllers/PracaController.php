@@ -191,25 +191,22 @@ class Web_PracaController extends Crud
         //finds the form class from the entity name
         $formClass = '\\Wms\Module\Web\Form\\' . $this->entityName;
         $form = new $formClass;
-
+        $form->init(3);
         $idPraca = $this->_getParam('id');
-
         try {
             /** @var \Wms\Domain\Entity\MapaSeparacao\ModeloSeparacao $modeloSeparacaoRepo */
             $pracaRepo = $this->getEntityManager()->getRepository("wms:".$this->entityName);
 
             $valores=$this->getRequest()->getPost();
             if ($this->getRequest()->isPost() && $form->isValid($valores)) {
-
-                $pracaRepo->salvar($valores);
+                $pracaRepo->salvar($valores, $idPraca);
                 $this->_helper->messenger('success', 'Praça Alterada com Sucesso');
                 return $this->redirect('index');
             }
+            $form->setDefaultsFromIdPraca ($idPraca); // pass values to form
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
-
-
 
         $this->view->form = $form;
     }
