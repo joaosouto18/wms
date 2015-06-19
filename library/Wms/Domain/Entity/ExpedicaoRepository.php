@@ -429,7 +429,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -460,7 +460,7 @@ class ExpedicaoRepository extends EntityRepository
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
             }
 
-            $result = $this->finalizar($idExpedicao,$central);
+            $result = $this->finalizar($idExpedicao,$central, $tipoFinalizacao);
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
@@ -503,7 +503,7 @@ class ExpedicaoRepository extends EntityRepository
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
     {
         if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
 
@@ -519,6 +519,7 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
         $expedicaoEntity->setDataFinalizacao(new \DateTime());
+        $expedicaoEntity->setTipoFechamento($tipoFinalizacao);
 
         $this->finalizeOSByExpedicao($expedicaoEntity->getId());
         $pedidoRepo->finalizaPedidosByCentral($centralEntrega,$expedicaoEntity->getId());
@@ -526,7 +527,20 @@ class ExpedicaoRepository extends EntityRepository
         $pedidosNaoConferidos = $pedidoRepo->findPedidosNaoConferidos($expedicaoEntity->getId());
         if ($pedidosNaoConferidos == null) {
             $novoStatus = Expedicao::STATUS_FINALIZADO;
-            $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
+            switch ($tipoFinalizacao) {
+                case 'C':
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via coletor", $expedicaoEntity->getId());
+                    break;
+                case 'M':
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop", $expedicaoEntity->getId());
+                    break;
+                case 'S':
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização", $expedicaoEntity->getId());
+                   break;
+                default:
+                    $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
+                    break;
+            }
         } else {
             $novoStatus = Expedicao::STATUS_PARCIALMENTE_FINALIZADO;
             $andamentoRepo->save("Expedição Parcialmente Finalizada com Sucesso", $expedicaoEntity->getId());

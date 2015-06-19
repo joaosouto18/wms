@@ -79,7 +79,7 @@ class Mobile_ExpedicaoController extends Action
         $idExpedicao      = $request->getParam('idExpedicao');
         $central          = $sessao->centralSelecionada;
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true);
+        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
         } else {
