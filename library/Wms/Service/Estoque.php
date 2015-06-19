@@ -269,7 +269,7 @@ class Estoque
     {
         /** @var  $estoqueRepo */
         $estoqueRepo    = $this->getEstoqueRepo();
-        return $estoqueRepo->movimentaEstoque(array(
+        $array = array(
             'produto' =>  $this->getProduto(),
             'endereco' =>  $this->getEndereco(),
             'qtd'   => $this->getQtd(),
@@ -280,7 +280,11 @@ class Estoque
             'os' => $this->getOs(),
             'usuario' => $this->getUsuario(),
             'estoqueRepo' => $this->getEstoqueRepo()
-        ));
+        );
+        if (is_null($array['produto'])) {
+            return false;
+        }
+        return $estoqueRepo->movimentaEstoque($array);
     }
 
 }

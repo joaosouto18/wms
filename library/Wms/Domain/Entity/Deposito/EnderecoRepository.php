@@ -317,10 +317,16 @@ class EnderecoRepository extends EntityRepository
         return $produto;
     }
 
-
-    public function getProdutoByEndereco($dscEndereco, $unico = true) {
+    /**
+     * @param $dscEndereco
+     * @param bool $unico
+     * @param bool $picking | true pega endereço do tipo picking
+     * @return array
+     */
+    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
+    {
         $em = $this->getEntityManager();
-        $tempEndereco = "a";
+        $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
 
         if (strlen($dscEndereco) < 8) {
             $rua = 0;
@@ -328,7 +334,6 @@ class EnderecoRepository extends EntityRepository
             $nivel = 0;
             $apartamento = 0;
         } else {
-            //var_dump(str_replace('.','',$dscEndereco));exit;
             $dscEndereco = str_replace('.','',$dscEndereco);
             if (strlen($dscEndereco) == 8){
                 $tempEndereco = "0" . $dscEndereco;
@@ -351,6 +356,11 @@ class EnderecoRepository extends EntityRepository
             ->andWhere("e.predio = $predio")
             ->andWhere("e.nivel = $nivel")
             ->andWhere("e.apartamento = $apartamento");
+
+        if ($picking == true) {
+            $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
+        }
+
         if ($unico == true) {
             $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
         } else {
@@ -368,6 +378,11 @@ class EnderecoRepository extends EntityRepository
                 ->andWhere("e.predio = $predio")
                 ->andWhere("e.nivel = $nivel")
                 ->andWhere("e.apartamento = $apartamento");
+
+            if ($picking == true) {
+                $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
+            }
+
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
             } else {
