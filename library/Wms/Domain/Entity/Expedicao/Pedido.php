@@ -225,4 +225,20 @@ class Pedido
         return $this->pontoTransbordo;
     }
 
+    /**
+     * @param mixed $indEtiquetaMapaGerado
+     */
+    public function setIndEtiquetaMapaGerado($indEtiquetaMapaGerado)
+    {
+        $this->indEtiquetaMapaGerado = $indEtiquetaMapaGerado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndEtiquetaMapaGerado()
+    {
+        return $this->indEtiquetaMapaGerado;
+    }
+
 }

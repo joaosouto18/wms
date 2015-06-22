@@ -57,8 +57,8 @@ class Expedicao extends Grid
                 ))
 
                 ->addColumn(array(
-                    'label' => 'Produtos Sem Etiquetas',
-                    'index' => 'prodSemEtiqueta',
+                    'label' => 'Imprimir',
+                    'index' => 'imprimir',
                 ))
                 ->addColumn(array(
                     'label' => 'Status',
@@ -66,7 +66,7 @@ class Expedicao extends Grid
                 ))
 
                 ->addAction(array(
-                    'label' => 'Imprimir Etiquetas',
+                    'label' => 'Imprimir',
                     'modelName' => 'expedicao',
                     'controllerName' => 'etiqueta',
                     'actionName' => 'index',
@@ -117,7 +117,7 @@ class Expedicao extends Grid
                     'cssClass' => 'dialogAjax pdf',
                     'pkIndex' => 'id',
                     'condition' => function ($row) {
-                        return $row['prodSemEtiqueta'] > 0;
+                        return $row['imprimir'] != "";
                     }
                 ))
                 ->addAction(array(

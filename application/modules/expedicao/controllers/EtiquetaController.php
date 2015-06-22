@@ -41,7 +41,6 @@ class Expedicao_EtiquetaController  extends Action
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-        $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
         //verifica se vai utilizar Ressuprimento
         $filialEn = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('codExterno'=>$central));
@@ -61,7 +60,29 @@ class Expedicao_EtiquetaController  extends Action
             $this->addFlashMessage('error', $mensagem );
             $this->_redirect('/expedicao');
         } else {
-            $this->gerarEtiquetas($idExpedicao,$central,$cargas);
+            $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas);
+        }
+
+        $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
+        $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
+        $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta;
+        $this->addFlashMessage('success', $mensagem );
+        $this->_redirect('/expedicao');
+
+    }
+
+    public function gerarPdfAjaxAction(){
+        $central        = $this->getRequest()->getParam('central');
+        $idExpedicao    = $this->getRequest()->getParam('id');
+        $tipo    = $this->getRequest()->getParam('tipo');
+
+        if ($tipo == "mapa") {
+
+        }
+        if ($tipo == "etiqueta") {
+            $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+            $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
 
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 40));
@@ -79,7 +100,6 @@ class Expedicao_EtiquetaController  extends Action
                 $andamentoRepo->save('Etiquetas Impressas', $idExpedicao);
             }
         }
-        //ini_set('max_execution_time', 30);
     }
 
     public function semDadosAction() 
@@ -168,7 +188,7 @@ class Expedicao_EtiquetaController  extends Action
     /**
      * @param $idExpedicao
      */
-    protected function gerarEtiquetas($idExpedicao, $central, $cargas) {
+    protected function gerarMapaEtiqueta($idExpedicao, $central, $cargas) {
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
@@ -182,13 +202,10 @@ class Expedicao_EtiquetaController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        if ($EtiquetaRepo->gerarEtiquetas($pedidosProdutos) > 0) {
-
-            $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
-            $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
-
-            $this->addFlashMessage('error', $mensagem );
-            $this->_redirect('/expedicao');
+        try {
+            $EtiquetaRepo->gerarMapaEtiqueta($pedidosProdutos,null,1);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
         }
     }
 

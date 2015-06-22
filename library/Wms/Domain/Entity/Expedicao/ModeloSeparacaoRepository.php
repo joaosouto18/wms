@@ -48,5 +48,29 @@ class ModeloSeparacaoRepository extends EntityRepository
         // print_r($source->getQuery()->getArrayResult());die();
     }
 
+    public function getQuebraFracionado($idModelo){
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('tqFr.tipoQuebra')
+            ->from('wms:Expedicao\ModeloSeparacao', 'm')
+            ->innerJoin('m.tiposQuebraFracionado', 'tqFr')
+            ->where('m.id='.$idModelo)
+            ->orderBy("m.id");
+        $resultado = $source->getQuery()->getArrayResult();
+        return $resultado;
+    }
+
+    public function getQuebraNaoFracionado($idModelo){
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('tqFr.tipoQuebra')
+            ->from('wms:Expedicao\ModeloSeparacao', 'm')
+            ->innerJoin('m.tiposQuebraNaoFracionado', 'tqFr')
+            ->where('m.id='.$idModelo)
+            ->orderBy("m.id");
+        $resultado = $source->getQuery()->getArrayResult();
+        return $resultado;
+    }
+
+
+
 }
 

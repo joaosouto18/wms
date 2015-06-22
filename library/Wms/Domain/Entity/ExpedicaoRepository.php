@@ -251,17 +251,10 @@ class ExpedicaoRepository extends EntityRepository
                         INNER JOIN wms:Expedicao\VProdutoEndereco e
                          WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
-                        WHERE c.expedicao = $idExpedicao
+                        WHERE ped.indEtiquetaMapaGerado != 'S'
                           $whereCargas
                           AND ped.centralEntrega = '$central'
-                          AND ped.id NOT IN (
-                             SELECT pp2.codPedido
-                               FROM wms:Expedicao\EtiquetaSeparacao ep
-                              INNER JOIN wms:Expedicao\PedidoProduto pp2
-                               WITH pp2.pedido = ep.pedido
-                              INNER JOIN ep.produto p2
-                              INNER JOIN ep.pedido ped2
-                        )";
+                        ";
 
         switch ($sequencia) {
             case 2:
@@ -975,7 +968,7 @@ class ExpedicaoRepository extends EntityRepository
                        to_char(E.DTH_FINALIZACAO,\'dd/mm/yyyy hh:mi:ss\') AS "dataFinalizacao",
                        C.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
-                       P.QTD AS "prodSemEtiqueta",
+                       P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
                        I.ITINERARIOS AS "itinerario"
@@ -994,15 +987,11 @@ class ExpedicaoRepository extends EntityRepository
                                       INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                       INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO '.$cond.' '.$whereSubQuery.')
                               GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT COUNT(DISTINCT PP.COD_PRODUTO||PP.DSC_GRADE) as QTD,
-                                    C.COD_EXPEDICAO
-                               FROM PEDIDO_PRODUTO PP
-                              INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
-                              INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-                               LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = PP.COD_PEDIDO AND ES.COD_PRODUTO = PP.COD_PRODUTO AND ES.DSC_GRADE = PP.DSC_GRADE
-                               LEFT JOIN EXPEDICAO EX ON EX.COD_EXPEDICAO=C.COD_EXPEDICAO
-                              WHERE ((ES.COD_ETIQUETA_SEPARACAO IS NULL OR ES.COD_STATUS = 522) '.$andSub.$whereSubQuery.'  )
-                              GROUP BY C.COD_EXPEDICAO) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    CASE WHEN SUM(CASE WHEN P.IND_ETIQUETA_MAPA_GERADO = \'N\' THEN 1 ELSE 0 END) > 0 THEN \'SIM\' ELSE \'\' END AS IMPRIMIR
+                               FROM CARGA C
+                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                              GROUP BY COD_EXPEDICAO) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
@@ -1044,7 +1033,7 @@ class ExpedicaoRepository extends EntityRepository
                           E.DTH_FINALIZACAO,
                           C.CARGAS,
                           S.DSC_SIGLA,
-                          P.QTD,
+                          P.IMPRIMIR,
                           PESO.NUM_PESO,
                           PESO.NUM_CUBAGEM,
                           I.ITINERARIOS

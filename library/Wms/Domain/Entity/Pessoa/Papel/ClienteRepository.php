@@ -77,6 +77,31 @@ class ClienteRepository extends AtorRepository
         }
     }
 
+    public function getCodPracaByClienteId($codClienteExterno) {
+        $codPraca = 0;
+        $clienteEn = $this->findOneBy(array('codClienteExterno'=>$codClienteExterno));
+        $praca = $clienteEn->getPraca();
+            if ($praca != null) return $praca->getId();
+
+        $enderecos = $clienteEn->getPessoa()->getEnderecos();
+        if (count($enderecos) >0){
+            $cep = $enderecos[0]->getCep();
+            if ($cep != null) {
+                $cep = str_replace(".","",$cep);
+                $cep = str_replace("-","",$cep);
+                $SQL = "SELECT COD_PRACA FROM PRACA_FAIXA
+                         WHERE REPLACE(REPLACE(FAIXA_CEP1,'-',''),'.','') < $cep
+                           AND REPLACE(REPLACE(FAIXA_CEP2,'-',''),'.','') > $cep";
+
+                $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                if(count($result) >0) {
+                    $codPraca = $result[0]['COD_PRACA'];
+                }
+            }
+        }
+        return $codPraca;
+    }
+
     public function getDadosByCliente($idCliente)
     {
 
