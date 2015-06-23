@@ -12,30 +12,33 @@ class EtiquetaSeparacao extends Pdf
     private $total;
     private $strReimpressao;
     private $modelo;
-
+    private $etqMae;
     protected $chaveCargas;
 
     public function Footer()
     {
-        switch($this->modelo) {
-            case 2:
-                // font
-                $this->SetFont('Arial','B',7);
-                //Go to 1.5 cm from bottom
-                $this->SetY(-22);
-                $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
-                $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
-                $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
-            break;
-            case 3:
-                // font
-                $this->SetFont('Arial','B',7);
-                //Go to 1.5 cm from bottom
-                $this->SetY(-22);
-                $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
-                $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
-                $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+        if ($this->etqMae ==false) {
+
+            switch($this->modelo) {
+                case 2:
+                        // font
+                        $this->SetFont('Arial','B',7);
+                        //Go to 1.5 cm from bottom
+                        $this->SetY(-22);
+                        $this->Cell(20, 3, "", 0, 1, "L");
+                        $this->Cell(20, 3, "", 0, 1, "L");
+                        $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                 break;
+                case 3:
+                    // font
+                    $this->SetFont('Arial','B',7);
+                    //Go to 1.5 cm from bottom
+                    $this->SetY(-22);
+                    //$this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
+                    //$this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
+                    $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+                    break;
+            }
         }
     }
 
@@ -74,7 +77,14 @@ class EtiquetaSeparacao extends Pdf
 
         $this->setChaveCargas($idExpedicao);
 
+        $etiquetaMaeAnterior = 0;
         foreach($etiquetas as $etiqueta) {
+            if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
+                $this->etqMae = true;
+                $this->layoutEtiquetaMae($etiqueta['codEtiquetaMae']);
+                $etiquetaMaeAnterior = $etiqueta['codEtiquetaMae'];
+            }
+            $this->etqMae = false;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
@@ -328,5 +338,30 @@ class EtiquetaSeparacao extends Pdf
                 $this->layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo);
         }
     }
+
+    protected function layoutEtiquetaMae($codEtiquetaMae)
+    {
+
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $this->etqMae= true;
+        $this->SetMargins(3, 1.5, 0);
+        $this->SetFont('Arial', 'B', 11);
+
+        $this->AddPage();
+        $this->total="";
+        $this->strReimpressao = "";
+        $this->SetFont('Arial', 'B', 11);
+
+        $etiquetaMae = $em->getRepository("wms:Expedicao\EtiquetaMae")->find($codEtiquetaMae);
+
+        $this->Cell(20, 5, utf8_decode('Etiqueta Mãe - ' . $codEtiquetaMae), 0, 1, "L");
+        $this->Cell(20, 5, utf8_decode('Expedição:' . $etiquetaMae->getExpedicao()->getId()), 0, 1, "L");
+        $this->Cell(20, 5, utf8_decode('Quebras:' . $etiquetaMae->getDscQuebra()), 0, 1, "L");
+
+        $this->Image(@CodigoBarras::gerarNovo($codEtiquetaMae), 25, 30, 60);
+
+    }
+
 
 }

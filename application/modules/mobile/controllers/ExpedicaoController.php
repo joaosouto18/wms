@@ -162,7 +162,8 @@ class Mobile_ExpedicaoController extends Action
         $this->view->codBarras = $codBarras;
 
         if (isset($qtd) && ($qtd > 0)) {
-            $this->addFlashMessage('info',$embalagemEntity->getQuantidade() * $qtd);
+            $this->addFlashMessage('info','Produto conferido com sucesso');
+            $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume);
         } else {
             $this->addFlashMessage('info','Informe uma Quantidade');
         }
