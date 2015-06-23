@@ -1,0 +1,16 @@
+
+<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/index" method="post">
+    <input type="hidden" name="uma" value="" id="uma">
+    <dt id="identification-label">&nbsp;</dt>
+    <dd id="identification-element">
+        <fieldset id="fieldset-identification">
+            <legend>Confirma Operação?</legend>
+            <dl>
+                <label style="font-size: 15px"><?php echo $this->operacao ?></label>
+                <label style="font-size: 15px">Expedição: <?php echo $this->expedicao ?></label>
+                <a class="finalizar" href="<?php echo $this->url ?>" >INICIAR</a>
+            </dl>
+        </fieldset>
+    </dd>
+</form>
+

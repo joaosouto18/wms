@@ -10,28 +10,162 @@ class Mobile_ExpedicaoController extends Action
 
     protected $bloquearOs = 'S';
 
-    public function indexAction()
+    public function indexAction(){
+
+    }
+
+    public function confirmarOperacaoAction()
     {
-        $menu = array(
-            1 => array(
-                'url' => 'ordem-servico/centrais-entrega',
-                'label' => 'CONF. EXPEDIÇÃO',
-            ),
-            2 => array(
-                'url' => 'ordem-servico/centrais-entrega/transbordo/1',
-                'label' => 'CONF. TRANSBORDO',
-            ),
-            3 => array (
-                'url' => 'ordem-servico/recebimento-transbordo',
-                'label' => 'RECB. TRANSBORDO',
-            ),
-            4 => array (
-                'url' => 'onda-ressuprimento/listar-ondas',
-                'label' => 'ONDA DE RESSUPRIMENTO',
-            )
-        );
-        $this->view->menu = $menu;
-        $this->renderScript('menu.phtml');
+        $codBarras = $this->_getParam('codigoBarras');
+        if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
+            try {
+                $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+                $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
+                $this->view->operacao = $operacao['operacao'];
+                $this->view->expedicao = $operacao['expedicao'];
+                $this->view->url = $operacao['url'];
+            } catch (\Exception $e) {
+                $this->addFlashMessage('error',$e->getMessage());
+                $this->_redirect('mobile/expedicao/index');
+            }
+        } else {
+            $this->addFlashMessage('info','informe um código de barras');
+            $this->_redirect('mobile/expedicao/index');
+        }
+    }
+
+    public function lerProdutoMapaAction() {
+        $idMapa = $this->_getParam("idMapa");
+        $idVolume = $this->_getParam("idVolume");
+        $qtd = $this->_getParam("qtd");
+        $codBarras = $this->_getParam("codigoBarras");
+
+        $idModeloSeparacao = 1;
+        $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
+
+        $this->view->idVolume = $idVolume;
+        $this->view->idMapa = $idMapa;
+        if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
+            try {
+
+                $codBarrasProduto = true;
+                if ((strlen($codBarras) > 2) && ((substr($codBarras,0,2)) == "13") ){
+                    $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+                    $volumeEn = $volumeRepo->find($codBarras);
+                    if ($volumeEn != null) {
+                        $idVolume = $codBarras;
+                        $this->view->idVolume = $codBarras;
+                        $codBarrasProduto = false;
+                    }
+                }
+
+                if ($codBarrasProduto == true) {
+                    $embalagemEntity = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras))[0];
+
+                    //VERIFICO SE O PRODUTO EXISTE
+                    $erro = false;
+                    if ($erro == false) {
+                        if ($embalagemEntity == null) {
+                            $this->addFlashMessage('error', "Nenhum produto com o código de barras $codBarras encontrado");
+                            $erro = true;
+                        }
+                    }
+
+                    //VERIFICO SE O PRODUTO PERTENCE AO MAPA SELECIONADO
+                    if ($erro == false) {
+                        $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $idMapa));
+                        $encontrou = false;
+                        foreach ($mapaSeparacaoProduto as $mapaProduto){
+                            if ($mapaProduto->getProduto() == $embalagemEntity->getProduto()) {
+                                $encontrou = true;
+                                break;
+                            }
+                        }
+                        if ($encontrou == false) {
+                            $this->addFlashMessage('error', "Este produto não se encontra no mapa selecionado");
+                            $erro = true;
+                        }
+                    }
+
+
+                    //VERIFICO SE O PRODUTO É EMBALADO OU NÃO
+                    if ($erro == false) {
+                        $embalado = false;
+                        if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
+                            if ($embalagemEntity->getEmbalado() == "S") {
+                                $embalado = true;
+                            }
+                        } else {
+                            $embalagens = $embalagemEntity->getProduto()->getEmbalagens();
+                            foreach ($embalagens as $emb){
+                                if ($emb->getIsPadrao() == "S") {
+                                    if ($embalagemEntity->getQuantidade() < $emb->getQuantidade()) {
+                                        $embalado = true;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        if ((isset($idVolume)) && ($idVolume != null) && ($embalado == false)) {
+                            $this->addFlashMessage('error','Este produto não é embalado');
+                            $erro = false;
+                        }
+
+                        if ((!(isset($idVolume)) || ($idVolume == null)) && ($embalado == true)) {
+                            $this->addFlashMessage('error','Este produto é embalado');
+                            $erro = false;
+                        }
+                    }
+
+                    if ($erro == false) {
+                        if (isset($qtd) && ($qtd != null)) {
+                            $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
+                        } else{
+                            $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                $this->addFlashMessage('error',$e->getMessage());
+                $this->_redirect('mobile/expedicao/index');
+            }
+        }
+
+        $this->view->exibeQtd = false;
+        if ((isset($idVolume)) && ($idVolume != null)) {
+            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "Q") {
+                $this->view->exibeQtd = true;
+            }
+        } else {
+            $idVolume = "";
+            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q") {
+                $this->view->exibeQtd = true;
+            }
+        }
+
+    }
+
+    public function informaQtdMapaAction(){
+        $idVolume = $this->_getParam('idVolume');
+        $idMapa = $this->_getParam('idMapa');
+        $codBarras = $this->_getParam('codBarras');
+        $qtd = $this->_getParam('qtd');
+
+        $embalagemEntity = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras))[0];
+        $this->view->codProduto = $embalagemEntity->getProduto()->getId();
+        $this->view->grade = $embalagemEntity->getProduto()->getGrade();
+        $this->view->descricao = $embalagemEntity->getProduto()->getDescricao();
+        $this->view->embalagem = $embalagemEntity->getDescricao() . "(" . $embalagemEntity->getQuantidade() . ")";
+        $this->view->fator = $embalagemEntity->getQuantidade();
+        $this->view->idVolume = $idVolume;
+        $this->view->idMapa = $idMapa;
+        $this->view->codBarras = $codBarras;
+
+        if (isset($qtd) && ($qtd > 0)) {
+            $this->addFlashMessage('info',$embalagemEntity->getQuantidade() * $qtd);
+        } else {
+            $this->addFlashMessage('info','Informe uma Quantidade');
+        }
     }
 
     public function tipoConferenciaAction()
@@ -101,6 +235,8 @@ class Mobile_ExpedicaoController extends Action
 
         $this->view->placas = $placas;
     }
+
+
 
     protected function validacaoEtiqueta($codigoBarras)
     {
