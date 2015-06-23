@@ -988,10 +988,16 @@ class ExpedicaoRepository extends EntityRepository
                                       INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO '.$cond.' '.$whereSubQuery.')
                               GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    CASE WHEN SUM(CASE WHEN P.IND_ETIQUETA_MAPA_GERADO = \'N\' THEN 1 ELSE 0 END) > 0 THEN \'SIM\' ELSE \'\' END AS IMPRIMIR
+                                    CASE WHEN (SUM(CASE WHEN P.IND_ETIQUETA_MAPA_GERADO = \'N\' THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\' ELSE \'\' END AS IMPRIMIR
                                FROM CARGA C
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                              GROUP BY COD_EXPEDICAO) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
+                               LEFT JOIN (SELECT C.COD_EXPEDICAO, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                            FROM ETIQUETA_SEPARACAO ES
+                                            LEFT JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                                            LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                                           WHERE COD_STATUS = 522 GROUP BY C.COD_EXPEDICAO) PED ON PED.COD_EXPEDICAO = C.COD_EXPEDICAO
+                               LEFT JOIN (SELECT COD_EXPEDICAO, COUNT(COD_MAPA_SEPARACAO) as QTD FROM MAPA_SEPARACAO WHERE COD_STATUS = 522 GROUP BY COD_EXPEDICAO ) MAP ON MAP.COD_EXPEDICAO = C.COD_EXPEDICAO
+                              GROUP BY C.COD_EXPEDICAO, MAP.QTD, PED.QTD) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
@@ -1568,6 +1574,34 @@ class ExpedicaoRepository extends EntityRepository
         $result = $this->getEntityManager()->getConnection()->query($dql)->fetch(\PDO::FETCH_ASSOC);
 
         return $result;
+    }
+
+    public function getQtdMapasPendentesImpressao($codExpedicao){
+        $SQL = "SELECT COUNT(COD_MAPA_SEPARACAO) as QTD
+                  FROM MAPA_SEPARACAO
+                 WHERE COD_STATUS = 522
+                   AND COD_EXPEDICAO = " . $codExpedicao;
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
+        if (count($result) >0) {
+            return $result['QTD'];
+        } else {
+            return 0;
+        }
+    }
+
+    public function getQtdEtiquetasPendentesImpressao($codExpedicao){
+        $SQL = "SELECT COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                  FROM ETIQUETA_SEPARACAO ES
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                 WHERE COD_STATUS = 522
+                   AND C.COD_EXPEDICAO = " . $codExpedicao;
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
+        if (count($result) >0) {
+            return $result['QTD'];
+        } else {
+            return 0;
+        }
     }
 
 }

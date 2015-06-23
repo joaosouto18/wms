@@ -63,9 +63,19 @@ class Expedicao_EtiquetaController  extends Action
             $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas);
         }
 
-        $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
-        $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
-        $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta;
+        $linkEtiqueta = "";
+        $linkMapa = "";
+        if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0)
+            $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
+        if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)
+            $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
+
+            if (($linkMapa != "") &&($linkEtiqueta != "")) {
+                $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta;
+            } else {
+                $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta;
+            }
+
         $this->addFlashMessage('success', $mensagem );
         $this->_redirect('/expedicao');
 
@@ -195,6 +205,8 @@ class Expedicao_EtiquetaController  extends Action
         $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
 
         if (count($pedidosProdutos) == 0) {
+            if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)  return;
+            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) return;
             $cargas = implode(',',$cargas);
             $this->addFlashMessage('error', 'Pedidos não encontrados na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
             $this->_redirect('/expedicao');
