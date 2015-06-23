@@ -85,8 +85,17 @@ class Expedicao_EtiquetaController  extends Action
         $central        = $this->getRequest()->getParam('central');
         $idExpedicao    = $this->getRequest()->getParam('id');
         $tipo    = $this->getRequest()->getParam('tipo');
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
 
         if ($tipo == "mapa") {
+            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
+                $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
+                $mapa->imprimir($idExpedicao);
+            } else {
+                $this->addFlashMessage('info', 'Todos os mapas ja foram impressos');
+                $this->_redirect('/expedicao');
+            }
 
         }
         if ($tipo == "etiqueta") {
