@@ -70,7 +70,7 @@ class EnderecoRepository extends EntityRepository
         }
 
         $andContagem = null;
-        if ($numContagem != null) {
+        if (isset($numContagem)) {
             $andContagem = " AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem." AND IE.INVENTARIADO IS NULL ";
         }
 
@@ -98,6 +98,8 @@ class EnderecoRepository extends EntityRepository
          $andRua
          ORDER BY DE.DSC_DEPOSITO_ENDERECO
          ";
+
+        echo $sql;
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
