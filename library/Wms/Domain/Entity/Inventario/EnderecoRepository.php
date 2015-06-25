@@ -70,13 +70,19 @@ class EnderecoRepository extends EntityRepository
         }
 
         $andContagem = null;
-        if ($numContagem != null) {
+        if (isset($numContagem)) {
             $andContagem = " AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem." AND IE.INVENTARIADO IS NULL ";
         }
 
-        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM, IE.DIVERGENCIA, IE.COD_INVENTARIO_ENDERECO AS codInvEndereco,
+        $campos = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM, IE.DIVERGENCIA, IE.COD_INVENTARIO_ENDERECO AS codInvEndereco,
          MAXCONT.DSC_PRODUTO, MAXCONT.DSC_GRADE, MAXCONT.COMERCIALIZACAO,
-          CASE WHEN IE.DIVERGENCIA = 1 THEN 'DIVERGENCIA' WHEN IE.INVENTARIADO = 1 THEN 'INVENTARIADO' ELSE 'PENDENTE' END SITUACAO
+          CASE WHEN IE.DIVERGENCIA = 1 THEN 'DIVERGENCIA' WHEN IE.INVENTARIADO = 1 THEN 'INVENTARIADO' ELSE 'PENDENTE' END SITUACAO ";
+
+        if (isset($params['campos']) && $params['campos'] != null) {
+            $campos = $params['campos'];
+        }
+
+        $sql = "$campos
           FROM INVENTARIO_ENDERECO IE
           LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
           LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, NVL(PV.DSC_VOLUME,PE.DSC_EMBALAGEM) COMERCIALIZACAO
@@ -92,6 +98,8 @@ class EnderecoRepository extends EntityRepository
          $andRua
          ORDER BY DE.DSC_DEPOSITO_ENDERECO
          ";
+
+        echo $sql;
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

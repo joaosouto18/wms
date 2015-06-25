@@ -124,6 +124,9 @@ class Expedicao_OsController extends Action
             $percentualConclusao = ($qtdConferidas / $qtdEtiqueta) * 100;
         }
 
+        $qtdTotalVolumePatrimonio = $ExpedicaoRepo->qtdTotalVolumePatrimonio($idExpedicao);
+        $qtdConferidaVolumePatrimonio = $ExpedicaoRepo->qtdConferidaVolumePatrimonio($idExpedicao);
+
         $this->view->idExpedicao         = $idExpedicao;
         $this->view->expedicao           = $ExpedicaoRepo->find($idExpedicao);
         $this->view->qtdEtiquetas        = $qtdEtiqueta;
@@ -132,6 +135,8 @@ class Expedicao_OsController extends Action
         $this->view->percentualConclusao = number_format($percentualConclusao,2) . '%';
         $this->view->status              = $resumoConferencia['sigla'];
         $this->view->dataInicio          = $resumoConferencia['dataInicio']->format('d/m/Y H:i:s');
+        $this->view->qtdTotalVolumePatrimonio = $qtdTotalVolumePatrimonio[0]['qtdTotal'];
+        $this->view->qtdConferidaVolumePatrimonio = $qtdConferidaVolumePatrimonio[0]['qtdConferida'];
 
         $resumoByPlacaCarga = $EtiquetaSeparacaoRepo->getCountGroupByCentralPlaca($idExpedicao);
         foreach ($resumoByPlacaCarga as $key => $resumo) {

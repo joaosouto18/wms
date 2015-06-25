@@ -689,6 +689,7 @@ class PaleteRepository extends EntityRepository
         $paleteEn->setImpresso("N");
 
         $this->getEntityManager()->persist($paleteEn);
+        $this->_em->flush();
     }
 
     public function alocaEnderecoPalete($idPalete, $idEndereco) {
@@ -955,17 +956,32 @@ class PaleteRepository extends EntityRepository
 
     public function realizaTroca($recebimento, array $umas)
     {
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        $usuarioEn = $usuarioRepo->find($idUsuario);
+
         foreach($umas as $uma)
         {
             $entity = $this->find($uma);
             $entRecebimento = $this->_em->getReference('wms:Recebimento', $recebimento);
-            if ($entity->getDepositoEndereco() != null) {
-                $entStatus = $this->_em->getReference('wms:Util\Sigla', Palete::STATUS_ENDERECADO);
-            } else {
-                $entStatus = $this->_em->getReference('wms:Util\Sigla', Palete::STATUS_EM_ENDERECAMENTO);
-            }
-            $entity->setStatus($entStatus);
+            $entity->setStatus($entity->getStatus());
             $entity->setRecebimento($entRecebimento);
+
+            if ($entRecebimento->getStatus()->getId() == RecebimentoEntity::STATUS_FINALIZADO) {
+                /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+                $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+                $reservaEstoqueEnderecamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
+                $reservaEstoque = $reservaEstoqueEnderecamentoRepo->findOneBy(array('palete'=> $uma));
+
+                $reservaEstoqueEn = $reservaEstoque->getReservaEstoque();
+                if ($reservaEstoqueEn->getAtendida() == 'N') {
+                    $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,"E",$uma,$usuarioEn);
+                }
+
+            }
+
             $this->_em->persist($entity);
         }
         try {
@@ -983,7 +999,7 @@ class PaleteRepository extends EntityRepository
             ->from("wms:Enderecamento\Palete", "pa")
             ->innerJoin('pa.unitizador', 'u')
             ->innerJoin('pa.recebimento', 'receb')
-            ->innerJoin('receb.status', 'sigla')
+            ->innerJoin('pa.status', 'sigla')
             ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = pa.id')
             ->leftJoin('pa.depositoEndereco', 'de')
             ->setParameter('recebimento', $params['id'])

@@ -236,7 +236,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('es.codBarras, es.codCargaExterno, p.descricao, es.codProduto, es.grade');
+            ->orderBy('es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
 
         $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->findOneBy(array('id'=>$idExpedicao));
         if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {

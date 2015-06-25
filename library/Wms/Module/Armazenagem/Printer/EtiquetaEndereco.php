@@ -31,12 +31,22 @@ class EtiquetaEndereco extends Pdf
 
             switch ($modelo) {
                 case 1:
-                    $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
-                    $this->layoutModelo1($produto,$codBarras);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    foreach ($produtos as $produto){
+                        $this->layoutModelo1($produto,$codBarras);
+                    }
+                    if (count($produtos) <= 0){
+                        $this->layoutModelo1(null,$codBarras);
+                    }
                     break;
                 case 2:
-                    $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
-                    $this->layoutModelo2($produto,$codBarras);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    foreach ($produtos as $produto){
+                        $this->layoutModelo2($produto,$codBarras);
+                    }
+                    if (count($produtos) <= 0){
+                        $this->layoutModelo2(null,$codBarras);
+                    }
                     break;
                 case 3:
                     $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$codBarras));
@@ -103,9 +113,9 @@ class EtiquetaEndereco extends Pdf
             $dscGrade = "";
             $idProduto = "";
         } else {
-            $idProduto = $produto[0]['codProduto'];
-            $dscProduto = utf8_decode($produto[0]['descricao']);
-            $dscGrade  = utf8_decode($produto[0]['grade']);
+            $idProduto = $produto['codProduto'];
+            $dscProduto = utf8_decode($produto['descricao']);
+            $dscGrade  = utf8_decode($produto['grade']);
         }
 
         $lenCodBarras      = 95;
@@ -141,9 +151,9 @@ class EtiquetaEndereco extends Pdf
             $dscGrade = "";
             $idProduto = "";
         } else {
-            $idProduto = $produto[0]['codProduto'];
-            $dscProduto = utf8_decode($produto[0]['descricao']);
-            $dscGrade  = utf8_decode($produto[0]['grade']);
+            $idProduto = $produto['codProduto'];
+            $dscProduto = utf8_decode($produto['descricao']);
+            $dscGrade  = utf8_decode($produto['grade']);
         }
 
         $lenCodBarras      = 75;

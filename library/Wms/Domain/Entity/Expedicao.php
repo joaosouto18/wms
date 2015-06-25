@@ -74,6 +74,11 @@ class Expedicao
      */
     protected $codDeposito;
 
+    /**
+     * @column(name="TIPO_FECHAMENTO", type="string", length=1, nullable=false)
+     */
+    protected $tipoFechamento;
+
     public function setStatus($status)
     {
         $this->status = $status;
@@ -152,6 +157,22 @@ class Expedicao
     public function getCentralEntregaParcFinalizada()
     {
         return $this->centralEntregaParcFinalizada;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoFechamento()
+    {
+        return $this->tipoFechamento;
+    }
+
+    /**
+     * @param mixed $tipoFechamento
+     */
+    public function setTipoFechamento($tipoFechamento)
+    {
+        $this->tipoFechamento = $tipoFechamento;
     }
 
 }

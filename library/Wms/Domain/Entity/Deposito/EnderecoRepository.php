@@ -317,10 +317,16 @@ class EnderecoRepository extends EntityRepository
         return $produto;
     }
 
-
-    public function getProdutoByEndereco($dscEndereco, $unico = true) {
+    /**
+     * @param $dscEndereco
+     * @param bool $unico
+     * @param bool $picking | true pega endereço do tipo picking
+     * @return array
+     */
+    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
+    {
         $em = $this->getEntityManager();
-        $tempEndereco = "a";
+        $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
 
         if (strlen($dscEndereco) < 8) {
             $rua = 0;
@@ -328,7 +334,6 @@ class EnderecoRepository extends EntityRepository
             $nivel = 0;
             $apartamento = 0;
         } else {
-            //var_dump(str_replace('.','',$dscEndereco));exit;
             $dscEndereco = str_replace('.','',$dscEndereco);
             if (strlen($dscEndereco) == 8){
                 $tempEndereco = "0" . $dscEndereco;
@@ -351,6 +356,11 @@ class EnderecoRepository extends EntityRepository
             ->andWhere("e.predio = $predio")
             ->andWhere("e.nivel = $nivel")
             ->andWhere("e.apartamento = $apartamento");
+
+        if ($picking == true) {
+            $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
+        }
+
         if ($unico == true) {
             $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
         } else {
@@ -368,6 +378,11 @@ class EnderecoRepository extends EntityRepository
                 ->andWhere("e.predio = $predio")
                 ->andWhere("e.nivel = $nivel")
                 ->andWhere("e.apartamento = $apartamento");
+
+            if ($picking == true) {
+                $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
+            }
+
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
             } else {
@@ -381,6 +396,7 @@ class EnderecoRepository extends EntityRepository
     public function getEnderecoesDisponivesByParam($params)
     {
         $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $estruturaBlocado = \Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
         extract($params);
         $query = "
@@ -403,8 +419,9 @@ class EnderecoRepository extends EntityRepository
 		          ON LONGARINA.NUM_PREDIO = DE.NUM_PREDIO
                  AND LONGARINA.NUM_NIVEL  = DE.NUM_NIVEL
                  AND LONGARINA.NUM_RUA    = DE.NUM_RUA
-          WHERE DE.COD_CARACTERISTICA_ENDERECO  != $idCaracteristicaEndereco AND DE.IND_ATIVO = 'S'
-        ";
+          WHERE DE.IND_ATIVO = 'S'
+          AND ((DE.COD_CARACTERISTICA_ENDERECO  != $idCaracteristicaEndereco) OR (DE.COD_TIPO_EST_ARMAZ = $estruturaBlocado))
+                  ";
 
         if (!empty($unitizador)) {
             $unitizadorEn = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador")->find($unitizador);

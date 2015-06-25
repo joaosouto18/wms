@@ -18,12 +18,12 @@ class Mobile_ExpedicaoController extends Action
                 'label' => 'CONF. EXPEDIÇÃO',
             ),
             2 => array(
-                'url' => 'ordem-servico/centrais-entrega/transbordo/1',
-                'label' => 'CONF. TRANSBORDO',
-            ),
-            3 => array (
                 'url' => 'ordem-servico/recebimento-transbordo',
                 'label' => 'RECB. TRANSBORDO',
+            ),
+            3 => array (
+                'url' => 'ordem-servico/centrais-entrega/transbordo/1',
+                'label' => 'CONF. TRANSBORDO',
             ),
             4 => array (
                 'url' => 'onda-ressuprimento/listar-ondas',
@@ -79,7 +79,7 @@ class Mobile_ExpedicaoController extends Action
         $idExpedicao      = $request->getParam('idExpedicao');
         $central          = $sessao->centralSelecionada;
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true);
+        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
         } else if ($result==0) {
@@ -652,7 +652,7 @@ class Mobile_ExpedicaoController extends Action
 
         if ($obrigaBiparEtiqueta == 'S') {
             $conferido = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_CONFERIDO, "Array", $placa);
-            if ($conferido > 0) {
+            if (count($conferido) > 0) {
                 $result = $conferido;
             } else {
                 $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO, "Array", $placa);
