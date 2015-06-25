@@ -99,8 +99,6 @@ class EnderecoRepository extends EntityRepository
          ORDER BY DE.DSC_DEPOSITO_ENDERECO
          ";
 
-        echo $sql;
-
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
