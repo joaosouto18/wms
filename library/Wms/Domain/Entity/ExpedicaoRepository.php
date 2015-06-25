@@ -1251,15 +1251,6 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                             AND es1.codStatus NOT IN(524,525)
                           GROUP BY c1.codExpedicao
                           ) as qtdEtiquetas")
-            ->addSelect("(
-                         SELECT COUNT(es2.id)
-                           FROM wms:Expedicao\EtiquetaSeparacao es2
-                          LEFT JOIN es2.pedido ped2
-                          LEFT JOIN ped2.carga c2
-                          WHERE c2.codExpedicao = e.id
-                            AND es2.codStatus in ( 526, 531, 532 )
-                          GROUP BY c2.codExpedicao
-                          ) as qtdConferidas")
             ->where('e.id = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
 
