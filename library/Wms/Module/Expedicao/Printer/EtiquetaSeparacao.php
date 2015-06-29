@@ -55,7 +55,6 @@ class EtiquetaSeparacao extends Pdf
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-		$this->AddPage();
         foreach($etiquetas as $etiqueta) {
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
         }
