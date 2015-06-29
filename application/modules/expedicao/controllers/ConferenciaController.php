@@ -18,7 +18,6 @@ class Expedicao_ConferenciaController extends Action
 
     public function finalizarAction()
     {
-//        var_dump($this->_getAllParams()); exit;
         $request = $this->getRequest();
         $params = $this->_getAllParams();
 
@@ -27,7 +26,7 @@ class Expedicao_ConferenciaController extends Action
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
             $centrais         = $request->getParam('centrais');
             $origin           = $request->getParam('origin');
-            $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 23, 'constante' => 'SENHA_FINALIZAR_EXPEDICAO'));
+            $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 3, 'constante' => 'SENHA_AUTORIZAR_DIVERGENCIA'));
             $senhaAutorizacao = $senhaAutorizacao->getValor();
             $submit           = $request->getParam('btnFinalizar');
 
@@ -42,7 +41,6 @@ class Expedicao_ConferenciaController extends Action
 
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
-                    //$expedicaoRepo->finalizacarga($idExpedicao);
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
                 } else {
                     $result = 'Senha informada não é válida';
@@ -50,22 +48,10 @@ class Expedicao_ConferenciaController extends Action
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],true, 'M');
             }
-
-            if (is_string($result)) {
-                $this->addFlashMessage('error', $result);
-            } else {
-                $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
-            }
-
             $this->_helper->json(array('result' => $result));
 
-            //var_dump($result); exit;
-
-//            if ($origin == "expedicao") {
-//                $this->_redirect('/expedicao');
-//            } else {
-//                $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
-//            }
+            
+            
         }
     }
 }
