@@ -70,6 +70,10 @@ class Expedicao extends Grid
                 'index' => 'prodSemEtiqueta',
             ))
             ->addColumn(array(
+                'label' => 'Percentual Conferencia',
+                'index' => 'PercConferencia',
+            ))
+            ->addColumn(array(
                 'label' => 'Status',
                 'index' => 'status',
             ))
@@ -189,6 +193,15 @@ class Expedicao extends Grid
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',
                 'actionName' => 'imprimir',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Declaração dos Volumes Patrimônio',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'declaracao-ajax',
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))

@@ -884,13 +884,13 @@ class EstoqueRepository extends EntityRepository
     public function getProdutosVolumesDivergentes()
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('e.codProduto as Codigo, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
+            ->select('e.codProduto as Codigo, e.grade as Grade, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
             ->from("wms:Enderecamento\Estoque", "e")
             ->innerJoin("e.produto", 'p')
             ->innerJoin("e.produtoVolume", 'v')
             ->where('e.produtoVolume IS NOT NULL')
-            ->groupBy('e.codProduto, p.descricao', 'v.id', 'v.descricao')
-            ->orderBy('e.codProduto', 'ASC');
+            ->groupBy('e.codProduto ','e.grade', 'p.descricao', 'v.id', 'v.descricao')
+            ->orderBy('e.codProduto, e.grade', 'ASC');
 
         $result = $dql->getQuery()->getArrayResult();
 
@@ -905,15 +905,14 @@ class EstoqueRepository extends EntityRepository
 
             if ($prodAnterior == "") {
                 $prodAnterior = $produto;
-
             } else {
-                if ($prodAnterior['Codigo'] == $produto['Codigo']) {
+                if (($prodAnterior['Codigo'] == $produto['Codigo']) && ($prodAnterior['Grade'] == $produto['Grade'])) {
                     $qtdVolumes = $qtdVolumes + 1;
                     if ($prodAnterior['Qtd'] != $produto['Qtd']) {
                         array_push($produtosDivergentes, $produto);
                     }
                 } else {
-                    $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $prodAnterior['Codigo']));
+                    $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $prodAnterior['Codigo'], 'grade' => $prodAnterior['Grade']));
                     if ($produtoEn->getNumVolumes() != $qtdVolumes) {
                         $produtoFaltante = $prodAnterior;
                         $produtoFaltante['Volume'] = 'Faltando Volume';

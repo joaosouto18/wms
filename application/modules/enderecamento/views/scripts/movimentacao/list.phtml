@@ -13,7 +13,18 @@
 </script>
 
 <table class="gTable ">
-    <caption>Estoque do produto - Picking cadastrado: <?php echo $this->endPicking; ?></caption>
+    <?php
+    $ends = '';
+    if (isset($this->endPicking) && !empty($this->endPicking)) :
+        foreach ($this->endPicking as $endsPicking) {
+            $ends .= $endsPicking.' - ';
+        } ?>
+
+        <?php if (isset($this->enderecos) && empty($this->enderecos)) : ?>
+            <caption>Estoque do produto - Picking cadastrado: <?php echo $ends; ?></caption>
+        <?php endif; ?>
+    <?php endif; ?>
+
     <tbody>
     <?php $codProdutoAnterior = null;
     $gradeAnterior = null;
@@ -22,8 +33,10 @@
     $qtdEstoque = 0;
     $qtdReservaEntrada = 0;
     $qtdReservaSaida = 0;
-    foreach($this->enderecos as $endereco) {
-        if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
+    $count = 0;
+
+    foreach($this->enderecos as $key => $endereco) {
+       if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
 
             if ($codProdutoAnterior != NULL) {
                 ?><tr >
@@ -39,11 +52,16 @@
             $qtdReservaEntrada = 0;
             $qtdReservaSaida = 0;
 
-            ?><tr class ="gTTitle">
+            ?>
+
+           <tr class ="gTTitle">
             <td><b><?php echo "CÓDIGO: ".$endereco['COD_PRODUTO']?></b></td>
             <td><b><?php echo "GRADE: ". $endereco['DSC_GRADE']?></b></td>
             <td colspan="3"><b><?php echo "PRODUTO: ".$endereco['DSC_PRODUTO']?></b></td>
-            <td colspan="4"><b><?php echo "VOLUME: ". $endereco['VOLUME']?></b></td>
+            <td colspan="2"><b><?php echo "VOLUME: ". $endereco['VOLUME']?></b></td>
+           <?php if (isset($this->endPicking[$count])) : ?>
+                <td colspan="2"><b><?php echo "PICKING: ". $this->endPicking[$count]; ?></b></td>
+           <?php endif; ?>
             </tr>
 
             <tr>
@@ -57,6 +75,7 @@
                 <td><b>Qtd.Estoque</b></td>
             </tr>
         <?php
+           $count++;
         }
         ?><tr>
         <td><?php echo $endereco['ENDERECO']?></td>

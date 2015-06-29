@@ -429,7 +429,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -460,7 +460,7 @@ class ExpedicaoRepository extends EntityRepository
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
             }
 
-            $result = $this->finalizar($idExpedicao,$central);
+            $result = $this->finalizar($idExpedicao,$central, $tipoFinalizacao);
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
@@ -503,7 +503,7 @@ class ExpedicaoRepository extends EntityRepository
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
     {
         if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
 
@@ -515,11 +515,11 @@ class ExpedicaoRepository extends EntityRepository
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
         $expedicaoEntity->setDataFinalizacao(new \DateTime());
+        $expedicaoEntity->setTipoFechamento($tipoFinalizacao);
 
         $this->finalizeOSByExpedicao($expedicaoEntity->getId());
         $pedidoRepo->finalizaPedidosByCentral($centralEntrega,$expedicaoEntity->getId());
@@ -527,7 +527,20 @@ class ExpedicaoRepository extends EntityRepository
         $pedidosNaoConferidos = $pedidoRepo->findPedidosNaoConferidos($expedicaoEntity->getId());
         if ($pedidosNaoConferidos == null) {
             $novoStatus = Expedicao::STATUS_FINALIZADO;
-            $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
+            switch ($tipoFinalizacao) {
+                case 'C':
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via coletor", $expedicaoEntity->getId());
+                    break;
+                case 'M':
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop", $expedicaoEntity->getId());
+                    break;
+                case 'S':
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização", $expedicaoEntity->getId());
+                   break;
+                default:
+                    $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
+                    break;
+            }
         } else {
             $novoStatus = Expedicao::STATUS_PARCIALMENTE_FINALIZADO;
             $andamentoRepo->save("Expedição Parcialmente Finalizada com Sucesso", $expedicaoEntity->getId());
@@ -966,7 +979,6 @@ class ExpedicaoRepository extends EntityRepository
             $andSub=" and ";
         }
 
-
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
 
@@ -980,9 +992,27 @@ class ExpedicaoRepository extends EntityRepository
                        P.QTD AS "prodSemEtiqueta",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
-                       I.ITINERARIOS AS "itinerario"
+                       I.ITINERARIOS AS "itinerario",
+                       C.CONFERIDA AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN
+
+                   (SELECT
+CAST(C.Etiqueta * 100 / (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS NUMBER(6,2)) AS Conferida, C.COD_EXPEDICAO
+FROM ETIQUETA_SEPARACAO ESEP
+INNER JOIN PEDIDO P ON P.COD_PEDIDO = ESEP.COD_PEDIDO
+INNER JOIN CARGA ON CARGA.COD_CARGA = P.COD_CARGA
+INNER JOIN (
+SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) AS Etiqueta, C.COD_EXPEDICAO
+FROM ETIQUETA_SEPARACAO ES
+INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+WHERE ES.COD_STATUS IN(526, 531, 532) GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = CARGA.COD_EXPEDICAO
+WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
+
+
+                   C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C '.$cond.' '.$whereSubQuery.'
@@ -1048,6 +1078,7 @@ class ExpedicaoRepository extends EntityRepository
                           S.DSC_SIGLA,
                           P.QTD,
                           PESO.NUM_PESO,
+                          C.CONFERIDA,
                           PESO.NUM_CUBAGEM,
                           I.ITINERARIOS
                  ORDER BY E.COD_EXPEDICAO DESC
@@ -1450,27 +1481,31 @@ class ExpedicaoRepository extends EntityRepository
 
     public function getProdutosSemEstoqueByExpedicao($idExpedicao) {
 
-            $sql = "SELECT * FROM (
-                      SELECT P.COD_PRODUTO as CODIGO,
-                             P.DSC_GRADE as GRADE,
-                             P.DSC_PRODUTO as PRODUTO,
-                             NVL (PV.DSC_VOLUME, 'PRODUTO UNITARIO') as VOLUME,
-                             NVL(E.QTD,0) + SUM(REP.QTD_RESERVADA) as SALDO_NEGATIVO
-                      FROM RESERVA_ESTOQUE_EXPEDICAO REEXP
-                      LEFT JOIN RESERVA_ESTOQUE RE ON REEXP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                      LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                      LEFT JOIN ESTOQUE E ON E.COD_PRODUTO = REP.COD_PRODUTO
-                                         AND E.DSC_GRADE = REP.DSC_GRADE
-                                         AND E.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
-                                         AND ((REP.COD_PRODUTO_EMBALAGEM IS NOT NULL AND E.COD_PRODUTO_EMBALAGEM IS NOT NULL)
-                                          OR (REP.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME))
-                      LEFT JOIN PRODUTO P ON P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE
-                      LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = REP.COD_PRODUTO AND PV.DSC_GRADE = REP.DSC_GRADE
-                     WHERE REEXP.COD_EXPEDICAO = " . $idExpedicao . "
-                       AND RE.IND_ATENDIDA = 'N'
-                     GROUP BY P.COD_PRODUTO, P.DSC_GRADE, PV.COD_PRODUTO_VOLUME, PV.DSC_VOLUME,E.QTD,P.DSC_PRODUTO
-                     ORDER BY P.COD_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME)
-                     WHERE SALDO_NEGATIVO <0";
+        $sql = "SELECT RESERVA.CODIGO,
+                RESERVA.GRADE,
+                PROD.DSC_PRODUTO PRODUTO,
+                RESERVA.DSC_VOLUME VOLUME,
+                DE.DSC_DEPOSITO_ENDERECO ENDERECO,
+                (RESERVA.QTDRESERVADA * -1) QTD_RESERVADA,
+                (ESTOQUE.QTDESTOQUE - RESERVA.QTDRESERVADA) SALDO_NEGATIVO
+                    FROM (SELECT REP.COD_PRODUTO AS CODIGO, REP.DSC_GRADE GRADE,
+                    (SUM(REP.QTD_RESERVADA)) QTDRESERVADA,
+                    PV.COD_DEPOSITO_ENDERECO ENDERECO,
+                    PV.DSC_VOLUME,
+                    NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
+                          FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                          INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                          INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                          LEFT JOIN PRODUTO_VOLUME PV ON REP.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
+                          WHERE REE.COD_EXPEDICAO = $idExpedicao AND RE.IND_ATENDIDA = 'N'
+                          GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, PV.COD_DEPOSITO_ENDERECO, PV.DSC_VOLUME, PV.COD_PRODUTO_VOLUME) RESERVA
+                    LEFT JOIN (SELECT SUM(E.QTD) QTDESTOQUE, E.COD_PRODUTO CODIGO, E.DSC_GRADE GRADE, E.COD_DEPOSITO_ENDERECO ENDERECO, NVL(E.COD_PRODUTO_VOLUME,0) as VOLUME
+                          FROM ESTOQUE E
+                          GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) ESTOQUE ON ESTOQUE.CODIGO = RESERVA.CODIGO AND ESTOQUE.GRADE = RESERVA.GRADE
+                          AND ESTOQUE.ENDERECO = RESERVA.ENDERECO AND ESTOQUE.VOLUME = RESERVA.VOLUME
+                          LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = RESERVA.CODIGO AND PROD.DSC_GRADE = RESERVA.GRADE
+                          LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RESERVA.ENDERECO
+                    WHERE ESTOQUE.QTDESTOQUE - RESERVA.QTDRESERVADA < 0";
 
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -1497,7 +1532,7 @@ class ExpedicaoRepository extends EntityRepository
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRIÇÃO, i.DSC_ITINERARIO as ITINERÁRIO, pes.NOM_PESSOA as CLIENTE
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
                 INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                 INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
@@ -1511,6 +1546,27 @@ class ExpedicaoRepository extends EntityRepository
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
+
+    }
+
+    public function qtdTotalVolumePatrimonio($idExpedicao)
+    {
+        $sql = $this->_em->createQueryBuilder()
+            ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdTotal')
+            ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
+            ->where("evp.expedicao = $idExpedicao");
+
+        return $sql->getQuery()->getResult();
+    }
+
+    public function qtdConferidaVolumePatrimonio($idExpedicao)
+    {
+        $sql = $this->_em->createQueryBuilder()
+            ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdConferida')
+            ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
+            ->where("evp.expedicao = $idExpedicao AND evp.dataConferencia is not null");
+
+        return $sql->getQuery()->getResult();
 
     }
 

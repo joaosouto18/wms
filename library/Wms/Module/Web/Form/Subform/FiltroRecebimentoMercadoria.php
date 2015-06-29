@@ -83,11 +83,6 @@ class FiltroRecebimentoMercadoria extends \Wms\Module\Web\Form
         if ($this->checkAllEmpty())
             return false;
 
-        if (($dataInicial1 && !$dataInicial2) || ($dataFinal1 && !$dataFinal2) || (!$dataInicial1 && $dataInicial2) || (!$dataFinal1 && $dataFinal2)) {
-            $this->addError('Favor preencher corretamente o intervalo de datas');
-           return false;
-        }
-
         return true;
     }
 

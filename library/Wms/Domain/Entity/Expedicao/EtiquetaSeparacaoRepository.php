@@ -235,7 +235,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('es.codBarras, es.codCargaExterno, p.descricao, es.codProduto, es.grade');
+            ->orderBy('es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
 
         if ($tipoResult == "Array") {
             $result = $dql->getQuery()->getResult();
