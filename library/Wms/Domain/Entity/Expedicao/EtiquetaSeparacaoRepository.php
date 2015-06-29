@@ -189,7 +189,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
-    public function getPendenciasByExpedicaoAndStatus($idExpedicao,$status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL, $carga = NULL) {
+    public function getPendenciasByExpedicaoAndStatus($idExpedicao, $status, $tipoResult = "Array", $placaCarga = NULL, $transbordo = NULL, $embalado = NULL, $carga = NULL) {
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select("es.codBarras,
                       es.cliente,
@@ -236,6 +237,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $dql->setParameter('idExpedicao', $idExpedicao)
             ->orderBy('es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
+
+        $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->findOneBy(array('id'=>$idExpedicao));
+        if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+            $dql->leftJoin("wms:Expedicao\EtiquetaConferencia",'ec','WITH','ec.codEtiquetaSeparacao = es.codBarras');
+            $dql->andWhere("ec.status = " . Expedicao::STATUS_PRIMEIRA_CONFERENCIA);
+        }
 
         if ($tipoResult == "Array") {
             $result = $dql->getQuery()->getResult();
@@ -415,8 +422,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param int $status
      * @return int
      */
-    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null)
+    public function gerarEtiquetas(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $depositosPermitidos = null,$idExpedicao = null)
     {
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+        $etiquetaConferenciaRepo=$this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
         $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $status);
         $prodSemdados = 0;
 
@@ -446,9 +456,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($codReferencia != null) {
                             $arrayEtiqueta['codReferencia'] = $codReferencia;
-                            $this->save($arrayEtiqueta,$statusEntity);
+                            $codEtiqueta=$this->save($arrayEtiqueta,$statusEntity);
+
+                            if ($verificaReconferencia=='S'){
+                                $arrayEtiqueta['codEtiquetaSeparacao']=$codEtiqueta;
+                                $arrayEtiqueta['expedicao']=$this->_em->getReference('wms:Expedicao', $idExpedicao);
+                                $etiquetaConferenciaRepo->save($arrayEtiqueta,$statusEntity) ;
+                            }
                         } else {
                             $codReferencia = $this->save($arrayEtiqueta,$statusEntity);
+                            if ($verificaReconferencia=='S'){
+                                unset($arrayEtiqueta['codReferencia']);
+                                $arrayEtiqueta['codEtiquetaSeparacao']=$codReferencia;
+                                $arrayEtiqueta['expedicao']=$this->_em->getReference('wms:Expedicao', $idExpedicao);
+                                $etiquetaConferenciaRepo->save($arrayEtiqueta,$statusEntity) ;
+                            }
                         }
 
                         unset($arrayEtiqueta);
@@ -476,7 +498,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $arrayEtiqueta['produto']           = $produtoEntity;
                     $arrayEtiqueta['grade']             = $produtoEntity;
                     $arrayEtiqueta['pedido']            = $pedidoEntity;
-                    $this->save($arrayEtiqueta,$statusEntity);
+                    $codEtiqueta=$this->save($arrayEtiqueta,$statusEntity);
+                    if ($verificaReconferencia=='S'){
+                        unset($arrayEtiqueta['codReferencia']);
+                        $arrayEtiqueta['codEtiquetaSeparacao']=$codEtiqueta;
+                        $arrayEtiqueta['expedicao']=$this->_em->getReference('wms:Expedicao', $idExpedicao);
+                        $etiquetaConferenciaRepo->save($arrayEtiqueta,$statusEntity) ;
+                    }
                     unset($arrayEtiqueta);
                 }
             }
@@ -507,8 +535,37 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         } else {
             $novoStatus = EtiquetaSeparacao::STATUS_CONFERIDO;
         }
-
         $this->finalizaEtiquetaByStatus($idExpedicao, EtiquetaSeparacao::STATUS_ETIQUETA_GERADA , $novoStatus, $central);
+        $this->_em->flush();
+
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+        if ($verificaReconferencia=='S'){
+            $idStatus=$expedicao->getStatus()->getId();
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+            $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
+            if (($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA) || ($idStatus==Expedicao::STATUS_EM_SEPARACAO)){
+                $novoStatus = Expedicao::STATUS_PRIMEIRA_CONFERENCIA;
+                $etiquetas = $this->getEtiquetasByExpedicao($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, $central);
+                foreach($etiquetas as $etiqueta) {
+                    $etiquetaEntity = $EtiquetaConfRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta['codBarras']));
+                    $this->alteraStatus($etiquetaEntity, $novoStatus);
+                }
+
+            }
+            if ($idStatus==Expedicao::STATUS_SEGUNDA_CONFERENCIA){
+                $novoStatus = Expedicao::STATUS_SEGUNDA_CONFERENCIA;
+                $etiquetas = $this->getEtiquetasByExpedicao($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, $central);
+                foreach($etiquetas as $etiqueta) {
+                    $etiquetaEntity = $EtiquetaConfRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta['codBarras']));
+                    if ($etiquetaEntity->getStatus()->getId() == Expedicao::STATUS_PRIMEIRA_CONFERENCIA) {
+                        $this->alteraStatus($etiquetaEntity, $novoStatus);
+                    }
+                }
+
+            }
+        }
+
         $this->_em->flush();
     }
 

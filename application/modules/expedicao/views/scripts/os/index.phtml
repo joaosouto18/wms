@@ -1,38 +1,36 @@
 <form id="header-expedicao-os-form" class="header" action="">
-    <div>
-        <fieldset id="fieldset-expedicao">
-            <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
-            <table class="gTable">
-                <tbody>
-                <tr class = "">
-                    <td width=""><span><b>Expedicao</b></span></td>
-                    <td width=""><span><b>Status</b></span></td>
-                    <td width=""><span><b>Qtd. Etiquetas</b></span></td>
-                    <td width=""><span><b>Etq. Conferidas</b></span></td>
-                    <td width=""><span><b>Etq. Pendentes</b></span></td>
-                    <td width=""><span><b>Volumes</b></span></td>
-
-                    <td width=""><span><b>% Conferencia</b></span></td>
-                    <td width=""><span><b>Inicio</b></span></td>
-                    <td width=""><span><b>Fim</b></span></td>
-                </tr>
-                <tr>
-                    <td width = ""><span><?php echo $this->idExpedicao; ?></span></td>
-                    <td width = ""><span><?php echo $this->status; ?></span></td>
-                    <td width = ""><span><?php echo $this->qtdEtiquetas;?></span></td>
-                    <td width = ""><span><?php echo $this->qtdConferidas;?></span></td>
-                    <td width = ""><span><?php echo $this->qtdPendentes;?></span></td>
-                    <td width = ""><span><?php echo $this->qtdConferidaVolumePatrimonio.'/'.$this->qtdTotalVolumePatrimonio;?></span></td>
-
-                    <td width = ""><span><?php echo $this->percentualConclusao;?></span></td>
-                    <td width = ""><span><?php echo $this->dataInicio;?></span></td>
-                    <td width = ""><span><?php echo $this->dataFim;?></span></td>
-                </tr>
-                </tbody>
-            </table>
-        </fieldset>
-    </div>
-
+    <?php if (count($this->resumoPlacaCarga) > 0 && $this->expedicao->getStatus()->getId() != \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) : ?>
+        <div>
+            <fieldset id="fieldset-expedicao">
+                <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
+                <table class="gTable">
+                    <tbody>
+                    <tr class = "">
+                        <td width=""><span><b>Expedicao</b></span></td>
+                        <td width=""><span><b>Status</b></span></td>
+                        <td width=""><span><b>Qtd. Etiquetas</b></span></td>
+                        <td width=""><span><b>Etq. Conferidas</b></span></td>
+                        <td width=""><span><b>Etq. Pendentes</b></span></td>
+                        <td width=""><span><b>% Conferencia</b></span></td>
+                        <td width=""><span><b>Inicio</b></span></td>
+                        <td width=""><span><b>Fim</b></span></td>
+                    </tr>
+                    <tr>
+                        <td width = ""><span><?php echo $this->idExpedicao; ?></span></td>
+                        <td width = ""><span><?php echo $this->status; ?></span></td>
+                        <td width = ""><span><?php echo $this->qtdEtiquetas;?></span></td>
+                        <td width = ""><span><?php echo $this->qtdConferidas;?></span></td>
+                        <td width = ""><span><?php echo $this->qtdPendentes;?></span></td>
+                        <td width = ""><span><?php echo $this->percentualConclusao;?></span></td>
+                        <td width = ""><span><?php echo $this->dataInicio;?></span></td>
+                        <td width = ""><span><?php echo $this->dataFim;?></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+    <?php endif; ?>
+    
     <?php if (count($this->resumoPlacaCarga) > 0) : ?>
         <div>
             <fieldset id="fieldset-resumo-cargas">

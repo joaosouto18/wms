@@ -10,6 +10,20 @@
         else {
             $this->complemento = "";
         }
+
+        if ($this->reconfere == "S") {
+            if ($expedicao['codStatus'] == \Wms\Domain\Entity\Expedicao::STATUS_PRIMEIRA_CONFERENCIA) {
+                $this->complemento .= " - 1ªC";
+            }
+            if ($expedicao['codStatus'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO) {
+                $this->complemento .= " - 1ªC";
+            }
+            if ($expedicao['codStatus'] == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                $this->complemento .= " - 2ªC";
+            }
+        }
+
+        //$this->complemento = "";
     ?>
         <li>
             <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras', 'idExpedicao' => $expedicao['id'] )); ?>" title="<?php echo $expedicao['id'] ?>" >Cod. Exp. <?php echo $expedicao['id'] . ' - C:'. $expedicao['placaExpedicao'] . $this->complemento ?> </a>

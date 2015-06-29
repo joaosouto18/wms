@@ -15,6 +15,10 @@ class Expedicao_PendenciaController  extends Action
 
         if (is_null($placaCarga))    {
             $status = "522,523";
+            $expedicaoEn = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
+            if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                $status = "522,523,526";
+            }
         } else {
             $status = "522,523,526,532";
         }
@@ -55,9 +59,12 @@ class Expedicao_PendenciaController  extends Action
         $embalado    = $this->getRequest()->getParam('embalado');
         $tipo        = $this->getRequest()->getParam('tipo', null);
 
-
         if (is_null($placaCarga))    {
             $status = "522,523";
+            $expedicaoEn = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
+            if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                $status = "522,523,526";
+            }
         } else {
             $status = "522,523,526,532";
         }

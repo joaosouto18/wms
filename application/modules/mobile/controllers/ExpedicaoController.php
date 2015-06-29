@@ -82,6 +82,8 @@ class Mobile_ExpedicaoController extends Action
         $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
+        } else if ($result==0) {
+            $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
         } else {
             $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
         }
@@ -247,7 +249,7 @@ class Mobile_ExpedicaoController extends Action
         return $etiqueta;
     }
 
-    public function validaStatusEtiqueta($idExpedicao, $status, $sessaoColetor)
+    public function validaStatusEtiqueta($idExpedicao, $status, $sessaoColetor,$etiqueta=null)
     {
         $this->bloquearOs();
         $tipoConferencia    = $this->getRequest()->getParam('tipo-conferencia', null);
@@ -267,7 +269,33 @@ class Mobile_ExpedicaoController extends Action
                 break;
             case EtiquetaSeparacao::STATUS_CONFERIDO:
                 if ($sessaoColetor->parcialmenteFinalizado == false) {
-                    return false;
+
+                    $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
+                    if ($verificaReconferencia=='S'){
+                        $expedEntity=$this->_em->getReference('wms:Expedicao',$idExpedicao);
+                        $statusExped=$expedEntity->getStatus()->getId();
+
+                        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $etiquetaConfRepo */
+                        $etiquetaConfRepo  = $this->em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
+                        if ( $statusExped==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
+
+                            $resultado=$etiquetaConfRepo->getEtiquetaByCodBarras($idExpedicao,$etiqueta);
+
+                            if ($resultado[0]['codStatus']==Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
+                                return false;
+                        } else if ( $statusExped==Expedicao::STATUS_SEGUNDA_CONFERENCIA){
+
+                            $resultado=$etiquetaConfRepo->getEtiquetaByCodBarras($idExpedicao,$etiqueta);
+
+                            if ($resultado[0]['codStatus']==Expedicao::STATUS_SEGUNDA_CONFERENCIA)
+                                return false;
+                        }
+
+                    } else {
+                        return false;
+                    }
                 } else {
                     if ($obrigaRealizarRecebimento == 'S') {
                         $msg='Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido';
@@ -404,7 +432,7 @@ class Mobile_ExpedicaoController extends Action
     /**
      * @param $idEtiqueta
      */
-    protected function confereEtiqueta($idEtiqueta, $volume = null)
+    protected function confereEtiqueta($idEtiqueta, $volume = null,$idExpedicao=null)
     {
         $sessao = new \Zend_Session_Namespace('coletor');
 
@@ -412,18 +440,47 @@ class Mobile_ExpedicaoController extends Action
         $date = $date->format('Y-m-d H:i:s');
 
         if (isset($sessao->parcialmenteFinalizado) && $sessao->parcialmenteFinalizado == true) {
-            $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
-            $q->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
+            $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+            $q1->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
         } else {
-            $q = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
-            $q->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
+            $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
+            if ($verificaReconferencia == 'S') {
+                $expedEntity = $this->_em->getReference('wms:Expedicao',$idExpedicao);
+                $statusExped = $expedEntity->getStatus()->getId();
+
+                if ($statusExped == Expedicao::STATUS_PRIMEIRA_CONFERENCIA ){
+                    $q2 = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsPrimeiraConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
+                    $q2->setParameter('status', EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA);
+                    $q2->setParameter('dataConferencia', $date);
+
+                    $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+                    $q1->setParameter('dataConferencia', $date);
+                } else {
+                    $q2 = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsSegundaConferencia = :osID , es.dataReconferencia = :dataReconferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
+                    $q2->setParameter('status', EtiquetaSeparacao::STATUS_SEGUNDA_CONFERENCIA);
+                    $q2->setParameter('dataReconferencia', $date);
+
+                    $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+                }
+
+                $q2->setParameter('osID', $sessao->osID);
+                $q2->setParameter('idEtiqueta', $idEtiqueta);
+                $q2->setParameter('volumePatrimonio', $volume);
+                $q2->execute();
+
+            } else {
+                $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
+                $q1->setParameter('dataConferencia', $date);
+            }
+
+            $q1->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
         }
 
-        $q->setParameter('dataConferencia', $date);
-        $q->setParameter('osID', $sessao->osID);
-        $q->setParameter('idEtiqueta', $idEtiqueta);
-        $q->setParameter('volumePatrimonio', $volume);
-        $q->execute();
+        $q1->setParameter('osID', $sessao->osID);
+        $q1->setParameter('idEtiqueta', $idEtiqueta);
+        $q1->setParameter('volumePatrimonio', $volume);
+        $q1->execute();
     }
 
     public function buscarEtiquetasAction()
@@ -443,12 +500,13 @@ class Mobile_ExpedicaoController extends Action
         $etiqueta = $this->validacaoEtiqueta($etiquetaSeparacao);
 
         if ($etiqueta == false) {
+            $msg = "";
             if ($this->bloquearOs=='S'){
                 return false;
             }
         }
 
-        $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor);
+        $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
 
         if ($return == false) {
             if ($etiqueta[0]['status'] == 'EXPEDIDO TRANSBORDO') {
@@ -478,7 +536,7 @@ class Mobile_ExpedicaoController extends Action
         if ($sessaoColetor->parcialmenteFinalizado == true) {
             $obrigaBiparEtiqueta = $sessaoColetor->RecebimentoTransbordoObrigatorio;
             if ($obrigaBiparEtiqueta == 'N') {
-                $this->confereEtiqueta($etiquetaSeparacao, $volume);
+                $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
                 $this->addFlashMessage('success', 'Produto conferido com sucesso');
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('success', 'Produto conferido com sucesso');
@@ -513,7 +571,7 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        $this->confereEtiqueta($etiquetaSeparacao, $volume);
+        $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
 
         if ($this->_request->isXmlHttpRequest()) {
             $this->createXml('success', 'Etiqueta conferida com sucesso');
@@ -537,6 +595,13 @@ class Mobile_ExpedicaoController extends Action
             $this->view->mensagem = $this->_getParam('msg', null);
             $this->view->placa = $Expedicao->getPlaca();
             $this->view->idExpedicao = $Expedicao->getIdExpedicao();
+
+            $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->find($Expedicao->getIdExpedicao());
+            if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                $this->view->segundaConferencia = "S";
+            }else {
+                $this->view->segundaConferencia = "N";
+            }
 
             $url="/volume".$this->_getParam('volume', null)."/volume".$this->_getParam('volume', null)."/placa".$this->_getParam('placa', null)."/bloqueiaOS".$this->_getParam('bloqueiaOS', null);
 

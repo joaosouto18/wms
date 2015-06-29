@@ -434,6 +434,7 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
+        if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
 
         $pedidoProdutoSemEtiquetas = $this->findProdutosSemEtiquetasById($idExpedicao);
         if (count($pedidoProdutoSemEtiquetas) > 0) {
@@ -460,7 +461,38 @@ class ExpedicaoRepository extends EntityRepository
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
             }
 
-            $result = $this->finalizar($idExpedicao,$central, $tipoFinalizacao);
+            $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
+            if ($verificaReconferencia=='S'){
+                $idStatus=$expedicaoEn->getStatus()->getId();
+
+                /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+                $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+
+                if (($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA) || ($idStatus==Expedicao::STATUS_EM_SEPARACAO)) {
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idExpedicao, $central);
+
+                    if (count($numEtiquetas) > 0) {
+                        return 'Existem etiquetas pendentes de conferência nesta expedição';
+                    } else {
+                        /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
+                        $expedicaoEntity = $this->find($idExpedicao);
+
+                        $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
+                        $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
+                        $this->getEntityManager()->flush();
+                        $this->getEntityManager()->commit();
+                        return 0;
+                    }
+                } else {
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA, $idExpedicao, $central);
+                    if (count($numEtiquetas) > 0) {
+                        return 'Existem etiquetas pendentes de conferência nesta expedição';
+                    }
+                }
+            }
+            
+            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao);
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
@@ -536,7 +568,7 @@ class ExpedicaoRepository extends EntityRepository
                     break;
                 case 'S':
                     $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização", $expedicaoEntity->getId());
-                   break;
+                    break;
                 default:
                     $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
                     break;
@@ -548,10 +580,22 @@ class ExpedicaoRepository extends EntityRepository
 
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
         $this->alteraStatus($expedicaoEntity,$novoStatus);
+        $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
+        $this->getEntityManager()->flush();
+        return true;
+    }
+
+    public function efetivaReservaEstoqueByExpedicao($idExpedicao)
+    {
+        $expedicaoEntity = $this->find($idExpedicao);
+
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
         $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $expedicaoEntity->getId()));
-
 
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
@@ -562,9 +606,9 @@ class ExpedicaoRepository extends EntityRepository
                 $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,"E",$idExpedicao,$usuarioEn);
             }
         }
-        $this->getEntityManager()->flush();
-        return true;
+
     }
+
 
     public function liberarVolumePatrimonioByExpedicao($idExpedicao){
         $volumes = $this->getVolumesPatrimonioByExpedicao($idExpedicao);
@@ -979,6 +1023,7 @@ class ExpedicaoRepository extends EntityRepository
             $andSub=" and ";
         }
 
+
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
 
@@ -1187,7 +1232,8 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
      * @param $idExpedicao
      * @return mixed
      */
-    public function getResumoConferenciaByID ($idExpedicao){
+    public function getResumoConferenciaByID ($idExpedicao)
+    {
         $source = $this->_em->createQueryBuilder()
             ->select('e.id,
                       e.dataInicio,
@@ -1205,17 +1251,33 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                             AND es1.codStatus NOT IN(524,525)
                           GROUP BY c1.codExpedicao
                           ) as qtdEtiquetas")
-            ->addSelect("(
-                         SELECT COUNT(es2.id)
-                           FROM wms:Expedicao\EtiquetaSeparacao es2
-                          LEFT JOIN es2.pedido ped2
-                          LEFT JOIN ped2.carga c2
-                          WHERE c2.codExpedicao = e.id
-                            AND es2.codStatus in ( 526, 531, 532 )
-                          GROUP BY c2.codExpedicao
-                          ) as qtdConferidas")
             ->where('e.id = :idExpedicao')
             ->setParameter('idExpedicao', $idExpedicao);
+
+        $expedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $expedicaoEntity = $expedicaoRepo->find($idExpedicao);
+        if ($expedicaoEntity->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+            $source->addSelect("(
+             SELECT COUNT(es2.id)
+               FROM wms:Expedicao\EtiquetaConferencia es2
+              LEFT JOIN es2.pedido ped2
+              LEFT JOIN ped2.carga c2
+              WHERE c2.codExpedicao = e.id
+                AND es2.codStatus in ( ". Expedicao::STATUS_SEGUNDA_CONFERENCIA . " )
+              GROUP BY c2.codExpedicao
+              ) as qtdConferidas");
+
+        } else {
+            $source->addSelect("(
+             SELECT COUNT(es2.id)
+               FROM wms:Expedicao\EtiquetaSeparacao es2
+              LEFT JOIN es2.pedido ped2
+              LEFT JOIN ped2.carga c2
+              WHERE c2.codExpedicao = e.id
+                AND es2.codStatus in ( 526, 531, 532 )
+              GROUP BY c2.codExpedicao
+              ) as qtdConferidas");
+        }
 
         $result = $source->getQuery()->getResult();
 
@@ -1479,7 +1541,8 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
         return $source->getQuery()->getResult();
     }
 
-    public function getProdutosSemEstoqueByExpedicao($idExpedicao) {
+    public function getProdutosSemEstoqueByExpedicao($idExpedicao) 
+    {
 
         $sql = "SELECT RESERVA.CODIGO,
                 RESERVA.GRADE,
@@ -1532,7 +1595,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRIÇÃO, i.DSC_ITINERARIO as ITINERÁRIO, pes.NOM_PESSOA as CLIENTE
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
                 INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                 INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
