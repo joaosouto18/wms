@@ -14,6 +14,9 @@ class Rua extends Grid
         $params['idInventario'] = $params['id'];
         $params['rua']          = $params['RUA'];
         $params['divergencia']  = 'todos';
+        $params['campos']       = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, IE.COD_INVENTARIO_ENDERECO AS codInvEndereco,
+          CASE WHEN IE.DIVERGENCIA = 1 THEN 'DIVERGENCIA' WHEN IE.INVENTARIADO = 1 THEN 'INVENTARIADO' ELSE 'PENDENTE' END SITUACAO";
+
         $detalheByRua = $invEnderecoRepo->getByInventario($params);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($detalheByRua));
@@ -22,10 +25,6 @@ class Rua extends Grid
                 'label' => 'Endereço',
                 'index' => 'DSC_DEPOSITO_ENDERECO'
              ))
-            ->addColumn(array(
-                'label' => 'Números de Contagens',
-                'index' => 'ULTIMACONTAGEM',
-            ))
             ->addColumn(array(
                 'label' => 'Situação',
                 'index' => 'SITUACAO',

@@ -20,6 +20,7 @@
     });
 </script>
 <form id="" class="saveForm">
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' )); ?>">
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <tbody>
@@ -30,7 +31,6 @@
                         <?php foreach($this->cargas as $carga) : ?>
                             <?php echo $carga->getCodCargaExterno(); ?>
                         <?php endforeach; ?>
-                        <input type="hidden" id="codCargaExterno" class="codCargaExternoo" value="<?php echo $carga->getCodCargaExterno(); ?>">
                     </div>
                 </td>
             </tr>
@@ -64,7 +64,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="3">
+                <td colspan="3">                    
                     <button name="btnFinalizar" class="finaliza-pelo-coletor" id="finaliza-pelo-coletor" type="button" value="comConferencia">Finalizar Pelo Coletor</button>
                 </td>
             </tr>

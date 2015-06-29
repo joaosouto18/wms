@@ -325,7 +325,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 foreach ($produtos as $produto){
                     if (($produto['codProdutoVolume'] == $reservaProduto->getCodProdutoVolume()) &&
                         ($produto['codProdutoEmbalagem'] == $reservaProduto->getCodProdutoEmbalagem())) {
-                        $reservaProduto->setQtd($reservaProduto->getQtd() - $produto['qtd']);
+                        $reservaProduto->setQtd($reservaProduto->getQtd() + $produto['qtd']);
                         $this->getEntityManager()->persist($reservaProduto);
                     }
                 }

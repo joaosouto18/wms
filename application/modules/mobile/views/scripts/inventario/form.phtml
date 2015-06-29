@@ -1,9 +1,44 @@
-﻿<?php echo $this->form; ?>
+﻿<?php if ($this->produtosEndPicking) : ?>
+
+    <table class="info">
+        <caption>Endereço <?php echo $this->enderecoBipado ?> é picking dos produtos: </caption>
+        <?php
+        if (isset($this->produtosEndPicking)):
+            ?>
+            <tr>
+                <td>
+                    <div id="carousel">
+                        <?php foreach ($this->produtosEndPicking as $produto): ?>
+                            <div id="lista-produto<?php echo $produto['codProduto'] ?>"><?php echo $produto['descricao'] ?> - <?php echo $produto['grade'] ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                </td>
+                <td style="width: 20%"> <button id="next"> >| </button></td>
+            </tr>
+        <?php
+        endif;
+        ?>
+    </table>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#carousel').cycle({
+                fx:   'turnDown',
+                next: '#next',
+                timeout:  0
+            });
+
+        });
+    </script>
+
+<?php endif; ?>
+
+<?php echo $this->form; ?>
 
 <?php if ($this->botoes) : ?>
 
     <div id="footer">
-        <a href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem . "/divergencia/" . $this->divergencia ?> class="btn button finalizar mudar">Finalizar</a>
+    <a href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem . "/divergencia/" . $this->divergencia ?> class="btn button finalizar mudar">Finalizar</a>
     </div>
 
 <?php endif; ?>

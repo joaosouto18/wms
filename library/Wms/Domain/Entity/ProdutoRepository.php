@@ -885,13 +885,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             return null;
         }
 
-        $enderecoPicking = null;
-        foreach($embalagemEn as $embalagem) {
+        $enderecoPicking = array();
+        foreach($embalagemEn as $key => $embalagem) {
             if ($embalagem->getEndereco() != null) {
                 if ($tipoRetorno == "DSC"){
-                    $enderecoPicking = $embalagem->getEndereco()->getDescricao();
+                    $enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
                 } else {
-                    $enderecoPicking = $embalagem->getEndereco()->getId();
+                    $enderecoPicking[$key] = $embalagem->getEndereco()->getId();
                 }
             } else{
                 $enderecoPicking = null;

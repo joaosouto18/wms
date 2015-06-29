@@ -134,9 +134,9 @@ class Mobile_EnderecamentoController extends Action
         if ($paleteEn == NULL) {
             $this->createXml('error','Palete não encontrado');
         }
-        if ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO) {
-            $this->createXml('error','Palete já endereçado');
-        }
+//        if ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO) {
+//            $this->createXml('error','Palete já endereçado');
+//        }
         if ($paleteEn->getCodStatus() == Palete::STATUS_CANCELADO) {
             $this->createXml('error','Palete cancelado');
         }
@@ -171,14 +171,17 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('info','Escolha um nível',null, $elementos);
         }
 
-        $enderecoReservado = $paleteEn->getDepositoEndereco();
-
-        if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
-            $this->enderecar($enderecoEn,$paleteEn,$enderecoRepo, $paleteRepo);
+        if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
+            $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $idEndereco);
         } else {
-            $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $paleteEn->getId() . '/endereco/' . $idEndereco);
-        }
+            $enderecoReservado = $paleteEn->getDepositoEndereco();
 
+            if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
+                $this->enderecar($enderecoEn,$paleteEn,$enderecoRepo, $paleteRepo);
+            } else {
+                $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $paleteEn->getId() . '/endereco/' . $idEndereco);
+            }
+        }
     }
 
     public function validaNivelAction()
