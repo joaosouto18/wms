@@ -34,12 +34,13 @@ class Expedicao_ConferenciaController extends Action
 
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
-                    $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false);
+                    //$expedicaoRepo->finalizacarga($idExpedicao);
+                    $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
                 } else {
                     $result = 'Senha informada não é válida';
                 }
             } else {
-                $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],true);
+                $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],true, 'M');
             }
 
             if (is_string($result)) {

@@ -74,7 +74,11 @@ class Estoque
         if ($embalagem == "0") {
             $contagemEndEn = $this->getContagemEndEn();
             if ($contagemEndEn == null) {
-                return false;
+                $embalagensEn = $this->_em->getRepository("wms:Produto\Embalagem")->findBy(
+                    array('codProduto' => $this->getProduto()->getId(), 'grade' => $this->getProduto()->getGrade()), array('quantidade' => 'ASC')
+                );
+                $this->_embalagem = $embalagensEn[0];
+                return true;
             }
             $embalagensEn = $this->_em->getRepository("wms:Produto\Embalagem")->findBy(
                 array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC')
@@ -265,7 +269,7 @@ class Estoque
     {
         /** @var  $estoqueRepo */
         $estoqueRepo    = $this->getEstoqueRepo();
-        return $estoqueRepo->movimentaEstoque(array(
+        $array = array(
             'produto' =>  $this->getProduto(),
             'endereco' =>  $this->getEndereco(),
             'qtd'   => $this->getQtd(),
@@ -276,7 +280,11 @@ class Estoque
             'os' => $this->getOs(),
             'usuario' => $this->getUsuario(),
             'estoqueRepo' => $this->getEstoqueRepo()
-        ));
+        );
+        if (is_null($array['produto'])) {
+            return false;
+        }
+        return $estoqueRepo->movimentaEstoque($array);
     }
 
 }

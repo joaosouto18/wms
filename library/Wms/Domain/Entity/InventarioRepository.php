@@ -163,10 +163,11 @@ class InventarioRepository extends EntityRepository
     public function getDivergencias($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, ce.qtdContada Qtde_Contada, ce.qtdDivergencia Qtde_Divergencia, ce.numContagem')
+            ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, ce.qtdContada Qtde_Contada, ce.qtdDivergencia Qtde_Divergencia, ce.numContagem, p.descricao')
             ->from('wms:Inventario', 'i')
             ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
             ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
+            ->innerJoin('ce.produto', 'p')
             ->innerJoin('ie.depositoEndereco','de')
             ->where('i.id = :idInventario')
             ->andWhere('ce.divergencia is not null')
@@ -218,10 +219,6 @@ class InventarioRepository extends EntityRepository
             $enderecoEn         = $invEnderecoEn->getDepositoEndereco();
             $idDepositoEndereco = $enderecoEn->getId();
 
-            if ($enderecoEn->getId() == 2469){
-                $entra = true;
-            }
-
             foreach($contagemEndEnds as $contagemEndEn) {
                 //Endereco tem estoque?
 
@@ -248,7 +245,7 @@ class InventarioRepository extends EntityRepository
                     } else {
                         if ($enderecoVazio) {
                             $qtdRetirar = $estoqueEn->getQtd();
-                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, $qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
+                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
                         } else {
                             $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
@@ -293,7 +290,7 @@ class InventarioRepository extends EntityRepository
         $params['endereco']     = $invEnderecoEn->getDepositoEndereco();
         $params['qtd']          = $qtd;
         $params['volume']       = $estoqueEn->getProdutoVolume();
-        $params['embalagem']    = $estoqueEn->getCodProdutoEmbalagem();
+        $params['embalagem']    = 0;
         $params['tipo']         = 'I';
         $params['observacoes']  = 'Mov. correção inventário';
         $params['os']           = $osEn;
@@ -314,7 +311,8 @@ class InventarioRepository extends EntityRepository
               COUNT(G.COD_INVENTARIO) QTD_ENDERECOS,
               COUNT(G.DIVERGENCIA) QTD_DIVERGENTE,
               COUNT(G.INVENTARIADO) QTD_INVENTARIADO,
-              COUNT(PENDENTES.CONT) as QTD_PENDENTE
+              COUNT(PENDENTES.CONT) as QTD_PENDENTE,
+              round( (COUNT(G.INVENTARIADO) * 100) / COUNT(G.COD_INVENTARIO) ) CONCLUIDO
             FROM INVENTARIO_ENDERECO G
             INNER JOIN  DEPOSITO_ENDERECO F  ON F.COD_DEPOSITO_ENDERECO = G.COD_DEPOSITO_ENDERECO
             LEFT JOIN (SELECT IE.COD_INVENTARIO_ENDERECO as CONT, IE.COD_INVENTARIO_ENDERECO FROM INVENTARIO_ENDERECO IE
@@ -329,6 +327,60 @@ class InventarioRepository extends EntityRepository
         ";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function verificaReservas($idInventario)
+    {
+        $source = $this->_em->createQueryBuilder()
+            ->select('d.id, re.tipoReserva, re.dataReserva, d.descricao')
+            ->from("wms:Ressuprimento\ReservaEstoque","re")
+            ->innerJoin('re.endereco', 'd')
+            ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
+            ->andWhere("re.atendida = 'N'")
+            ->andWhere("ie.inventario = $idInventario")
+            ->groupBy('d.id, re.tipoReserva, re.dataReserva, d.descricao');
+        return $source->getQuery()->getResult();
+    }
+
+    public function removeEnderecos(array $enderecos, $id)
+    {
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+        foreach($enderecos as $endereco) {
+            $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
+            if ($inventarioEndEn) {
+                $this->_em->remove($inventarioEndEn);
+                $this->_em->flush();
+            }
+        }
+    }
+
+    public function bloqueiaEnderecos($id)
+    {
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+
+        $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
+        foreach($inventarioEndsEn as $invEndEn) {
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'S');
+        }
+        $this->_em->flush();
+    }
+
+    public function desbloqueiaEnderecos($id)
+    {
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+
+        $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
+        foreach($inventarioEndsEn as $invEndEn) {
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'N');
+        }
+        $this->_em->flush();
     }
 
 }

@@ -13,7 +13,9 @@
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <caption>Recebimento <?php echo $this->idRecebimento ?> - <?php echo "Paletes do Produto $this->codProduto - $this->produto / $this->grade"?></caption>
-            <p>Endereço de picking:<?php echo $this->endPicking ?></p>
+            <p>Endereço de picking:
+                <?php if (is_array($this->endPicking)) echo $this->endPicking[0]; ?>
+            </p>
             <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             <tbody>
                 <tr class ="gTTitle">
@@ -28,9 +30,16 @@
                     <td>Ação</td>
                 </tr>
                 <?php
-                foreach ($this->paletes as $palete): $this->color = !($this->color);?>
-                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                        <td><input name="palete[]" value="<?php echo $palete['UMA'] ?>" type="checkbox" /> </td>
+                foreach ($this->paletes as $palete):
+                    $fontColor = "black";
+                    $liberado = true;
+                    if ($palete['QTD_VOL_TOTAL'] > $palete['QTD_VOL_CONFERIDO']) {
+                        $fontColor = "gray";
+                        $liberado = false;
+                    }
+                    $this->color = !($this->color);?>
+                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td><?php if ($liberado == true) {?><input name="palete[]" value="<?php echo $palete['UMA'] ?>" type="checkbox" /> <?php }?></td>
                         <td><?php echo $palete['UMA'] ?></td>
                         <td><?php echo $palete['UNITIZADOR'] ?></td>
                         <td><?php echo $palete['VOLUMES'] ?></td>

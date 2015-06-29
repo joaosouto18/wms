@@ -54,80 +54,91 @@ class AbastecimentoPicking extends Pdf
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
 
-       $limite = 49;
-       foreach ($enderecos as $endereco) {
+        $limite = 49;
+        $codProdutoAnterior = null;
+        $gradeAnterior = null;
+
+        foreach ($enderecos as $endereco) {
             $produtos = $enderecoRepo->getVolumesByPicking($endereco['COD_DEPOSITO_ENDERECO'],false);
 
             $dscPicking = $endereco['DESCRICAO'];
             $dscVolume = "";
+
             foreach ($produtos as $produto) {
                 if ($dscVolume != "") $dscVolume .= "; ";
                 $dscVolume .= $produto['descricao'];
             }
-            foreach ($produtos as $produto) {
 
+            foreach ($produtos as $produto) {
                 $codProduto = $produto['codProduto'];
                 $grade = $produto['grade'];
-                $dscProduto = $produto['produto'];
 
-                $params = array();
-                $params['idProduto'] = $codProduto;
-                $params['grade'] = $grade;
-                $params['volume'] = $produto['codVolume'];
+                if ($codProduto != $codProdutoAnterior || $grade != $gradeAnterior) {
+                    $dscProduto = $produto['produto'];
 
-                $enderecosPulmao = $estoqueRepo->getEstoqueAndVolumeByParams ($params,5,false);
-                $c = count($enderecosPulmao);
+                    $params = array();
+                    $params['idProduto'] = $codProduto;
+                    $params['grade'] = $grade;
+                    $params['volume'] = $produto['codVolume'];
 
-                if ((($limite - $c) - 2 ) <= 0 )
-                {
-                    $this->AddPage();
-                    $limite = 49;
-                }
+                    $enderecosPulmao = $estoqueRepo->getEstoqueAndVolumeByParams ($params,5,false);
+                    $c = count($enderecosPulmao);
 
-                $this->SetFont('Arial', 'B', 8);
-                $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
-                $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
-                $this->Cell(130, 5, utf8_decode($dscProduto) ,1, 0);
-                $this->Cell(30, 5, utf8_decode($dscPicking) ,1, 1);
+                    if ((($limite - $c) - 2 ) <= 0 )
+                    {
+                        $this->AddPage();
+                        $limite = 49;
+                    }
 
-                $limite = $limite -1;
-
-                $this->Cell(10, 5, "" , 0);
-                $this->Cell(30, 5, "Dth Armazenagem" ,"TB");
-                $this->Cell(30, 5, utf8_decode("End.Pulmão") ,"TB");
-                $this->Cell(15, 5, "Res. Ent." ,"TB");
-                $this->Cell(15, 5, "Res. Sai." ,"TB");
-                $this->Cell(15, 5, "Qtd" ,"TB");
-                $this->Cell(75, 5, utf8_decode("Volume") ,"TB",1);
-
-                $limite = $limite -1;
-
-                foreach($enderecosPulmao as $pulmao) {
-                    $this->SetFont('Arial', '', 8);
-                    $qtdReservaEntrada = $pulmao["RESERVA_ENTRADA"];
-                    $qtdReservaSaida = $pulmao["RESERVA_SAIDA"];
-                    $qtdEndereco = $pulmao["QTD"];
-                    $dscEndereco = $pulmao['ENDERECO'];
-                    $dthUltimaEntrada = $pulmao['DTH_PRIMEIRA_MOVIMENTACAO'];
-
-                    $this->Cell(10, 5, "" , 0, 0);
-                    $this->Cell(30, 5, $dthUltimaEntrada ,0,  0);
-                    $this->Cell(30, 5, utf8_decode($dscEndereco) ,0, 0);
-                    $this->Cell(15, 5, utf8_decode($qtdReservaEntrada) ,0,  0);
-                    $this->Cell(15, 5, utf8_decode($qtdReservaSaida) ,0,  0);
-                    $this->Cell(15, 5, utf8_decode($qtdEndereco) ,0,  0);
-                    $this->Cell(75, 5, utf8_decode($dscVolume) ,0, 1);
+                    $this->SetFont('Arial', 'B', 8);
+                    $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
+                    $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
+                    $this->Cell(130, 5, utf8_decode($dscProduto) ,1, 0);
+                    $this->Cell(30, 5, utf8_decode($dscPicking) ,1, 1);
 
                     $limite = $limite -1;
 
-                }
-                $this->Ln();
-                $limite = $limite -1;
-                break;
-            }
-            $this->Ln();
-           $limite = $limite -1;
+                    $this->Cell(10, 5, "" , 0);
+                    $this->Cell(30, 5, "Dth Armazenagem" ,"TB");
+                    $this->Cell(30, 5, utf8_decode("End.Pulmão") ,"TB");
+                    $this->Cell(15, 5, "Res. Ent." ,"TB");
+                    $this->Cell(15, 5, "Res. Sai." ,"TB");
+                    $this->Cell(15, 5, "Qtd" ,"TB");
+                    $this->Cell(75, 5, utf8_decode("Volume") ,"TB",1);
 
+                    $limite = $limite -1;
+
+                    foreach($enderecosPulmao as $pulmao) {
+                        $this->SetFont('Arial', '', 8);
+                        $qtdReservaEntrada = $pulmao["RESERVA_ENTRADA"];
+                        $qtdReservaSaida = $pulmao["RESERVA_SAIDA"];
+                        $qtdEndereco = $pulmao["QTD"];
+                        $dscEndereco = $pulmao['ENDERECO'];
+                        $dthUltimaEntrada = $pulmao['DTH_PRIMEIRA_MOVIMENTACAO'];
+
+                        $this->Cell(10, 5, "" , 0, 0);
+                        $this->Cell(30, 5, $dthUltimaEntrada ,0,  0);
+                        $this->Cell(30, 5, utf8_decode($dscEndereco) ,0, 0);
+                        $this->Cell(15, 5, utf8_decode($qtdReservaEntrada) ,0,  0);
+                        $this->Cell(15, 5, utf8_decode($qtdReservaSaida) ,0,  0);
+                        $this->Cell(15, 5, utf8_decode($qtdEndereco) ,0,  0);
+                        $this->Cell(75, 5, utf8_decode($dscVolume) ,0, 1);
+
+                        $limite = $limite -1;
+                    }
+
+                    $codProdutoAnterior = $codProduto;
+                    $gradeAnterior = $grade;
+                    $this->Ln();
+                    $limite = $limite -1;
+                } else {
+                    $codProdutoAnterior = $codProduto;
+                    $gradeAnterior = $grade;
+                }
+            }
+
+            $this->Ln();
+            $limite = $limite -1;
         }
         $this->Output('AbastecimentoPicking.pdf','D');
     }

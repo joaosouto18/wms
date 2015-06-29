@@ -190,9 +190,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'pontoTransbordo' => $pedido['pontoTransbordo'],
             'envioParaLoja' => $pedido['envioParaLoja']
         );
-
         $entityPedido  = $this->findPedidoById($arrayPedido);
         $this->savePedidoProduto($pedido['produtos'], $entityPedido);
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepo */
+        $pedidoEnderecoRepo = $this->_em->getRepository('wms:Expedicao\PedidoEndereco');
+        $pedidoEnderecoRepo->save($entityPedido,$pedido['cliente']);
+
     }
 
     protected function savePedidoProduto(array $produtos, Expedicao\Pedido $enPedido) {
@@ -208,6 +212,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'grade' => $produto['grade'],
                 'quantidade' => $produto['qtde']
             );
+
             $PedidoProdutoRepo->save($prod);
         }
     }

@@ -102,8 +102,6 @@ class Enderecamento_PaleteController extends Action
 
     public function enderecarAction()
     {
-        $conferenteRepo = $this->em->getRepository('wms:Pessoa\Fisica\Conferente');
-
         $usuarioRepo = $this->em->getRepository('wms:Usuario');
         $perfilParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_PERFIL_OPERADOR_EMPILHADEIRA'));
 
@@ -201,13 +199,12 @@ class Enderecamento_PaleteController extends Action
             );
             $buttons[] = array(
                 'label' => 'Trocar U.M.A',
-                'cssClass' => 'dialogAjax',
                 'urlParams' => array(
                     'module' => 'enderecamento',
                     'controller' => 'palete',
-                    'action' => 'trocar',
+                    'action' => 'trocar'
                 ),
-                'tag' => 'a'
+                'tag' => 'a',
             );
         }
 
@@ -224,7 +221,11 @@ class Enderecamento_PaleteController extends Action
 
         $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
         try {
-            $paleteRepo->enderecaPicking($paletes);
+            $result = $paleteRepo->enderecaPicking($paletes);
+
+            if ($result != "") {
+                $this->addFlashMessage("info",$result);
+            }
         } catch(Exception $e) {
             $this->addFlashMessage('error',$e->getMessage());
         }
@@ -268,7 +269,7 @@ class Enderecamento_PaleteController extends Action
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
             $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto);
 
-            if ($result) {
+            if (count($result) > 0) {
                 // realizar trocas de U.M.As para novo recebimento
                 $result = $this->confirmaTroca();
 
@@ -277,7 +278,7 @@ class Enderecamento_PaleteController extends Action
                     $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
                 }
             } else {
-                $this->addFlashMessage('info', 'Este produto já consta no novo recebimento!');
+                $this->addFlashMessage('info', 'Este produto não consta no recebimento: '.$params['novo-recebimento-id']);
                 $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
             }
         }
@@ -306,12 +307,12 @@ class Enderecamento_PaleteController extends Action
         }
 
         if ($paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'])) {
+            $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
             $this->addFlashMessage('success', 'Troca realizada com sucesso');
         }
 
         $url = '/enderecamento/produto/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']);
         $this->_redirect($url);
-        exit;
     }
 
 } 

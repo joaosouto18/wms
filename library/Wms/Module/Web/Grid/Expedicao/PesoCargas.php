@@ -49,10 +49,10 @@ class PesoCargas extends Grid
                     'modelName' => 'expedicao',
                     'controllerName' => 'index',
                     'actionName' => 'desagruparcarga',
+                    'cssClass' => 'inside-modal',
                     'pkIndex' => 'COD_CARGA'
                 ))
-                ->setShowExport(false)
-                ;
+                ->setShowExport(false);
 
         return $this;
     }

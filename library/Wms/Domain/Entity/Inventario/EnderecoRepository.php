@@ -56,9 +56,12 @@ class EnderecoRepository extends EntityRepository
         $divergencia    = isset($params['divergencia']) ? $params['divergencia'] : null;
         $rua            = isset($params['rua']) ? $params['rua'] : null;
 
-        $andDivergencia = null;
-        if ($divergencia != null) {
+        if ($divergencia != null && $divergencia != 'todos') {
             $andDivergencia = " AND IE.DIVERGENCIA = 1 ";
+        } else if ($divergencia == 'todos') {
+            $andDivergencia = null;
+        } else {
+            $andDivergencia = " AND IE.DIVERGENCIA IS NULL ";
         }
 
         $andRua = null;
@@ -67,16 +70,27 @@ class EnderecoRepository extends EntityRepository
         }
 
         $andContagem = null;
-        if ($numContagem != null) {
+        if (isset($numContagem)) {
             $andContagem = " AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem." AND IE.INVENTARIADO IS NULL ";
         }
 
-        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM, IE.DIVERGENCIA
+        $campos = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM, IE.DIVERGENCIA, IE.COD_INVENTARIO_ENDERECO AS codInvEndereco,
+         MAXCONT.DSC_PRODUTO, MAXCONT.DSC_GRADE, MAXCONT.COMERCIALIZACAO,
+          CASE WHEN IE.DIVERGENCIA = 1 THEN 'DIVERGENCIA' WHEN IE.INVENTARIADO = 1 THEN 'INVENTARIADO' ELSE 'PENDENTE' END SITUACAO ";
+
+        if (isset($params['campos']) && $params['campos'] != null) {
+            $campos = $params['campos'];
+        }
+
+        $sql = "$campos
           FROM INVENTARIO_ENDERECO IE
           LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
-          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO
-                       FROM INVENTARIO_CONTAGEM_ENDERECO
-                      GROUP BY COD_INVENTARIO_ENDERECO) MAXCONT
+          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, NVL(PV.DSC_VOLUME,PE.DSC_EMBALAGEM) COMERCIALIZACAO
+                        FROM INVENTARIO_CONTAGEM_ENDERECO ICE
+                        LEFT JOIN PRODUTO P ON ICE.COD_PRODUTO = P.COD_PRODUTO AND ICE.DSC_GRADE = P.DSC_GRADE
+                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
+                        LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                        GROUP BY COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME,PE.DSC_EMBALAGEM) MAXCONT
             ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
          WHERE IE.COD_INVENTARIO = ".$idInventario."
          $andContagem
@@ -132,6 +146,7 @@ class EnderecoRepository extends EntityRepository
             ->select('ie')
             ->from("wms:Inventario\Endereco","ie")
             ->andWhere("ie.inventariado = 1")
+            ->andWhere("ie.atualizaEstoque = 1")
             ->andWhere("ie.inventario = $idInventario");
 
         return $query->getQuery()->getResult();

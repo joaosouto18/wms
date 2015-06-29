@@ -78,6 +78,7 @@ class UMA extends Pdf
         $this->SetFont('Arial','I',8);
         // Print centered page number
         $this->Cell(0,10,utf8_decode('Página ').$this->PageNo(),0,0,'C');
+        $this->Cell(-30,0,utf8_decode(date('d/m/Y')." às ".date('H:i')),0,0,'C');
     }
 
     public function layout02($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
@@ -128,7 +129,7 @@ class UMA extends Pdf
 
 
         if (strlen($descricaoProduto) >= 42) {
-            $font_size = 50;
+            $font_size = 38;
         }
         
         $this->SetFont('Arial', 'B', $font_size);

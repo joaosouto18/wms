@@ -132,17 +132,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getCountGroupByCentralPlaca ($idExpedicao)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select(' count(es.codBarras) as qtdEtiqueta,
-                      c.placaCarga, es.pontoTransbordo, c.codCargaExterno, c.sequencia')
-            ->from('wms:Expedicao\VEtiquetaSeparacao','es')
-            ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
-            ->where('es.codExpedicao = :idExpedicao')
-            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE )
-            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO )
+            ->select('count(distinct es.id) as qtdEtiqueta,
+                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->innerJoin('es.pedido', 'ped')
+            ->innerJoin('ped.carga', 'c')
+            ->innerJoin('c.expedicao', 'exp')
+            ->where('exp.id = :idExpedicao')
+            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE)
+            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
             ->groupBy('c.placaCarga, c.codCargaExterno, c.sequencia')
-            ->addGroupBy('es.pontoTransbordo')
+            ->addGroupBy('ped.pontoTransbordo')
             ->setParameter('idExpedicao', $idExpedicao)
             ->orderBy('c.placaCarga, c.sequencia');
+
         return $dql->getQuery()->getArrayResult();
     }
 
@@ -195,6 +198,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.codCargaExterno,
                       es.grade,
                       es.codEstoque,
+                      es.pontoTransbordo,
                       CASE WHEN es.codStatus = 522 THEN 'PENDENTE DE IMPRESSÃO'
                            WHEN es.codStatus = 523 THEN 'PENDENTE DE CONFERENCIA'
                            ELSE 'Consulte o admnistrador do sistema'
@@ -231,7 +235,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('es.codCargaExterno, p.descricao, es.codProduto, es.grade');
+            ->orderBy('es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
 
         if ($tipoResult == "Array") {
             $result = $dql->getQuery()->getResult();

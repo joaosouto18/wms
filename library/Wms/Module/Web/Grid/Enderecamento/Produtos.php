@@ -79,12 +79,13 @@ class Produtos extends Grid
 
             ->setShowExport(false);
 
-        if ($status->getSigla() == 'DESFEITO' ) {
+        if ($status->getSigla() == 'DESFEITO' || $status->getSigla() == 'CANCELADO') {
             $this->addAction(array(
                 'label' => 'Trocar U.M.As',
                 'controllerName' => 'palete',
                 'actionName' => 'trocar',
-                'pkIndex' => array('codigo','grade')
+                'pkIndex' => array('codigo','grade'),
+                'target' => '_blank'
             ));
         }
 

@@ -7,7 +7,7 @@ use Wms\Module\Web\Form;
 class FiltroRelatorio extends Form
 {
 
-    public function init()
+    public function init($utilizaGrade = 'S')
     {
 
         $this
@@ -20,15 +20,22 @@ class FiltroRelatorio extends Form
                 'size' => 12,
                 'label' => 'Cod. produto',
                 'class' => 'focus',
-            ))
-            ->addElement('text', 'grade', array(
+            ));
+        if ($utilizaGrade == "S") {
+            $this->addElement('text', 'grade', array(
                 'size' => 12,
                 'label' => 'Grade',
-            ))
-            ->addElement('text', 'rua', array(
-                'size' => 3,
-                'label' => 'Rua'
-            ))
+            ));
+        } else {
+            $this->addElement('hidden', 'grade', array(
+                'label' => 'Grade',
+                'value' => 'UNICA'
+            ));
+        }
+        $this->addElement('text', 'rua', array(
+            'size' => 3,
+            'label' => 'Rua'
+        ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
                 'label' => 'Prédio',
@@ -43,6 +50,11 @@ class FiltroRelatorio extends Form
             ))
             ->addElement('submit', 'imprimir', array(
                 'label' => 'Imprimir',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper'),
+            ))
+            ->addElement('button', 'produtos-divergentes', array(
+                'label' => 'Imprimir Produtos com Volumes Divergentes',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))

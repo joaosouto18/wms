@@ -28,7 +28,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $this->view->expedicoes = $expedicoes;
     }
 
-    public function semDadosAction(){
+    public function semDadosAction()
+    {
         $strExpedicao = $this->_getParam("expedicoes");
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
@@ -70,7 +71,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
     }
 
-    public function gerenciarOsAction(){
+    public function gerenciarOsAction()
+    {
         $form = new FiltroDadosOnda;
         $actionParams= $this->_getParam('actionParams',false);
 
@@ -100,13 +102,20 @@ class Expedicao_OndaRessuprimentoController  extends Action
             $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
             $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador);
             $Grid = new OsGrid();
-            $this->view->grid = $Grid->init($result,$values)->render();
+            $Grid->init($result,$values)->render();
+
+            $pager = $Grid->getPager();
+            $pager->setMaxPerPage(30000);
+            $Grid->setPager($pager);
+
+            $this->view->grid = $Grid->render();
         }
 
         $this->view->form = $form;
     }
 
-    public function liberarAction() {
+    public function liberarAction()
+    {
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
@@ -131,7 +140,8 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
     }
 
-    public function cancelarAction() {
+    public function cancelarAction()
+    {
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
@@ -160,6 +170,17 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
         $this->addFlashMessage("success","OS  $idOndaOs cancelada com sucesso");
         $this->redirect("gerenciar-os","onda-ressuprimento","expedicao",$formParams);
+    }
+
+    public function listAction()
+    {
+        $idOndaOs = $this->_getParam("ID");
+
+        /** @var \Wms\Domain\Entity\Ressuprimento\AndamentoRepository $andamentoRepo */
+        $andamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\Andamento");
+        $result = $andamentoRepo->getAndamentoRessuprimento($idOndaOs);
+
+        $this->view->andamentos = $result;
     }
 
 }

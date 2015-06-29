@@ -9,18 +9,26 @@ use Doctrine\ORM\EntityRepository,
 
 class OndaRessuprimentoRepository extends EntityRepository
 {
-    public function getOndasEmAberto(){
+    public function getOndasEmAberto($codProduto, $grade){
             $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("os.id as OS,
                           w.id as Onda,
                           e.descricao as Endereco,
-                          wos.id as OndaOsId")
+                          wos.id as OndaOsId,
+                          wos.sequencia")
                 ->from("wms:Ressuprimento\OndaRessuprimentoOs",'wos')
+                ->leftJoin("wos.produtos",'osp')
+                ->leftJoin('osp.produto','prod')
                 ->leftJoin("wos.os","os")
                 ->leftJoin("wos.endereco", 'e')
                 ->leftJoin("wos.ondaRessuprimento","w")
                 ->where("wos.status = ". \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA)
-                ->orderBy("wos.sequencia");
+                ->orderBy("wos.sequencia")
+                ->distinct(true);
+
+            if ($codProduto != null) {
+                $query->andWhere("prod.id = $codProduto AND prod.grade ='$grade'");
+            }
         $result = $query->getQuery()->getArrayResult();
         return $result;
     }
@@ -127,7 +135,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $SqlWhere .= " AND OND.DTH_CRIACAO >= TO_DATE('$dataInicial 00:00','DD-MM-YYYY HH24:MI')";
         }
         if (isset($dataFinal) && (!empty($dataFinal))) {
-            $SqlWhere .= " AND OND.DTH_CRIACAO <= TO_DATE('$dataInicial 23:59','DD-MM-YYYY HH24:MI')";
+            $SqlWhere .= " AND OND.DTH_CRIACAO <= TO_DATE('$dataFinal 23:59','DD-MM-YYYY HH24:MI')";
         }
 
         $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
@@ -201,6 +209,8 @@ class OndaRessuprimentoRepository extends EntityRepository
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
 
         foreach ($produtos as $produto) {
             $codExpedicao = $produto['COD_EXPEDICAO'];
@@ -213,6 +223,10 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
                 $embalagem = $embalagensEn[0];
                 $idPicking = $embalagem->getEndereco()->getId();
+                /*
+                if ($enderecoRepo->verificaBloqueioInventario($idPicking) == true) {
+                    throw new \Exception("Não foi possível continuar pois existem endereços sendo inventariados");
+                }*/
 
                 $produtosArray = array();
                     $produtoArray = array();
@@ -352,6 +366,7 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
     private function geraOsByPicking ($picking,$ondaEn) {
+        $qtdOsGerada = 0;
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
         $idPicking = $picking['idPicking'];
@@ -384,11 +399,18 @@ class OndaRessuprimentoRepository extends EntityRepository
             $qtdRessuprir = $saldo * -1;
             $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
 
+            $quantidadeBloqueadoInventario = 0;
             //GERO AS OS DE ACORDO COM OS ENDEREÇOS DE PULMAO
             $estoquePulmao = $estoqueRepo->getEstoquePulmaoByProduto($codProduto, $grade,$idVolume, false);
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
+
+                /*
+                if ($enderecoRepo->verificaBloqueioInventario($idPulmao) == true) {
+                    $quantidadeBloqueadoInventario = $qtdEstoque + $quantidadeBloqueadoInventario;
+                    continue;
+                }*/
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
 
@@ -407,13 +429,27 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking);
+                    $qtdOsGerada ++;
                 }
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                if ($qtdRessuprir <= 0) break;
+                if ($qtdRessuprir <= 0)  {
+                    $qtdRessuprir = 0;
+                    break;
+                }
             }
+
+            /*
+            if ($saldo != $pontoReposicao) {
+                //Verificar se atendeu corretamente ao ressuprimento devido ao inventario
+                if (($quantidadeBloqueadoInventario >= $qtdRessuprir) && ($qtdRessuprir > 0)) {
+                    throw new \Exception('Existem endereços de pulmão sendo bloqueados por inventario.');
+                }
+            }*/
+
         }
+        return $qtdOsGerada;
 
     }
 
@@ -428,6 +464,7 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
     public function geraOsRessuprimento($produtosRessuprir, $ondaEn){
+        $totalOsGerada = 0;
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
 
@@ -473,10 +510,13 @@ class OndaRessuprimentoRepository extends EntityRepository
             }
 
             foreach ($pickings as $picking) {
-                $this->geraOsByPicking($picking, $ondaEn);
+                $qtdOsGerada = $this->geraOsByPicking($picking, $ondaEn);
+                $totalOsGerada = $totalOsGerada + $qtdOsGerada;
+
             }
 
         }
+        return $totalOsGerada;
     }
 
     private function getOndasNaoSequenciadas (){

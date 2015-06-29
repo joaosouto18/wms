@@ -9,7 +9,7 @@ namespace Wms\Domain\Entity\Armazenagem\Estrutura;
 class Tipo
 {
     const ESTRUTURA_PORTA_PALETES = 1;
-    const BLOCADO = 2;
+    const BLOCADO = 26;
 
     /**
      * @Column(name="COD_TIPO_EST_ARMAZ", type="integer", nullable=false)

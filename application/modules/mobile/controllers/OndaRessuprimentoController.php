@@ -1,5 +1,7 @@
 <?php
-use Wms\Controller\Action;
+use Wms\Controller\Action,
+    Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
+    Wms\Service\Recebimento as LeituraColetor;
 
 
 class Mobile_OndaRessuprimentoController extends Action
@@ -7,9 +9,23 @@ class Mobile_OndaRessuprimentoController extends Action
 
     public function listarOndasAction()
     {
+
+        $codProduto = null;
+        $grade = null;
+        $html = '
+         <a  class="finalizar" style="float: none; margin: 0px 0px 0px 0px" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
+        ';
+
+        if ($this->_getParam('codProduto') != null) {
+            $codProduto = $this->_getParam('codProduto');
+            $grade = $this->_getParam('grade');
+            $html .= '
+         <a  class="finalizar" href="/mobile/onda-ressuprimento/listar-ondas/" style="background-image: -moz-linear-gradient(center top , #e5c062, #e5c062); border: 1px solid #e5c062; float: none; margin: 0px 0px 0px 0px" href="teste" title="Filtrar" >Mostrar Todas</a>
+        ';
+        }
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
         $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-        $ondas = $ondaRepo->getOndasEmAberto();
+        $ondas = $ondaRepo->getOndasEmAberto($codProduto,$grade);
 
         $menu = array();
         $enderecoAnterior = null;
@@ -26,8 +42,55 @@ class Mobile_OndaRessuprimentoController extends Action
             $menu[] = $botao;
         }
         $this->view->menu = $menu;
+
+        $this->view->header = $html;
         $this->view->showQuantidade = true;
         $this->renderScript('menu.phtml');
+    }
+
+    public function filtrarAction(){
+        $LeituraColetor = new LeituraColetor();
+
+        $form = new PickingLeitura();
+        $form->setControllerUrl("onda-ressuprimento");
+        $form->setActionUrl("filtrar");
+        $form->setLabel("Busca de Produto/Picking");
+        $form->setLabelElement("Código de Barras do Produto");
+
+        $codigoBarras = $this->_getParam('codigoBarras');
+        if ($codigoBarras != NULL) {
+
+            //VERIFICA SE FOI DIGITADO O CÓDIGO DE UM PRODUTO
+                $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codigoBarras));
+                if ($produtoEn != null) {
+                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
+                }
+
+            //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM PRODUTO
+                $recebimentoService = new \Wms\Service\Recebimento;
+                $codBarrasProduto = $recebimentoService->analisarCodigoBarras($codigoBarras);
+                $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+                $info = $produtoRepo->getProdutoByCodBarras($codBarrasProduto);
+                if ($info!= null) {
+                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$info[0]['idProduto'], 'grade'=>$info[0]['grade']));
+                }
+
+            //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM ENDEREÇO DE PICKING
+                $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+                $codBarrasEndereco = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+                $result = $enderecoRepo->getProdutoByEndereco($codBarrasEndereco,false);
+                if (count($result) > 0){
+                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$result[0]['codProduto'], 'grade'=>$result[0]['grade']));
+                }
+
+            $this->addFlashMessage("error","Nenhum Produto ou Endereço encontrado no código de barras");
+            $this->_redirect('/mobile/onda-ressuprimento/filtrar');
+        }
+
+
+        $this->view->form = $form;
+        $form->init();
     }
 
     public function selecionarEnderecoAction(){
@@ -211,8 +274,10 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 $LeituraColetor = new \Wms\Service\Coletor();
 
+                $result = null;
                 if ($codigoBarrasUMA)
                 {
+                    $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
                     $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
 
                     $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $estoqueEn->getId());
@@ -224,6 +289,7 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 if ($etiquetaProduto)
                 {
+                    $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
                     $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto);
 
                     $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $estoqueEn->getId());
@@ -233,21 +299,22 @@ class Mobile_OndaRessuprimentoController extends Action
                     }
                 }
 
+                if ($result == null) {
+                    throw new \Exception("error","Ocorreu um erro tentando finalizar a OS");
+                }
+
                 $codProduto = $result[0]['id'];
                 $grade = $result[0]['grade'];
                 $ondaOsEn = $ondaOsEn->getProdutos();
 
                 if (($codProduto != $ondaOsEn[0]->getProduto()->getId()) || ($grade != $ondaOsEn[0]->getProduto()->getGrade())){
-                    if ($codigoBarrasUMA) {
-                        $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
-                    }else {
-                        $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
-                    }
                     throw new \Exception("error","Produto diferente do indicado na onda");
                 }
 
                 $ondaRepo->finalizaOnda($ondaOsEn2);
             $this->getEntityManager()->commit();
+            $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
+
             $this->addFlashMessage("success","Os Finalizada com sucesso");
 
         } catch (\Exception $e) {

@@ -73,7 +73,7 @@ class ContagemEnderecoRepository extends EntityRepository
         $sql = "SELECT DISTINCT IE.DIVERGENCIA, NVL(MAXCONT.ULTCONT,1) as CONTAGEM
                   FROM INVENTARIO_ENDERECO IE
                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
-                  LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, ICE.COD_INVENTARIO_ENDERECO FROM INVENTARIO_CONTAGEM_ENDERECO ICE
+                  LEFT JOIN (SELECT MAX(ICE.NUM_CONTAGEM) as ULTCONT, ICE.COD_INVENTARIO_ENDERECO FROM INVENTARIO_CONTAGEM_ENDERECO ICE
                         INNER JOIN INVENTARIO_ENDERECO IE2 ON ICE.COD_INVENTARIO_ENDERECO = IE2.COD_INVENTARIO_ENDERECO
                         WHERE NOT(IE2.INVENTARIADO = 1 AND IE2.DIVERGENCIA IS NULL)
                         GROUP BY ICE.COD_INVENTARIO_ENDERECO) MAXCONT
@@ -83,6 +83,22 @@ class ContagemEnderecoRepository extends EntityRepository
          ";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getDetalhesByInventarioEndereco($codInvEndereco)
+    {
+        $query = $this->_em->createQueryBuilder()
+            ->select('ice.numContagem, pessoa.nome, p.id, p.grade, p.descricao, ice.qtdContada, ice.qtdDivergencia')
+            ->from("wms:Inventario\ContagemEndereco","ice")
+            ->innerJoin("ice.inventarioEndereco",'ie')
+            ->innerJoin("ice.contagemOs",'co')
+            ->innerJoin("co.os",'o')
+            ->leftJoin("o.pessoa",'pessoa')
+            ->innerJoin("ice.produto",'p')
+            ->andWhere("ie.id = $codInvEndereco")
+            ->orderBy('p.id, p.grade, ice.numContagem');
+
+        return $query->getQuery()->getResult();
     }
 
 }

@@ -8,8 +8,9 @@ class Enderecamento_Relatorio_MovimentacaoProdutoController extends Action
 {
     public function indexAction()
     {
-
+        $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
         $form = new \Wms\Module\Armazenagem\Form\MovimentacaoProduto\Filtro();
+        $form->init($utilizaGrade);
         $values = $form->getParams();
 
         if ($values)

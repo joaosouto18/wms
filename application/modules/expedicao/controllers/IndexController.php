@@ -136,53 +136,62 @@ class Expedicao_IndexController  extends Action
         $this->view->totalExpedicao=$pesos;
     }
 
-    public function desagruparcargaAction () {
+    public function desagruparcargaAction ()
+    {
+        //var_dump($this->_getAllParams()); exit;
+        $params = $this->_getAllParams();
 
-        $idCarga = $this->_getParam('COD_CARGA');
+        if (isset($params['placa']) && !empty($params['placa'])) {
+            $idCarga = $this->_getParam('COD_CARGA');
+            $placa = $params['placa'];
 
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $AndamentoRepo */
-        $AndamentoRepo   = $this->_em->getRepository('wms:Expedicao\Andamento');
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo      = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo      = $this->_em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $CargaRepo */
-        $CargaRepo      = $this->_em->getRepository('wms:Expedicao\Carga');
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $AndamentoRepo */
+            $AndamentoRepo   = $this->_em->getRepository('wms:Expedicao\Andamento');
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+            $EtiquetaRepo      = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+            $ExpedicaoRepo      = $this->_em->getRepository('wms:Expedicao');
+            /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $CargaRepo */
+            $CargaRepo      = $this->_em->getRepository('wms:Expedicao\Carga');
 
-        try {
-            /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
-            $cargaEn = $CargaRepo->findOneBy(array('id'=>$idCarga));
+            try {
+                /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
+                $cargaEn = $CargaRepo->findOneBy(array('id'=>$idCarga));
 
-            $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao() ,null,null,$idCarga);
-            $countTotal = $EtiquetaRepo->countByStatus(null, $cargaEn->getExpedicao(),null,null,$idCarga);
+                $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao() ,null,null,$idCarga);
+                $countTotal = $EtiquetaRepo->countByStatus(null, $cargaEn->getExpedicao(),null,null,$idCarga);
 
-            if ($countTotal != $countCortadas) {
-                throw new \Exception('A Carga '. $cargaEn->getCodCargaExterno(). ' possui etiquetas que não foram cortadas e não pode ser removida da expedição');
+                if ($countTotal != $countCortadas) {
+                   throw new \Exception('A Carga '. $cargaEn->getCodCargaExterno(). ' possui etiquetas que não foram cortadas e não pode ser removida da expedição');
+                }
+
+                $cargas=$ExpedicaoRepo->getCargas($cargaEn->getCodExpedicao());
+                if (count($cargas) <= 1) {
+                    throw new \Exception('A Expedição não pode ficar sem cargas');
+                }
+                $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
+                $expedicaoAntiga = $cargaEn->getCodExpedicao();
+                $expedicaoEn = $ExpedicaoRepo->save($cargaEn->getCodCargaExterno());
+                $cargaEn->setExpedicao($expedicaoEn);
+                $cargaEn->setSequencia(1);
+                $cargaEn->setPlacaCarga($placa);
+                $this->_em->persist($cargaEn);
+
+                if ($countCortadas > 0) {
+                    $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
+                    $this->_em->persist($expedicaoEn);
+                    $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
+                }
+
+                $this->_em->flush();
+                $this->_helper->messenger('Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga selecionada");
+            } catch (\Exception $e) {
+                $this->_helper->messenger('error', $e->getMessage());
             }
-
-            $cargas=$ExpedicaoRepo->getCargas($cargaEn->getCodExpedicao());
-            if (count($cargas) <= 1) {
-                throw new \Exception('A Expedição não pode ficar sem cargas');
-            }
-            $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
-            $expedicaoAntiga = $cargaEn->getCodExpedicao();
-            $expedicaoEn = $ExpedicaoRepo->save($cargaEn->getCodCargaExterno());
-            $cargaEn->setExpedicao($expedicaoEn);
-            $cargaEn->setSequencia(1);
-            $this->_em->persist($cargaEn);
-
-            if ($countCortadas >0) {
-                $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
-                $this->_em->persist($expedicaoEn);
-                $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
-            }
-
-            $this->_em->flush();
-            $this->_helper->messenger('Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga selecionada");
-        } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            $this->redirect("index",'index','expedicao');
         }
-        $this->redirect("index",'index','expedicao');
+
+
     }
 
     public function semEstoqueReportAction(){
@@ -192,5 +201,26 @@ class Expedicao_IndexController  extends Action
         $result = $ExpedicaoRepo->getProdutosSemEstoqueByExpedicao($idExpedicao);
         $this->exportPDF($result,'semEstoque.pdf','Produtos sem estoque na expedição','L');
     }
+
+    public function imprimirAction(){
+        $idExpedicao = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
+        $this->exportPDF($result,'volume-patrimonio.pdf','Relatório de Volumes Patrimônio da Expedição','L');
+    }
+
+    public function declaracaoAjaxAction(){
+        $idExpedicao = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
+        $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
+
+        $declaracaoReport = new \Wms\Module\Expedicao\Report\VolumePatrimonio();
+        $declaracaoReport->imprimir($result);
+    }
+
 
 }

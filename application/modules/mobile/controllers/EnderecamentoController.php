@@ -134,9 +134,9 @@ class Mobile_EnderecamentoController extends Action
         if ($paleteEn == NULL) {
             $this->createXml('error','Palete não encontrado');
         }
-        if ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO) {
-            $this->createXml('error','Palete já endereçado');
-        }
+//        if ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO) {
+//            $this->createXml('error','Palete já endereçado');
+//        }
         if ($paleteEn->getCodStatus() == Palete::STATUS_CANCELADO) {
             $this->createXml('error','Palete cancelado');
         }
@@ -171,14 +171,17 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('info','Escolha um nível',null, $elementos);
         }
 
-        $enderecoReservado = $paleteEn->getDepositoEndereco();
-
-        if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
-            $this->enderecar($enderecoEn,$paleteEn,$enderecoRepo, $paleteRepo);
+        if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
+            $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $idEndereco);
         } else {
-            $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $paleteEn->getId() . '/endereco/' . $idEndereco);
-        }
+            $enderecoReservado = $paleteEn->getDepositoEndereco();
 
+            if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
+                $this->enderecar($enderecoEn,$paleteEn,$enderecoRepo, $paleteRepo);
+            } else {
+                $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $paleteEn->getId() . '/endereco/' . $idEndereco);
+            }
+        }
     }
 
     public function validaNivelAction()
@@ -213,7 +216,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->validaEnderecoPicking($codBarras, $paleteEn);
+        $this->validaEnderecoPicking($codBarras, $paleteEn, $nivel);
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
 
@@ -230,13 +233,17 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn)
+    public function validaEnderecoPicking($endereco, $paleteEn, $nivel)
     {
-        $nivel      = $endereco[4].$endereco[5];
+
         //Se for picking do produto entao o nivel poderá ser escolhido
         if ($nivel == '00') {
-            $codProduto = $paleteEn->getCodProduto();
-            $grade      = $paleteEn->getGrade();
+
+            $produtosEn = $paleteEn->getProdutos();
+            $produto = $produtosEn[0];
+            $codProduto = $produto->getCodProduto();
+            $grade      = $produto->getGrade();
+
             /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
             $ProdutoRepository   = $this->em->getRepository('wms:Produto');
             $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
@@ -258,6 +265,13 @@ class Mobile_EnderecamentoController extends Action
     {
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
+
+        if($enderecoRepo->verificaBloqueioInventario($enderecoEn->getId())) {
+            $this->createXml('error','Endereço bloqueado por inventário');
+        }
 
         if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
             $this->createXml('error','Endereço já ocupado');

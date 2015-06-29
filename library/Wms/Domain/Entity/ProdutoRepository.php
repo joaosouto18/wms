@@ -885,16 +885,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             return null;
         }
 
-        if ($embalagemEn[0]->getEndereco() != null) {
-            if ($tipoRetorno == "DSC"){
-                $enderecoPicking = $embalagemEn[0]->getEndereco()->getDescricao();
-            } else {
-                $enderecoPicking = $embalagemEn[0]->getEndereco()->getId();
+        $enderecoPicking = array();
+        foreach($embalagemEn as $key => $embalagem) {
+            if ($embalagem->getEndereco() != null) {
+                if ($tipoRetorno == "DSC"){
+                    $enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
+                } else {
+                    $enderecoPicking[$key] = $embalagem->getEndereco()->getId();
+                }
+            } else{
+                $enderecoPicking = null;
+                break;
             }
-            return $enderecoPicking;
-        } else{
-            return null;
         }
+        return $enderecoPicking;
     }
 
     public function getNormaPaletizacaoPadrao($codProduto, $grade) {
@@ -1093,7 +1097,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $cond=" AND  DE.NUM_RUA = ".$rua." ";
         }
 
-
         $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
@@ -1108,6 +1111,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function verificaSeEProdutoComposto($idProduto)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.numVolumes')
+            ->from('wms:Produto', 'p')
+            ->where('p.id = :codProduto')
+            ->setParameter('codProduto', $idProduto);
+
+        return $dql->getQuery()->getResult();
     }
 
 }

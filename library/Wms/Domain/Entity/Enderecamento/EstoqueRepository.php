@@ -189,7 +189,8 @@ class EstoqueRepository extends EntityRepository
     {
         $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
 
-        $Sql = " SELECT ESTQ.COD_DEPOSITO_ENDERECO, DE.DSC_DEPOSITO_ENDERECO, ESTQ.QTD, NVL(RS.QTD_RESERVA,0) as QTD_RESERVA, ESTQ.QTD + NVL(RS.QTD_RESERVA,0) as SALDO, ESTQ.COD_PRODUTO_VOLUME, ESTQ.COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.DTH_PRIMEIRA_MOVIMENTACAO
+        $Sql = " SELECT ESTQ.COD_DEPOSITO_ENDERECO, DE.DSC_DEPOSITO_ENDERECO, ESTQ.QTD, NVL(RS.QTD_RESERVA,0) as QTD_RESERVA, ESTQ.QTD + NVL(RS.QTD_RESERVA,0) as SALDO, ESTQ.COD_PRODUTO_VOLUME, ESTQ.COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
+                        TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI') as DT_MOVIMENTACAO
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                 FROM RESERVA_ESTOQUE RE
@@ -207,7 +208,7 @@ class EstoqueRepository extends EntityRepository
                     AND ESTQ.DSC_GRADE = '$grade'
                     AND ESTQ.COD_PRODUTO = '$codProduto'";
 
-        $SqlOrder = " ORDER BY ESTQ.DTH_PRIMEIRA_MOVIMENTACAO ASC";
+        $SqlOrder = " ORDER BY DT_MOVIMENTACAO , ESTQ.QTD";
 
         $SqlWhere = "";
         if ($volume != null) {
@@ -224,13 +225,14 @@ class EstoqueRepository extends EntityRepository
             }
             $result = $arrayResult;
         } else {
-            $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlWhere)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrder)->fetchAll(\PDO::FETCH_ASSOC);
         }
         return $result;
     }
 
     public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true){
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                       DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
                        E.COD_PRODUTO,
                        E.DSC_GRADE,
@@ -241,9 +243,10 @@ class EstoqueRepository extends EntityRepository
                        E.RESERVA_SAIDA,
                        E.QTD,
                        TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
-                       P.DSC_PRODUTO
-                  FROM (SELECT
-                               NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
+                       P.DSC_PRODUTO,
+                       E.UMA,
+                       E.UNITIZADOR
+                  FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                                NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),E.COD_PRODUTO) as COD_PRODUTO,
                                NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),E.DSC_GRADE) as DSC_GRADE,
                                CASE WHEN (E.VOLUME = '0' OR RE.VOLUME = '0' OR RS.VOLUME = '0') THEN 'PRODUTO UNITÁRIO'
@@ -254,9 +257,12 @@ class EstoqueRepository extends EntityRepository
                                NVL(RS.QTD_RESERVADA,0) as RESERVA_SAIDA,
                                NVL(E.QTD,0) as QTD,
                                NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
-                               E.DTH_PRIMEIRA_MOVIMENTACAO
-                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD,
+                               E.DTH_PRIMEIRA_MOVIMENTACAO,
+                               E.UMA,
+                               UN.DSC_UNITIZADOR AS UNITIZADOR
+                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR,
                                        E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE E) E
+                          LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = E.COD_UNITIZADOR
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
                                              FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                                      FROM RESERVA_ESTOQUE RE
@@ -807,6 +813,119 @@ class EstoqueRepository extends EntityRepository
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
 
+    }
+
+    public function getProdutosArmazenadosPickingErrado($params) {
+        $SQLWhere = " WHERE ";
+        $SQLOrder = " ORDER BY DE.DSC_DEPOSITO_ENDERECO ";
+        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                       PK.COD_PRODUTO as PRODUTO_PICKING,
+                       PK.DSC_GRADE as GRADE_PICKING,
+                       PK.VOLUMES as VOLUME_PICKING,
+                       E.COD_PRODUTO as PRODUTO_ESTOQUE,
+                       E.DSC_GRADE as GRADE_ESTOQUE,
+                       E.VOLUMES as VOLUMES_ESTOQUE,
+                       E.QTD,
+                       E.PK_CORRETO as PICKING_CORRETO
+                  FROM (SELECT E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.QTD, E.PK_CORRETO,
+                               LISTAGG(E.VOLUME,',') WITHIN GROUP (ORDER BY E.VOLUME) VOLUMES
+                          FROM (SELECT E.QTD,
+                                       NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) as COD_PRODUTO,
+                                       NVL(PE.DSC_GRADE, PV.DSC_GRADE) as DSC_GRADE,
+                                       NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
+                                       E.COD_DEPOSITO_ENDERECO,
+                                       DE2.DSC_DEPOSITO_ENDERECO AS PK_CORRETO
+                                  FROM ESTOQUE E
+                                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME
+                                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = E.COD_PRODUTO_EMBALAGEM
+                                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                                  LEFT JOIN DEPOSITO_ENDERECO DE2 ON (DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO OR DE2.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO)
+                                 WHERE DE.COD_CARACTERISTICA_ENDERECO = 37
+                                   AND (E.COD_DEPOSITO_ENDERECO <> PE.COD_DEPOSITO_ENDERECO
+                                     OR E.COD_DEPOSITO_ENDERECO <> PV.COD_DEPOSITO_ENDERECO))E
+                         GROUP BY E.QTD, E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.PK_CORRETO) E
+                  LEFT JOIN (SELECT COD_PRODUTO,
+                                    DSC_GRADE,
+                                    COD_DEPOSITO_ENDERECO,
+                                    LISTAGG (VOLUME,';') WITHIN GROUP (ORDER BY VOLUME) VOLUMES
+                               FROM (SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO
+                                       FROM PRODUTO P
+                                       LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+                                       LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE)
+                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_DEPOSITO_ENDERECO) PK
+                         ON PK.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = E.COD_PRODUTO AND PROD.DSC_GRADE = E.DSC_GRADE
+                   ";
+
+        if (isset($params['inicioRua']) && ($params['inicioRua'] != "")) {
+            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            $SQLWhere .= " DE.NUM_RUA >= " . $params['inicioRua'];
+        }
+
+        if (isset($params['fimRua']) && ($params['fimRua'] != "")) {
+            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            $SQLWhere .= " DE.NUM_RUA <= " . $params['fimRua'];
+        }
+
+        if (isset($params['grandeza']) && (count($params['grandeza']) >0)) {
+            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            $grandezas = implode(",",$params['grandeza']);
+            $SQLWhere .= " PROD.COD_LINHA_SEPARACAO IN ($grandezas)";
+        }
+
+        $array = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
+        return $array;
+
+    }
+
+    public function getProdutosVolumesDivergentes()
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('e.codProduto as Codigo, e.grade as Grade, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
+            ->from("wms:Enderecamento\Estoque", "e")
+            ->innerJoin("e.produto", 'p')
+            ->innerJoin("e.produtoVolume", 'v')
+            ->where('e.produtoVolume IS NOT NULL')
+            ->groupBy('e.codProduto ','e.grade', 'p.descricao', 'v.id', 'v.descricao')
+            ->orderBy('e.codProduto, e.grade', 'ASC');
+
+        $result = $dql->getQuery()->getArrayResult();
+
+        $prodAnterior = "";
+        $prodAtual = "";
+        $qtdVolumes = 1;
+
+        $produtosDivergentes = array();
+
+        foreach ($result as $produto) {
+            $prodAtual = $produto;
+
+            if ($prodAnterior == "") {
+                $prodAnterior = $produto;
+            } else {
+                if (($prodAnterior['Codigo'] == $produto['Codigo']) && ($prodAnterior['Grade'] == $produto['Grade'])) {
+                    $qtdVolumes = $qtdVolumes + 1;
+                    if ($prodAnterior['Qtd'] != $produto['Qtd']) {
+                        array_push($produtosDivergentes, $produto);
+                    }
+                } else {
+                    $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $prodAnterior['Codigo'], 'grade' => $prodAnterior['Grade']));
+                    if ($produtoEn->getNumVolumes() != $qtdVolumes) {
+                        $produtoFaltante = $prodAnterior;
+                        $produtoFaltante['Volume'] = 'Faltando Volume';
+                        $produtoFaltante['Qtd'] = "-";
+                        array_push($produtosDivergentes, $produtoFaltante);
+                    }
+
+                    $qtdVolumes = 1;
+                }
+            }
+
+            $prodAnterior = $prodAtual;
+        }
+
+        return $produtosDivergentes;
     }
 
 }

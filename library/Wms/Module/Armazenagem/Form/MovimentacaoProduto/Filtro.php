@@ -6,7 +6,7 @@ use Wms\Module\Web\Form;
 class Filtro extends Form
 {
 
-    public function init()
+    public function init($utilizaGrade = 'S')
     {
                 $this->setAttribs(array(
                    'method' => 'post',
@@ -17,12 +17,19 @@ class Filtro extends Form
                    'size' => 12,
                    'label' => 'Cod. produto',
                    'class' => 'focus',
-                ))
-                ->addElement('text', 'grade', array(
-                    'size' => 12,
-                    'label' => 'Grade',
-                ))
-                ->addElement('date', 'dataInicial', array(
+                ));
+                if ($utilizaGrade == "S") {
+                    $this->addElement('text', 'grade', array(
+                        'size' => 12,
+                        'label' => 'Grade',
+                    ));
+                } else {
+                    $this->addElement('hidden', 'grade', array(
+                        'label' => 'Grade',
+                        'value' => 'UNICA'
+                    ));
+                }
+                $this->addElement('date', 'dataInicial', array(
                     'size' => 20,
                     'label' => 'Data Inicio'
                 ))

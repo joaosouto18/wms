@@ -19,6 +19,7 @@ class Mobile_OrdemServicoController extends Action
         $transbordo = $this->_getParam('transbordo', null);
         $this->view->transbordo = $transbordo;
         $sessao = new \Zend_Session_Namespace('deposito');
+
         if (count($sessao->centraisPermitidas) == 1) {
             if ($transbordo) {
                 $this->redirect('conferencia-transbordo', 'ordem-servico');
@@ -26,6 +27,7 @@ class Mobile_OrdemServicoController extends Action
                 $this->redirect('conferencia-expedicao', 'ordem-servico');
             }
         }
+        $this->view->centraisPermitidas = $sessao->centraisPermitidas;
     }
 
     public function conferenciaExpedicaoAction()
@@ -36,10 +38,9 @@ class Mobile_OrdemServicoController extends Action
         $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $this->view->iniciadas  = $expedicaoRepo->getOSByUser();
 
-        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA);
+        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_PARCIALMENTE_FINALIZADO);
 
         $this->view->expedicoes = $expedicaoRepo->getByStatusAndCentral($status, $idCentral);
-
     }
 
     public function conferenciaTransbordoAction()
