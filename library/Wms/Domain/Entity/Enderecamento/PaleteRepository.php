@@ -999,7 +999,7 @@ class PaleteRepository extends EntityRepository
             ->from("wms:Enderecamento\Palete", "pa")
             ->innerJoin('pa.unitizador', 'u')
             ->innerJoin('pa.recebimento', 'receb')
-            ->innerJoin('receb.status', 'sigla')
+            ->innerJoin('pa.status', 'sigla')
             ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = pa.id')
             ->leftJoin('pa.depositoEndereco', 'de')
             ->setParameter('recebimento', $params['id'])

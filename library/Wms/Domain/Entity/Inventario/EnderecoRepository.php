@@ -70,7 +70,7 @@ class EnderecoRepository extends EntityRepository
         }
 
         $andContagem = null;
-        if ($numContagem != null) {
+        if (isset($numContagem)) {
             $andContagem = " AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem." AND IE.INVENTARIADO IS NULL ";
         }
 
