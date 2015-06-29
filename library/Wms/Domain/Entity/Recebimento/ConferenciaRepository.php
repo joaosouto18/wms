@@ -138,7 +138,7 @@ class ConferenciaRepository extends EntityRepository
             ->from("wms:Recebimento\VQtdRecebimento", "r")
             ->leftjoin("wms:Produto\NormaPaletizacao", "np","WITH","np.id = r.codNormaPaletizacao")
             ->leftJoin('np.unitizador','un')
-            ->where("r.codProduto = $idProduto")
+            ->where("r.codProduto = '$idProduto'")
             ->andWhere("r.grade = '$grade'")
             ->andWhere("r.codRecebimento = $idRecebimento");
         $result = $query->getQuery()->getArrayResult();

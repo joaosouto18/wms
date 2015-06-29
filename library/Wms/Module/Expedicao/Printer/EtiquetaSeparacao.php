@@ -55,6 +55,7 @@ class EtiquetaSeparacao extends Pdf
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
+		$this->AddPage();
         foreach($etiquetas as $etiqueta) {
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
         }
@@ -164,8 +165,7 @@ class EtiquetaSeparacao extends Pdf
 
         $strReimpressao = "";
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
-
-        $this->AddPage();
+		
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
@@ -182,12 +182,12 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr("$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - Fornecedor:$etiqueta[fornecedor]",0,50) . " \n";
                 $impressao .= utf8_decode("$etiqueta[tipoComercializacao] - $etiqueta[endereco]\n");
                 $this->MultiCell(100, 2.7, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, 16, 50);
+                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, null, 50);
                 // font
                 $this->SetFont('Arial','B',17);
                 //Go to 1.5 cm from bottom
-                $this->SetY(16.5);
-                $this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
+                //$this->SetY(16.5);
+                //$this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
 
                 break;
             default:
@@ -198,12 +198,12 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr("$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - Fornecedor:$etiqueta[fornecedor] ",0,50) . " \n";
                 $impressao .= utf8_decode("$etiqueta[tipoComercializacao] - $etiqueta[endereco]\n");
                 $this->MultiCell(100, 2.7, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, 16, 50);
+                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, null, 50);
                 // font
                 $this->SetFont('Arial','B',17);
                 //Go to 1.5 cm from bottom
-                $this->SetY(16.5);
-                $this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
+                //$this->SetY(16.5);
+                //$this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
                 break;
         }
     }

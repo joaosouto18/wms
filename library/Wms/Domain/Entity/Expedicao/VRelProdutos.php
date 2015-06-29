@@ -16,7 +16,7 @@ class VRelProdutos
     protected $codExpedicao;
 
     /**
-     * @Column(name="PRODUTO", type="integer", nullable=false)
+     * @Column(name="PRODUTO", type="string", nullable=false)
      * @id
      */
     protected $codProduto;

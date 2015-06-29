@@ -64,15 +64,20 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
 
-    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null)
+    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false)
     {
         $SqlWhere = "  WHERE RES.TIPO_RESERVA = 'E'";
         $osId = "";
         $siglaId = "";
+        $codBarrasProduto = "";
 
         if ($showOsId == true) {
             $osId = "O.COD_ONDA_RESSUPRIMENTO_OS as ID,";
             $siglaId = "SIGLA.COD_SIGLA as COD_STATUS,";
+        }
+
+        if ($exibrCodBarrasProduto == true) {
+            $codBarrasProduto = ", CB_PROD.COD_BARRAS ";
         }
 
         if (!empty($status)) {
@@ -107,7 +112,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                DE2.DSC_DEPOSITO_ENDERECO as PICKING,
                $siglaId
                SIGLA.DSC_SIGLA STATUS
-
+               $$codBarrasProduto
           FROM ONDA_RESSUPRIMENTO_OS O
           INNER JOIN SIGLA ON SIGLA.COD_SIGLA = O.COD_STATUS
           LEFT JOIN ORDEM_SERVICO OS ON O.COD_OS = OS.COD_OS
@@ -129,6 +134,12 @@ class OndaRessuprimentoRepository extends EntityRepository
                        LEFT JOIN PRODUTO_VOLUME    PV ON O.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
                        LEFT JOIN PRODUTO_EMBALAGEM PE ON O.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
                       GROUP BY O.COD_ONDA_RESSUPRIMENTO_OS) VOLS ON VOLS.COD_ONDA_RESSUPRIMENTO_OS = O.COD_ONDA_RESSUPRIMENTO_OS
+          LEFT JOIN (SELECT O.COD_ONDA_RESSUPRIMENTO_OS,
+                        MAX(NVL(PV.COD_BARRAS,PE.COD_BARRAS)) as COD_BARRAS
+                       FROM ONDA_RESSUPRIMENTO_OS_PRODUTO O
+                       LEFT JOIN PRODUTO_VOLUME    PV ON O.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
+                       LEFT JOIN PRODUTO_EMBALAGEM PE ON O.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                       GROUP BY O.COD_ONDA_RESSUPRIMENTO_OS) CB_PROD ON CB_PROD.COD_ONDA_RESSUPRIMENTO_OS = O.COD_ONDA_RESSUPRIMENTO_OS
                       ";
 
         if (isset($dataInicial) && (!empty($dataInicial))) {

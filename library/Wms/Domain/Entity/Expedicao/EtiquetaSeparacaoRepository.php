@@ -17,20 +17,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getCountEtiquetasByExpedicao ($idExpedicao)
     {
         $produtos = $this->getEntityManager()->createQueryBuilder()
-                ->select("p.id, p.grade, SUM(pp.quantidade) quantidade")
-                ->from("wms:Expedicao\PedidoProduto", "pp")
-                ->innerJoin("pp.produto", "p")
-                ->innerJoin("pp.pedido", "ped")
-                ->innerJoin("ped.carga", "c")
-                ->leftJoin("p.volumes", "v")
-                ->where("c.expedicao = " . $idExpedicao)
-                ->groupBy("p.id, p.grade")->getQuery()->getResult();
-        
+            ->select("p.id, p.grade, SUM(pp.quantidade) quantidade")
+            ->from("wms:Expedicao\PedidoProduto", "pp")
+            ->innerJoin("pp.produto", "p")
+            ->innerJoin("pp.pedido", "ped")
+            ->innerJoin("ped.carga", "c")
+            ->leftJoin("p.volumes", "v")
+            ->where("c.expedicao = " . $idExpedicao)
+            ->groupBy("p.id, p.grade")->getQuery()->getResult();
+
         $qtdTotal = 0;
         foreach ($produtos as $produto) {
             $qtdTotal = $qtdTotal + $produto['quantidade'];
         }
-        
+
         return $qtdTotal;
     }
 
@@ -88,7 +88,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if ($placaCarga != NULL) {
             $dql->andWhere('c.placaCarga = :placaCarga')
-            ->setParameter('placaCarga', $placaCarga);
+                ->setParameter('placaCarga', $placaCarga);
         }
 
         if ($idCarga != NULL) {
@@ -281,7 +281,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         switch ($sequencia) {
             case 2:
                 $dql->orderBy("es.codBarras","DESC");
-            break;
+                break;
             default:
                 $dql->orderBy("es.codBarras");
         }

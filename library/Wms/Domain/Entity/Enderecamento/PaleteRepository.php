@@ -190,7 +190,7 @@ class PaleteRepository extends EntityRepository
             ->leftJoin("wms:Enderecamento\PaleteProduto","pp",'WITH','pp.uma = p.id')
             ->leftJoin("wms:Produto\Embalagem","pe",'WITH','pp.codProdutoEmbalagem = pe.id')
             ->leftJoin("wms:Produto\Volume","pv",'WITH','pp.codProdutoVolume = pv.id')
-            ->where("(pv.codProduto = $idProduto AND pv.grade = '$grade') OR (pe.codProduto = $idProduto AND pe.grade = '$grade')")
+            ->where("(pv.codProduto = '$idProduto' AND pv.grade = '$grade') OR (pe.codProduto = '$idProduto' AND pe.grade = '$grade')")
             ->andWhere("p.recebimento = $idRecebimento")
             ->andWhere("p.codStatus = ". $codStatus)
             ->groupBy('pp.codNormaPaletizacao, pp.codProdutoEmbalagem, pp.codProdutoVolume ')

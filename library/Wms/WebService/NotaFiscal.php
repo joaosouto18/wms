@@ -3,34 +3,57 @@
 use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
     Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
 
-class Item
-{
 
-    /**
-     * @var string
-     */
+class Item {
+    /** @var string */
     public $idProduto;
-
-    /**
-     * @var string
-     */
+    /** @var string */
     public $grade;
-
-    /**
-     * @var integer
-     */
+    /** @var integer */
     public $quantidade;
-
 }
 
-class Itens
-{
-
-    /**
-     * @var Item[]
-     */
+class Itens {
+    /** @var Item[] */
     public $itens = array();
+}
 
+class itensNf {
+    /** @var string */
+    public $idProduto;
+    /** @var string */
+    public $quantidade;
+    /** @var string */
+    public $grade;
+    /** @var string */
+    public $quantidadeConferida;
+    /** @var string */
+    public $quantidadeAvaria;
+    /** @var string */
+    public $motivoDivergencia;
+}
+
+class notaFiscal {
+    /** @var string */
+    public $idRecebimeto;
+    /** @var string */
+    public $idFornecedor;
+    /** @var string */
+    public $numero;
+    /** @var string */
+    public $serie;
+    /** @var string */
+    public $dataEmissao;
+    /** @var string */
+    public $placa;
+    /** @var string */
+    public $status;
+    /** @var string */
+    public $dataEntrada;
+    /** @var string */
+    public $bonificacao;
+    /** @var itensNf[] */
+    public $itens = array();
 }
 
 class Wms_WebService_NotaFiscal extends Wms_WebService
@@ -48,6 +71,13 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus)
     {
+
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao  = trim($dataEmissao);
+        $idStatus = trim($idStatus);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
@@ -67,8 +97,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             throw new \Exception('NotaFiscal não encontrada');
 
         $itemsNF = $em->getRepository('wms:NotaFiscal')->getConferencia($fornecedorEntity->getId(), $numero, $serie, $dataEmissao, $idStatus);
-        $itens = array();
 
+        $itens = array();
         foreach ($itemsNF as $item) {
             $itens[] = array(
                 'idProduto' => $item['COD_PRODUTO'],
@@ -85,7 +115,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $dataEntrada = ($notaFiscalEntity->getDataEntrada()) ? $notaFiscalEntity->getDataEntrada()->format('d/m/Y') : '';
 
-        return array(
+        return $result =  array(
             'idRecebimento' => $idRecebimento,
             'idFornecedor' => $notaFiscalEntity->getFornecedor()->getId(),
             'numero' => $notaFiscalEntity->getNumero(),
@@ -100,6 +130,71 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     }
 
     /**
+     * Retorna uma Nota Fiscal específico no WMS pelo seu ID.
+     *
+     * @param string $idFornecedor Codigo do fornecedor
+     * @param string $numero Numero da nota fiscal
+     * @param string $serie Serie da nota fiscal
+     * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
+     * @return notaFiscal
+     */
+    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
+    {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+
+        $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+
+        if ($fornecedorEntity == null)
+            throw new \Exception('Codigo de Fornecedor invalido');
+
+        $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
+            'fornecedor' => $fornecedorEntity->getId(),
+            'numero' => $numero,
+            'serie' => $serie,
+            'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao)
+        ));
+
+        if ($notaFiscalEntity == null)
+            throw new \Exception('NotaFiscal não encontrada');
+
+        $itemsNF = $em->getRepository('wms:NotaFiscal')->getConferencia($fornecedorEntity->getId(), $numero, $serie, $dataEmissao, $notaFiscalEntity->getStatus()->getId());
+
+        $clsNf = new notaFiscal();
+        foreach ($itemsNF as $item) {
+            $clsItensNf = new itensNf();
+            $clsItensNf->idProduto = $item['COD_PRODUTO'];
+            $clsItensNf->quantidade = $item['QTD_ITEM'];
+            $clsItensNf->grade = $item['DSC_GRADE'];
+            $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
+            $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
+            $clsNf->itens[] = $clsItensNf;
+        }
+
+        //verifica se existe recebimento, senao seta 0 no codigo do recebimento
+        $idRecebimento = ($notaFiscalEntity->getRecebimento()) ? $notaFiscalEntity->getRecebimento()->getId() : 0;
+
+        $dataEntrada = ($notaFiscalEntity->getDataEntrada()) ? $notaFiscalEntity->getDataEntrada()->format('d/m/Y') : '';
+
+        $clsNf->idRecebimeto = $idRecebimento;
+        $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getId();
+        $clsNf->numero = $notaFiscalEntity->getNumero();
+        $clsNf->serie = $notaFiscalEntity->getSerie();
+        $clsNf->dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
+        $clsNf->placa = $notaFiscalEntity->getPlaca();
+        $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
+        $clsNf->dataEntrada = $dataEntrada;
+        $clsNf->bonificacao = $notaFiscalEntity->getBonificacao();
+
+        return $clsNf;
+    }
+
+
+    /**
      * Salva uma Nota Fiscal no WMS
      * 
      * @param string $idFornecedor Codigo do fornecedor
@@ -107,82 +202,70 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param array  $itens
+     * @param Itens  $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @return boolean
      */
     public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao)
     {
-
         $em = $this->__getDoctrineContainer()->getEntityManager();
-        $em->beginTransaction();
 
-        try {
-            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+        $placa = trim($placa);
+        $bonificacao = trim ($bonificacao);
 
-            if ($fornecedorEntity == null)
-                throw new \Exception('Fornecedor não encontrado');
 
-            $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
-                    ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
-
-            if ($notaFiscalEntity != null)
-                throw new \Exception('Nota fiscal já se encontra cadastrada');
-
-            // caso haja um veiculo vinculado a placa
-            if (empty($placa) || (strlen($placa) != 7))
-                $placa = $em->getRepository('wms:Sistema\Parametro')->getValor(5, 'PLACA_PADRAO_NOTAFISCAL');
-
-            $service = $this->__getServiceLocator()->getService('Veiculo');
-            $veiculo = $service->get($placa);
-
-            if ($veiculo == null)
-                throw new \Exception('Veiculo de placa ' . $placa . ' não encontrado');
-
-            if (!in_array($bonificacao, array('S', 'N')))
-                throw new \Exception('Indicação de bonificação inválida. Deve ser N para não ou S para sim.');
-
-            $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
-
-            //inserção de nova NF
-            $notaFiscalEntity = new NotaFiscalEntity;
-            $notaFiscalEntity->setNumero($numero)
-                    ->setSerie($serie)
-                    ->setDataEntrada(new \DateTime)
-                    ->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao))
-                    ->setFornecedor($fornecedorEntity)
-                    ->setBonificacao($bonificacao)
-                    ->setStatus($statusEntity)
-                    ->setPlaca($placa);
-
-            if (count($itens) > 0) {
-                //itera nos itens das notas
-                foreach ($itens as $item) {
-                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $item['idProduto'], 'grade' => $item['grade']));
-
-                    if ($produtoEntity == null)
-                        throw new \Exception('Produto de código  ' . $item['idProduto'] . ' e grade ' . $item['grade'] . ' não encontrado');
-
-                    $itemEntity = new ItemNF;
-                    $itemEntity->setNotaFiscal($notaFiscalEntity)
-                            ->setProduto($produtoEntity)
-                            ->setGrade($item['grade'])
-                            ->setQuantidade($item['quantidade']);
-
-                    $notaFiscalEntity->getItens()->add($itemEntity);
-                }
+        //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+        if (gettype($itens) != "array") {
+            $itensNf = array();
+            foreach ($itens->itens as $itemNf){
+                $itemWs['idProduto'] = $itemNf->idProduto;
+                $itemWs['grade'] = $itemNf->grade;
+                $itemWs['quantidade'] = $itemNf->quantidade;
+                $itensNf[] = $itemWs;
             }
+            $itens = $itensNf;
+        }
+        $itens = $this->trimArray($itens);
 
-            $em->persist($notaFiscalEntity);
-            $em->flush();
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+        $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
+        $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
+        return true;
+    }
 
-            $em->commit();
+    /**
+     * Salva uma Nota Fiscal no WMS atraves de Json para os itens
+     *
+     * @param string $idFornecedor Codigo do fornecedor
+     * @param string $numero Numero da nota fiscal
+     * @param string $serie Serie da nota fiscal
+     * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
+     * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
+     * @param string $itens Itens da Nota {Json}
+     * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
+     * @return boolean
+     */
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao){
+        /*
+        $jsonMockSample ='{"produtos": [';
+        $jsonMockSample .='     {"idProduto": "999", ';
+        $jsonMockSample .='      "grade": "UNICA",' ;
+        $jsonMockSample .='      "quantidade": "50"}, ';
+        $jsonMockSample .='     {"idProduto": "888", ';
+        $jsonMockSample .='      "grade": "UNICA2",' ;
+        $jsonMockSample .='      "quantidade": "55"}]} ';
+        */
+        try {
+            $array = json_decode($itens, true);
+            $arrayItens = $array['produtos'];
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao);
         } catch (\Exception $e) {
-            $em->rollback();
             throw $e;
         }
-
-        return true;
     }
 
     /**
@@ -196,6 +279,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function status($idFornecedor, $numero, $serie, $dataEmissao)
     {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
@@ -228,6 +315,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function descartar($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
+        $idFornecedor = trim ($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+        $observacao = trim($observacao);
+
         $dataEmissao = \DateTime::createFromFormat('d/m/Y', $dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -261,6 +354,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function desfazer($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
+        $idFornecedor = trim($idFornecedor);
+        $numero = trim($numero);
+        $serie = trim($serie);
+        $dataEmissao = trim($dataEmissao);
+        $observacao = trim($observacao);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 

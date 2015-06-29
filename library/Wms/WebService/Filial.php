@@ -19,6 +19,11 @@ class Wms_WebService_Filial extends Wms_WebService
      */
     public function salvar($id, $cnpj, $nome, $nomeFantasia = '')
     {
+        $id = trim($id);
+        $cnpj = trim($cnpj);
+        $nome = trim($nome);
+        $nomeFantasia = trim($nomeFantasia);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $service = $this->__getServiceLocator()->getService('Filial');
 

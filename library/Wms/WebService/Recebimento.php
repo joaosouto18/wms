@@ -75,6 +75,8 @@ class Wms_WebService_Recebimento extends Wms_WebService
      */
     public function buscar($idRecebimento)
     {
+        $idRecebimento = trim ($idRecebimento);
+
         $recebimento = $this->__getServiceLocator()->getService('Recebimento')->get($idRecebimento);
 
         if ($recebimento == null)
