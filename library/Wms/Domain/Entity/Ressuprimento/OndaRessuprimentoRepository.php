@@ -112,7 +112,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                DE2.DSC_DEPOSITO_ENDERECO as PICKING,
                $siglaId
                SIGLA.DSC_SIGLA STATUS
-               $$codBarrasProduto
+               $codBarrasProduto
           FROM ONDA_RESSUPRIMENTO_OS O
           INNER JOIN SIGLA ON SIGLA.COD_SIGLA = O.COD_STATUS
           LEFT JOIN ORDEM_SERVICO OS ON O.COD_OS = OS.COD_OS
