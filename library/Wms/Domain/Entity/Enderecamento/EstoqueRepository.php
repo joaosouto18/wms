@@ -38,24 +38,31 @@ class EstoqueRepository extends EntityRepository
         $enderecoEn = $params['endereco'];
         $produtoEn = $params['produto'];
         $qtd = $params['qtd'];
+        $volumeEn = $params['volume'];
 
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
 
+
+        $qtdReserva = 0;
+
         if ($saidaProduto == true) {
-            $dql = "SELECT sum(ES.QTD), sum(REP.QTD_RESERVADA), sum(ES.QTD) + sum(REP.QTD_RESERVADA) as soma
-                    FROM RESERVA_ESTOQUE RE
-                    INNER JOIN DEPOSITO_ENDERECO DE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                    INNER JOIN ESTOQUE ES ON ES.COD_PRODUTO = REP.COD_PRODUTO
-                    WHERE REP.COD_PRODUTO = '$codProduto' AND ES.COD_DEPOSITO_ENDERECO = '$endereco'
-                    ORDER BY RE.COD_RESERVA_ESTOQUE DESC";
+            $dql = "SELECT SUM(REP.QTD_RESERVADA) QTD_RESERVADA
+                        FROM RESERVA_ESTOQUE RE
+                        INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                        WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'S'
+                        AND REP.COD_PRODUTO = $codProduto AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
+                        if (isset($volumeEn) && !empty($volumeEn)) {
+                            $idVolume = $volumeEn->getId();
+                            $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
+            $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
             $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
 
-            if ($params['qtd'] > $resultado[0]['SOMA']) {
-                throw new \Exception("A movimentação não pode ser maior que a quantidade em estoque");
+            if (count($resultado) > 0) {
+                $qtdReserva = $resultado[0]['QTD_RESERVADA'];
             }
         }
 
@@ -133,7 +140,7 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setQtd($novaQtd);
         }
 
-        if ($novaQtd < 0) {
+        if ($novaQtd < 0 || $novaQtd + $qtdReserva < 0) {
             throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
         } else if ($novaQtd > 0) {
             $em->persist($estoqueEn);
