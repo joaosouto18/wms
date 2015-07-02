@@ -352,7 +352,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             //produtos
             $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
-
             //unidade Medida
             $produtoRepo = $this->em->getRepository('wms:Produto');
             $this->view->unMedida = $produtoRepo->getProdutoEmbalagem();

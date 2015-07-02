@@ -1127,7 +1127,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     public function getProdutoEmbalagem()
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.id')
+            ->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.grade, pe.id')
             ->from('wms:Produto\Embalagem', 'pe')
             ->orderBy('pe.isPadrao', 'desc');
 

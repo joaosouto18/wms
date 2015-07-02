@@ -37,7 +37,7 @@
                             <?php
                             $medida = null;
                             foreach ($this->unMedida as $key => $medidas) {
-                                if ($medidas['produto'] == $produto['codigo']) {
+                                if ($medidas['produto'] == $produto['codigo'] && $medidas['grade'] == $produto['grade']) {
                                     $medida[$medidas['id']] = $medidas['descricao'];
                                 }
                             }
