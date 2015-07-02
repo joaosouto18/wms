@@ -299,7 +299,6 @@ class RecebimentoRepository extends EntityRepository
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
-
                 $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
                 $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
                 $quantidade = $produtoEmbalagemEntity->getQuantidade();
@@ -320,7 +319,7 @@ class RecebimentoRepository extends EntityRepository
             }
         }
 
-        if (isset($idConferente) && is_numeric($idConferente))
+        if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);
 
         if ($divergencia) {
