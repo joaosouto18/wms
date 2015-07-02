@@ -38,7 +38,10 @@ class EstoqueRepository extends EntityRepository
         $enderecoEn = $params['endereco'];
         $produtoEn = $params['produto'];
         $qtd = $params['qtd'];
-        $volumeEn = $params['volume'];
+
+        if (isset($params['volume']) && !empty($params['volume']) ) {
+            $volumeEn = $params['volume'];
+        }
 
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
@@ -140,7 +143,7 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setQtd($novaQtd);
         }
 
-        if ($novaQtd < 0 || $novaQtd + $qtdReserva < 0) {
+        if ($novaQtd + $qtdReserva < 0) {
             throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
         } else if ($novaQtd > 0) {
             $em->persist($estoqueEn);
