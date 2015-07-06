@@ -63,12 +63,13 @@ class MapaSeparacaoRepository extends EntityRepository
               AND M.QTD_SEPARAR = NVL(C.QTD_CONFERIDA,0) ";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        throw new \Exception(count($result));
         foreach ($result as $produto) {
             $arrayFiltro = array();
             $arrayFiltro['mapaSeparacao'] = $produto['COD_MAPA_SEPARACAO'];
             $arrayFiltro['codProduto'] = $produto['COD_PRODUTO'];
             $arrayFiltro['dscGrade'] = $produto['DSC_GRADE'];
+            throw new \Exception('chegou aqui 1');
+
             if ($produto['VOLUME'] != "0") $arrayFiltro['produtoVolume'] = $produto['VOLUME'];
             $produtosEn = $mapaSeparacaoProdutoRepo->findBy($arrayFiltro);
             foreach ($produtosEn as $produtoEn) {
