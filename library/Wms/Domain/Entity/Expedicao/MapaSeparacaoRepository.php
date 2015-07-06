@@ -37,6 +37,7 @@ class MapaSeparacaoRepository extends EntityRepository
     private function validaConferencia($idExpedicao){
 
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
+        $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
 
         $SQL = "SELECT M.COD_EXPEDICAO,
                        M.COD_MAPA_SEPARACAO,
@@ -71,6 +72,10 @@ class MapaSeparacaoRepository extends EntityRepository
             $produtosEn = $mapaSeparacaoProdutoRepo->findBy($arrayFiltro);
             foreach ($produtosEn as $produtoEn) {
                 $produtoEn->setIndConferido('S');
+                $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
+                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()));
+
+                $this->getEntityManager()->persist($pedidoProdutoEn);
                 $this->getEntityManager()->persist($produtoEn);
             }
         }
@@ -118,7 +123,6 @@ class MapaSeparacaoRepository extends EntityRepository
             return 0;
         }
     }
-
 
     public function getQtdConferenciaAberta($embalagemEn, $volumeEn, $mapaEn){
         $sqlVolume = "";
@@ -196,12 +200,16 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function forcaConferencia($idExpedicao) {
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
+        $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
 
         $mapas = $this->findBy(array('expedicao'=>$idExpedicao));
         foreach ($mapas as $mapa) {
             $mapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapa->getId(),'indConferido'=>'N'));
             foreach ($mapaProduto as $produtoEn) {
                 $produtoEn->setIndConferido('S');
+                $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
+                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()));
+                $this->getEntityManager()->persist($pedidoProdutoEn);
                 $this->getEntityManager()->persist($produtoEn);
             }
             $mapa->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
