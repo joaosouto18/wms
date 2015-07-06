@@ -1615,7 +1615,13 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRIÇÃO, i.DSC_ITINERARIO as ITINERÁRIO, pes.NOM_PESSOA as CLIENTE
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRIÇÃO, i.DSC_ITINERARIO as ITINERÁRIO, pes.NOM_PESSOA as CLIENTE,
+                    (
+                        SELECT count(es1.cod_etiqueta_separacao) FROM ETIQUETA_SEPARACAO es1
+                        INNER JOIN PEDIDO ped ON ped.COD_PEDIDO = es1.COD_PEDIDO
+                        INNER JOIN CARGA c ON c.COD_CARGA = ped.COD_CARGA
+                        WHERE c.cod_expedicao = $idExpedicao
+                    ) QTD_CAIXA
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
                     LEFT JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                     LEFT JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
