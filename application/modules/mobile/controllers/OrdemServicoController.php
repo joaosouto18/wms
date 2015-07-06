@@ -20,6 +20,7 @@ class Mobile_OrdemServicoController extends Action
         $this->view->transbordo = $transbordo;
         $sessao = new \Zend_Session_Namespace('deposito');
         if (count($sessao->centraisPermitidas) == 1) {
+            $this->redirect('index', 'expedicao');
             if ($transbordo) {
                 $this->redirect('conferencia-transbordo', 'ordem-servico');
             } else {
@@ -88,6 +89,14 @@ class Mobile_OrdemServicoController extends Action
             return $idCentral;
         }
         return $idCentral;
+    }
+
+    public function selecionaFilialAction()
+    {
+        $sessao = new \Zend_Session_Namespace('deposito');
+        if (count($sessao->centraisPermitidas) == 1) {
+            $this->redirect('index', 'expedicao','mobile',array('idCentral'=>$sessao->centraisPermitidas[0]));
+        }
     }
 
     public function conferenciaInventarioAction()

@@ -4,17 +4,17 @@ namespace Wms\Domain\Entity\Expedicao;
 
 /**
  *
- * @Table(name="MAPA_SEPARACAO_PRODUTO")
- * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository")
+ * @Table(name="MAPA_SEPARACAO_CONFERENCIA")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository")
  */
-class MapaSeparacaoProduto
+class MapaSeparacaoConferencia
 {
 
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @Column(name="COD_MAPA_SEPARACAO_PRODUTO", type="integer", nullable=false)
-     * @SequenceGenerator(sequenceName="SQ_MAPA_SEPARACAO_PROD_01", initialValue=1, allocationSize=1)
+     * @Column(name="COD_MAPA_SEPARACAO_CONFERENCIA", type="integer", nullable=false)
+     * @SequenceGenerator(sequenceName="SQ_MAPA_SEPARACAO_CONF_01", initialValue=1, allocationSize=1)
      */
     protected $id;
 
@@ -61,14 +61,51 @@ class MapaSeparacaoProduto
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="QTD_SEPARAR", type="integer", nullable=false)
+     * @Column(name="QTD_CONFERIDA", type="integer", nullable=false)
      */
-    protected $qtdSeparar;
+    protected $qtdConferida;
 
     /**
-     * @Column(name="IND_CONFERIDO", type="string", nullable=true)
+     * @Column(name="COD_OS", type="integer", nullable=true)
      */
-    protected $indConferido;
+    protected $codOS;
+
+    /**
+     * @Column(name="NUM_CONFERENCIA", type="integer", nullable=true)
+     */
+    protected $numConferencia;
+
+    /**
+     * @Column(name="IND_CONFERENCIA_FECHADA", type="integer", nullable=true)
+     */
+    protected $indConferenciaFechada;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\VolumePatrimonio")
+     * @JoinColumn(name="COD_VOLUME_PATRIMONIO", referencedColumnName="COD_VOLUME_PATRIMONIO")
+     */
+    protected $volumePatrimonio;
+
+    /**
+     * @Column(name="DTH_CONFERENCIA", type="datetime", nullable=true)
+     */
+    protected $dataConferencia;
+
+    /**
+     * @param mixed $codOS
+     */
+    public function setCodOS($codOS)
+    {
+        $this->codOS = $codOS;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodOS()
+    {
+        return $this->codOS;
+    }
 
     /**
      * @param mixed $codProduto
@@ -119,6 +156,22 @@ class MapaSeparacaoProduto
     }
 
     /**
+     * @param mixed $indConferenciaFechada
+     */
+    public function setIndConferenciaFechada($indConferenciaFechada)
+    {
+        $this->indConferenciaFechada = $indConferenciaFechada;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndConferenciaFechada()
+    {
+        return $this->indConferenciaFechada;
+    }
+
+    /**
      * @param mixed $mapaSeparacao
      */
     public function setMapaSeparacao($mapaSeparacao)
@@ -132,6 +185,22 @@ class MapaSeparacaoProduto
     public function getMapaSeparacao()
     {
         return $this->mapaSeparacao;
+    }
+
+    /**
+     * @param mixed $numConferencia
+     */
+    public function setNumConferencia($numConferencia)
+    {
+        $this->numConferencia = $numConferencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNumConferencia()
+    {
+        return $this->numConferencia;
     }
 
     /**
@@ -183,6 +252,22 @@ class MapaSeparacaoProduto
     }
 
     /**
+     * @param mixed $qtdConferida
+     */
+    public function setQtdConferida($qtdConferida)
+    {
+        $this->qtdConferida = $qtdConferida;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdConferida()
+    {
+        return $this->qtdConferida;
+    }
+
+    /**
      * @param mixed $qtdEmbalagem
      */
     public function setQtdEmbalagem($qtdEmbalagem)
@@ -199,35 +284,35 @@ class MapaSeparacaoProduto
     }
 
     /**
-     * @param mixed $qtdSeparar
+     * @param mixed $dataConferencia
      */
-    public function setQtdSeparar($qtdSeparar)
+    public function setDataConferencia($dataConferencia)
     {
-        $this->qtdSeparar = $qtdSeparar;
+        $this->dataConferencia = $dataConferencia;
     }
 
     /**
      * @return mixed
      */
-    public function getQtdSeparar()
+    public function getDataConferencia()
     {
-        return $this->qtdSeparar;
+        return $this->dataConferencia;
     }
 
     /**
-     * @param mixed $indConferido
+     * @param mixed $volumePatrimonio
      */
-    public function setIndConferido($indConferido)
+    public function setVolumePatrimonio($volumePatrimonio)
     {
-        $this->indConferido = $indConferido;
+        $this->volumePatrimonio = $volumePatrimonio;
     }
 
     /**
      * @return mixed
      */
-    public function getIndConferido()
+    public function getVolumePatrimonio()
     {
-        return $this->indConferido;
+        return $this->volumePatrimonio;
     }
 
 }

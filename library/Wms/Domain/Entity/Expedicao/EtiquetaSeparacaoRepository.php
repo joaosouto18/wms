@@ -817,6 +817,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setProdutoVolume($volumeEntity);
             $mapaProduto->setQtdSeparar($quantidadePedido);
             $mapaProduto->setQtdEmbalagem($quantidadeEmbalagem);
+            $mapaProduto->setIndConferido('N');
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
         }

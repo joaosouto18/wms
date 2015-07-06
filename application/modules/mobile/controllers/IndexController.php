@@ -11,7 +11,7 @@ class Mobile_IndexController  extends Action
                 'label' => 'CONF. RECEBIMENTO',
             ),
             2 => array(
-                'url' => '/mobile/expedicao',
+                'url' => '/mobile/ordem-servico/seleciona-filial',
                 'label' => 'EXPEDIÇÃO',
             ),
             3 => array(

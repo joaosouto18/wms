@@ -6,6 +6,7 @@ use Core\Grid\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao as ExpedicaoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
+    Wms\Service\Recebimento as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Expedicao\Andamento;
@@ -13,6 +14,24 @@ use Doctrine\ORM\EntityRepository,
 
 class ExpedicaoRepository extends EntityRepository
 {
+
+    public function validaPedidosImpressos($idExpedicao) {
+        $SQL = "SELECT C.COD_EXPEDICAO
+                  FROM PEDIDO P
+             LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+             LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = P.COD_PEDIDO
+             LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_EXPEDICAO = C.COD_EXPEDICAO
+                 WHERE (ES.COD_STATUS = 522 OR P.IND_ETIQUETA_MAPA_GERADO = 'N' OR MS.COD_STATUS = 522)
+                   AND C.COD_EXPEDICAO = " . $idExpedicao;
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) > 0) {
+            return false;
+        } else {
+            return true;
+        }
+
+    }
 
     public function findProdutosSemEtiquetasById($idExpedicao, $central = null) {
 
@@ -424,10 +443,12 @@ class ExpedicaoRepository extends EntityRepository
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
+        $MapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
 
-        $pedidoProdutoSemEtiquetas = $this->findProdutosSemEtiquetasById($idExpedicao);
-        if (count($pedidoProdutoSemEtiquetas) > 0) {
+        if ($this->validaPedidosImpressos($idExpedicao) == false) {
             return 'Existem produtos sem etiquetas impressas';
         }
 
@@ -438,10 +459,15 @@ class ExpedicaoRepository extends EntityRepository
         Try {
             $this->getEntityManager()->beginTransaction();
             if ($validaStatusEtiqueta == true) {
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
+                if (is_string($result)) {
+                    return $result;
+                }
                 $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
                     return $result;
                 }
+
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
                 if (is_string($result)) {
                     return $result;
@@ -449,6 +475,7 @@ class ExpedicaoRepository extends EntityRepository
             } else {
                 if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
+                $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
             }
 
             $result = $this->finalizar($idExpedicao,$central);
@@ -505,7 +532,6 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
@@ -1605,10 +1631,11 @@ class ExpedicaoRepository extends EntityRepository
     }
 
     public function getUrlMobileByCodBarras($codBarras){
-
+        $LeituraColetor = new LeituraColetor();
         if (strlen($codBarras) >2){
             if ((substr($codBarras,0,2)) == "10") {
                 //ETIQUETA DE SEPARAÇÃO
+                $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
                 $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
                 if ($etiquetaSeparacao == null) {
                     throw new \Exception("Nenhuma Etiqueta de Separação encontrada com o codigo de barras " . $codBarras);
@@ -1692,7 +1719,7 @@ class ExpedicaoRepository extends EntityRepository
             }
             if ((substr($codBarras,0,2)) == "11") {
                 //ETIQUETA MÃE
-
+                $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
                 $etiquetaMae = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaMae")->find($codBarras);
                 if ($etiquetaMae == null) throw new \Exception("Nenhuma etiqueta mãe encontrada com este código de barras $codBarras");
 
@@ -1748,11 +1775,12 @@ class ExpedicaoRepository extends EntityRepository
             }
             if ((substr($codBarras,0,2)) == "12") {
                 //MAPA DE SEPARAÇÃO
+                $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
                 $mapaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codBarras);
                 if ($mapaSeparacao == NULL) throw new \Exception("Nenhum mapa de separação encontrado com o códgo ". $codBarras);
                 $idExpedicao = $mapaSeparacao->getExpedicao()->getId();
                     $operacao = "Conferencia do Mapa cód. $codBarras";
-                    $url = "/mobile/expedicao/ler-produto-mapa/idMapa/$codBarras";
+                    $url = "/mobile/expedicao/ler-produto-mapa/idMapa/$codBarras/idExpedicao/$idExpedicao";
                 return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
             }
             if ((substr($codBarras,0,2)) == "13") {

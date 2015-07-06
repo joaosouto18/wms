@@ -73,7 +73,7 @@ class Expedicao extends Grid
                     'params' => array('urlAction' => 'imprimir', 'urlController' => 'etiqueta', 'sc' => true),
                     'cssClass' => 'dialogAjax pdf',
                     'condition' => function ($row) {
-                        return $row['status'] != "FINALIZADO";
+                        return $row['imprimir'] == "SIM";
                     },
                     'pkIndex' => 'id'
                 ))

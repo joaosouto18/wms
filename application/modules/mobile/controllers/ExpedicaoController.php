@@ -11,7 +11,8 @@ class Mobile_ExpedicaoController extends Action
     protected $bloquearOs = 'S';
 
     public function indexAction(){
-
+        $idCentral = $this->_getParam('idCentral');
+        $this->setIdCentral($idCentral);
     }
 
     public function confirmarOperacaoAction()
@@ -37,108 +38,87 @@ class Mobile_ExpedicaoController extends Action
     public function lerProdutoMapaAction() {
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
+        $idExpedicao = $this->_getParam("idExpedicao");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
-
         $idModeloSeparacao = 1;
-        $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
 
         $this->view->idVolume = $idVolume;
         $this->view->idMapa = $idMapa;
+        $this->view->idExpedicao = $idExpedicao;
+
+        $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
+        if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
+            //BLOQUEIA COLETOR
+        }
+
+        $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
+
+        $volumePatrimonioEn = null;
+        if ((isset($idVolume)) && ($idVolume != null)) {
+            $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+        }
+        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+        $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+
+
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
             try {
 
-                $codBarrasProduto = true;
+                $codBarrasVolumePatrimonio = false;
+                //VERIFICA SE É CODIGO DEBARRAS DE UM VOLUME PATRIMONIO
                 if ((strlen($codBarras) > 2) && ((substr($codBarras,0,2)) == "13") ){
-                    $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
-                    $volumeEn = $volumeRepo->find($codBarras);
-                    if ($volumeEn != null) {
-                        $idVolume = $codBarras;
-                        $this->view->idVolume = $codBarras;
-                        $codBarrasProduto = false;
+                    $novoVolumeEn = $volumePatrimonioRepo->find($codBarras);
+                    if ($novoVolumeEn != null) {
+                        $codBarrasVolumePatrimonio = true;
+                        if ($volumePatrimonioEn != null) {
+                            throw new \Exception("Já existe um volume patrimonio, feche a caixa antes de abrir um novo volume");
+                        } else {
+                            $idVolume = $codBarras;
+                            $this->view->idVolume = $codBarras;
+                        }
                     }
                 }
 
-                if ($codBarrasProduto == true) {
-                    $embalagemEntity = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras))[0];
+                if ($codBarrasVolumePatrimonio == false) {
 
-                    //VERIFICO SE O PRODUTO EXISTE
-                    $erro = false;
-                    if ($erro == false) {
-                        if ($embalagemEntity == null) {
-                            $this->addFlashMessage('error', "Nenhum produto com o código de barras $codBarras encontrado");
-                            $erro = true;
-                        }
+                    $embalagemEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+                    $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('codigoBarras'=>$codBarras));
+                    if (count($embalagemEn) >0) {
+                        $embalagemEn = $embalagemEn[0];
+                        $volumeEn = null;
+                    }
+                    if (count($volumeEn)>0) {
+                        $volumeEn = $volumeEn[0];
+                        $embalagemEn = null;
                     }
 
-                    //VERIFICO SE O PRODUTO PERTENCE AO MAPA SELECIONADO
-                    if ($erro == false) {
-                        $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $idMapa));
-                        $encontrou = false;
-                        foreach ($mapaSeparacaoProduto as $mapaProduto){
-                            if ($mapaProduto->getProduto() == $embalagemEntity->getProduto()) {
-                                $encontrou = true;
-                                break;
-                            }
-                        }
-                        if ($encontrou == false) {
-                            $this->addFlashMessage('error', "Este produto não se encontra no mapa selecionado");
-                            $erro = true;
-                        }
+                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn);
+                    if ($resultado['return'] == false) {
+                        throw new \Exception($resultado['message']);
                     }
-
-
-                    //VERIFICO SE O PRODUTO É EMBALADO OU NÃO
-                    if ($erro == false) {
-                        $embalado = false;
-                        if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
-                            if ($embalagemEntity->getEmbalado() == "S") {
-                                $embalado = true;
-                            }
-                        } else {
-                            $embalagens = $embalagemEntity->getProduto()->getEmbalagens();
-                            foreach ($embalagens as $emb){
-                                if ($emb->getIsPadrao() == "S") {
-                                    if ($embalagemEntity->getQuantidade() < $emb->getQuantidade()) {
-                                        $embalado = true;
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        if ((isset($idVolume)) && ($idVolume != null) && ($embalado == false)) {
-                            $this->addFlashMessage('error','Este produto não é embalado');
-                            $erro = false;
-                        }
-
-                        if ((!(isset($idVolume)) || ($idVolume == null)) && ($embalado == true)) {
-                            $this->addFlashMessage('error','Este produto é embalado');
-                            $erro = false;
-                        }
-                    }
-
-                    if ($erro == false) {
-                        if (isset($qtd) && ($qtd != null)) {
-                            $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
-                        } else{
-                            $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume);
-                        }
+                    if (isset($qtd) && ($qtd != null)) {
+                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
+                    } else{
+                        $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume);
                     }
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
-                $this->_redirect('mobile/expedicao/index');
             }
         }
 
         $this->view->exibeQtd = false;
         if ((isset($idVolume)) && ($idVolume != null)) {
-            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "Q") {
+            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "I") {
                 $this->view->exibeQtd = true;
             }
         } else {
-            $idVolume = "";
-            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q") {
+            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "I") {
                 $this->view->exibeQtd = true;
             }
         }
@@ -150,6 +130,7 @@ class Mobile_ExpedicaoController extends Action
         $idMapa = $this->_getParam('idMapa');
         $codBarras = $this->_getParam('codBarras');
         $qtd = $this->_getParam('qtd');
+        $idExpedicao = $this->_getParam('idExpedicao');
 
         $embalagemEntity = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras))[0];
         $this->view->codProduto = $embalagemEntity->getProduto()->getId();
@@ -160,10 +141,38 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idVolume = $idVolume;
         $this->view->idMapa = $idMapa;
         $this->view->codBarras = $codBarras;
+        $this->view->idExpedicao = $idExpedicao;
 
         if (isset($qtd) && ($qtd > 0)) {
-            $this->addFlashMessage('info','Produto conferido com sucesso');
-            $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume);
+            try {
+                $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+                $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+
+                $embalagemEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+                $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('codigoBarras'=>$codBarras));
+                if (count($embalagemEn) >0) {
+                    $embalagemEn = $embalagemEn[0];
+                    $volumeEn = null;
+                }
+                if (count($volumeEn)>0) {
+                    $volumeEn = $volumeEn[0];
+                    $embalagemEn = null;
+                }
+                $volumePatrimonioEn = null;
+                if ((isset($idVolume)) && ($idVolume != null)) {
+                    $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                }
+                $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+
+                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+                $this->addFlashMessage('info','Produto conferido com sucesso');
+                $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/" . $idVolume);
+
+            } catch (\Exception $e) {
+                $this->addFlashMessage('error',$e->getMessage());
+            }
+
         } else {
             $this->addFlashMessage('info','Informe uma Quantidade');
         }
@@ -634,6 +643,31 @@ class Mobile_ExpedicaoController extends Action
         } else {
             $this->createXml('success','Todos os produtos já foram recebidos');
         }
+    }
+
+    public function setIdCentral($idCentral = null)
+    {
+        $sessaoColetor = new \Zend_Session_Namespace('coletor');
+        $sessaoColetor->parcialmenteFinalizado = false;
+
+        if (empty($idCentral)) {
+            $sessao = new \Zend_Session_Namespace('deposito');
+            $idCentral = $sessao->centraisPermitidas;
+            $sessaoColetor->centralSelecionada = $idCentral[0];
+        } else {
+            $sessaoColetor->centralSelecionada = $idCentral;
+        }
+
+        /** @var \Wms\Domain\Entity\Filial $filialEn */
+        $filialRepo = $this->em->getRepository('wms:Filial');
+        $filialEn = $filialRepo->findOneBy(array('codExterno' => $idCentral));
+
+        if ($filialEn) {
+            $sessaoColetor->ObrigaBiparEtiquetaProduto = $filialEn->getIndLeitEtqProdTransbObg();
+            $sessaoColetor->RecebimentoTransbordoObrigatorio = $filialEn->getIndRecTransbObg();
+            return $idCentral;
+        }
+        return $idCentral;
     }
 
 }

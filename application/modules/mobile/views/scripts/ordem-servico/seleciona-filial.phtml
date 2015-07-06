@@ -1,0 +1,10 @@
+<h3>Centrais de Entrega</h3>
+
+<ul class="menu">
+    <?php foreach($this->centraisPermitidas as $central):?>
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'index', 'idCentral' => $central )); ?>" title="<?php echo $central ?>" >Selecionar Filial <?php echo $central ?> </a>
+        </li>
+    <?php endforeach; ?>
+</ul>
+

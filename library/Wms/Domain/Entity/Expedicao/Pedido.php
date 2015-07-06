@@ -80,7 +80,7 @@ class Pedido
     protected $dataCancelamento;
 
     /**
-     * @Column(name="IND_ETIQUETA_MAPA_GERADO", type="integer", nullable=true)
+     * @Column(name="IND_ETIQUETA_MAPA_GERADO", type="string", nullable=true)
      */
     protected $indEtiquetaMapaGerado;
 
