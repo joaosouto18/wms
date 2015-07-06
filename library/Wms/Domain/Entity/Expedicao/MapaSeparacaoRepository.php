@@ -68,18 +68,21 @@ class MapaSeparacaoRepository extends EntityRepository
             $arrayFiltro['mapaSeparacao'] = $produto['COD_MAPA_SEPARACAO'];
             $arrayFiltro['codProduto'] = $produto['COD_PRODUTO'];
             $arrayFiltro['dscGrade'] = $produto['DSC_GRADE'];
+
             if ($produto['VOLUME'] != "0") $arrayFiltro['produtoVolume'] = $produto['VOLUME'];
             $produtosEn = $mapaSeparacaoProdutoRepo->findBy($arrayFiltro);
             foreach ($produtosEn as $produtoEn) {
+
                 $produtoEn->setIndConferido('S');
+                $this->getEntityManager()->persist($produtoEn);
+
                 $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
                 $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()));
 
                 $this->getEntityManager()->persist($pedidoProdutoEn);
-                $this->getEntityManager()->persist($produtoEn);
+                $this->getEntityManager()->flush();
             }
         }
-        $this->getEntityManager()->flush();
 
         $conferido = true;
         $mapas = $this->findBy(array('expedicao'=>$idExpedicao));
