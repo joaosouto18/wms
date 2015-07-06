@@ -56,6 +56,16 @@ class PedidoProduto
      */
     protected $quantidade;
 
+    /**
+     * @Column(name="QTD_ATENDIDA", type="integer", nullable=false)
+     */
+    protected $qtdAtendida;
+
+    /**
+     * @Column(name="QTD_CORTADA", type="integer", nullable=false)
+     */
+    protected $qtdCortada;
+
     public function setProdutos($produtos)
     {
         $this->produtos = $produtos;
@@ -134,6 +144,38 @@ class PedidoProduto
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $qtdAtendida
+     */
+    public function setQtdAtendida($qtdAtendida)
+    {
+        $this->qtdAtendida = $qtdAtendida;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdAtendida()
+    {
+        return $this->qtdAtendida;
+    }
+
+    /**
+     * @param mixed $qtdCortada
+     */
+    public function setQtdCortada($qtdCortada)
+    {
+        $this->qtdCortada = $qtdCortada;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdCortada()
+    {
+        return $this->qtdCortada;
     }
 
 }
