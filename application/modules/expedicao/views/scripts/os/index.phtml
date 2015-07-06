@@ -1,5 +1,5 @@
 <form id="header-expedicao-os-form" class="header" action="">
-    <?php if (count($this->resumoPlacaCarga) > 0 && $this->expedicao->getStatus()->getId() != \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) : ?>
+    <?php if ($this->expedicao->getStatus()->getId() != \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) : ?>
         <div>
             <fieldset id="fieldset-expedicao">
                 <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
@@ -31,7 +31,7 @@
         </div>
     <?php endif; ?>
     
-    <?php if (count($this->resumoPlacaCarga) > 0) : ?>
+    <?php if ($this->expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) : ?>
         <div>
             <fieldset id="fieldset-resumo-cargas">
                 <legend> Resumo por Placa da Carga</legend>
