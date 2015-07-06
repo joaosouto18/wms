@@ -79,7 +79,10 @@ class EtiquetaSeparacao extends Pdf
 
         $etiquetaMaeAnterior = 0;
 
-        $idModeloSeparacao = 1;
+        $parametroRepo = $this->getEntityManager()->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'MODELO_SEPARACAO_PADRAO'));
+        $idModeloSeparacao = $parametro->getValor();
+        
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $em->getRepository("wms:Expedicao\ModeloSeparacao");
 

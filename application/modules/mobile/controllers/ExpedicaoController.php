@@ -41,7 +41,7 @@ class Mobile_ExpedicaoController extends Action
         $idExpedicao = $this->_getParam("idExpedicao");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
-        $idModeloSeparacao = 1;
+        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
         $this->view->idVolume = $idVolume;
         $this->view->idMapa = $idMapa;

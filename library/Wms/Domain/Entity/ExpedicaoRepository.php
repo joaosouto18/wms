@@ -1802,7 +1802,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                     case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                         $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
 
-                        $idModeloSeparacao = 1;
+                        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
                         $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
                         if ($modeloSeparacao == null) throw new \Exception("Modelo de Separação não encontrado");
                         $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
@@ -1864,7 +1864,8 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                 if ($etiquetaMae == null) throw new \Exception("Nenhuma etiqueta mãe encontrada com este código de barras $codBarras");
 
                 $etiquetas = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao")->findBy(array('codEtiquetaMae'=>$codBarras));
-                $idModeloSeparacao = 1;
+                $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+
                 $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
                 if ($modeloSeparacao == null) throw new \Exception("Modelo de Separação não encontrado");
 
