@@ -1,4 +1,4 @@
-<?php
+d<?php
 
 namespace Wms\Domain\Entity\Expedicao;
 

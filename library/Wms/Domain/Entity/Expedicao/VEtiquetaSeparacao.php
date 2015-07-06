@@ -10,7 +10,7 @@ namespace Wms\Domain\Entity\Expedicao;
 class VEtiquetaSeparacao
 {
     /**
-     * @Column(name="CODBARRAS", type="integer", nullable=false)
+     * @Column(name="CODBARRAS", type="bigint", nullable=false)
      * @id 
      */
     protected $codBarras;

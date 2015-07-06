@@ -23,7 +23,7 @@ class EtiquetaSeparacao
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @Column(name="COD_ETIQUETA_SEPARACAO", type="integer", nullable=false)
+     * @Column(name="COD_ETIQUETA_SEPARACAO", type="bigint", nullable=false)
      * @SequenceGenerator(sequenceName="SQ_ETQ_SEPARACAO_01", initialValue=1, allocationSize=1)
      */
     protected $id;
@@ -62,7 +62,7 @@ class EtiquetaSeparacao
     protected $codStatus;
 
     /**
-     * @Column(name="COD_REFERENCIA", type="integer", nullable=false)
+     * @Column(name="COD_REFERENCIA", type="bigint", nullable=false)
      */
     protected $codReferencia;
 

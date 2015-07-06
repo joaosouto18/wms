@@ -20,7 +20,7 @@ class EtiquetaConferencia
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @Column(name="COD_ETIQUETA_CONFERENCIA", type="integer", nullable=false)
+     * @Column(name="COD_ETIQUETA_CONFERENCIA", type="bigint", nullable=false)
      * @SequenceGenerator(sequenceName="SQ_ETIQUETA_CONFERENCIA_01", initialValue=1, allocationSize=1)
      */
     protected $id;
@@ -58,7 +58,7 @@ class EtiquetaConferencia
     protected $codExpedicao;
 
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      */
     protected $codProduto;
 
@@ -89,13 +89,13 @@ class EtiquetaConferencia
     protected $pedido;
 
     /**
-     * @Column(name="COD_PEDIDO", type="integer", nullable=false)
+     * @Column(name="COD_PEDIDO", type="bigint", nullable=false)
      */
     protected $codReferencia;
 
 
     /**
-     * @Column(name="COD_ETIQUETA_SEPARACAO", type="integer", nullable=false)
+     * @Column(name="COD_ETIQUETA_SEPARACAO", type="bigint", nullable=false)
      */
     protected $codEtiquetaSeparacao;
 
