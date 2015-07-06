@@ -368,6 +368,9 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 9);
 
         $qtdEmbalagem = "";
+        if (!is_null($etiqueta['codProdutoEmbalagem'])) {
+            $qtdEmbalagem = "(". $etiqueta['qtdProduto'] . ")";
+        }
 
         $this->SetFont('Arial', 'B', 11);
         $impressao  = utf8_decode("\n\nEXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
