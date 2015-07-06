@@ -72,7 +72,6 @@ class MapaSeparacaoRepository extends EntityRepository
             if ($produto['VOLUME'] != "0") $arrayFiltro['produtoVolume'] = $produto['VOLUME'];
             $produtosEn = $mapaSeparacaoProdutoRepo->findBy($arrayFiltro);
             foreach ($produtosEn as $produtoEn) {
-                throw new \Exception('chegou aqui 3');
 
                 $produtoEn->setIndConferido('S');
                 $this->getEntityManager()->persist($produtoEn);
