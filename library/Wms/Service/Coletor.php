@@ -8,7 +8,7 @@ class Coletor
      *
      * @param string $codigoBarras
      */
-    public function adequaCodigoBarras($codigoBarras)
+    public function adequaCodigoBarras($codigoBarras, $exception = false)
     {
         if(substr($codigoBarras, 0, 4) == '(01)') {
             return substr($codigoBarras, 4, 18);
@@ -17,7 +17,11 @@ class Coletor
         $codigoBarras = str_replace('(','',$codigoBarras);
         $codigoBarras = str_replace(')','',$codigoBarras);
         if (!$codigoBarras || empty($codigoBarras)) {
-            return 0;
+            if ($exception == true) {
+                throw new \Exception('Código de barras inválido ou não existente');
+            } else {
+                return 0;
+            }
         }
 
         // Se o código começa com "]C1010", o sistema considera o código da posição 6 até 19.
