@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
+use Zend\Stdlib\Configurator;
 
 class PedidoRepository extends EntityRepository
 {
@@ -49,6 +50,32 @@ class PedidoRepository extends EntityRepository
         }
 
         return $enPedido;
+    }
+
+    public function getQtdPedidaAtendidaByPedido ($codPedido) {
+        $statusConferido = EtiquetaSeparacao::STATUS_CONFERIDO;
+        $statusExpedidoTransbordo = EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
+        $statusRecebidoTransbordo = EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
+        $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO,
+                       NVL(TRUNC (ETQ.QTD_ETIQUETAS/V.NUM_VOLUMES),0) as QTD_ATENDIDO
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN (SELECT COUNT(ES.COD_ETIQUETA_SEPARACAO) as QTD_ETIQUETAS,
+                                    ES.COD_PRODUTO,
+                                    ES.DSC_GRADE,
+                                    ES.COD_PEDIDO
+                               FROM ETIQUETA_SEPARACAO ES
+                              WHERE ES.COD_STATUS IN ($statusConferido, $statusExpedidoTransbordo, $statusRecebidoTransbordo)
+                              GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE, ES.COD_PEDIDO) ETQ
+                    ON ETQ.COD_PEDIDO = PP.COD_PEDIDO AND ETQ.COD_PRODUTO = PP.COD_PRODUTO AND ETQ.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN (SELECT COUNT(VOLUMES) as NUM_VOLUMES, COD_PRODUTO, DSC_GRADE, COD_PEDIDO
+                               FROM (SELECT DISTINCT NVL(COD_PRODUTO_VOLUME, COD_PRODUTO_EMBALAGEM) as VOLUMES,
+                                            COD_PRODUTO, DSC_GRADE, COD_PEDIDO
+                                       FROM ETIQUETA_SEPARACAO)
+                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_PEDIDO) V
+                    ON V.COD_PEDIDO = PP.COD_PEDIDO AND V.COD_PRODUTO = PP.COD_PRODUTO AND V.DSC_GRADE = PP.DSC_GRADE
+                 WHERE PP.COD_PEDIDO = '$codPedido'";
+        $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $array;
     }
 
     public function finalizaPedidosByCentral ($PontoTransbordo, $Expedicao)
@@ -178,6 +205,8 @@ class PedidoRepository extends EntityRepository
                 $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
             }
 
+            $this->removeReservaEstoque($idPedido);
+
         } catch (Exception $e) {
             echo $e->getMessage();
         }
@@ -203,6 +232,7 @@ class PedidoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $etiquetas = $EtiquetaRepo->findBy(array('pedido'=>$pedidoEntity));
+
         foreach($etiquetas as $etiqueta) {
             $this->_em->remove($etiqueta);
             $this->_em->flush();
@@ -211,6 +241,7 @@ class PedidoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
         $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
         $pedidosProduto = $PedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity->getId()));
+
         foreach ($pedidosProduto as $pedidoProduto) {
             $this->_em->remove($pedidoProduto);
             $this->_em->flush();
@@ -235,6 +266,52 @@ class PedidoRepository extends EntityRepository
        if ($this->_em->flush()) {
            return true;
        }
+    }
+
+    public function removeReservaEstoque($idPedido)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
+        $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+
+        $getCentralEntrega = $PedidoProdutoRepo->getFilialByProduto($idPedido);
+
+        $ondasPedido = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido')->findBy(array('pedido'=>$idPedido));
+        if (count($ondasPedido) == 0) {
+            return;
+        }
+        foreach ($ondasPedido as $ondaPedido) {
+            $this->getEntityManager()->remove($ondaPedido);
+        }
+
+        foreach ($getCentralEntrega as $centralEntrega) {
+            if ($centralEntrega['indUtilizaRessuprimento'] == 'S') {
+                $dados['produto'] = $centralEntrega['produto'];
+                $dados['grade'] = $centralEntrega['grade'];
+                $dados['expedicao'] = $centralEntrega['expedicao'];
+
+                $arrayReservaEstoqueId = $PedidoProdutoRepo->identificaExpedicaoPedido($dados);
+
+                //atualiza a tabela RESERVA_ESTOQUE_PRODUTO que tiver o COD_RESERVA_ESTOQUE da consulta acima
+                $reservaEstoqueProdutoRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+
+                foreach ($arrayReservaEstoqueId as $key => $reservaEstoqueId) {
+                    $arrayReservaProdutoEntity = $reservaEstoqueProdutoRepository->findBy(array('reservaEstoque' => $reservaEstoqueId['reservaEstoque']));
+                    foreach ($arrayReservaProdutoEntity as $reservaProdutoEntity) {
+                        $reservaProdutoEntity->setQtd($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']);
+                        $this->_em->persist($reservaProdutoEntity);
+
+                        $reservaEstoqueRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
+                        $reservaId = $reservaEstoqueRepository->findOneBy(array('id' => $reservaProdutoEntity->getReservaEstoque()));
+                        if (($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']) == 0) {
+                            $reservaId->setAtendida('C');
+                            $this->_em->persist($reservaId);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->_em->flush();
     }
 
 }

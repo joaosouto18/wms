@@ -281,7 +281,7 @@ class RecebimentoRepository extends EntityRepository
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida) {
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
 
         // ordem servico
@@ -299,6 +299,9 @@ class RecebimentoRepository extends EntityRepository
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
+                $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+                $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
+                $quantidade = $produtoEmbalagemEntity->getQuantidade();
 
                 $qtdNF = (int) $qtdNFs[$idProduto][$grade];
                 $qtdConferida = (int) $qtdConferida;
@@ -307,7 +310,8 @@ class RecebimentoRepository extends EntityRepository
                 if ($gravaRecebimentoVolumeEmbalagem == true) {
                     $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico);
                 }
-
+                
+                $qtdConferida = (int) $qtdConferida * $quantidade;
                 $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
                 if ($qtdDivergencia != 0) {
                     $divergencia = true;
@@ -315,7 +319,7 @@ class RecebimentoRepository extends EntityRepository
             }
         }
 
-        if (isset($idConferente) && is_numeric($idConferente))
+        if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);
 
         if ($divergencia) {
@@ -490,6 +494,14 @@ class RecebimentoRepository extends EntityRepository
         $em = $this->getEntityManager();
 
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+//        $qtdEmbalagem = 1;
+//       $embalagens = $produtoEntity->getEmbalagens();
+//        foreach ($embalagens as $embalagem) {
+//            if ($embalagem->getIsPadrao()=="S") {
+//                $qtdEmbalagem = $embalagem->getQuantidade();
+//            }
+//        }
+//        $qtdConferida = $qtdConferida * $qtdEmbalagem;
 
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
@@ -1211,5 +1223,28 @@ class RecebimentoRepository extends EntityRepository
          return $resultado;
     }
 
+    public function getUsuarioByRecebimento($id)
+    {
+        $sql = "SELECT R.COD_RECEBIMENTO RECEBIMENTO, P.NOM_PESSOA NOME, (SELECT SUM(PV.NUM_PESO)
+                    FROM RECEBIMENTO_VOLUME RV
+                    INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                    WHERE RV.COD_RECEBIMENTO = $id) PESO_TOTAL, (SELECT SUM(PV.NUM_CUBAGEM)
+                    FROM RECEBIMENTO_VOLUME RV
+                    INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                    WHERE RV.COD_RECEBIMENTO = $id) CUBAGEM_TOTAL, (SELECT (COUNT(DISTINCT PV.COD_PRODUTO) + COUNT(DISTINCT PE.COD_PRODUTO))
+                    FROM RECEBIMENTO_VOLUME RV
+                    LEFT JOIN RECEBIMENTO_EMBALAGEM RE ON RE.COD_RECEBIMENTO = RV.COD_RECEBIMENTO
+                    LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                    WHERE RV.COD_RECEBIMENTO = $id) SKU, (SELECT SUM(RC.QTD_CONFERIDA)
+                    FROM RECEBIMENTO_CONFERENCIA RC
+                    WHERE RC.COD_RECEBIMENTO = $id) QTD_TOTAL_PRODUTOS
+                    FROM RECEBIMENTO R
+                    INNER JOIN RECEBIMENTO_DESCARGA RD ON RD.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                    INNER JOIN USUARIO U ON U.COD_USUARIO = RD.COD_USUARIO
+                    INNER JOIN PESSOA P ON P.COD_PESSOA = U.COD_USUARIO
+                    WHERE R.COD_RECEBIMENTO = $id";
 
+        return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

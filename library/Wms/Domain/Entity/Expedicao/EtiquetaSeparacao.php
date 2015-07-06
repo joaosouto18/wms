@@ -16,6 +16,9 @@ class EtiquetaSeparacao
     const STATUS_CONFERIDO = 526;
     const STATUS_RECEBIDO_TRANSBORDO = 532;
     const STATUS_EXPEDIDO_TRANSBORDO = 531;
+    const STATUS_PRIMEIRA_CONFERENCIA = 551;
+    const STATUS_SEGUNDA_CONFERENCIA = 552;
+
 
     /**
      * @Id

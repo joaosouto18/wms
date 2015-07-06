@@ -17,6 +17,8 @@ class Expedicao
     const STATUS_FINALIZADO = 465;
     const STATUS_CANCELADO = 466;
     const STATUS_PARCIALMENTE_FINALIZADO = 530;
+    const STATUS_PRIMEIRA_CONFERENCIA = 551;
+    const STATUS_SEGUNDA_CONFERENCIA = 552;
 
     /**
      * @Column(name="COD_EXPEDICAO", type="integer", nullable=false)
@@ -71,6 +73,11 @@ class Expedicao
      * @Column(name="COD_DEPOSITO", type="integer", nullable=false)
      */
     protected $codDeposito;
+
+    /**
+     * @column(name="TIPO_FECHAMENTO", type="string", length=1, nullable=false)
+     */
+    protected $tipoFechamento;
 
     public function setStatus($status)
     {
@@ -150,6 +157,22 @@ class Expedicao
     public function getCentralEntregaParcFinalizada()
     {
         return $this->centralEntregaParcFinalizada;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoFechamento()
+    {
+        return $this->tipoFechamento;
+    }
+
+    /**
+     * @param mixed $tipoFechamento
+     */
+    public function setTipoFechamento($tipoFechamento)
+    {
+        $this->tipoFechamento = $tipoFechamento;
     }
 
 }

@@ -90,6 +90,11 @@ class ContagemEndereco
     protected $numContagem;
 
     /**
+     * @Column(name="CONTAGEM_INVENTARIADA")
+     */
+    protected $contagemInventariada;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -311,6 +316,22 @@ class ContagemEndereco
     public function setProdutoVolume($produtoVolume)
     {
         $this->produtoVolume = $produtoVolume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getContagemInventariada()
+    {
+        return $this->contagemInventariada;
+    }
+
+    /**
+     * @param mixed $contagemInventariada
+     */
+    public function setContagemInventariada($contagemInventariada)
+    {
+        $this->contagemInventariada = $contagemInventariada;
     }
 
 }

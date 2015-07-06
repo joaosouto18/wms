@@ -82,17 +82,47 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
                 return $retorno;
             }
 
+            $expedicaoRepo = $this->_em->getRepository('wms:Expedicao');
+            $expedicao = $expedicaoRepo->find($idExpedicao);
+
             foreach ($volumesPatrimonio as $volumeCarga) {
-                if ($volumeCarga->getDataFechamento() == NULL) {
-                    throw new \Exception("O Volume $volume ainda está em conferencia na carga " . $volumeCarga->getTipoVolume());
+                $validaEtiqueta = false;
+                $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+                if ($verificaReconferencia=='S'){
+
+                    $idStatus=$expedicao->getStatus()->getId();
+                    /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+                    $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+                    if ($idStatus==Expedicao::STATUS_SEGUNDA_CONFERENCIA){
+                        $etiquetas = $EtiquetaConfRepo->findBy(array('status'=>Expedicao::STATUS_PRIMEIRA_CONFERENCIA,
+                                                                     'codExpedicao'=>$idExpedicao,
+                                                                     'volumePatrimonio'=>$volume));
+                        $statusEntity = $this->_em->getReference('wms:Util\Sigla', EXPEDICAO::STATUS_SEGUNDA_CONFERENCIA);
+
+                        foreach ($etiquetas as $etiqueta) {
+                            $etiqueta->setStatus($statusEntity);
+                            $this->getEntityManager()->persist($etiqueta);
+                        }
+                        $validaEtiqueta = false;
+                    } else {
+                        $validaEtiqueta = true;
+                    }
+                } else {
+                    $validaEtiqueta = true;
                 }
 
-                if ($volumeCarga->getDataConferencia() != NULL) {
-                    throw new \Exception("O Volume $volume já esta conferido");
-                }
+                if ($validaEtiqueta == true) {
+                    if ($volumeCarga->getDataFechamento() == NULL) {
+                        throw new \Exception("O Volume $volume ainda está em conferencia na carga " . $volumeCarga->getTipoVolume());
+                    }
 
-                $volumeCarga->setDataConferencia(new \DateTime());
-                $em->persist($volumeCarga);
+                    if ($volumeCarga->getDataConferencia() != NULL) {
+                        throw new \Exception("O Volume $volume já esta conferido");
+                    }
+
+                    $volumeCarga->setDataConferencia(new \DateTime());
+                    $em->persist($volumeCarga);
+                }
             }
             $em->flush();
             $em->commit();

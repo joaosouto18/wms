@@ -325,7 +325,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 foreach ($produtos as $produto){
                     if (($produto['codProdutoVolume'] == $reservaProduto->getCodProdutoVolume()) &&
                         ($produto['codProdutoEmbalagem'] == $reservaProduto->getCodProdutoEmbalagem())) {
-                        $reservaProduto->setQtd($reservaProduto->getQtd() - $produto['qtd']);
+                        $reservaProduto->setQtd($reservaProduto->getQtd() + $produto['qtd']);
                         $this->getEntityManager()->persist($reservaProduto);
                     }
                 }
@@ -377,7 +377,7 @@ class ReservaEstoqueRepository extends EntityRepository
     public function getResumoReservasNaoAtendidasByParams($params) {
         $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO
                             WHEN REOND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Ressuprimento: '  || OOS.COD_ONDA_RESSUPRIMENTO
-                            WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA
+                            WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA || ' Recebimento: ' || P.COD_RECEBIMENTO
                        END AS ORIGEM,
                        TO_CHAR(RE.DTH_RESERVA,'DD/MM/YYYY HH24:MI:SS') as DTH_RESERVA,
                        CASE WHEN REP.QTD_RESERVADA >= 0 THEN 'ENTRADA'
@@ -387,6 +387,7 @@ class ReservaEstoqueRepository extends EntityRepository
                   FROM RESERVA_ESTOQUE RE
                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN RESERVA_ESTOQUE_ENDERECAMENTO REEND ON REEND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN PALETE P ON REEND.UMA = P.UMA
                   LEFT JOIN RESERVA_ESTOQUE_ONDA_RESSUP REOND ON REOND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
 				  LEFT JOIN ONDA_RESSUPRIMENTO_OS OOS ON OOS.COD_ONDA_RESSuPRIMENTO_OS = REOND.COD_ONDA_RESSUPRIMENTO_OS
                   LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REEXP ON REEXP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE

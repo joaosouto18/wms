@@ -154,18 +154,21 @@
         <input name="idTipoVolume" type="hidden" value="<?php echo $this->idTipoVolume?>" />
     <?php endif; ?>
 
-    <?php if (isset($this->placa))  : ?>
+    <?php if ((isset($this->placa)) && ($this->placa != ""))  : ?>
         <input name="placa" type="hidden" value="<?php echo $this->placa?>" />
         <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
-        <?php else : ?>
-            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+    <?php else : ?>
+        <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+        <?php if ($this->segundaConferencia != "S") { ?>
             <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+        <?php } ?>
+
     <?php endif; ?>
 
     <input type="submit" name="submit" id="submit" value="Conferir" />
 </form>
 
-    <?php if (isset($this->placa) && !is_null($this->placa))  : ?>
+    <?php if (isset($this->placa) && !is_null($this->placa) && ($this->placa != ""))  : ?>
 
         <div id="footer">
             <!--<a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a> |-->

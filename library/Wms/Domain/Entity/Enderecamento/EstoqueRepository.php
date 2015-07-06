@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
+    Core\Util\Produto as ProdutoUtil,
     Core\Util\Produto;
 
 class EstoqueRepository extends EntityRepository
@@ -38,23 +39,33 @@ class EstoqueRepository extends EntityRepository
         $produtoEn = $params['produto'];
         $qtd = $params['qtd'];
 
+        if (isset($params['volume']) && !empty($params['volume']) ) {
+            $volumeEn = $params['volume'];
+        }
+
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
 
+
+        $qtdReserva = 0;
+
         if ($saidaProduto == true) {
-            $dql = "SELECT sum(ES.QTD), sum(REP.QTD_RESERVADA), sum(ES.QTD) + sum(REP.QTD_RESERVADA) as soma
-                    FROM RESERVA_ESTOQUE RE
-                    INNER JOIN DEPOSITO_ENDERECO DE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                    INNER JOIN ESTOQUE ES ON ES.COD_PRODUTO = REP.COD_PRODUTO
-                    WHERE REP.COD_PRODUTO = '$codProduto' AND ES.COD_DEPOSITO_ENDERECO = '$endereco'
-                    ORDER BY RE.COD_RESERVA_ESTOQUE DESC";
+            $dql = "SELECT SUM(REP.QTD_RESERVADA) QTD_RESERVADA
+                        FROM RESERVA_ESTOQUE RE
+                        INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                        WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'S'
+                        AND REP.COD_PRODUTO = $codProduto AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
+                        if (isset($volumeEn) && !empty($volumeEn)) {
+                            $idVolume = $volumeEn->getId();
+                            $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
+            $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
             $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
 
-            if ($params['qtd'] > $resultado[0]['SOMA']) {
-                throw new \Exception("A movimentação não pode ser maior que a quantidade em estoque");
+            if (count($resultado) > 0) {
+                $qtdReserva = $resultado[0]['QTD_RESERVADA'];
             }
         }
 
@@ -132,7 +143,7 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setQtd($novaQtd);
         }
 
-        if ($novaQtd < 0) {
+        if ($novaQtd + $qtdReserva < 0) {
             throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
         } else if ($novaQtd > 0) {
             $em->persist($estoqueEn);
@@ -292,7 +303,8 @@ class EstoqueRepository extends EntityRepository
 
         $SQLWhere = " WHERE 1 = 1 ";
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
-            $SQLWhere .= " AND E.COD_PRODUTO = ".$parametros['idProduto'];
+            $parametros['idProduto'] = ProdutoUtil::formatar($parametros['idProduto']);
+            $SQLWhere .= " AND E.COD_PRODUTO = '".$parametros['idProduto'] . "' ";
             if (isset($parametros['grade']) && !empty($parametros['grade'])) {
                 $SQLWhere .= " AND E.DSC_GRADE = '".$parametros['grade']."'";
             } else {
@@ -877,6 +889,55 @@ class EstoqueRepository extends EntityRepository
         $array = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
 
+    }
+
+    public function getProdutosVolumesDivergentes()
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('e.codProduto as Codigo, e.grade as Grade, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
+            ->from("wms:Enderecamento\Estoque", "e")
+            ->innerJoin("e.produto", 'p')
+            ->innerJoin("e.produtoVolume", 'v')
+            ->where('e.produtoVolume IS NOT NULL')
+            ->groupBy('e.codProduto ','e.grade', 'p.descricao', 'v.id', 'v.descricao')
+            ->orderBy('e.codProduto, e.grade', 'ASC');
+
+        $result = $dql->getQuery()->getArrayResult();
+
+        $prodAnterior = "";
+        $prodAtual = "";
+        $qtdVolumes = 1;
+
+        $produtosDivergentes = array();
+
+        foreach ($result as $produto) {
+            $prodAtual = $produto;
+
+            if ($prodAnterior == "") {
+                $prodAnterior = $produto;
+            } else {
+                if (($prodAnterior['Codigo'] == $produto['Codigo']) && ($prodAnterior['Grade'] == $produto['Grade'])) {
+                    $qtdVolumes = $qtdVolumes + 1;
+                    if ($prodAnterior['Qtd'] != $produto['Qtd']) {
+                        array_push($produtosDivergentes, $produto);
+                    }
+                } else {
+                    $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $prodAnterior['Codigo'], 'grade' => $prodAnterior['Grade']));
+                    if ($produtoEn->getNumVolumes() != $qtdVolumes) {
+                        $produtoFaltante = $prodAnterior;
+                        $produtoFaltante['Volume'] = 'Faltando Volume';
+                        $produtoFaltante['Qtd'] = "-";
+                        array_push($produtosDivergentes, $produtoFaltante);
+                    }
+
+                    $qtdVolumes = 1;
+                }
+            }
+
+            $prodAnterior = $prodAtual;
+        }
+
+        return $produtosDivergentes;
     }
 
 }

@@ -14,7 +14,7 @@ class Web_Relatorio_ProdutoRecebidoController extends Action
 
     /**
      *
-     * @return type 
+     * @return type
      */
     public function indexAction()
     {
@@ -31,6 +31,19 @@ class Web_Relatorio_ProdutoRecebidoController extends Action
         }
 
         $this->view->form = $form;
+    }
+
+    public function equipeRecebimentoAction()
+    {
+        $params = $this->_getAllParams();
+        if (isset($params['recebimento']) && !empty($params['recebimento'])) {
+            $id = $params['recebimento'];
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $this->em->getRepository("wms:Recebimento");
+            $codRecebimentoAndPessoa = $recebimentoRepo->getUsuarioByRecebimento($id);
+
+            $this->exportCSV($codRecebimentoAndPessoa,"Equipe-Recebimento");
+        }
     }
 
 }

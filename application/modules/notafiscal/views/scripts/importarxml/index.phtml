@@ -1,3 +1,27 @@
 <?php
   // print form
   echo $this->form;
+
+if ($this->isValid == false) {?>
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable " style="margin-top: 20px">
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Falhas importando a nota fiscal</td>
+            </tr>
+            <?php
+            foreach ($this->falhas as $falha): $this->color = !($this->color);?>
+                <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><?php echo $falha ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <div class = "gPager">
+            <span>
+                <?php echo count($this->falhas) . " falha(s) encontrados"?>
+            </span>
+        </div>
+    </div>
+<?php
+}?>

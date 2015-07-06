@@ -84,7 +84,8 @@ class Produtos extends Grid
                 'label' => 'Trocar U.M.As',
                 'controllerName' => 'palete',
                 'actionName' => 'trocar',
-                'pkIndex' => array('codigo','grade')
+                'pkIndex' => array('codigo','grade'),
+                'target' => '_blank'
             ));
         }
 

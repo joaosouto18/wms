@@ -24,4 +24,18 @@ class AndamentoRepository extends EntityRepository
         $this->_em->persist($andamento);
     }
 
+    public function getAndamentoRessuprimento($idOndaOs)
+    {
+        $sql = "SELECT ra.NUM_SEQUENCIA as CODIGO, p.NOM_PESSOA as NOME, ra.DSC_OBSERVACAO as OBS, ra.DTH_ANDAMENTO as DATA, s.DSC_SIGLA as SIGLA
+                  FROM RESSUPRIMENTO_ANDAMENTO ra
+                INNER JOIN PESSOA p ON p.COD_PESSOA = ra.COD_USUARIO
+                INNER JOIN SIGLA s ON ra.COD_TIPO = s.COD_SIGLA
+                WHERE COD_ONDA_RESSUPRIMENTO_OS = $idOndaOs
+                ORDER BY ra.NUM_SEQUENCIA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
 }

@@ -52,6 +52,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 'uma' => '',
                 'idRecebimento' => ''
             );
+        } else {
+            if ($values['idRecebimento'] || $values['uma']) {
+                $values['dataInicial1'] = null;
+                $values['dataInicial2'] = null;
+                $values['dataFinal1'] = null;
+                $values['dataFinal2'] = null;
+            }
         }
 
         // grid
@@ -346,6 +353,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             //produtos
             $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
+            //unidade Medida
+            $produtoRepo = $this->em->getRepository('wms:Produto');
+            $this->view->unMedida = $produtoRepo->getProdutoEmbalagem();
+
             //salvar produto e quantidade Conferencia
             if ($this->getRequest()->isPost()) {
                 // checando quantidades
@@ -353,9 +364,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdNFs = $this->getRequest()->getParam('qtdNF');
                 $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
+                $unMedida = $this->getRequest()->getParam('unMedida');
 
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];
@@ -1095,5 +1107,25 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     public function __call($methodName, $args)
     {
         parent::__call($methodName, $args);
+    }
+
+    public function forcarCorrecaoAction()
+    {
+        $idRecebimento = $this->getRequest()->getParam('id');
+
+        $repository = $this->em->getRepository('wms:OrdemServico');
+        $result = $repository->forcarCorrecao($idRecebimento);
+        $idOS = $result[0][2];
+
+        if ($result[0][1] == 2) {
+            $data = new \DateTime;
+            $repository->atualizarDataFinal($idOS, $data);
+            $this->_helper->messenger('info', 'A Ordem de Serviço foi finalizada com sucesso.');
+            $this->redirect('index', 'recebimento', null);
+        } else {
+            $this->_helper->messenger('info', 'Essa correção não pode ser usada, pois existe apenas uma Ordem de Serviço.');
+            $this->redirect('index', 'recebimento', null);
+        }
+
     }
 }

@@ -104,7 +104,7 @@ class Expedicao_EtiquetaController  extends Action
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
 
             if ($modelo == '1') {
-                $Etiqueta = new Etiqueta("L", 'mm', array(110, 40));
+                $Etiqueta = new Etiqueta();
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
@@ -217,8 +217,7 @@ class Expedicao_EtiquetaController  extends Action
             if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)  return;
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) return;
             $cargas = implode(',',$cargas);
-            $this->addFlashMessage('error', 'Pedidos não encontrados na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
-            $this->_redirect('/expedicao');
+            $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */

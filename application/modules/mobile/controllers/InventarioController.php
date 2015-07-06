@@ -58,19 +58,20 @@ class Mobile_InventarioController extends Action
                 return false;
             } else {
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
-                $enderecoArray  = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
+                $enderecoRepo           = $this->em->getRepository("wms:Deposito\Endereco");
+                $enderecoArray          = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
                 if (count($enderecoArray) == 0) {
                     $result = array(
                         'status' => 'error',
                         'msg' => 'Endereço não encontrado',
-                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario
+                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
                     );
                     $this->checkErrors($result);
                 }
+                $produtosEndPicking     = $enderecoRepo->getProdutoByEndereco($codigoBarras, false, true);
                 $enderecoId = $enderecoArray[0]['COD_DEPOSITO_ENDERECO'];
 
-                $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoId);
+                $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoId, $numContagem, $divergencia);
                 $this->checkErrors($result);
 
                 $recontagemMesmoUsuario = $this->getSystemParameterValue('RECONTAGEM_MESMO_USUARIO');
@@ -82,6 +83,11 @@ class Mobile_InventarioController extends Action
                 $this->view->numContagem     = $numContagem;
                 $this->view->divergencia     = $divergencia;
                 $this->view->botoes          = true;
+                if (count($produtosEndPicking) > 0) {
+                    $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                    $this->view->produtosEndPicking = $produtosEndPicking;
+                    $this->view->enderecoBipado = $this->_getParam('codigoBarras');
+                }
             }
 
             $exigenciaUma = $this->getSystemParameterValue('EXIGENCIA_UMA');
@@ -129,6 +135,7 @@ class Mobile_InventarioController extends Action
                 $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
                 $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
 
+                $this->checkErrors($inventarioService->checaSeInventariado($params));
                 $inventarioService->contagemEndereco($params);
                 if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
                     $this->addFlashMessage('success', 'Endereço vazio invetariado com sucesso');
@@ -142,12 +149,13 @@ class Mobile_InventarioController extends Action
                 ));
             } else {
 
-                $result = $this->_service->consultarProduto($params);
+                $result = $inventarioService->consultarProduto($params);
                 $this->checkErrors($result);
-                $result['populateForm']['numContagem']  =  $params['numContagem'];
-                $result['populateForm']['divergencia']  =  $divergencia;
+                $result['populateForm']['numContagem']   =  $params['numContagem'];
+                $result['populateForm']['divergencia']   =  $divergencia;
+                $result['populateForm']['idInventario']  =  $params['idInventario'];
                 //Verifica se existe contagem endereco
-                $result['populateForm']['contagemEndId'] = $inventarioService->verificaContagemEnd($result['populateForm']);
+                $result['populateForm']['contagemEndId'] = $this->checkErrors($inventarioService->verificaContagemEnd($result['populateForm']));
 
                 $form->populate($result['populateForm']);
             }
@@ -206,7 +214,7 @@ class Mobile_InventarioController extends Action
     {
         if (isset($result['status']) && $result['status'] == 'error') {
             $this->addFlashMessage("error",$result['msg']);
-            $this->redirect($result['url']);
+            $this->_redirect($result['url']);
         }
     }
 

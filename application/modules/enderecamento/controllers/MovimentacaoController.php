@@ -1,7 +1,7 @@
 <?php
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Page,
-    Core\Util\Produto as ProdutoUtil;;
+    Core\Util\Produto as ProdutoUtil;
 
 class Enderecamento_MovimentacaoController extends Action
 {
@@ -31,6 +31,7 @@ class Enderecamento_MovimentacaoController extends Action
         } else {
             if ($request->isPost()) {
                 try {
+                    $this->getEntityManager()->beginTransaction();
                     $result = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
                     if ($result == null) {
                         throw new Exception("Endereço não encontrado.");
@@ -75,7 +76,7 @@ class Enderecamento_MovimentacaoController extends Action
                             throw new Exception("Este produto não possui nenhuma embalagem cadastrada.");
                         }
                         $params['embalagem'] = $embalagensEn[0];
-                        $EstoqueRepository->movimentaEstoque($params, true);
+                        $EstoqueRepository->movimentaEstoque($params, true, true);
                     } else {
                         if (isset($data['volumes']) && ($data['volumes'] != "")) {
                             $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
@@ -84,12 +85,14 @@ class Enderecamento_MovimentacaoController extends Action
                             }
                             foreach ($volumes as $volume) {
                                 $params['volume'] = $volume;
-                                $EstoqueRepository->movimentaEstoque($params, true);
+                                $EstoqueRepository->movimentaEstoque($params, true, true);
                             }
                         } else {
                             throw new \Exception("Selecione um grupo de volumes");
                         }
                     }
+
+                    $this->getEntityManager()->commit();
 
                     $link = '/enderecamento/movimentacao/imprimir/endereco/'.$result[0]['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
                     if($request->isXmlHttpRequest()) {
@@ -102,8 +105,8 @@ class Enderecamento_MovimentacaoController extends Action
                         $this->addFlashMessage('success','Movimentação realizada com sucesso');
                         $form->populate($data);
                     }
-
                 } catch(Exception $e) {
+                    $this->getEntityManager()->rollback();
                     if($request->isXmlHttpRequest()) {
                         echo $this->_helper->json(array('status' => 'error', 'msg' =>  $e->getMessage()));
                     } else {
@@ -170,7 +173,7 @@ class Enderecamento_MovimentacaoController extends Action
         echo $this->_helper->json(false);
     }
 
-    public function volumesAction(){
+    public function volumesAction() {
         $codProduto = $this->_getParam('idproduto');
         $grade = $this->_getParam('grade');
         $grade = trim($grade);
@@ -298,6 +301,17 @@ class Enderecamento_MovimentacaoController extends Action
 
         $enderecoEn = $this->getEntityManager()->getReference("wms:Deposito\Endereco",$idEndereco);
         $this->view->endereco = $enderecoEn->getDescricao();
+    }
+
+    public function consultarProdutoAction()
+    {
+        $idProduto = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $result = $produtoRepo->verificaSeEProdutoComposto($idProduto);
+
+        echo $this->_helper->json($result);
     }
 
 } 

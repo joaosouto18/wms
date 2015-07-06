@@ -1,5 +1,21 @@
 <?php
 
+class classe {
+    /** @var string */
+    public $idClasse;
+    /** @var string */
+    public $nome;
+    /** @var string */
+    public $idClassePai;
+
+}
+
+class classes {
+    /** @var classe[] */
+    public $classes = array();
+}
+
+
 class Wms_WebService_ProdutoClasse extends Wms_WebService
 {
 
@@ -7,20 +23,22 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
      * Retorna um Classe específico no WMS pelo seu ID
      *
      * @param string $idClasse ID do Classe
-     * @return array|Exception
+     * @return classe|Exception
      */
     public function buscar($idClasse)
     {
+        $idClasse = trim($idClasse);
+
         $classeEntity = $this->__getServiceLocator()->getService('Produto\Classe')->get($idClasse);
 
         if ($classeEntity == null)
             throw new \Exception('Classe não encontrada');
 
-        return array(
-            'idClasse' => $idClasse,
-            'nome' => $classeEntity->getNome(),
-            'idClassePai' => $classeEntity->getIdPai(),
-        );
+        $classe = new classe();
+        $classe->idClasse = $idClasse;
+        $classe->nome = $classeEntity->getNome();
+        $classe->idClassePai = $classeEntity->getIdPai();
+        return $classe;
     }
 
     /**
@@ -118,6 +136,9 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
      */
     public function salvar($idClasse, $nome, $idClassePai = null)
     {
+        $idClasse = trim($idClasse);
+        $nome = trim ($nome);
+
         $service = $this->__getServiceLocator()->getService('Produto\Classe');
         $entity = $service->get($idClasse);
 
@@ -139,6 +160,9 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
      */
     public function excluir($idClasse)
     {
+
+        $idClasse = trim ($idClasse);
+
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $em->beginTransaction();
         
@@ -164,7 +188,7 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
     /**
      * Lista todos os Classees cadastrados no sistema
      * 
-     * @return array|Exception
+     * @return classes|Exception
      */
     public function listar()
     {
@@ -177,7 +201,17 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
                 ->getQuery()
                 ->getArrayResult();
 
-        return $result;
+        $classes = new classes();
+        $arrayClasses = array();
+        foreach ($result as $line) {
+            $classe = new classe();
+            $classe->idClasse = $line['idClasse'];
+            $classe->idClassePai = $line['idClassePai'];
+            $classe->nome = $line['nome'];
+            $arrayClasses[] = $classe;
+        }
+        $classes->classes = $arrayClasses;
+        return $classes;
     }
 
 }

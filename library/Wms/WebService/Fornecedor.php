@@ -1,5 +1,22 @@
 <?php
 
+class fornecedor {
+    /** @var string */
+    public $idFornecedor;
+    /** @var string */
+    public $nome;
+    /** @var string */
+    public $cnpj;
+    /** @var string */
+    public $insc;
+}
+
+class fornecedores {
+
+    /** @var fornecedor[] */
+    public $fornecedores = array();
+}
+
 class Wms_WebService_Fornecedor extends Wms_WebService
 {
 
@@ -7,23 +24,24 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      * Retorna um fornecedor específico no WMS pelo seu ID
      *
      * @param string $idFornecedor ID do fornecedor
-     * @return array|Exception
+     * @return fornecedor
      */
     public function buscar($idFornecedor)
     {
+        $idFornecedor = trim($idFornecedor);
+
         $fornecedorEntity = $this->__getServiceLocator()->getService('Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
         if ($fornecedorEntity == null)
             throw new \Exception('Fornecedor não encontrado');
 
         $pessoa = $fornecedorEntity->getPessoa();
-
-        return array(
-            'idFornecedor' => $idFornecedor,
-            'cnpj' => $pessoa->getCnpj(),
-            'insc' => $pessoa->getInscricaoEstadual(),
-            'nome' => ($pessoa->getNomeFantasia() != null) ? $pessoa->getNomeFantasia() : $pessoa->getNome(),
-        );
+        $for = new fornecedor();
+        $for->idFornecedor = $idFornecedor;
+        $for->nome =  ($pessoa->getNomeFantasia() != null) ? $pessoa->getNomeFantasia() : $pessoa->getNome();
+        $for->cnpj =  $pessoa->getCnpj();
+        $for->insc = $pessoa->getInscricaoEstadual();
+        return $for;
     }
 
     /**
@@ -103,6 +121,11 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     public function salvar($idFornecedor, $cnpj, $insc, $nome)
     {
+        $idFornecedor = trim($idFornecedor);
+        $cnpj = trim($cnpj);
+        $insc = trim($insc);
+        $nome = trim($nome);
+
         $service = $this->__getServiceLocator()->getService('Fornecedor');
         $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
 
@@ -124,6 +147,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     public function excluir($idFornecedor)
     {
+        $idFornecedor = trim($idFornecedor);
+
         $service = $this->__getServiceLocator()->getService('Fornecedor');
         $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
 
@@ -139,7 +164,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     /**
      * Lista todos os fornecedores cadastrados no sistema
      * 
-     * @return array|Exception
+     * @return fornecedores
      */
     public function listar()
     {
@@ -156,7 +181,20 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         if ($result == null)
             throw new \Exception('Não foi possível recuperar os fornecedores:');
 
-        return $result;
+        $fornecedores = array();
+        foreach($result as $line){
+            $for = new fornecedor();
+            $for->idFornecedor = $line['idFornecedor'];
+            $for->nome =  $line['nome'];
+            $for->cnpj =  $line['cnpj'];
+            $for->insc = $line['insc'];
+            $fornecedores[] = $for;
+        }
+        $clsFornecedres = new fornecedores();
+        $clsFornecedres->fornecedores = $fornecedores;
+
+        return $clsFornecedres;
     }
 
 }
+

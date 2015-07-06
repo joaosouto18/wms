@@ -22,6 +22,7 @@
                 <tr class="gTTitle">
                     <td>Cód. - Produto</td>
                     <td>Grade</td>
+                    <td>Unidade</td>
                     <td>Quantidade</td>
                     <td>Qtde. Avaria</td>
                 </tr>
@@ -31,6 +32,28 @@
                     <tr height="35">
                         <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
                         <td ><?php echo $produto['grade'] ?></td>
+                        <td>
+
+                            <?php
+                            $medida = null;
+                            foreach ($this->unMedida as $key => $medidas) {
+                                if ($medidas['produto'] == $produto['codigo'] && $medidas['grade'] == $produto['grade']) {
+                                    $medida[$medidas['id']] = $medidas['descricao'];
+                                }
+                            }
+                            if (isset($medida) && $medida != null) {
+                                //($name, $value = null, $attribs = null, $options = null, $listsep = "<br />\n")
+                                echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}]", null, array(
+                                    'validators' => array('numeric'),
+                                    'alt' => 'number',
+                                    'class' => "unMedida",
+                                    'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                                ), $medida);
+                            } else {
+                                echo '-';
+                            }
+                            ?>
+                        </td>
                         <td>
                             <?php
                             echo $this->formHidden("qtdNF[{$produto['codigo']}][{$produto['grade']}]", $produto['quantidade'], array(

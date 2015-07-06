@@ -20,6 +20,7 @@ class Notafiscal_ImportarxmlController extends Crud
     protected $entityName = 'NotaFiscal';
     //@isValid: Boolean variável isValid = true, caso encontre divergências valor = false
     private $isValid = true;
+    private $falhas = array();
 
     /**
      * Configura a Classe
@@ -46,6 +47,8 @@ class Notafiscal_ImportarxmlController extends Crud
 
     public function indexAction()
     {
+        $this->isValid = true;
+        $this->falhas = array();
 
         $form = new Wms\Module\Web\Form\NotaFiscal\Importarxml;
 
@@ -58,30 +61,34 @@ class Notafiscal_ImportarxmlController extends Crud
 
             // Define um método de transporte
             $upload = new Zend_File_Transfer_Adapter_Http();
-            $upload->setDestination(APPLICATION_PATH.'/../data/');
+            $upload->setDestination(APPLICATION_PATH.'/../data/xml/');
 
             try {
                 // Recebe o arquivo de upload
                 $upload->receive();
-                $valida=$this->validarNota($upload);
+                $result=$this->validarNota($upload);
 
-                //Nota Fiscal Válida?
-                if ( $this->isValid ){
-                    print "<pre>";
-                    print_r($valida);
-
+                if ($this->isValid) {
+                    /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+                    $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
+                    $idFornecedor = trim($result['NotaFiscal']['COD_FORNECEDOR']);
+                    $numero = trim($result['NotaFiscal']['NUM_NOTA_FISCAL']);
+                    $serie = trim($result['NotaFiscal']['COD_SERIE_NOTA_FISCAL']);
+                    $dataEmissao = trim($result['NotaFiscal']['DTH_ENTRADA']);
+                    $placa = trim($result['NotaFiscal']['DSC_PLACA_VEICULO']);
+                    $bonificacao = 'N';
+                    $itens = $result['NotaFiscalItem'];
+                    $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
+                    $this->addFlashMessage("success","Nota Fiscal $numero / $serie importada com sucesso");
                 } else {
-                    print "<pre>";
-                    print_r($valida['NotValid']);
+                    $this->addFlashMessage("error","Falhas importando nota fiscal");
                 }
-
-
             } catch (Zend_File_Transfer_Exception $e) {
                 echo $e->message();
             }
-
-            die();
         }
+        $this->view->isValid = $this->isValid;
+        $this->view->falhas = $this->falhas;
 
         $this->view->form = $form;
     }
@@ -151,16 +158,18 @@ class Notafiscal_ImportarxmlController extends Crud
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='serie';
             $arrayRetorno['NotValid']['valores']['serie']=$dados["NFe"]["infNFe"]['ide']['serie'];
+            $this->falhas[] = "Série da Nota Fiscal inválida | Série:" . $dados["NFe"]["infNFe"]['ide']['serie'];
         }
 
-        if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ){
-            $dataEmissao=new Zend_Date($dados["NFe"]["infNFe"]['ide']['dEmi'], 'dd-mm-yyyy', 'en');
+        if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
+            $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
+            $dataEmissao=new Zend_Date($dEmi, 'dd-mm-yyyy', 'en');
             $arrayRetorno['NotaFiscal']['DAT_EMISSAO']=$dataEmissao->get('dd/mm/YY');
         }
         else {
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='dEmi';
-            $arrayRetorno['NotValid']['valores']['dEmi']=$dados["NFe"]["infNFe"]['ide']['dEmi'];
+            $this->falhas[]['Data de Emissão inválida | Data: '] = null;
         }
 
         $arrayRetorno['NotaFiscal']['COD_STATUS']=NotaFiscal::STATUS_INTEGRADA;
@@ -169,13 +178,13 @@ class Notafiscal_ImportarxmlController extends Crud
         if ( !empty($dados["NFe"]["infNFe"]['emit']['CNPJ']) ){
 
             $sql = "
-                SELECT f.COD_FORNECEDOR
+                SELECT f.COD_EXTERNO AS COD_FORNECEDOR
                     FROM fornecedor f
                     INNER JOIN pessoa_juridica p ON (f.COD_FORNECEDOR = p.COD_PESSOA)
                     WHERE (
                           p.NUM_CNPJ='".$dados["NFe"]["infNFe"]['emit']['CNPJ']."'
                         )
-                   GROUP BY f.COD_FORNECEDOR";
+                   GROUP BY f.COD_EXTERNO";
 
             $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -185,12 +194,14 @@ class Notafiscal_ImportarxmlController extends Crud
                 $this->isValid=false;
                 $arrayRetorno['NotValid']['tags'][]='CNPJ';
                 $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['emit']['CNPJ'];
+                $this->falhas[] = "Não foi possível encontrar nenhum fornecedor com o CNPJ informado | CNPJ :" . $dados["NFe"]["infNFe"]['emit']['CNPJ'];
             }
 
         } else {
             $this->isValid=false;
             $arrayRetorno['NotValid']['tags'][]='CNPJ';
             $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['emit']['CNPJ'];
+            $this->falhas[] = "CNPJ Inválido | CNPJ: " . $dados["NFe"]["infNFe"]['emit']['CNPJ'];
         }
 
         $arrayRetorno['NotaFiscal']['NUM_NOTA_FISCAL']=$dados["NFe"]["infNFe"]['ide']['nNF'];
@@ -235,10 +246,9 @@ class Notafiscal_ImportarxmlController extends Crud
 
         for ($qtdProduto=0; $qtdProduto<$numProdutos; $qtdProduto++){
 
-            if ( !empty($dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN']) ){
+            $filiaLInterna = $this->filialInterna($dados);
 
-                //teste com existente
-                $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN']=7892509061056;
+            if ( !empty($dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN']) ){
 
                 //pega o produto pelo código de barras
                 $sql = "
@@ -257,37 +267,116 @@ class Notafiscal_ImportarxmlController extends Crud
                 $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
                 if ( !empty($array[0]['COD_PRODUTO']) ){
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['COD_PRODUTO']=$array[0]['COD_PRODUTO'];
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['DSC_GRADE']=$array[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
                 } else {
                     $this->isValid=false;
+                    $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $qtd = (int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
                     $arrayRetorno['NotValid']['tags'][]='cEAN';
                     $arrayRetorno['NotValid']['valores']['cEAN'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
                     $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
                     $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
                     $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
+                }
+            }
+            else if ($filiaLInterna == true) {
+
+                $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
+                $sql = "
+                SELECT COD_PRODUTO, DSC_GRADE
+                    FROM PRODUTO P
+                    WHERE P.COD_PRODUTO = '$codigoProdutoNF'
+                ";
+                $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if ( !empty($array[0]['COD_PRODUTO']) ){
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                } else {
+                    $this->isValid=false;
+                    $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $qtd = (int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $arrayRetorno['NotValid']['tags'][]='cEAN';
+                    $arrayRetorno['NotValid']['valores']['cEAN'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
+                    $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
+                }
+
+            }
+            else if ($filiaLInterna == false) {
+
+                $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
+                $sql = "
+                SELECT COD_PRODUTO, DSC_GRADE
+                    FROM PRODUTO P
+                    WHERE P.DSC_REFERENCIA = '$codigoProdutoNF'
+                ";
+                $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if ( !empty($array[0]['COD_PRODUTO']) ){
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                } else {
+                    $this->isValid=false;
+                    $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $qtd = (int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $arrayRetorno['NotValid']['tags'][]='cEAN';
+                    $arrayRetorno['NotValid']['valores']['cEAN'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                    $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                    $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
+                    $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                    $this->falhas[] = "Produto não encontrado | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
                 }
             }
             else {
                 $this->isValid=false;
+                $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
+                $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
+                $qtd = (int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+
                 $arrayRetorno['NotValid']['tags'][]='cEAN';
                 $arrayRetorno['NotValid']['valores']['cEAN'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
                 $arrayRetorno['NotValid']['valores']['DSC_PRODUTO'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];
                 $arrayRetorno['NotValid']['valores']['Grade'][]='UNICA';
                 $arrayRetorno['NotValid']['valores']['QTD_ITEM'][]=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                $this->falhas[] = "Dados do Produto Inválidos | EAN: " .$ean . "   DESCRIÇÃO: " . $dscProduto ."   QTD: " . $qtd;
             }
 
-
             if ( !empty($dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom']) )
-                $arrayRetorno['NotaFiscalItem'][$qtdProduto]['QTD_ITEM']=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                $arrayRetorno['NotaFiscalItem'][$qtdProduto]['quantidade']=(int)$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
             else {
                 $this->isValid=false;
                 $arrayRetorno['NotValid']['tags'][]='qCom';
                 $arrayRetorno['NotValid']['valores']['qCom'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
+                $this->falhas[] = "Quantidade não informada | Qtd: " . $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
             }
 
         }
 
         return $arrayRetorno;
     }
+
+    public function filialInterna($dados)
+    {
+        //se o CNPJ do emitente da nota fiscal for uma das filiais do sistema, pegar pelo código referente do sistema
+        $cnpjEmitenteNF = $dados["NFe"]["infNFe"]['emit']['CNPJ'];
+        $sql = "
+                SELECT COD_FILIAL
+                    FROM FILIAL F INNER JOIN PESSOA_JURIDICA PJ ON F.COD_FILIAL = PJ.COD_PESSOA
+                    WHERE PJ.NUM_CNPJ = '$cnpjEmitenteNF'
+           ";
+        $resultado = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($resultado) > 0) {
+            return true;
+        }
+        return false;
+    }
+
 }
