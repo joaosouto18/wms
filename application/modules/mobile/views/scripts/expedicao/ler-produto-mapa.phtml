@@ -52,7 +52,7 @@
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <?php if ($this->idVolume != "") {?>
-                <legend>Volume: 113 CAIXA AZUL</legend>
+                <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
             <?}?>
 
