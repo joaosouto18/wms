@@ -2,7 +2,7 @@
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
-    Wms\Service\Coletor as LeituraColetor,
+    Wms\Service\Coletor as LeituraColetor, 
     Wms\Domain\Entity\Expedicao;
 
 class Mobile_ExpedicaoController extends Action
@@ -61,10 +61,10 @@ class Mobile_ExpedicaoController extends Action
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+            $this->view->dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
         }
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
-
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
             try {
