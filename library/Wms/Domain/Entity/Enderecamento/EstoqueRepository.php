@@ -55,7 +55,7 @@ class EstoqueRepository extends EntityRepository
                         FROM RESERVA_ESTOQUE RE
                         INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                         WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'S'
-                        AND REP.COD_PRODUTO = $codProduto AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
+                        AND REP.COD_PRODUTO = '$codProduto' AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
                         if (isset($volumeEn) && !empty($volumeEn)) {
                             $idVolume = $volumeEn->getId();
                             $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";

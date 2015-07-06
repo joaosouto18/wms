@@ -100,7 +100,7 @@ class VolumeRepository extends EntityRepository
             ->select("v")
             ->from("wms:Produto\Volume",'v')
             ->innerJoin("v.normaPaletizacao",'np')
-            ->where("v.codProduto = " . $codProduto)
+            ->where("v.codProduto = '$codProduto'")
             ->andWhere("v.grade = '$grade'")
             ->andWhere("np.id = '$codNormaPaletizacao'");
         $result = $dql->getQuery()->getResult();
