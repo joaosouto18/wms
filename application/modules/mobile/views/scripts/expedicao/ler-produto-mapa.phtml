@@ -1,3 +1,23 @@
+<script>
+
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetaSeparacao').value != "") {
+                etiquetaProduto   = document.getElementById('etiquetaProduto');
+                if (etiquetaProduto) {
+                    etiquetaProduto.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+
 
 <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" method="post">
     <input type="hidden" name="uma" value="" id="uma">
@@ -33,7 +53,7 @@
             </dl>
             <?php if ($this->idVolume != "") {?>
                 <legend>Volume: 113 CAIXA AZUL</legend>
-                <td><a class="finalizar" href=""" >Fechar</a></td>
+                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
             <?}?>
 
         </fieldset>

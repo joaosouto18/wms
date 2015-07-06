@@ -39,11 +39,16 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $expedicaoRepo          = $em->getRepository('wms:Expedicao');
             $entityExpedicao        = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
 
-            $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
-            $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
-            $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
-            $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
-            $em->persist($enExpVolumePatrimonio);
+            $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
+
+            if (count($arrayExpVolPatrimonioEn) ==0){
+                $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
+                $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
+                $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
+                $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
+                $em->persist($enExpVolumePatrimonio);
+            }
+
             $em->flush();
             $em->commit();
 
@@ -159,7 +164,12 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
             $etiquetaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao");
             $etiquetasEn = $etiquetaRepo->getEtiquetasByExpedicaoAndVolumePatrimonio($idExpedicao,$volume);
-            if (count($etiquetasEn) == 0) {
+
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+            $qtdMapa = $mapaSeparacaoRepo->getQtdConferidaByVolumePatrimonio($idExpedicao,$volume);
+
+            if ((count($etiquetasEn) == 0) && ($qtdMapa == 0)) {
                 $this->desocuparVolume($volume,$idExpedicao);
             } else {
                 foreach ($volumesPatrimonio as $carga) {

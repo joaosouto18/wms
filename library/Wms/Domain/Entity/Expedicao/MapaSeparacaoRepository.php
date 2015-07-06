@@ -11,10 +11,11 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function verificaMapaSeparacao($idExpedicao){
         $conferenciaFinalizada = $this->validaConferencia($idExpedicao);
-        $this->fechaConferencia($idExpedicao);
 
         if ($conferenciaFinalizada == false) {
             return 'Existem mapas de separação que ainda não foram totalmente conferidos nesta expedição';
+        } else {
+            $this->fechaConferencia($idExpedicao);
         }
         return $conferenciaFinalizada;
     }
@@ -207,7 +208,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $this->getEntityManager()->persist($mapa);
         }
         $this->getEntityManager()->flush();
-    }
+}
 
     public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn) {
         $mensagemColetor = false;
@@ -272,4 +273,23 @@ class MapaSeparacaoRepository extends EntityRepository
         }
         return array('return'=>true);
     }
+
+    public function getQtdConferidaByVolumePatrimonio ($idExpedicao, $idVolume) {
+        $SQL = "SELECT NVL(SUM(MC.QTD_EMBALAGEM * MC.QTD_CONFERIDA),0) as QTD_CONFERIDA
+                  FROM MAPA_SEPARACAO_CONFERENCIA MC
+                 INNER JOIN (SELECT MAX(NUM_CONFERENCIA) MAX_C, COD_PRODUTO, DSC_GRADE , NVL(COD_PRODUTO_VOLUME,0) VOLUME, COD_MAPA_SEPARACAO
+                               FROM MAPA_SEPARACAO_CONFERENCIA
+                              GROUP BY COD_PRODUTO, DSC_GRADE , NVL(COD_PRODUTO_VOLUME,0), COD_MAPA_SEPARACAO) MAX_C
+                    ON MAX_C.COD_PRODUTO = MC.COD_PRODUTO
+                   AND MAX_C.DSC_GRADE = MC.DSC_GRADE
+                   AND MAX_C.COD_MAPA_SEPARACAO = MC.COD_MAPA_SEPARACAO
+                   AND MAX_C.VOLUME = NVL(MC.COD_PRODUTO_VOLUME,0)
+                  LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MC.COD_MAPA_SEPARACAO
+                 WHERE MC.COD_VOLUME_PATRIMONIO = $idVolume
+                   AND MS.COD_EXPEDICAO = $idExpedicao";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result[0]['QTD_CONFERIDA'];
+    }
+
 }

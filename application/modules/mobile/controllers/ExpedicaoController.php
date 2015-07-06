@@ -78,6 +78,8 @@ class Mobile_ExpedicaoController extends Action
                             throw new \Exception("Já existe um volume patrimonio, feche a caixa antes de abrir um novo volume");
                         } else {
                             $idVolume = $codBarras;
+                                $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+                                $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, 0);
                             $this->view->idVolume = $codBarras;
                         }
                     }
@@ -123,6 +125,22 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
+    }
+
+    public function fechaVolumePatrimonioMapaAction(){
+        $idMapa = $this->_getParam('idMapa');
+        $idExpedicao = $this->_getParam('idExpedicao');
+        $idVolume = $this->_getParam('idVolume');
+
+        $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+        try {
+            $expVolumePatrimonioRepo->fecharCaixa($idExpedicao, $idVolume);
+            $this->_helper->messenger('success', 'Volume '. $idVolume. ' fechado com sucesso');
+        } catch (Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/");
     }
 
     public function informaQtdMapaAction(){
@@ -245,8 +263,6 @@ class Mobile_ExpedicaoController extends Action
 
         $this->view->placas = $placas;
     }
-
-
 
     protected function validacaoEtiqueta($codigoBarras)
     {

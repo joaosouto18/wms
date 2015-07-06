@@ -529,15 +529,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $qtdQuebras  = 0;
         $SQL_Quebras = "";
         $codCliente = "";
+        $nomCliente = "";
         $codPraca = "";
+        $nomPraca = "";
         $numRua = "";
+        $dscRua = "";
         $codLinhaSeparacao = "";
+        $nomLinha = "";
 
         foreach ($quebras as $quebra) {
             //CLIENTE
             $quebra = $quebra['tipoQuebra'];
             if ($quebra == "C")  {
                 $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
+                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -552,7 +557,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     if (count($embalagens) >0) $endereco = $embalagens[0]->getEndereco();
                 $volumes = $pedidoProduto->getProduto()->getVolumes();
                     if (count($volumes) >0) $endereco = $volumes[0]->getEndereco();
-                if (isset($endereco)) $numRua = $endereco->getRua();
+                if (isset($endereco)) {
+                    $numRua = $endereco->getRua();
+                    $dscRua = $numRua;
+                } else {
+                    $dscRua = "SEM ENDEREÇO DE PICKING";
+                }
 
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
@@ -564,6 +574,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //LINHA DE SEPARAÇÃO
             if ($quebra == "L") {
                 $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
+                $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -575,6 +586,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($quebra == "P") {
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
                 $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
+                if ($codPraca == 0){
+                    $nomPraca = "Sem Praça Definida";
+                } else {
+                    $pracaEn = $this->getEntityManager()->getRepository("wms:MapaSeparacao\Praca")->find($codPraca);
+                    $nomPraca = $pracaEn->getNomePraca();
+                }
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -622,20 +639,24 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $codQuebra = 0;
             foreach ($quebras as $quebra) {
                 $quebra = $quebra['tipoQuebra'];
+                if ($dscQuebra != "") {
+                    $dscQuebra = $dscQuebra . ", ";
+                }
+
                 if ($quebra == "C")  {
                     $codQuebra = $codCliente;
-                    $dscQuebra = $dscQuebra . " CLIENTE: " . $codCliente;
+                    $dscQuebra = $dscQuebra . "CLIENTE: " . $codCliente . " - " .$nomCliente;
                 }
                 if ($quebra == "R") {
-                    $dscQuebra = $dscQuebra . " RUA: " . $numRua;
+                    $dscQuebra = $dscQuebra . "RUA: " . $dscRua;
                     $codQuebra = $numRua;
                 }
                 if ($quebra == "L") {
-                    $dscQuebra = $dscQuebra . " LINHA: " . $codLinhaSeparacao;
+                    $dscQuebra = $dscQuebra . "LINHA: " . $codLinhaSeparacao . " - " . $nomLinha;
                     $codQuebra = $codLinhaSeparacao;
                 }
                 if ($quebra == "P") {
-                    $dscQuebra = $dscQuebra . " PRACA: " . $codPraca;
+                    $dscQuebra = $dscQuebra . "PRACA: " . $codPraca . " - " . $nomPraca;
                     $codQuebra = $codPraca;
                 }
                 $etqQuebra = new EtiquetaMaeQuebra();
@@ -658,9 +679,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $qtdQuebras  = 0;
         $SQL_Quebras = "";
         $codCliente = "";
+        $nomCliente = "";
         $codPraca = "";
+        $nomPraca = "";
         $numRua = "";
+        $dscRua = "";
         $codLinhaSeparacao = "";
+        $nomLinha = "";
         $codStatus = $siglaEntity->getId();
 
         foreach ($quebras as $quebra) {
@@ -668,6 +693,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //CLIENTE
             if ($quebra == "C")  {
                 $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
+                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -679,10 +705,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($quebra == "R") {
                 $numRua = 0;
                 $embalagens = $pedidoProduto->getProduto()->getEmbalagens();
-                if (count($embalagens) >0) $endereco = $embalagens[0]->getEndereco();
                 $volumes = $pedidoProduto->getProduto()->getVolumes();
+                if (count($embalagens) >0) $endereco = $embalagens[0]->getEndereco();
                 if (count($volumes) >0) $endereco = $volumes[0]->getEndereco();
-                if (isset($endereco)) $numRua = $endereco->getRua();
+                if (isset($endereco)) {
+                    $numRua = $endereco->getRua();
+                    $dscRua = $numRua;
+                } else {
+                    $dscRua = "SEM ENDEREÇO DE PICKING";
+                }
 
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
@@ -694,6 +725,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //LINHA DE SEPARAÇÃO
             if ($quebra == "L") {
                 $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
+                $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
+
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -705,6 +738,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($quebra == "P") {
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
                 $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
+                if ($codPraca == 0){
+                    $nomPraca = "Sem Praça Definida";
+                } else {
+                    $pracaEn = $this->getEntityManager()->getRepository("wms:MapaSeparacao\Praca")->find($codPraca);
+                    $nomPraca = $pracaEn->getNomePraca();
+                }
+
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -756,20 +796,24 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ($quebras as $quebra) {
                 $quebra = $quebra['tipoQuebra'];
                 $codQuebra = 0;
+                if ($dscQuebra != "") {
+                    $dscQuebra = $dscQuebra . ", ";
+                }
+
                 if ($quebra == "C")  {
-                    $dscQuebra = $dscQuebra . " CLIENTE: " . $codCliente;
+                    $dscQuebra = $dscQuebra . "CLIENTE: " . $codCliente . " - " .$nomCliente;
                     $codQuebra = $codCliente;
                 }
                 if ($quebra == "R") {
-                    $dscQuebra = $dscQuebra . " RUA: " . $numRua;
+                    $dscQuebra = $dscQuebra . "RUA: " . $dscRua;
                     $codQuebra = $numRua;
                 }
                 if ($quebra == "L") {
-                    $dscQuebra = $dscQuebra . " LINHA: " . $codLinhaSeparacao;
+                    $dscQuebra = $dscQuebra . "LINHA: " . $codLinhaSeparacao . " - " . $nomLinha;
                     $codQuebra = $codLinhaSeparacao;
                 }
                 if ($quebra == "P") {
-                    $dscQuebra = $dscQuebra . " PRACA: " . $codPraca;
+                    $dscQuebra = $dscQuebra . "PRACA: " . $codPraca . " - " . $nomPraca;
                     $codQuebra = $codPraca;
                 }
                 $mapaQuebra = new MapaSeparacaoQuebra();
