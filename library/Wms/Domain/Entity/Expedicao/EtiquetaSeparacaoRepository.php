@@ -939,6 +939,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         foreach($etiquetas as $etiqueta) {
             $etiquetaEntity = $etiquetaRepository->find($etiqueta['codBarras']);
             $this->alteraStatus($etiquetaEntity, $novoStatus);
+            $this->incrementaQtdAtentidaOuCortada($etiqueta['codBarras'], 'atendida');
         }
     }
 
@@ -1003,6 +1004,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
+        $EtiquetaRepo->incrementaQtdAtentidaOuCortada($etiquetaEntity->getId(), 'cortada');
         $this->alteraStatus($etiquetaEntity,EtiquetaSeparacao::STATUS_CORTADO);
         $this->_em->flush();
 
@@ -1246,6 +1248,36 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->distinct(true);
 
         return $source->getQuery()->getResult();
+    }
+
+    public function incrementaQtdAtentidaOuCortada($idEtiqueta, $tipo)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+        $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        $etiquetaEntity     = $this->findOneBy(array('id' => $idEtiqueta));
+        $qtdProdutoEtiqueta    = $etiquetaEntity->getQtdProduto();
+        $codPedido          = $etiquetaEntity->getPedido()->getId();
+        $codProduto = $etiquetaEntity->getProduto()->getId();
+        $grade = $etiquetaEntity->getProduto()->getGrade();
+        $pedidoProdutoEntity = $pedidoProdutoRepo->findOneBy(array('codPedido' => $codPedido,'codProduto'=>$codProduto, 'grade'=>$grade));
+
+        if ($tipo == 'atendida') {
+            $qtdProdutoAtendida  = $pedidoProdutoEntity->getQtdAtendida();
+
+            $somaFinal = $qtdProdutoEtiqueta + $qtdProdutoAtendida;
+
+            $pedidoProdutoEntity->setQtdAtendida($somaFinal);
+            $this->_em->persist($pedidoProdutoEntity);
+            $this->_em->flush($pedidoProdutoEntity);
+        } else {
+            $qtdProdutoCortada  = $pedidoProdutoEntity->getQtdCortada();
+
+            $somaFinal = $qtdProdutoEtiqueta + $qtdProdutoCortada;
+
+            $pedidoProdutoEntity->setQtdCortada($somaFinal);
+            $this->_em->persist($pedidoProdutoEntity);
+            $this->_em->flush($pedidoProdutoEntity);
+        }
     }
 
 }
