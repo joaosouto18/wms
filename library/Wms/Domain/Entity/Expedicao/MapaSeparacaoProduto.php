@@ -71,6 +71,11 @@ class MapaSeparacaoProduto
     protected $indConferido;
 
     /**
+     * @Column(name="COD_PEDIDO_PRODUTO", type="integer", nullable=false)
+     */
+    protected $codPedidoProduto;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -228,6 +233,22 @@ class MapaSeparacaoProduto
     public function getIndConferido()
     {
         return $this->indConferido;
+    }
+
+    /**
+     * @param mixed $codPedidoProduto
+     */
+    public function setCodPedidoProduto($codPedidoProduto)
+    {
+        $this->codPedidoProduto = $codPedidoProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPedidoProduto()
+    {
+        return $this->codPedidoProduto;
     }
 
 }
