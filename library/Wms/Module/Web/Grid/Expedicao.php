@@ -168,18 +168,6 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
-                'label' => 'Relatório de Produtos sem Etiquetas',
-                'modelName' => 'expedicao',
-                'controllerName' => 'etiqueta',
-                'actionName' => 'index',
-                'params' => array('urlAction' => 'sem-dados', 'urlController' => 'etiqueta'),
-                'cssClass' => 'dialogAjax pdf',
-                'pkIndex' => 'id',
-                'condition' => function ($row) {
-                    return $row['prodSemEtiqueta'] > 0;
-                }
-            ))
-            ->addAction(array(
                 'label' => 'Relatório de Carregamento',
                 'modelName' => 'expedicao',
                 'controllerName' => 'relatorio_carregamento',

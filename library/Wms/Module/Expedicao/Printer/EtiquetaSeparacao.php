@@ -78,11 +78,21 @@ class EtiquetaSeparacao extends Pdf
         $this->setChaveCargas($idExpedicao);
 
         $etiquetaMaeAnterior = 0;
+
+        $idModeloSeparacao = 1;
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
+        $modeloSeparacaoRepo = $em->getRepository("wms:Expedicao\ModeloSeparacao");
+
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+
         foreach($etiquetas as $etiqueta) {
-            if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
-                $this->etqMae = true;
-                $this->layoutEtiquetaMae($etiqueta['codEtiquetaMae']);
-                $etiquetaMaeAnterior = $etiqueta['codEtiquetaMae'];
+            if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == 'S') {
+                if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
+                    $this->etqMae = true;
+                    $this->layoutEtiquetaMae($etiqueta['codEtiquetaMae']);
+                    $etiquetaMaeAnterior = $etiqueta['codEtiquetaMae'];
+                }
             }
             $this->etqMae = false;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
