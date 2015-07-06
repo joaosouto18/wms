@@ -2,7 +2,7 @@
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
-    Wms\Service\Coletor as LeituraColetor,
+    Wms\Service\Coletor as LeituraColetor, 
     Wms\Domain\Entity\Expedicao;
 
 class Mobile_ExpedicaoController extends Action
