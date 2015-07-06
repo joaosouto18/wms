@@ -6,7 +6,7 @@ use Core\Grid\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao as ExpedicaoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
-    Wms\Service\Recebimento as LeituraColetor,
+    Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Expedicao\Andamento;
