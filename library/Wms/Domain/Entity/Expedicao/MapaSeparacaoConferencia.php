@@ -25,7 +25,7 @@ class MapaSeparacaoConferencia
     protected $mapaSeparacao;
 
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      */
     protected $codProduto;
 
