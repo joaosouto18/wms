@@ -39,7 +39,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setPessoa($pedido['pessoa']);
             $enPedido->setPontoTransbordo($pedido['pontoTransbordo']);
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
-
+            $enPedido->setIndEtiquetaMapaGerado('N');
             $em->persist($enPedido);
             $em->flush();
             $em->commit();
