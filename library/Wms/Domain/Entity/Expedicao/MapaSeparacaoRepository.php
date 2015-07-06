@@ -68,11 +68,12 @@ class MapaSeparacaoRepository extends EntityRepository
             $arrayFiltro['mapaSeparacao'] = $produto['COD_MAPA_SEPARACAO'];
             $arrayFiltro['codProduto'] = $produto['COD_PRODUTO'];
             $arrayFiltro['dscGrade'] = $produto['DSC_GRADE'];
-            throw new \Exception('chegou aqui 1');
 
             if ($produto['VOLUME'] != "0") $arrayFiltro['produtoVolume'] = $produto['VOLUME'];
             $produtosEn = $mapaSeparacaoProdutoRepo->findBy($arrayFiltro);
             foreach ($produtosEn as $produtoEn) {
+                throw new \Exception('chegou aqui 2');
+
                 $produtoEn->setIndConferido('S');
                 $this->getEntityManager()->persist($produtoEn);
 
