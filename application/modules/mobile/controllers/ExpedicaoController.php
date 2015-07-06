@@ -10,7 +10,8 @@ class Mobile_ExpedicaoController extends Action
 
     protected $bloquearOs = null;
 
-    public function indexAction(){
+    public function indexAction()
+    {
         $idCentral = $this->_getParam('idCentral');
         $this->setIdCentral($idCentral);
     }
@@ -711,7 +712,7 @@ class Mobile_ExpedicaoController extends Action
         $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
         if (isset($etiquetaProduto)) {
             $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto   = $LeituraColetor->analisarCodigoBarras($etiquetaProduto);
+            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
 
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
                 $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
