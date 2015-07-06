@@ -57,6 +57,8 @@ class EtiquetaSeparacao extends Pdf
         $this->chaveCargas = $chaveCarga;
     }
 
+
+
     public function imprimir(array $params = array(), $modelo)
     {
         $this->modelo = $modelo;
@@ -349,20 +351,13 @@ class EtiquetaSeparacao extends Pdf
         $this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
 
-    protected function layoutModelo4($etiqueta,$countEtiquetas,$reimpressao, $modelo, $addPage = true)
+    protected function layoutModelo4($etiqueta,$countEtiquetas,$reimpressao, $modelo)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
 
         $strReimpressao = "";
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
-
-        if ($addPage == true) {
-            $this->AddPage();
-            $yImage= 36;
-        } else {
-            $yImage= null;
-        }
 
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
@@ -393,7 +388,7 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, $yImage, 68,17);
+        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, null, 68,17);
         $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 4.1, 1.5, 20,5);
         $this->SetFont('Arial', 'B', 13);
         $this->SetY(36);
@@ -401,20 +396,20 @@ class EtiquetaSeparacao extends Pdf
 
     }
 
-    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $addPage = true)
+    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo)
     {
         switch ($modelo) {
             case 4:
-                $this->layoutModelo4($etiqueta, $countEtiquetas, $reimpressao, $modelo, $addPage);
+                $this->layoutModelo4($etiqueta, $countEtiquetas, $reimpressao, $modelo);
                 break;
             case 3:
-                $this->layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo, $addPage);
+                $this->layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo);
                 break;
             case 2:
-                $this->layoutModelo2($etiqueta,$countEtiquetas,$reimpressao, $modelo, $addPage);
+                $this->layoutModelo2($etiqueta,$countEtiquetas,$reimpressao, $modelo);
                 break;
             default:
-                $this->layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo, $addPage);
+                $this->layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo);
         }
     }
 
