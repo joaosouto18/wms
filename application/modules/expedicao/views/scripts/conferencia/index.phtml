@@ -5,7 +5,8 @@
             url: URL_MODULO + '/conferencia/finalizar',
             type: 'POST',
             data: {
-                codCargaExterno: $('.codCargaExternoo').val()
+                codCargaExterno: $('.codCargaExternoo').val(),
+                centrais: $('input[type="radio"]:checked').val()
             },
             success: function(data){
                 if (data.result) {
@@ -38,7 +39,7 @@
             <tr style="line-height: 20px;">
                 <td><div>
                         <p><b>Selecione a Central de Entrega</b></p>
-                        <ul id="centrais">
+                        <ul id="central">
                             <?php foreach($this->centraisEntrega as $central) : ?>
                                 <li>
                                     <input
