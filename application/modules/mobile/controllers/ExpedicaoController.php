@@ -55,6 +55,8 @@ class Mobile_ExpedicaoController extends Action
         $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
         $volumePatrimonioEn = null;
@@ -87,13 +89,21 @@ class Mobile_ExpedicaoController extends Action
 
                 if ($codBarrasVolumePatrimonio == false) {
 
-                    $embalagemEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
-                    $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('codigoBarras'=>$codBarras));
-                    if (count($embalagemEn) >0) {
-                        $embalagemEn = $embalagemEn[0];
-                        $volumeEn = null;
+                    $volumeEn = null;
+                    $embalagemEn = null;
+                    $embalagens = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+                    $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('codigoBarras'=>$codBarras));
+                    if (count($embalagens) >0) {
+                        foreach ($embalagens as $embalagem) {
+                            $codProduto = $embalagem->getProduto()->getId();
+                            $grade = $embalagem->getProduto()->getGrade();
+                            $produto = $mapaSeparacaoProdutoRepo->findBy(array('codProduto'=>$codProduto,'dscGrade'=>$grade,'mapaSeparacao'=>$idMapa));
+                            if (count($produto)>0){
+                                $embalagemEn = $embalagem;
+                            }
+                        }
                     }
-                    if (count($volumeEn)>0) {
+                    if (count($volumes)>0) {
                         $volumeEn = $volumeEn[0];
                         $embalagemEn = null;
                     }
@@ -166,17 +176,28 @@ class Mobile_ExpedicaoController extends Action
                 $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
                 $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+                $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 
-                $embalagemEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
-                $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('codigoBarras'=>$codBarras));
-                if (count($embalagemEn) >0) {
-                    $embalagemEn = $embalagemEn[0];
-                    $volumeEn = null;
+                $volumeEn = null;
+                $embalagemEn = null;
+                $embalagens = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+                $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('codigoBarras'=>$codBarras));
+                if (count($embalagens) >0) {
+                    foreach ($embalagens as $embalagem) {
+                        $codProduto = $embalagem->getProduto()->getId();
+                        $grade = $embalagem->getProduto()->getGrade();
+                        $produto = $mapaSeparacaoProdutoRepo->findBy(array('codProduto'=>$codProduto,'dscGrade'=>$grade,'mapaSeparacao'=>$idMapa));
+                        if (count($produto)>0){
+                            $embalagemEn = $embalagem;
+                        }
+                    }
                 }
-                if (count($volumeEn)>0) {
+                if (count($volumes)>0) {
                     $volumeEn = $volumeEn[0];
                     $embalagemEn = null;
                 }
+
                 $volumePatrimonioEn = null;
                 if ((isset($idVolume)) && ($idVolume != null)) {
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
