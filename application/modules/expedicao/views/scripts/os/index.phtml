@@ -3,7 +3,7 @@
         <div>
             <fieldset id="fieldset-expedicao">
                 <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
-                <table class="gTable">
+                <table style="width: 100%">
                     <tbody>
                     <tr class = "">
                         <td width=""><span><b>Expedicao</b></span></td>
@@ -25,6 +25,13 @@
                         <td width = ""><span><?php echo $this->dataInicio;?></span></td>
                         <td width = ""><span><?php echo $this->dataFim;?></span></td>
                     </tr>
+                    <?php if (isset($this->gridMapas)) {?>
+                        <tr>
+                            <td colspan="8">
+                                <?php echo $this->gridMapas?>
+                            </td>
+                        </tr>
+                    <?php }?>
                     </tbody>
                 </table>
             </fieldset>

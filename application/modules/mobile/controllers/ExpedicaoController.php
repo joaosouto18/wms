@@ -66,11 +66,11 @@ class Mobile_ExpedicaoController extends Action
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
             try {
-                $codBarras = (float) $codBarras;
+                $codBarrasProcessado = (float) $codBarras;
                 $codBarrasVolumePatrimonio = false;
                 //VERIFICA SE É CODIGO DEBARRAS DE UM VOLUME PATRIMONIO
-                if ((strlen($codBarras) > 2) && ((substr($codBarras,0,2)) == "13") ){
-                    $novoVolumeEn = $volumePatrimonioRepo->find($codBarras);
+                if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado,0,2)) == "13") ){
+                    $novoVolumeEn = $volumePatrimonioRepo->find($codBarrasProcessado);
                     if ($novoVolumeEn != null) {
                         $codBarrasVolumePatrimonio = true;
                         if ($volumePatrimonioEn != null) {
@@ -80,7 +80,7 @@ class Mobile_ExpedicaoController extends Action
                                 $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
                                 $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, 0);
                             $this->view->idVolume = $codBarras;
-                            $this->addFlashMessage('info','Volume ' . $codBarras . ' vinculada a expedição');
+                            $this->addFlashMessage('info','Volume ' . $codBarrasProcessado . ' vinculada a expedição');
                         }
                     }
                 }
