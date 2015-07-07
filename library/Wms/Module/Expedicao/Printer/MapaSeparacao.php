@@ -100,6 +100,14 @@ class MapaSeparacao extends Pdf
 
         }
 
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
+        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+        $ExpedicaoEntity->setStatus($statusEntity);
+        $em->persist($ExpedicaoEntity);
+
         $this->Output('Mapa Separação-'.$idExpedicao.'.pdf','D');
 
         $em->flush();
