@@ -1778,6 +1778,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
 
     public function getUrlMobileByCodBarras($codBarras){
         $LeituraColetor = new LeituraColetor();
+        $codBarras = (float) $codBarras;
         if (strlen($codBarras) >2){
             if ((substr($codBarras,0,2)) == "10") {
                 //ETIQUETA DE SEPARAÇÃO
