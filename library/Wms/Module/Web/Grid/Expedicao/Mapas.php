@@ -33,30 +33,30 @@ class Mapas extends Grid
                     'index' => 'COD_MAPA_SEPARACAO',
                 ))
                 ->addColumn(array(
-                    'label' => 'DTH. CRIAÇÃO',
+                    'label' => 'Dth. Criação',
                     'index' => 'DTH_CRIACAO',
                 ))
                 ->addColumn(array(
-                    'label' => 'QUEBRAS',
+                    'label' => 'Quebras',
                     'index' => 'QUEBRA',
                 ))                
                 ->addColumn(array(
-                    'label' => 'TOTAL PRODUTOS',
+                    'label' => 'Total Produtos',
                     'index' => 'QTD_TOTAL',
                 ))
                 ->addColumn(array(
-                    'label' => 'PROD. CONFERIDOS',
+                    'label' => 'Prod. Conferidos',
                     'index' => 'QTD_CONF',
                 ))
                 ->addColumn(array(
-                    'label' => 'CONFERENCIA',
+                    'label' => '% Conferencia',
                     'index' => 'PERCENTUAL',
                 ))
                 ->addAction(array(
                     'label' => 'Visualizar Produtos',
                     'moduleName' => 'expedicao',
                     'controllerName' => 'mapa',
-                    'actionName' => 'consultar-produto',
+                    'actionName' => 'consultar',
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => 'COD_MAPA_SEPARACAO'
                 ))

@@ -18,39 +18,50 @@ class ProdutosMapa extends Grid
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($idMapa,$idProduto,$grade,$numConferencia)
+    public function init($idMapa)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $array = $mapaSeparacaoRepo->getDetalhesConferenciaMapaProduto($idMapa,$idProduto,$grade,$numConferencia);
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
+        $mapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $array = $mapaRepo->getResumoConferenciaMapaProduto($idMapa);
         $this->showPager = false;
         $this->showExport = false;
         $this->setSource(new \Core\Grid\Source\ArraySource($array))
-                ->setId('expedicao-mapas-grid')
-                ->setAttrib('class', 'grid-expedicao-pendencias')
-                ->setAttrib('caption', 'Mapas')
-                ->addColumn(array(
-                    'label' => 'Mapa',
-                    'index' => 'COD_OS',
-                ))
-                ->addColumn(array(
-                    'label' => 'DTH. CRIAÇÃO',
-                    'index' => 'NOM_PESSOA',
-                ))
-                ->addColumn(array(
-                    'label' => 'QUEBRAS',
-                    'index' => 'EMBALAGEM',
-                ))                
-                ->addColumn(array(
-                    'label' => 'TOTAL PRODUTOS',
-                    'index' => 'QTD_CONFERIDA',
-                ))
-                ->addColumn(array(
-                    'label' => 'PROD. CONFERIDOS',
-                    'index' => 'DTH_CONFERENCIA',
-                ))
-                ;
-
+            ->setId('expedicao-mapas-grid')
+            ->setAttrib('class', 'grid-expedicao-pendencias')
+            ->setAttrib('caption', 'Produtos')
+            ->addColumn(array(
+                'label' => 'Cod.Produto',
+                'index' => 'COD_PRODUTO',
+            ))
+            ->addColumn(array(
+                'label' => 'Grade',
+                'index' => 'DSC_GRADE',
+            ))
+            ->addColumn(array(
+                'label' => 'Produto',
+                'index' => 'DSC_PRODUTO',
+            ))
+            ->addColumn(array(
+                'label' => 'Qtd.Separar',
+                'index' => 'QTD_SEPARAR',
+            ))
+            ->addColumn(array(
+                'label' => 'Qtd. Conferido',
+                'index' => 'QTD_CONFERIDA',
+            ))
+            ->addColumn(array(
+                'label' => 'Conferido',
+                'index' => 'CONFERIDO',
+            ))
+            ->addAction(array(
+                'label' => 'Visualizar Conferencia',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'mapa',
+                'actionName' => 'conferencia',
+                'cssClass' => 'inside-modal',
+                'pkIndex' => array('COD_PRODUTO','DSC_GRADE','NUM_CONFERENCIA')
+            ))
+        ;
         return $this;
     }
 

@@ -1,21 +1,23 @@
 <?php
-use Wms\Module\Web\Controller\Action,
-    Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
-    Wms\Module\Web\Page,
-    Wms\Module\Expedicao\Report\Produtos,
-    Wms\Service\Recebimento as LeituraColetor,
-    Wms\Module\Expedicao\Report\ProdutosSemEtiquetas as ProdutosSemEtiquetas;
+use Wms\Module\Web\Controller\Action;
 ;
 
-class Expedicao_EtiquetaController  extends Action
+class Expedicao_MapaController  extends Action
 {
 
-    public function consultarProdutoAction()
+    public function consultarAction()
     {
-
+        $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
+        $grid = new \Wms\Module\Web\Grid\Expedicao\ProdutosMapa();
+        $this->view->grid = $grid->init($idMapa)->render();
     }
 
     public function conferenciaAction(){
-
+        $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
+        $idProduto = $this->_getParam('COD_PRODUTO');
+        $grade = $this->_getParam('DSC_GRADE');
+        $nomConferencia = $this->_getParam('NUM_CONFERENCIA');
+        $grid = new \Wms\Module\Web\Grid\Expedicao\ConferenciaProdutoMapa();
+        $this->view->grid = $grid->init($idMapa,$idProduto,$grade,$nomConferencia);
     }
 }

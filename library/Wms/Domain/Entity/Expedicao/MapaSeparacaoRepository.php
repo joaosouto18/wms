@@ -12,9 +12,9 @@ class MapaSeparacaoRepository extends EntityRepository
     public function getDetalhesConferenciaMapaProduto ($idMapa, $idProduto, $grade, $numConferencia) {
         $SQL = "SELECT OS.COD_OS,
                        P.NOM_PESSOA,
-                       NVL(PV.DSC_VOLUME, PE.DSC_EMBALAGEM || '(' || MSC.QTD_EMBALAGEM || ')') as EMBALAGEM,
+                       NVL(PV.DSC_VOLUME, PE.DSC_EMBALAGEM || ' (' || MSC.QTD_EMBALAGEM || ')') as EMBALAGEM,
                        MSC.QTD_CONFERIDA,
-                       MSC.DTH_CONFERENCIA
+                       TO_CHAR(DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') as DTH_CONFERENCIA
                   FROM MAPA_SEPARACAO_CONFERENCIA MSC
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSC.COD_PRODUTO_VOLUME
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MSC.COD_PRODUTO_EMBALAGEM
@@ -34,10 +34,11 @@ class MapaSeparacaoRepository extends EntityRepository
                        P.COD_PRODUTO,
                        P.DSC_GRADE,
                        P.DSC_PRODUTO,
+                       NVL(CONF.NUM_CONFERENCIA,0) as NUM_CONFERENCIA,
                        SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) as QTD_SEPARAR,
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
-                       CASE WHEN (MSP.IND_CONFERIDO = 'N') THEN 'PENDENTE'
-                            ELSE 'CONFERIDO'
+                       CASE WHEN (MSP.IND_CONFERIDO = 'S') OR NVL(CONF.QTD_CONFERIDA,0) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) THEN 'CONFERIDO'
+                            ELSE 'PENDENTE'
                        END AS CONFERIDO
                   FROM MAPA_SEPARACAO_PRODUTO MSP
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
@@ -59,6 +60,7 @@ class MapaSeparacaoRepository extends EntityRepository
                           P.DSC_GRADE,
                           P.DSC_PRODUTO,
                         MSP.COD_MAPA_SEPARACAO,
+                       CONF.NUM_CONFERENCIA,
                        CONF.QTD_CONFERIDA,
                         MSP.IND_CONFERIDO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -67,19 +69,31 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function getResumoConferenciaMapaByExpedicao ($idExpedicao){
         $SQL = "SELECT MS.COD_MAPA_SEPARACAO,
-                       DTH_CRIACAO,
+                       TO_CHAR(DTH_CRIACAO, 'DD/MM/YYYY HH24:MI') as DTH_CRIACAO,
                        TRIM(DSC_QUEBRA) as QUEBRA,
                        TOTAL.QTD_PROD as QTD_TOTAL,
                        NVL(CONF.QTD_PROD,0) as QTD_CONF,
-                       NVL(CONF.QTD_PROD,0)/TOTAL.QTD_PROD as PERCENTUAL
+                       CAST((NVL(CONF.QTD_PROD,0)/TOTAL.QTD_PROD) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL
                   FROM MAPA_SEPARACAO MS
                   LEFT JOIN (SELECT COUNT(DISTINCT COD_PRODUTO || DSC_GRADE) as QTD_PROD, COD_MAPA_SEPARACAO
                                FROM MAPA_SEPARACAO_PRODUTO
                               GROUP BY COD_MAPA_SEPARACAO) TOTAL
                     ON TOTAL.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                  LEFT JOIN (SELECT COUNT(DISTINCT COD_PRODUTO || DSC_GRADE) as QTD_PROD, COD_MAPA_SEPARACAO
-                               FROM MAPA_SEPARACAO_PRODUTO
-                              WHERE IND_CONFERIDO = 'S'
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COUNT(*) as QTD_PROD
+                               FROM (SELECT M.COD_MAPA_SEPARACAO
+                                       FROM (SELECT MP.IND_CONFERIDO, M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) as QTD_SEPARAR
+                                               FROM MAPA_SEPARACAO_PRODUTO MP
+                                               LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
+                                              GROUP BY MP.IND_CONFERIDO,M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
+                                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
+                                               FROM MAPA_SEPARACAO_CONFERENCIA
+                                              WHERE IND_CONFERENCIA_FECHADA = 'N'
+                                              GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) C
+                                         ON M.COD_MAPA_SEPARACAO = C.COD_MAPA_SEPARACAO
+                                        AND M.COD_PRODUTO = C.COD_PRODUTO
+                                        AND M.DSC_GRADE = C.DSC_GRADE
+                                        AND M.VOLUME = C.VOLUME
+                                      WHERE (M.QTD_SEPARAR = NVL(C.QTD_CONFERIDA,0) OR M.IND_CONFERIDO = 'S'))
                               GROUP BY COD_MAPA_SEPARACAO) CONF
                     ON CONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                  WHERE MS.COD_EXPEDICAO = $idExpedicao";
@@ -344,14 +358,18 @@ class MapaSeparacaoRepository extends EntityRepository
                 }
             }
 
+            $dscEmbalagem = "";
+            if ($embalagemEn != null){
+                $dscEmbalagem = " - " . $embalagemEn->getDescricao() . " (".$embalagemEn->getQuantidade().") - ";
+            }
             if ((isset($volumePatrimonioEn)) && ($volumePatrimonioEn != null) && ($embalado == false)) {
                 $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não é embalado");
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " não é embalado");
             }
 
             if ((!(isset($volumePatrimonioEn)) || ($volumePatrimonioEn == null)) && ($embalado == true)) {
                 $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " é embalado");
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " é embalado");
             }
         } catch (\Exception $e) {
             if ($mensagemColetor == true) {
