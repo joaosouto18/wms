@@ -18,6 +18,8 @@ class Expedicao_OsController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
         $EtiquetaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
+        $MapaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
@@ -150,6 +152,12 @@ class Expedicao_OsController extends Action
             $this->view->dataFim = "Expedição em andamento";
         } else {
             $this->view->dataFim = $resumoConferencia['dataFinalizacao']->format('d/m/Y H:i:s');
+        }
+
+        $mapas = $MapaSeparacaoRepo->getResumoConferenciaMapaByExpedicao($idExpedicao);
+        if (count($mapas) >0){
+            $gridMapas = new \Wms\Module\Web\Grid\Expedicao\Mapas();
+            $this->view->gridMapas = $gridMapas->init($mapas)->render();
         }
 
         $GridOs = new OsGrid();

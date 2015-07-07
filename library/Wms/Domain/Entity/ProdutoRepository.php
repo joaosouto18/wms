@@ -1054,7 +1054,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                   FROM PRODUTO P
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE)
                   LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE)
-                 WHERE PE.COD_BARRAS = $codBarras OR PV.COD_BARRAS = $codBarras";
+                 WHERE PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras'";
         $result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         $embalagenEn = null;
         $volumeEn = null;
