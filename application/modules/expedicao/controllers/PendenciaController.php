@@ -11,19 +11,28 @@ class Expedicao_PendenciaController  extends Action
         $placaCarga  = $this->getRequest()->getParam('placa');
         $transbordo  = $this->getRequest()->getParam('transbordo');
         $embalado    = $this->getRequest()->getParam('embalado');
+        $status      = $this->getRequest()->getParam('status');
 
-        if (is_null($placaCarga))    {
-            $status = "522,523";
-            $expedicaoEn = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
-            if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
-                $status = "522,523,526";
-            }
+        $this->view->showReport = true;
+        if (isset($status) && ($status != null)) {
+            $embalado = null;
+            $label = "Etiquetas da Expedição";
+            $this->view->showReport = false;
         } else {
-            $status = "522,523,526,532";
+            $label = "Etiquetas pendentes de conferência";
+            if (is_null($placaCarga))    {
+                $status = "522,523";
+                $expedicaoEn = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
+                if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                    $status = "522,523,526";
+                }
+            } else {
+                $status = "522,523,526,532";
+            }
         }
 
         $GridCortes = new PendentesGrid();
-        $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,"Etiquetas pendentes de conferência",$embalado)
+        $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,$label,$embalado)
             ->render();
     }
 
