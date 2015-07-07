@@ -55,8 +55,8 @@ class Mapas extends Grid
                 ->addAction(array(
                     'label' => 'Visualizar Produtos',
                     'moduleName' => 'expedicao',
-                    'controllerName' => 'os',
-                    'actionName' => 'conferencia-transbordo',
+                    'controllerName' => 'mapa',
+                    'actionName' => 'consultar-produto',
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => 'COD_MAPA_SEPARACAO'
                 ))
