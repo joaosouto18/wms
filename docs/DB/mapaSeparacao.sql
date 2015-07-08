@@ -130,3 +130,6 @@ VALUES (SQ_MENU_ITEM_01.NEXTVAL,
 (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Expedição Mercadorias'),
 'Modelo de Separação',
 10, '#', '_self', 'N');
+
+insert into acao (COD_ACAO, DSC_ACAO, NOM_ACAO) values (SQ_ACAO_01.NEXTVAL, 'Reimprimir mapa de separação', 'reimprimir-mapa');
+insert into RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, cod_acao, dsc_recurso_acao) values (SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from RECURSO where NOM_RECURSO like '%etiqueta'), (select COD_ACAO from acao where NOM_ACAO = 'reimprimir-mapa'), 're-imprimir etiquetas de mapa de separação');

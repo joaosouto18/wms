@@ -149,6 +149,16 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Reimprimir Mapa de Separação',
+                'modelName' => 'expedicao',
+                'controllerName' => 'etiqueta',
+                'actionName' => 'reimprimir-mapa',
+                'condition' => function($row) {
+                    return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                },
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Relatório de Produtos',
                 'target' => '_blank',
                 'modelName' => 'expedicao',

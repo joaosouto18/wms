@@ -114,4 +114,57 @@ class MapaSeparacao extends Pdf
         $em->clear();
     }
 
+    public function reimprimirMapaByCodBarras($idExpedicao, $codBarras)
+    {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('id' => $codBarras));
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        foreach ($mapaSeparacao as $mapa) {
+            $produtos = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao' => $mapa->getId()));
+            $quebras = $mapa->getDscQuebra();
+            $mapa->setCodStatus(523);
+            $em->persist($mapa);
+
+            $this->idMapa = $mapa->getId();
+            $this->quebrasEtiqueta = $quebras;
+            $this->idExpedicao = $idExpedicao;
+
+            $this->AddPage();
+            foreach ($produtos as $produto) {
+                $this->SetFont('Arial',  null, 8);
+                $endereco = $produto->getProdutoEmbalagem()->getEndereco();
+                $dscEndereco = "";
+                if ($endereco != null) {
+                    $dscEndereco = $endereco->getDescricao();
+                }
+                $embalagem = $produto->getProdutoEmbalagem();
+                $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
+                $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
+                $this->Cell(20, 4, utf8_decode($produto->getDscGrade()) ,0, 0);
+                $this->Cell(80, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,54) ,0, 0);
+                $this->Cell(35, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
+                $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
+                $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                $this->Cell(20, 1, "", 0, 1);
+            }
+
+        }
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
+        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+        $ExpedicaoEntity->setStatus($statusEntity);
+        $em->persist($ExpedicaoEntity);
+
+        $this->Output('Mapa Separação-'.$idExpedicao.'.pdf','D');
+
+        $em->flush();
+        $em->clear();
+
+    }
 }

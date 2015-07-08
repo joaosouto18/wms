@@ -399,4 +399,16 @@ class MapaSeparacaoRepository extends EntityRepository
         return $result[0]['QTD_CONFERIDA'];
     }
 
+    public function getMapaSeparacaoByExpedicao($idExpedicao)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('ms.id codBarras, p.id codProduto, p.descricao produto, p.grade')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = msp.codProduto AND p.grade = msp.dscGrade')
+            ->where("ms.expedicao = $idExpedicao");
+
+        return $dql->getQuery()->getResult();
+    }
+
 }

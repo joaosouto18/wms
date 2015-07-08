@@ -16,7 +16,7 @@
         return true;
     }
 </script>
-<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir' ))?>">
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir-mapa' ))?>">
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <thead>
@@ -29,31 +29,24 @@
             </thead>
             <tbody>
             <?php
-            foreach ($this->etiquetas as $etiqueta): ?>
+            foreach ($this->mapaSeparacao as $mapa): ?>
                 <tr height="35">
-                    <td><?php echo $etiqueta['codBarras'] ?></td>
-                    <td><?php echo $etiqueta['codProduto'] ?></td>
-                    <td ><?php echo $etiqueta['produto'] ?></td>
-                    <td ><?php echo $etiqueta['grade'] ?></td>
+                    <td><?php echo $mapa['codBarras'] ?></td>
+                    <td><?php echo $mapa['codProduto'] ?></td>
+                    <td ><?php echo $mapa['produto'] ?></td>
+                    <td ><?php echo $mapa['grade'] ?></td>
                 </tr>
             <?php endforeach; ?>
             <tr>
                 <td>
-                    <label>Código de barras etiqueta:</label>
+                    <label>Código de barras Mapa Separação:</label>
                     <input class="focus" type="text" name="codBarra" id="codBarra"  onkeydown="nextInput(event)" />
                 </td>
-                <td>
-                    <label>Motivo:</label>
-                    <?php echo $this->formText('motivo') ?>
-                </td>
+
                 <td >
                     <?php
-                    echo '<label>Senha para confirmação: </label>';
-                    echo $this->formPassword("senhaConfirmacao", '', array(
-                        'size' => '10',
-                        'maxlength' => '20',
-                    ));
                     echo $this->formSubmit("btnConfirmacao", "Reimprimir", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+                    echo $this->formSubmit("btnReimpressao", "Reimprimir Todos", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
                     ?>
                 </td>
             </tr>

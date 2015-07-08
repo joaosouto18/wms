@@ -4,6 +4,7 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Page,
     Wms\Module\Expedicao\Report\Produtos,
     Wms\Service\Recebimento as LeituraColetor,
+    Wms\Module\Expedicao\Printer\MapaSeparacao as MapaSeparacao,
     Wms\Module\Expedicao\Report\ProdutosSemEtiquetas as ProdutosSemEtiquetas;
 ;
 
@@ -202,6 +203,57 @@ class Expedicao_EtiquetaController  extends Action
 
         }
 
+    }
+
+    public function reimprimirMapaAction()
+    {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar para Busca de Expedições',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'module' => 'expedicao',
+                        'controller' => 'index',
+                        'action' => 'index'
+                    ),
+                    'tag' => 'a'
+                ),
+            )
+        ));
+        $request = $this->getRequest();
+        $idExpedicao = $request->getParam('id');
+        $LeituraColetor = new LeituraColetor();
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
+        $mapaRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+        $mapaSeparacao = $mapaRepo->getMapaSeparacaoByExpedicao($idExpedicao);
+        $this->view->mapaSeparacao = $mapaSeparacao;
+        $reimprimirTodos = $this->_getParam('btnReimpressao');
+        $reimprimirByCodBarras = $this->_getParam('btnConfirmacao');
+
+        $mapa = new MapaSeparacao;
+
+        if (isset($reimprimirTodos) && $reimprimirTodos != null) {
+            $mapa->imprimir($idExpedicao);
+        } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
+            $codBarra    = $request->getParam('codBarra');
+            $codBarra    = $LeituraColetor->retiraDigitoIdentificador($codBarra);
+            if (!$codBarra) {
+                $this->addFlashMessage('error', 'É necessário informar o Código de Barras');
+                $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id'.$idExpedicao);
+            }
+            $mapaSeparacaoEntity = $mapaRepo->findOneBy(array('id' => $codBarra));
+            if ($mapaSeparacaoEntity == null ) {
+                $this->addFlashMessage('error', "Etiqueta $codBarra não encontrada");
+                $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
+            }
+            $mapa->reimprimirMapaByCodBarras($idExpedicao, $codBarra);
+
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+            $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao);
+        }
     }
 
     /**
