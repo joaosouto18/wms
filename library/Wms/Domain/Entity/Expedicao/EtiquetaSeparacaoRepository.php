@@ -554,7 +554,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quebra = $quebra['tipoQuebra'];
             if ($quebra == "C")  {
                 $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
-                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getNome();
+                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
@@ -705,7 +705,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             //CLIENTE
             if ($quebra == "C")  {
                 $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
-                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getNome();
+                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
