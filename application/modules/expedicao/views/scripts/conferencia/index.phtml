@@ -11,9 +11,7 @@
             success: function(data){
                 if (data.result) {
                     location.href = window.location.href;
-                    if (data.result == true) {
-                        alert('Conferência finalizada com sucesso!');
-                    } else {
+                    if (data.result != true) {
                         alert(data.result);
                     }
                 }
