@@ -221,7 +221,6 @@ class Expedicao_IndexController  extends Action
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
         $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
 
-
         foreach ($result as $key => $resultado) {
             if ($key + 1 == count($result)) {
                 $result[$key + 1]['VOLUME'] = null;
@@ -233,7 +232,7 @@ class Expedicao_IndexController  extends Action
             $result[$key]['QTD_CAIXA'] = null;
         }
 
-        $this->exportPDF($result,'volume-patrimonio','Relatório de Volumes Patrimônio da Expedição','L');
+        $this->exportPDF($result,'volume-patrimonio','Relatório de Volumes Patrimônio da Expedição '.$idExpedicao,'L');
     }
 
     public function declaracaoAjaxAction(){
