@@ -244,7 +244,7 @@ class Mobile_ExpedicaoController extends Action
         } else {
             $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
         }
-        $this->_redirect('mobile/ordem-servico/conferencia-expedicao/idCentral/'.$central);
+        $this->_redirect('mobile');
 
     }
 
