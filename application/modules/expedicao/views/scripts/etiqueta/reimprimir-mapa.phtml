@@ -21,10 +21,7 @@
         <table class="gTable ">
             <thead>
             <tr class="gTTitle">
-                <td>Cód de barras</td>
-                <td>Cód Produto</td>
-                <td>Produto</td>
-                <td>Grade</td>
+                <td>Cód de barras do Mapa</td>
             </tr>
             </thead>
             <tbody>
@@ -32,9 +29,6 @@
             foreach ($this->mapaSeparacao as $mapa): ?>
                 <tr height="35">
                     <td><?php echo $mapa['codBarras'] ?></td>
-                    <td><?php echo $mapa['codProduto'] ?></td>
-                    <td ><?php echo $mapa['produto'] ?></td>
-                    <td ><?php echo $mapa['grade'] ?></td>
                 </tr>
             <?php endforeach; ?>
             <tr>
@@ -45,7 +39,7 @@
 
                 <td >
                     <?php
-                    echo $this->formSubmit("btnConfirmacao", "Reimprimir", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+                    echo $this->formSubmit("btnConfirmacao", "Reimprimir por Código", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
                     echo $this->formSubmit("btnReimpressao", "Reimprimir Todos", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
                     ?>
                 </td>

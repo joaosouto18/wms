@@ -402,10 +402,8 @@ class MapaSeparacaoRepository extends EntityRepository
     public function getMapaSeparacaoByExpedicao($idExpedicao)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('ms.id codBarras, p.id codProduto, p.descricao produto, p.grade')
+            ->select('ms.id codBarras')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
-            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
-            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = msp.codProduto AND p.grade = msp.dscGrade')
             ->where("ms.expedicao = $idExpedicao");
 
         return $dql->getQuery()->getResult();
