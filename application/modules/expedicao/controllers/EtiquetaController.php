@@ -238,10 +238,9 @@ class Expedicao_EtiquetaController  extends Action
             $mapa->imprimir($idExpedicao, 523);
         } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
             $codBarra    = $request->getParam('codBarra');
-            $codBarra    = $LeituraColetor->retiraDigitoIdentificador($codBarra);
             if (!$codBarra) {
                 $this->addFlashMessage('error', 'É necessário informar o Código de Barras');
-                $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id'.$idExpedicao);
+                $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
             }
             $mapaSeparacaoEntity = $mapaRepo->findOneBy(array('id' => $codBarra));
             if ($mapaSeparacaoEntity == null ) {
