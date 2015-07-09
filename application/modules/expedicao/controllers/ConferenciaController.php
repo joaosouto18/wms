@@ -44,6 +44,7 @@ class Expedicao_ConferenciaController extends Action
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,false, 'S');
                 } else {
                     $result = 'Senha informada não é válida';
+                    $this->addFlashMessage('error', $result);
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
