@@ -10,10 +10,11 @@
             },
             success: function(data){
                 if (data.result) {
-                    location.href = window.location.href;
+                    alert(data.result);
                     if (data.result != true) {
                         alert(data.result);
                     }
+                    location.href = window.location.href;
                 }
             }
         });
