@@ -45,11 +45,11 @@ class Expedicao_ConferenciaController extends Action
                 } else {
                     $result = 'Senha informada não é válida';
                     $this->addFlashMessage('error', $result);
-                    if ($origin == "expedicao") {
-                        $this->_redirect('/expedicao');
-                    } else {
-                        $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
-                    }
+                }
+                if ($origin == "expedicao") {
+                    $this->_redirect('/expedicao');
+                } else {
+                    $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
