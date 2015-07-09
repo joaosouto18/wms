@@ -42,6 +42,7 @@ class Expedicao_ConferenciaController extends Action
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,false, 'S');
+                    $this->addFlashMessage('success', $result);
                 } else {
                     $result = 'Senha informada não é válida';
                     $this->addFlashMessage('error', $result);
