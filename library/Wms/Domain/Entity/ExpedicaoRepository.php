@@ -1108,16 +1108,17 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->orderBy("e.id" , "DESC")
             ->distinct(true);
 
+        $parcialmenteFinalizado = ExpedicaoEntity::STATUS_PARCIALMENTE_FINALIZADO;
         if (is_array($central)) {
             $central = implode(',',$central);
-            $source->andWhere("pedido.centralEntrega in ($central)")
-                    ->orWhere("pedido.pontoTransbordo in ($central)");
-
+            $source->andWhere("pedido.centralEntrega in ($central) AND e.codStatus != $parcialmenteFinalizado")
+                    ->orWhere("pedido.pontoTransbordo in ($central) AND e.codStatus = $parcialmenteFinalizado");
         } else if ($central) {
-            $source->andWhere('pedido.centralEntrega = :central')
-                    ->orWhere("pedido.pontoTransbordo = :central");
+            $source->andWhere("pedido.centralEntrega = :central AND e.codStatus != $parcialmenteFinalizado")
+                    ->orWhere("pedido.pontoTransbordo = :central AND e.codStatus = $parcialmenteFinalizado");
             $source->setParameter('central', $central);
         }
+        $source->andWhere("pedido.conferido = 0 OR pedido.conferido IS NULL");
 
         if (is_array($status)) {
             $status = implode(',',$status);
