@@ -57,7 +57,55 @@ class EtiquetaVolume extends eFPDF
         $type     = 'code128';
         $black    = '000000';
         $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),1.5,18);
+
         $this->Text($x2,$y2 ,$dsc, 0, 0);
+
+    }
+
+    public function getCodBarrasByPatrimonio($volumePatrimonio)
+    {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        $this->SetMargins(3, 1.5, 0);
+
+        foreach ($volumePatrimonio as $volume) {
+            $this->SetFont('Arial', 'B', 20);
+//coloca o cod barras
+            $this->AddPage();
+            $dsc = utf8_decode($volume['volume']) .' - '.utf8_decode($volume['descricao']);
+            $lentxt = $this->GetStringWidth($dsc);
+
+            $height   = 8;
+            $angle    = 0;
+            $x        = 32;
+            $y        = 35;
+            $x2 = ($x-$height) + (($height - $lentxt)/2) + 3;
+            $y2 = 30;
+
+            $type     = 'code128';
+            $black    = '000000';
+            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$volume['volume']),1.25,10);
+
+//monta o restante dos dados ta etiqueta
+            $this->SetFont('Arial', 'B', 11);
+            $impressao = utf8_decode("\n\nEXP:$volume[expedicao] - PEDIDO:$volume[pedido].\n");
+            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+            $impressao = utf8_decode("$volume[cliente] - $volume[nomeFantasia]");
+            $this->MultiCell(100, 5, $impressao, 0, 'L');
+            $this->SetFont('Arial', 'B', 20);
+            $impressao = "PRODUTOS DIVERSOS";
+            $this->MultiCell(100, 6, $impressao, 0, 'C');
+            $this->SetFont('Arial', 'B', 11);
+            $impressao = utf8_decode("$volume[volume] - $volume[descricao]");
+            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+
+            $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 4.1, 1.5, 20,5);
+        }
+        $this->Output('Volume-Patrimonio.pdf','D');
 
     }
 

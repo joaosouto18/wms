@@ -159,6 +159,14 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Imprimir Volume Patrimonio',
+                'modelName' => 'expedicao',
+                'controllerName' => 'volume-patrimonio',
+                'actionName' => 'imprimir-volume-patrimonio',
+                'pkIndex' => 'id',
+                'cssClass' => 'dialogAjax'
+            ))
+            ->addAction(array(
                 'label' => 'Relatório de Produtos',
                 'target' => '_blank',
                 'modelName' => 'expedicao',

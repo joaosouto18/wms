@@ -3,7 +3,8 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Grid\Expedicao\VolumePatrimonio as VolumesGrid,
     Wms\Module\Web\Controller\Action\Crud,
     Wms\Module\Web\Page,
-    Wms\Domain\Entity\Expedicao;
+    Wms\Domain\Entity\Expedicao,
+    Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta;
 
 class Expedicao_VolumePatrimonioController  extends  Crud
 {
@@ -161,5 +162,24 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         $getRelatorio = $volumePatrimonioRepository->imprimirRelatorio();
         $this->exportPDF($getRelatorio,'imprimir-relatorio','Caixas Expedidas','P');
     }
+
+    public function imprimirVolumePatrimonioAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+        $params = $this->_getAllParams();
+        /** @var \Wms\Domain\Entity\Expedicao\VolumePatrimonioRepository $volumePatrimonioRepository */
+        $volumePatrimonioRepository = $this->em->getRepository("wms:Expedicao\VolumePatrimonio");
+        $volumePatrimonio = $volumePatrimonioRepository->getVolumesByExpedicao($idExpedicao);
+        $this->view->volumesPatrimonio = $volumePatrimonio;
+
+        if (isset($params['btnImprimir'])) {
+            $etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+            $etiqueta->imprimirVolume($volumePatrimonio);
+        }
+    }
+
+
+
+
 
 }
