@@ -214,7 +214,7 @@ class OrdemServicoRepository extends EntityRepository
                       prod.id as codProduto,
                       prod.grade,
                       CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
-                      es.dataConferenciaTransbordo,
+                      es.dataConferenciaTransbordo
                       ')
                     ->andWhere('es.codOS = :idOS');
             }
@@ -225,7 +225,7 @@ class OrdemServicoRepository extends EntityRepository
                       prod.id as codProduto,
                       prod.grade,
                       CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
-                      es.dataConferenciaTransbordo,
+                      es.dataConferenciaTransbordo
                       ')
                 ->andWhere('es.codOSTransbordo = :idOS');
         }

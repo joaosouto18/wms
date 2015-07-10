@@ -10,17 +10,17 @@
             },
             success: function(data){
                 if (data.result) {
-                    location.href = window.location.href;
                     if (data.result != true) {
                         alert(data.result);
                     }
+                    location.href = window.location.href;
                 }
             }
         });
 
     });
 </script>
-<form id="" class="saveForm">
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' ))?>">
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <tbody>
