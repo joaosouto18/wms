@@ -84,6 +84,11 @@ class ModeloSeparacao
     protected $tiposQuebraNaoFracionado;
 
     /**
+     * @column(name="IND_IMPRIME_ETQ_VOLUME", type="string", nullable=true)
+     */
+    protected $imprimeEtiquetaVolume;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -307,9 +312,20 @@ class ModeloSeparacao
         $this->tiposQuebraNaoFracionado = $tiposQuebraNaoFracionado;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getImprimeEtiquetaVolume()
+    {
+        return $this->imprimeEtiquetaVolume;
+    }
 
-
-
-
+    /**
+     * @param mixed $imprimeEtiquetaVolume
+     */
+    public function setImprimeEtiquetaVolume($imprimeEtiquetaVolume)
+    {
+        $this->imprimeEtiquetaVolume = $imprimeEtiquetaVolume;
+    }
 
 }

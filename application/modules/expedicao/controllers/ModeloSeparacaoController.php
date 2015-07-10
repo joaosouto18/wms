@@ -251,6 +251,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
         $entity->setDescricao($params['descricao']);
         $entity->setUtilizaCaixaMaster($this->getBooleanValue($params['utilizaCaixaMaster']));
         $entity->setUtilizaEtiquetaMae($this->getBooleanValue($params['utilizaEtiquetaMae']));
+        $entity->setImprimeEtiquetaVolume($this->getBooleanValue($params['imprimeEtiquetaPatrimonio']));
         $entity->setUtilizaQuebraColetor($this->getBooleanValue($params['utilizaQuebraColetor']));
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
         $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);

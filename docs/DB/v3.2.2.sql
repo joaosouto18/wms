@@ -419,3 +419,7 @@ INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_A
 --imprimir volume patrimonio --
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (SQ_ACAO_01.NEXTVAL, 'Impressão de Volume Patrimônio', 'imprimir-volume-patrimonio');
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from RECURSO where NOM_RECURSO like 'expedicao:volume-patrimonio'), (select COD_ACAO from acao where NOM_ACAO like 'imprimir-volume-patrimonio'), 'Impressão do volume patrimonio');
+
+--criado coluna na tabela MODELO_SEPARACAO
+ALTER TABLE MODELO_SEPARACAO
+ADD (IND_IMPRIME_ETQ_VOLUME VARCHAR(1));

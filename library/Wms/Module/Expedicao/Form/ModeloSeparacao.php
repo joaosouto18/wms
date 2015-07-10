@@ -26,6 +26,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'utilizaEtiquetaMae', array(
             'label' => 'Utiliza Etiqueta Mãe',
             'checkedValue' => 'S'
+        ))->addElement('checkbox', 'imprimeEtiquetaPatrimonio', array(
+            'label' => 'Imprime Etiqueta Volume Patrimonio',
+            'checkedValue' => 'S',
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
             'multiOptions' => array('N' => 'Não utiliza', 'C' => 'Por Cliente', 'P' => 'Por Praça'),
@@ -79,6 +82,7 @@ class ModeloSeparacao extends Form
             'utilizaCaixaMaster',
             'utilizaQuebraColetor',
             'utilizaEtiquetaMae',
+            'imprimeEtiquetaPatrimonio',
             'quebraPulmaDoca',
             'tipoQuebraVolume',
             'tipoDefaultEmbalado',
