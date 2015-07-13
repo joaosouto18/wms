@@ -215,7 +215,7 @@ class Produtos extends Pdf
                 switch($modelo) {
                     case 2:
                         $this->Cell(15, 5, $produto->getCodProduto(), 1);
-                        $this->Cell(87, 5, utf8_decode($produto->getDescricao()), 1);
+                        $this->Cell(87, 5, utf8_decode(substr($produto->getDescricao(), 0, 40)), 1);
                         $this->Cell(30, 5, utf8_decode($produto->getLinhaSeparacao()), 1);
                         $this->Cell(5, 5, " ", 1);
                         $this->Cell(12, 5, $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()], 1);
@@ -225,7 +225,7 @@ class Produtos extends Pdf
                         break;
                     default:
                         $this->Cell(15, 5, $produto->getCodProduto(), 1);
-                        $this->Cell(75, 5, utf8_decode($produto->getDescricao()), 1);
+                        $this->Cell(75, 5, utf8_decode(substr($produto->getDescricao(), 0, 40)), 1);
                         $this->Cell(22, 5, utf8_decode($produto->getLinhaSeparacao()), 1);
                         $this->Cell(20, 5, utf8_decode($produto->getGrade()), 1);
                         $this->Cell(5, 5, " ", 1);
