@@ -75,7 +75,7 @@ class Inventario extends Pdf
         foreach ($saldo as $estoque) {
             $endereco = $estoque['dscEndereco'];
             $codProduto = $estoque['codProduto'];
-            $dscProduto = $estoque['descricao'];
+            $dscProduto = utf8_decode(substr($estoque['descricao'],0,40));
             $descricaoVolume = str_replace(";CADASTRO","",$estoque['volume']);
             $unitizador = $estoque['unitizador'];
             $grade= $estoque['grade'];
