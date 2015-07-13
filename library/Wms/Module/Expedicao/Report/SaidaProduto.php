@@ -25,7 +25,7 @@ class SaidaProduto extends Report
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
-        $pdf->setTitle('Saída Cod.Produto:'.$produtos[0]['codProduto'].$grade)
+        $pdf->setTitle(utf8_decode('Saída Cod.Produto:'.$produtos[0]['codProduto'].$grade))
                 ->setLabelHeight(6)
                 ->setColHeight(7);
 
