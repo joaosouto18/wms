@@ -406,20 +406,3 @@ ORDER BY
       GRADE,
       IND_PADRAO DESC,
       DSC_VOLUME;
-
--- verifica produto volume --
-
- INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (SQ_ACAO_01.NEXTVAL, 'Consultar Produto', 'consultar-produto');
-INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'enderecamento:movimentacao'), (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'consultar-produto'), 'Verifica se Produto é Composto ou Uninatário');
-
--- volume patrimonio --
-
-INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'expedicao:index'), (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'imprimir'), 'Relatório de Volumes Patrimônio');
-
---imprimir volume patrimonio --
-INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (SQ_ACAO_01.NEXTVAL, 'Impressão de Volume Patrimônio', 'imprimir-volume-patrimonio');
-INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from RECURSO where NOM_RECURSO like 'expedicao:volume-patrimonio'), (select COD_ACAO from acao where NOM_ACAO like 'imprimir-volume-patrimonio'), 'Impressão do volume patrimonio');
-
---criado coluna na tabela MODELO_SEPARACAO
-ALTER TABLE MODELO_SEPARACAO
-ADD (IND_IMPRIME_ETQ_VOLUME VARCHAR(1));
