@@ -9,7 +9,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
-    Wms\Domain\Entity\Expedicao\Andamento;
+    Wms\Domain\Entity\Expedicao\Andamento,
+    Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta;
 
 
 class ExpedicaoRepository extends EntityRepository
@@ -471,6 +472,19 @@ class ExpedicaoRepository extends EntityRepository
 
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
                 if (is_string($result)) {
+                    $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+
+                    $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
+                    $modeloSeparacaoEn = $modeloSeparacaoRepo->findBy(array('id'=> $modeloSeparacaoId));
+
+                    if ($modeloSeparacaoEn->imprimeEtiquetaVolume() == 'S') {
+                        /** @var \Wms\Domain\Entity\Expedicao\VolumePatrimonioRepository $volumePatrimonioRepository */
+                        $volumePatrimonioRepository = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+                        $volumePatrimonio = $volumePatrimonioRepository->getVolumesByExpedicao($idExpedicao);
+
+                        $etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+                        $etiqueta->imprimirVolume($volumePatrimonio);
+                    }
                     return $result;
                 }
             } else {
