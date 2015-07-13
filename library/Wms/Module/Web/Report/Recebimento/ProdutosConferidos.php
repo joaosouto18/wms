@@ -34,21 +34,21 @@ class ProdutosConferidos extends Report
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
 
         // header
-        $pdf->setTitle('Relatório de Produtos Conferidos')
+        $pdf->setTitle(utf8_decode('Relatório de Produtos Conferidos'))
                 ->setLabelHeight(6)
                 ->setColHeight(7);
 
         // header
         $pdf->addLabel(0, 30, 'Recebimento', 0, 0, 'L');
         $pdf->addLabel(0, 65, 'Filial', 0, 0, 'L');
-        $pdf->addLabel(0, 55, 'Depósito', 0, 0, 'L');
+        $pdf->addLabel(0, 55, utf8_decode('Depósito'), 0, 0, 'L');
         $pdf->addLabel(0, 25, 'Box', 0, 0, 'L');
-        $pdf->addLabel(0, 25, 'Veículo', 0, 0, 'L');
+        $pdf->addLabel(0, 25, utf8_decode('Veículo'), 0, 0, 'L');
         $pdf->addLabel(0, 35, 'Data Inicial', 0, 0, 'L');
         $pdf->addLabel(0, 50, 'Data Final', 0, 1, 'L');
         $pdf->addLabel(0, 30, $recebimentoEntity->getId(), 0, 0, 'L');
-        $pdf->addLabel(0, 65, $recebimentoEntity->getFilial()->getPessoa()->getNome(), 0, 0, 'L');
-        $pdf->addLabel(0, 55, $recebimentoEntity->getDeposito()->getDescricao(), 0, 0, 'L');
+        $pdf->addLabel(0, 65, utf8_decode($recebimentoEntity->getFilial()->getPessoa()->getNome()), 0, 0, 'L');
+        $pdf->addLabel(0, 55, utf8_decode($recebimentoEntity->getDeposito()->getDescricao()), 0, 0, 'L');
         $pdf->addLabel(0, 25, $recebimentoEntity->getBox()->getDescricao(), 0, 0, 'L');
         $pdf->addLabel(0, 25, $placaVeiculo, 0, 0, 'L');
         $pdf->addLabel(0, 35, $recebimentoEntity->getDataInicial(), 0, 0, 'L');
@@ -70,7 +70,7 @@ class ProdutosConferidos extends Report
         $pdf->addLabel(6, 2, '', '', 0, 'L');
         $pdf->addLabel(7, 25, 'Qtd. Diverg.', 'B', 0, 'L');
         $pdf->addLabel(7, 2, '', '', 0, 'L');
-        $pdf->addLabel(8, 60, 'Observação', 'B', 1, 'L');
+        $pdf->addLabel(8, 60, utf8_decode('Observação'), 'B', 1, 'L');
 
         
 
@@ -85,7 +85,7 @@ class ProdutosConferidos extends Report
             $dataConf = \DateTime::createFromFormat('Y-m-d H:i:s', $item['DTH_CONFERENCIA']);
             $dataEmissaoNF = \DateTime::createFromFormat('Y-m-d H:i:s', $item['DAT_EMISSAO']);
 
-            $notaFiscal = '-----------------------------------   Nota Fiscal Nº: ' . $item['NUM_NOTA_FISCAL'] . ' - Série: ' . $item['COD_SERIE_NOTA_FISCAL'] . ' - Data Emissão: ' . $dataEmissaoNF->format('d/m/Y') . '    -----------------------------------';
+            $notaFiscal = utf8_decode('-----------------------------------   Nota Fiscal Nº: ' . $item['NUM_NOTA_FISCAL'] . ' - Série: ' . $item['COD_SERIE_NOTA_FISCAL'] . ' - Data Emissão: ' . $dataEmissaoNF->format('d/m/Y') . '    -----------------------------------');
             $codigoGrade = $item['COD_PRODUTO'] . $item['DSC_GRADE'];
 
             $motivoDivergencia = '';
@@ -111,7 +111,7 @@ class ProdutosConferidos extends Report
 
             //$pdf->addCol(1, 279, $notaFiscal, $borderNF, 1, 'L');
             $pdf->addCol(3, 17, $item['COD_PRODUTO'], $border, 0, 'L');
-            $pdf->addCol(4, 72, $item['DSC_PRODUTO'], $border, 0, 'L');
+            $pdf->addCol(4, 72, utf8_decode(substr($item['DSC_PRODUTO'], 0, 30)), $border, 0, 'L');
             $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
             $pdf->addCol(6, 27, $dataConf->format('d/m/y H:i'), $border, 0, 'L');
             $pdf->addCol(7, 28, $item['QTD_CONFERIDA'], $border, 0, 'C');
