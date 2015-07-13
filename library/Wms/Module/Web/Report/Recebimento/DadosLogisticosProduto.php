@@ -21,15 +21,15 @@ class DadosLogisticosProduto extends Report
         switch ($params['indDadosLogisticos']) {
             case 'S':
                 $tituloRelatorio = 'Relatório de Produtos Com Dados Logísticos';
-                $dscVazio = 'Não existe produto com dados logísticos.';
+                $dscVazio = utf8_decode('Não existe produto com dados logísticos.');
                 break;
             case 'N':
                 $tituloRelatorio = 'Relatório de Produtos Sem Dados Logísticos';
-                $dscVazio = 'Não existe produto sem dados logísticos.';
+                $dscVazio = utf8_decode('Não existe produto sem dados logísticos.');
                 break;
             default :
                 $tituloRelatorio = 'Relatório de Produtos';
-                $dscVazio = 'Não existe produto.';
+                $dscVazio = utf8_decode('Não existe produto.');
                 break;
         }
 
@@ -45,7 +45,7 @@ class DadosLogisticosProduto extends Report
                ->setNumRows(count($produtos));
 
         if (empty($produtos)) {
-            $dscVazio = 'Não existe produto.';
+            $dscVazio = utf8_decode('Não existe produto.');
             $pdf->addLabel(0, 70, $dscVazio, 0, 1, 'L');
         } else {
             // header
