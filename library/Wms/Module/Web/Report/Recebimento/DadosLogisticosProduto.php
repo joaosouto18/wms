@@ -63,7 +63,7 @@ class DadosLogisticosProduto extends Report
                 $pdf->addCol(0, 1, '', 0, 0, 'L');
                 $pdf->addCol(0, 20, $produto['COD_PRODUTO'],  0, 0, 'TB');
                 $pdf->addCol(0, 30, $produto['DSC_GRADE'], 0, 0, 'L');
-                $pdf->addCol(0, 100, $produto['DSC_PRODUTO'], 0, 0, 'L');
+                $pdf->addCol(0, 100, substr($produto['DSC_PRODUTO'], 0, 40) , 0, 0, 'L');
                 $pdf->addCol(0, 70, $produto['COD_BARRAS'], 0, 0, 'L');
                 $pdf->addCol(0, 30,  $produto['ALTURA'], 0, 0, 'L');
                 $pdf->addCol(0, 30, $produto['LARGURA'], 0, 1, 'L');
