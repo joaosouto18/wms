@@ -73,7 +73,7 @@ class UMA extends Pdf
             $this->Cell(16, 5, $uma['COD_RECEBIMENTO'], 1, 0);
             $this->Cell(15, 5, $uma['UMA'], 1, 0);
             $this->Cell(16, 5, $uma['COD_PRODUTO'], 1, 0);
-            $this->Cell(66, 5, $uma['DSC_PRODUTO'], 1, 0);
+            $this->Cell(66, 5, substr($uma['DSC_PRODUTO'],0,30), 1, 0);
             if (strlen($uma['VOLUMES']) >= 70) {
                 $this->Cell(110, 5, substr($uma['VOLUMES'],0,63) . "...", 1, 0);
             } else {

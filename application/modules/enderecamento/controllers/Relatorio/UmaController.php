@@ -8,8 +8,6 @@ class Enderecamento_Relatorio_UmaController extends Action
 {
     public function indexAction()
     {
-
-
         $form = new FiltroRecebimentoMercadoria;
         $values = $form->getParams();
 

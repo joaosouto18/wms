@@ -70,7 +70,7 @@ class PickingMultiplosProdutos extends Pdf
             $this->SetFont('Arial', 'B', 8);
             $this->Cell(20, 5, utf8_decode($estoque['COD_PRODUTO']), 1, 0);
             $this->Cell(25, 5, utf8_decode($estoque['GRADE']), 1, 0);
-            $this->Cell(115, 5, utf8_decode($estoque['PRODUTO']), 1, 0);
+            $this->Cell(115, 5, utf8_decode(substr($estoque['PRODUTO'],0,50)), 1, 0);
             $this->Cell(20, 5, " " . utf8_decode($estoque['DESCRICAO']), 1, 0);
             $this->Cell(17, 5,$estoque['QTD'], 1, 1);
         }
