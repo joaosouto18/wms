@@ -150,12 +150,9 @@ class Mobile_ExpedicaoController extends Action
         try {
             $expVolumePatrimonioRepo->fecharCaixa($idExpedicao, $idVolume);
             $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'imprime-volume-patrimonio', 'idExpedicao' => $idExpedicao, 'volume' => $idVolume)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Clique aqui para Imprimir</a>';
-//            $params = "/imprimirVolume/".$idVolume;
             $mensagem = "Volume $idVolume fechado com sucesso - $linkImpressao";
 
             $this->addFlashMessage('success', $mensagem );
-
-//            $this->_helper->messenger('success', 'Volume '. $idVolume. ' fechado com sucesso');
         } catch (Exception $e) {
             $params = "";
             $this->_helper->messenger('error', $e->getMessage());
