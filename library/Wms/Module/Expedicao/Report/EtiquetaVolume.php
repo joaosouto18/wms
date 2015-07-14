@@ -103,7 +103,7 @@ class EtiquetaVolume extends eFPDF
 
             $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 4.1, 1.5, 20,5);
         }
-        $this->Output('Volume-Patrimonio.pdf','D');
+        $this->Output('Volume-Patrimonio.pdf','I');
 
     }
 

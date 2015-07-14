@@ -202,12 +202,29 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             if ((count($etiquetasEn) == 0) && ($qtdMapa == 0)) {
                 $this->desocuparVolume($volume,$idExpedicao);
             } else {
+                $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+                $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
+
+                $volumeEn = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio")->find($volume);
+
                 foreach ($volumesPatrimonio as $carga) {
                     $carga->setDataFechamento(new \DateTime());
                     $em->persist($carga);
                 }
+
+                if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
+                    $rows = array();
+                    $fields = array();
+                        $fields['expedicao'] = $idExpedicao;
+                        $fields['volume'] = $volume;
+                        $fields['descricao'] = $volumeEn->getDescricao();
+                    $rows[] = $fields;
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+                    $gerarEtiqueta->imprimirExpedicao($rows);
+                }
             }
             $em->flush();
+
         } catch (Exception $e) {
             throw new \Exception($e->getMessage());
         }

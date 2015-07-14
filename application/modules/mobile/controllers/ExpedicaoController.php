@@ -43,6 +43,19 @@ class Mobile_ExpedicaoController extends Action
         $idExpedicao = $this->_getParam("idExpedicao");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
+        $imprimirVolume = $this->_getParam("imprimirVolume");
+
+        if (isset($imprimirVolume) && (!is_null($imprimirVolume))){
+            $rows = array();
+            $fields = array();
+            $fields['expedicao'] = $idExpedicao;
+            $fields['volume'] = $imprimirVolume;
+            $fields['descricao'] = "Teste";
+            $rows[] = $fields;
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+            $gerarEtiqueta->imprimirExpedicao($rows);
+        }
+
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $dscVolume = "";
         $this->view->idVolume = $idVolume;
@@ -136,26 +149,13 @@ class Mobile_ExpedicaoController extends Action
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         try {
             $expVolumePatrimonioRepo->fecharCaixa($idExpedicao, $idVolume);
-
-            $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-            $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->findBy(array('id'=> $modeloSeparacaoId));
-
-            if ($modeloSeparacaoEn[0]->getImprimeEtiquetaVolume() == 'S') {
-                /** @var \Wms\Domain\Entity\Expedicao\VolumePatrimonioRepository $volumePatrimonioRepository */
-                $volumePatrimonioRepository = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
-                $volumePatrimonio = $volumePatrimonioRepository->getVolumesByExpedicao($idExpedicao);
-
-                $etiqueta = new Etiqueta();
-                $etiqueta->imprimirVolume($volumePatrimonio);
-            }
-
+            $params = "/imprimirVolume/".$idVolume;
             $this->_helper->messenger('success', 'Volume '. $idVolume. ' fechado com sucesso');
         } catch (Exception $e) {
+            $params = "";
             $this->_helper->messenger('error', $e->getMessage());
         }
-
-        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/");
+        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . $params . "/idVolume/" );
     }
 
     public function informaQtdMapaAction(){
