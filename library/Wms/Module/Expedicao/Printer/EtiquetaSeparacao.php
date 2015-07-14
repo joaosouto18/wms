@@ -438,10 +438,4 @@ class EtiquetaSeparacao extends Pdf
         $this->Image(@CodigoBarras::gerarNovo($codEtiquetaMae), 25, 30, 60);
     }
 
-    public function imprimirVolume($volumePatrimonio)
-    {
-        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-        $gerarEtiqueta->getCodBarrasByPatrimonio($volumePatrimonio);
-    }
-
 }

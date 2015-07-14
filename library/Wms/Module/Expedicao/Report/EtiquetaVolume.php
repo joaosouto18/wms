@@ -62,7 +62,7 @@ class EtiquetaVolume extends eFPDF
 
     }
 
-    public function getCodBarrasByPatrimonio($volumePatrimonio)
+    public function imprimirExpedicao($volumePatrimonio)
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -74,7 +74,7 @@ class EtiquetaVolume extends eFPDF
 
         foreach ($volumePatrimonio as $volume) {
             $this->SetFont('Arial', 'B', 20);
-//coloca o cod barras
+            //coloca o cod barras
             $this->AddPage();
             $dsc = utf8_decode($volume['volume']) .' - '.utf8_decode($volume['descricao']);
             $lentxt = $this->GetStringWidth($dsc);
@@ -92,10 +92,8 @@ class EtiquetaVolume extends eFPDF
 
 //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 11);
-            $impressao = utf8_decode("\n\nEXP:$volume[expedicao] - PEDIDO:$volume[pedido].\n");
+            $impressao = utf8_decode("\n\nEXP:$volume[expedicao].\n");
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-            $impressao = utf8_decode("$volume[cliente] - $volume[nomeFantasia]");
-            $this->MultiCell(100, 5, $impressao, 0, 'L');
             $this->SetFont('Arial', 'B', 20);
             $impressao = "PRODUTOS DIVERSOS";
             $this->MultiCell(100, 6, $impressao, 0, 'C');

@@ -171,10 +171,11 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         $volumePatrimonioRepository = $this->em->getRepository("wms:Expedicao\VolumePatrimonio");
         $volumePatrimonio = $volumePatrimonioRepository->getVolumesByExpedicao($idExpedicao);
         $this->view->volumesPatrimonio = $volumePatrimonio;
+        $this->idExpedicao = $idExpedicao;
 
         if (isset($params['btnImprimir'])) {
-            $etiqueta = new Etiqueta("L", 'mm', array(110, 60));
-            $etiqueta->imprimirVolume($volumePatrimonio);
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+            $gerarEtiqueta->imprimirExpedicao($volumePatrimonio);
         }
     }
 
