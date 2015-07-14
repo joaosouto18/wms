@@ -81,18 +81,18 @@ class EtiquetaVolume extends eFPDF
 
             $height   = 8;
             $angle    = 0;
-            $x        = 32;
+            $x        = 50;
             $y        = 35;
             $x2 = ($x-$height) + (($height - $lentxt)/2) + 3;
             $y2 = 30;
 
             $type     = 'code128';
             $black    = '000000';
-            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$volume['volume']),1.25,10);
+            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$volume['volume']),0.75,10);
 
 //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 11);
-            $impressao = utf8_decode("\n\nEXP:$volume[expedicao].\n");
+            $impressao = utf8_decode("\n\nEXP:$volume[expedicao]. CLIENTE:$volume[quebra]\n");
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
             $this->SetFont('Arial', 'B', 20);
             $impressao = "PRODUTOS DIVERSOS";

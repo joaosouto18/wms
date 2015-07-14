@@ -139,9 +139,11 @@ class VolumePatrimonioRepository extends EntityRepository
     public function getVolumesByExpedicao($idExpedicao)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('vp.id volume, vp.descricao, e.id as expedicao')
+            ->select('vp.id volume, vp.descricao, e.id as expedicao, p.nome as quebra')
             ->from('wms:Expedicao\VolumePatrimonio', 'vp')
             ->innerJoin('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp', 'WITH', 'evp.volumePatrimonio = vp.id')
+            ->innerJoin('wms:Pessoa\Papel\cliente', 'c', 'WITH', 'evp.tipoVolume = c.codClienteExterno')
+            ->innerJoin('c.pessoa', 'p')
             ->innerJoin('evp.expedicao', 'e')
             ->where("evp.expedicao = $idExpedicao")
         ;

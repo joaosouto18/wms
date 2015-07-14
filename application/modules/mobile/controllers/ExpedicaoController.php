@@ -96,8 +96,16 @@ class Mobile_ExpedicaoController extends Action
                             $idVolume = $codBarras;
                             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                             $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
-                                $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
-                                $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, 0);
+                            $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+
+                            $codQuebra = 0;
+                            if ($modeloSeparacaoEn->getTipoQuebraVolume() == 'C') {
+                                $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
+                                $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => 'C'));
+                                $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
+                            }
+                            $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, $codQuebra);
+
                             $this->view->idVolume = $codBarras;
                             $this->addFlashMessage('info','Volume ' . $codBarrasProcessado . ' vinculada a expedição');
                         }
@@ -180,7 +188,6 @@ class Mobile_ExpedicaoController extends Action
             $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
             $gerarEtiqueta->imprimirExpedicao($rows);
         }
-
     }
 
     public function informaQtdMapaAction(){

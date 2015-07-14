@@ -1959,7 +1959,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
     {
         $sql = $this->_em->createQueryBuilder()
             ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdTotal')
-            ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
+            ->from('wms:Expedicao\ExpedigetVolumesByExpedicaocaoVolumePatrimonio', 'evp')
             ->where("evp.expedicao = $idExpedicao");
 
         return $sql->getQuery()->getResult();
