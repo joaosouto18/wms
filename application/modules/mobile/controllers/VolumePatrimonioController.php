@@ -82,6 +82,7 @@ class Mobile_VolumePatrimonioController  extends Action
     {
         $volume         = $this->_getParam('volume');
         $idExpedicao    = $this->_getParam('idExpedicao');
+
         if ($this->_request->isXmlHttpRequest()) {
             /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
             $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
@@ -92,6 +93,7 @@ class Mobile_VolumePatrimonioController  extends Action
                     $this->createXml('error', $retorno['msg'],"/mobile/volume-patrimonio/liberar-os/idExpedicao/$idExpedicao/tipo-conferencia/volume");
                 }
                 $this->createXml('success', 'Volume '. $volume . ' conferido');
+
             } catch(Exception $e) {
                 $this->createXml('error', $e->getMessage());
             }

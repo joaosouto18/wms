@@ -2,7 +2,8 @@
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
-    Wms\Service\Coletor as LeituraColetor, 
+    Wms\Service\Coletor as LeituraColetor,
+    Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Domain\Entity\Expedicao;
 
 class Mobile_ExpedicaoController extends Action
@@ -135,6 +136,20 @@ class Mobile_ExpedicaoController extends Action
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         try {
             $expVolumePatrimonioRepo->fecharCaixa($idExpedicao, $idVolume);
+
+            $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+            $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->findBy(array('id'=> $modeloSeparacaoId));
+
+            if ($modeloSeparacaoEn[0]->getImprimeEtiquetaVolume() == 'S') {
+                /** @var \Wms\Domain\Entity\Expedicao\VolumePatrimonioRepository $volumePatrimonioRepository */
+                $volumePatrimonioRepository = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+                $volumePatrimonio = $volumePatrimonioRepository->getVolumesByExpedicao($idExpedicao);
+
+                $etiqueta = new Etiqueta();
+                $etiqueta->imprimirVolume($volumePatrimonio);
+            }
+
             $this->_helper->messenger('success', 'Volume '. $idVolume. ' fechado com sucesso');
         } catch (Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
