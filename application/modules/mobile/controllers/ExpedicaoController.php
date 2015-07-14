@@ -149,13 +149,41 @@ class Mobile_ExpedicaoController extends Action
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         try {
             $expVolumePatrimonioRepo->fecharCaixa($idExpedicao, $idVolume);
-            $params = "/imprimirVolume/".$idVolume;
-            $this->_helper->messenger('success', 'Volume '. $idVolume. ' fechado com sucesso');
+            $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'imprime-volume-patrimonio', 'idExpedicao' => $idExpedicao, 'volume' => $idVolume)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Clique aqui para Imprimir</a>';
+//            $params = "/imprimirVolume/".$idVolume;
+            $mensagem = "Volume $idVolume fechado com sucesso - $linkImpressao";
+
+            $this->addFlashMessage('success', $mensagem );
+
+//            $this->_helper->messenger('success', 'Volume '. $idVolume. ' fechado com sucesso');
         } catch (Exception $e) {
             $params = "";
             $this->_helper->messenger('error', $e->getMessage());
         }
         $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . $params . "/idVolume/" );
+    }
+
+    public function imprimeVolumePatrimonioAction()
+    {
+        $idExpedicao = $this->_getParam('idExpedicao');
+        $volume = $this->_getParam('volume');
+
+        $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+        $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
+
+        $volumeEn = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio")->find($volume);
+
+        if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
+            $rows = array();
+            $fields = array();
+            $fields['expedicao'] = $idExpedicao;
+            $fields['volume'] = $volume;
+            $fields['descricao'] = $volumeEn->getDescricao();
+            $rows[] = $fields;
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+            $gerarEtiqueta->imprimirExpedicao($rows);
+        }
+
     }
 
     public function informaQtdMapaAction(){
