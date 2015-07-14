@@ -43,18 +43,6 @@ class Mobile_ExpedicaoController extends Action
         $idExpedicao = $this->_getParam("idExpedicao");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
-        $imprimirVolume = $this->_getParam("imprimirVolume");
-
-        if (isset($imprimirVolume) && (!is_null($imprimirVolume))){
-            $rows = array();
-            $fields = array();
-            $fields['expedicao'] = $idExpedicao;
-            $fields['volume'] = $imprimirVolume;
-            $fields['descricao'] = "Teste";
-            $rows[] = $fields;
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-            $gerarEtiqueta->imprimirExpedicao($rows);
-        }
 
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $dscVolume = "";
@@ -176,14 +164,24 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
 
-        $volumeEn = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio")->find($volume);
+        $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volume));
+
+        $codCliente = $expVolumePatrimonioEn[0]->getTipoVolume();
+        $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
+        $clienteEn = $clienteRepo->findBy(array('codClienteExterno' => $codCliente));
+
+        $dscVolume = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio')->find($volume)->getDescricao();
+
+        $codPessoa = $clienteEn[0]->getPessoa()->getNome();
 
         if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
             $rows = array();
             $fields = array();
             $fields['expedicao'] = $idExpedicao;
             $fields['volume'] = $volume;
-            $fields['descricao'] = $volumeEn->getDescricao();
+            $fields['descricao'] = $dscVolume;
+            $fields['quebra'] = $codPessoa;
             $rows[] = $fields;
             $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
             $gerarEtiqueta->imprimirExpedicao($rows);
