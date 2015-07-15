@@ -165,7 +165,7 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
 
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
-        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volume));
+        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao));
 
         $codCliente = $expVolumePatrimonioEn[0]->getTipoVolume();
         $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
