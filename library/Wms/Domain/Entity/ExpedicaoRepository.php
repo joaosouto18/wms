@@ -1955,11 +1955,12 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
         throw new \Exception("Código de barras invalido");
 
     }
+
     public function qtdTotalVolumePatrimonio($idExpedicao)
     {
         $sql = $this->_em->createQueryBuilder()
             ->select('COUNT(DISTINCT evp.volumePatrimonio) as qtdTotal')
-            ->from('wms:Expedicao\ExpedigetVolumesByExpedicaocaoVolumePatrimonio', 'evp')
+            ->from('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp')
             ->where("evp.expedicao = $idExpedicao");
 
         return $sql->getQuery()->getResult();
