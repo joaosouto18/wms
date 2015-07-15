@@ -93,7 +93,7 @@ class AbastecimentoPicking extends Pdf
                     $this->SetFont('Arial', 'B', 8);
                     $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
                     $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
-                    $this->Cell(130, 5, utf8_decode($dscProduto) ,1, 0);
+                    $this->Cell(130, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
                     $this->Cell(30, 5, utf8_decode($dscPicking) ,1, 1);
 
                     $limite = $limite -1;
