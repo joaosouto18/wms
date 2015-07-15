@@ -3,10 +3,8 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Module\Web\Page,
     Wms\Module\Expedicao\Report\Produtos,
-    Wms\Service\Recebimento as LeituraColetor,
-    Wms\Module\Expedicao\Printer\MapaSeparacao as MapaSeparacao,
-    Wms\Module\Expedicao\Report\ProdutosSemEtiquetas as ProdutosSemEtiquetas;
-;
+    Wms\Service\Coletor as LeituraColetor,
+    Wms\Module\Expedicao\Printer\MapaSeparacao as MapaSeparacao;
 
 class Expedicao_EtiquetaController  extends Action
 {
