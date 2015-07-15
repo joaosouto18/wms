@@ -13,7 +13,7 @@ class RelatoriosSimplesRepository extends EntityRepository {
 
     public function getConsultaRelatorioOndas($params,$relatorio){
 
-       // $header=$this->getHeader($relatorio);
+        // $header=$this->getHeader($relatorio);
         $result=false;
         if ( !empty($params['dataInicial']) ){
             $expInicial=explode("/",$params['dataInicial']);
@@ -135,7 +135,7 @@ class RelatoriosSimplesRepository extends EntityRepository {
           LEFT JOIN ( SELECT SUM(PP2.QUANTIDADE) as QTD,
                              PROD2.COD_PRODUTO,
                              PROD2.DSC_GRADE,
-                             PROD2.DSC_PRODUTO
+                             SUBSTR(PROD2.DSC_PRODUTO,1,35) DSC_PRODUTO
                         FROM PEDIDO_PRODUTO PP2
                    LEFT JOIN PEDIDO P2 ON P2.COD_PEDIDO = PP2.COD_PEDIDO
                    LEFT JOIN CARGA C2 ON C2.COD_CARGA = P2.COD_CARGA
