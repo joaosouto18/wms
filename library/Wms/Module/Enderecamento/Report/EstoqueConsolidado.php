@@ -72,7 +72,7 @@ class EstoqueConsolidado extends Pdf
             $this->Cell(30, 5, $estoque['codProduto'], 1, 0);
             $this->Cell(30, 5, utf8_decode($estoque['descricao']), 1, 0);
             $this->Cell(20, 5, utf8_decode($estoque['grade']), 1, 0);
-            $this->Cell(90, 5, utf8_decode($estoque['nomeProduto']), 1, 0);
+            $this->Cell(90, 5, utf8_decode(substr($estoque['nomeProduto'],0,40)), 1, 0);
             $this->Cell(30, 5,$estoque['qtdestoque'], 1, 1);
         }
 
