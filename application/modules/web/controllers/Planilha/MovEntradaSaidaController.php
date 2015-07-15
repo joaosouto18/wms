@@ -13,7 +13,7 @@ class Web_Planilha_MovEntradaSaidaController extends Action
 {
 
     /**
-     * 
+     *
      */
     public function indexAction()
     {
@@ -25,16 +25,16 @@ class Web_Planilha_MovEntradaSaidaController extends Action
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
 
         // header
-        $pdf->setTitle('Controle de Movimentação de Entrada e Saída')
-                ->setLabelHeight(5)
-                ->setColHeight(9);
+        $pdf->setTitle(utf8_decode('Controle de Movimentação de Entrada e Saída'))
+            ->setLabelHeight(5)
+            ->setColHeight(9);
 
 
         $pdf->addLabel(1, 35, 'Codigo', 'B', 0, 'C');
         $pdf->addLabel(2, 65, 'Descricao', 'B', 0, 'C');
         $pdf->addLabel(3, 40, 'Grade', 'B', 0, 'C');
         $pdf->addLabel(4, 40, 'Tipo Movimentacao', 'B', 0, 'C');
-        $pdf->addLabel(5, 40, 'Endereço', 'B', 0, 'C');
+        $pdf->addLabel(5, 40, utf8_decode('Endereço'), 'B', 0, 'C');
         $pdf->addLabel(6, 30, 'Volume', 'B', 0, 'C');
         $pdf->addLabel(7, 30, 'Qtde. Mov.', 'B', 1, 'C');
 
@@ -55,8 +55,8 @@ class Web_Planilha_MovEntradaSaidaController extends Action
 
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output();
+            ->render()
+            ->Output();
     }
 
 }
