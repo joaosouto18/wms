@@ -42,7 +42,7 @@ class ListagemProdutosSintetico extends Report
 
             foreach ($produtos as $produto) {
                 $pdf->addCol(0, 15, $produto['COD_PRODUTO'], 0, 0, 'L');
-                $pdf->addCol(0, 95, $produto['DSC_PRODUTO'], 0, 0, 'L');
+                $pdf->addCol(0, 95, substr($produto['DSC_PRODUTO'],0,40), 0, 0, 'L');
                 $pdf->addCol(0, 25, $produto['DSC_GRADE'], 0, 0, 'L');
                 $pdf->addCol(0, 30, $produto['NUM_VOLUMES'], 0, 0, 'L');
                 $pdf->addCol(0, 45, $produto['CODIGO_BARRAS'], 0, 0, 'L');

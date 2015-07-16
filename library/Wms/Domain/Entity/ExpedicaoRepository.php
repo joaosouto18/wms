@@ -226,6 +226,8 @@ class ExpedicaoRepository extends EntityRepository
                 $ondaRepo->sequenciaOndasOs();
                     $this->getEntityManager()->commit();
 
+            $resultado = array();
+
             if ($qtdOsGerada == 0) {
                 $resultado['observacao'] = "Nenhuma Os gerada";
                 $resultado['resultado'] = true;
@@ -250,8 +252,8 @@ class ExpedicaoRepository extends EntityRepository
     }
 
 
-    public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) {
-
+    public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
+    {
         $sequencia = $this->getSystemParameterValue("SEQUENCIA_ETIQUETA_SEPARACAO");
 
         $whereCargas = null;
@@ -301,7 +303,8 @@ class ExpedicaoRepository extends EntityRepository
      * @param $idExpedicao
      * @return mixed
      */
-    public function countPedidosNaoCancelados($idExpedicao) {
+    public function countPedidosNaoCancelados($idExpedicao) 
+    {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
             ->select('count(e.id)')
             ->from('wms:Expedicao\Pedido','p')
@@ -549,7 +552,7 @@ class ExpedicaoRepository extends EntityRepository
         return true;
     }
 
-    /**
+        /**
      * @param array $cargas
      * @return bool
      */
@@ -826,14 +829,14 @@ class ExpedicaoRepository extends EntityRepository
     public function getItinerarios($idExpedicao)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('i.id, i.descricao')
-            ->from('wms:Expedicao', 'e')
-            ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
-            ->innerJoin('wms:Expedicao\Pedido', 'pedido', 'WITH', 'c.id = pedido.carga')
-            ->innerJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = pedido.itinerario')
-            ->where('e.id = :idExpedicao')
-            ->distinct(true)
-            ->setParameter('idExpedicao', $idExpedicao);
+                ->select('i.id, i.descricao')
+                ->from('wms:Expedicao', 'e')
+                ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
+                ->innerJoin('wms:Expedicao\Pedido', 'pedido', 'WITH', 'c.id = pedido.carga')
+                ->innerJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = pedido.itinerario')
+                ->where('e.id = :idExpedicao')
+                ->distinct(true)
+                ->setParameter('idExpedicao', $idExpedicao);
         return $source->getQuery()->getArrayResult();
     }
 
@@ -852,11 +855,11 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         if(!is_null($cargas) && is_array($cargas)) {
-            $cargas = implode(',',$cargas);
-            $source->andWhere("rp.codCargaExterno in ($cargas)");
+           $cargas = implode(',',$cargas);
+           $source->andWhere("rp.codCargaExterno in ($cargas)");
         } else if (!is_null($cargas)) {
             $source->andWhere('rp.codCargaExterno = :cargas')
-                ->setParameter('cargas', $cargas);
+                   ->setParameter('cargas', $cargas);
         }
 
         return $source->getQuery()->getResult();
@@ -968,7 +971,7 @@ class ExpedicaoRepository extends EntityRepository
                 ) q
                 GROUP BY
                   '.$agrupador
-        ;
+                  ;
 
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -1151,7 +1154,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                  ORDER BY E.COD_EXPEDICAO DESC
                      ';
 
-        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+       $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
     }
@@ -1175,16 +1178,17 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->orderBy("e.id" , "DESC")
             ->distinct(true);
 
+        $parcialmenteFinalizado = ExpedicaoEntity::STATUS_PARCIALMENTE_FINALIZADO;
         if (is_array($central)) {
             $central = implode(',',$central);
-            $source->andWhere("pedido.centralEntrega in ($central)")
-                ->orWhere("pedido.pontoTransbordo in ($central)");
-
+            $source->andWhere("pedido.centralEntrega in ($central) AND e.codStatus != $parcialmenteFinalizado")
+                ->orWhere("pedido.pontoTransbordo in ($central) AND e.codStatus = $parcialmenteFinalizado");
         } else if ($central) {
-            $source->andWhere('pedido.centralEntrega = :central')
-                ->orWhere("pedido.pontoTransbordo = :central");
+            $source->andWhere("pedido.centralEntrega = :central AND e.codStatus != $parcialmenteFinalizado")
+                ->orWhere("pedido.pontoTransbordo = :central AND e.codStatus = $parcialmenteFinalizado");
             $source->setParameter('central', $central);
         }
+        $source->andWhere("pedido.conferido = 0 OR pedido.conferido IS NULL");
 
         if (is_array($status)) {
             $status = implode(',',$status);
@@ -1362,7 +1366,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
 
         if (isset($grade)) {
             $source->andWhere('es.dscGrade = :grade')
-                ->setParameter('grade', $grade);
+                    ->setParameter('grade', $grade);
         }
 
         return $source->getQuery()->getResult();
@@ -1434,7 +1438,8 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
         return $source->getQuery()->getResult();
     }
 
-    public function getDadosExpedicao ($params) {
+    public function getDadosExpedicao ($params) 
+    {
         $dataInicial = $params['dataInicial'];
         $dataFim = $params['dataFim'];
         $statusCancelado = \Wms\Domain\Entity\Expedicao::STATUS_CANCELADO;

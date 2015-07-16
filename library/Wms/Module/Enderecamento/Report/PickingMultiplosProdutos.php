@@ -13,12 +13,11 @@ class PickingMultiplosProdutos extends Pdf
         $this->SetFont('Arial','B',10);
         $this->Cell(20, 20, utf8_decode("RELATÓRIO DE PICKINGS COM MULTIPLOS PRODUTOS"), 0, 1);
         $this->SetFont('Arial', 'B', 8);
-        $this->Cell(25, 5, utf8_decode("Cód. Produto") ,1, 0);
-        $this->Cell(30, 5, utf8_decode("Grade") ,1, 0);
-        $this->Cell(70, 5, utf8_decode("Produto") ,1, 0);
-        $this->Cell(30, 5, utf8_decode("Endereço") ,1, 0);
-        $this->Cell(20, 5, "Qtd. Produtos", 1, 1);
-
+        $this->Cell(20, 5, utf8_decode("Cód. Produto") ,1, 0);
+        $this->Cell(25, 5, utf8_decode("Grade") ,1, 0);
+        $this->Cell(115, 5, utf8_decode("Produto") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
+        $this->Cell(17, 5, "Qtd. Prod.", 1, 1);
     }
 
     public function layout()
@@ -62,18 +61,18 @@ class PickingMultiplosProdutos extends Pdf
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EstoqueRepo */
         $EstoqueRepo = $em->getRepository("wms:Deposito\Endereco");
 
-        $estoqueReport = $EstoqueRepo->getPickingMultiplosProdutos();
+        $estoqueReport = $EstoqueRepo->getPickingMultiplosProdutos($params);
 
         //var_dump($estoqueReport);exit;
 
         foreach($estoqueReport as $estoque)
         {
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(25, 5, utf8_decode($estoque['COD_PRODUTO']), 1, 0);
-            $this->Cell(30, 5, utf8_decode($estoque['GRADE']), 1, 0);
-            $this->Cell(70, 5, utf8_decode($estoque['PRODUTO']), 1, 0);
-            $this->Cell(30, 5, utf8_decode($estoque['DESCRICAO']), 1, 0);
-            $this->Cell(20, 5,$estoque['QTD'], 1, 1);
+            $this->Cell(20, 5, utf8_decode($estoque['COD_PRODUTO']), 1, 0);
+            $this->Cell(25, 5, utf8_decode($estoque['GRADE']), 1, 0);
+            $this->Cell(115, 5, utf8_decode($estoque['PRODUTO']), 1, 0);
+            $this->Cell(20, 5, " " . utf8_decode($estoque['DESCRICAO']), 1, 0);
+            $this->Cell(17, 5,$estoque['QTD'], 1, 1);
         }
 
         $this->Output('PickingMultiplosProdutos.pdf','D');

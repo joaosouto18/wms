@@ -17,19 +17,19 @@ class DadosLogisticosProduto extends Report
         $em = $this->getEm();
 
         $produtos = $em->getRepository('wms:NotaFiscal')->relatorioProdutoDadosLogisticos($params);
-        
+
         switch ($params['indDadosLogisticos']) {
             case 'S':
                 $tituloRelatorio = 'Relatório de Produtos Com Dados Logísticos';
-                $dscVazio = 'Não existe produto com dados logísticos.';
+                $dscVazio = utf8_decode('Não existe produto com dados logísticos.');
                 break;
             case 'N':
                 $tituloRelatorio = 'Relatório de Produtos Sem Dados Logísticos';
-                $dscVazio = 'Não existe produto sem dados logísticos.';
+                $dscVazio = utf8_decode('Não existe produto sem dados logísticos.');
                 break;
             default :
                 $tituloRelatorio = 'Relatório de Produtos';
-                $dscVazio = 'Não existe produto.';
+                $dscVazio = utf8_decode('Não existe produto.');
                 break;
         }
 
@@ -39,13 +39,13 @@ class DadosLogisticosProduto extends Report
 
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
 
-       $pdf->setTitle(utf8_decode($tituloRelatorio))
-               ->setLabelHeight(6)
-               ->setColHeight(5)
-               ->setNumRows(count($produtos));
+        $pdf->setTitle(utf8_decode($tituloRelatorio))
+            ->setLabelHeight(6)
+            ->setColHeight(5)
+            ->setNumRows(count($produtos));
 
         if (empty($produtos)) {
-            $dscVazio = 'Não existe produto.';
+            $dscVazio = utf8_decode('Não existe produto.');
             $pdf->addLabel(0, 70, $dscVazio, 0, 1, 'L');
         } else {
             // header
@@ -63,7 +63,7 @@ class DadosLogisticosProduto extends Report
                 $pdf->addCol(0, 1, '', 0, 0, 'L');
                 $pdf->addCol(0, 20, $produto['COD_PRODUTO'],  0, 0, 'TB');
                 $pdf->addCol(0, 30, $produto['DSC_GRADE'], 0, 0, 'L');
-                $pdf->addCol(0, 100, $produto['DSC_PRODUTO'], 0, 0, 'L');
+                $pdf->addCol(0, 100, substr($produto['DSC_PRODUTO'], 0, 40) , 0, 0, 'L');
                 $pdf->addCol(0, 70, $produto['COD_BARRAS'], 0, 0, 'L');
                 $pdf->addCol(0, 30,  $produto['ALTURA'], 0, 0, 'L');
                 $pdf->addCol(0, 30, $produto['LARGURA'], 0, 1, 'L');
@@ -83,8 +83,8 @@ class DadosLogisticosProduto extends Report
 
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output('', 'I');
+            ->render()
+            ->Output('', 'I');
     }
 
 }
