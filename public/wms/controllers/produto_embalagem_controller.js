@@ -36,7 +36,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         '#btn-salvar-embalagem click': function(el, ev) {
 
             if ($('#embalagem-endereco').val() != $('#embalagem-enderecoAntigo').val()) {
-                this.verificarEstoque();
+                if (this.verificarEstoque() == false) {
+                    return false;
+                }
             }
 
             var inputAcao = $('#embalagem-acao').val();
@@ -180,7 +182,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             });
 
             if(qtdEmbalagens != 0){
-                alert('Não é possível excluir esta esbalagem. \nRemova os dados logísticos cadastrados com ela.');
+                alert('Não é possível excluir esta embalagem. \nRemova os dados logísticos cadastrados com ela.');
                 return false;
             }
 
@@ -188,8 +190,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 var produto_embalagem = el.closest('.produto_embalagem').model();
                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
                 var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
-
-                this.verificarEstoque();
 
                 var isPadrao = $(el).parent('div').find('.isPadrao').val();
                 // caso seja uma embalagem de recebimento
@@ -219,6 +219,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                         value: 'excluir',
                         type: 'hidden'
                     }).appendTo('#fieldset-embalagens-cadastradas');
+                }
+
+                if (this.verificarEstoque() == false){
+                    return false;
                 }
 
                 //remove a div do endereco
@@ -541,7 +545,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 return false;
             }
 
-            //this.salvarDadosEmbalagem();
+            this.salvarDadosEmbalagem();
         },
 
         validarEstoqueEndereco: function( params ){
