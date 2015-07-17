@@ -28,7 +28,20 @@ class Produto
         
         return $numero;
     }
-    
+
+    public function getSystemParameterValue($param) {
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => $param));
+
+        if ($parametro == NULL) {
+            return "";
+        } else {
+            return $parametro->getValor();
+        }
+    }
+
+
     /**
      * Limpa deixando apenas numericos e preenche com zeros a esquerda,
      * conforme formato de produtos do cliente
@@ -40,7 +53,11 @@ class Produto
     {
         $valor = trim($valor);
         if (strlen(preg_replace('/\D+/', '', $valor)) == strlen($valor)) {
-            return self::preencheZerosEsquerda($valor, self::$qtdDigitosCodProduto);
+            if (self::getSystemParameterValue('ZERO_ESQ_COD_PRODUTO') == "N") {
+                return $valor;
+            } else {
+                return self::preencheZerosEsquerda($valor, self::$qtdDigitosCodProduto);
+            }
         } else {
             return trim($valor);
         }

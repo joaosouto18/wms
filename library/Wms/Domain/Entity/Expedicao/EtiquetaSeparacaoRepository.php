@@ -440,9 +440,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $arrayVolumes = $produtoEntity->getVolumes()->toArray();
 
                 usort($arrayVolumes, function ($a,$b){
-                    if ($a->getCodigoSequencial() > $b->getCodigoSequencial()) {
-                        return -1;
-                    }
+                    return $a->getCodigoSequencial() < $b->getCodigoSequencial();
                 });
 
                 for($i=0;$i<$quantidade;$i++) {

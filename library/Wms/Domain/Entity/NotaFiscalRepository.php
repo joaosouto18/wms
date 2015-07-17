@@ -781,6 +781,21 @@ class NotaFiscalRepository extends EntityRepository
         try {
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
+            // VALIDO SE OS PRODUTOS EXISTEM NO SISTEMA
+            if (count($itens) > 0) {
+                foreach ($itens as $item) {
+
+                    $idProduto = trim($item['idProduto']);
+                    if (is_numeric($idProduto)) {
+                        $idProduto =  (int) $idProduto;
+                    }
+
+                    $grade = trim($item['grade']);
+                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                    if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
+                }
+            }
+
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
@@ -810,24 +825,28 @@ class NotaFiscalRepository extends EntityRepository
                 ->setStatus($statusEntity)
                 ->setPlaca($placa);
 
-            if (count($itens) > 0) {
-                //itera nos itens das notas
+            if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
-                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $item['idProduto'], 'grade' => $item['grade']));
+                    $idProduto = trim($item['idProduto']);
+                    if (is_numeric(trim($item['idProduto']))) {
+                        $idProduto =  (int) trim($item['idProduto']);
+                    }
 
-                    if ($produtoEntity == null)
-                        throw new \Exception('Produto de código  ' . $item['idProduto'] . ' e grade ' . $item['grade'] . ' não encontrado');
+                    $grade = trim($item['grade']);
+                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                    if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
 
                     $itemEntity = new ItemNF;
-                    $itemEntity->setNotaFiscal($notaFiscalEntity)
-                        ->setProduto($produtoEntity)
-                        ->setGrade($item['grade'])
-                        ->setQuantidade($item['quantidade']);
+                    $itemEntity->setNotaFiscal($notaFiscalEntity);
+                    $itemEntity->setProduto($produtoEntity);
+                    $itemEntity->setGrade($item['grade']);
+                    $itemEntity->setQuantidade($item['quantidade']);
 
                     $notaFiscalEntity->getItens()->add($itemEntity);
                 }
+            } else {
+                throw new \Exception("Nenhum item informado na nota");
             }
-
             $em->persist($notaFiscalEntity);
             $em->flush();
 

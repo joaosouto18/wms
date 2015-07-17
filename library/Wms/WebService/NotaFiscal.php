@@ -210,8 +210,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+
         $idFornecedor = trim($idFornecedor);
-        $numero = trim($numero);
+        $numero = (int) trim($numero);
         $serie = trim($serie);
         $dataEmissao = trim($dataEmissao);
         $placa = trim($placa);
@@ -220,16 +222,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
         if (gettype($itens) != "array") {
+
             $itensNf = array();
             foreach ($itens->itens as $itemNf){
-                $itemWs['idProduto'] = $itemNf->idProduto;
-                $itemWs['grade'] = $itemNf->grade;
-                $itemWs['quantidade'] = $itemNf->quantidade;
+                $itemWs['idProduto'] = trim($itemNf->idProduto);
+                $itemWs['grade'] = trim($itemNf->grade);
+                $itemWs['quantidade'] = trim($itemNf->quantidade);
                 $itensNf[] = $itemWs;
             }
             $itens = $itensNf;
         }
-        $itens = $this->trimArray($itens);
 
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
