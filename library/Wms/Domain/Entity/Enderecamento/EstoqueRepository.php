@@ -611,7 +611,7 @@ class EstoqueRepository extends EntityRepository
     public function getEstoqueConsolidado($params)
     {
         $query = $this->getEntityManager()->createQueryBuilder()
-            ->select('estq.codProduto, estq.grade,  ls.descricao, sum(estq.qtd) qtdestoque, p.descricao nomeProduto, NVL(pv.id,pe.id) as idVolume')
+            ->select('estq.codProduto, estq.grade,  ls.descricao, min(sum(estq.qtd)) qtdestoque, p.descricao nomeProduto, NVL(pv.id,pe.id) as idVolume')
             ->from("wms:Enderecamento\Estoque",'estq')
             ->innerJoin("estq.produto", "p")
             ->innerJoin("p.linhaSeparacao", "ls")

@@ -29,8 +29,8 @@ class Produto
         return $numero;
     }
 
-    public function getSystemParameterValue($param) {
-        $em = $this->__getDoctrineContainer()->getEntityManager();
+    public static function getSystemParameterValue($param) {
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
         $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => $param));
 
