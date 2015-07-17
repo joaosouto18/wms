@@ -34,6 +34,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          * @param {Event} ev A jQuery event whose default action is prevented.
          */
         '#btn-salvar-embalagem click': function(el, ev) {
+
+            if ($('#embalagem-endereco').val() != $('#embalagem-enderecoAntigo').val()) {
+                this.verificarEstoque();
+            }
+
             var inputAcao = $('#embalagem-acao').val();
             var valores = $('#fieldset-embalagem').formParams(false).embalagem;
             var id = $("#fieldset-embalagem #embalagem-id").val();
@@ -65,14 +70,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             }
 
             this.verificarCodigoBarras();
-
-            if ($('#embalagem-endereco').val() == '') {
-                if (this.verificarEstoque()  == false) {
-                    alert('Existe estoque e/ou reserva de estoque para esse endereço');
-                    return false;
-                }
-
-            }
 
             ev.preventDefault();
         },
@@ -166,6 +163,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          * Handle's clicking on a produto_embalagem's destroy link.
          */
         '.btn-excluir-embalagem click': function(el, ev) {
+
             var model = el.closest('.produto_embalagem').model();
             var id = model.id.toString();
 
@@ -187,6 +185,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             }
 
             if( confirm("Tem certeza que deseja excluir esta embalagem?") ) {
+                var produto_embalagem = el.closest('.produto_embalagem').model();
+                $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
+                var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
+
+                this.verificarEstoque();
 
                 var isPadrao = $(el).parent('div').find('.isPadrao').val();
                 // caso seja uma embalagem de recebimento
@@ -471,8 +474,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
         verificarEstoque: function() {
             var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
+            var idProduto = $('#embalagem-idProduto').val();
+            var grade = $('#embalagem-grade').val();
             new Wms.Models.ProdutoEmbalagem.verificarEstoque({
-                enderecoAntigo: enderecoAntigo
+                enderecoAntigo: enderecoAntigo,
+                grade: grade,
+                produto: idProduto
             }, this.callback('validarEstoqueEndereco'));
         },
 
@@ -534,7 +541,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 return false;
             }
 
-            this.salvarDadosEmbalagem();
+            //this.salvarDadosEmbalagem();
         },
 
         validarEstoqueEndereco: function( params ){

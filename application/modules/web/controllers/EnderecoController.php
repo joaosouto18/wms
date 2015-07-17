@@ -524,10 +524,36 @@ class Web_EnderecoController extends Crud
 
     public function verificarEstoqueAjaxAction()
     {
-        $arrayMensagens = array(
-            'status' => 'error',
-            'msg' => 'Mensagem de sucesso',
-        );
+        $endereco = $this->_getParam('enderecoAntigo');
+        $grade = $this->_getParam('grade');
+        $idProduto = $this->_getParam('produto');
+
+        $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $endereco));
+        $idDepositoEndereco = $depositoEnderecoEn->getId();
+
+        $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $idProduto, 'grade' => "$grade"));
+
+        if (isset($estoqueEn)) {
+            if ($estoqueEn->getQtd() > 0) {
+                $arrayMensagens = array(
+                    'status' => 'error',
+                    'msg' => 'Não é possível apagar o endereço com estoque no picking.',
+                );
+            } else {
+                $arrayMensagens = array(
+                    'status' => 'success',
+                    'msg' => 'sucesso',
+                );
+            }
+        } else {
+            $arrayMensagens = array(
+                'status' => 'success',
+                'msg' => 'sucesso',
+            );
+        }
+
         $this->_helper->json($arrayMensagens, true);
     }
 
