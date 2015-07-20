@@ -857,4 +857,21 @@ class NotaFiscalRepository extends EntityRepository
         }
     }
 
+    public function getNotaFiscalByProduto($codRecebimento, $codProduto, $grade) {
+        $SQL = "SELECT NF.NUM_NOTA_FISCAL as NF, NF.COD_SERIE_NOTA_FISCAL as SERIE
+                  FROM NOTA_FISCAL_ITEM NFI
+                  LEFT JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                 WHERE NF.COD_RECEBIMENTO = $codRecebimento
+                   AND NFI.COD_PRODUTO = '$codProduto'
+                   AND NFI.DSC_GRADE = '$grade'";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $array = array();
+        foreach($result as $nota) {
+            $array[] = TRIM($nota['NF']) . '/' . TRIM($nota['SERIE']);
+        };
+        return implode(', ',$array);
+
+        return 'teste';
+    }
+
 }
