@@ -610,24 +610,46 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueConsolidado($params)
     {
-        $query = $this->getEntityManager()->createQueryBuilder()
-            ->select('estq.codProduto, estq.grade,  ls.descricao, min(sum(estq.qtd)) qtdestoque, p.descricao nomeProduto, NVL(pv.id,pe.id) as idVolume')
-            ->from("wms:Enderecamento\Estoque",'estq')
-            ->innerJoin("estq.produto", "p")
-            ->innerJoin("p.linhaSeparacao", "ls")
-            ->innerJoin("estq.depositoEndereco", "e")
-            ->leftJoin("estq.produtoVolume",'pv')
-            ->leftJoin("estq.produtoEmbalagem",'pe')
-            ->groupBy('estq.codProduto, estq.grade, ls.descricao, p.descricao, pv.id, pe.id')
-            ->orderBy('ls.descricao,estq.codProduto,estq.grade');
+        $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha Separação",
+                       E.COD_PRODUTO as "Código",
+                       E.DSC_GRADE as "Grade",
+                       SubSTR(P.DSC_PRODUTO,0,60) as "Descrição",
+                       MIN(E.QTD) as "Qtd"
+                  FROM (SELECT PROD.COD_PRODUTO,
+                               PROD.DSC_GRADE,
+                               NVL(QTD.QTD,0) as QTD
+                          FROM (SELECT DISTINCT E.COD_PRODUTO, E.DSC_GRADE, NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
+                                  FROM ESTOQUE E
+                                  LEFT JOIN PRODUTO_VOLUME PV ON E.COD_PRODUTO = PV.COD_PRODUTO AND E.DSC_GRADE = PV.DSC_GRADE) PROD
+                          LEFT JOIN (SELECT SUM(E.QTD) as QTD, E.COD_PRODUTO, E.DSC_GRADE,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as VOLUME
+                                       FROM ESTOQUE E
+                                      GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) QTD
+                            ON QTD.COD_PRODUTO = PROD.COD_PRODUTO
+                           AND QTD.DSC_GRADE = PROD.DSC_GRADE
+                           AND QTD.VOLUME = PROD.VOLUME) E
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE
+                  LEFT JOIN LINHA_SEPARACAO LS ON LS.COD_LINHA_SEPARACAO = P.COD_LINHA_SEPARACAO
+        ';
+        $SQLGroup = " GROUP BY E.COD_PRODUTO,
+                            E.DSC_GRADE,
+                            P.DSC_PRODUTO,
+                            LS.DSC_LINHA_SEPARACAO";
 
-        $grandeza = $params['grandeza'];
-        if (!empty($grandeza)) {
-            $grandeza = implode(',',$grandeza);
-            $query->andWhere("p.linhaSeparacao in ($grandeza)");
+        $SQLOrder = " ORDER BY LS.DSC_LINHA_SEPARACAO, P.DSC_PRODUTO";
+
+        $SQLWhere = "";
+        if (isset($params['grandeza'])) {
+            $grandeza = $params['grandeza'];
+            if (!empty($grandeza)) {
+                $grandeza = implode(',',$grandeza);
+                $SQLWhere = " WHERE P.COD_LINHA_SEPARACAO IN ($grandeza) ";
+            }
         }
 
-        return $query->getQuery()->getResult();
+        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLGroup . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
     }
 
 
