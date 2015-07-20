@@ -66,13 +66,18 @@ class FiltroDadosLogisticosProduto extends Form
                     'label' => 'Produtos com estoque no Pulmão',
                     'multiOptions' => array('T' => 'TODOS', 'S' => 'SIM', 'N' => 'NÃO'),
                 ))
-                ->addElement('submit', 'submit', array(
+                ->addElement('submit', 'report', array(
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
+                ->addElement('submit', 'csv', array(
+                    'label' => 'Exportar',
+                    'class' => 'btn',
+                    'decorators' => array('ViewHelper'),
+                ))
                 ->addDisplayGroup(array('idRecebimento', 'classe', 'idLinhaSeparacao', 'idTipoComercializacao', 'indDadosLogisticos',
-                    'codigoBarras', 'normaPaletizacao','enderecoPicking','estoquePulmao','submit'), 'identificacao', array('legend' => 'Busca')
+                    'codigoBarras', 'normaPaletizacao','enderecoPicking','estoquePulmao','report','csv' ), 'identificacao', array('legend' => 'Busca')
         );
     }
 
