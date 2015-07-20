@@ -521,7 +521,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         foreach ($produtos as $produto) {
             $idProduto = trim($produto['codProduto']);
             if (is_numeric($idProduto)) {
-                $idProduto = (int) $idProduto;
+                //$idProduto = (int) $idProduto;
             }
             $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
             if (isset($produto['quantidade'])) {
