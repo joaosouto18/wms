@@ -243,8 +243,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'pp.pedido = p.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
-            ->where('es.codExpedicao = :idExpedicao')
+            ->where('es.codExpedicao = :idExpedicao AND (pp.quantidade - pp.qtdCortada) > 0')
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
