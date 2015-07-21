@@ -101,7 +101,7 @@ class EtiquetaVolume extends eFPDF
 			
 			$this->SetFont('Arial', 'B', 15);
             $impressao = "PRODUTOS DIVERSOS";
-            $this->MultiCell(100, 6, $impressao, 0, 'C');
+            $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 4.1, 1.5, 20,5);
         }
