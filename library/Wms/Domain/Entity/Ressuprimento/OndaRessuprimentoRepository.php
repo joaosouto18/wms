@@ -215,13 +215,12 @@ class OndaRessuprimentoRepository extends EntityRepository
         return $ondaEn;
     }
 
-    public function gerarReservaSaidaPicking ($produtos){
+    public function getArrayProdutosPorTipoSaida ($produtos) {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+
+        $arraySaidaPicking = array();
+        $arraySaidaPulmao = array();
 
         foreach ($produtos as $produto) {
             $codExpedicao = $produto['COD_EXPEDICAO'];
@@ -233,23 +232,24 @@ class OndaRessuprimentoRepository extends EntityRepository
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
                 $embalagem = $embalagensEn[0];
-                if ($embalagem->getEndereco()) {
+
+                $idPicking = null;
+                if ($embalagem->getEndereco() != null) {
                     $idPicking = $embalagem->getEndereco()->getId();
-                    /*
-                    if ($enderecoRepo->verificaBloqueioInventario($idPicking) == true) {
-                        throw new \Exception("Não foi possível continuar pois existem endereços sendo inventariados");
-                    }*/
+                }
+                $saidaProduto = array(
+                    'idPicking' => $idPicking,
+                    'idExpedicao' => $codExpedicao,
+                    'produtos' => array(array('codProdutoEmbalagem'=>$embalagem->getId(),
+                        'codProdutoVolume'=>null,
+                        'codProduto'=>$codProduto,
+                        'grade'=>$grade,
+                        'qtd'=>$qtd)));
 
-                    $produtosArray = array();
-                        $produtoArray = array();
-                        $produtoArray['codProdutoEmbalagem'] = $embalagem->getId();
-                        $produtoArray['codProdutoVolume'] = null;
-                        $produtoArray['codProduto'] = $codProduto;
-                        $produtoArray['grade'] = $grade;
-                        $produtoArray['qtd'] = $qtd;
-                    $produtosArray[] = $produtoArray;
-
-                    $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosArray,"S","E",$codExpedicao);
+                if ($idPicking == null) {
+                    $arraySaidaPulmao[] = $saidaProduto;
+                } else {
+                    $arraySaidaPicking[] = $saidaProduto;
                 }
             } else {
                 $normas = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getNormasByProduto($codProduto,$grade);
@@ -258,23 +258,38 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $produtosArray = array();
                     $idPicking = null;
                     foreach ($volumes as $volume) {
-                        $produtoArray = array();
-                        $produtoArray['codProdutoEmbalagem'] = null;
-                        $produtoArray['codProdutoVolume'] = $volume->getId();
-                        $produtoArray['codProduto'] = $codProduto;
-                        $produtoArray['grade'] = $grade;
-                        $produtoArray['qtd'] = $qtd;
+                        $produtoArray = array(
+                            'codProdutoEmbalagem' => null,
+                            'codProdutoVolume' => $volume->getId(),
+                            'codProduto' =>$codProduto,
+                            'grade' => $grade,
+                            'qtd' => $qtd
+                        );
                         $produtosArray[] = $produtoArray;
                         if ($volume->getEndereco() != null) {
                             $idPicking = $volume->getEndereco()->getId();
                         }
                     }
+                    $saidaProduto = array(
+                        'idPicking' => $idPicking,
+                        'idExpedicao' => $codExpedicao,
+                        'produtos' => $produtosArray
+                    );
+
                     if ($idPicking != null) {
-                        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosArray,"S","E",$codExpedicao);
+                        $arraySaidaPicking[] = $saidaProduto;
+                    } else {
+                        $arraySaidaPulmao[] = $saidaProduto;
                     }
                 }
             }
         }
+
+        return array(
+            'picking' => $arraySaidaPicking,
+            'pulmao' => $arraySaidaPulmao
+        );
+
     }
 
     public function relacionaOndaPedidosExpedicao ($pedidosProdutosRessuprir, $ondaEn){
