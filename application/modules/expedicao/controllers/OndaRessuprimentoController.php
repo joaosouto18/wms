@@ -56,9 +56,6 @@ class Expedicao_OndaRessuprimentoController  extends Action
                 $result = $expedicaoRepo->gerarOnda($expedicoes);
             ini_set('max_execution_time', 30);
 
-
-
-
             if ($result['resultado'] == false) {
                 if ($result['observacao'] == 'Existem produtos sem picking nesta(s) expedição(ões)'){
                     $strExpedicao = "";
