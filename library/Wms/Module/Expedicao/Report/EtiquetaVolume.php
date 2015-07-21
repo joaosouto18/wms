@@ -94,12 +94,12 @@ class EtiquetaVolume extends eFPDF
             $this->SetFont('Arial', 'B', 11);
             $impressao = utf8_decode("\n\nEXP:$volume[expedicao]. CLIENTE:$volume[quebra]\n");
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-            $this->SetFont('Arial', 'B', 20);
+            $this->SetFont('Arial', 'B', 15);
+            $impressao = utf8_decode("Pedido: $volume[pedido]");
+            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+			$this->SetFont('Arial', 'B', 20);
             $impressao = "PRODUTOS DIVERSOS";
             $this->MultiCell(100, 6, $impressao, 0, 'C');
-            $this->SetFont('Arial', 'B', 11);
-            $impressao = utf8_decode("$volume[volume] - $volume[descricao]");
-            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
 
             $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 4.1, 1.5, 20,5);
         }
