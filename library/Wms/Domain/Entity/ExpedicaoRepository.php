@@ -251,6 +251,51 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+    public function verificaDisponibilidadeEstoquePedido($expedicoes)
+    {
+
+        $expedicoes = implode(',', $expedicoes);
+
+        $sql = "SELECT E.COD_PRODUTO AS Codigo,
+             E.DSC_GRADE AS Grade,
+             E.QTD AS Qtd,
+             REP.QTD_RESERVADA AS Reservado,
+             PEDIDO.quantidade_pedido AS Quantidade_Pedido,
+            (E.QTD + REP.QTD_RESERVADA) - PEDIDO.quantidade_pedido total
+       FROM (SELECT SUM(PP.QUANTIDADE - PP.QTD_CORTADA) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
+               FROM PEDIDO P
+              INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+              INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+              GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
+  LEFT JOIN (SELECT PROD.COD_PRODUTO,
+                    PROD.DSC_GRADE,
+                    NVL(QTD.QTD,0) AS QTD
+              FROM (SELECT DISTINCT E.COD_PRODUTO, E.DSC_GRADE, NVL(PV.COD_PRODUTO_VOLUME,0) AS VOLUME
+                      FROM ESTOQUE E
+                      LEFT JOIN PRODUTO_VOLUME PV ON E.COD_PRODUTO = PV.COD_PRODUTO AND E.DSC_GRADE = PV.DSC_GRADE) PROD
+                      LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
+                                        NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
+                                   FROM ESTOQUE E
+                                  GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) QTD
+                        ON QTD.COD_PRODUTO = PROD.COD_PRODUTO
+                       AND QTD.DSC_GRADE = PROD.DSC_GRADE
+                       AND QTD.VOLUME = PROD.VOLUME) E ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE
+  LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE
+               FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(PVOL.COD_PRODUTO_VOLUME,0)
+                       FROM RESERVA_ESTOQUE RE
+                       INNER JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                      INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                       LEFT JOIN PRODUTO_VOLUME PVOL ON REP.COD_PRODUTO = PVOL.COD_PRODUTO AND REP.DSC_GRADE = PVOL.DSC_GRADE
+                      WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
+                      GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(PVOL.COD_PRODUTO_VOLUME,0)) MAX_RES
+              GROUP BY COD_PRODUTO, DSC_GRADE) REP
+         ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
+      WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
+        AND ((E.QTD + REP.QTD_RESERVADA) - PEDIDO.quantidade_pedido) < 0";
+
+        return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 
     public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
     {

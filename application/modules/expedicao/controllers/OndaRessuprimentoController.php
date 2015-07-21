@@ -43,10 +43,21 @@ class Expedicao_OndaRessuprimentoController  extends Action
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicao");
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+
+       if (isset($verificaDisponibilidadeEstoquePedido) && !empty($verificaDisponibilidadeEstoquePedido)) {
+           $this->addFlashMessage("error", "Existem Produtos sem Estoque nas Expedições Selecionadas.");
+           $this->redirect("index","onda-ressuprimento","expedicao");
+       }
+
         try {
             ini_set('max_execution_time', 300);
                 $result = $expedicaoRepo->gerarOnda($expedicoes);
             ini_set('max_execution_time', 30);
+
+
+
 
             if ($result['resultado'] == false) {
                 if ($result['observacao'] == 'Existem produtos sem picking nesta(s) expedição(ões)'){
