@@ -1334,7 +1334,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
         return $arrayResult;
     }
 
-    public function getRelatorioSaidaProdutos($codProduto, $grade)
+    public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null)
     {
         $source = $this->_em->createQueryBuilder()
             ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
@@ -1348,6 +1348,22 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->where('es.codProduto = :codProduto')
             ->orderBy('e.dataFinalizacao','DESC')
             ->setParameter("codProduto", $codProduto);
+
+        if (isset($dataInicial) && (!empty($dataInicial))) {
+            $dataInicial1 = str_replace("/", "-", $dataInicial);
+            $dataI1 = new \DateTime($dataInicial1);
+
+            $source->andWhere("(TRUNC(r.dataInicial) >= ?d1")
+                ->setParameter('d1', $dataI1);
+        }
+
+        if (isset($dataFinal) && (!empty($dataFinal))) {
+            $dataFinal1 = str_replace("/", "-", $dataFinal);
+            $dataF1 = new \DateTime($dataFinal1);
+
+            $source->andWhere("(TRUNC(r.dataInicial) <= ?d2")
+                ->setParameter('d2', $dataF1);
+        }
 
         if (isset($grade)) {
             $source->andWhere('es.dscGrade = :grade')
