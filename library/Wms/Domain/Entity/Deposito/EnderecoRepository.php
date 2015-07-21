@@ -589,47 +589,34 @@ class EnderecoRepository extends EntityRepository
 
         $sqlWhere = "";
         if ($ruaFinal != "") {
-            if ($sqlWhere != "") {$sqlWhere = $sqlWhere . " AND ";}
-            $sqlWhere = $sqlWhere . " DE.NUM_RUA <= " . $ruaFinal;
+            $sqlWhere = $sqlWhere . " AND DE.NUM_RUA <= " . $ruaFinal;
         }
         if ($ruaInicial != "") {
-            if ($sqlWhere != "") {$sqlWhere = $sqlWhere . " AND ";}
-            $sqlWhere = $sqlWhere . " DE.NUM_RUA >= " . $ruaInicial;
-        }
-        if ($sqlWhere != "") {
-            $sqlWhere = " WHERE " . $sqlWhere . " and DE.IND_ATIVO='S' ";
-        } else {
-            $sqlWhere = " WHERE DE.IND_ATIVO='S' ";
+            $sqlWhere = $sqlWhere . " AND DE.NUM_RUA >= " . $ruaInicial;
         }
 
-        $sql= "SELECT OC.NUM_RUA as RUA,
-                      DE.QTD_POSICOES as PALETES_EXISTENTES,
-                      OC.QTD_OCUPADO as PALETES_OCUPADOS,
-                      ROUND(((OC.QTD_OCUPADO * 100) / DE.QTD_POSICOES), 2) PERCENTUAL_OCUPADOS
-                 FROM (SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_POSICOES, NUM_RUA, DE.IND_ATIVO
-                         FROM V_SALDO_ESTOQUE_COMPLETO P LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = P.COD_DEPOSITO_ENDERECO
-                          LEFT JOIN UNITIZADOR u ON u.COD_UNITIZADOR=P.COD_UNITIZADOR
-                          WHERE DE.COD_CARACTERISTICA_ENDERECO <>37
-                          AND ( ( u.COD_UNITIZADOR=23 and DE.NUM_APARTAMENTO=3 and DE.IND_DISPONIVEL = 'N' )  or DE.NUM_APARTAMENTO<>3 or ( DE.NUM_APARTAMENTO=3 and u.COD_UNITIZADOR<>23 ) )
-                        GROUP BY DE.NUM_RUA,DE.IND_ATIVO) DE
-                LEFT JOIN (SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_OCUPADO,
-                                                  DE.NUM_RUA
-                                             FROM V_SALDO_ESTOQUE_COMPLETO P
-                                             LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = P.COD_DEPOSITO_ENDERECO
-                                             LEFT JOIN UNITIZADOR u ON u.COD_UNITIZADOR=P.COD_UNITIZADOR
-                                            WHERE P.COD_DEPOSITO_ENDERECO IS NOT NULL AND P.QTDE>0 AND DE.COD_CARACTERISTICA_ENDERECO <>37
-                                             AND ( ( u.COD_UNITIZADOR=23 and DE.NUM_APARTAMENTO=3 and DE.IND_DISPONIVEL = 'N' )  or DE.NUM_APARTAMENTO<>3 or ( DE.NUM_APARTAMENTO=3 and u.COD_UNITIZADOR<>23 ) )
-                                            GROUP BY DE.NUM_RUA) OC
-                   ON OC.NUM_RUA = DE.NUM_RUA
-              ".$sqlWhere."
-               GROUP BY
-                OC.NUM_RUA,
-                      DE.QTD_POSICOES ,
-                      OC.QTD_OCUPADO
-               ORDER BY OC.NUM_RUA";
+        $SQL = "SELECT DE.NUM_RUA,
+                       SUM(DE.QTD_ENDERECO) as POS_EXISTENTES,
+                       SUM(CASE WHEN O.QTD_DISPONIVEL > DE.QTD_ENDERECO THEN DE.QTD_ENDERECO ELSE O.QTD_DISPONIVEL END) AS POS_DISPONIVEIS
+                  FROM (SELECT COUNT(DE.COD_DEPOSITO_ENDERECO) as QTD_ENDERECO,
+                               DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA
+                          FROM DEPOSITO_ENDERECO DE
+                         WHERE DE.IND_ATIVO = 'S'
+                         GROUP BY DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA) DE
+             LEFT JOIN (SELECT TRUNC((O.TAMANHO_LONGARINA - O.OCUPADO) /UN.LARGURA) as QTD_DISPONIVEL,
+                               O.TAMANHO_LONGARINA - O.OCUPADO as LARGURA_DISPONIVEL,
+                               O.NUM_PREDIO, O.NUM_NIVEL, O.NUM_RUA
+                          FROM V_OCUPACAO_LONGARINA O,
+                          (SELECT MIN(NUM_LARGURA_UNITIZADOR * 100) LARGURA FROM UNITIZADOR) UN) O
+                    ON O.NUM_PREDIO = DE.NUM_PREDIO
+                   AND O.NUM_NIVEL = DE.NUM_NIVEL
+                   AND O.NUM_RUA = DE.NUM_RUA
+                 WHERE 1 = 1
+                 $sqlWhere
+                GROUP BY DE.NUM_RUA
+                ORDER BY DE.NUM_RUA";
 
-        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-
+        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
