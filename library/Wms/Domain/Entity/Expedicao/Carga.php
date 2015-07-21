@@ -67,7 +67,22 @@ class Carga
      * @Column(name="SEQUENCIA", type="integer",nullable=false)
      */
     protected $sequencia;
+	
+	/**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\Pedido", mappedBy="carga")
+     */
+    protected $pedido;
 
+	public function setPedido($pedido)
+    {
+        $this->pedido = $pedido;
+    }
+
+    public function getPedido()
+    {
+        return $this->pedido;
+    }
+	
     public function setCentralEntrega($centralEntrega)
     {
         $this->centralEntrega = $centralEntrega;
