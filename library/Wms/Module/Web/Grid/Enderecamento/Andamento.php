@@ -23,7 +23,7 @@ class Andamento extends Grid
         /** @var \Wms\Domain\Entity\Enderecamento\AndamentoRepository $andamentoRepo */
         $andamentoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Andamento');
         $result = $andamentoRepo->getAndamento($idRecebimento, $codProduto, $grade);
-
+        $this->setAttrib('title','Andamento Enderecamento');
         $this->setSource(new \Core\Grid\Source\Doctrine($result))
                 ->setId('enderecamento-andamento-grid')
                 ->setAttrib('caption', 'Andamento do endereçamento')

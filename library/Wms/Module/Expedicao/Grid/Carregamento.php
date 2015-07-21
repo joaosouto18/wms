@@ -12,7 +12,7 @@ class Carregamento extends Grid
         $expRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
 
         $result = $expRepo->getCarregamentoByExpedicao($params['codExpedicao']);
-
+        $this->setAttrib('title','Carregamento');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
                     'label' => 'Seq.',

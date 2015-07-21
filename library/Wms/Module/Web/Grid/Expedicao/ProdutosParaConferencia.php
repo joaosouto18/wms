@@ -21,7 +21,7 @@ class ProdutosParaConferencia extends Grid
     {
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
         $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
-
+        $this->setAttrib('title','Produtos Conferencia');
         if ($tipoConferencia != null) {
             $result = $osRepo->getConferenciaByOs($idOS, $transbordo, $tipoConferencia);
 

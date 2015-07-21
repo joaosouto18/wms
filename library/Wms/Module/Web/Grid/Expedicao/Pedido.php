@@ -22,7 +22,7 @@ class Pedido extends Grid
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
-
+        $this->setAttrib('title','Pedidos Expedição');
         $sessao = new \Zend_Session_Namespace('deposito');
         $params['centrais'] = $sessao->centraisPermitidas;
 

@@ -788,11 +788,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->andWhere('es.codProduto = :codProduto');
         }
 
-        if ($parametros['reimpresso'] != "") {
-            if ($parametros['reimpresso'] == 'S') {
-                $source->andWhere("es.reimpressao is not null");
-            } else {
-                $source->andWhere("es.reimpressao is null");
+        if (isset($parametros['reimpresso'])){
+            if ($parametros['reimpresso'] != "") {
+                if ($parametros['reimpresso'] == 'S') {
+                    $source->andWhere("es.reimpressao is not null");
+                } else {
+                    $source->andWhere("es.reimpressao is null");
+                }
             }
         }
 

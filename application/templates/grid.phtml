@@ -9,9 +9,9 @@ $attribs = $grid->getAttribs();
     $(document).ready(function(){   
         $('#grid-export').click(function() {
             var select = $('select[name="grid[export]"]');
-            
+
             if(select.val() == "") {
-                alert('Select the Format');
+                alert('Selecione um formato');
                 select.focus();
                 return false;
             }
@@ -20,7 +20,7 @@ $attribs = $grid->getAttribs();
                 .attr('action', '?')
                 .attr('target', '_blank')
                 .submit();
-                
+
             select.val('');
             
             return false;
@@ -101,8 +101,8 @@ $attribs = $grid->getAttribs();
     <div class="gExport">
 	<select name="grid[export]">
             <option value="" selected="selected">Formato...</option>
-            <option value="csv">CSV</option>
-            <option value="xml">Excel XML</option>
+            <option value="csv">Excel CSV</option>
+            <option value="xml">XML</option>
             <option value="pdf">PDF</option>
         </select>
         <button id="grid-export" class="btn">Exportar</button>

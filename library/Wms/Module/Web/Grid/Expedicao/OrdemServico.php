@@ -21,7 +21,7 @@ class OrdemServico extends Grid
     {
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
         $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
-
+        $this->setAttrib('title','Os Expedição');
         if ($verificaReconferencia == 'S') {
             $result = $osRepo->getOsByExpedicaoReconferencia($idExpedicao);
 

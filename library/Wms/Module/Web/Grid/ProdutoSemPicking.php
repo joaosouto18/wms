@@ -23,7 +23,7 @@ class ProdutoSemPicking extends Grid
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
         $result = $produtoRepo->relatorioProdutosSemPicking($values);
 
-
+        $this->setAttrib('title','Produtos sem Picking');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-index-grid')
                 ->setAttrib('class', 'grid-expedicao')

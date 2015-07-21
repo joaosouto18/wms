@@ -14,6 +14,7 @@ class DetalheContagem extends Grid
         $params['codInvEndereco'] = $params['CODINVENDERECO'];
         $detalheEndereco = $contEnderecoRepo->getDetalhesByInventarioEndereco($params['codInvEndereco']);
 
+        $this->setAttrib('title','Detalhe Contagem');
         $this->setSource(new \Core\Grid\Source\ArraySource($detalheEndereco));
         $this->setShowExport(false);
         $this->addColumn(array(
