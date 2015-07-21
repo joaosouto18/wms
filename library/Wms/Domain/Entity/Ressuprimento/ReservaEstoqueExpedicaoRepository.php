@@ -29,7 +29,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
             $grade = $produto['produtos'][0]['grade'];
             $qtdRestante = $produto['produtos'][0]['qtd'];
             $idVolume = $produtos['produto']['0']['codProdutoVolume'];
-
+            $qtdRestante = $qtdRestante * -1;
             $estoquePulmao = $estoqueRepo->getEstoquePulmaoByProduto($codProduto, $grade,$idVolume, false);
             foreach ($estoquePulmao as $estoque) {
                 if ($qtdRestante > 0) {
@@ -45,7 +45,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                     $qtdRestante = $qtdRestante - $qtdSeparar;
                     $produtosSeparar = $produto['produtos'];
                     foreach ($produtosSeparar as $key=> $produtoSeparar){
-                        $produtosSeparar[$key]['qtd'] = $qtdSeparar;
+                        $produtosSeparar[$key]['qtd'] = ($qtdSeparar * -1);
                     }
 
                     $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$produtosSeparar,"S","E",$idExpedicao);

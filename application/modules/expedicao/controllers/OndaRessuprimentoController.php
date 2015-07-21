@@ -46,10 +46,10 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
         $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
 
-       if (isset($verificaDisponibilidadeEstoquePedido) && !empty($verificaDisponibilidadeEstoquePedido)) {
-           $this->addFlashMessage("error", "Existem Produtos sem Estoque nas Expedições Selecionadas.");
-           $this->redirect("index","onda-ressuprimento","expedicao");
-       }
+        if (count($verificaDisponibilidadeEstoquePedido) > 0){
+            $this->addFlashMessage("error", "Existem Produtos sem Estoque nas Expedições Selecionadas.");
+            $this->redirect("index","onda-ressuprimento","expedicao");
+        }
 
         try {
             ini_set('max_execution_time', 300);
