@@ -134,6 +134,17 @@ class EtiquetaSeparacao
      */
     protected $etiquetaMae;
 
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
+     * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
+     */
+    protected $codDepositoEndereco;
+
+    /**
+     * @Column(name="COD_DEPOSITO_ENDERECO", type="integer", nullable=false)
+     */
+    protected $depositoEndereco;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -345,6 +356,38 @@ class EtiquetaSeparacao
     public function getEtiquetaMae()
     {
         return $this->etiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodDepositoEndereco()
+    {
+        return $this->codDepositoEndereco;
+    }
+
+    /**
+     * @param mixed $codDepositoEndereco
+     */
+    public function setCodDepositoEndereco($codDepositoEndereco)
+    {
+        $this->codDepositoEndereco = $codDepositoEndereco;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDepositoEndereco()
+    {
+        return $this->depositoEndereco;
+    }
+
+    /**
+     * @param mixed $depositoEndereco
+     */
+    public function setDepositoEndereco($depositoEndereco)
+    {
+        $this->depositoEndereco = $depositoEndereco;
     }
 
 }

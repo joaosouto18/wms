@@ -243,9 +243,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
-            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'pp.pedido = p.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
-            ->where('es.codExpedicao = :idExpedicao AND (pp.quantidade - pp.qtdCortada) > 0')
+            ->where('es.codExpedicao = :idExpedicao')
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
@@ -391,6 +390,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $enEtiquetaSeparacao = new EtiquetaSeparacao();
         $enEtiquetaSeparacao->setStatus($statusEntity);
+        $enEtiquetaSeparacao->setStatus($statusEntity);
 
         if ( !empty($dadosEtiqueta['codEtiquetaMae']) ){
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMae $EtiquetaMaeRepo */
@@ -435,7 +435,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 /** @var \Wms\Domain\Entity\Produto $produtoEntity */
                 $pedidoEntity   = $pedidoProduto->getPedido();
                 $produtoEntity  = $pedidoProduto->getProduto();
-                $quantidade     = $pedidoProduto->getQuantidade();
+                $quantidade     = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
+
+                if ($quantidade <= 0) {
+                    continue;
+                }
 
                 $pedidoEntity->setIndEtiquetaMapaGerado("S");
                 $this->getEntityManager()->persist($pedidoEntity);
@@ -448,13 +452,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     });
 
+                    $depositoEnderecoEn = $produtoEntity->getVolumes()[0]->getEndereco();
+
                     if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
                         for($i=0;$i<$quantidade;$i++) {
                             $codReferencia = null;
                             foreach ($arrayVolumes as $volumeEntity) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasNaoFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
-                                $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,1,$volumeEntity,null,$codReferencia,$etiquetaMae);
+                                $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,1,$volumeEntity,null,$codReferencia,$etiquetaMae,$depositoEnderecoEn);
                                 if ($codReferencia == null) {
                                     $codReferencia = $idEtiqueta;
                                 }
@@ -499,11 +505,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         $quantidadeRestante = $quantidadeRestante - $embalagemAtual->getQuantidade();
 
+                        $depositoEnderecoEn = $produtoEntity->getEmbalagens()[0]->getEndereco();
+
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasNaoFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
-                                $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae);
+                                $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn);
                             }   else {
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasNaoFracionado, $statusEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto);
@@ -512,7 +520,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == "E") {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasFracionado);
-                                $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae);
+                                $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn);
                             }   else {
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasFracionado,$statusEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto);
@@ -842,15 +850,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $mapaSeparacao;
     }
 
-    public function salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $quantidade, $volumeEntity,$embalagemEntity, $referencia, $etiquetaMae){
-        $arrayEtiqueta['produtoVolume']     = $volumeEntity;
-        $arrayEtiqueta['produtoEmbalagem']  = $embalagemEntity;
-        $arrayEtiqueta['produto']           = $produtoEntity;
-        $arrayEtiqueta['grade']             = $produtoEntity;
-        $arrayEtiqueta['pedido']            = $pedidoEntity;
-        $arrayEtiqueta['qtdProduto']        = $quantidade;
-        $arrayEtiqueta['codReferencia']     = $referencia;
-        $arrayEtiqueta['etiquetaMae']       = $etiquetaMae;
+    public function salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $quantidade, $volumeEntity,$embalagemEntity, $referencia, $etiquetaMae, $depositoEndereco){
+
+        $arrayEtiqueta['produtoVolume']        = $volumeEntity;
+        $arrayEtiqueta['produtoEmbalagem']     = $embalagemEntity;
+        $arrayEtiqueta['produto']              = $produtoEntity;
+        $arrayEtiqueta['grade']                = $produtoEntity;
+        $arrayEtiqueta['pedido']               = $pedidoEntity;
+        $arrayEtiqueta['qtdProduto']           = $quantidade;
+        $arrayEtiqueta['codReferencia']        = $referencia;
+        $arrayEtiqueta['etiquetaMae']          = $etiquetaMae;
+        $arrayEtiqueta['codDepositoEndereco']  = $depositoEndereco;
+
         return $this->save($arrayEtiqueta,$statusEntity);
     }
 
