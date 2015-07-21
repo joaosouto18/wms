@@ -7,4 +7,10 @@ use Doctrine\ORM\EntityRepository;
 class ReservaEstoqueExpedicaoRepository extends EntityRepository
 {
 
+    public function gerarReservaAerea($produtosRessuprir)
+    {
+
+
+    }
+
 }

@@ -211,20 +211,29 @@ class ExpedicaoRepository extends EntityRepository
                 throw new \Exception("Nenhuma expedição Selecionada");
             }
 
+
+
+
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
+            $gerarReservaAerea = $reservaEstoqueExpedicaoRepo->gerarReservaAerea($produtosRessuprir);
+
+
+
+
+
             /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
             $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
 
-                $result = $this->validaPickingProdutosByExpedicao( $produtosRessuprir);
-                if ($result['resultado'] != true) return $result;
-                $ondaEn = $ondaRepo->geraNovaOnda();
-                $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
-                $this->getEntityManager()->flush();
-                $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
-                $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
+            $ondaEn = $ondaRepo->geraNovaOnda();
+            $ondaRepo->gerarReservaSaidaPicking($produtosReservaSaida);
+            $this->getEntityManager()->flush();
+            $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
+            $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
 
-                $this->getEntityManager()->flush();
-                $ondaRepo->sequenciaOndasOs();
-                    $this->getEntityManager()->commit();
+            $this->getEntityManager()->flush();
+            $ondaRepo->sequenciaOndasOs();
+            $this->getEntityManager()->commit();
 
             $resultado = array();
 

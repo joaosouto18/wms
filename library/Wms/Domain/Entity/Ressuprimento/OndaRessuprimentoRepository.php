@@ -233,22 +233,24 @@ class OndaRessuprimentoRepository extends EntityRepository
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
                 $embalagem = $embalagensEn[0];
-                $idPicking = $embalagem->getEndereco()->getId();
-                /*
-                if ($enderecoRepo->verificaBloqueioInventario($idPicking) == true) {
-                    throw new \Exception("Não foi possível continuar pois existem endereços sendo inventariados");
-                }*/
+                if ($embalagem->getEndereco()) {
+                    $idPicking = $embalagem->getEndereco()->getId();
+                    /*
+                    if ($enderecoRepo->verificaBloqueioInventario($idPicking) == true) {
+                        throw new \Exception("Não foi possível continuar pois existem endereços sendo inventariados");
+                    }*/
 
-                $produtosArray = array();
-                    $produtoArray = array();
-                    $produtoArray['codProdutoEmbalagem'] = $embalagem->getId();
-                    $produtoArray['codProdutoVolume'] = null;
-                    $produtoArray['codProduto'] = $codProduto;
-                    $produtoArray['grade'] = $grade;
-                    $produtoArray['qtd'] = $qtd;
-                $produtosArray[] = $produtoArray;
+                    $produtosArray = array();
+                        $produtoArray = array();
+                        $produtoArray['codProdutoEmbalagem'] = $embalagem->getId();
+                        $produtoArray['codProdutoVolume'] = null;
+                        $produtoArray['codProduto'] = $codProduto;
+                        $produtoArray['grade'] = $grade;
+                        $produtoArray['qtd'] = $qtd;
+                    $produtosArray[] = $produtoArray;
 
-                $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosArray,"S","E",$codExpedicao);
+                    $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosArray,"S","E",$codExpedicao);
+                }
             } else {
                 $normas = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getNormasByProduto($codProduto,$grade);
                 foreach ($normas as $norma) {
@@ -263,9 +265,13 @@ class OndaRessuprimentoRepository extends EntityRepository
                         $produtoArray['grade'] = $grade;
                         $produtoArray['qtd'] = $qtd;
                         $produtosArray[] = $produtoArray;
-                        $idPicking = $volume->getEndereco()->getId();
+                        if ($volume->getEndereco() != null) {
+                            $idPicking = $volume->getEndereco()->getId();
+                        }
                     }
-                    $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosArray,"S","E",$codExpedicao);
+                    if ($idPicking != null) {
+                        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosArray,"S","E",$codExpedicao);
+                    }
                 }
             }
         }
@@ -492,7 +498,8 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $embalagens = array();
                 $embalagens[] = $embalagem->getId();
 
-                $picking = array();
+                if ($embalagem->getEndereco() != null) {
+                    $picking = array();
                     $picking['volumes'] = null;
                     $picking['embalagens'] = $embalagens;
                     $picking['capacidadePicking'] = $embalagem->getCapacidadePicking();
@@ -500,7 +507,8 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $picking['idPicking'] = $embalagem->getEndereco()->getId();
                     $picking['codProduto'] = $codProduto;
                     $picking['grade'] = $grade;
-                $pickings[] = $picking;
+                    $pickings[] = $picking;
+                }
             } else {
                 $normas = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getNormasByProduto($codProduto,$grade);
                 foreach ($normas as $norma) {
@@ -510,13 +518,19 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $picking['codProduto'] = $codProduto;
                     $picking['grade'] = $grade;
                     $picking['embalagens'] = null;
+                    $idPicking = null;
                     foreach ($volumesEn as $volume) {
+                        if ($volume->getEndereco() != null) {
+                            $idPicking = $volume->getEndereco()->getId();
+                        }
                         $picking['volumes'][] = $volume->getId();
-                        $picking['idPicking'] = $volume->getEndereco()->getId();
+                        $picking['idPicking'] = $idPicking;
                         $picking['capacidadePicking'] = $volume->getCapacidadePicking();
                         $picking['pontoReposicao'] = $volume->getPontoReposicao();
                     }
-                    $pickings[] = $picking;
+                    if ($idPicking != null) {
+                        $pickings[] = $picking;
+                    }
                 }
             }
 
