@@ -53,11 +53,9 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getQtdPedidaAtendidaByPedido ($codPedido) {
-        $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, SUM(PP.QUANTIDADE) as QTD_PEDIDO, SUM(PP.QTD_ATENDIDA) as QTD_ATENDIDA
+        $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QTD_ATENDIDA
                   FROM PEDIDO_PRODUTO PP
-                 WHERE PP.COD_PEDIDO = '$codPedido'
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE
-                 ";
+                 WHERE PP.COD_PEDIDO = '$codPedido'";
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
     }
