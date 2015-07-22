@@ -176,6 +176,8 @@ class Mobile_ExpedicaoController extends Action
         $codPessoa = $clienteEn[0]->getPessoa()->getNome();
 		$pedido = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga()[0]->getPedido()[0]->getId();
 
+        $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
+
         if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
             $rows = array();
             $fields = array();
@@ -184,6 +186,7 @@ class Mobile_ExpedicaoController extends Action
             $fields['descricao'] = $dscVolume;
             $fields['quebra'] = $codPessoa;
             $fields['pedido'] = $pedido;
+            $fields['produtos'] = $produtos;
             $rows[] = $fields;
             $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
             $gerarEtiqueta->imprimirExpedicao($rows);

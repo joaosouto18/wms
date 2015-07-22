@@ -90,7 +90,7 @@ class EtiquetaVolume extends eFPDF
             $black    = '000000';
             $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$volume['volume']),0.75,10);
 
-//monta o restante dos dados da etiqueta
+            //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 11);
             $impressao = utf8_decode("\n\nEXP:$volume[expedicao]. CLIENTE:$volume[quebra]\n");
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');

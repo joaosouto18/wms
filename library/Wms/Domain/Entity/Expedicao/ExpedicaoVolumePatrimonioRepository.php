@@ -242,4 +242,17 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
         $this->_em->flush();
     }
 
+    public function getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('msc.codProduto, msc.dscGrade, SUM(msc.qtdConferida) quantidade')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoConferencia', 'msc', 'WITH', 'msc.mapaSeparacao = ms.id')
+            ->where("ms.expedicao = $idExpedicao")
+            ->andWhere("msc.volumePatrimonio = $volumePatrimonio")
+            ->groupBy("msc.codProduto, msc.dscGrade");
+
+        return $dql->getQuery()->getResult();
+    }
+
 }
