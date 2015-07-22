@@ -372,20 +372,17 @@ class EtiquetaSeparacao extends Pdf
             $qtdEmbalagem = "(". $etiqueta['qtdProduto'] . ")";
         }
 
-        $this->SetFont('Arial', 'B', 11);
-        $impressao  = utf8_decode("\n\nEXP:$etiqueta[codExpedicao] - PEDIDO:$etiqueta[pedido]\n");
+        $this->SetFont('Arial', 'B', 18);
+        $impressao  = utf8_decode("\n\nPEDIDO:$etiqueta[pedido]\n");
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 11);
+
+        $this->SetFont('Arial', 'B', 9);
         $impressao = substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 10);
-        $impressao = "CODIGO:$etiqueta[codProduto] \n";
+        $this->SetFont('Arial', 'B', 9);
+        $impressao = "CODIGO:$etiqueta[codProduto] - EXP:$etiqueta[codExpedicao] \n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        if (strlen($etiqueta['produto']) >= 40 ) {
-            $this->SetFont('Arial', 'B', 9);
-        } else {
-            $this->SetFont('Arial', 'B', 11);
-        }
+        $this->SetFont('Arial', 'B', 9);
         $impressao = substr(trim($etiqueta['produto']),0,70)."\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         $this->SetFont('Arial', 'B', 9);
