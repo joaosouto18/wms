@@ -452,7 +452,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     });
 
-                    $depositoEnderecoEn = $produtoEntity->getVolumes()[0]->getEndereco();
+                    foreach ($produtoEntity->getVolumes() as $produtoVolume) {
+                        if ($produtoVolume->getNivel() == 0 or $produtoVolume->getNivel() == 1) {
+                            $depositoEnderecoEn = $produtoEntity->getVolumes()->getEndereco();
+                        }
+                    }
 
                     if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
                         for($i=0;$i<$quantidade;$i++) {
@@ -482,6 +486,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                     $qtdEmbalagemPadraoRecebimento = 1;
                     foreach ($embalagensEn as $embalagem) {
+                        $endereco = $embalagem->getEndereco();
+                        if (isset($endereco) && !empty($endereco)){
+                            if ($endereco->getNivel() == 0 or $endereco->getNivel() == 1) {
+                                $depositoEnderecoEn = $endereco;
+                            }
+                        }
                         if ($embalagem->getIsPadrao() == "S") {
                             $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
                             break;
@@ -504,8 +514,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         $quantidadeRestante = $quantidadeRestante - $embalagemAtual->getQuantidade();
-
-                        $depositoEnderecoEn = $produtoEntity->getEmbalagens()[0]->getEndereco();
 
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
