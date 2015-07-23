@@ -188,8 +188,8 @@ class Mobile_ExpedicaoController extends Action
             $fields['pedido'] = $pedido;
             $fields['produtos'] = $produtos;
             $rows[] = $fields;
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-            $gerarEtiqueta->imprimirExpedicao($rows);
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
+            $gerarEtiqueta->imprimirExpedicaoModelo2($rows);
         }
     }
 
