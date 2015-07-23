@@ -116,11 +116,14 @@ class EtiquetaVolume extends eFPDF
             $this->SetFont('Arial', 'B', 7);
 
             foreach ($volume['produtos'] as $produtos) {
-
-                $impressao = utf8_decode($produtos['codProduto'].'          '.substr($produtos['descricao'], 0, 33).'               '.$produtos['quantidade']);
+                $impressao = utf8_decode($produtos['codProduto'].'          '.substr($produtos['descricao'], 0, 33));
                 $this->SetX(5);
                 $this->SetY($y);
                 $this->MultiCell(150, $y, $impressao, 0, 'L');
+
+                $impressao = $produtos['quantidade'];
+                $this->SetXY(75,$y);
+                $this->Cell(75,$y, $impressao, 0, 'L');
 
                 $y = $y + 2;
             }
