@@ -160,6 +160,7 @@ class Mobile_ExpedicaoController extends Action
     {
         $idExpedicao = $this->_getParam('idExpedicao');
         $volume = $this->_getParam('volume');
+        $parametroEtiquetaVolume = $this->getSystemParameterValue('MODELO_ETIQUETA_VOLUME');
 
         $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
@@ -188,8 +189,13 @@ class Mobile_ExpedicaoController extends Action
             $fields['pedido'] = $pedido;
             $fields['produtos'] = $produtos;
             $rows[] = $fields;
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
-            $gerarEtiqueta->imprimirExpedicaoModelo2($rows);
+            if ($parametroEtiquetaVolume == 1) {
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+                $gerarEtiqueta->imprimirExpedicaoModelo1($rows);
+            } else {
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
+                $gerarEtiqueta->imprimirExpedicaoModelo2($rows);
+            }
         }
     }
 
