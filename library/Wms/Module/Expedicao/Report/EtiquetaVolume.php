@@ -86,13 +86,13 @@ class EtiquetaVolume extends eFPDF
             $this->SetFont('Arial', 'B', 10);
             $impressao = utf8_decode("Pedido:");
             $this->SetY(15);
-            $this->SetX(85);
+            $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 15);
             $impressao = utf8_decode("\n$volume[pedido]");
             $this->SetY(15);
-            $this->SetX(85);
+            $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 8);
@@ -168,13 +168,13 @@ class EtiquetaVolume extends eFPDF
             $this->SetFont('Arial', 'B', 10);
             $impressao = utf8_decode("Pedido:");
             $this->SetY(15);
-            $this->SetX(85);
+            $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 15);
             $impressao = utf8_decode("\n$volume[pedido]");
             $this->SetY(15);
-            $this->SetX(85);
+            $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 8);
