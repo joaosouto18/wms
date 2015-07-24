@@ -58,7 +58,7 @@ class ProdutosParaConferencia extends Grid
                     'index' =>  'dataConferenciaTransbordo',
                     'render' => 'DataTime'
                 ))
-                ->setShowExport(false);
+                ->setShowExport(true);
             ;
         } else {
             $result = $osRepo->getConferenciaByOs($idOS, $transbordo, $tipoConferencia);
@@ -96,7 +96,7 @@ class ProdutosParaConferencia extends Grid
                     'index' =>  'dataConferenciaTransbordo',
                     'render' => 'DataTime'
                 ))
-                ->setShowExport(false);
+                ->setShowExport(true);
             ;
         }
 
