@@ -66,17 +66,22 @@ class OcupacaoCD extends Pdf
         $total_ocupado=0;
         $total_disponivel=0;
         foreach ($produtos as $ocupacao) {
+            $numRua = $ocupacao['NUM_RUA'];
+            $posExistentes = $ocupacao['POS_EXISTENTES'];
+            $posOcupadas = ($ocupacao['POS_EXISTENTES'] - $ocupacao['POS_DISPONIVEIS']);
+            $posDisponives = $ocupacao['POS_DISPONIVEIS'];
+            $percentualOcupacao = ($posOcupadas/$posExistentes) * 100;
 
-            $total_existente = $ocupacao['PALETES_EXISTENTES'] + $total_existente;
-            $total_ocupado   = $ocupacao['PALETES_OCUPADOS']   + $total_ocupado;
-            $total_disponivel = ($ocupacao['PALETES_EXISTENTES']- $ocupacao['PALETES_OCUPADOS']) + $total_disponivel;
+            $total_existente  = $posExistentes + $total_existente;
+            $total_ocupado    = $posOcupadas   + $total_ocupado;
+            $total_disponivel = $posDisponives + $total_disponivel;
 
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(30, 5, $ocupacao['RUA'] ,0, 0, "C");
-            $this->Cell(45, 5, $ocupacao['PALETES_EXISTENTES'] ,0, 0, "C");
-            $this->Cell(45, 5, $ocupacao['PALETES_OCUPADOS'] ,0, 0, "C");
-            $this->Cell(45, 5, $ocupacao['PALETES_EXISTENTES']- $ocupacao['PALETES_OCUPADOS'] ,0, 0, "C");
-            $this->Cell(30, 5, $ocupacao['PERCENTUAL_OCUPADOS'] . " %" ,0, 1, "C");
+            $this->Cell(30, 5, $numRua ,0, 0, "C");
+            $this->Cell(45, 5, $posExistentes ,0, 0, "C");
+            $this->Cell(45, 5, $posOcupadas ,0, 0, "C");
+            $this->Cell(45, 5, $posDisponives ,0, 0, "C");
+            $this->Cell(30, 5, number_format($percentualOcupacao, 2, '.', ',') . " %" ,0, 1, "C");
         }
 
         $total_percentual = ($total_ocupado * 100) / $total_existente;

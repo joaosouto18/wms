@@ -266,6 +266,16 @@ class ExpedicaoRepository extends EntityRepository
                         )";
 
         switch ($sequencia) {
+            case 3:
+                $order = " ORDER BY c.placaExpedicao,
+                                    ls.descricao,
+                                    e.rua,
+                                    e.predio,
+                                    e.nivel,
+                                    e.apartamento,
+                                    ped.id,
+                                    p.descricao";
+                break;
             case 2:
                 $order = " ORDER BY c.placaExpedicao,
                                     ls.descricao,
@@ -1324,7 +1334,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
         return $arrayResult;
     }
 
-    public function getRelatorioSaidaProdutos($codProduto, $grade)
+    public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null)
     {
         $source = $this->_em->createQueryBuilder()
             ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
@@ -1338,6 +1348,22 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->where('es.codProduto = :codProduto')
             ->orderBy('e.dataFinalizacao','DESC')
             ->setParameter("codProduto", $codProduto);
+
+        if (isset($dataInicial) && (!empty($dataInicial))) {
+            $dataInicial1 = str_replace("/", "-", $dataInicial);
+            $dataI1 = new \DateTime($dataInicial1);
+
+            $source->andWhere("(TRUNC(r.dataInicial) >= ?d1")
+                ->setParameter('d1', $dataI1);
+        }
+
+        if (isset($dataFinal) && (!empty($dataFinal))) {
+            $dataFinal1 = str_replace("/", "-", $dataFinal);
+            $dataF1 = new \DateTime($dataFinal1);
+
+            $source->andWhere("(TRUNC(r.dataInicial) <= ?d2")
+                ->setParameter('d2', $dataF1);
+        }
 
         if (isset($grade)) {
             $source->andWhere('es.dscGrade = :grade')
@@ -1634,4 +1660,76 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
 
     }
 
+    public function getPedidosByParams($parametros, $idDepositoLogado = null){
+
+        $where = "";
+        $orderBy = " ORDER BY P.COD_PEDIDO";
+        if (isset($idDepositoLogado)) {
+            $where .= ' AND P.CENTRAL_ENTREGA = ' . $idDepositoLogado;
+        }
+
+        if (is_array($parametros['centrais'])) {
+            $central = implode(',',$parametros['centrais']);
+            $where .= " AND ( P.CENTRAL_ENTREGA in(".$central.") OR P.PONTO_TRANSBORDO in(".$central.") )";
+        }
+
+        if (isset($parametros['placa']) && !empty($parametros['placa'])) {
+            $where.= " AND E.DSC_PLACA_EXPEDICAO = '".$parametros['placa']."'";
+        }
+
+        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1']))){
+            $where.= " AND E.DTH_INICIO >= TO_DATE('".$parametros['dataInicial1']." 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['dataInicial2']) && (!empty($parametros['dataInicial2']))){
+            $where.= " AND E.DTH_INICIO <= TO_DATE('".$parametros['dataInicial2']." 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1']))) {
+            $where.= " AND E.DTH_FINALIZACAO >= TO_DATE('".$parametros['dataFinal1']." 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
+            $where.= " AND E.DTH_FINALIZACAO <= TO_DATE('".$parametros['dataFinal2']." 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['status']) && (!empty($parametros['status']))) {
+            $where.= " AND S.COD_SIGLA = ".$parametros['status']."";
+        }
+        if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
+            $where = " AND E.COD_EXPEDICAO = ".$parametros['idExpedicao']."";
+        }
+
+        if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
+            $where = " AND P.COD_PEDIDO = ".$parametros['pedido']."";
+        }
+
+        if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
+            $where = " AND CA.COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."";
+        }
+
+        $SQL = "
+        SELECT P.COD_PEDIDO,
+               CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+               PES.NOM_PESSOA as CLIENTE,
+               E.COD_EXPEDICAO,
+               C.COD_CARGA_EXTERNO,
+               E.DSC_PLACA_EXPEDICAO,
+               S.DSC_SIGLA,
+               NVL(ETQ.QTD,0) as ETIQUETAS_GERADAS,
+               PROD.QTD as QTD_PRODUTOS
+          FROM PEDIDO P
+          LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+          LEFT JOIN CLIENTE CLI ON CLI.COD_PESSOA = PES.COD_PESSOA
+          LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+          LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+          LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+          LEFT JOIN (SELECT COUNT(*) as QTD, COD_PEDIDO FROM PEDIDO_PRODUTO GROUP BY COD_PEDIDO) PROD ON PROD.COD_PEDIDO = P.COD_PEDIDO
+          LEFT JOIN (SELECT COUNT(COD_ETIQUETA_SEPARACAO) as QTD, COD_PEDIDO FROM ETIQUETA_SEPARACAO GROUP BY COD_PEDIDO) ETQ ON ETQ.COD_PEDIDO = P.COD_PEDIDO
+          WHERE 1 = 1";
+
+        $result=$this->getEntityManager()->getConnection()->query($SQL . $where . $orderBy)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
+    }
 }

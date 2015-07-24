@@ -41,7 +41,7 @@ class Web_ImprimirController extends Action
         $endereco = $EnderecoRepository->getImprimirEndereco($codEndereco);
 
         $modelo =  $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
-            if ($modelo == 4) {
+            if (($modelo == 4) || ($modelo == 6)) {
                 $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
             } else {
                 $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");

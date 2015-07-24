@@ -28,6 +28,7 @@ class Expedicao extends Grid
 
         $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
+        $this->setAttrib('title','Expedição');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->setId('expedicao-index-grid')
             ->setAttrib('class', 'grid-expedicao')

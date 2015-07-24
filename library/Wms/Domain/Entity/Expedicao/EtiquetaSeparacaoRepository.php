@@ -440,9 +440,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $arrayVolumes = $produtoEntity->getVolumes()->toArray();
 
                 usort($arrayVolumes, function ($a,$b){
-                    if ($a->getCodigoSequencial() > $b->getCodigoSequencial()) {
-                        return -1;
-                    }
+                    return $a->getCodigoSequencial() < $b->getCodigoSequencial();
                 });
 
                 for($i=0;$i<$quantidade;$i++) {
@@ -790,11 +788,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->andWhere('es.codProduto = :codProduto');
         }
 
-        if ($parametros['reimpresso'] != "") {
-            if ($parametros['reimpresso'] == 'S') {
-                $source->andWhere("es.reimpressao is not null");
-            } else {
-                $source->andWhere("es.reimpressao is null");
+        if (isset($parametros['reimpresso'])){
+            if ($parametros['reimpresso'] != "") {
+                if ($parametros['reimpresso'] == 'S') {
+                    $source->andWhere("es.reimpressao is not null");
+                } else {
+                    $source->andWhere("es.reimpressao is null");
+                }
             }
         }
 
