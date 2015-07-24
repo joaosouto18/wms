@@ -651,7 +651,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 
             if ($entityPessoa == null) {
-                $entityPessoa   = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
+                $entityPessoa   = $ClienteRepo->persistirAtor($entityCliente, $cliente, true);
             } else {
                 $entityCliente->setPessoa($entityPessoa);
             }
