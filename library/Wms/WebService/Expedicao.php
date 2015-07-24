@@ -1,6 +1,7 @@
 <?php
 
 use Wms\Domain\Entity\Expedicao,
+    Core\Util\Produto as ProdutoUtil,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 
 class cliente {
@@ -191,9 +192,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 foreach ($carga['pedidos'] as  $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
                         $idProduto = trim($cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto']);
-                        if (is_null($idProduto)) {
-                            $idProduto = (int) $idProduto;
-                        }
+                        $idProduto = ProdutoUtil::formatar($idProduto);
                         $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
                     }
                 }
@@ -520,9 +519,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         foreach ($produtos as $produto) {
             $idProduto = trim($produto['codProduto']);
-            if (is_numeric($idProduto)) {
-                //$idProduto = (int) $idProduto;
-            }
+            $idProduto = ProdutoUtil::formatar($idProduto);
+
             $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
             if (isset($produto['quantidade'])) {
                 $produto['qtde'] = $produto['quantidade'];
@@ -586,9 +584,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             foreach($pedido['produtos'] as $produto) {
                 $idProduto = trim($produto['codProduto']);
-                if (is_numeric($idProduto)) {
-                //    $idProduto = (int) $idProduto;
-                }
+                $idProduto = ProdutoUtil::formatar($idProduto);
+
                 if ($ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade'])) == null) {
                     throw new Exception("Produto $produto[codProduto] - $produto[grade] nao encontrado");
                 }

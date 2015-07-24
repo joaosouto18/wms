@@ -786,9 +786,7 @@ class NotaFiscalRepository extends EntityRepository
                 foreach ($itens as $item) {
 
                     $idProduto = trim($item['idProduto']);
-                    if (is_numeric($idProduto)) {
-                        $idProduto =  (int) $idProduto;
-                    }
+                    $idProduto = ProdutoUtil::formatar($idProduto);
 
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));

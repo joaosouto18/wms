@@ -1,6 +1,7 @@
 <?php
 
-use Wms\Domain\Entity\Produto as ProdutoEntity;
+use Wms\Domain\Entity\Produto as ProdutoEntity,
+    Core\Util\Produto as ProdutoUtil;
 
 class fabricante {
     /** @var string */
@@ -136,9 +137,8 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
-        if (is_numeric(trim($idProduto))) {
-            $idProduto = (int) $idProduto;
-        }
+
+        $idProduto = ProdutoUtil::formatar($idProduto);
 
         $grade = trim ($grade);
         $idFabricante = trim ($idFabricante);
@@ -283,9 +283,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
         $idProduto = trim ($idProduto);
-        if (is_numeric(trim($idProduto))) {
-            $idProduto = (int) $idProduto;
-        }
+        $idProduto = ProdutoUtil::formatar($idProduto);
         $descricao = trim ($descricao);
         $idFabricante = trim($idFabricante);
         $tipo = trim($tipo);
