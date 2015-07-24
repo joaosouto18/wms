@@ -660,7 +660,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entityCliente->setCodClienteExterno($cliente['codCliente']);
 
             $this->_em->persist($entityCliente);
-            //$this->_em->flush();
+            $this->_em->flush();
 
         }
 
