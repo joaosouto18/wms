@@ -190,12 +190,7 @@ class Expedicao_VolumePatrimonioController  extends  Crud
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
                 $gerarEtiqueta->imprimirExpedicaoModelo2($volumePatrimonio);
             }
-
         }
     }
-
-
-
-
 
 }
