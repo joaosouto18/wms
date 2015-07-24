@@ -22,7 +22,7 @@ class Recebimento extends Grid
     {
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
         $resultSet = $recebimentoRepo->buscar($params);
-
+        $this->setAttrib('title','Recebimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($resultSet))
                 ->setId('recebimento-index-grid')
                 ->setAttrib('class', 'grid-recebimento')

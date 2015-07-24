@@ -136,6 +136,10 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
+        if (is_numeric(trim($idProduto))) {
+            $idProduto = (int) $idProduto;
+        }
+
         $grade = trim ($grade);
         $idFabricante = trim ($idFabricante);
         $tipo = trim ($tipo);
@@ -279,6 +283,9 @@ class Wms_WebService_Produto extends Wms_WebService {
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
         $idProduto = trim ($idProduto);
+        if (is_numeric(trim($idProduto))) {
+            $idProduto = (int) $idProduto;
+        }
         $descricao = trim ($descricao);
         $idFabricante = trim($idFabricante);
         $tipo = trim($tipo);

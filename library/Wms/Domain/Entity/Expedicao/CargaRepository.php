@@ -22,11 +22,15 @@ class CargaRepository extends EntityRepository
             $enCarga = new Carga;
             $enCarga->setPlacaExpedicao($carga['placaExpedicao']);
             $enCarga->setCentralEntrega($carga['centralEntrega']);
-            $enCarga->setCodCargaExterno($carga['codCargaExterno']);
+            $enCarga->setCodCargaExterno(trim($carga['codCargaExterno']));
             $enCarga->setExpedicao($carga['idExpedicao']);
             $enCarga->setPlacaCarga($carga['placaCarga']);
             $enCarga->setTipoCarga($tipoCarga);
             $enCarga->setSequencia($numeroDeCargas);
+
+            if ($this->getSystemParameterValue('VALIDA_FECHAMENTO_CARGA') == 'N') {
+                $enCarga->setDataFechamento(new \DateTime());
+            }
 
             $em->persist($enCarga);
             $em->flush();

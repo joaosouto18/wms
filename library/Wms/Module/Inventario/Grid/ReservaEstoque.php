@@ -9,6 +9,7 @@ class ReservaEstoque extends Grid
 
     public function init($reservas)
     {
+        $this->setAttrib('title','Reserva de Estoque');
         $this->setSource(new \Core\Grid\Source\ArraySource($reservas));
         $this->setShowExport(false);
         $this

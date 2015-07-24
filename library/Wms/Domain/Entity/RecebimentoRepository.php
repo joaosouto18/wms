@@ -299,23 +299,43 @@ class RecebimentoRepository extends EntityRepository
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
-                $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-                $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
-                $quantidade = $produtoEmbalagemEntity->getQuantidade();
 
-                $qtdNF = (int) $qtdNFs[$idProduto][$grade];
-                $qtdConferida = (int) $qtdConferida;
-                $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
+                if (isset($unMedida) && !empty($unMedida)) {
+                    $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+                    $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
+                    $quantidade = $produtoEmbalagemEntity->getQuantidade();
 
-                if ($gravaRecebimentoVolumeEmbalagem == true) {
-                    $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico);
+                    $qtdNF = (int) $qtdNFs[$idProduto][$grade];
+                    $qtdConferida = (int) $qtdConferida;
+                    $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
+
+                    if ($gravaRecebimentoVolumeEmbalagem == true) {
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico);
+                    }
+
+                    $qtdConferida = (int) $qtdConferida * $quantidade;
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
+                    if ($qtdDivergencia != 0) {
+                        $divergencia = true;
+                    }
+                } else {
+
+                    $qtdNF = (int) $qtdNFs[$idProduto][$grade];
+                    $qtdConferida = (int) $qtdConferida;
+                    $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
+
+                    if ($gravaRecebimentoVolumeEmbalagem == true) {
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico);
+                    }
+
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
+                    if ($qtdDivergencia != 0) {
+                        $divergencia = true;
+                    }
+
                 }
-                
-                $qtdConferida = (int) $qtdConferida * $quantidade;
-                $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
-                if ($qtdDivergencia != 0) {
-                    $divergencia = true;
-                }
+
+
             }
         }
 

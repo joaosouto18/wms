@@ -19,7 +19,7 @@ class PedidoRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $em->beginTransaction();
+//        $em->beginTransaction();
         try {
             $enPedido = new Pedido;
 
@@ -41,11 +41,11 @@ class PedidoRepository extends EntityRepository
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
 
             $em->persist($enPedido);
-            $em->flush();
-            $em->commit();
+ //           $em->flush();
+ //           $em->commit();
 
         } catch(\Exception $e) {
-            $em->rollback();
+ //           $em->rollback();
             throw new \Exception();
         }
 
@@ -313,6 +313,79 @@ class PedidoRepository extends EntityRepository
         }
 
         $this->_em->flush();
+    }
+
+
+    public function getDadosPedidoByCodPedido ($codPedido){
+        $SQL = "
+                SELECT P.COD_PEDIDO,
+                       CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       PES.NOM_PESSOA as CLIENTE,
+                       E.COD_EXPEDICAO,
+                       C.COD_CARGA_EXTERNO,
+                       E.DSC_PLACA_EXPEDICAO,
+                       S.DSC_SIGLA as SITUACAO,
+                       NVL(ETQ.QTD,0) as ETIQUETAS_GERADAS,
+                       PROD.QTD as QTD_PRODUTOS,
+                       I.DSC_ITINERARIO,
+                       P.DSC_LINHA_ENTREGA,
+                       ENDERECO.DSC_ENDERECO as RUA,
+                       ENDERECO.NUM_ENDERECO as NUMERO,
+                       ENDERECO.DSC_COMPLEMENTO as COMPLEMENTO,
+                       ENDERECO.NOM_BAIRRO,
+                       ENDERECO.NOM_LOCALIDADE CIDADE,
+                       UF.COD_REFERENCIA_SIGLA as UF,
+                       ENDERECO.NUM_CEP as CEP,
+                       P.CENTRAL_ENTREGA as FILIAL_ESTOQUE,
+                       P.PONTO_TRANSBORDO as FILIAL_TRANSBORDO
+                  FROM PEDIDO P
+                  LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+                  LEFT JOIN CLIENTE CLI ON CLI.COD_PESSOA = PES.COD_PESSOA
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN (SELECT COUNT(*) as QTD, COD_PEDIDO FROM PEDIDO_PRODUTO GROUP BY COD_PEDIDO) PROD ON PROD.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN (SELECT COUNT(COD_ETIQUETA_SEPARACAO) as QTD, COD_PEDIDO FROM ETIQUETA_SEPARACAO GROUP BY COD_PEDIDO) ETQ ON ETQ.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN ITINERARIO I ON I.COD_ITINERARIO = P.COD_ITINERARIO
+                  LEFT JOIN PESSOA_ENDERECO ENDERECO ON ENDERECO.COD_PESSOA = PES.COD_PESSOA AND ENDERECO.COD_TIPO_ENDERECO = 22
+                  LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
+                  WHERE P.COD_PEDIDO = " . $codPedido;
+
+        $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
+    }
+
+    public function getProdutosByPedido($codPedido){
+        $SQL = "
+        SELECT P.COD_PRODUTO,
+               P.DSC_GRADE,
+               P.DSC_PRODUTO,
+               PP.QUANTIDADE
+          FROM PEDIDO_PRODUTO PP
+          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
+         WHERE PP.COD_PEDIDO = $codPedido ORDER BY COD_PRODUTO, DSC_GRADE";
+        $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getEtiquetasByPedido($codPedido) {
+        $SQL = "
+        SELECT ES.COD_ETIQUETA_SEPARACAO,
+               P.COD_PRODUTO,
+               P.DSC_GRADE,
+               P.DSC_PRODUTO,
+               NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as EMBALAGEM,
+               S.DSC_SIGLA as SITUACAO
+          FROM ETIQUETA_SEPARACAO ES
+          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ES.COD_PRODUTO AND P.DSC_GRADE = ES.DSC_GRADE
+          LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
+          LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
+          LEFT JOIN SIGLA S ON S.COD_SIGLA = ES.COD_STATUS
+         WHERE ES.COD_PEDIDO = $codPedido ORDER BY ES.COD_ETIQUETA_SEPARACAO";
+        $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
     }
 
 }

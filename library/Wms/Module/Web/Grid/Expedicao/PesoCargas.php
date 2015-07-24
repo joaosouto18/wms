@@ -25,7 +25,7 @@ class PesoCargas extends Grid
         $result = $ExpedicaoRepo->getPesos($parametros);
 
         $grid = new \Core\Grid(new \Core\Grid\Source\ArraySource($result));
-
+        $this->setAttrib('title','Peso Cargas');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-peso-grid')
                 ->setAttrib('caption', 'Peso das Cargas Expedição '.$parametros['id'])
