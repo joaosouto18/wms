@@ -167,6 +167,8 @@ class Expedicao_VolumePatrimonioController  extends  Crud
     {
         $idExpedicao = $this->_getParam('id');
         $params = $this->_getAllParams();
+        $parametroEtiquetaVolume = $this->getSystemParameterValue('MODELO_ETIQUETA_VOLUME');
+
         /** @var \Wms\Domain\Entity\Expedicao\VolumePatrimonioRepository $volumePatrimonioRepository */
         $volumePatrimonioRepository = $this->em->getRepository("wms:Expedicao\VolumePatrimonio");
         $volumePatrimonio = $volumePatrimonioRepository->getVolumesByExpedicao($idExpedicao);
@@ -174,11 +176,21 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         $this->idExpedicao = $idExpedicao;
 
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
-        $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio[0]);
+
+        foreach ($volumePatrimonio as $key => $volume) {
+            $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio[$key]['volume']);
+            $volumePatrimonio[$key]['produtos'] = $produtos;
+        }
 
         if (isset($params['btnImprimir'])) {
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-            $gerarEtiqueta->imprimirExpedicaoModelo1($volumePatrimonio);
+            if ($parametroEtiquetaVolume == 1) {
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+                $gerarEtiqueta->imprimirExpedicaoModelo1($volumePatrimonio);
+            } else {
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
+                $gerarEtiqueta->imprimirExpedicaoModelo2($volumePatrimonio);
+            }
+
         }
     }
 
