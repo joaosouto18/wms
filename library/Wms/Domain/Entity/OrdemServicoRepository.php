@@ -174,7 +174,7 @@ class OrdemServicoRepository extends EntityRepository
         return $result[0];
     }
 
-    public function getConferenciaByOs ($idOS, $transbordo = false, $tipoConferencia) {
+    public function getConferenciaByOs ($idOS, $transbordo = false, $tipoConferencia = null) {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin("es.produto","prod")
