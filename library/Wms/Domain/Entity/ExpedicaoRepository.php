@@ -1336,6 +1336,37 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
 
     public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null)
     {
+/*
+        $source = "SELECT e0_.DTH_CONFERENCIA AS DTH_CONFERENCIA0, i1_.DSC_ITINERARIO AS DSC_ITINERARIO1, i1_.COD_ITINERARIO AS COD_ITINERARIO2, c2_.COD_CARGA_EXTERNO AS COD_CARGA_EXTERNO3,
+                    e3_.COD_EXPEDICAO AS COD_EXPEDICAO4, c4_.COD_CLIENTE_EXTERNO AS COD_CLIENTE_EXTERNO5, e0_.COD_PRODUTO AS COD_PRODUTO6, e0_.DSC_GRADE AS DSC_GRADE7,
+                    e3_.DTH_INICIO AS DTH_INICIO8, e3_.DTH_FINALIZACAO AS DTH_FINALIZACAO9, p5_.COD_PEDIDO AS COD_PEDIDO10
+                    FROM ETIQUETA_SEPARACAO e0_
+                    INNER JOIN PEDIDO p5_ ON e0_.COD_PEDIDO = p5_.COD_PEDIDO
+                    INNER JOIN ITINERARIO i1_ ON p5_.COD_ITINERARIO = i1_.COD_ITINERARIO
+                    INNER JOIN CARGA c2_ ON p5_.COD_CARGA = c2_.COD_CARGA
+                    INNER JOIN EXPEDICAO e3_ ON c2_.COD_EXPEDICAO = e3_.COD_EXPEDICAO
+                    INNER JOIN CLIENTE c4_ ON p5_.COD_PESSOA = c4_.COD_PESSOA
+                    WHERE e0_.COD_PRODUTO = $codProduto";
+
+
+
+        if (isset($dataInicial) && (!empty($dataInicial))) {
+            $source .= "  AND e3_.DTH_FINALIZACAO >= '$dataInicial'";
+        }
+        if (isset($dataFinal) && (!empty($dataFinal))) {
+            $source .= " AND e3_.DTH_FINALIZACAO <=' $dataFinal'";
+        }
+        if (isset($grade)) {
+            $source .= " AND e0_.DSC_GRADE = '$grade'";
+        }
+        $source .= " ORDER BY e3_.DTH_FINALIZACAO DESC";
+
+        echo $source; exit;
+        return $this->getEntityManager()->getConnection()->query($source)-> fetchAll(\PDO::FETCH_ASSOC);
+
+*/
+
+
         $source = $this->_em->createQueryBuilder()
             ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
              e.dataInicio, e.dataFinalizacao, p.id as idPedido")
@@ -1349,21 +1380,27 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->orderBy('e.dataFinalizacao','DESC')
             ->setParameter("codProduto", $codProduto);
 
-        if (isset($dataInicial) && (!empty($dataInicial))) {
-            $data1 = new \DateTime($dataInicial);
-            $data1 = $data1->format('d/m/Y');
-            $source->setParameter('dataInicio', $data1)
-                ->andWhere('e.dataFinalizacao >= :dataInicio');
 
+        if (isset($dataInicial) && (!empty($dataInicial))) {
+            $expFinal=explode("/",$dataInicial);
+
+            $dataFinal1=new \DateTime();
+            $dataFinal1->setDate($expFinal[2],$expFinal[1],$expFinal[0]);
+            $dataFinal1->setTime(0,0,0);
+
+            $source->andWhere(" e.dataFinalizacao >= :dFinal1 ")
+                ->setParameter("dFinal1",$dataFinal1);
         }
 
         if (isset($dataFinal) && (!empty($dataFinal))) {
-            $dataFinal = str_replace('/','-',$dataFinal);
-            $data2 = new \DateTime($dataFinal);
-            $data2 = $data2->format('d/m/Y');
+            $expFinal2=explode("/",$dataFinal);
 
-            $source->setParameter('dataFinal', $data2)
-                ->andWhere('e.dataFinalizacao <= :dataFinal');
+            $dataFinal2=new \DateTime();
+            $dataFinal2->setDate($expFinal2[2],$expFinal2[1],$expFinal2[0]);
+            $dataFinal2->setTime(23,59,59);
+
+            $source->andWhere(" e.dataFinalizacao <= :dFinal2 ")
+                ->setParameter("dFinal2",$dataFinal2);
         }
 
         if (isset($grade)) {
@@ -1371,8 +1408,8 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                     ->setParameter('grade', $grade);
         }
 
-
         return $source->getQuery()->getResult();
+
     }
 
 
