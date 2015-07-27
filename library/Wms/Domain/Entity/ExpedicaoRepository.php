@@ -1350,25 +1350,27 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->setParameter("codProduto", $codProduto);
 
         if (isset($dataInicial) && (!empty($dataInicial))) {
-            $dataInicial1 = str_replace("/", "-", $dataInicial);
-            $dataI1 = new \DateTime($dataInicial1);
+            $data1 = new \DateTime($dataInicial);
+            $data1 = $data1->format('d/m/Y');
+            $source->setParameter('dataInicio', $data1)
+                ->andWhere('e.dataFinalizacao >= :dataInicio');
 
-            $source->andWhere("(TRUNC(r.dataInicial) >= ?d1")
-                ->setParameter('d1', $dataI1);
         }
 
         if (isset($dataFinal) && (!empty($dataFinal))) {
-            $dataFinal1 = str_replace("/", "-", $dataFinal);
-            $dataF1 = new \DateTime($dataFinal1);
+            $dataFinal = str_replace('/','-',$dataFinal);
+            $data2 = new \DateTime($dataFinal);
+            $data2 = $data2->format('d/m/Y');
 
-            $source->andWhere("(TRUNC(r.dataInicial) <= ?d2")
-                ->setParameter('d2', $dataF1);
+            $source->setParameter('dataFinal', $data2)
+                ->andWhere('e.dataFinalizacao <= :dataFinal');
         }
 
         if (isset($grade)) {
             $source->andWhere('es.dscGrade = :grade')
                     ->setParameter('grade', $grade);
         }
+
 
         return $source->getQuery()->getResult();
     }
