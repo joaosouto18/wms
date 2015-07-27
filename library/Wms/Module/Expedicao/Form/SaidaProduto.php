@@ -22,8 +22,7 @@ class SaidaProduto extends Form
                 if ($utilizaGrade == "S") {
                     $this->addElement('text', 'grade', array(
                         'size' => 12,
-                        'label' => 'Grade',
-                        'decorators' => array('ViewHelper'),
+                        'label' => 'Grade'
                     ));
                 } else {
                     $this->addElement('hidden', 'grade', array(

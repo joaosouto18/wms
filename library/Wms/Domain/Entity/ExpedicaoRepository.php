@@ -1350,17 +1350,18 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->setParameter("codProduto", $codProduto);
 
         if (isset($dataInicial) && (!empty($dataInicial))) {
+            $dataInicial = str_replace('/','-',$dataInicial);
             $data1 = new \DateTime($dataInicial);
-            $data1 = $data1->format('d/m/Y');
+            $data1 = $data1->format('Y-m-d') . ' 00:00:00';
             $source->setParameter('dataInicio', $data1)
-                ->andWhere('e.dataFinalizacao >= :dataInicio');
+                ->andWhere("e.dataFinalizacao >= :dataInicio");
 
         }
 
         if (isset($dataFinal) && (!empty($dataFinal))) {
             $dataFinal = str_replace('/','-',$dataFinal);
             $data2 = new \DateTime($dataFinal);
-            $data2 = $data2->format('d/m/Y');
+            $data2 = $data2->format('Y-m-d') . ' 23:59:59';
 
             $source->setParameter('dataFinal', $data2)
                 ->andWhere('e.dataFinalizacao <= :dataFinal');
