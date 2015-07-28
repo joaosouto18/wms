@@ -110,17 +110,6 @@ $.Model.extend('Wms.Models.ProdutoEmbalagem',
                 success: success,
                 error: error
             });
-        },
-
-        verificarEstoque: function(params, success, error) {
-            $.ajax({
-                url: URL_MODULO + '/endereco/verificar-estoque-ajax',
-                type: 'POST',
-                dataType: 'json',
-                data: params,
-                success: success,
-                error: error
-            });
         }
     },
     /* @Prototype */

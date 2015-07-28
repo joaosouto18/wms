@@ -35,12 +35,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '#btn-salvar-embalagem click': function(el, ev) {
 
-            if ($('#embalagem-endereco').val() != $('#embalagem-enderecoAntigo').val()) {
-                if (this.verificarEstoque() == false) {
-                    return false;
-                }
-            }
-
             var inputAcao = $('#embalagem-acao').val();
             var valores = $('#fieldset-embalagem').formParams(false).embalagem;
             var id = $("#fieldset-embalagem #embalagem-id").val();
@@ -476,17 +470,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             }, this.callback('validarCodigoBarras'));
         },
 
-        verificarEstoque: function() {
-            var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
-            var idProduto = $('#embalagem-idProduto').val();
-            var grade = $('#embalagem-grade').val();
-            new Wms.Models.ProdutoEmbalagem.verificarEstoque({
-                enderecoAntigo: enderecoAntigo,
-                grade: grade,
-                produto: idProduto
-            }, this.callback('validarEstoqueEndereco'));
-        },
-
         /**
          * Valida o codigo de barras informado
          *
@@ -512,16 +495,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var idProduto = $('#embalagem-idProduto').val();
             var grade = $('#embalagem-grade').val();
 
-            if (endereco == ""){
-                this.salvarDadosEmbalagem();
-                return false;
-            }
-
-            if (endereco.length != 12){
-                alert('Formato inválido de Endereço.');
-                return false;
-            }
-
             //Verifica se a embalagem esta sendo editada e o codigo é igual
             if((acao == 'alterar') && (endereco == enderecoAntigo)){
                 this.salvarDadosEmbalagem();
@@ -533,6 +506,34 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 grade:grade,
                 endereco:endereco
             }, this.callback('validarEndereco'));
+
+            if (endereco == "" || (endereco != enderecoAntigo)){
+                var este = this;
+                $.ajax({
+                    url: URL_MODULO + '/endereco/verificar-estoque-ajax',
+                    type: 'POST',
+                    data: {
+                        enderecoAntigo: enderecoAntigo,
+                        grade: grade,
+                        produto: idProduto
+                    },
+                    success: function(data){
+                        if (data.status == 'error') {
+                            alert(data.msg);
+                        } else if (data.status == 'success') {
+                            este.salvarDadosEmbalagem();
+                        }
+                    }
+                });
+                return false;
+            }
+
+            if (endereco.length != 12){
+                alert('Formato inválido de Endereço.');
+                return false;
+            }
+
+
         },
 
         /**
