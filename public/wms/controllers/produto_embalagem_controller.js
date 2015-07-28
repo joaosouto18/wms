@@ -184,6 +184,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 var produto_embalagem = el.closest('.produto_embalagem').model();
                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
                 var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
+                var idProduto = $('#embalagem-idProduto').val();
+                var grade = $('#embalagem-grade').val();
+                var este = this;
 
                 var isPadrao = $(el).parent('div').find('.isPadrao').val();
                 // caso seja uma embalagem de recebimento
@@ -215,17 +218,28 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     }).appendTo('#fieldset-embalagens-cadastradas');
                 }
 
-                if (this.verificarEstoque() == false){
-                    return false;
-                }
-
-                //remove a div do endereco
-                model.elements().remove();
-
-                //reseta o form
-                this.resetarForm();
-                // carregar embalagens nos dados logisticos
-                this.carregarSelectEmbalagens();
+                $.ajax({
+                    url: URL_MODULO + '/endereco/verificar-estoque-ajax',
+                    type: 'POST',
+                    data: {
+                        enderecoAntigo: enderecoAntigo,
+                        grade: grade,
+                        produto: idProduto
+                    },
+                    success: function(data){
+                        if (data.status == 'error') {
+                            alert(data.msg);
+                            return false;
+                        } else if (data.status == 'success') {
+                            //remove a div do endereco
+                            model.elements().remove();
+                            //reseta o form
+                            este.resetarForm();
+                            // carregar embalagens nos dados logisticos
+                            este.carregarSelectEmbalagens();
+                        }
+                    }
+                });
             }
         },
 
@@ -495,18 +509,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var idProduto = $('#embalagem-idProduto').val();
             var grade = $('#embalagem-grade').val();
 
-            //Verifica se a embalagem esta sendo editada e o codigo é igual
-            if((acao == 'alterar') && (endereco == enderecoAntigo)){
-                this.salvarDadosEmbalagem();
-                return false;
-            }
-
-            new Wms.Models.ProdutoEmbalagem.verificarEndereco({
-                idProduto:idProduto,
-                grade:grade,
-                endereco:endereco
-            }, this.callback('validarEndereco'));
-
             if (endereco == "" || (endereco != enderecoAntigo)){
                 var este = this;
                 $.ajax({
@@ -533,7 +535,17 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 return false;
             }
 
+            //Verifica se a embalagem esta sendo editada e o codigo é igual
+            if((acao == 'alterar') && (endereco == enderecoAntigo)){
+                this.salvarDadosEmbalagem();
+                return false;
+            }
 
+            new Wms.Models.ProdutoEmbalagem.verificarEndereco({
+                idProduto:idProduto,
+                grade:grade,
+                endereco:endereco
+            }, this.callback('validarEndereco'));
         },
 
         /**
