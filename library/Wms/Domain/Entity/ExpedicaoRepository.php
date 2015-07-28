@@ -1372,7 +1372,6 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                     ->setParameter('grade', $grade);
         }
 
-
         return $source->getQuery()->getResult();
     }
 
