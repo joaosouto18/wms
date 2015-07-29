@@ -70,7 +70,7 @@ class Expedicao extends Grid
                 'index' => 'imprimir',
             ))
             ->addColumn(array(
-                'label' => '% Conferencia',
+                'label' => '% Conferência',
                 'index' => 'PercConferencia',
             ))
             ->addColumn(array(
