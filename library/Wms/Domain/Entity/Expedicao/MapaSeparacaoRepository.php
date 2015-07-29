@@ -68,35 +68,31 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function getResumoConferenciaMapaByExpedicao ($idExpedicao){
-        $SQL = "SELECT MS.COD_MAPA_SEPARACAO,
-                       TO_CHAR(DTH_CRIACAO, 'DD/MM/YYYY HH24:MI') as DTH_CRIACAO,
-                       TRIM(DSC_QUEBRA) as QUEBRA,
-                       TOTAL.QTD_PROD as QTD_TOTAL,
-                       NVL(CONF.QTD_PROD,0) as QTD_CONF,
-                       CAST((NVL(CONF.QTD_PROD,0)/TOTAL.QTD_PROD) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL
+        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) QUEBRA, NVL(SUM(MSP.QTD_TOTAL),0) QTD_TOTAL,
+                (CASE WHEN MSP.IND_CONFERIDO = 'S'
+                  THEN NVL(SUM(MSP.QTD_TOTAL),0)
+                  ELSE
+                  NVL(SUM(MSC.QTD_CONFERIDA),0)
+                  END) AS QTD_CONF,
+                (CASE WHEN MSP.IND_CONFERIDO = 'S'
+                  THEN '100%'
+                  ELSE
+                  CAST(NVL(SUM(MSC.QTD_CONFERIDA),0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) AS NUMBER(6,2)) || '%'
+                END) AS PERCENTUAL, MS.COD_EXPEDICAO
+                FROM MAPA_SEPARACAO MS
+                LEFT JOIN (
+                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS.COD_MAPA_SEPARACAO
                   FROM MAPA_SEPARACAO MS
-                  LEFT JOIN (SELECT COUNT(DISTINCT COD_PRODUTO || DSC_GRADE) as QTD_PROD, COD_MAPA_SEPARACAO
-                               FROM MAPA_SEPARACAO_PRODUTO
-                              GROUP BY COD_MAPA_SEPARACAO) TOTAL
-                    ON TOTAL.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COUNT(*) as QTD_PROD
-                               FROM (SELECT M.COD_MAPA_SEPARACAO
-                                       FROM (SELECT MP.IND_CONFERIDO, M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) as QTD_SEPARAR
-                                               FROM MAPA_SEPARACAO_PRODUTO MP
-                                               LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
-                                              GROUP BY MP.IND_CONFERIDO,M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
-                                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
-                                               FROM MAPA_SEPARACAO_CONFERENCIA
-                                              WHERE IND_CONFERENCIA_FECHADA = 'N'
-                                              GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) C
-                                         ON M.COD_MAPA_SEPARACAO = C.COD_MAPA_SEPARACAO
-                                        AND M.COD_PRODUTO = C.COD_PRODUTO
-                                        AND M.DSC_GRADE = C.DSC_GRADE
-                                        AND M.VOLUME = C.VOLUME
-                                      WHERE (M.QTD_SEPARAR = NVL(C.QTD_CONFERIDA,0) OR M.IND_CONFERIDO = 'S'))
-                              GROUP BY COD_MAPA_SEPARACAO) CONF
-                    ON CONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                 WHERE MS.COD_EXPEDICAO = $idExpedicao";
+                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  GROUP BY MS.COD_MAPA_SEPARACAO) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                  SELECT SUM(MSP.QTD_SEPARAR) QTD_TOTAL, MS.COD_MAPA_SEPARACAO, MSP.COD_MAPA_SEPARACAO_PRODUTO, MSP.IND_CONFERIDO
+                  FROM MAPA_SEPARACAO_PRODUTO MSP
+                  INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  GROUP BY MS.COD_MAPA_SEPARACAO, MSP.COD_MAPA_SEPARACAO_PRODUTO, MSP.IND_CONFERIDO ) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao
+                GROUP BY MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, MS.DSC_QUEBRA, MS.COD_EXPEDICAO, MSP.COD_MAPA_SEPARACAO_PRODUTO, MSP.IND_CONFERIDO";
+
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
