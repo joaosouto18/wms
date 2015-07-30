@@ -849,7 +849,7 @@ class NotaFiscalRepository extends EntityRepository
             $em->commit();
         } catch (\Exception $e) {
             $em->rollback();
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
     }
 
