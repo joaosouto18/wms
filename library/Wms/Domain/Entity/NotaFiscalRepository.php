@@ -835,7 +835,7 @@ class NotaFiscalRepository extends EntityRepository
                     $itemEntity = new ItemNF;
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
                     $itemEntity->setProduto($produtoEntity);
-                    $itemEntity->setGrade($item['grade']);
+                    $itemEntity->setGrade(trim($item['grade']));
                     $itemEntity->setQuantidade($item['quantidade']);
 
                     $notaFiscalEntity->getItens()->add($itemEntity);
