@@ -99,14 +99,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
         try {
             $cargas = str_replace("/","",$cargas);
             $cargas = str_replace('\\','',$cargas);
-
             $array = json_decode($cargas, true);
             if (!is_array($array)) {throw new \Exception("Formato de dados incorreto - Não está formatado como JSON");}
 
             $arrayCargas = $array['cargas'];
             return $this->enviar($arrayCargas);
         } catch (\Exception $e) {
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
     }
 
@@ -205,7 +204,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             return true;
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
+            throw new \Exception($e->getMessage());
         }
     }
 
