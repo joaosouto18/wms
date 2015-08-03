@@ -516,14 +516,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if ($embalagem->getQuantidade() <= $quantidadeAtender) {
                                     $embalagemAtual = $embalagem;
                                     break;
-                                };
+                                }
+                            }
+                            if ($embalagemAtual == null) {
+                                $mensagem = 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+                                throw new \Exception($mensagem);
                             }
                         } else {
                             $embalagemAtual = $menorEmbalagem;
                         }
 
-                        if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
+                        if ($embalagemAtual != null) {
                             $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
+                        }
+
+
+
+                        if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             $enderecoPulmao[$indiceEnderecoPulmao] = $enderecoPulmao[$indiceEnderecoPulmao] - $embalagemAtual->getQuantidade();
                         }
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
