@@ -325,6 +325,16 @@ class ExpedicaoRepository extends EntityRepository
                         ";
 
         switch ($sequencia) {
+            case 3:
+                $order = " ORDER BY c.placaExpedicao,
+                                    ls.descricao,
+                                    e.rua,
+                                    e.predio,
+                                    e.nivel,
+                                    e.apartamento,
+                                    ped.id,
+                                    p.descricao";
+                break;
             case 2:
                 $order = " ORDER BY c.placaExpedicao,
                                     ls.descricao,
@@ -1108,26 +1118,38 @@ class ExpedicaoRepository extends EntityRepository
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
                        I.ITINERARIOS AS "itinerario",
-                       C.CONFERIDA AS "PercConferencia"
+                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
+                          ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MSCONF.QTD_TOTAL_CONF_MANUAL,0) ) * 100) / (NVL(MSP.QTD_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2))
+                       END) AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
-                  LEFT JOIN
-
-                   (SELECT
-CAST(C.Etiqueta * 100 / (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS NUMBER(6,2)) AS Conferida, C.COD_EXPEDICAO
-FROM ETIQUETA_SEPARACAO ESEP
-INNER JOIN PEDIDO P ON P.COD_PEDIDO = ESEP.COD_PEDIDO
-INNER JOIN CARGA ON CARGA.COD_CARGA = P.COD_CARGA
-INNER JOIN (
-SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) AS Etiqueta, C.COD_EXPEDICAO
-FROM ETIQUETA_SEPARACAO ES
-INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
-INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-WHERE ES.COD_STATUS IN(526, 531, 532) GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = CARGA.COD_EXPEDICAO
-WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
-
-
-                   C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT C.Etiqueta AS CONFERIDA, (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS QTDETIQUETA, CARGA.COD_EXPEDICAO
+                        FROM ETIQUETA_SEPARACAO ESEP
+                        INNER JOIN PEDIDO P ON P.COD_PEDIDO = ESEP.COD_PEDIDO
+                        INNER JOIN CARGA ON CARGA.COD_CARGA = P.COD_CARGA
+                        LEFT JOIN (
+                        SELECT COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) AS Etiqueta, C.COD_EXPEDICAO
+                        FROM ETIQUETA_SEPARACAO ES
+                        INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                        INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                        WHERE ES.COD_STATUS IN(526, 531, 532) GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = CARGA.COD_EXPEDICAO
+                        WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY CARGA.COD_EXPEDICAO, C.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT
+                        SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS.COD_EXPEDICAO
+                        FROM MAPA_SEPARACAO MS
+                        INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        GROUP BY MS.COD_EXPEDICAO) MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR) QTD_TOTAL, MS.COD_EXPEDICAO
+                        FROM MAPA_SEPARACAO_PRODUTO MSP
+                        INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        GROUP BY MS.COD_EXPEDICAO) MSP ON MSP.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT
+                        SUM(MSP.QTD_SEPARAR) QTD_TOTAL_CONF_MANUAL, MS.COD_EXPEDICAO
+                        FROM MAPA_SEPARACAO_PRODUTO MSP
+                        INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSCONF ON MSCONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                        WHERE MSP.IND_CONFERIDO = \'S\' AND MSCONF.COD_MAPA_SEPARACAO_CONFERENCIA IS NULL
+                        GROUP BY MS.COD_EXPEDICAO) MSCONF ON MSCONF.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C '.$cond.' '.$whereSubQuery.'
@@ -1197,11 +1219,15 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
                           PESO.NUM_PESO,
                           C.CONFERIDA,
                           PESO.NUM_CUBAGEM,
-                          I.ITINERARIOS
+                          I.ITINERARIOS,
+                          MS.QTD_CONFERIDA,
+                          MSP.QTD_TOTAL,
+                          C.QTDETIQUETA,
+                          MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
                      ';
 
-       $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
     }
@@ -1396,7 +1422,7 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
         return $arrayResult;
     }
 
-    public function getRelatorioSaidaProdutos($codProduto, $grade)
+    public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null)
     {
         $source = $this->_em->createQueryBuilder()
             ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
@@ -1410,6 +1436,24 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
             ->where('es.codProduto = :codProduto')
             ->orderBy('e.dataFinalizacao','DESC')
             ->setParameter("codProduto", $codProduto);
+
+        if (isset($dataInicial) && (!empty($dataInicial))) {
+            $dataInicial = str_replace('/','-',$dataInicial);
+            $data1 = new \DateTime($dataInicial);
+            $data1 = $data1->format('Y-m-d') . ' 00:00:00';
+            $source->setParameter('dataInicio', $data1)
+                ->andWhere("e.dataFinalizacao >= :dataInicio");
+
+        }
+
+        if (isset($dataFinal) && (!empty($dataFinal))) {
+            $dataFinal = str_replace('/','-',$dataFinal);
+            $data2 = new \DateTime($dataFinal);
+            $data2 = $data2->format('Y-m-d') . ' 23:59:59';
+
+            $source->setParameter('dataFinal', $data2)
+                ->andWhere('e.dataFinalizacao <= :dataFinal');
+        }
 
         if (isset($grade)) {
             $source->andWhere('es.dscGrade = :grade')
@@ -2030,4 +2074,76 @@ WHERE ESEP.COD_STATUS NOT IN(524, 525) GROUP BY C.COD_EXPEDICAO, C.Etiqueta)
     }
 
 
+    public function getPedidosByParams($parametros, $idDepositoLogado = null){
+
+        $where = "";
+        $orderBy = " ORDER BY P.COD_PEDIDO";
+        if (isset($idDepositoLogado)) {
+            $where .= ' AND P.CENTRAL_ENTREGA = ' . $idDepositoLogado;
+        }
+
+        if (is_array($parametros['centrais'])) {
+            $central = implode(',',$parametros['centrais']);
+            $where .= " AND ( P.CENTRAL_ENTREGA in(".$central.") OR P.PONTO_TRANSBORDO in(".$central.") )";
+        }
+
+        if (isset($parametros['placa']) && !empty($parametros['placa'])) {
+            $where.= " AND E.DSC_PLACA_EXPEDICAO = '".$parametros['placa']."'";
+        }
+
+        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1']))){
+            $where.= " AND E.DTH_INICIO >= TO_DATE('".$parametros['dataInicial1']." 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['dataInicial2']) && (!empty($parametros['dataInicial2']))){
+            $where.= " AND E.DTH_INICIO <= TO_DATE('".$parametros['dataInicial2']." 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1']))) {
+            $where.= " AND E.DTH_FINALIZACAO >= TO_DATE('".$parametros['dataFinal1']." 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
+            $where.= " AND E.DTH_FINALIZACAO <= TO_DATE('".$parametros['dataFinal2']." 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($parametros['status']) && (!empty($parametros['status']))) {
+            $where.= " AND S.COD_SIGLA = ".$parametros['status']."";
+        }
+        if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
+            $where = " AND E.COD_EXPEDICAO = ".$parametros['idExpedicao']."";
+        }
+
+        if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
+            $where = " AND P.COD_PEDIDO = ".$parametros['pedido']."";
+        }
+
+        if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
+            $where = " AND CA.COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."";
+        }
+
+        $SQL = "
+        SELECT P.COD_PEDIDO,
+               CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+               PES.NOM_PESSOA as CLIENTE,
+               E.COD_EXPEDICAO,
+               C.COD_CARGA_EXTERNO,
+               E.DSC_PLACA_EXPEDICAO,
+               S.DSC_SIGLA,
+               NVL(ETQ.QTD,0) as ETIQUETAS_GERADAS,
+               PROD.QTD as QTD_PRODUTOS
+          FROM PEDIDO P
+          LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+          LEFT JOIN CLIENTE CLI ON CLI.COD_PESSOA = PES.COD_PESSOA
+          LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+          LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+          LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+          LEFT JOIN (SELECT COUNT(*) as QTD, COD_PEDIDO FROM PEDIDO_PRODUTO GROUP BY COD_PEDIDO) PROD ON PROD.COD_PEDIDO = P.COD_PEDIDO
+          LEFT JOIN (SELECT COUNT(COD_ETIQUETA_SEPARACAO) as QTD, COD_PEDIDO FROM ETIQUETA_SEPARACAO GROUP BY COD_PEDIDO) ETQ ON ETQ.COD_PEDIDO = P.COD_PEDIDO
+          WHERE 1 = 1";
+
+        $result=$this->getEntityManager()->getConnection()->query($SQL . $where . $orderBy)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
+    }
 }

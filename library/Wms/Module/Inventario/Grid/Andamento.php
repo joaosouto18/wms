@@ -12,7 +12,7 @@ class Andamento extends Grid
         /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
         $inventarioRepo = $this->getEntityManager()->getRepository("wms:Inventario");
         $sumarioByRua = $inventarioRepo->getSumarioByRua($params);
-
+        $this->setAttrib('title','Andamento');
         $this->setSource(new \Core\Grid\Source\ArraySource($sumarioByRua));
         $this->setShowExport(false);
         $this->addColumn(array(

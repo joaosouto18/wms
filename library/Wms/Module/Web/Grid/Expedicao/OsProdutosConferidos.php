@@ -22,6 +22,7 @@ class OsProdutosConferidos extends Grid
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $this->setAttrib('title','Produtos Conferidos');
         $this->setSource(new \Core\Grid\Source\ArraySource($values))
                 ->setId('expedicao-produtos-grid')
                 ->setAttrib('class', 'grid-expedicao-pendencias')

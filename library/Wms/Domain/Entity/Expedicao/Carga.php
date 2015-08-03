@@ -19,7 +19,7 @@ class Carga
     protected $id;
 
     /**
-     * @Column(name="COD_CARGA_EXTERNO", type="integer", nullable=false)
+     * @Column(name="COD_CARGA_EXTERNO", type="string", nullable=false)
      */
     protected $codCargaExterno;
     
@@ -67,7 +67,22 @@ class Carga
      * @Column(name="SEQUENCIA", type="integer",nullable=false)
      */
     protected $sequencia;
+	
+	/**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\Pedido", mappedBy="carga")
+     */
+    protected $pedido;
 
+	public function setPedido($pedido)
+    {
+        $this->pedido = $pedido;
+    }
+
+    public function getPedido()
+    {
+        return $this->pedido;
+    }
+	
     public function setCentralEntrega($centralEntrega)
     {
         $this->centralEntrega = $centralEntrega;

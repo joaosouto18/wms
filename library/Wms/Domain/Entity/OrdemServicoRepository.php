@@ -174,7 +174,7 @@ class OrdemServicoRepository extends EntityRepository
         return $result[0];
     }
 
-    public function getConferenciaByOs ($idOS, $transbordo = false, $tipoConferencia) {
+    public function getConferenciaByOs ($idOS, $transbordo = false, $tipoConferencia = null) {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin("es.produto","prod")
@@ -208,26 +208,26 @@ class OrdemServicoRepository extends EntityRepository
                     ->leftJoin('wms:Expedicao\EtiquetaConferencia', 'ec', 'WITH', 'ec.codEtiquetaSeparacao = es.id')
                     ->andWhere('ec.codOsSegundaConferencia = :idOS');
             } else {
-                $queryBuilder
-                    ->select('es.id,
+                $queryBuilder->select('es.id,
                       prod.descricao as produto,
                       prod.id as codProduto,
                       prod.grade,
                       CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
+                      es.dataConferencia,
                       es.dataConferenciaTransbordo
-                      ')
-                    ->andWhere('es.codOS = :idOS');
+                      ');
+                $queryBuilder->andWhere('es.codOS = :idOS');
             }
         } else {
-            $queryBuilder
-                ->select('es.id,
+            $queryBuilder->select('es.id,
                       prod.descricao as produto,
                       prod.id as codProduto,
                       prod.grade,
                       CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
+                      es.dataConferencia,
                       es.dataConferenciaTransbordo
-                      ')
-                ->andWhere('es.codOSTransbordo = :idOS');
+                      ');
+            $queryBuilder->andWhere('es.codOSTransbordo = :idOS');
         }
 
         return $queryBuilder;

@@ -1,28 +1,7 @@
 <?php
 
-use Wms\Domain\Entity\Produto as ProdutoEntity;
-
-class fabricante {
-    /** @var string */
-    public $idFabricante;
-    /** @var string */
-    public $nome;
-}
-
-class classe {
-    /** @var string */
-    public $idClasse;
-    /** @var string */
-    public $nome;
-    /** @var string */
-    public $idClassePai;
-
-}
-
-class classes {
-    /** @var classe[] */
-    public $classes = array();
-}
+use Wms\Domain\Entity\Produto as ProdutoEntity,
+    Core\Util\Produto as ProdutoUtil;
 
 class produto {
     /** @var string */
@@ -136,6 +115,9 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
+
+        $idProduto = ProdutoUtil::formatar($idProduto);
+
         $grade = trim ($grade);
         $idFabricante = trim ($idFabricante);
         $tipo = trim ($tipo);
@@ -278,28 +260,29 @@ class Wms_WebService_Produto extends Wms_WebService {
      */
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
-        $idProduto = trim ($idProduto);
-        $descricao = trim ($descricao);
-        $idFabricante = trim($idFabricante);
-        $tipo = trim($tipo);
-        $grades = $this->trimArray($grades);
-        $classes = $this->trimArray($classes);
-        $fabricante = $this->trimArray($fabricante);
+        try {
+            $idProduto = trim ($idProduto);
+            $idProduto = ProdutoUtil::formatar($idProduto);
+            $descricao = trim ($descricao);
+            $idFabricante = trim($idFabricante);
+            $tipo = trim($tipo);
 
-        $wsClasse = new Wms_WebService_ProdutoClasse();
-        foreach($classes as $classe)
-            $wsClasse->salvar($classe['idClasse'], $classe['nome'], $classe['idClassePai']);
-        unset($wsClasse);
+            $wsClasse = new Wms_WebService_ProdutoClasse();
+            foreach($classes as $classe)
+                $wsClasse->salvar(trim($classe['idClasse']), trim($classe['nome']), $classe['idClassePai']);
+            unset($wsClasse);
 
-        $wsFabricante  = new Wms_WebService_Fabricante();
-        $wsFabricante->salvar($fabricante['idFabricante'], $fabricante['nome']);
-        unset($wsFabricante);
+            $wsFabricante  = new Wms_WebService_Fabricante();
+            $wsFabricante->salvar(trim($fabricante['idFabricante']), trim($fabricante['nome']));
+            unset($wsFabricante);
 
-        if( empty($grades) )
-            throw new \Exception('O array de grades deve ser informado.');
-
-        foreach($grades as $grade)
-            $this->salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse);
+            if( empty($grades) )
+                throw new \Exception('O array de grades deve ser informado.');
+            foreach($grades as $grade)
+                $this->salvar($idProduto, $descricao, trim($grade), $idFabricante, $tipo, $idClasse);
+        } catch(\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
 
         return true;
     }

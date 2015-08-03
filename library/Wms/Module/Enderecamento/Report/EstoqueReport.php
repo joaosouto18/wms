@@ -89,7 +89,7 @@ class EstoqueReport extends Pdf
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(12, 5, $produto['COD_PRODUTO'], 1, 0);
                 $this->Cell(21, 5, utf8_decode($produto['DSC_GRADE']), 1, 0);
-                $this->Cell(100, 5, substr(utf8_decode($produto['DSC_PRODUTO']),0,70), 1, 0);
+                $this->Cell(100, 5, substr(utf8_decode($produto['DSC_PRODUTO']),0,50), 1, 0);
                 $this->Cell(60, 5, substr(utf8_decode($produto['VOLUME']),0,70), 1, 1);
 
                 $this->Cell(33, 5, utf8_decode("Endereço"), 1, 0);

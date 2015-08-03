@@ -9,6 +9,7 @@ class Inventario extends Grid
 
     public function init()
     {
+        $this->setAttrib('title','Inventario');
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select("i, s.sigla as status, count(ie.id) as qtdEndereco")
             ->addSelect("

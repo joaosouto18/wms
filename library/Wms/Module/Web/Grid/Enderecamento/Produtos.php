@@ -19,7 +19,7 @@ class Produtos extends Grid
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo    = $this->getEntityManager()->getRepository('wms:Recebimento');
         $result = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
-
+        $this->setAttrib('title','Endederçamento Produtos');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('enderecamento-produtos-grid')
                 ->setAttrib('caption', 'Produtos para Endereçar')
