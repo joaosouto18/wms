@@ -27,6 +27,7 @@ class ConsultaEtiqueta extends Grid
             $result = $etiquetaSeparacaoRepo->buscarEtiqueta($params);
         }
 
+        $this->setAttrib('title','Etiquetas de Separação');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->setId('consulta-etiqueta-index-grid')
             ->setAttrib('class', 'grid-consulta-etiqueta')

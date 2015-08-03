@@ -20,7 +20,7 @@ class DadoLogistico extends Grid
     public function init(array $params = array())
     {
         extract($params);
-
+        $this->setAttrib('title','Dados Logisticos');
         $source = $this->getEntityManager()->createQueryBuilder()
                 ->select('p, c.nome classe, f.nome fabricante, tc.id as idTipoComercializacao, tc.descricao tipoComercializacao')
                 ->addSelect("

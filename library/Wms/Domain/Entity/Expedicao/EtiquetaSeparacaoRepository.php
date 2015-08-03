@@ -63,7 +63,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param $idExpedicao
      * @return mixed
      */
-    public function countByStatus ($status, $expedicaoEn, $centralEntrega = null, $placaCarga = null)
+    public function countByStatus ($status = null, $expedicaoEn = null, $centralEntrega = null, $placaCarga = null, $idCarga = null)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('COUNT(es.codBarras)')
@@ -88,10 +88,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->setParameter('placaCarga', $placaCarga);
         }
 
+        if ($idCarga != NULL) {
+            $dql->andWhere('c.id = :idCarga')
+                ->setParameter('idCarga', $idCarga);
+        }
+
         return $dql->getQuery()->getSingleScalarResult();
     }
 
-    public function countByPontoTransbordo ($status, $idExpedicao, $centralEntrega = null, $placaCarga = null)
+    public function countByPontoTransbordo ($status, $idExpedicao, $centralEntrega = null, $placaCarga = null, $codCargaExterno = null)
     {
 
         $dql = $this->getEntityManager()->createQueryBuilder()
@@ -101,6 +106,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->where('es.codExpedicao = :idExpedicao')
             ->andWhere('es.codStatus = :Status')
             ->andWhere('es.pontoTransbordo = :centralEntrega')
+            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE )
+            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO )
             ->setParameter('idExpedicao', $idExpedicao)
             ->setParameter('Status', $status)
             ->setParameter('centralEntrega', $centralEntrega);
@@ -108,6 +115,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($placaCarga != NULL) {
             $dql->andWhere('c.placaCarga = :placaCarga')
                 ->setParameter('placaCarga', $placaCarga);
+        }
+
+        if ($codCargaExterno != NULL) {
+            $dql->andWhere('c.codCargaExterno = :codCargaExterno')
+                ->setParameter('codCargaExterno', $codCargaExterno);
         }
 
         return $dql->getQuery()->getSingleScalarResult();
@@ -201,6 +213,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if (!is_null($placaCarga)) {
             $dql->andwhere("es.placaCarga = '$placaCarga'");
+        }
+
+        if (!is_null($carga)) {
+            $dql->andwhere("es.codCargaExterno = '$carga'");
         }
 
         if (!is_null($embalado)) {
@@ -443,10 +459,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($produtoEntity->getVolumes()->count() > 0) {
                     $arrayVolumes = $produtoEntity->getVolumes()->toArray();
+
                     usort($arrayVolumes, function ($a,$b){
-                        if ($a->getCodigoSequencial() > $b->getCodigoSequencial()) {
-                            return -1;
-                        }
+                        return $a->getCodigoSequencial() < $b->getCodigoSequencial();
                     });
 
                     if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
@@ -1159,11 +1174,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->andWhere('es.codProduto = :codProduto');
         }
 
-        if ($parametros['reimpresso'] != "") {
-            if ($parametros['reimpresso'] == 'S') {
-                $source->andWhere("es.reimpressao is not null");
-            } else {
-                $source->andWhere("es.reimpressao is null");
+        if (isset($parametros['reimpresso'])){
+            if ($parametros['reimpresso'] != "") {
+                if ($parametros['reimpresso'] == 'S') {
+                    $source->andWhere("es.reimpressao is not null");
+                } else {
+                    $source->andWhere("es.reimpressao is null");
+                }
             }
         }
 

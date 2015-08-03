@@ -636,6 +636,7 @@ class Mobile_ExpedicaoController extends Action
         if (isset($sessao->parcialmenteFinalizado) && $sessao->parcialmenteFinalizado == true) {
             $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
             $q1->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
+            $q1->setParameter('dataConferencia', $date);
         } else {
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 

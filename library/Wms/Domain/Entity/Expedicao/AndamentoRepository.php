@@ -11,7 +11,7 @@ class AndamentoRepository extends EntityRepository
      * @param $idExpedicao
      * @param bool $usuarioId
      */
-    public function save($observacao = false, $idExpedicao, $usuarioId = false)
+    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true)
     {
         $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
@@ -27,7 +27,10 @@ class AndamentoRepository extends EntityRepository
             ->setDataAndamento(new \DateTime);
 
         $this->_em->persist($andamento);
-        $this->_em->flush();
+
+        if ($flush == true) {
+            $this->_em->flush();
+        }
     }
 
 }

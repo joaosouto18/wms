@@ -1,6 +1,7 @@
 <?php
 
 use Wms\Domain\Entity\Expedicao,
+    Core\Util\Produto as ProdutoUtil,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 
 class cliente {
@@ -96,11 +97,15 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviarJson ($cargas){
         try {
+            $cargas = str_replace("/","",$cargas);
+            $cargas = str_replace('\\','',$cargas);
             $array = json_decode($cargas, true);
+            if (!is_array($array)) {throw new \Exception("Formato de dados incorreto - Não está formatado como JSON");}
+
             $arrayCargas = $array['cargas'];
             return $this->enviar($arrayCargas);
         } catch (\Exception $e) {
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
     }
 
@@ -182,16 +187,24 @@ class Wms_WebService_Expedicao extends Wms_WebService
         try {
 
             $this->_em->beginTransaction();
-            foreach($cargas as $carga) {
+            foreach($cargas as $k1 => $carga) {
+                foreach ($carga['pedidos'] as  $k2 => $pedido) {
+                    foreach ($pedido['produtos'] as $k3 => $produto){
+                        $idProduto = trim($cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto']);
+                        $idProduto = ProdutoUtil::formatar($idProduto);
+                        $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
+                    }
+                }
                 $this->checkProductsExists($carga['pedidos']);
                 $this->checkPedidosExists($carga['pedidos']);
                 $this->saveCarga($carga);
             }
+            $this->_em->flush();
             $this->_em->commit();
             return true;
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
+            throw new \Exception($e->getMessage());
         }
     }
 
@@ -504,7 +517,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $PedidoProdutoRepo  = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
 
         foreach ($produtos as $produto) {
-            $enProduto = $ProdutoRepo->find(array('id' => $produto['codProduto'], 'grade' => $produto['grade']));
+            $idProduto = trim($produto['codProduto']);
+            $idProduto = ProdutoUtil::formatar($idProduto);
+
+            $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
             if (isset($produto['quantidade'])) {
                 $produto['qtde'] = $produto['quantidade'];
             }
@@ -519,7 +535,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $PedidoProdutoRepo->save($prod);
         }
-        $this->_em->flush();
     }
 
     /**
@@ -537,21 +552,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
         foreach ($pedidos as $pedido) {
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
             if ($PedidoEntity != null) {
-                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
-                if (($statusExpedicao == Expedicao::STATUS_CANCELADO)||
-                    ($statusExpedicao == Expedicao::STATUS_EM_SEPARACAO) ||
-                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_EM_CONFERENCIA)){
+//                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
+//                if (($statusExpedicao == Expedicao::STATUS_CANCELADO)||
+//                    ($statusExpedicao == Expedicao::STATUS_EM_SEPARACAO) ||
+//                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
+//                    ($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
+//                    ($statusExpedicao == Expedicao::STATUS_EM_CONFERENCIA)){
                     if ( count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'], EtiquetaSeparacao::STATUS_PENDENTE_CORTE)) > 0) {
                         throw new Exception("Pedido $pedido[codPedido] tem etiquetas pendentes de corte");
                     } else {
                         $PedidoRepo->remove($PedidoEntity);
                     }
-                } else {
-                    $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
-                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
-                }
-                throw new Exception();
+//                } else {
+//                    $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
+//                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+//                }
             }
         }
 
@@ -567,7 +582,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
         foreach($pedidos as $pedido) {
 
             foreach($pedido['produtos'] as $produto) {
-                if ($ProdutoRepo->find(array('id' => $produto['codProduto'], 'grade' => $produto['grade'])) == null) {
+                $idProduto = trim($produto['codProduto']);
+                $idProduto = ProdutoUtil::formatar($idProduto);
+                $grade = trim($produto['grade']);
+                if ($ProdutoRepo->find(array('id' => $idProduto, 'grade' => $grade)) == null) {
                     throw new Exception("Produto $produto[codProduto] - $produto[grade] nao encontrado");
                 }
             }
@@ -633,7 +651,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 
             if ($entityPessoa == null) {
-                $entityPessoa   = $ClienteRepo->persistirAtor($entityCliente, $cliente);
+                $entityPessoa   = $ClienteRepo->persistirAtor($entityCliente, $cliente, true);
             } else {
                 $entityCliente->setPessoa($entityPessoa);
             }
@@ -643,8 +661,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $this->_em->persist($entityCliente);
             $this->_em->flush();
-
-
 
         }
 
@@ -695,7 +711,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $tipoCarga = $this->verificaTipoCarga($carga['codTipoCarga']);
 
-        $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => $carga['codCargaExterno'], 'tipoCarga' => $tipoCarga->getId()));
+        $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => trim($carga['codCargaExterno']), 'tipoCarga' => $tipoCarga->getId()));
         if ($entityCarga == null) {
             $entityCarga = $CargaRepo->save($carga);
         }

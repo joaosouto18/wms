@@ -19,7 +19,7 @@ class Carga
     protected $id;
 
     /**
-     * @Column(name="COD_CARGA_EXTERNO", type="integer", nullable=false)
+     * @Column(name="COD_CARGA_EXTERNO", type="string", nullable=false)
      */
     protected $codCargaExterno;
     

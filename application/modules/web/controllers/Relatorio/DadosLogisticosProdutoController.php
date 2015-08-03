@@ -29,8 +29,15 @@ class Web_Relatorio_DadosLogisticosProdutoController extends Action
 
         if ($params) {
             $form->populate($params);
-            $produtosSemDadosLogisticosReport = new DadosLogisticosProduto;
-            $produtosSemDadosLogisticosReport->init($params);
+            if (isset($params['report'])){
+                $produtosSemDadosLogisticosReport = new DadosLogisticosProduto;
+                $produtosSemDadosLogisticosReport->init($params);
+
+            }
+            if (isset($params['csv'])){
+                $produtos = $this->getEntityManager()->getRepository('wms:NotaFiscal')->relatorioProdutoDadosLogisticos($params);
+                $this->exportCSV($produtos,'produtos',true);
+            }
         }
         $this->view->form = $form;
     }
