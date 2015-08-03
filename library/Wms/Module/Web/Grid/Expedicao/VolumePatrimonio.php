@@ -18,6 +18,7 @@ class VolumePatrimonio extends Grid
      */
     public function init ($values, $showAction = true)
     {
+        $this->setAttrib('title','Volume Patrimonio');
         $this->setSource(new \Core\Grid\Source\ArraySource($values))
                 ->setId('expedicao-produto-volume-grid')
                 ->setAttrib('caption', 'Andamento da expedição')

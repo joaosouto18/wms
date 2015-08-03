@@ -24,6 +24,7 @@ class Andamento extends Grid
         $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
         $result = $ExpedicaoRepo->getAndamentoByExpedicao($idExpedicao);
         $this->showPager = false;
+        $this->setAttrib('title','Andamento Expedição');
         $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($result));
         $this->setSource(new \Core\Grid\Source\Doctrine($result))
                 ->setId('expedicao-andamento-grid')

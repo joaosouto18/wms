@@ -160,6 +160,7 @@ class Mobile_ExpedicaoController extends Action
     {
         $idExpedicao = $this->_getParam('idExpedicao');
         $volume = $this->_getParam('volume');
+        $parametroEtiquetaVolume = $this->getSystemParameterValue('MODELO_ETIQUETA_VOLUME');
 
         $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
@@ -174,6 +175,9 @@ class Mobile_ExpedicaoController extends Action
         $dscVolume = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio')->find($volume)->getDescricao();
 
         $codPessoa = $clienteEn[0]->getPessoa()->getNome();
+		$pedido = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga()[0]->getPedido()[0]->getId();
+
+        $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
         if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
             $rows = array();
@@ -182,9 +186,16 @@ class Mobile_ExpedicaoController extends Action
             $fields['volume'] = $volume;
             $fields['descricao'] = $dscVolume;
             $fields['quebra'] = $codPessoa;
+            $fields['pedido'] = $pedido;
+            $fields['produtos'] = $produtos;
             $rows[] = $fields;
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-            $gerarEtiqueta->imprimirExpedicao($rows);
+            if ($parametroEtiquetaVolume == 1) {
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+                $gerarEtiqueta->imprimirExpedicaoModelo1($rows);
+            } else {
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
+                $gerarEtiqueta->imprimirExpedicaoModelo2($rows);
+            }
         }
     }
 
@@ -625,6 +636,7 @@ class Mobile_ExpedicaoController extends Action
         if (isset($sessao->parcialmenteFinalizado) && $sessao->parcialmenteFinalizado == true) {
             $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
             $q1->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
+            $q1->setParameter('dataConferencia', $date);
         } else {
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 

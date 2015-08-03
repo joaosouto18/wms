@@ -39,7 +39,7 @@ class Mobile_OrdemServicoController extends Action
         $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $this->view->iniciadas  = $expedicaoRepo->getOSByUser();
 
-        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_PARCIALMENTE_FINALIZADO);
+        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_PARCIALMENTE_FINALIZADO, Expedicao::STATUS_PRIMEIRA_CONFERENCIA, Expedicao::STATUS_SEGUNDA_CONFERENCIA);
         $this->view->reconfere = $this->getSystemParameterValue("RECONFERENCIA_EXPEDICAO");
         $this->view->expedicoes = $expedicaoRepo->getByStatusAndCentral($status, $idCentral);
     }

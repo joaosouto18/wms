@@ -1,0 +1,138 @@
+<fieldset>
+    <legend>Informações do Pedido</legend>
+
+    <table class="gTable">
+        <tbody>
+        <tr>
+            <td>Cód. Pedido</td>
+            <td>Cód. Cliente</td>
+            <td colspan="2">Cliente</td>
+            <td>Situação</td>
+        </tr>
+        <tr>
+            <td><input type="text" size="10" value="<?php echo $this->codPedido; ?>" disabled/></td>
+            <td><input type="text" size="10" value="<?php echo $this->codCliente; ?>" disabled/></td>
+            <td colspan="2"><input type="text" size="60" value="<?php echo $this->cliente; ?>" disabled/></td>
+            <td><input type="text" size="20" value="<?php echo $this->situacaoExpedicao; ?>" disabled/></td>
+        </tr>
+
+        <tr>
+            <td>Expedição</td>
+            <td>Placa</td>
+            <td>Carga</td>
+            <td>Itinerário</td>
+            <td>Linha de Entrega</td>
+        </tr>
+        <tr>
+            <td><input type="text" size="10" value="<?php echo $this->codExpedicao; ?>" disabled/></td>
+            <td><input type="text" size="10" value="<?php echo $this->placa; ?>" disabled/></td>
+            <td><input type="text" size="10" value="<?php echo $this->codCarga; ?>" disabled/></td>
+            <td><input type="text" size="46" value="<?php echo $this->itinerario; ?>" disabled/></td>
+            <td><input type="text" size="20" value="<?php echo $this->linhaEntrega; ?>" disabled/></td>
+        </tr>
+
+        </tbody>
+    </table>
+</fieldset>
+
+<fieldset>
+    <legend>Informações da Entrega</legend>
+
+    <table class="gTable">
+        <tbody>
+        <tr>
+            <td colspan="2">Rua</td>
+            <td>Numero</td>
+            <td>Complemento</td>
+        </tr>
+        <tr>
+            <td colspan="2"><input type="text" size="75" value="<?php echo $this->rua; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo $this->numero; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo $this->complemento; ?>" disabled/></td>
+        </tr>
+
+        <tr>
+            <td>Cidade</td>
+            <td>Bairro</td>
+            <td>UF</td>
+            <td>CEP</td>
+        </tr>
+        <tr>
+            <td><input type="text" size="40" value="<?php echo $this->cidade; ?>" disabled/></td>
+            <td><input type="text" size="30" value="<?php echo $this->bairro; ?>" disabled/></td>
+            <td><input type="text" size="10" value="<?php echo $this->uf; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo $this->cep; ?>" disabled/></td>
+        </tr>
+        </tbody>
+
+    </table>
+</fieldset>
+
+<fieldset>
+    <legend>Dados dos Produtos</legend>
+    <table style="width: 100%; margin-bottom: 10px">
+        <tbody>
+        <tr>
+            <td>Qtd.Produtos</td>
+            <td>Qtd.Etiquetas</td>
+            <td>Filial Estoque</td>
+            <td>Filial Transbordo</td>
+        </tr>
+        <tr>
+            <td><input type="text" value="<?php echo $this->qtdProdutos; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo $this->qtdEtiquetas; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo $this->filialEstoque; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo $this->filialTransbordo; ?>" disabled/></td>
+        </tr>
+        </tbody>
+    </table>
+    <?php $color = false?>
+    <table class="gTable">
+        <caption>Produtos</caption>
+        <tr class="gTTitle">
+            <td>Código</td>
+            <td>Grade</td>
+            <td>Produto</td>
+            <td>Qtd</td>
+        </tr>
+
+        <?php foreach ($this->produtos as $produto) {?>
+            <?php $color = !$color?>
+            <tr <?php if ($color) {echo 'class="gTResultSet"';} else {echo 'class="gTResultSet gRowColor"';}?> >
+                <td><?php echo $produto['COD_PRODUTO']; ?></td>
+                <td><?php echo $produto['DSC_GRADE']; ?></td>
+                <td><?php echo $produto['DSC_PRODUTO'];?></td>
+                <td><?php echo $produto['QUANTIDADE'];?></td>
+            </tr>
+        <?php }?>
+    </table>
+</fieldset>
+
+<?php if ($this->qtdEtiquetas >0) {?>
+    <fieldset>
+        <legend>Etiquetas Geradas</legend>
+        <?php $color = false?>
+        <table class="gTable">
+            <tr class="gTTitle">
+                <td>Cód.Barras</td>
+                <td>Gód.Produto</td>
+                <td>Grade</td>
+                <td>Produto</td>
+                <td>Embalagem</td>
+                <td>Situação</td>
+            </tr>
+
+            <?php foreach ($this->etiquetas as $etiqueta) {?>
+                <?php $color = !$color?>
+                <tr <?php if ($color) {echo 'class="gTResultSet"';} else {echo 'class="gTResultSet gRowColor"';}?> >
+                    <td><?php echo $etiqueta['COD_ETIQUETA_SEPARACAO']; ?></td>
+                    <td><?php echo $etiqueta['COD_PRODUTO']; ?></td>
+                    <td><?php echo $etiqueta['DSC_GRADE'];?></td>
+                    <td><?php echo $etiqueta['DSC_PRODUTO'];?></td>
+                    <td><?php echo $etiqueta['EMBALAGEM'];?></td>
+                    <td><?php echo $etiqueta['SITUACAO'];?></td>
+                </tr>
+            <?php }?>
+        </table>
+    </fieldset>
+<?php }?>

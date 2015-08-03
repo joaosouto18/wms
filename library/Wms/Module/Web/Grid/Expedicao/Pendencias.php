@@ -18,12 +18,12 @@ class Pendencias extends Grid
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($idExpedicao,$status = '522,523', $placaCarga = NULL, $transbordo = NULL, $caption = "Etiquetas pendentes de conferência",$embalado = Null)
+    public function init($idExpedicao,$status = '522,523', $placaCarga = NULL, $transbordo = NULL, $caption = "Etiquetas pendentes de conferência",$embalado = Null, $carga = null)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, $status,"DQL",$placaCarga, $transbordo,$embalado);
-
+        $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, $status,"DQL",$placaCarga, $transbordo,$embalado, $carga);
+        $this->setAttrib('title','Pendencias Expedição');
         $this->setSource(new \Core\Grid\Source\Doctrine($result))
                 ->setId('expedicao-pendencias-grid')
                 ->setAttrib('class', 'grid-expedicao-pendencias')

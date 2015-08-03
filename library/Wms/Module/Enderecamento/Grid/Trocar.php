@@ -12,7 +12,7 @@ class Trocar extends Grid
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
         $result = $paleteRepo->getPaletesByProdutoAndGrade($params);
-
+        $this->setAttrib('title','Trocar U.M.A');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
                     'label' => 'U.M.A',

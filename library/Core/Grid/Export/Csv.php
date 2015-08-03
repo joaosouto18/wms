@@ -20,7 +20,7 @@ class Csv implements IExport
     public static function render(Grid $grid, $title = '')
     {
         header("Content-type: text/csv");
-        header("Content-Disposition: attachment; filename=" . strtolower($title) . ".csv");
+        header("Content-Disposition: attachment; filename=" . strtolower($title) . ".csv; charset=UTF-8");
         header("Pragma: no-cache");
         header("Expires: 0");        
         
@@ -46,9 +46,10 @@ class Csv implements IExport
         }
 
         $fp = fopen("php://output", 'w');
-
-        foreach ($list as $fields)
-            fputcsv($fp, $fields);
+        foreach ($list as $fields) {
+            $fields = array_map("utf8_decode", $fields);
+            fputcsv($fp, $fields,';');
+        }
 
         fclose($fp);
     }

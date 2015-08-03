@@ -19,6 +19,7 @@ class Rua extends Grid
 
         $detalheByRua = $invEnderecoRepo->getByInventario($params);
 
+        $this->setAttrib('title','Rua');
         $this->setSource(new \Core\Grid\Source\ArraySource($detalheByRua));
         $this->setShowExport(false);
         $this->addColumn(array(

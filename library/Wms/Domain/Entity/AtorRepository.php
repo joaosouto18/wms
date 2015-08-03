@@ -22,7 +22,7 @@ class AtorRepository extends EntityRepository {
      * @param array $values
      * @return Pessoa
      */
-    public function persistirAtor(AtorInterface $ator, array $values) {
+    public function persistirAtor(AtorInterface $ator, array $values, $flush = true) {
         $pessoa = $this->persistirPessoa($ator, $values);
 
         if (isset($values['enderecos']))
@@ -31,7 +31,9 @@ class AtorRepository extends EntityRepository {
         if (isset($values['telefones']))
             $this->persistirTelefones($pessoa, $values['telefones']);
 
-        $this->getEntityManager()->flush();
+        if ($flush == true) {
+            $this->getEntityManager()->flush();
+        }
 
         return $pessoa;
     }

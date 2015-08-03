@@ -349,7 +349,7 @@ class RelatorioCarregamento extends Pdf
             $this->Cell(12, 5, utf8_decode('Vol.'), 1);
             $this->Cell(12, 5, utf8_decode('Código'), 1);
             $this->Cell(72, 5, utf8_decode('Produto'), 1);
-            $this->Cell(23, 5, utf8_decode('Fabricante'), 1);
+            $this->Cell(23, 5, substr(utf8_decode('Fabricante'),0,15), 1);
             $this->Cell(10, 5, utf8_decode('Qtde.'), 1);
             $this->Ln();
         } else {
@@ -358,7 +358,7 @@ class RelatorioCarregamento extends Pdf
             $this->Cell(54, 5, utf8_decode('Cliente'), 1);
             $this->Cell(12, 5, utf8_decode('Código'), 1);
             $this->Cell(72, 5, utf8_decode('Produto'), 1);
-            $this->Cell(23, 5, utf8_decode('Fabricante'), 1);
+            $this->Cell(23, 5, substr(utf8_decode('Fabricante'),0,15), 1);
             $this->Cell(10, 5, utf8_decode('Qtde.'), 1);
             $this->Ln();
         }
@@ -384,7 +384,7 @@ class RelatorioCarregamento extends Pdf
             $this->Cell(12, 5, utf8_decode($volume)     ,1);
             $this->Cell(12, 5, utf8_decode($produto['codProduto']) ,1);
             $this->Cell(72, 5, utf8_decode($produto['produto'])    ,1);
-            $this->Cell(23, 5, utf8_decode($produto['fabricante']) ,1);
+            $this->Cell(23, 5, substr(utf8_decode($produto['fabricante']),0,15) ,1);
             $this->Cell(10, 5, utf8_decode($qtdProduto) ,1,1);
         } else {
             $this->Cell(8,  5, $produto['sequencia'], 1);
@@ -392,7 +392,7 @@ class RelatorioCarregamento extends Pdf
             $this->Cell(54, 5, substr(utf8_decode($produto['cliente']),0,40)    ,1);
             $this->Cell(12, 5, utf8_decode($produto['codProduto']) ,1);
             $this->Cell(72, 5, utf8_decode($produto['produto'])    ,1);
-            $this->Cell(23, 5, utf8_decode($produto['fabricante']) ,1);
+            $this->Cell(23, 5, substr(utf8_decode($produto['fabricante']),0,15) ,1);
             $this->Cell(10, 5, utf8_decode($qtdProduto) ,1,1);
         }
 
