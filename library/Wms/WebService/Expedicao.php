@@ -553,21 +553,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
         foreach ($pedidos as $pedido) {
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
             if ($PedidoEntity != null) {
-                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
-                if (($statusExpedicao == Expedicao::STATUS_CANCELADO)||
-                    ($statusExpedicao == Expedicao::STATUS_EM_SEPARACAO) ||
-                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_EM_CONFERENCIA)){
+//                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
+//                if (($statusExpedicao == Expedicao::STATUS_CANCELADO)||
+//                    ($statusExpedicao == Expedicao::STATUS_EM_SEPARACAO) ||
+//                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
+//                    ($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
+//                    ($statusExpedicao == Expedicao::STATUS_EM_CONFERENCIA)){
                     if ( count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'], EtiquetaSeparacao::STATUS_PENDENTE_CORTE)) > 0) {
                         throw new Exception("Pedido $pedido[codPedido] tem etiquetas pendentes de corte");
                     } else {
                         $PedidoRepo->remove($PedidoEntity);
                     }
-                } else {
-                    $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
-                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
-                }
+//                } else {
+//                    $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
+//                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+//                }
             }
         }
 
