@@ -1,0 +1,16 @@
+<?php
+    $pedidoAnterior = null;
+    $itens = array();
+    if (count($this->pedidos) > 0) {
+        $pedidoAnterior = $this->pedidos[0]['COD_PEDIDO'];
+    }
+    foreach ($this->pedidos as $key => $pedido) {
+        if (($pedidoAnterior != $pedido['COD_PEDIDO']) OR ($key  == count($this->pedidos) -1)) {
+            echo " Pedido - " . $pedidoAnterior;
+        } else {
+
+        }
+        $pedidoAnterior = $pedido['COD_PEDIDO'];
+
+    }
+?>
