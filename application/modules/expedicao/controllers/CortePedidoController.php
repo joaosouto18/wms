@@ -17,18 +17,25 @@ class Expedicao_CortePedidoController  extends Action
      */
     public function listAction()
     {
+        $this->view->em = $this->getEntityManager();
         $params = array();
-        if ($this->_getParam('idExpedicao') != null) {
-            $params['idExpedicao'] = $params['idExpedicao'];
-        }
         if ($this->_getParam('idMapa') != null) {
-            $params['idMapa'] = $params['idMapa'];
+            $idMapa = $params['idMapa'];
+            $params['idMapa'] = $idMapa;
+            $this->view->idMapa = $idMapa;
         }
         if ($this->_getParam('idProduto') != null) {
-            $params['idProduto'] = $params['idProduto'];
+            $idProduto = $params['idProduto'];
+            $params['idProduto'] = $idProduto;
+            $this->view->idProduto = $idProduto;
         }
         if ($this->_getParam('grade') != null) {
-            $params['grade'] = $params['grade'];
+            $grade = $params['grade'];
+            $this->view->grade = $grade;
+            $params['grade'] = $grade;
+        }
+        if ($this->_getParam('idExpedicao') != null) {
+            $params['idExpedicao'] = $params['idExpedicao'];
         }
         if ($this->_getParam('clientes') != null) {
             $params['clientes'] = $params['clientes'];
@@ -36,23 +43,30 @@ class Expedicao_CortePedidoController  extends Action
         if ($this->_getParam('pedidos') != null) {
             $params['pedidos'] = $params['pedidos'];
         }
-        if ($this->_getParam('pedidoCompleto') != null) {
-            $params['pedidoCompleto'] = $params['pedidoCompleto'];
-        }
 
+        $this->view->idProduto = "8680";
+        $this->view->grade = "UNICA";
+
+        $pedidoCompleto = true;
+        if ($this->_getParam('pedidoCompleto') != null) {
+            $pedidoCompleto = $params['pedidoCompleto'];
+        }
+        $this->view->pedidoCompleto = $pedidoCompleto;
         //Apenas para mock e teste
         $params = array(
-            'idExpedicao' => 7,
-            'pedidos'=>array(20009662,11022547),
-            'pedidoCompleto'=>true
+            'idProduto' => "8680",
+            'grade' => "UNICA",
         );
-
+        //'pedidos'=>array(20009662,11022547)
         $pedidos = $this->getEntityManager()->getRepository('wms:Expedicao')->getPedidosParaCorteByParams($params);
         $this->view->pedidos = $pedidos;
-        var_dump($pedidos);
     }
 
     public function cortarAjaxAction(){
+        $qtdCorte = $this->_getParam('qtdCorte');
+        $motivo   = $this->_getParam('motivoCorte');
+        $senha    = $this->_getParam('senha');
+        //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
 
     }
 }

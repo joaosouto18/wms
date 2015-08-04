@@ -2156,28 +2156,14 @@ class ExpedicaoRepository extends EntityRepository
                PE.DSC_ENDERECO,
                PE.NOM_BAIRRO,
                PE.NOM_LOCALIDADE,
-               UF.COD_REFERENCIA_SIGLA as UF,
-               PROD.COD_PRODUTO,
-               PROD.DSC_GRADE,
-               PROD.DSC_PRODUTO,
-               PP.QUANTIDADE,
-               PP.QTD_ATENDIDA,
-               PP.QTD_CORTADA
+               UF.COD_REFERENCIA_SIGLA as UF
           FROM PEDIDO P
           LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
           LEFT JOIN CLIENTE CLI ON P.COD_PESSOA = CLI.COD_PESSOA
           LEFT JOIN PESSOA PES ON PES.COD_PESSOA = P.COD_PESSOA
           LEFT JOIN PEDIDO_ENDERECO PE ON PE.COD_PEDIDO = P.COD_PEDIDO
           LEFT JOIN SIGLA UF ON UF.COD_SIGLA = PE.COD_UF
-          LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-          LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-          LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
          WHERE 1 = 1";
-
-        $pedidoCompleto = false;
-        if (isset($params['pedidoCompleto']) && ($params['pedidoCompleto']!= null)){
-            $pedidoCompleto = $params['pedidoCompleto'];
-        }
 
         if (isset($params['idExpedicao']) && ($params['idExpedicao']!= null)){
             $idExpedicao = $params['idExpedicao'];
@@ -2196,13 +2182,9 @@ class ExpedicaoRepository extends EntityRepository
 
         if (isset($params['idMapa']) && ($params['idMapa']!= null)){
             $idMapa = $params['idMapa'];
-            if ($pedidoCompleto == true) {
-                $SQL .= " AND P.COD_PEDIDO IN ( SELECT PP.COD_PEDIDO FROM MAPA_SEPARACAO_PRODUTO MSP
-                                                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                                                 WHERE MSP.COD_MAPA_SEPARACAO = $idMapa) ";
-            } else {
-                $SQL .= " AND MSP.COD_MAPA_SEPARACAO = $idMapa ";
-            }
+            $SQL .= " AND P.COD_PEDIDO IN ( SELECT PP.COD_PEDIDO FROM MAPA_SEPARACAO_PRODUTO MSP
+                                              LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                                             WHERE MSP.COD_MAPA_SEPARACAO = $idMapa) ";
         }
 
         $SQLWhereProdutos = "";
@@ -2216,12 +2198,8 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         if (isset($idProduto) OR (isset($grade))) {
-            if ($pedidoCompleto == true) {
-                $SQL .= " AND P.COD_PEDIDO IN ( SELECT COD_PEDIDO FROM PEDIDO_PRODUTO PP
-                                                 WHERE 1 = 1 $SQLWhereProdutos );";
-            } else {
-                $SQL .= $SQLWhereProdutos;
-            }
+            $SQL .= " AND P.COD_PEDIDO IN ( SELECT COD_PEDIDO FROM PEDIDO_PRODUTO PP
+                                             WHERE 1 = 1 $SQLWhereProdutos )";
         }
 
         $SQL .= " ORDER BY PES.NOM_PESSOA DESC, P.COD_PEDIDO";
@@ -2229,5 +2207,37 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
+    public function getProdutosParaCorteByParams($params) {
+        $idPedido = $params['idPedido'];
+        $SQL = "
+        SELECT PP.COD_PRODUTO,
+               PP.DSC_GRADE,
+               P.DSC_PRODUTO,
+               PP.QUANTIDADE as QTD_PEDIDO,
+               PP.QTD_ATENDIDA,
+               PP.QTD_CORTADA
+          FROM PEDIDO_PRODUTO PP
+          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
+          LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+          WHERE COD_PEDIDO = $idPedido";
+
+        if ($params['pedidoCompleto'] == false) {
+            if (isset($params['idProduto']) && ($params['idProduto']!= null)){
+                $idProduto = $params['idProduto'];
+                $SQL .= " AND PP.COD_PRODUTO = '$idProduto' ";
+            }
+            if (isset($params['grade']) && ($params['grade']!= null)){
+                $grade = $params['grade'];
+                $SQL .= " AND PP.DSC_GRADE = '$grade' ";
+            }
+            if (isset($params['idMapa']) && ($params['idMapa']!= null)){
+                $idMapa = $params['idMapa'];
+                $SQL .= " WHERE MSP.COD_MAPA_SEPARACAO = $idMapa) ";
+            }
+        }
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
 
 }
