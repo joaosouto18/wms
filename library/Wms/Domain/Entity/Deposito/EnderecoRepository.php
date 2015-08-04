@@ -611,6 +611,7 @@ class EnderecoRepository extends EntityRepository
                     ON O.NUM_PREDIO = DE.NUM_PREDIO
                    AND O.NUM_NIVEL = DE.NUM_NIVEL
                    AND O.NUM_RUA = DE.NUM_RUA
+                   AND O.NUM_NIVEL > 0
                  WHERE 1 = 1
                  $sqlWhere
                 GROUP BY DE.NUM_RUA
