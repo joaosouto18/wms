@@ -473,7 +473,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     });
 
                     foreach ($produtoEntity->getVolumes() as $produtoVolume) {
-                        $depositoEnderecoEn = $produtoVolume->getEndereco();
+                        $endereco = $produtoVolume->getEndereco();
+                        if (isset($endereco) && !empty($endereco)) {
+                            $depositoEnderecoEn = $produtoVolume->getEndereco();
+                        } else {
+                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
+                            foreach ($enderecosPulmao as $enderecoPulmao) {
+                                $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                            }
+                            $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                        }
                     }
 
                     if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
