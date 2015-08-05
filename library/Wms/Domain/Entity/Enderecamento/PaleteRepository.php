@@ -292,6 +292,8 @@ class PaleteRepository extends EntityRepository
     public function deletaPaletesEmRecebimento ($idRecebimento, $idProduto, $grade) {
 
         $ppRepository = $this->_em->getRepository("wms:Enderecamento\PaleteProduto");
+        $reservaEstoqueRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $reservaEstoqueEnderecamentoRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
 
         $statusRecebimento = Palete::STATUS_EM_RECEBIMENTO;
         $query = $this->getEntityManager()->createQueryBuilder()
@@ -310,6 +312,13 @@ class PaleteRepository extends EntityRepository
             $produtos = $ppRepository->findBy(array('uma'=>$palete->getId()));
             foreach ($produtos as $produto) {
                 $this->getEntityManager()->remove($produto);
+            }
+            $reservaEstoqueEnderecamentoEn = $reservaEstoqueEnderecamentoRepo->findOneBy(array('palete' => $palete->getId()));
+
+            if (count($reservaEstoqueEnderecamentoEn) > 0) {
+                $reservaEstoqueEn = $reservaEstoqueRepo->findOneBy(array('id' => $reservaEstoqueEnderecamentoEn->getReservaEstoque()->getId()));
+                $this->getEntityManager()->remove($reservaEstoqueEn);
+                $this->getEntityManager()->remove($reservaEstoqueEnderecamentoEn);
             }
             $this->getEntityManager()->remove($palete);
         }
