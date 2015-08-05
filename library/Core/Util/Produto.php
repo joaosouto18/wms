@@ -54,7 +54,7 @@ class Produto
         $valor = trim($valor);
         if (strlen(preg_replace('/\D+/', '', $valor)) == strlen($valor)) {
             if (self::getSystemParameterValue('ZERO_ESQ_COD_PRODUTO') == "N") {
-                return $valor;
+                return (int) $valor;
             } else {
                 return self::preencheZerosEsquerda($valor, self::$qtdDigitosCodProduto);
             }

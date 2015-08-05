@@ -208,35 +208,38 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao)
     {
-        $em = $this->__getDoctrineContainer()->getEntityManager();
+        try{
+            $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        $em = $this->__getDoctrineContainer()->getEntityManager();
-
-        $idFornecedor = trim($idFornecedor);
-        $numero = (int) trim($numero);
-        $serie = trim($serie);
-        $dataEmissao = trim($dataEmissao);
-        $placa = trim($placa);
-        $bonificacao = trim ($bonificacao);
+            $idFornecedor = trim($idFornecedor);
+            $numero = (int) trim($numero);
+            $serie = trim($serie);
+            $dataEmissao = trim($dataEmissao);
+            $placa = trim($placa);
+            $bonificacao = trim ($bonificacao);
 
 
-        //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
-        if (gettype($itens) != "array") {
+            //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+            if (gettype($itens) != "array") {
 
-            $itensNf = array();
-            foreach ($itens->itens as $itemNf){
-                $itemWs['idProduto'] = trim($itemNf->idProduto);
-                $itemWs['grade'] = trim($itemNf->grade);
-                $itemWs['quantidade'] = trim($itemNf->quantidade);
-                $itensNf[] = $itemWs;
+                $itensNf = array();
+                foreach ($itens->itens as $itemNf){
+                    $itemWs['idProduto'] = trim($itemNf->idProduto);
+                    $itemWs['grade'] = trim($itemNf->grade);
+                    $itemWs['quantidade'] = trim($itemNf->quantidade);
+                    $itensNf[] = $itemWs;
+                }
+                $itens = $itensNf;
             }
-            $itens = $itensNf;
+
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
+            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
+                return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
 
-        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-        $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-        $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
-        return true;
     }
 
     /**
@@ -266,7 +269,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $arrayItens = $array['produtos'];
             return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao);
         } catch (\Exception $e) {
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
     }
 

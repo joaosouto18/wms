@@ -27,10 +27,11 @@ class Wms_WebService
 	return \Zend_Registry::get('serviceLocator');
     }
 
-    public function trimArray(&$array)
+    public function trimArray($array)
     {
-        foreach($array as &$value)
+        /*foreach($array as &$value)
             is_array($value) ? $this->trimArray($value):$value=trim($value);
-        unset($value);
+        unset($value);*/
+        return array_map('trim',$array);
     }
 }
