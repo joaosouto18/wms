@@ -26,7 +26,7 @@ class Expedicao_ConferenciaController extends Action
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
             $centrais         = $request->getParam('centrais');
             $origin           = $request->getParam('origin');
-            $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 3, 'constante' => 'SENHA_AUTORIZAR_DIVERGENCIA'));
+            $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 23, 'constante' => 'SENHA_FINALIZAR_EXPEDICAO'));
             $senhaAutorizacao = $senhaAutorizacao->getValor();
             $submit           = $request->getParam('btnFinalizar');
 
