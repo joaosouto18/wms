@@ -42,6 +42,9 @@ class Expedicao_ConferenciaController extends Action
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
+                    if ($result == true) {
+                        $result = 'Expedição Finalizada com Sucesso!';
+                    }
                     $this->addFlashMessage('success', $result);
                 } else {
                     $result = 'Senha informada não é válida';
@@ -54,6 +57,9 @@ class Expedicao_ConferenciaController extends Action
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
+                if ($result == 0) {
+                    $result = 'Expedição Finalizada com Sucesso!';
+                }
             }
             $this->_helper->json(array('result' => $result));
 

@@ -467,7 +467,9 @@ class ExpedicaoRepository extends EntityRepository
                     return $result;
                 }
             } else {
-                if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
+                if ($this->validaCargaFechada($idExpedicao) == false){
+                    return 'Existem cargas com pendencias de fechamento';
+                }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
             }
 
@@ -547,7 +549,9 @@ class ExpedicaoRepository extends EntityRepository
      */
     private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
     {
-        if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
+        if ($this->validaCargaFechada($idExpedicao) == false) {
+            return 'Existem cargas com pendencias de fechamento';
+        }
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
