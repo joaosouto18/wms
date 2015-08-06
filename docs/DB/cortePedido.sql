@@ -34,6 +34,11 @@ UPDATE MENU_ITEM
                      AND COD_PAI = (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Expedição' AND COD_PAI = 0))
 WHERE DSC_MENU_ITEM IN ('Gerar Onda de Ressuprimento','Gerenciar OS de Ressuprimento');
 
+UPDATE MENU_ITEM
+  SET COD_PAI = (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Etiqueta de Separação'
+
+                     AND COD_PAI = (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Expedição' AND COD_PAI = 0))
+WHERE DSC_MENU_ITEM IN ('Reimpressao por Faixa de Etiquetas','Corte por Faixa de Etiquetas', 'Consultar Etiqueta');
 
 UPDATE MENU_ITEM SET NUM_PESO = 0 WHERE DSC_MENU_ITEM = 'Etiqueta de Separação'
                      AND COD_PAI = (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Expedição' AND COD_PAI = 0);
