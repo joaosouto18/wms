@@ -89,6 +89,16 @@ class Expedicao extends Grid
                 }
             ))
             ->addAction(array(
+                'label' => 'Equipe de Carregamento',
+                'moduleName' => 'produtividade',
+                'controllerName' => 'carregamento',
+                'actionName' => 'index',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                        return $row['status'] != "INTEGRADO";
+                    }
+            ))
+            ->addAction(array(
                 'label' => 'Finalizar Conferência Expedição',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'conferencia',
