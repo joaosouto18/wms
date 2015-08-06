@@ -215,6 +215,8 @@ class Mobile_InventarioController extends Action
         if (isset($result['status']) && $result['status'] == 'error') {
             $this->addFlashMessage("error",$result['msg']);
             $this->_redirect($result['url']);
+        } else {
+            return $result;
         }
     }
 
