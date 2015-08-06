@@ -18,7 +18,7 @@ class ProdutosMapa extends Grid
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($idMapa)
+    public function init($idMapa, $idExpedicao)
     {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
         $mapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
@@ -61,6 +61,25 @@ class ProdutosMapa extends Grid
                 'cssClass' => 'inside-modal',
                 'pkIndex' => array('COD_PRODUTO','DSC_GRADE','NUM_CONFERENCIA')
             ))
+            ->addAction(array(
+                'label' => 'Cortar Item',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte-pedido',
+                'actionName' => 'list',
+                'cssClass' => 'inside-modal',
+                'params'=>array('pedidoCompleto'=>'N','COD_EXPEDICAO'=>$idExpedicao),
+                'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
+            ))
+            ->addAction(array(
+                'label' => 'Cortar Pedido',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte-pedido',
+                'actionName' => 'list',
+                'cssClass' => 'inside-modal',
+                'params'=>array('pedidoCompleto'=>'S','COD_EXPEDICAO'=>$idExpedicao),
+                'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
+            ))
+
         ;
         return $this;
     }

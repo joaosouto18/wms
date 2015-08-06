@@ -2147,6 +2147,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+
     public function getPedidosParaCorteByParams($params){
         $SQL = "
         SELECT DISTINCT
@@ -2210,7 +2211,7 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutosParaCorteByParams($params) {
         $idPedido = $params['idPedido'];
         $SQL = "
-        SELECT PP.COD_PRODUTO,
+        SELECT DISTINCT PP.COD_PRODUTO,
                PP.DSC_GRADE,
                P.DSC_PRODUTO,
                PP.QUANTIDADE as QTD_PEDIDO,
@@ -2232,12 +2233,61 @@ class ExpedicaoRepository extends EntityRepository
             }
             if (isset($params['idMapa']) && ($params['idMapa']!= null)){
                 $idMapa = $params['idMapa'];
-                $SQL .= " WHERE MSP.COD_MAPA_SEPARACAO = $idMapa) ";
+                $SQL .= " AND MSP.COD_MAPA_SEPARACAO = $idMapa ";
             }
         }
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+    }
+
+    public function     executaCortePedido($cortes, $motivo) {
+        //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
+        foreach ($cortes as $codPedido => $produtos) {
+            foreach ($produtos as $codProduto=> $grades) {
+                foreach ($grades as $grade=> $quantidade) {
+                    if (!($quantidade > 0)) continue;
+                    $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
+                }
+            }
+        }
+    }
+
+    private function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
+
+        $entidadePedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')->findOneBy(array('codPedido'=>$codPedido,
+            'codProduto'=>$codProduto,
+            'grade'=>$grade));
+        $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId(),
+            'codProduto'=>$codProduto,
+            'dscGrade'=>$grade));
+        $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
+        $qtdAtendida = $entidadePedidoProduto->setQtdAtendida();
+        $qtdPedido   = $entidadePedidoProduto->getQuantidade();
+
+        //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
+        if (($qtdCortar + $qtdCortada) > $qtdPedido) {
+            $qtdCortar = ($qtdPedido - $qtdCortada);
+        }
+
+        $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
+        $this->getEntityManager()->persist($entidadePedidoProduto);
+
+        $qtdMapa = 0;
+
+        foreach ($entidadeMapaProduto as $mapa) {
+            $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
+            $qtdCortadoMapa = $mapa->getQtdCortado();
+            $qtdCortarMapa = $qtdCortar;
+            if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
+                $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
+            }
+            $mapa->setQtdCortado($qtdCortarMapa);
+            $this->getEntityManager()->persist($mapa);
+            $qtdCortar = $qtdCortar - $qtdCortarMapa;
+        }
+
+        $this->getEntityManager()->flush();
     }
 
 }

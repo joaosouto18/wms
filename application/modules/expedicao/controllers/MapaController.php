@@ -7,9 +7,10 @@ class Expedicao_MapaController  extends Action
 
     public function consultarAction()
     {
+        $idExpedicao = $this->_getParam('id');
         $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
         $grid = new \Wms\Module\Web\Grid\Expedicao\ProdutosMapa();
-        $this->view->grid = $grid->init($idMapa)->render();
+        $this->view->grid = $grid->init($idMapa,$idExpedicao)->render();
     }
 
     public function conferenciaAction(){
