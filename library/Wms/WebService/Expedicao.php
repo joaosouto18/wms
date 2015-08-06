@@ -76,6 +76,31 @@ class carga {
     public $pedidos = array();
 }
 
+class notaFiscal {
+    /** @var integer */
+    public $pedido;
+    /** @var integer */
+    public $numeroNf;
+    /** @var string */
+    public $serieNf;
+    /** @var double */
+    public $valorVenda;
+    /** @var notaFiscalProduto[] */
+    public $itens;
+
+}
+
+class notaFiscalProduto {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var integer */
+    public $qtd;
+    /** @var double */
+    public $valorVenda;
+}
+
 class Wms_WebService_Expedicao extends Wms_WebService
 {
 
@@ -731,6 +756,17 @@ class Wms_WebService_Expedicao extends Wms_WebService
             throw new \Exception('Tipo de Carga não encontrado');
         }
         return $siglaTipoCarga;
+    }
+
+    /**
+     *  Recebe as notas fiscais emitidas da empresa
+     *
+     * @param notaFiscal[] nf Array de objetos nota fiscal
+     * @return boolean Se as notas fiscais foram salvas com sucesso
+     */
+    public function informarNotaFiscal ($nf)
+    {
+        return true;
     }
 
 }
