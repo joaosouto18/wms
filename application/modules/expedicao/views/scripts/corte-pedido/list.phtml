@@ -1,0 +1,92 @@
+<form action="/expedicao/corte-pedido/cortar-ajax">
+    <b>Motivo do Corte:</b>
+    <input type="text" name="motivoCorte" id="motivoCorte" value="" size="40%" title="motivoCorte" style="margin-right: 15px">
+    <b>Senha:</b>
+    <input type="password" name="senha" id="senha" value="" size="0%" title="senha" style="margin-right: 25px">
+    <input type="submit" name="submit" id="btnCortar" value="Confirmar Cortes" class="btn" style="margin-top: 10px; margin-bottom: 15px">
+
+    <table class="gTable">
+    <tr">
+        <td>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+
+    </tr>
+</table>
+<table class="gTable ">
+    <tbody>
+
+    <?php
+    $em = $this->em;
+    foreach ($this->pedidos as $key => $pedido) {
+        $params = array();
+        $params['pedidoCompleto'] = $this->pedidoCompleto;
+        $params['idPedido'] = $pedido['COD_PEDIDO'];
+        if (isset($this->idProduto) && ($this->idProduto != null)) {
+            $params['idProduto'] = $this->idProduto;
+        }
+        if (isset($this->grade) && ($this->grade != null)) {
+            $params['grade'] = $this->grade;
+        }
+        if (isset($this->idMapa) && ($this->idMapa != null)) {
+            $params['idMapa'] = $this->idMapa;
+        }
+        $itens = $em->getRepository('wms:Expedicao')->getProdutosParaCorteByParams($params);
+    ?>
+        <tr class="gTTitle">
+            <td colspan="2"><b><?php echo "Pedido: " . $pedido['COD_PEDIDO']; ?></b></td>
+            <td><b><?php echo "Cliente: " . $pedido['CLIENTE'] . " - " . $pedido['NOM_PESSOA']; ?></b></td>
+            <td colspan="4"><b><?php echo "Endereço: BAIRRO " . $pedido['NOM_BAIRRO'] . ", CIDADE " . $pedido['NOM_LOCALIDADE'] . " - " . $pedido['UF'] ; ?></b></td>
+        </tr>
+        <tr>
+            <td><b>Codigo</b></td>
+            <td><b>Grade</b></td>
+            <td><b>Descrição</b></td>
+            <td><b>Qtd.Pedido</b></td>
+            <td><b>Qtd.Atendido</b></td>
+            <td><b>Qtd.Cortado</b></td>
+            <td><b>Qtd.Cortar</b></td>
+        </tr>
+            <?php
+                foreach ($itens as $item){?>
+                    <tr style="height: 30px"
+                        "
+                    <?php
+                    $class = "gTResultSet";
+                    $encontrou = true;
+                    if ($this->pedidoCompleto == true) {
+                        if (isset($this->idProduto) && ($this->idProduto != null)) {
+                            if ($this->idProduto != $item['COD_PRODUTO']) $encontrou = false;
+                        }
+                        if (isset($this->grade) && ($this->grade != null)) {
+                            if ($this->grade != $item['DSC_GRADE']) $encontrou = false;
+                        }
+                    } else {
+                        $encontrou = false;
+                    }
+                    if ($encontrou == true) {
+                        $class = "gTResultSet gRowColor";
+                    }
+                    echo 'class="'.$class.'"';
+                        ?>">
+                        <td><?php echo $item['COD_PRODUTO']?></td>
+                        <td><?php echo $item['DSC_GRADE']?></td>
+                        <td><?php echo $item['DSC_PRODUTO']?></td>
+                        <td><?php echo $item['QTD_PEDIDO']?></td>
+                        <td><?php echo $item['QTD_ATENDIDA']?></td>
+                        <td><?php echo $item['QTD_CORTADA']?></td>
+                        <td><?php
+                            $idPedido = $pedido['COD_PEDIDO'];
+                            $idProduto = $item['COD_PRODUTO'];
+                            $grade = $item['DSC_GRADE'];
+                            echo "<input type=\"text\" name=\"qtdCorte[" . $idPedido . "][".$idProduto."][" . $grade ."]\" id=\"qtdConferida-" . $idPedido ."-" .$idProduto . "-" . $grade . "\" value=\"0\" size=\"8\" validators=\"numeric\" alt=\"number\" class=\"qtdCorte valid\" title=\"[".$idPedido ."][" . $idProduto . "][" . $grade . "]\">";
+                        ?></td>
+                    </tr>
+                <?php } ?>
+        <?php } ?>
+    </tbody>
+</table>
+</form>

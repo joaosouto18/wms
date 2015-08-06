@@ -245,10 +245,30 @@ class MapaSeparacaoRepository extends EntityRepository
         }
     }
 
+    public function getQtdCortadaByMapa($mapaEn,$embalagemEn,$volumeEn){
+        if ($embalagemEn != null) {
+            $produtoEn = $embalagemEn->getProduto();
+        } else {
+            $produtoEn = $volumeEn->getProduto();
+        }
+
+        $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapaEn->getId(),
+                                                                                                                            'codProduto'=>$produtoEn->getId(),
+                                                                                                                            'dscGrade'=>$produtoEn->getGrade()));
+        $qtdCortada = 0;
+        foreach ($entidadeMapaProduto as $mapaProduto){
+            $qtdCortada = $qtdCortada + $mapaProduto->getQtdCortado();
+        }
+
+        return $qtdCortada;
+    }
+
     public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade){
 
         $numConferencia = 1;
         $qtdConferida = 0;
+        $qtdCortada = 0;
+
         $ultConferencia = $this->getQtdConferenciaAberta($embalagemEn,$volumeEn,$mapaEn);
         $qtdMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn);
 
@@ -265,7 +285,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $produtoEn = $volumeEn->getProduto();
         }
 
-        if (($qtdConferida + ($qtdEmbalagem*$quantidade)) > $qtdMapa) {
+        if (($qtdConferida + $qtdCortada + ($qtdEmbalagem*$quantidade)) > $qtdMapa) {
            throw new \Exception("Quantidade informada excede a quantidade solicitada no mapa");
         }
         $sessao = new \Zend_Session_Namespace('coletor');
