@@ -766,6 +766,70 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function informarNotaFiscal ($nf)
     {
+        try {
+            $produtoRepo = $this->_em->getRepository("wms:Produto");
+            $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
+            $nfRepo = $this->_em->getRepository("wms:NotaFiscal");
+
+            $this->_em->beginTransaction();
+
+            /* @var notaFiscal $notaFiscal */
+            foreach ($nf as $notaFiscal) {
+
+                $nfEn = $nfRepo->findOneBy(array('numero' => $notaFiscal->numeroNf, 'serie' => $notaFiscal->serieNf));
+
+                if ($nfEn != null) {
+                    throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.' série '.$notaFiscal->serieNf.' já existe no sistema!');
+                }
+
+                $nfEntity = new Expedicao\NotaFiscalSaida();
+                $nfEntity->setNumeroNf($notaFiscal->numeroNf);
+                $nfEntity->setSerieNf($notaFiscal->serieNf);
+                $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                $this->_em->persist($nfEntity);
+
+                $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
+                $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
+                $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
+                $pedidoEn = $pedidoRepo->findOneBy(array('id' => $notaFiscal->pedido));
+
+                if ($pedidoEn == null) {
+                    throw new \Exception('Pedido '.$notaFiscal->pedido.' não encontrado!');
+                }
+
+                $nfPedidoEntity->setCodPedido($notaFiscal->pedido);
+                $nfPedidoEntity->setPedido($pedidoEn);
+                $this->_em->persist($nfPedidoEntity);
+
+                /* @var notaFiscalProduto $itemNotaFiscal */
+                foreach ($notaFiscal->itens as $itemNotaFiscal) {
+                    $itemNfEntity = new Expedicao\NotaFiscalSaidaProduto();
+
+                    $idProduto = $itemNotaFiscal->codProduto;
+                    $idProduto = ProdutoUtil::formatar($idProduto);
+                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => trim($itemNotaFiscal->grade)));
+
+                    if ($produtoEn == null) {
+                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
+                    }
+
+                    $itemNfEntity->setCodProduto($produtoEn->getId());
+                    $itemNfEntity->setGrade($produtoEn->getGrade());
+                    $itemNfEntity->setProduto($produtoEn);
+                    $itemNfEntity->setCodNotaFiscalSaida($nfEntity->getId());
+                    $itemNfEntity->setNotaFiscalSaida($nfEntity);
+                    $itemNfEntity->setValorVenda($itemNotaFiscal->valorVenda);
+                    $itemNfEntity->setQuantidade($itemNotaFiscal->qtd);
+
+                    $this->_em->persist($itemNfEntity);
+                }
+            }
+            $this->_em->flush();
+            $this->_em->commit();
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw new \Exception($e->getMessage());
+        }
         return true;
     }
 

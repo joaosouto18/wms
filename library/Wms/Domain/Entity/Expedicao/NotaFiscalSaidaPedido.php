@@ -40,4 +40,84 @@ class NotaFiscalSaidaPedido
      */
     protected $pedido;
 
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPedido()
+    {
+        return $this->pedido;
+    }
+
+    /**
+     * @param mixed $pedido
+     */
+    public function setPedido($pedido)
+    {
+        $this->pedido = $pedido;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNotaFiscalSaida()
+    {
+        return $this->notaFiscalSaida;
+    }
+
+    /**
+     * @param mixed $notaFiscalSaida
+     */
+    public function setNotaFiscalSaida($notaFiscalSaida)
+    {
+        $this->notaFiscalSaida = $notaFiscalSaida;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodNotaFiscalSaida()
+    {
+        return $this->codNotaFiscalSaida;
+    }
+
+    /**
+     * @param mixed $codNotaFiscalSaida
+     */
+    public function setCodNotaFiscalSaida($codNotaFiscalSaida)
+    {
+        $this->codNotaFiscalSaida = $codNotaFiscalSaida;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPedido()
+    {
+        return $this->codPedido;
+    }
+
+    /**
+     * @param mixed $codPedido
+     */
+    public function setCodPedido($codPedido)
+    {
+        $this->codPedido = $codPedido;
+    }
+
 }

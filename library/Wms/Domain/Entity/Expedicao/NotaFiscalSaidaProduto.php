@@ -31,7 +31,7 @@ class NotaFiscalSaidaProduto
     /**
      * @Column(name="QUANTIDADE", type="string",nullable=false)
      */
-    protected $quantiadade;
+    protected $quantidade;
 
     /**
      * @Column(name="VALOR_VENDA", type="decimal",nullable=false)
@@ -155,19 +155,19 @@ class NotaFiscalSaidaProduto
     }
 
     /**
-     * @param mixed $quantiadade
+     * @param mixed $quantidade
      */
-    public function setQuantiadade($quantiadade)
+    public function setQuantidade($quantidade)
     {
-        $this->quantiadade = $quantiadade;
+        $this->quantidade = $quantidade;
     }
 
     /**
      * @return mixed
      */
-    public function getQuantiadade()
+    public function getQuantidade()
     {
-        return $this->quantiadade;
+        return $this->quantidade;
     }
 
     /**
