@@ -165,7 +165,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 $this->getEntityManager()->persist($produtoEn);
 
                 $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
-                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()));
+                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()) - $produtoEn->getQtdCortado());
 
                 $this->getEntityManager()->persist($pedidoProdutoEn);
                 $this->getEntityManager()->flush();
