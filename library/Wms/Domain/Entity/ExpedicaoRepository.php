@@ -2215,7 +2215,6 @@ class ExpedicaoRepository extends EntityRepository
             'codProduto'=>$codProduto,
             'dscGrade'=>$grade));
         $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
-        $qtdAtendida = $entidadePedidoProduto->setQtdAtendida();
         $qtdPedido   = $entidadePedidoProduto->getQuantidade();
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO

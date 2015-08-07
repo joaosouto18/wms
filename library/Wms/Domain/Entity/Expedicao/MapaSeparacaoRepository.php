@@ -134,7 +134,7 @@ class MapaSeparacaoRepository extends EntityRepository
                        M.VOLUME,
                        M.QTD_SEPARAR,
                        NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIDA
-                  FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) as QTD_SEPARAR
+                  FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
                           FROM MAPA_SEPARACAO_PRODUTO MP
                           LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
                          WHERE MP.IND_CONFERIDO = 'N'
@@ -148,7 +148,7 @@ class MapaSeparacaoRepository extends EntityRepository
                    AND M.DSC_GRADE = C.DSC_GRADE
                    AND M.VOLUME = C.VOLUME
             WHERE M.COD_EXPEDICAO = $idExpedicao
-              AND M.QTD_SEPARAR = NVL(C.QTD_CONFERIDA,0) ";
+              AND NVL(C.QTD_CONFERIDA,0) >= M.QTD_SEPARAR";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $produto) {
@@ -165,7 +165,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 $this->getEntityManager()->persist($produtoEn);
 
                 $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
-                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()));
+                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()) - $produtoEn->getQtdCortado());
 
                 $this->getEntityManager()->persist($pedidoProdutoEn);
                 $this->getEntityManager()->flush();
