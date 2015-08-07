@@ -50,6 +50,12 @@ class NotaFiscalSaida
     }
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
+     * @JoinColumn(name="COD_STATUS", referencedColumnName="COD_SIGLA")
+     */
+    protected $status;
+
+    /**
      * @param mixed $numeroNf
      */
     public function setNumeroNf($numeroNf)
@@ -97,4 +103,19 @@ class NotaFiscalSaida
         return $this->valorTotal;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param mixed $status
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
 }
