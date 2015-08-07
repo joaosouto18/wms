@@ -148,7 +148,7 @@ class MapaSeparacaoRepository extends EntityRepository
                    AND M.DSC_GRADE = C.DSC_GRADE
                    AND M.VOLUME = C.VOLUME
             WHERE M.COD_EXPEDICAO = $idExpedicao
-              AND M.QTD_SEPARAR = NVL(C.QTD_CONFERIDA,0) ";
+              AND NVL(C.QTD_CONFERIDA,0) >= M.QTD_SEPARAR";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $produto) {
