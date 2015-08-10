@@ -17,7 +17,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
     public function getNotaFiscalOuCarga($data)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nfs.numeroNf, c.id')
+            ->select('nfs.numeroNf', 'c.id', 'nfs.serieNf', 'nfs.id')
             ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
             ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
             ->innerJoin('nfsp.pedido', 'p')
@@ -28,7 +28,8 @@ class NotaFiscalSaidaRepository extends EntityRepository
         if (isset($data['carga']) && !empty($data['carga'])) {
             $sql->andWhere("c.id = $data[carga]");
         }
-
+        $sql->groupBy('nfs.numeroNf', 'c.id', 'nfs.serieNf', 'nfs.id');
+echo $sql->getQuery()->getSQL(); exit;
         return $sql->getQuery()->getResult();
     }
 
