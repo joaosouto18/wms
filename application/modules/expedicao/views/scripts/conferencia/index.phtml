@@ -13,7 +13,11 @@
                     if (data.result != true) {
                         alert(data.result);
                     }
-                    location.href = window.location.href;
+                    if (data.redirect) {
+                        location.href = 'produtividade/carregamento/index/id/'.concat(data.idExpedicao);
+                    } else {
+                        location.href = window.location.href;
+                    }
                 }
             }
         });
