@@ -183,6 +183,7 @@ class ReservaEstoqueRepository extends EntityRepository
     public function reabrirReservaEstoque($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $throwException = false )
     {
         $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem);
+
         if ($reservaEstoqueEn == NULL) {
             if ($throwException == true) {
                 throw new \Exception("Reserva de estoque não encontrada");
@@ -198,7 +199,7 @@ class ReservaEstoqueRepository extends EntityRepository
 
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
 
-        if (($reservaEstoqueEn == NULL) || ($reservaEstoqueEn->getDataAtendimento() != NULL)) {
+        if (($reservaEstoqueEn != NULL) && ($reservaEstoqueEn->getDataAtendimento() != NULL)) {
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
@@ -221,7 +222,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         if ($reservaEstoqueEn != NULL) {
-            $reservaEstoqueEn->setAtendida("N");
+            $reservaEstoqueEn->setAtendida("C");
             $reservaEstoqueEn->setDataAtendimento(null);
             $reservaEstoqueEn->setDscObservacao("RESERVA DE ESTOQUE REABERTA POR ". $idUsuario);
             $reservaEstoqueEn->setUsuarioAtendimento(null);

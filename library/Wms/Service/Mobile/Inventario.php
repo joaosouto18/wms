@@ -108,7 +108,9 @@ class Inventario
         $codigoBarras   = $params['codigoBarras'];
         $idInventario   = $params['idInventario'];
         $numContagem    = $params['numContagem'];
-        $divergencia    = $params['divergencia'];
+        if (isset($params['divergencia'])) {
+            $divergencia    = $params['divergencia'];
+        }
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEm()->getRepository("wms:Produto");

@@ -612,6 +612,8 @@ class EnderecoRepository extends EntityRepository
                    AND O.NUM_NIVEL = DE.NUM_NIVEL
                    AND O.NUM_RUA = DE.NUM_RUA
                  WHERE 1 = 1
+                   AND O.NUM_NIVEL > 0
+                   AND DE.NUM_NIVEL > 0
                  $sqlWhere
                 GROUP BY DE.NUM_RUA
                 ORDER BY DE.NUM_RUA";

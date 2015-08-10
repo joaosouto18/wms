@@ -92,7 +92,7 @@ class ConferenciaCega extends Report {
 
             if ($produto != $produtoGradeAnterior) {
                 $pdf->addCol(1, 50, '', 0, 1, 'L');
-                $pdf->addCol(1, 148, utf8_decode(substr($produto,0,70)), 1, 0, 'L');
+                $pdf->addCol(1, 148, utf8_decode($produto), 1, 0, 'L');
                 $pdf->addCol(7, 25, '', 1, 0, 'R');
                 $pdf->addCol(8, 100, '', 1, 1, 'R');
 

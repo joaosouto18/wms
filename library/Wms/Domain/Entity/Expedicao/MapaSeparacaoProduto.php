@@ -66,6 +66,11 @@ class MapaSeparacaoProduto
     protected $qtdSeparar;
 
     /**
+     * @Column(name="QTD_CORTADO", type="integer", nullable=false)
+     */
+    protected $qtdCortado;
+
+    /**
      * @Column(name="IND_CONFERIDO", type="string", nullable=true)
      */
     protected $indConferido;
@@ -271,6 +276,22 @@ class MapaSeparacaoProduto
     public function setCodDepositoEndereco($codDepositoEndereco)
     {
         $this->codDepositoEndereco = $codDepositoEndereco;
+    }
+
+    /**
+     * @param mixed $qtdCortado
+     */
+    public function setQtdCortado($qtdCortado)
+    {
+        $this->qtdCortado = $qtdCortado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdCortado()
+    {
+        return $this->qtdCortado;
     }
 
 }
