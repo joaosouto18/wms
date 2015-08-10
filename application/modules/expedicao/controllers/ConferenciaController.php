@@ -37,10 +37,17 @@ class Expedicao_ConferenciaController extends Action
                 $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $params['codCargaExterno']));
                 $idExpedicao = $entityCarga->getExpedicao()->getId();
             }
-
+            $redirect = false;
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
+                    if ($result == 'true') {
+                        $result = 'Expedição Finalizada com Sucesso!';
+                        if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
+                            $this->addFlashMessage('success', $result);
+                            $this->_redirect('/produtividade/carregamento/index/id/' . $idExpedicao);
+                        }
+                    }
                     $this->addFlashMessage('success', $result);
                 } else {
                     $result = 'Senha informada não é válida';
@@ -53,9 +60,16 @@ class Expedicao_ConferenciaController extends Action
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
+                if ($result == 'true') {
+                    if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
+                        $redirect = true;
+                    }
+                    $result = 'Expedição Finalizada com Sucesso!';
+                }
             }
-            $this->_helper->json(array('result' => $result));
-
+            $this->_helper->json(array('result' => $result,
+                                       'redirect' => $redirect,
+                                       'idExpedicao'=>$idExpedicao));
         }
     }
 }

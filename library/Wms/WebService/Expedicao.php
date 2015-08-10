@@ -398,8 +398,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
             }
 
-
-
             $cliente = new cliente();
             $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
             $cliente->nome = $pedidoEn->getPessoa()->getPessoa()->getNome();
@@ -435,7 +433,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto->codProduto = $item['COD_PRODUTO'];
                 $produto->grade = $item['DSC_GRADE'];
                 $produto->quantidade = $item['QTD_PEDIDO'];
-                $produto->quantidadeAtendida = $item['QTD_ATENDIDA'];;
+                if (is_null($item['QTD_ATENDIDA'])) {
+                    $produto->quantidadeAtendida = 0;
+                } else {
+                    $produto->quantidadeAtendida = $item['QTD_ATENDIDA'];
+                }
                 $pedido->produtos[] = $produto;
             }
             $carga->pedidos[] = $pedido;
