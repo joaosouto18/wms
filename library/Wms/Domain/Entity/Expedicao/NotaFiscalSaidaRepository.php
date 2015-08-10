@@ -9,5 +9,28 @@ use Wms\Domain\Entity\Expedicao;
 class NotaFiscalSaidaRepository extends EntityRepository
 {
 
+    public function save()
+    {
+
+    }
+
+    public function getNotaFiscalOuCarga($data)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('nfs.numeroNf, c.id')
+            ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
+            ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+            ->innerJoin('nfsp.pedido', 'p')
+            ->innerJoin('p.carga', 'c');
+        if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
+            $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
+        }
+        if (isset($data['carga']) && !empty($data['carga'])) {
+            $sql->andWhere("c.id = $data[carga]");
+        }
+
+        return $sql->getQuery()->getResult();
+    }
+
 }
 
