@@ -1,6 +1,7 @@
 <?php
 use Wms\Controller\Action;
 use Wms\Module\Mobile\Form\Reentrega as FormReentrega;
+use Wms\Domain\Entity\Expedicao\NotaFiscalSaida as NotaFiscalSaida;
 
 class Mobile_ReentregaController extends Action
 {
@@ -27,6 +28,19 @@ class Mobile_ReentregaController extends Action
             $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
             $this->view->notasFiscaisByCarga = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
         }
+    }
+
+    public function gerarRecebimentoAction()
+    {
+        $params = $this->_getAllParams();
+
+        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
+        $recebimentoReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\RecebimentoReentrega");
+        $recebimentoReentregaId = $recebimentoReentregaRepo->save();
+
+        var_dump($recebimentoReentregaId); exit;
+
+
     }
 
 }
