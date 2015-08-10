@@ -47,7 +47,7 @@ class VEtiquetaSeparacao
     protected $codTipoCarga;
 
     /**
-     * @Column(name="CODCARGAEXTERNO", type="integer", nullable=false)
+     * @Column(name="CODCARGAEXTERNO", type="string", nullable=false)
      */
     protected $codCargaExterno;
 

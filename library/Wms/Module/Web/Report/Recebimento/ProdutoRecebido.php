@@ -50,7 +50,7 @@ class ProdutoRecebido extends Report
             $pdf->addCol(0, 15, $produto['COD_SERIE_NOTA_FISCAL'], 0, 0, 'L');
             $pdf->addCol(0, 30, $produto['COD_PRODUTO'], 0, 0, 'L');
             $pdf->addCol(0, 20, $produto['DSC_GRADE'], 0, 0, 'L');
-            $pdf->addCol(0, 70, substr($produto['DSC_PRODUTO'],0,40), 0, 0, 'L');
+            $pdf->addCol(0, 70, substr($produto['DSC_PRODUTO'],0,37), 0, 0, 'L');
             $pdf->addCol(0, 10, '', 0, 0, 'L');
             $pdf->addCol(0, 12, $produto['QTD_ITEM'], 0, 0, 'C');
             $pdf->addCol(0, 22, $produto['QTD_CONFERIDA'], 0, 0, 'C');

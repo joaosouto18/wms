@@ -22,7 +22,7 @@ class SaidaProduto extends Form
                 if ($utilizaGrade == "S") {
                     $this->addElement('text', 'grade', array(
                         'size' => 12,
-                        'label' => 'Grade',
+                        'label' => 'Grade'
                     ));
                 } else {
                     $this->addElement('hidden', 'grade', array(
@@ -30,12 +30,21 @@ class SaidaProduto extends Form
                         'value' => 'UNICA'
                     ));
                 }
+                $this->addElement('date', 'dataInicial', array(
+                    'size' => 20,
+                    'label' => 'Data Inicial',
+                ))
+                ->addElement('date', 'dataFinal', array(
+                    'size' => 20,
+                    'label' => 'Data Final',
+                ));
+
                 $this->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('idProduto', 'grade', 'submit'), 'identificacao', array('legend' => 'Busca')
+                ->addDisplayGroup(array('idProduto', 'grade','dataInicial','dataFinal', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
     }
 

@@ -33,7 +33,7 @@ class ConferenciaCega extends Report {
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
 
         // header
-        $pdf->setTitle('Relatório de Conferência Cega')
+        $pdf->setTitle(utf8_decode('Relatório de Conferência Cega'))
                 ->setLabelHeight(6)
                 ->setColHeight(7);
 
@@ -45,7 +45,7 @@ class ConferenciaCega extends Report {
         $pdf->addLabel(0, 30, 'Data Inicial', 0, 0, 'L');
         $pdf->addLabel(0, 50, 'Status', 0, 0, 'L');
         $pdf->addLabel(0, 20, 'Box', 0, 0, 'L');
-        $pdf->addLabel(0, 25, 'Veículo', 0, 0, 'L');
+        $pdf->addLabel(0, 25, utf8_decode('Veículo'), 0, 0, 'L');
         $pdf->addLabel(0, 90, 'Conferente', 0, 1, 'L');
         $pdf->addLabel(0, 20, $recebimentoEntity->getId(), 0, 0, 'L');
         $pdf->addLabel(0, 65, $recebimentoEntity->getFilial()->getPessoa()->getNome(), 0, 0, 'L');
@@ -60,7 +60,7 @@ class ConferenciaCega extends Report {
         $pdf->addLabel(1, 2, '', 0, 0, 'L');
         $pdf->addLabel(2, 23, 'Quantidade', 'B', 0, 'C');
         $pdf->addLabel(1, 2, '', 0, 0, 'L');
-        $pdf->addLabel(3, 100, 'Observação', 'B', 1, 'L');
+        $pdf->addLabel(3, 100, utf8_decode('Observação'), 'B', 1, 'L');
 
         $produtoGradeAnterior = '';
         $dscUnitizadorAnterior = '';
@@ -76,10 +76,10 @@ class ConferenciaCega extends Report {
             }
             if ($item['COD_SEQUENCIA_VOLUME']) {
                 $dscItem = 'Volume ' . $item['COD_SEQUENCIA_VOLUME'];
-                $endereco = ' -   Endereço: ' . $item['ENDERECO_VOLUME'];
+                $endereco = utf8_decode(' -   Endereço: ' . $item['ENDERECO_VOLUME']);
             } else {
                 $dscItem = $item['DSC_EMBALAGEM'];
-                $endereco = ' -   Endereço: ' . $item['ENDERECO_EMBALAGEM'];
+                $endereco = utf8_decode(' -   Endereço: ' . $item['ENDERECO_EMBALAGEM']);
             }
 
             $produto = $item['CODIGO'] . ' - ' . $item['GRADE'] . ' - ' . $item['DESCRICAO'];
@@ -92,17 +92,21 @@ class ConferenciaCega extends Report {
 
             if ($produto != $produtoGradeAnterior) {
                 $pdf->addCol(1, 50, '', 0, 1, 'L');
-                $pdf->addCol(1, 148, $produto, 1, 0, 'L');
+                $pdf->addCol(1, 148, utf8_decode($produto), 1, 0, 'L');
                 $pdf->addCol(7, 25, '', 1, 0, 'R');
                 $pdf->addCol(8, 100, '', 1, 1, 'R');
 
+                $notas = $notaFiscalRepo->getNotaFiscalByProduto($idRecebimento,$item['CODIGO'],$item['GRADE']);
                 if ($item['DSC_UNITIZADOR']) {
                     $pdf->addCol(4, 45, $dscUnitizador, $bordaUnitizador, 0, 'R');
-                    $pdf->addCol(5, 20, $normaPaletizacao, $bordaUnitizador, 1, 'L');
+                    $pdf->addCol(5, 105, $normaPaletizacao, $bordaUnitizador, 0, 'L');
+                    $pdf->addCol(1,55,'NF: ' . $notas,0,1,'L');
                     $pdf->addCol(6, 45, $dscItem, 0, 0, 'R');
                     $pdf->addCol(7, 45, $endereco, 0, 0, 'L');
                 } else {
-                    $pdf->addCol(1, 55, 'Não possui dados logísticos.', 0, 0, 'R');
+                    $pdf->addCol(1, 55, utf8_decode('Não possui dados logísticos.'), 0, 0, 'R');
+                    $pdf->addCol(1,95,'',0,0,'L');
+                    $pdf->addCol(1,55,'NF: ' . $notas,0,0,'L');
                 }
 
                 $produtoGradeAnterior = $produto;

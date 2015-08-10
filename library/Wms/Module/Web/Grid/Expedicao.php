@@ -28,6 +28,7 @@ class Expedicao extends Grid
 
         $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
+        $this->setAttrib('title','Expedição');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->setId('expedicao-index-grid')
             ->setAttrib('class', 'grid-expedicao')
@@ -70,7 +71,7 @@ class Expedicao extends Grid
                 'index' => 'imprimir',
             ))
             ->addColumn(array(
-                'label' => '% Conferencia',
+                'label' => '% Conferência',
                 'index' => 'PercConferencia',
             ))
             ->addColumn(array(
@@ -86,6 +87,16 @@ class Expedicao extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "INTEGRADO";
                 }
+            ))
+            ->addAction(array(
+                'label' => 'Equipe de Carregamento',
+                'moduleName' => 'produtividade',
+                'controllerName' => 'carregamento',
+                'actionName' => 'index',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                        return $row['status'] != "INTEGRADO";
+                    }
             ))
             ->addAction(array(
                 'label' => 'Finalizar Conferência Expedição',

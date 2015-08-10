@@ -13,10 +13,11 @@ class OcupacaoCD extends Pdf
         $this->Cell(20, 20, utf8_decode("RELATÓRIO DE ACOMPANHAMENTO DE OCUPAÇÃO CD" ), 0, 1);
 
         $this->SetFont('Arial', 'B', 8);
-        $this->Cell(40,  5, utf8_decode("Rua"),1, 0, "C");
-        $this->Cell(55, 5, utf8_decode("Pos. Paletes Existentes") ,1, 0);
-        $this->Cell(55, 5, utf8_decode("Pos. Paletes Ocupados") ,1, 0);
-        $this->Cell(40, 5, utf8_decode("% Ocupação") ,1, 1, "C");
+        $this->Cell(30,  5, utf8_decode("Rua"),1, 0, "C");
+        $this->Cell(45, 5, utf8_decode("Pos. Paletes Existentes") ,1, 0, "C");
+        $this->Cell(45, 5, utf8_decode("Pos. Paletes Ocupados") ,1, 0,"C");
+        $this->Cell(45, 5, utf8_decode("Pos. Paletes Disponiveis") ,1, 0,"C");
+        $this->Cell(30, 5, utf8_decode("% Ocupação") ,1, 1, "C");
     }
 
     public function layout()
@@ -46,6 +47,7 @@ class OcupacaoCD extends Pdf
 
     public function imprimir($params)
     {
+
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
@@ -62,27 +64,34 @@ class OcupacaoCD extends Pdf
 
         $total_existente=0;
         $total_ocupado=0;
-
+        $total_disponivel=0;
         foreach ($produtos as $ocupacao) {
+            $numRua = $ocupacao['NUM_RUA'];
+            $posExistentes = $ocupacao['POS_EXISTENTES'];
+            $posOcupadas = ($ocupacao['POS_EXISTENTES'] - $ocupacao['POS_DISPONIVEIS']);
+            $posDisponives = $ocupacao['POS_DISPONIVEIS'];
+            $percentualOcupacao = ($posOcupadas/$posExistentes) * 100;
 
-            $total_existente = $ocupacao['PALETES_EXISTENTES'] + $total_existente;
-            $total_ocupado   = $ocupacao['PALETES_OCUPADOS']   + $total_ocupado;
-
+            $total_existente  = $posExistentes + $total_existente;
+            $total_ocupado    = $posOcupadas   + $total_ocupado;
+            $total_disponivel = $posDisponives + $total_disponivel;
 
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(40, 5, $ocupacao['RUA'] ,0, 0, "C");
-            $this->Cell(55, 5, $ocupacao['PALETES_EXISTENTES'] ,0, 0, "C");
-            $this->Cell(55, 5, $ocupacao['PALETES_OCUPADOS'] ,0, 0, "C");
-            $this->Cell(40, 5, $ocupacao['PERCENTUAL_OCUPADOS'] . " %" ,0, 1, "C");
+            $this->Cell(30, 5, $numRua ,0, 0, "C");
+            $this->Cell(45, 5, $posExistentes ,0, 0, "C");
+            $this->Cell(45, 5, $posOcupadas ,0, 0, "C");
+            $this->Cell(45, 5, $posDisponives ,0, 0, "C");
+            $this->Cell(30, 5, number_format($percentualOcupacao, 2, '.', ',') . " %" ,0, 1, "C");
         }
 
         $total_percentual = ($total_ocupado * 100) / $total_existente;
 
         $this->Ln();
-        $this->Cell(40, 5, '' ,0, 0);
-        $this->Cell(55, 5, $total_existente ,0, 0, "C");
-        $this->Cell(55, 5, $total_ocupado ,0, 0, "C");
-        $this->Cell(40, 5, number_format($total_percentual, 2, '.', ',') . " %" ,0, 1, "C");
+        $this->Cell(30, 5, '' ,0, 0);
+        $this->Cell(45, 5, $total_existente ,0, 0, "C");
+        $this->Cell(45, 5, $total_ocupado ,0, 0, "C");
+        $this->Cell(45, 5, $total_disponivel ,0, 0, "C");
+        $this->Cell(30, 5, number_format($total_percentual, 2, '.', ',') . " %" ,0, 1, "C");
 
         $this->Output('OcupacaoCD.pdf','D');
     }

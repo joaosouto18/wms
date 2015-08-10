@@ -23,7 +23,7 @@ class CortesPendentes extends Grid
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
         $EtiquetaSeparacaoRepo   = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $pendencias = $EtiquetaSeparacaoRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_CORTE, "DQL");
-
+        $this->setAttrib('title','Pendencia Corte');
         $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($pendencias));
         $this->setSource(new \Core\Grid\Source\Doctrine($pendencias))
                 ->setId('expedicao-cortes-grid')

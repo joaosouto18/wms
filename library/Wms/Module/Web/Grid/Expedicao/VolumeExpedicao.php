@@ -18,6 +18,7 @@ class VolumeExpedicao extends Grid
      */
     public function init ($values)
     {
+        $this->setAttrib('title','Volumes Expedição');
         $this->setSource(new \Core\Grid\Source\ArraySource($values))
                 ->setId('expedicao-produto-volume-grid')
                 ->setAttrib('caption', 'Volumes Patrimonios usados na expedição')
