@@ -11,10 +11,10 @@ namespace Wms\Domain\Entity\Expedicao;
 class Reentrega
 {
     /**
+     * @Id
      * @Column(name="COD_REENTREGA", type="integer", nullable=false)
      * @SequenceGenerator(sequenceName="SQ_REENTREGA_01", allocationSize=1, initialValue=1)
      * @GeneratedValue(strategy="SEQUENCE")
-     * @Id
      */
     protected $id;
 
