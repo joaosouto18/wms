@@ -1,0 +1,18 @@
+<form id="formGrid" method="post" action="">
+
+    <table>
+        <tbody><tr>
+            <td colspan="1"></td>
+            <td width=""><span>Notas Fiscais</span></td>
+        </tr>
+        <?php foreach($this->notasFiscaisByCarga as $notaFiscal) : ?>
+            <tr>
+                <td><input type="checkbox" value="<?php echo $notaFiscal['id'] ?>" name="mass-id[]"></td>
+                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['numeroNf'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <button type="submit"><span>Gerar Recebimento</span></button>
+</form>

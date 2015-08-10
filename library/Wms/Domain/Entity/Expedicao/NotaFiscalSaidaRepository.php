@@ -29,7 +29,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
             $sql->andWhere("c.id = $data[carga]");
         }
         $sql->groupBy('nfs.numeroNf', 'c.id', 'nfs.serieNf', 'nfs.id');
-echo $sql->getQuery()->getSQL(); exit;
+
         return $sql->getQuery()->getResult();
     }
 

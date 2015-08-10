@@ -13,7 +13,10 @@ class Mobile_ReentregaController extends Action
     public function recebimentoAction()
     {
         $this->view->form = new FormReentrega;
+    }
 
+    public function buscarAction()
+    {
         $params = $this->_getAllParams();
         unset($params['module']);
         unset($params['controller']);
@@ -22,18 +25,9 @@ class Mobile_ReentregaController extends Action
         if (!empty($params['carga']) && isset($params['carga'])) {
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
             $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
-            $getNotaFiscal = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
-
-            var_dump($getNotaFiscal); exit;
-
-
-
+            $this->view->notasFiscaisByCarga = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
         }
-
-
     }
-
-
 
 }
 
