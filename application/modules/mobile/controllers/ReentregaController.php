@@ -36,9 +36,13 @@ class Mobile_ReentregaController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
         $recebimentoReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\RecebimentoReentrega");
-        $recebimentoReentregaId = $recebimentoReentregaRepo->save();
+        $recebimentoReentregaEn = $recebimentoReentregaRepo->save();
 
-        var_dump($recebimentoReentregaId); exit;
+        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
+        $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\RecebimentoReentregaNota");
+        $recebimentoReentregaNotaRepo->save($recebimentoReentregaEn, $params);
+
+        var_dump($recebimentoReentregaNotaRepo); exit;
 
 
     }
