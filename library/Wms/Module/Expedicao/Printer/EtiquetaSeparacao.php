@@ -346,7 +346,7 @@ class EtiquetaSeparacao extends Pdf
 
         $tamanhoSringProduto = strlen($etiqueta['produto']);
         if ($tamanhoSringProduto >= 35) {
-            $this->SetFont('Arial', 'B', 13);
+            $this->SetFont('Arial', 'B', 11);
         } else {
             $this->SetFont('Arial', 'B', 15);
         }
