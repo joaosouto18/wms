@@ -25,7 +25,7 @@ class RecebimentoReentrega
     protected $status;
 
     /**
-     * @Column(name="DTH_CRIACAO", type="date")
+     * @Column(name="DTH_CRIACAO", type="string")
      * @var string
      */
     protected $dataCriacao;
