@@ -77,7 +77,7 @@ class ConferenciaRecebimentoReentrega
     protected $ordemServico;
 
     /**
-     * @Column(name="NUM_CONFERENCIA", type"integer")
+     * @Column(name="NUM_CONFERENCIA", type="integer")
      * @var int
      */
     protected $numeroConferencia;

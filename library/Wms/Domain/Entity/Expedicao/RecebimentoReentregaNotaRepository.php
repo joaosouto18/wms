@@ -23,6 +23,20 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
 
         $this->_em->flush();
 
-        return $recebimentoReentregaNotaEn;
+        return true;
+    }
+
+    public function getRecebimentoReentregaByNota()
+    {
+        $status = NotaFiscalSaida::NOTA_FISCAL_EMITIDA;
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('nfs.numeroNf')
+            ->from('wms:Expedicao\RecebimentoReentregaNota', 'rrn')
+            ->innerJoin('rrn.recebimentoReentrega', 'rr')
+            ->innerJoin('rrn.notaFiscalSaida', 'nfs')
+            ->where("rr.status = $status")
+            ->groupBy('nfs.numeroNf');
+
+        return $sql->getQuery()->getResult();
     }
 }
