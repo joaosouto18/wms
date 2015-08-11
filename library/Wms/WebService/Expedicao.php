@@ -835,4 +835,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return true;
     }
 
+    /**
+     *  Recebe as notas fiscais emitidas da empresa
+     *
+     * @param notaFiscal[] nf Array de objetos nota fiscal
+     * @return boolean Se as notas fiscais foram salvas com sucesso
+     */
+    public function definirReentrega ($numeroNf, $serieNF, $numeroCarga, $tipoCarga)
+    {
+
+    }
+
+
 }
