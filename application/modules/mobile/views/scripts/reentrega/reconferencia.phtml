@@ -1,0 +1,8 @@
+<ul class="menu">
+    <?php foreach($this->notasFiscais as $notaFiscal) : ?>
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'reconferir-produtos', 'id' => $notaFiscal['numeroNf'])); ?>" > <?php echo $notaFiscal['numeroNf'] ?></a>
+        </li>
+    <?php endforeach; ?>
+</ul>
+

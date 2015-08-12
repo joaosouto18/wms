@@ -12,6 +12,8 @@ class NotaFiscalSaida
     const NOTA_FISCAL_EMITIDA = 553;
     const DEVOLVIDO_PARA_REENTREGA = 554;
     const EXPEDIDO_REENTREGA = 555;
+    const FINALIZADO = 556;
+    const RECEBIDA = 557;
 
     /**
      * @Id
@@ -37,6 +39,12 @@ class NotaFiscalSaida
     protected $valorTotal;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
+     * @JoinColumn(name="COD_STATUS", referencedColumnName="COD_SIGLA")
+     */
+    protected $status;
+
+    /**
      * @param mixed $id
      */
     public function setId($id)
@@ -51,12 +59,6 @@ class NotaFiscalSaida
     {
         return $this->id;
     }
-
-    /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
-     * @JoinColumn(name="COD_STATUS", referencedColumnName="COD_SIGLA")
-     */
-    protected $status;
 
     /**
      * @param mixed $numeroNf

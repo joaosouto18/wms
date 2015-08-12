@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Expedicao;
+use Zend\Stdlib\Configurator;
 
 /**
  *
@@ -25,7 +26,7 @@ class RecebimentoReentrega
     protected $status;
 
     /**
-     * @Column(name="DTH_CRIACAO", type="string")
+     * @Column(name="DTH_CRIACAO", type="date")
      * @var string
      */
     protected $dataCriacao;
