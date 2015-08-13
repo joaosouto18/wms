@@ -59,7 +59,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
             $conferenciaRecebimentoReentregaEn->setGrade($grade);
             $conferenciaRecebimentoReentregaEn->setQuantidadeConferida($data['qtd']);
             $conferenciaRecebimentoReentregaEn->setRecebimentoReentrega($recebimentoReentregaEn);
-            $conferenciaRecebimentoReentregaEn->setNumeroConferencia(1);
+            $conferenciaRecebimentoReentregaEn->setNumeroConferencia($recebimentoReentregaEn->getNumeroConferencia() + 1);
             $conferenciaRecebimentoReentregaEn->setQtdEmbalagemConferida(1);
             $conferenciaRecebimentoReentregaEn->setOrdemServico($ordemServicoEn);
 
