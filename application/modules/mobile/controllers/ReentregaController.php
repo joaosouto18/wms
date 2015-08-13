@@ -75,8 +75,8 @@ class Mobile_ReentregaController extends Action
 
     public function reconferirProdutosAction()
     {
-        $this->view->form = new FormConferirProdutosReentrega;
         $params = $this->_getAllParams();
+        $this->view->form = new FormConferirProdutosReentrega;
 
         if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
             try {
@@ -94,6 +94,7 @@ class Mobile_ReentregaController extends Action
     public function finalizarConferenciaAction()
     {
         $params = $this->_getAllParams();
+        var_dump($params); exit;
 
         try {
             /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */

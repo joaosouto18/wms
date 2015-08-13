@@ -49,15 +49,21 @@ class RecebimentoReentregaRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
         $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-
-
         /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
         $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
+        $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
+        $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
 
         $getQtdProdutosByNota = $notaFiscalSaidaRepo->getQtdProdutoByNota($data);
 
         foreach ($getQtdProdutosByNota as $produto) {
             if ($produto['QTD_TOTAL'] != 0) {
+                $recebimentoReentregaEn->setNumeroConferencia($recebimentoReentregaEn->getNumeroConferencia() + 1);
+                $this->_em->persist($recebimentoReentregaEn);
+                $this->_em->flush();
+                $this->_em->clear();
+                $this->getEntityManager()->commit();
                 $mensagem = utf8_encode('Existem produtos com conferência errada!');
                 throw new \Exception($mensagem);
             }
@@ -65,9 +71,6 @@ class RecebimentoReentregaRepository extends EntityRepository
 
         try {
             //alterar o status do recebimento para finalizado
-            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
-            $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
-            $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
             $siglaRecebimentoEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::FINALIZADO));
             $recebimentoReentregaEn->setStatus($siglaRecebimentoEn);
             $this->_em->persist($recebimentoReentregaEn);
