@@ -26,7 +26,14 @@ class Mobile_ReentregaController extends Action
         if ((!empty($params['carga']) && isset($params['carga'])) || (!empty($params['notaFiscal']) && isset($params['notaFiscal']))) {
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
             $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
-            $this->view->notasFiscaisByCarga = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
+            $result = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
+
+            if (count($result) > 0) {
+                $this->view->notasFiscaisByCarga = $result;
+            } else {
+                $this->addFlashMessage('error', 'Nenhuma nota fiscal encontrada!');
+                $this->_redirect('/mobile/reentrega/recebimento');
+            }
         }
     }
 
@@ -36,6 +43,15 @@ class Mobile_ReentregaController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
         $recebimentoReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\RecebimentoReentrega");
+
+        //verifica se a nota fiscal ja foi gerada
+        $verificaRecebimento = $recebimentoReentregaRepo->verificaRecebimento($params);
+        if (count($verificaRecebimento) > 0) {
+            $this->addFlashMessage('success', 'Nota fiscal ja gerada e em conferencia!');
+            $this->redirect('recebimento', 'reentrega', 'mobile');
+        }
+
+        //caso a nota nao tenha sido gerada salva os dados nas tabelas RECEBIMENTO_REENTREGA, RECEBIMENTO_REENTREGA_NOTA e ORDEM_SERVICO
         $recebimentoReentregaEn = $recebimentoReentregaRepo->save();
 
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
@@ -46,7 +62,7 @@ class Mobile_ReentregaController extends Action
         $ordemServicoRepo = $this->getEntityManager()->getRepository("wms:OrdemServico");
         $ordemServicoRepo->criarOsByReentrega($recebimentoReentregaEn);
 
-        $this->addFlashMessage('success', 'Recebimento de Reentrega concluido com sucesso!');
+        $this->addFlashMessage('success', 'Recebimento de Reentrega gerado com sucesso!');
         $this->redirect('reconferencia', 'reentrega', 'mobile');
     }
 
@@ -83,17 +99,15 @@ class Mobile_ReentregaController extends Action
     {
         $params = $this->_getAllParams();
 
-        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
-        $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
-        $result = $recebimentoReentregaRepo->finalizarConferencia($params);
-
-        if ($result == false) {
-            $this->addFlashMessage('error', 'Existe divergencia na conferencia de produtos');
-        } else {
-            $this->addFlashMessage('success', 'Conferencia Finalizada com sucesso!');
+        try {
+            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
+            $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
+            $result = $recebimentoReentregaRepo->finalizarConferencia($params);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
         }
+
         $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
     }
-
 }
 

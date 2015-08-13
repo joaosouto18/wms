@@ -8,7 +8,7 @@
         <?php foreach($this->notasFiscaisByCarga as $notaFiscal) : ?>
             <tr>
                 <td><input type="checkbox" value="<?php echo $notaFiscal['id'] ?>" name="mass-id[]"></td>
-                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['numeroNf'] ?></td>
+                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['numeroNf'].' - '.$notaFiscal['carga'] ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
