@@ -12,6 +12,8 @@ class Reentrega extends Form
     {
         $this->setAttribs(array('id' => 'reentrega-form', 'class' => 'saveForm'));
 
+        $this->setAction($this->getView()->url(array('controller' => 'reentrega', 'action' => 'buscar')));
+
         $em = $this->getEm();
 
         $this->addElement('text', 'carga', array(

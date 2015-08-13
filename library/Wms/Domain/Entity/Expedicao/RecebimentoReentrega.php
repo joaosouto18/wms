@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Expedicao;
+use Zend\Stdlib\Configurator;
 
 /**
  *
