@@ -1,7 +1,7 @@
 <?php
 use Wms\Controller\Action;
 use Wms\Module\Mobile\Form\Reentrega as FormReentrega;
-use Wms\Domain\Entity\Expedicao\NotaFiscalSaida as NotaFiscalSaida;
+use Wms\Module\Mobile\Form\ConferirProdutosReentrega as FormConferirProdutosReentrega;
 
 class Mobile_ReentregaController extends Action
 {
@@ -75,23 +75,19 @@ class Mobile_ReentregaController extends Action
 
     public function reconferirProdutosAction()
     {
+        $this->view->form = new FormConferirProdutosReentrega;
         $params = $this->_getAllParams();
-        if (isset($params['id'])) {
-            $this->view->id = $params['id'];
-        } else {
-            $this->view->id = $params['numeroNota'];
-        }
 
-        if (isset($params['qtd']) && isset($params['codBarras'])) {
-            /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
-            $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
-            $result = $conferenciaRecebimentoReentregaRepo->save($params);
-
-            if ($result == true) {
-                $this->addFlashMessage('success', 'Produto conferido com sucesso!');
-            } else {
-                $this->addFlashMessage('error', 'Erro! Tente Novamente');
+        if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
+            try {
+                /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
+                $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
+                $result = $conferenciaRecebimentoReentregaRepo->save($params);
+            } catch (\Exception $e) {
+                $this->_helper->messenger('error', $e->getMessage());
             }
+        } else {
+            $this->_helper->messenger('error', 'Preencha todos os campos corretamente');
         }
     }
 

@@ -1,33 +1,10 @@
-<div class="saveForm">
-    <input type="hidden" id="numeroNota" value="<?php echo $this->id ?>">
-    Codigo de Barras: <input type="text" name="codBarras" id="codBarras">
-    Qtd: <input type="text" name="quantidade" id="quantidade">
-    <button type="button" id="conferir"><span>Reconferir</span></button>
-</div>
+<?php echo $this->form; ?>
 
 <div id="footer">
     <a href="<?php echo "/mobile/reentrega/finalizar-conferencia/id/" . $this->id ?>" class="finalizar">
         Finalizar
     </a>
-    
+    <a href="<?php echo "/mobile/reentrega/cancelar-conferencia/id/" . $this->id ?>" class="finalizar">
+        Cancelar
+    </a>
 </div>
-
-<script type="text/javascript">
-    $(document).ready(function(){
-        $('#conferir').click(function(){
-            $.ajax({
-                type: 'POST',
-                url: '/mobile/reentrega/reconferir-produtos',
-                data: {
-                    codBarras: $('#codBarras').val(),
-                    qtd: $('#quantidade').val(),
-                    numeroNota: $('#numeroNota').val()
-                },
-                success: function(data) {
-                    $('#codBarras').val('');
-                    $('#quantidade').val('');
-                }
-            });
-        })
-    });
-</script>

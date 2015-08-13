@@ -31,7 +31,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
                 $produtoId = $produtoEmbalagemEn->getProduto();
                 $grade = $produtoEmbalagemEn->getGrade();
             } else {
-                throw new \Exception('Produto não encontrado para esse recebimento!');
+                throw new \Exception(utf8_encode('Código do Produto não cadastrado!'));
             }
 
             /** @var \Wms\Domain\Entity\Produto $produtoRepo */
@@ -40,11 +40,17 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
 
             /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
             $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
-            $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['numeroNota']));
+            $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
 
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
             $ordemServicoEn = $ordemServicoRepo->findOneBy(array('recebimentoReentrega' => $recebimentoReentregaEn));
+
+            //verifica se o produto existe no recebimento selecionado
+            $getProdutosByRecebimento = $recebimentoReentregaRepo->getProdutosByRecebimento($data['id'], $produtoId, $grade);
+            if (count($getProdutosByRecebimento) == 0) {
+                throw new \Exception(utf8_encode('Produto não encontrado para esse recebimento!'));
+            }
 
             $conferenciaRecebimentoReentregaEn = new ConferenciaRecebimentoReentrega();
             $conferenciaRecebimentoReentregaEn->setProdutoVolume($produtoVolumeEn);

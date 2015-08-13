@@ -90,4 +90,18 @@ class RecebimentoReentregaRepository extends EntityRepository
         }
     }
 
+    public function getProdutosByRecebimento($recebimentoReentrega, $produto, $grade)
+    {
+        $produtoId = $produto->getId();
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('rr.id, nfsp.codProduto, nfsp.grade')
+            ->from('wms:Expedicao\RecebimentoReentrega', 'rr')
+            ->innerJoin('wms:Expedicao\RecebimentoReentregaNota', 'rrn', 'WITH', 'rr.id = rrn.recebimentoReentrega')
+            ->innerJoin('rrn.notaFiscalSaida', 'nfs')
+            ->innerJoin('wms:Expedicao\NotafiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+            ->where("rr.id = $recebimentoReentrega AND nfsp.codProduto = '$produtoId' AND nfsp.grade = '$grade'");
+
+        return $sql->getQuery()->getResult();
+    }
+
 }
