@@ -30,12 +30,13 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
     {
         $status = NotaFiscalSaida::NOTA_FISCAL_EMITIDA;
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nfs.numeroNf')
+            ->select('nfs.numeroNf', 'rr.id recebimento')
             ->from('wms:Expedicao\RecebimentoReentregaNota', 'rrn')
             ->innerJoin('rrn.recebimentoReentrega', 'rr')
             ->innerJoin('rrn.notaFiscalSaida', 'nfs')
             ->where("rr.status = $status")
-            ->groupBy('nfs.numeroNf');
+            ->groupBy('nfs.numeroNf', 'rr.id')
+            ->orderBy('rr.id', 'DESC');
 
         return $sql->getQuery()->getResult();
     }

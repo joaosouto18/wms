@@ -7,6 +7,18 @@ use Wms\Domain\Entity\NotaFiscal;
 
 class RecebimentoReentregaRepository extends EntityRepository
 {
+    public function verificaRecebimento($data)
+    {
+        $notas = implode(',', $data['mass-id']);
+        $notaFiscalEmitida = NotaFiscalSaida::NOTA_FISCAL_EMITIDA;
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('rr.id')
+            ->from('wms:Expedicao\RecebimentoReentrega', 'rr')
+            ->innerJoin('wms:Expedicao\RecebimentoReentregaNota', 'rrn', 'WITH', 'rr.id = rrn.recebimentoReentrega')
+            ->where("rrn.notaFiscalSaida IN ($notas) AND rr.status = $notaFiscalEmitida");
+        return $sql->getQuery()->getResult();
+    }
+
     public function save()
     {
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
@@ -33,44 +45,66 @@ class RecebimentoReentregaRepository extends EntityRepository
 
     public function finalizarConferencia($data)
     {
+        $this->getEntityManager()->beginTransaction();
+
         /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
         $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-        $siglaNotaEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::RECEBIDA));
-
         /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
         $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
-
-        /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $confRecebReentregaRepo */
-        $confRecebReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
+        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
+        $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
+        $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
 
         $getQtdProdutosByNota = $notaFiscalSaidaRepo->getQtdProdutoByNota($data);
 
-        foreach ($getQtdProdutosByNota as $qtdProduto) {
-            $confRecebReentregaEn = $confRecebReentregaRepo->findBy(array('codProduto' => $qtdProduto['codProduto'], 'grade' => $qtdProduto['grade']), array('numeroConferencia' => 'DESC'));
-            if ($qtdProduto['qtdProduto'] != $confRecebReentregaEn[0]->getQuantidadeConferida()) {
-                return false;
+        foreach ($getQtdProdutosByNota as $produto) {
+            if ($produto['QTD_TOTAL'] != 0) {
+                $recebimentoReentregaEn->setNumeroConferencia($recebimentoReentregaEn->getNumeroConferencia() + 1);
+                $this->_em->persist($recebimentoReentregaEn);
+                $this->_em->flush();
+                $this->_em->clear();
+                $this->getEntityManager()->commit();
+                $mensagem = utf8_encode('Existem produtos com conferência errada!');
+                throw new \Exception($mensagem);
             }
         }
 
-        $notaFiscalSaidaEn = $notaFiscalSaidaRepo->findOneBy(array('numeroNf' => $data['id']));
-        $notaFiscalSaidaEn->setStatus($siglaNotaEn);
-        $this->_em->persist($notaFiscalSaidaEn);
+        try {
+            //alterar o status do recebimento para finalizado
+            $siglaRecebimentoEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::FINALIZADO));
+            $recebimentoReentregaEn->setStatus($siglaRecebimentoEn);
+            $this->_em->persist($recebimentoReentregaEn);
 
-        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
-        $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
-        $recebimentoReentregaNotaEn = $recebimentoReentregaNotaRepo->findBy(array('notaFiscalSaida' => $notaFiscalSaidaEn->getId()), array('id' => 'DESC'));
+            //alterar o status da nota fiscal para recebida
+            $siglaNotaEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::RECEBIDA));
+            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
+            $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
+            $recebimentoReentregaNotaEn = $recebimentoReentregaNotaRepo->findBy(array('recebimentoReentrega' => $recebimentoReentregaEn->getId()));
+            $notaFiscalSaidaEn = $notaFiscalSaidaRepo->findOneBy(array('id' => $recebimentoReentregaNotaEn->getNotaFiscalSaida()));
+            $notaFiscalSaidaEn->setStatus($siglaNotaEn);
+            $this->_em->persist($notaFiscalSaidaEn);
 
-        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
-        $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
-        $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $recebimentoReentregaNotaEn[0]->getRecebimentoReentrega()));
-
-        $siglaRecebimentoEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::FINALIZADO));
-
-        $recebimentoReentregaEn->setStatus($siglaRecebimentoEn);
-
-        $this->_em->persist($recebimentoReentregaEn);
-        $this->_em->flush();
-
-        return true;
+            $this->_em->flush();
+            $this->_em->clear();
+            $this->getEntityManager()->commit();
+        } catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
+            throw new \Exception($e->getMessage());
+        }
     }
+
+    public function getProdutosByRecebimento($recebimentoReentrega, $produto, $grade)
+    {
+        $produtoId = $produto->getId();
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('rr.id, nfsp.codProduto, nfsp.grade')
+            ->from('wms:Expedicao\RecebimentoReentrega', 'rr')
+            ->innerJoin('wms:Expedicao\RecebimentoReentregaNota', 'rrn', 'WITH', 'rr.id = rrn.recebimentoReentrega')
+            ->innerJoin('rrn.notaFiscalSaida', 'nfs')
+            ->innerJoin('wms:Expedicao\NotafiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+            ->where("rr.id = $recebimentoReentrega AND nfsp.codProduto = '$produtoId' AND nfsp.grade = '$grade'");
+
+        return $sql->getQuery()->getResult();
+    }
+
 }
