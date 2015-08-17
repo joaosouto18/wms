@@ -220,6 +220,24 @@ class PedidoRepository extends EntityRepository
             $this->_em->flush();
         }
 
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+        $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        $pedidoProdutoEn = $pedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity));
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaProdutoRepo */
+        $mapaSeparacaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaRepo */
+        $mapaSeparacaRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+        foreach ($pedidoProdutoEn as $pedidoProduto) {
+            $mapaSeparacaoProdutoEn = $mapaSeparacaProdutoRepo->findBy(array('codPedidoProduto' => $pedidoProduto->getId()));
+
+            $mapaSeparacaoEn = $mapaSeparacaRepo->findBy(array('id' => $mapaSeparacaoProdutoEn->getMapaSeparacao()));
+            foreach ($mapaSeparacaoEn as $mapaSeparacao) {
+                $this->_em->remove($mapaSeparacao);
+            }
+            $this->_em->remove($mapaSeparacaoProdutoEn);
+            $this->_em->flush();
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
         $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
         $pedidosProduto = $PedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity->getId()));

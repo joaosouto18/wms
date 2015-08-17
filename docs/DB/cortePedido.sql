@@ -51,7 +51,11 @@ UPDATE MENU_ITEM SET NUM_PESO = 3 WHERE DSC_MENU_ITEM = 'Corte de Pedidos'
 UPDATE MENU_ITEM SET NUM_PESO = 4 WHERE DSC_MENU_ITEM = 'Expedição Mercadorias'
                      AND COD_PAI = (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Expedição' AND COD_PAI = 0);
 
+<<<<<<< HEAD
+UPDATE MENU_ITEM SET DSC_MENU_ITEM = 'Gerar Ressuprimento' WHERE DSC_MENU_ITEM = 'Gerar Onda de Ressuprimento';
+=======
 UPDATE MENU_ITEM SET DSC_MENU_ITEM = 'Gerar Ressuprimento' WHERE DSC_MENU_ITEM = 'Gerar Onda de Ressuprimento';
 
 ALTER TABLE MAPA_SEPARACAO_PRODUTO
   ADD ( QTD_CORTADO NUMBER (8)  DEFAULT 0) ;
+>>>>>>> melhoriasExpedicao
