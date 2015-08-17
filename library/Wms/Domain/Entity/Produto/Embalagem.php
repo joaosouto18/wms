@@ -97,7 +97,6 @@ class Embalagem
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
-     * @var Wms\Domain\Entity\Deposito\Endereco $endereco
      */
     protected $endereco;
 
