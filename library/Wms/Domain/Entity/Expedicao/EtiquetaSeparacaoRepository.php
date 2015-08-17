@@ -75,7 +75,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         return $sql->getQuery()->getResult();
     }
-
+    
     /**
      * @param $status
      * @param $idExpedicao
@@ -425,7 +425,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     protected function save(array $dadosEtiqueta, $statusEntity)
     {
         $enEtiquetaSeparacao = new EtiquetaSeparacao();
-        $enEtiquetaSeparacao->setStatus($statusEntity);
         $enEtiquetaSeparacao->setStatus($statusEntity);
 
         if ( !empty($dadosEtiqueta['codEtiquetaMae']) ){
