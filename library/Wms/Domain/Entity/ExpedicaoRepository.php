@@ -2146,4 +2146,148 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
 
     }
+
+
+    public function getPedidosParaCorteByParams($params){
+        $SQL = "
+        SELECT DISTINCT
+               P.COD_PEDIDO,
+               CLI.COD_CLIENTE_EXTERNO as CLIENTE,
+               PES.NOM_PESSOA,
+               PE.DSC_ENDERECO,
+               PE.NOM_BAIRRO,
+               PE.NOM_LOCALIDADE,
+               UF.COD_REFERENCIA_SIGLA as UF
+          FROM PEDIDO P
+          LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+          LEFT JOIN CLIENTE CLI ON P.COD_PESSOA = CLI.COD_PESSOA
+          LEFT JOIN PESSOA PES ON PES.COD_PESSOA = P.COD_PESSOA
+          LEFT JOIN PEDIDO_ENDERECO PE ON PE.COD_PEDIDO = P.COD_PEDIDO
+          LEFT JOIN SIGLA UF ON UF.COD_SIGLA = PE.COD_UF
+         WHERE 1 = 1";
+
+        if (isset($params['idExpedicao']) && ($params['idExpedicao']!= null)){
+            $idExpedicao = $params['idExpedicao'];
+            $SQL .= " AND C.COD_EXPEDICAO = $idExpedicao ";
+        }
+
+        if (isset($params['clientes']) && ($params['clientes']!= null)){
+            $clientes = implode(',',$params['clientes']);
+            $SQL .= " AND CLI.COD_CLIENTE_EXTERNO IN ($clientes) ";
+        }
+
+        if (isset($params['pedidos']) && ($params['pedidos']!= null)){
+            $pedidos = implode(',',$params['pedidos']);
+            $SQL .= " AND P.COD_PEDIDO IN ($pedidos) ";
+        }
+
+        if (isset($params['idMapa']) && ($params['idMapa']!= null)){
+            $idMapa = $params['idMapa'];
+            $SQL .= " AND P.COD_PEDIDO IN ( SELECT PP.COD_PEDIDO FROM MAPA_SEPARACAO_PRODUTO MSP
+                                              LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                                             WHERE MSP.COD_MAPA_SEPARACAO = $idMapa) ";
+        }
+
+        $SQLWhereProdutos = "";
+        if (isset($params['idProduto']) && ($params['idProduto']!= null)){
+            $idProduto = $params['idProduto'];
+            $SQLWhereProdutos .= " AND PP.COD_PRODUTO = '$idProduto' ";
+        }
+        if (isset($params['grade']) && ($params['grade']!= null)){
+            $grade = $params['grade'];
+            $SQLWhereProdutos .= " AND PP.DSC_GRADE = '$grade' ";
+        }
+
+        if (isset($idProduto) OR (isset($grade))) {
+            $SQL .= " AND P.COD_PEDIDO IN ( SELECT COD_PEDIDO FROM PEDIDO_PRODUTO PP
+                                             WHERE 1 = 1 $SQLWhereProdutos )";
+        }
+
+        $SQL .= " ORDER BY PES.NOM_PESSOA DESC, P.COD_PEDIDO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getProdutosParaCorteByParams($params) {
+        $idPedido = $params['idPedido'];
+        $SQL = "
+        SELECT DISTINCT PP.COD_PRODUTO,
+               PP.DSC_GRADE,
+               P.DSC_PRODUTO,
+               PP.QUANTIDADE as QTD_PEDIDO,
+               PP.QTD_ATENDIDA,
+               PP.QTD_CORTADA
+          FROM PEDIDO_PRODUTO PP
+          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
+          LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+          WHERE COD_PEDIDO = $idPedido";
+
+        if ($params['pedidoCompleto'] == false) {
+            if (isset($params['idProduto']) && ($params['idProduto']!= null)){
+                $idProduto = $params['idProduto'];
+                $SQL .= " AND PP.COD_PRODUTO = '$idProduto' ";
+            }
+            if (isset($params['grade']) && ($params['grade']!= null)){
+                $grade = $params['grade'];
+                $SQL .= " AND PP.DSC_GRADE = '$grade' ";
+            }
+            if (isset($params['idMapa']) && ($params['idMapa']!= null)){
+                $idMapa = $params['idMapa'];
+                $SQL .= " AND MSP.COD_MAPA_SEPARACAO = $idMapa ";
+            }
+        }
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function     executaCortePedido($cortes, $motivo) {
+        //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
+        foreach ($cortes as $codPedido => $produtos) {
+            foreach ($produtos as $codProduto=> $grades) {
+                foreach ($grades as $grade=> $quantidade) {
+                    if (!($quantidade > 0)) continue;
+                    $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
+                }
+            }
+        }
+    }
+
+    private function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
+
+        $entidadePedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')->findOneBy(array('codPedido'=>$codPedido,
+            'codProduto'=>$codProduto,
+            'grade'=>$grade));
+        $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId(),
+            'codProduto'=>$codProduto,
+            'dscGrade'=>$grade));
+        $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
+        $qtdAtendida = $entidadePedidoProduto->setQtdAtendida();
+        $qtdPedido   = $entidadePedidoProduto->getQuantidade();
+
+        //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
+        if (($qtdCortar + $qtdCortada) > $qtdPedido) {
+            $qtdCortar = ($qtdPedido - $qtdCortada);
+        }
+
+        $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
+        $this->getEntityManager()->persist($entidadePedidoProduto);
+
+        $qtdMapa = 0;
+
+        foreach ($entidadeMapaProduto as $mapa) {
+            $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
+            $qtdCortadoMapa = $mapa->getQtdCortado();
+            $qtdCortarMapa = $qtdCortar;
+            if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
+                $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
+            }
+            $mapa->setQtdCortado($qtdCortarMapa);
+            $this->getEntityManager()->persist($mapa);
+            $qtdCortar = $qtdCortar - $qtdCortarMapa;
+        }
+
+        $this->getEntityManager()->flush();
+    }
+
 }
