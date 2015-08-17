@@ -59,6 +59,24 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     /**
+     * @param $idPedido
+     * @return array
+     */
+    public function getMapaByPedido($idPedido)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id pedido, ms.id mapaSeparacao')
+            ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'pp.pedido = p.id')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.codPedidoProduto = pp.id')
+            ->innerJoin('wms:Expedicao\MapaSeparacao', 'ms', 'WITH', 'ms.id. = msp.mapaSeparacao')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoConferencia', 'msc', 'WITH', 'msc.mapaSeparacao = ms.id')
+            ->where("p.id = $idPedido");
+
+        return $sql->getQuery()->getResult();
+    }
+
+    /**
      * @param $status
      * @param $idExpedicao
      * @return mixed
