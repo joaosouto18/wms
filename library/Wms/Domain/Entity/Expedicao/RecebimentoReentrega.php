@@ -44,6 +44,12 @@ class RecebimentoReentrega
     protected $usuario;
 
     /**
+     * @Column(name="NUM_CONFERENCIA", type="integer")
+     * $var int
+     */
+    protected $numeroConferencia;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -122,4 +128,21 @@ class RecebimentoReentrega
     {
         $this->usuario = $usuario;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getNumeroConferencia()
+    {
+        return $this->numeroConferencia;
+    }
+
+    /**
+     * @param mixed $numeroConferencia
+     */
+    public function setNumeroConferencia($numeroConferencia)
+    {
+        $this->numeroConferencia = $numeroConferencia;
+    }
+
 }

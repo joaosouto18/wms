@@ -273,6 +273,7 @@ class Expedicao_EtiquetaController  extends Action
         $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         try {
             $EtiquetaRepo->gerarMapaEtiqueta($pedidosProdutos,null,1);
+            $EtiquetaRepo->gerarMapaEtiquetaReentrega($idExpedicao);
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }

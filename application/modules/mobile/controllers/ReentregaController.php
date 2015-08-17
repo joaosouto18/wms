@@ -75,8 +75,9 @@ class Mobile_ReentregaController extends Action
 
     public function reconferirProdutosAction()
     {
-        $this->view->form = new FormConferirProdutosReentrega;
         $params = $this->_getAllParams();
+        $this->view->id = $params['id'];
+        $this->view->form = new FormConferirProdutosReentrega;
 
         if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
             try {
