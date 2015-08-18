@@ -19,6 +19,10 @@ class EtiquetaSeparacao
     const STATUS_PRIMEIRA_CONFERENCIA = 551;
     const STATUS_SEGUNDA_CONFERENCIA = 552;
 
+    const PREFIXO_ETIQUETA_SEPARACAO = 10;
+    const PREFIXO_ETIQUETA_MAE = 11;
+    const PREFIXO_MAPA_SEPARACAO = 12;
+    const PREFIXO_ETIQUETA_VOLUME = 13;
 
     /**
      * @Id
