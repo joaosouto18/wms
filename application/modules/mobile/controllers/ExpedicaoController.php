@@ -82,12 +82,18 @@ class Mobile_ExpedicaoController extends Action
         $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
+            $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
         } else if ($result==0) {
             $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
         } else {
             $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
         }
-        $this->redirect('mobile/ordem-servico/conferencia-expedicao/idCentral/'.$central);
+
+        if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
+            $this->redirect('carregamento', 'expedicao','mobile', array('idExpedicao' => $idExpedicao));
+        } else {
+            $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
+        }
 
     }
 
@@ -674,6 +680,32 @@ class Mobile_ExpedicaoController extends Action
         $this->bloquearOs = $this->getSystemParameterValue('BLOQUEIO_OS');
 
         return $this->bloquearOs;
+    }
+
+    public function carregamentoAction()
+    {
+        $operadores     = $this->_getParam('mass-id');
+        $idExpedicao    = $this->_getParam('idExpedicao');
+        $sessao = new \Zend_Session_Namespace('coletor');
+        $central        = $sessao->centralSelecionada;
+
+        if ($operadores && $idExpedicao) {
+
+            /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
+            $carregamentoRepo = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+            try {
+                $carregamentoRepo->vinculaOperadores($idExpedicao,$operadores);
+                $this->_helper->messenger('success', 'Operadores vinculados a expedicao com sucesso');
+                $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
+            } catch(Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+            }
+        }
+
+        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
+        $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
+        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil('EQP.CARREGAMENTO');
+        $this->view->idExpedicao    = $idExpedicao;
     }
 
 }
