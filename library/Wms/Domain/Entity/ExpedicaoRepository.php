@@ -1888,6 +1888,9 @@ class ExpedicaoRepository extends EntityRepository
             if ((substr($codBarras,0,2)) == "69") {
                 $codBarras = '10' . $codBarras;
             }
+            if ((substr($codBarras,0,2)) == "68") {
+                $codBarras = '10' . $codBarras;
+            }
 
             if ((substr($codBarras,0,2)) == "10") {
                 //ETIQUETA DE SEPARAÇÃO
