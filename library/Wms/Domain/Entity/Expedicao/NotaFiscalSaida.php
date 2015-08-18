@@ -34,6 +34,17 @@ class NotaFiscalSaida
     protected $serieNf;
 
     /**
+     * @Column(name="COD_PESSOA", type="string",nullable=false)
+     */
+    protected $codPessoa;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa")
+     * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_PESSOA")
+     */
+    protected $pessoa;
+
+    /**
      * @Column(name="VALOR_TOTAL_NF", type="decimal",nullable=false)
      */
     protected $valorTotal;
@@ -123,4 +134,37 @@ class NotaFiscalSaida
     {
         $this->status = $status;
     }
+
+    /**
+     * @param mixed $codPessoa
+     */
+    public function setCodPessoa($codPessoa)
+    {
+        $this->codPessoa = $codPessoa;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPessoa()
+    {
+        return $this->codPessoa;
+    }
+
+    /**
+     * @param mixed $pessoa
+     */
+    public function setPessoa($pessoa)
+    {
+        $this->pessoa = $pessoa;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPessoa()
+    {
+        return $this->pessoa;
+    }
+
 }
