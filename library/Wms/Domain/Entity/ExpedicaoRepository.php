@@ -1882,6 +1882,13 @@ class ExpedicaoRepository extends EntityRepository
         $LeituraColetor = new LeituraColetor();
         $codBarras = (float) $codBarras;
         if (strlen($codBarras) >2){
+
+            // TRAVA PARA EVITAR UM UPDATE EM MASSA NA SIMONETTI E LINHARES
+            // REMOVER FUTURAMENTE
+            if ((substr($codBarras,0,2)) == "69") {
+                $codBarras = '10' . $codBarras;
+            }
+
             if ((substr($codBarras,0,2)) == "10") {
                 //ETIQUETA DE SEPARAÇÃO
                 $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
