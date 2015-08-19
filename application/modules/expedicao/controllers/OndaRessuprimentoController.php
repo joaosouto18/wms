@@ -38,6 +38,15 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $this->exportPDF($produtosSemPicking,'Produtos-sem-picking','Produtos Sem Picking - Expedições: ' . $strExpedicao,'P');
     }
 
+    public function relatorioSemEstoqueAjaxAction(){
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $expedicoes = $this->_getParam("expedicoes");
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+        $this->exportPDF($verificaDisponibilidadeEstoquePedido,'sem-estoque','Produtos sem estoque','P');
+    }
+
+
     public function gerarAction()
     {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
@@ -47,7 +56,12 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
 
         if (count($verificaDisponibilidadeEstoquePedido) > 0){
-            $this->addFlashMessage("error", "Existem Produtos sem Estoque nas Expedições Selecionadas.");
+            $idExp = $expedicoes = implode(',', $expedicoes);
+
+            $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+            $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+
+            $this->addFlashMessage("error", $mensagem);
             $this->redirect("index","onda-ressuprimento","expedicao");
         }
 
