@@ -56,12 +56,11 @@ class DescargaRepository extends EntityRepository
     public function getInfosDescarga($params)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('r.id Recebimento, u.login Funcionario, rd.dataVinculo Data_Vinculo, sum(np.numPeso) Peso_Total, count(p.id) N_Paletes')
+            ->select('r.id Recebimento, u.login Funcionario, rd.dataVinculo Data_Vinculo, count(p.id) N_Paletes')
             ->from('wms:Recebimento\Descarga', 'rd')
             ->innerjoin('rd.usuario', 'u')
             ->innerjoin('rd.recebimento', 'r')
-            ->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'rd.recebimento = p.recebimento')
-            ->innerJoin('wms:Produto\NormaPaletizacao', 'np', 'WITH', 'p.codNormaPaletizacao = np.id')
+            ->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'r.id = p.recebimento')
             ->orderBy('r.id')
             ->groupBy('r.id, u.login, rd.dataVinculo');
 
@@ -70,15 +69,19 @@ class DescargaRepository extends EntityRepository
                 ->setParameter('idUsuario', $params['operadores']);
         }
 
-        if (!empty($params['data'])) {
-            $DataFinal1 = str_replace("/", "-", $params['data']);
-            $dataF1 = new \DateTime($DataFinal1);
+        if (!empty($params['dataInicio']) && !empty($params['dataFim'])) {
+            $dataInicio = str_replace('/','-',$params['dataInicio']);
+            $dataInicio = new \DateTime($dataInicio);
+            $dataInicio = $dataInicio->format('Y-m-d');
 
-            $source->andWhere("TRUNC(rd.dataVinculo) = ?3")
-                ->setParameter(3, $dataF1);
+            $dataFim = str_replace('/','-',$params['dataFim']);
+            $dataFim = new \DateTime($dataFim);
+            $dataFim = $dataFim->format('Y-m-d');
+
+            $source->andWhere("TRUNC(rd.dataVinculo) between '$dataInicio' AND '$dataFim'");
         }
 
-        return $source->getQuery()->getArrayResult();
+        return $source->getQuery()->getResult();
     }
 
 }
