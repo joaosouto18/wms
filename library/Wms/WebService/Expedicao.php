@@ -853,7 +853,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $this->_em->commit();
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
         return true;
     }
@@ -919,7 +919,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $this->_em->persist($reentregaEn);
             $this->_em->flush();
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
 
         return true;
