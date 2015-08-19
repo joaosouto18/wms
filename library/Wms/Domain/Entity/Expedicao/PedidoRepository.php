@@ -232,14 +232,16 @@ class PedidoRepository extends EntityRepository
 
         foreach ($pedidoProdutoEn as $pedidoProduto) {
             $mapaSeparacaoProdutoEn = $mapaSeparacaProdutoRepo->findOneBy(array('codPedidoProduto' => $pedidoProduto->getId()));
-            $mapaSeparacaoEn = $mapaSeparacaoRepo->findOneBy(array('id' => $mapaSeparacaoProdutoEn->getMapaSeparacao()));
-            $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacaoEn->getId()));
+            if ($mapaSeparacaoProdutoEn != null) {
+                $mapaSeparacaoEn = $mapaSeparacaoRepo->findOneBy(array('id' => $mapaSeparacaoProdutoEn->getMapaSeparacao()));
+                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacaoEn->getId()));
 
-            $this->_em->remove($mapaSeparacaoQuebraEn);
-            $this->_em->remove($mapaSeparacaoEn);
+                $this->_em->remove($mapaSeparacaoQuebraEn);
+                $this->_em->remove($mapaSeparacaoEn);
 
-            $this->_em->remove($mapaSeparacaoProdutoEn);
-            $this->_em->flush();
+                $this->_em->remove($mapaSeparacaoProdutoEn);
+                $this->_em->flush();
+            }
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
