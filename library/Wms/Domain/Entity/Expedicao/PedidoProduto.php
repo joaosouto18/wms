@@ -66,6 +66,11 @@ class PedidoProduto
      */
     protected $qtdCortada;
 
+    /**
+     * @Column(name="VALOR_VENDA", type="decimal", nullable=false)
+     */
+    protected $valorVenda;
+
     public function setProdutos($produtos)
     {
         $this->produtos = $produtos;
@@ -177,5 +182,22 @@ class PedidoProduto
     {
         return $this->qtdCortada;
     }
+
+    /**
+     * @param mixed $valorVenda
+     */
+    public function setValorVenda($valorVenda)
+    {
+        $this->valorVenda = $valorVenda;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getValorVenda()
+    {
+        return $this->valorVenda;
+    }
+
 
 }
