@@ -532,7 +532,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function gerarMapaEtiquetaReentrega(array $idExpedicao){
+    public function gerarMapaEtiquetaReentrega($idExpedicao){
         $reentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Reentrega");
         $nfProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaidaPedido");
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
