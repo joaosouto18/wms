@@ -560,13 +560,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 //                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
 //                    ($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
 //                    ($statusExpedicao == Expedicao::STATUS_EM_CONFERENCIA)){
-                    if ( count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'], EtiquetaSeparacao::STATUS_PENDENTE_CORTE)) > 0) {
-                        throw new Exception("Pedido $pedido[codPedido] tem etiquetas pendentes de corte");
-                    } else if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
-                        throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
-                    } else {
-                        $PedidoRepo->remove($PedidoEntity);
-                    }
+                if ( count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'], EtiquetaSeparacao::STATUS_PENDENTE_CORTE)) > 0) {
+                    throw new Exception("Pedido $pedido[codPedido] tem etiquetas pendentes de corte");
+                } else if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
+                    throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
+                } else {
+                    $PedidoRepo->remove($PedidoEntity);
+                }
 //                } else {
 //                    $statusEntity           = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
 //                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));

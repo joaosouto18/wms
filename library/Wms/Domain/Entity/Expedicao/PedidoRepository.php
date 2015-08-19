@@ -225,15 +225,19 @@ class PedidoRepository extends EntityRepository
         $pedidoProdutoEn = $pedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaProdutoRepo */
         $mapaSeparacaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaRepo */
-        $mapaSeparacaRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
-        foreach ($pedidoProdutoEn as $pedidoProduto) {
-            $mapaSeparacaoProdutoEn = $mapaSeparacaProdutoRepo->findBy(array('codPedidoProduto' => $pedidoProduto->getId()));
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
+        $mapaSeparacaoQuebraRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
-            $mapaSeparacaoEn = $mapaSeparacaRepo->findBy(array('id' => $mapaSeparacaoProdutoEn->getMapaSeparacao()));
-            foreach ($mapaSeparacaoEn as $mapaSeparacao) {
-                $this->_em->remove($mapaSeparacao);
-            }
+        foreach ($pedidoProdutoEn as $pedidoProduto) {
+            $mapaSeparacaoProdutoEn = $mapaSeparacaProdutoRepo->findOneBy(array('codPedidoProduto' => $pedidoProduto->getId()));
+            $mapaSeparacaoEn = $mapaSeparacaoRepo->findOneBy(array('id' => $mapaSeparacaoProdutoEn->getMapaSeparacao()));
+            $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacaoEn->getId()));
+
+            $this->_em->remove($mapaSeparacaoQuebraEn);
+            $this->_em->remove($mapaSeparacaoEn);
+
             $this->_em->remove($mapaSeparacaoProdutoEn);
             $this->_em->flush();
         }
@@ -247,6 +251,13 @@ class PedidoRepository extends EntityRepository
             $this->_em->flush();
         }
 
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaRessuprimentoPedidoRepo */
+        $ondaRessuprimentoPedidoRepo = $this->_em->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
+        $ondaRessuprimentoPedidoEn = $ondaRessuprimentoPedidoRepo->findOneBy(array('pedido' => $pedidoEntity));
+
+        if (isset($ondaRessuprimentoPedidoEn) && !empty($ondaRessuprimentoPedidoEn)) {
+            $this->_em->remove($ondaRessuprimentoPedidoEn);
+        }
         $this->_em->remove($pedidoEntity);
         $this->_em->flush();
     }
