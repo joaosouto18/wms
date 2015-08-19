@@ -595,28 +595,41 @@ class EnderecoRepository extends EntityRepository
             $sqlWhere = $sqlWhere . " AND DE.NUM_RUA >= " . $ruaInicial;
         }
 
-        $SQL = "SELECT DE.NUM_RUA,
-                       SUM(DE.QTD_ENDERECO) as POS_EXISTENTES,
-                       SUM(CASE WHEN O.QTD_DISPONIVEL > DE.QTD_ENDERECO THEN DE.QTD_ENDERECO ELSE O.QTD_DISPONIVEL END) AS POS_DISPONIVEIS
-                  FROM (SELECT COUNT(DE.COD_DEPOSITO_ENDERECO) as QTD_ENDERECO,
-                               DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA
-                          FROM DEPOSITO_ENDERECO DE
-                         WHERE DE.IND_ATIVO = 'S'
-                         GROUP BY DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA) DE
-             LEFT JOIN (SELECT TRUNC((O.TAMANHO_LONGARINA - O.OCUPADO) /UN.LARGURA) as QTD_DISPONIVEL,
-                               O.TAMANHO_LONGARINA - O.OCUPADO as LARGURA_DISPONIVEL,
-                               O.NUM_PREDIO, O.NUM_NIVEL, O.NUM_RUA
-                          FROM V_OCUPACAO_LONGARINA O,
-                          (SELECT MIN(NUM_LARGURA_UNITIZADOR * 100) LARGURA FROM UNITIZADOR) UN) O
-                    ON O.NUM_PREDIO = DE.NUM_PREDIO
-                   AND O.NUM_NIVEL = DE.NUM_NIVEL
-                   AND O.NUM_RUA = DE.NUM_RUA
-                 WHERE 1 = 1
-                   AND O.NUM_NIVEL > 0
-                   AND DE.NUM_NIVEL > 0
-                 $sqlWhere
-                GROUP BY DE.NUM_RUA
-                ORDER BY DE.NUM_RUA";
+        $SQL = "SELECT NUM_RUA,
+                       SUM(POS_EXISTENTES) as POS_EXISTENTES,
+                       SUM(CASE WHEN (POS_EXISTENTES - QTD_OCUPADOS) > POS_DISPONIVEIS THEN POS_DISPONIVEIS ELSE (POS_EXISTENTES - QTD_OCUPADOS) END) AS POS_DISPONIVEIS
+                  FROM (SELECT DE.NUM_RUA,
+                               DE.NUM_PREDIO,
+                               DE.NUM_NIVEL,
+                               SUM(DE.QTD_ENDERECO) as POS_EXISTENTES,
+                               SUM(CASE WHEN DISP.QTD_DISPONIVEL > DE.QTD_ENDERECO THEN DE.QTD_ENDERECO ELSE DISP.QTD_DISPONIVEL END) AS POS_DISPONIVEIS,
+                               SUM(NVL(OCUP.QTD_OCUPADOS,0)) as QTD_OCUPADOS
+                          FROM (SELECT COUNT(DE.COD_DEPOSITO_ENDERECO) as QTD_ENDERECO,
+                                       DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA
+                                  FROM DEPOSITO_ENDERECO DE
+                                 WHERE DE.IND_ATIVO = 'S'
+                                 GROUP BY DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA) DE
+                     LEFT JOIN (SELECT TRUNC((O.TAMANHO_LONGARINA - O.OCUPADO) /UN.LARGURA) as QTD_DISPONIVEL,
+                                       O.TAMANHO_LONGARINA - O.OCUPADO as LARGURA_DISPONIVEL,
+                                       O.NUM_PREDIO, O.NUM_NIVEL, O.NUM_RUA
+                                  FROM V_OCUPACAO_LONGARINA O,
+                                       (SELECT MIN(NUM_LARGURA_UNITIZADOR * 100) LARGURA FROM UNITIZADOR) UN) DISP
+                            ON DISP.NUM_PREDIO = DE.NUM_PREDIO
+                           AND DISP.NUM_NIVEL = DE.NUM_NIVEL
+                           AND DISP.NUM_RUA = DE.NUM_RUA
+                     LEFT JOIN (SELECT COUNT(DISTINCT (DE.COD_DEPOSITO_ENDERECO)) as QTD_OCUPADOS,
+                                       DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL
+                                  FROM ESTOQUE E LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                                 GROUP BY DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL) OCUP
+                            ON OCUP.NUM_PREDIO = DE.NUM_PREDIO
+                           AND OCUP.NUM_NIVEL = DE.NUM_NIVEL
+                           AND OCUP.NUM_RUA = DE.NUM_RUA
+                     WHERE 1 = 1
+                      AND DE.NUM_NIVEL > 0
+                      $sqlWhere
+                     GROUP BY DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL) OCUP
+                 GROUP BY NUM_RUA
+                 ORDER BY NUM_RUA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
