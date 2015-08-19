@@ -20,6 +20,11 @@ class EtiquetaSeparacao
     const STATUS_SEGUNDA_CONFERENCIA = 552;
     const STATUS_PENDENTE_REENTREGA = 558;
 
+    const PREFIXO_ETIQUETA_SEPARACAO = 10;
+    const PREFIXO_ETIQUETA_MAE = 11;
+    const PREFIXO_MAPA_SEPARACAO = 12;
+    const PREFIXO_ETIQUETA_VOLUME = 13;
+
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")

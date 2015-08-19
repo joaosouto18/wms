@@ -21,9 +21,13 @@ class RelatorioDescarga extends Form
                     'style' => 'height:auto; width:100%',
                     'multiOptions' => $usuariosDescarga
                 ))
-                ->addElement('date', 'data', array(
-                    'label' => 'Data',
+                ->addElement('date', 'dataInicio', array(
+                    'label' => 'Data Inicio',
                     'size' => 10,
+                    'decorators' => array('ViewHelper'),
+                ))
+                ->addElement('date', 'dataFim', array(
+                    'label' => 'Data Fim',
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('submit', 'submit', array(
@@ -31,7 +35,7 @@ class RelatorioDescarga extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-            ->addDisplayGroup(array('operadores', 'data', 'submit'), 'identificacao', array('legend' => 'Busca')
+            ->addDisplayGroup(array('operadores', 'dataInicio', 'dataFim', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
     }
 
