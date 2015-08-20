@@ -56,6 +56,18 @@ class Expedicao_OsController extends Action
                 ),
                 'tag' => 'a'
             );
+            $buttons[] = array(
+                'label' => 'Reentrega Pend.',
+                'cssClass' => 'dialogAjax',
+                'urlParams' => array(
+                    'module' => 'expedicao',
+                    'controller' => 'pendencia',
+                    'action' => 'pendencia-reentrega-ajax',
+                    'id' => $idExpedicao
+                ),
+                'tag' => 'a'
+            );
+
             if ($ExpedicaoRepo->getProdutosEmbalado($idExpedicao)> 0) {
                 $buttons[] = array(
                     'label' => 'Embalados Pend. Conf.',

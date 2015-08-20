@@ -1526,4 +1526,35 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
+    public function getEtiquetasReentrega($idExpedicao, $codStatus = null) {
+        $SQL = "
+        SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
+               PROD.COD_PRODUTO,
+               PROD.DSC_GRADE,
+               PROD.DSC_PRODUTO PRODUTO,
+               NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
+               PES.NOM_PESSOA as CLIENTE
+         FROM REENTREGA R
+         LEFT JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSP ON NFSP.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+         LEFT JOIN PEDIDO P ON P.COD_PEDIDO = NFSP.COD_PEDIDO
+         LEFT JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
+         LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = P.COD_PEDIDO
+         LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
+         LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
+         LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = ES.COD_PRODUTO AND PROD.DSC_GRADE = ES.DSC_GRADE
+         LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+         WHERE 1 = 1
+           AND C.COD_EXPEDICAO = $idExpedicao
+        ";
+
+        if ($codStatus != null) {
+            $SQL = $SQL . " AND ES.COD_STATUS = $codStatus";
+        }
+
+        $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
+        $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+
 }

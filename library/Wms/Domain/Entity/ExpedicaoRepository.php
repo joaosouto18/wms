@@ -486,6 +486,14 @@ class ExpedicaoRepository extends EntityRepository
         $qtdEtiquetasPendenteConferencia = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $expedicaoEn, $central);
         $qtdEtiquetasPendenteImpressão = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $expedicaoEn, $central);
 
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA')) {
+
+            $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId, EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            if ($qtdEtiquetasPendenteReentrega >0) {
+                return 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
+            }
+        }
+
         if ($qtdEtiquetasPendenteConferencia > 0) {
             return 'Existem etiquetas pendentes de conferência nesta expedição';
         } else if ($qtdEtiquetasPendenteImpressão > 0) {
