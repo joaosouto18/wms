@@ -98,10 +98,12 @@ class Identificacao extends SubForm
                 ->addDisplayGroup(
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
                 )
-                ->addElement('text', 'validade', array(
+                ->addElement('select', 'validade', array(
                     'label' => 'Possui validade (S/N)',
-                    'size'=> 10,
-                    'maxlength' => 1
+                    'multiOptions' => array(
+                        'S' => 'S',
+                        'N' => 'N'
+                    ),
                 ))
                 ->addElement('text', 'diasVidaUtil', array(
                         'label' => 'Dias para Vencimento',
