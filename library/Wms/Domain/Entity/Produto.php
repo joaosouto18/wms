@@ -111,6 +111,18 @@ class Produto
      */
     protected $linhaSeparacao;
 
+    /**
+     * @Column(name="DIAS_VIDA_UTIL", type="integer")
+     * @var int
+     */
+    protected $diasVidaUtil;
+
+    /**
+     * $Column(name="POSSUI_VALIDADE", type="string")
+     * @var string
+     */
+    protected $validade;
+
     public function __construct()
     {
         $this->volumes = new ArrayCollection;
@@ -319,6 +331,38 @@ class Produto
     {
         $this->numVolumes = $numVolumes;
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDiasVidaUtil()
+    {
+        return $this->diasVidaUtil;
+    }
+
+    /**
+     * @param int $diasVidaUtil
+     */
+    public function setDiasVidaUtil($diasVidaUtil)
+    {
+        $this->diasVidaUtil = $diasVidaUtil;
+    }
+
+    /**
+     * @return string
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param string $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
     }
 
 }
