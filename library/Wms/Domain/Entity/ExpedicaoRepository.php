@@ -488,8 +488,8 @@ class ExpedicaoRepository extends EntityRepository
 
         if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA')) {
 
-            $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId, EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
-            if ($qtdEtiquetasPendenteReentrega >0) {
+            $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            if (count($qtdEtiquetasPendenteReentrega) >0) {
                 return 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
             }
         }
