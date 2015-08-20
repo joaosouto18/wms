@@ -1681,33 +1681,37 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutosSemEstoqueByExpedicao($idExpedicao) 
     {
 
-        $sql = "SELECT RESERVA.CODIGO,
-                RESERVA.GRADE,
-                PROD.DSC_PRODUTO PRODUTO,
-                RESERVA.DSC_VOLUME VOLUME,
-                DE.DSC_DEPOSITO_ENDERECO ENDERECO,
-                (RESERVA.QTDRESERVADA * -1) QTD_RESERVADA,
-                (ESTOQUE.QTDESTOQUE - RESERVA.QTDRESERVADA) SALDO_NEGATIVO
-                    FROM (SELECT REP.COD_PRODUTO AS CODIGO, REP.DSC_GRADE GRADE,
-                    (SUM(REP.QTD_RESERVADA)) QTDRESERVADA,
-                    PV.COD_DEPOSITO_ENDERECO ENDERECO,
-                    PV.DSC_VOLUME,
-                    NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
-                          FROM RESERVA_ESTOQUE_EXPEDICAO REE
-                          INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
-                          INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                          LEFT JOIN PRODUTO_VOLUME PV ON REP.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
-                          WHERE REE.COD_EXPEDICAO = $idExpedicao AND RE.IND_ATENDIDA = 'N'
-                          GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, PV.COD_DEPOSITO_ENDERECO, PV.DSC_VOLUME, PV.COD_PRODUTO_VOLUME) RESERVA
-                    LEFT JOIN (SELECT SUM(E.QTD) QTDESTOQUE, E.COD_PRODUTO CODIGO, E.DSC_GRADE GRADE, E.COD_DEPOSITO_ENDERECO ENDERECO, NVL(E.COD_PRODUTO_VOLUME,0) as VOLUME
-                          FROM ESTOQUE E
-                          GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) ESTOQUE ON ESTOQUE.CODIGO = RESERVA.CODIGO AND ESTOQUE.GRADE = RESERVA.GRADE
-                          AND ESTOQUE.ENDERECO = RESERVA.ENDERECO AND ESTOQUE.VOLUME = RESERVA.VOLUME
-                          LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = RESERVA.CODIGO AND PROD.DSC_GRADE = RESERVA.GRADE
-                          LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RESERVA.ENDERECO
-                    WHERE ESTOQUE.QTDESTOQUE - RESERVA.QTDRESERVADA < 0";
+        $SQL = "
+            SELECT * FROM (
+            SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                   REP.COD_PRODUTO as CODIGO,
+                   REP.DSC_GRADE as GRADE,
+                   P.DSC_PRODUTO as PRODUTO,
+                   NVL(PV.DSC_VOLUME,'PRODUTO UNITARIO') as VOLUME,
+                   NVL(E.QTD,0) as ESTOQUE,
+                   SUM(REP.QTD_RESERVADA) * -1 as QTD_RESERVADO,
+                   NVL(E.QTD,0) + SUM(REP.QTD_RESERVADA) as SALDO
+              FROM RESERVA_ESTOQUE_EXPEDICAO REE
+              LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+              LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+              LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = REP.COD_PRODUTO_VOLUME
+              LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+              LEFT JOIN PRODUTO P ON P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE
+              LEFT JOIN (SELECT COD_PRODUTO,DSC_GRADE, COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD) as QTD
+                           FROM ESTOQUE
+                          GROUP BY COD_PRODUTO, DSC_GRADE, COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)) E
+                ON E.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+               AND E.COD_PRODUTO = REP.COD_PRODUTO
+               AND E.DSC_GRADE = REP.DSC_GRADE
+               AND E.VOLUME = NVL(REP.COD_PRODUTO_VOLUME,0)
+             WHERE 1 = 1
+               AND REE.COD_EXPEDICAO = $idExpedicao
+               AND RE.IND_ATENDIDA = 'N'
+             GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, PV.DSC_VOLUME, P.DSC_PRODUTO, E.QTD, DE.DSC_DEPOSITO_ENDERECO)
+             WHERE SALDO <0
+             ORDER BY CODIGO";
 
-        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
 
     }
@@ -1929,14 +1933,6 @@ class ExpedicaoRepository extends EntityRepository
             }
             $idExpedicao = 0;
             switch ($etiquetaSeparacao->getStatus()->getId()){
-                case EtiquetaSeparacao::STATUS_CONFERIDO:
-                    $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
-                    if ($etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getStatus()->getId() != Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
-                        throw new \Exception("Etiqueta já Conferida");
-                    }
-                    $operacao = "Recebimento de Transbordo";
-                    $url = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
-                    break;
                 case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
                     throw new \Exception("Etiqueta pendente de impresão");
                     break;
@@ -1946,6 +1942,13 @@ class ExpedicaoRepository extends EntityRepository
                 case EtiquetaSeparacao::STATUS_PENDENTE_CORTE:
                     throw new \Exception("Etiqueta Pendente de Corte");
                     break;
+                case EtiquetaSeparacao::STATUS_CONFERIDO:
+                    $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+                    if ($etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
+                        $operacao = "Recebimento de Transbordo";
+                        $url = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+                    }
                 case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                     $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
 
