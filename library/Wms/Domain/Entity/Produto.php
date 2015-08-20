@@ -111,6 +111,7 @@ class Produto
      */
     protected $linhaSeparacao;
 
+
     /**
      * @Column(name="DIAS_VIDA_UTIL", type="integer")
      * @var int
@@ -118,7 +119,7 @@ class Produto
     protected $diasVidaUtil;
 
     /**
-     * $Column(name="POSSUI_VALIDADE", type="string")
+     * @Column(name="POSSUI_VALIDADE", type="string")
      * @var string
      */
     protected $validade;
