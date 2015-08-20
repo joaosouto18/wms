@@ -16,7 +16,6 @@ class ModeloSeparacaoRepository extends EntityRepository
             ->orderBy("m.id");
 
         return $source->getQuery()->getArrayResult();
-       // print_r($source->getQuery()->getArrayResult());die();
     }
 
     public function getQuebras($modelos) {

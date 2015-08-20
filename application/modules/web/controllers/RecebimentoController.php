@@ -17,6 +17,9 @@ use Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Module\Web\Form\Subform\FiltroNotaFiscal as FiltroNotaFiscalForm,
     Wms\Module\Web\Grid\Recebimento as RecebimentoGrid,
     Wms\Module\Web\Grid\Recebimento\Andamento as AndamentoGrid,
+    Wms\Module\Web\Grid\Recebimento\ModeloRecebimento as ModeloRecebimentoGrid,
+    Wms\Module\Web\Form\Recebimento\ModeloRecebimento as ModeloRecebimentoForm,
+    Wms\Domain\Entity\Recebimento\ModeloRecebimento as ModeloRecebimentoEn,
     Wms\Module\Web\Grid\Recebimento\Conferencia as ConferenciaGrid;
 
 /**
@@ -1128,4 +1131,62 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         }
 
     }
+
+    public function modeloRecebimentoAction()
+    {
+
+        /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+        $modeloRecebimentoRepo = $this->em->getRepository('wms:Recebimento\ModeloRecebimento');
+
+        $modelos = $modeloRecebimentoRepo->getModelosRecebimento();
+
+        $grid = new ModeloRecebimentoGrid();
+        $this->view->grid = $grid->init($modelos)->render();
+    }
+
+    public function addAction()
+    {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+                array(
+                    'label' => 'Salvar',
+                    'cssClass' => 'btnSave'
+                ),
+            )
+        ));
+
+        $form = new ModeloRecebimentoForm();
+
+        try {
+            $params = $this->getRequest()->getParams();
+
+            /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+            $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+                $modeloRecebimentoEn = new ModeloRecebimentoEn();
+                $modeloRecebimentoRepo->save($modeloRecebimentoEn, $params['cadastro']);
+                $this->em->flush();
+
+                $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
+                $this->_redirect('/recebimento/modelo-recebimento');
+
+            }
+            //$form->setDefaultsFromEntity($entity); // pass values to form
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+        $this->view->form = $form;
+    }
+
 }

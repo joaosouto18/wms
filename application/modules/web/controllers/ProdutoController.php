@@ -348,6 +348,4 @@ class Web_ProdutoController extends Crud {
             $modelo);
     }
 
-
-
 }

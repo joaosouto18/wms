@@ -22,6 +22,12 @@ class ModeloRecebimento
     protected $id;
 
     /**
+     * @Column(name="DESCRICAO", type="string")
+     * @var string
+     */
+    protected $descricao;
+
+    /**
      * @Column(name="CONTROLE_VALIDADE", type="string", nullable=false)
      * @var string
      */
@@ -57,6 +63,22 @@ class ModeloRecebimento
     public function setControleValidade($controleValidade)
     {
         $this->controleValidade = $controleValidade;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescricao()
+    {
+        return $this->descricao;
+    }
+
+    /**
+     * @param string $descricao
+     */
+    public function setDescricao($descricao)
+    {
+        $this->descricao = $descricao;
     }
 
 }
