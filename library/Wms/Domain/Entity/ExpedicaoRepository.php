@@ -260,11 +260,13 @@ class ExpedicaoRepository extends EntityRepository
 
         $expedicoes = implode(',', $expedicoes);
 
-        $sql = "SELECT PEDIDO.COD_PRODUTO AS Codigo,
+        $sql = "SELECT * FROM (
+                SELECT DISTINCT
+                       PEDIDO.COD_PRODUTO AS Codigo,
                        PEDIDO.DSC_GRADE AS Grade,
                        PROD.DSC_PRODUTO as Produto,
-                       E.QTD AS Qtd,
-                       (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo
+                       NVL(E.QTD,0) AS Estoque,
+                       (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
        FROM (SELECT SUM(PP.QUANTIDADE - PP.QTD_CORTADA) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
                FROM PEDIDO P
               INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
@@ -296,7 +298,9 @@ class ExpedicaoRepository extends EntityRepository
   LEFT JOIN PRODUTO PROD
          ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
       WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
-        AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido <0";
+        AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido <0) PROD
+      ORDER BY Codigo, Grade, Produto
+        ";
 
         return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
     }
