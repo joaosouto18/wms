@@ -174,9 +174,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.dthConferencia')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->where('es.codExpedicao = :idExpedicao')
-            ->andWhere('es.codStatus = :Status')
-            ->setParameter('idExpedicao', $idExpedicao)
-            ->setParameter('Status', $status);
+            ->setParameter('idExpedicao', $idExpedicao);
+
+
+        if ($status != null) {
+            $dql->andWhere('es.codStatus = :Status')
+                ->setParameter('Status', $status);
+        }
         return $dql->getQuery()->getResult();
     }
 
@@ -1306,6 +1310,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->_em->flush();
 
         }
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
+        $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
+        $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
+
+        if ($pedidosNaoCancelados == 0) {
+            $qtdCorte     = $this->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
+            $qtdEtiquetas = $this->getEtiquetasByStatus(null,$idExpedicao);
+            if ($qtdCorte == $qtdEtiquetas) {
+                $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
+                $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
+                $this->_em->flush();
+            }
+        }
+
 
         return true;
     }

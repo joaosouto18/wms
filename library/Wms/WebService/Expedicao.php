@@ -311,6 +311,24 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $pedidoRepository->cancelar($idPedido);
 
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
+        $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo  */
+        $etiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+        $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
+        $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
+        if ($pedidosNaoCancelados == 0) {
+            $qtdCorte     = $etiquetaSeparacaoRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
+            $qtdEtiquetas = $etiquetaSeparacaoRepo->getEtiquetasByStatus(null,$idExpedicao);
+            if ($qtdCorte == $qtdEtiquetas) {
+                $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
+                $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
+                $this->_em->flush();
+            }
+        }
+
+
         return true;
     }
 
