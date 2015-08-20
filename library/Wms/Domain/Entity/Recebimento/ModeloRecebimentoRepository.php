@@ -14,7 +14,6 @@ class ModeloRecebimentoRepository extends EntityRepository
 
         $this->_em->persist($modeloRecebimentoEntity);
         $this->_em->flush();
-
     }
 
     public function getModelosRecebimento() {

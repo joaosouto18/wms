@@ -1175,13 +1175,76 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
                 $modeloRecebimentoEn = new ModeloRecebimentoEn();
                 $modeloRecebimentoRepo->save($modeloRecebimentoEn, $params['cadastro']);
-                $this->em->flush();
 
                 $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
                 $this->_redirect('/recebimento/modelo-recebimento');
 
             }
             //$form->setDefaultsFromEntity($entity); // pass values to form
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+        $this->view->form = $form;
+    }
+
+    public function deleteModeloAction()
+    {
+        try {
+            $params = $this->getRequest()->getParams();
+
+            /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+            $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+            $modeloRecebimentoEn = $modeloRecebimentoRepo->findOneBy(array('id' => $params['id']));
+
+            $this->_em->remove($modeloRecebimentoEn);
+            $this->_em->flush();
+
+            $this->addFlashMessage('success', 'Modelo de Recebimento excluido com sucesso.');
+            $this->_redirect('/recebimento/modelo-recebimento');
+
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+    }
+
+    public function editAction()
+    {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+                array(
+                    'label' => 'Salvar',
+                    'cssClass' => 'btnSave'
+                ),
+            )
+        ));
+
+        $form = new ModeloRecebimentoForm();
+
+        try {
+            $params = $this->getRequest()->getParams();
+
+            /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+            $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+                $modeloRecebimentoEn = $modeloRecebimentoRepo->findOneBy(array('id' => $params['id']));
+                $modeloRecebimentoRepo->save($modeloRecebimentoEn, $params['cadastro']);
+
+                $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
+                $this->_redirect('/recebimento/modelo-recebimento');
+
+            }
+            //$form->setDefaults($modeloRecebimentoEn); // pass values to form
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }

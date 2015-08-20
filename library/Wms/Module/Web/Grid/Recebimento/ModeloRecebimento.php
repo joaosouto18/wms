@@ -27,14 +27,14 @@ class ModeloRecebimento extends Grid
                     'label' => 'Editar',
                     'moduleName' => 'web',
                     'controllerName' => 'recebimento',
-                    'actionName' => '',
+                    'actionName' => 'edit',
                     'pkIndex' => 'id'
                 ))
                 ->addAction(array(
                     'label' => 'Excluir',
                     'moduleName' => 'web',
                     'controllerName' => 'recebimento',
-                    'actionName' => '',
+                    'actionName' => 'delete-modelo',
                     'pkIndex' => 'id'
                 ));
 
