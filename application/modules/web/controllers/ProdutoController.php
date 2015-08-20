@@ -168,9 +168,12 @@ class Web_ProdutoController extends Crud {
                     }
                 }
 
+                $validade = strtoupper($params['produto']['validade']);
+                $entity->setValidade($validade);
+                $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
+
                 $this->repository->save($entity, $this->getRequest()->getParams());
                 $this->em->flush();
-                //$this->_helper->messenger('success', 'Produto alterado com sucesso.');
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');

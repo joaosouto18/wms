@@ -98,18 +98,18 @@ class Identificacao extends SubForm
                 ->addDisplayGroup(
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
                 )
-                ->addElement('text', 'possuiValidade', array(
+                ->addElement('text', 'validade', array(
                     'label' => 'Possui validade (S/N)',
                     'size'=> 10,
                     'maxlength' => 1
                 ))
-                ->addElement('text', 'validadeDias', array(
+                ->addElement('text', 'diasVidaUtil', array(
                         'label' => 'Dias para Vencimento',
                         'size' => 10,
                         'maxlength' => 4
                 ))
                 ->addDisplayGroup(
-                        array('possuiValidade', 'validadeDias'), 'validadeProdutos', array('legend' => 'Validade')
+                        array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
                 );
     }
 
@@ -128,8 +128,8 @@ class Identificacao extends SubForm
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
-            'possuiValidade' => $produto->getValidade(),
-            'validadeDias' => $produto->getDiasVidaUtil(),
+            'validade' => $produto->getValidade(),
+            'diasVidaUtil' => $produto->getDiasVidaUtil(),
         );
 
         $this->setDefaults($values);
