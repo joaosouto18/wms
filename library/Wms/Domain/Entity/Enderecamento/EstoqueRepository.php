@@ -143,10 +143,10 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setQtd($novaQtd);
         }
 
-        if ($novaQtd + $qtdReserva < 0) {
-            throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
-        } else if ($novaQtd > 0) {
+        if ($novaQtd > 0) {
             $em->persist($estoqueEn);
+        } else if ($novaQtd + $qtdReserva < 0) {
+            throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
         } else {
             $em->remove($estoqueEn);
         }
