@@ -221,7 +221,6 @@ class Expedicao_EtiquetaController  extends Action
         ));
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('id');
-        $LeituraColetor = new LeituraColetor();
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
         $mapaRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
@@ -233,7 +232,7 @@ class Expedicao_EtiquetaController  extends Action
         $mapa = new MapaSeparacao;
 
         if (isset($reimprimirTodos) && $reimprimirTodos != null) {
-            $mapa->imprimir($idExpedicao, 523);
+            $mapa->imprimir($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
         } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
             $codBarra    = $request->getParam('codBarra');
             if (!$codBarra) {
@@ -245,7 +244,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', "Etiqueta $codBarra não encontrada");
                 $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
             }
-            $mapa->imprimir($idExpedicao, 523, $codBarra);
+            $mapa->imprimir($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $codBarra);
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');

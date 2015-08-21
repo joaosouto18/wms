@@ -45,22 +45,21 @@ class MapaSeparacao extends Pdf
 
     public function Footer()
     {
-        $this->SetY(-52);
-
         $this->SetFont('Arial',null,10);
         $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
         $this->SetFont('Arial','B',9);
 
         $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
-
-        $this->Image(@CodigoBarras::gerarNovo($this->idMapa), 150, 250, 50);
         $this->SetFont('Arial','B',7);
         //Go to 1.5 cm from bottom
         $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+
+        //$this->SetY(-92);
+        $this->Image(@CodigoBarras::gerarNovo($this->idMapa), 150, 280, 50);
     }
 
 
-    public function imprimir($idExpedicao, $status = 522, $codBarras = null)
+    public function imprimir($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -76,7 +75,7 @@ class MapaSeparacao extends Pdf
         foreach ($mapaSeparacao as $mapa) {
             $produtos = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
             $quebras = $mapa->getDscQuebra();
-            $mapa->setCodStatus(523);
+            $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
 
             $this->idMapa = $mapa->getId();
