@@ -117,7 +117,7 @@ class Mobile_RecebimentoController extends Action
     {
         // carrega js da pg
         $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/mobile/recebimento/produto-quantidade.js');
-        
+
         $form = new ProdutoQuantidadeForm;
 
         try {
