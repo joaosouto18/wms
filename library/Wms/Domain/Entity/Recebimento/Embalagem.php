@@ -67,6 +67,12 @@ class Embalagem
     protected $normaPaletizacao;
 
     /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $dataValidade;
+
+    /**
      * @param \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      */
     public function setNormaPaletizacao($normaPaletizacao)
@@ -140,6 +146,22 @@ class Embalagem
     {
         $this->embalagem = $embalagem;
         return $this;
+    }
+
+    /**
+     * @return date
+     */
+    public function getDataValidade()
+    {
+        return $this->dataValidade;
+    }
+
+    /**
+     * @param date $dataValidade
+     */
+    public function setDataValidade($dataValidade)
+    {
+        $this->dataValidade = $dataValidade;
     }
 
 }

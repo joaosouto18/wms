@@ -568,7 +568,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao = NULL)
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao = NULL, $params)
     {
 
         $em = $this->getEntityManager();
@@ -578,12 +578,14 @@ class RecebimentoRepository extends EntityRepository
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
         $produtoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idProdutoEmbalagem);
+        $validade = new \DateTime($params['dataValidade']);
 
         $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity)
                 ->setOrdemServico($ordemServicoEntity)
                 ->setEmbalagem($produtoEmbalagemEntity)
                 ->setQtdConferida($qtdConferida)
-                ->setDataConferencia(new \DateTime);
+                ->setDataConferencia(new \DateTime)
+                ->setDataValidade($validade);
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
@@ -603,7 +605,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null)
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params)
     {
         $em = $this->getEntityManager();
 
@@ -612,12 +614,14 @@ class RecebimentoRepository extends EntityRepository
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
         $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idProdutoVolume);
+        $validade = new \DateTime($params['dataValidade']);
 
         $recebimentoVolumeEntity->setRecebimento($recebimentoEntity)
                 ->setOrdemServico($ordemServicoEntity)
                 ->setVolume($produtoVolumeEntity)
                 ->setQtdConferida($qtdConferida)
-                ->setDataConferencia(new \DateTime);
+                ->setDataConferencia(new \DateTime)
+                ->setDataValidade($validade);
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);

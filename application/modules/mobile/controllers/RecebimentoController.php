@@ -170,6 +170,7 @@ class Mobile_RecebimentoController extends Action
 
         try {
             // data has been sent
+
             if (!$this->getRequest()->isPost())
                 throw new \Exception('Escaneie o volume/embalagem novamente.');
 
@@ -182,20 +183,34 @@ class Mobile_RecebimentoController extends Action
             $idProduto = $notaFiscalItemEntity->getProduto()->getId();
             $grade = $notaFiscalItemEntity->getGrade();
 
-            // caso embalagem
-            if ($this->_hasParam('idProdutoEmbalagem')) {                
-                // gravo conferencia do item
-                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao);
+            $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
+            $hoje = new Zend_Date;
+            $PeriodoUtil = $hoje->addDay($shelfLife);
+            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
 
-                $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+            // caso embalagem
+            if ($this->_hasParam('idProdutoEmbalagem')) {
+                if ($params['dataValidade'] >= $PeriodoUtil) {
+                    // gravo conferencia do item
+                    $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
+                    $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                } else {
+                    //autoriza recebimento
+                }
+
             } 
             
             // caso volume
             if ($this->_hasParam('idProdutoVolume')) {
-                // gravo conferencia do item
-                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao);
+                if ($params['dataValidade'] >= $PeriodoUtil) {
+                    // gravo conferencia do item
+                    $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
+                    $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                } else {
+                    $this->_helper->messenger('error', 'Autoriza Recebimento?');
+                    $this->redirect('autoriza-recebimento', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                }
 
-                $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // tudo certo, redireciono para a nova leitura
@@ -204,6 +219,12 @@ class Mobile_RecebimentoController extends Action
             $this->_helper->messenger('error', $e->getMessage());
             $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento));
         }
+    }
+
+    public function autorizaRecebimentoAction()
+    {
+        var_dump('ok'); exit;
+
     }
 
 }

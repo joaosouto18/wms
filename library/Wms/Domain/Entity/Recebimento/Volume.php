@@ -66,6 +66,12 @@ class Volume
      */
     protected $normaPaletizacao;
 
+    /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $dataValidade;
+
     public function getId()
     {
         return $this->id;
@@ -140,6 +146,22 @@ class Volume
     public function getNormaPaletizacao()
     {
         return $this->normaPaletizacao;
+    }
+
+    /**
+     * @return date
+     */
+    public function getDataValidade()
+    {
+        return $this->dataValidade;
+    }
+
+    /**
+     * @param date $dataValidade
+     */
+    public function setDataValidade($dataValidade)
+    {
+        $this->dataValidade = $dataValidade;
     }
 
 }
