@@ -421,6 +421,20 @@ class Volume
         return $this->pontoReposicao;
     }
 
+    /**
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
 
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
 
 }

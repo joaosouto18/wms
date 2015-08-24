@@ -6,7 +6,7 @@ namespace Wms\Domain\Entity\Recebimento;
  * Recebimento Embalagem
  *
  * @Table(name="RECEBIMENTO_VOLUME")
- * @Entity(repositoryClass="Wms\Domain\Entity\Recebimento\EmbalagemRepository")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Recebimento\VolumeRepository")
  */
 class Volume
 {

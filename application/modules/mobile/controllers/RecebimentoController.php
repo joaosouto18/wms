@@ -46,7 +46,7 @@ class Mobile_RecebimentoController extends Action
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
-        $result =  $recebimentoRepo->conferenciaColetor($idRecebimento, $idOS);
+        $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOS);
 
         if ($result['exception'] != null) {
             throw $result['exception'];
@@ -142,10 +142,18 @@ class Mobile_RecebimentoController extends Action
 
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
-            $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras);
-            $dataValidade = new Zend_Date($getDataValidadeUltimoProduto[0]['dataValidade']);
-            $dataValidade = $dataValidade->toString('dd/MM/Y');
-            $this->view->dataValidade = $dataValidade;
+
+            /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
+            $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+            $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
+            $idProduto = $produtoVolumeEn->getCodProduto();
+            $grade = $produtoVolumeEn->getGrade();
+            $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
+            if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
+                $dataValidade = new Zend_Date($getDataValidadeUltimoProduto[0]['dataValidade']);
+                $dataValidade = $dataValidade->toString('dd/MM/Y');
+                $this->view->dataValidade = $dataValidade;
+            }
 
             if ($itemNF['idEmbalagem'])
                 $this->_helper->viewRenderer('recebimento/embalagem-quantidade', null, true);
@@ -196,6 +204,7 @@ class Mobile_RecebimentoController extends Action
             if ($this->_hasParam('idProdutoEmbalagem')) {
                 if ($params['dataValidade'] >= $PeriodoUtil) {
                     // gravo conferencia do item
+                    $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
                     $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
                     $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
                 } else {
@@ -212,6 +221,7 @@ class Mobile_RecebimentoController extends Action
             if ($this->_hasParam('idProdutoVolume')) {
                 if ($params['dataValidade'] >= $PeriodoUtil) {
                     // gravo conferencia do item
+                    $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
                     $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
                     $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
                 } else {
