@@ -195,7 +195,11 @@ class Mobile_RecebimentoController extends Action
                     $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
                     $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
                 } else {
-                    //autoriza recebimento
+                    //autoriza recebimento?
+                    $this->redirect('autoriza-recebimento', 'recebimento', null, array(
+                        'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoEmbalagem' => $idProdutoEmbalagem,
+                        'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
+                        'idProduto' => $idProduto, 'grade' => $grade));
                 }
 
             } 
@@ -207,8 +211,11 @@ class Mobile_RecebimentoController extends Action
                     $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
                     $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
                 } else {
-                    $this->_helper->messenger('error', 'Autoriza Recebimento?');
-                    $this->redirect('autoriza-recebimento', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                   //Autoriza Recebimento?
+                    $this->redirect('autoriza-recebimento', 'recebimento', null, array(
+                        'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoVolume' => $idProdutoVolume,
+                        'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
+                        'idProduto' => $idProduto, 'grade' => $grade));
                 }
 
             }
@@ -221,9 +228,46 @@ class Mobile_RecebimentoController extends Action
         }
     }
 
+    //modal para autorização de recebimento
     public function autorizaRecebimentoAction()
     {
-        var_dump('ok'); exit;
+        $request = $this->getRequest();
+        $params = $this->_getAllParams();
+        $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+
+        if ($request->isPost()) {
+            $idRecebimento = $params['idRecebimento'];
+            $idOrdemServico = $params['idOrdemServico'];
+            $idProdutoVolume = $params['idProdutoVolume'];
+            $idProdutoEmbalagem = $params['idProdutoEmbalagem'];
+            $qtdConferida = $params['qtdConferida'];
+            $idNormaPaletizacao = $params['idNormaPaletizacao'];
+            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+            $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
+            $idProduto = $params['idProduto'];
+            $grade = $params['grade'];
+            $senhaDigitada = $params['senhaConfirmacao'];
+            $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
+            $submit = $params['btnFinalizar'];
+
+            if ($submit == 'semConferencia') {
+                if ($senhaDigitada == $senhaAutorizacao) {
+                    // gravo conferencia do item
+                    if (isset($idProdutoVolume)) {
+                        $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
+                        $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                    } elseif (isset($idProdutoEmbalagem)) {
+                        $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
+                        $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                    }
+                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                } else {
+                    $this->addFlashMessage('error', 'Senha informada não é válida');
+                    $this->_redirect('/mobile/recebimento/ler-codigo-barras/idRecebimento/'.$idRecebimento);
+                }
+            }
+        }
+
 
     }
 

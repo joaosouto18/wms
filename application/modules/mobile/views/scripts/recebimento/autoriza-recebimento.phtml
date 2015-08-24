@@ -1,0 +1,28 @@
+<form id="" method="post" class="saveForm" action="">
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable">
+            <tbody>
+            <tr>
+                <td>
+                    <div>
+                        <p><b>Data validade menor que prazo maximo de Shelf Life</b></p>
+                        <p><b>Autoriza Recebimento?</b></p>
+                    </div>
+                </td>
+            </tr>
+            <tr style="line-height: 50px;">
+                <td colspan="3">
+                    <?php
+                    echo '<label>Senha para confirmação: </label>';
+                    echo $this->formPassword("senhaConfirmacao", '', array(
+                        'size' => '50',
+                        'maxlength' => '20',
+                    ));
+                    ?>
+                    <button name="btnFinalizar" type="submit" value="semConferencia">Autorizar Recebimento</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</form>
