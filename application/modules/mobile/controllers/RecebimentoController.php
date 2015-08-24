@@ -136,12 +136,16 @@ class Mobile_RecebimentoController extends Action
             $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
             
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
-            
+
             if ($itemNF == null)
                 throw new \Exception('Nenhum produto encontrado com este Código de Barras.');
 
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
+            $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras);
+            $dataValidade = new Zend_Date($getDataValidadeUltimoProduto[0]['dataValidade']);
+            $dataValidade = $dataValidade->toString('dd/MM/Y');
+            $this->view->dataValidade = $dataValidade;
 
             if ($itemNF['idEmbalagem'])
                 $this->_helper->viewRenderer('recebimento/embalagem-quantidade', null, true);
