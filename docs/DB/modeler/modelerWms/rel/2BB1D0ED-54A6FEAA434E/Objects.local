@@ -1,0 +1,32 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="7650DBEC-A26A-91C3-8BCD-FAE0AEB78661" name="WMS_ADM" seqName="seg_0"/>
+   <object objectType="Table" objectID="F82FC4E6-7BF8-0D63-F19F-3D20CDC10C52" name="CARGA" seqName="seg_0"/>
+   <object objectType="Table" objectID="D3131D1C-2A0D-5AD4-B1BA-B8F0C9311F60" name="CLIENTE" seqName="seg_0"/>
+   <object objectType="Table" objectID="7C641DB2-D054-0D15-7343-E22ED50A781C" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="F39BAE12-16CF-315D-38B3-B777D9ACB7FC" name="ETIQUETA_SEPARACAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="AA0111C2-F744-7FD0-9E84-486EC5F56DD8" name="FABRICANTE" seqName="seg_0"/>
+   <object objectType="Table" objectID="7059823B-8495-4EAC-A27C-9B9AA1C97E83" name="ITINERARIO" seqName="seg_0"/>
+   <object objectType="Table" objectID="22D1F60D-F302-FF47-DD99-C1D4CD8BFB57" name="LINHA_SEPARACAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="FA3510AD-1E67-677F-EEFD-3D015917628F" name="PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="5DDB966E-5A90-AFB2-E471-58355D8CC07D" name="PEDIDO_PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="8FBC9AA3-1378-8DB5-2F0C-E2AE33D18BD7" name="PESSOA" seqName="seg_0"/>
+   <object objectType="Table" objectID="6BDC1ECD-133E-235C-5996-E9D5141CB8BF" name="PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="A80B27D8-19F7-A93C-1C2E-C3D6841F5047" name="PRODUTO_EMBALAGEM" seqName="seg_0"/>
+   <object objectType="Table" objectID="E68BFBD3-0D28-346F-8612-32DE61E0EDC4" name="PRODUTO_VOLUME" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="7CB929F0-0F7F-C991-78B0-2AC15D2F58E6" name="CLIENTE_PESSOA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="27B9B24C-554A-A55B-9233-61CA90AC4C1F" name="ES_PED_PROD_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="BAB63A45-56EE-5872-3419-B8EB1725F98A" name="ETQ_SEPAR_PROD_EMB_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="1D6D8538-20E7-38E4-0F35-F7FFA83C5873" name="ETQ_SEPAR_PROD_VOL_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="DD4998F9-7CB4-65F4-3864-3B7E1811FD6B" name="FK_PRODU_FABRI" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="F7838355-6125-813E-48D4-58D8800E1432" name="FK_PRODU_LISEP" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="5B2315D3-8909-9BFE-7FD5-E0374E1F4E67" name="FK_PROEM_DEPEN" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="685B7FF0-561F-765F-0000-8AFCC14C29F9" name="FK_PROEM_PRODU" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="F7F35CAA-5F78-AD48-115F-7E58132FC806" name="FK_PROVO_DEPEN" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="FBF61851-C28D-DF9B-1E18-78AC166D7210" name="FK_PROVO_PRODU" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="C06B1940-890E-451B-DB1F-AE602FE378BB" name="PEDIDO_CARGA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="BD26A540-EDCC-81BE-ED88-14D01A9024E9" name="PEDIDO_CLIENTE_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="856B9330-A950-654F-B8FC-0C717B009591" name="PEDIDO_ITINERARIO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="BB626256-4771-A119-0897-6CA09C78E3B6" name="PEDIDO_PRODUTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="4BACB106-C07A-CF24-E560-617BDE7B23F0" name="PEDIDO_PRODUTO_PRODUTO_FK" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

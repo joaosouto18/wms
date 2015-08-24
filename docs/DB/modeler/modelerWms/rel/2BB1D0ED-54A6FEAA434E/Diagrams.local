@@ -1,0 +1,4 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="main_view" objectID="C64A9D62-1C98-D079-36B8-34C44AD0197D" name="Etiqueta Separacao" visible="false"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>
