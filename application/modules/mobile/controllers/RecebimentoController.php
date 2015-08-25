@@ -195,6 +195,10 @@ class Mobile_RecebimentoController extends Action
             $idProduto = $notaFiscalItemEntity->getProduto()->getId();
             $grade = $notaFiscalItemEntity->getGrade();
 
+            if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
+                $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+            }
             $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
             $hoje = new Zend_Date;
             $PeriodoUtil = $hoje->addDay($shelfLife);
