@@ -281,7 +281,7 @@ class RecebimentoRepository extends EntityRepository
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false) {
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
 
         // ordem servico
@@ -523,19 +523,10 @@ class RecebimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
         $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto(null, null, $idProduto, $grade);
-//        var_dump($buscaDataProdutos); exit;
-//        $dataValidade = new \Zend_Date($buscaDataProduto[0]['dataValidade']);
-//        $dataValidade = $dataValidade->toString('dd/MM/Y');
 
-
-//        $qtdEmbalagem = 1;
-//       $embalagens = $produtoEntity->getEmbalagens();
-//        foreach ($embalagens as $embalagem) {
-//            if ($embalagem->getIsPadrao()=="S") {
-//                $qtdEmbalagem = $embalagem->getQuantidade();
-//            }
-//        }
-//        $qtdConferida = $qtdConferida * $qtdEmbalagem;
+        if(count($buscaDataProdutos) > 0) {
+            $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
+        }
 
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
@@ -550,7 +541,8 @@ class RecebimentoRepository extends EntityRepository
                 ->setProduto($produtoEntity)
                 ->setGrade($grade)
                 ->setQtdAvaria($qtdAvaria)
-                ->setQtdDivergencia($qtdDivergencia);
+                ->setQtdDivergencia($qtdDivergencia)
+                ->setDataValidade($dataValidade);
 
         $em->persist($conferenciaEntity);
 
