@@ -1134,6 +1134,18 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     public function modeloRecebimentoAction()
     {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Adicionar novo',
+                    'cssClass' => 'btnAdd',
+                    'urlParams' => array(
+                        'action' => 'add'
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
 
         /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
         $modeloRecebimentoRepo = $this->em->getRepository('wms:Recebimento\ModeloRecebimento');
@@ -1152,7 +1164,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     'label' => 'Voltar',
                     'cssClass' => 'btnBack',
                     'urlParams' => array(
-                        'action' => 'index',
+                        'action' => 'modelo-recebimento',
                         'id' => null
                     ),
                     'tag' => 'a'
@@ -1216,7 +1228,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     'label' => 'Voltar',
                     'cssClass' => 'btnBack',
                     'urlParams' => array(
-                        'action' => 'index',
+                        'action' => 'modelo-recebimento',
                         'id' => null
                     ),
                     'tag' => 'a'
