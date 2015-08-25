@@ -519,6 +519,15 @@ class RecebimentoRepository extends EntityRepository
         $em = $this->getEntityManager();
 
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+        $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+        $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto(null, null, $idProduto, $grade);
+//        var_dump($buscaDataProdutos); exit;
+//        $dataValidade = new \Zend_Date($buscaDataProduto[0]['dataValidade']);
+//        $dataValidade = $dataValidade->toString('dd/MM/Y');
+
+
 //        $qtdEmbalagem = 1;
 //       $embalagens = $produtoEntity->getEmbalagens();
 //        foreach ($embalagens as $embalagem) {
@@ -605,7 +614,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params)
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null)
     {
         $em = $this->getEntityManager();
 
