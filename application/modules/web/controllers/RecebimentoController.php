@@ -1235,16 +1235,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
             $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+            $modeloRecebimentoEn = $modeloRecebimentoRepo->findOneBy(array('id' => $params['id']));
 
             if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-                $modeloRecebimentoEn = $modeloRecebimentoRepo->findOneBy(array('id' => $params['id']));
                 $modeloRecebimentoRepo->save($modeloRecebimentoEn, $params['cadastro']);
 
                 $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
                 $this->_redirect('/recebimento/modelo-recebimento');
 
             }
-            //$form->setDefaults($modeloRecebimentoEn); // pass values to form
+            $form->setDefaultsFromEntity($modeloRecebimentoEn);
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }

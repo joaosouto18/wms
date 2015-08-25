@@ -26,9 +26,17 @@ class ModeloRecebimento extends Form
                 ),
             ));
 
-        $form->addDisplayGroup(array('descricao',
-            'controleValidade'), 'modeloRecebimento');
+        $form->addDisplayGroup(array('descricao', 'controleValidade'), 'modeloRecebimento');
         $this->addSubFormTab("Cadastro", $form, 'cadastro');
+    }
+
+    public function setDefaultsFromEntity(\Wms\Domain\Entity\Recebimento\ModeloRecebimento $recebimento)
+    {
+        $values = array(
+            'descricao' => $recebimento->getDescricao(),
+            'controleValidade' => $recebimento->getControleValidade()
+        );
+        $this->setDefaults($values);
     }
 
 }

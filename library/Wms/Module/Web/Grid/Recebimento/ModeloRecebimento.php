@@ -20,8 +20,8 @@ class ModeloRecebimento extends Grid
                     'index'  => 'id',
                 ))
                 ->addColumn(array(
-                    'label' => 'Validade',
-                    'index' => 'controleValidade',
+                    'label' => 'descrição',
+                    'index' => 'descricao',
                 ))
                 ->addAction(array(
                     'label' => 'Editar',
