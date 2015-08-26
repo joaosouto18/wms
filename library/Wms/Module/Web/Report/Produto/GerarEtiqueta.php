@@ -55,6 +55,11 @@ class GerarEtiqueta extends eFPDF
 
         foreach ($produtosEn as $produto) {
             for ($i = 0; $i < $produto['qtdItem']; $i++) {
+
+                $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
+                $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
+                $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
+
                 switch($modelo) {
                     case 2:
                         $this->SetMargins(6, 4, 0);
@@ -102,9 +107,15 @@ class GerarEtiqueta extends eFPDF
             $this->Ln(3);
             $this->Cell(100, 0, 'Volume: ' . utf8_decode($produto['dscVolume']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
         }
+        if ($produto['dataValidade'] != null) {
+            $this->Ln(3);
+            $dataValidade = new \DateTime($produto['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+        }
 
         $x        = 55;
-        $y        = 21;
+        $y        = 28;
         $height   = 8;
         $angle    = 0;
         $type     = 'code128';
@@ -148,8 +159,16 @@ class GerarEtiqueta extends eFPDF
             $this->Cell(100, 0, utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
         }
 
+        if ($produto['dataValidade'] != null) {
+            $this->Ln(3);
+            $dataValidade = new \DateTime($produto['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+        }
+
+
         $x        = 55;
-        $y        = 35;
+        $y        = 42;
         $height   = 12;
         $angle    = 0;
         $type     = 'code128';
