@@ -834,7 +834,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEntity->setStatus($statusEn);
                 $this->_em->persist($nfEntity);
 
-                $andamentoNFRepo->save($notaFiscal, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
+                $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
 
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {
