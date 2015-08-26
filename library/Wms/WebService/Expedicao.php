@@ -798,6 +798,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
     public function informarNotaFiscal ($nf)
     {
         try {
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoNotaFiscalSaidaRepository $andamentoNFRepo */
+            $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\AndamentoNotaFiscalSaida");
             $produtoRepo = $this->_em->getRepository("wms:Produto");
             $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
             $nfRepo = $this->_em->getRepository("wms:NotaFiscal");
@@ -808,18 +810,20 @@ class Wms_WebService_Expedicao extends Wms_WebService
             /* @var notaFiscal $notaFiscal */
             foreach ($nf as $notaFiscal) {
 
-                $nfEn = $nfRepo->findOneBy(array('numero' => $notaFiscal->numeroNf, 'serie' => $notaFiscal->serieNf));
-
-                if ($nfEn != null) {
-                    throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.' série '.$notaFiscal->serieNf.' já existe no sistema!');
-                }
-
-                $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $cnpjEmitente));
+                $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $notaFiscal->cnpjEmitente));
                 $pessoaEn = $pessoaJuridicaRepository->findOneBy(array('cnpj' => $cnpjEmitente));
 
-                if ($pessoaEn) {
-                    throw new \Exception("Emitente não encontrado para o cnpj " . $cnpjEmitente);
+                if (is_null($pessoaEn)) {
+                    throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
                 }
+
+                $nfEn = $nfRepo->findOneBy(array('numero' => $notaFiscal->numeroNf, 'serie' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
+
+                if ($nfEn != null) {
+                    throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
+                }
+
+                $statusEn = $this->getEntityManager()->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
 
                 $nfEntity = new Expedicao\NotaFiscalSaida();
                 $nfEntity->setNumeroNf($notaFiscal->numeroNf);
@@ -827,7 +831,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEntity->setPessoa($pessoaEn);
                 $nfEntity->setSerieNf($notaFiscal->serieNf);
                 $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                $nfEntity->setStatus($statusEn);
                 $this->_em->persist($nfEntity);
+
+                $andamentoNFRepo->save($notaFiscal, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
 
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {

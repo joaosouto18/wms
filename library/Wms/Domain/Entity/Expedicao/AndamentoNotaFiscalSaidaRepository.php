@@ -3,20 +3,23 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 
-class AndamentoRepository extends EntityRepository
+class AndamentoNotaFiscalSaidaRepository extends EntityRepository
 {
-    public function save()
+    public function save($notaFiscalEn, $idStatus,$expedicaoEn = null, $observacao = "", $idUsuario = false)
     {
-        $andamentoNotaFiscalSaidaEn = new AndamentoNotaFiscalSaida();
-        $andamentoNotaFiscalSaidaEn->setNotaFiscalSaida();
-        $andamentoNotaFiscalSaidaEn->setExpedicao();
-        $andamentoNotaFiscalSaidaEn->setUsuario();
-        $andamentoNotaFiscalSaidaEn->setStatus();
-        $andamentoNotaFiscalSaidaEn->setData(new \DateTime);
-        $andamentoNotaFiscalSaidaEn->setObservacao();
+        $idUsuario = ($idUsuario) ? $idStatus : \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuarioEn = $this->getEntityManager()->getReference('wms:Usuario', (int) $idUsuario);
 
-        $this->_em->persist($andamentoNotaFiscalSaidaEn);
-        $this->_em->flush();
+        $statusEn = $this->getEntityManager()->getReference('wms:Util\Sigla', (int) $idStatus);
+
+        $andamentoNotaFiscalSaidaEn = new AndamentoNotaFiscalSaida();
+            $andamentoNotaFiscalSaidaEn->setNotaFiscalSaida($notaFiscalEn);
+            $andamentoNotaFiscalSaidaEn->setExpedicao($expedicaoEn);
+            $andamentoNotaFiscalSaidaEn->setUsuario($usuarioEn);
+            $andamentoNotaFiscalSaidaEn->setStatus($statusEn);
+            $andamentoNotaFiscalSaidaEn->setData(new \DateTime);
+            $andamentoNotaFiscalSaidaEn->setObservacao($observacao);
+        $this->getEntityManager()->persist($andamentoNotaFiscalSaidaEn);
     }
 
 }
