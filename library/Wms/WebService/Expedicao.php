@@ -806,6 +806,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $nfRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaida");
             $pessoaJuridicaRepo    = $this->_em->getRepository('wms:Pessoa\Juridica');
 
+            if ((count($nf) == 0) || ($nf == null)) {
+                throw new \Exception("Nenhuma nota fiscal informada");
+            }
+
             /* @var notaFiscal $notaFiscal */
             foreach ($nf as $notaFiscal) {
 
@@ -835,6 +839,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true);
 
+                if ((count($notaFiscal->pedidos) == 0) || ($notaFiscal->pedidos == null)) {
+                    throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
+                }
+
+
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {
                     $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
@@ -849,6 +858,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $nfPedidoEntity->setCodPedido($notaFiscal->pedido);
                     $nfPedidoEntity->setPedido($pedidoEn);
                     $this->_em->persist($nfPedidoEntity);
+                }
+
+                if ((count($notaFiscal->itens) == 0) || ($notaFiscal->itens == null)) {
+                    throw new \Exception("Nenhuma produto informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
                 }
 
                 /* @var notaFiscalProduto $itemNotaFiscal */
