@@ -20,6 +20,11 @@ class Inventario_IndexController  extends Action
         }
 
         if (isset($id) && !empty($id)) {
+            $inventarioEn = $inventarioRepo->find($id);
+            if ($inventarioEn->getCodStatus() != \Wms\Domain\Entity\Inventario::STATUS_GERADO) {
+                $this->_helper->messenger('error', "Inventário já ".$inventarioEn->getStatus()->getSigla());
+                return false;
+            }
             $reservas = $inventarioRepo->verificaReservas($id);
             if (count($reservas) > 0) {
                 $grdReservas = new \Wms\Module\Inventario\Grid\ReservaEstoque();
