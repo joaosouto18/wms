@@ -899,6 +899,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     /**
      *  Recebe as notas fiscais emitidas da empresa
      *
+     * @param string $cnpjEmitente
      * @param integer $numeroNf
      * @param string $serieNF
      * @param integer $numeroCarga
@@ -907,9 +908,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function definirReentrega ($cnpjEmitente, $numeroNf, $serieNF, $numeroCarga, $tipoCarga)
     {
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+        $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
         $notaFiscalRepository = $this->_em->getRepository('wms:Expedicao\NotaFiscalSaida');
         $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
-        $reentregaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
+        $reentregaRepository = $this->_em->getRepository('wms:Expedicao\Reentrega');
         $pessoaJuridicaRepository = $this->_em->getRepository('wms:Pessoa\Juridica');
 
         try {
@@ -922,7 +925,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $cnpjEmitente));
             $pessoaEn = $pessoaJuridicaRepository->findOneBy(array('cnpj' => $cnpjEmitente));
 
-            if ($pessoaEn) {
+            if (is_null($pessoaEn)) {
                 throw new \Exception("Emitente não encontrado para o cnpj " . $cnpjEmitente);
             }
 
@@ -933,19 +936,22 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno' => trim($numeroCarga),
                                                          'tipoCarga' => $tipoCarga->getId()));
 
-            if ($notaFiscalEn) {
+            if (is_null($notaFiscalEn)) {
                 throw new \Exception('Nota Fiscal ' . $numeroNf . " / " . $serieNF . " não encontrada");
             }
 
-            if ($notaFiscalEn) {
+            if (is_null($cargaEn)) {
                 throw new \Exception(strtolower($tipoCarga->getSigla()) . " " . $numeroCarga . " não encontrada");
             }
 
             $reentregaEn = $reentregaRepository->findOneBy(array('codNotaFiscalSaida' => $notaFiscalEn->getId(),
                                                                  'codCarga' => $cargaEn->getId()));
+
             if ($reentregaEn != null) {
                 throw new \Exception('Nota Fiscal '. $numeroNf . ' / ' . $serieNF . " ja se encontra na " . strtolower($tipoCarga->getSigla()) . " " . $numeroCarga);
             }
+
+            $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA, true, $cargaEn->getExpedicao());
 
             $reentregaEn = new Expedicao\Reentrega();
                 $reentregaEn->setIndEtiquetaMapaGerado("N");
