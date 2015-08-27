@@ -84,6 +84,7 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
 
             $expedicaoRepo = $this->_em->getRepository('wms:Expedicao');
             $expedicao = $expedicaoRepo->find($idExpedicao);
+            $sessao = new \Zend_Session_Namespace('coletor');
 
             foreach ($volumesPatrimonio as $volumeCarga) {
                 $validaEtiqueta = false;
@@ -99,8 +100,11 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
                                                                      'volumePatrimonio'=>$volume));
                         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EXPEDICAO::STATUS_SEGUNDA_CONFERENCIA);
 
+                        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferencia $etiqueta */
                         foreach ($etiquetas as $etiqueta) {
                             $etiqueta->setStatus($statusEntity);
+                            $etiqueta->setCodOsSegundaConferencia($sessao->osID);
+                            $etiqueta->setDataReconferencia(new \DateTime());
                             $this->getEntityManager()->persist($etiqueta);
                         }
                         $validaEtiqueta = false;
