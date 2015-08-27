@@ -578,6 +578,12 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
+        if (($etiqueta[0]['embalado'] == 'S') && (is_null($volume))) {
+            $msg = "A etiqueta " . $etiquetaSeparacao . " precisa de um volume informado pois é Embalado";
+            $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+            $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+        }
+
         $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
 
         if ($this->_request->isXmlHttpRequest()) {
