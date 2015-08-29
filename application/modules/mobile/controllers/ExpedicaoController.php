@@ -28,7 +28,12 @@ class Mobile_ExpedicaoController extends Action
             4 => array (
                 'url' => 'onda-ressuprimento/listar-ondas',
                 'label' => 'ONDA DE RESSUPRIMENTO',
+            ),
+            5 => array (
+                'url' => 'ordem-servico/centrais-entrega/carregamento/1',
+                'label' => 'EQUIPE DE CARREGAMENTO',
             )
+
         );
         $this->view->menu = $menu;
         $this->renderScript('menu.phtml');
