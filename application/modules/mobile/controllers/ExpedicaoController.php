@@ -715,7 +715,7 @@ class Mobile_ExpedicaoController extends Action
                 $mensagem = 'Etiqueta de transbordo já conferida';
             } else {
                 $this->_helper->messenger('info', 'Etiqueta  com status '. $etiqueta[0]['status']);
-                $mensagem = 'Etiqueta com status '. $etiqueta[0]['status'];
+                $mensagem = 'Etiqueta:'. $etiquetaSeparacao .' - com status '. $etiqueta[0]['status'];
             }
 
             $msg=$mensagem;
@@ -768,6 +768,12 @@ class Mobile_ExpedicaoController extends Action
                 }
                 return false;
             }
+        }
+
+        if (($etiqueta[0]['embalado'] == 'S') && (is_null($volume))) {
+            $msg = "A etiqueta " . $etiquetaSeparacao . " precisa de um volume informado pois é Embalado";
+            $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+            $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
         }
 
         $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
