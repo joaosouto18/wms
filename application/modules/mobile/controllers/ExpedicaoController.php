@@ -526,7 +526,7 @@ class Mobile_ExpedicaoController extends Action
                 $mensagem = 'Etiqueta de transbordo já conferida';
             } else {
                 $this->_helper->messenger('info', 'Etiqueta  com status '. $etiqueta[0]['status']);
-                $mensagem = 'Etiqueta com status '. $etiqueta[0]['status'];
+                $mensagem = 'Etiqueta:'. $etiquetaSeparacao .' - com status '. $etiqueta[0]['status'];
             }
 
             $msg=$mensagem;
