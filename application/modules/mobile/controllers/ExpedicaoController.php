@@ -1,4 +1,4 @@
-<?php
+    <?php
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
