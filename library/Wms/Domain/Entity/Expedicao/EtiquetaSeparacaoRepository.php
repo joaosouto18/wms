@@ -610,7 +610,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (isset($endereco) && !empty($endereco)) {
                             $depositoEnderecoEn = $produtoVolume->getEndereco();
                         } else {
-                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
+                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $produtoVolume->getId());
                             foreach ($enderecosPulmao as $enderecoPulmao) {
                                 $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
                             }
@@ -624,6 +624,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             foreach ($arrayVolumes as $volumeEntity) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasNaoFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
+
+                                $endereco = $volumeEntity->getEndereco();
+                                if (isset($endereco) && !empty($endereco)) {
+                                    $depositoEnderecoEn = $volumeEntity->getEndereco();
+                                } else {
+                                    $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
+                                    foreach ($enderecosPulmao as $enderecoPulmao) {
+                                        $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                                    }
+                                    $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                                }
+
                                 $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,1,$volumeEntity,null,$codReferencia,$etiquetaMae,$depositoEnderecoEn);
                                 if ($codReferencia == null) {
                                     $codReferencia = $idEtiqueta;
@@ -734,7 +746,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     //pega o codigo de picking do produto ou caso o produto nao tenha picking pega o FIFO da reserva de saida (pulmao)
-    public function getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao)
+    public function getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $idVolume = 0)
     {
         $produtoId = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
@@ -759,6 +771,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                   GROUP BY MSP.COD_DEPOSITO_ENDERECO) MS ON MS.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 WHERE REE.COD_EXPEDICAO = $idExpedicao
                 AND REP.COD_PRODUTO = '$produtoId' AND REP.DSC_GRADE = '$grade'
+                AND NVL(REP.COD_PRODUTO_VOLUME,0) = '$idVolume'
                 AND RE.IND_ATENDIDA = 'N'
                 GROUP BY RE.COD_DEPOSITO_ENDERECO";
 
