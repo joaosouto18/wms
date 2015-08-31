@@ -258,6 +258,10 @@ class ExpedicaoRepository extends EntityRepository
     public function verificaDisponibilidadeEstoquePedido($expedicoes)
     {
 
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
+
         $expedicoes = implode(',', $expedicoes);
 
         $sql = "SELECT * FROM (
@@ -271,6 +275,7 @@ class ExpedicaoRepository extends EntityRepository
                FROM PEDIDO P
               INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
               INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+              WHERE P.CENTRAL_ENTREGA = $central
               GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
   LEFT JOIN (SELECT PROD.COD_PRODUTO,
                     PROD.DSC_GRADE,
