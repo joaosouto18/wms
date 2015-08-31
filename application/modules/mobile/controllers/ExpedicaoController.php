@@ -208,7 +208,8 @@ class Mobile_ExpedicaoController extends Action
         $qtd = $this->_getParam('qtd');
         $idExpedicao = $this->_getParam('idExpedicao');
 
-        $embalagemEntity = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras))[0];
+        $embalagens = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+        $embalagemEntity = $embalagens[0];
         $this->view->codProduto = $embalagemEntity->getProduto()->getId();
         $this->view->grade = $embalagemEntity->getProduto()->getGrade();
         $this->view->descricao = $embalagemEntity->getProduto()->getDescricao();
