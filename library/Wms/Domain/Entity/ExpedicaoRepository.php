@@ -1924,6 +1924,16 @@ class ExpedicaoRepository extends EntityRepository
             }
         }
 
+        if ($tipoEtiqueta == null) {
+            //ETIQUETA DE VOLUME
+            $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+            $volumeEn = $volumeRepo->find($codBarras);
+
+            if ($volumeEn != null) {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
+            }
+        }
+
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
             //ETIQUETA DE SEPARAÇÃO
             $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
