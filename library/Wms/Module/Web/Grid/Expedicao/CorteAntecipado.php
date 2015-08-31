@@ -65,6 +65,10 @@ class CorteAntecipado extends Grid
                     'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
                 ))
                 ;
+        $this->setShowPager(true);
+        $pager = new \Core\Grid\Pager(count($produtos),1,2000);
+        $this->setpager($pager);
+        $this->setShowPager(false);
 
         return $this;
     }
