@@ -175,7 +175,9 @@ class Mobile_ExpedicaoController extends Action
         $dscVolume = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio')->find($volume)->getDescricao();
 
         $codPessoa = $clienteEn[0]->getPessoa()->getNome();
-		$pedido = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga()[0]->getPedido()[0]->getId();
+        $cargas = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga();
+        $pedidos = $cargas[0]->getPedido();
+		$pedido = $pedidos[0]->getId();
 
         $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
