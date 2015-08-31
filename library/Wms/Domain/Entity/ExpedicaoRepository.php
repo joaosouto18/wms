@@ -1997,7 +1997,7 @@ class ExpedicaoRepository extends EntityRepository
                             $idCliente     = $etiquetaSeparacao->getPedido()->getPessoa()->getCodClienteExterno();
                             $idTipoVolume = $idCliente;
                         } else {
-                            $idCarga       = $etiquetaSeparacao->getPedido()->getCarga()->getId();
+                            $idCarga       = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
                             $idTipoVolume = $idCarga;
                         }
 
