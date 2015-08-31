@@ -1740,22 +1740,16 @@ class ExpedicaoRepository extends EntityRepository
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE,
-                    (
-                        SELECT count(es1.cod_etiqueta_separacao) FROM ETIQUETA_SEPARACAO es1
-                        INNER JOIN PEDIDO ped ON ped.COD_PEDIDO = es1.COD_PEDIDO
-                        INNER JOIN CARGA c ON c.COD_CARGA = ped.COD_CARGA
-                        WHERE c.cod_expedicao = $idExpedicao
-                    ) QTD_CAIXA
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
-                    LEFT JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
-                    LEFT JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
-                    LEFT JOIN PEDIDO p ON p.COD_CARGA = C.COD_CARGA
-                    LEFT JOIN ETIQUETA_SEPARACAO es ON p.COD_PEDIDO = es.COD_PEDIDO AND evp.COD_VOLUME_PATRIMONIO = es.COD_VOLUME_PATRIMONIO
-                    LEFT JOIN PESSOA pes ON pes.COD_PESSOA = p.COD_PESSOA
-                    LEFT JOIN ITINERARIO i ON i.COD_ITINERARIO = p.COD_ITINERARIO
-                   WHERE evp.COD_EXPEDICAO = $idExpedicao
-                   ORDER BY vp.COD_VOLUME_PATRIMONIO ASC";
+                INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
+                INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
+                INNER JOIN PEDIDO p ON p.COD_CARGA = C.COD_CARGA
+                INNER JOIN ETIQUETA_SEPARACAO es ON p.COD_PEDIDO = es.COD_PEDIDO AND evp.COD_VOLUME_PATRIMONIO = es.COD_VOLUME_PATRIMONIO
+                INNER JOIN PESSOA pes ON pes.COD_PESSOA = p.COD_PESSOA
+                INNER JOIN ITINERARIO i ON i.COD_ITINERARIO = p.COD_ITINERARIO
+                WHERE evp.COD_EXPEDICAO = $idExpedicao
+                ORDER BY vp.COD_VOLUME_PATRIMONIO ASC";
 
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
