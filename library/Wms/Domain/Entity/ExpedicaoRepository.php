@@ -2013,7 +2013,7 @@ class ExpedicaoRepository extends EntityRepository
                     break;
                 case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO:
                     $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
-                    $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlaca();
+                    $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
 
                     $operacao = "Expedição de Transbordo";
                     $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
