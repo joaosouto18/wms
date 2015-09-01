@@ -552,7 +552,7 @@ class PaleteRepository extends EntityRepository
                 $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
 
                 if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
-                    $volumes['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
+                    $dataValidade = $getDataValidadeUltimoProduto['dataValidade'];
                 }
 
                 //TRAVA PARA GERAR NO MAXIMO A QUANTIDADE TOTAL DA NOTA ENQUANTO O RECEBIMENTO NÃO TIVER SIDO FINALIZADO
@@ -575,21 +575,21 @@ class PaleteRepository extends EntityRepository
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
-                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$unitizador['NUM_NORMA']);
+                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$unitizador['NUM_NORMA'], $dataValidade);
                 }
 
                 if ($qtdUltimoPalete > 0) {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
                     if ($recebimentoFinalizado == true) {
-                        $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$qtdUltimoPalete);
+                        $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$qtdUltimoPalete, $dataValidade);
                     }
                 }
             }
         }
     }
 
-    public function salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd){
-        $dataValidade = new \DateTime($volumes['dataValidade']);
+    public function salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade){
+        $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
         $paleteEn->setUnitizador($unitizadorEn);
