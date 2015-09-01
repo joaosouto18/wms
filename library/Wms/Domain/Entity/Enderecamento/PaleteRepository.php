@@ -547,6 +547,15 @@ class PaleteRepository extends EntityRepository
                 }
                 $qtd = $unitizador['QTD'];
 
+                /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+                $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+                $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
+
+                if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
+                    $dataValidade = new \Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
+                    $volumes['dataValidade'] = $dataValidade->toString('dd/MM/Y');
+                }
+
                 //TRAVA PARA GERAR NO MAXIMO A QUANTIDADE TOTAL DA NOTA ENQUANTO O RECEBIMENTO NÃO TIVER SIDO FINALIZADO
                 if ($recebimentoFinalizado == false) {
                     if ($tipo == "V"){
@@ -599,6 +608,7 @@ class PaleteRepository extends EntityRepository
             $paleteProduto->setQtdEnderecada(0);
             $paleteProduto->setCodProdutoEmbalagem($volume['COD_PRODUTO_EMBALAGEM']);
             $paleteProduto->setCodProdutoVolume($volume['COD_PRODUTO_VOLUME']);
+            $paleteProduto->setValidade($volumes['dataValidade']);
             $this->_em->persist($paleteProduto);
         }
     }
