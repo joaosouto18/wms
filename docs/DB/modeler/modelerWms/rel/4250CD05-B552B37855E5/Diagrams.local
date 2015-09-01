@@ -1,0 +1,4 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="main_view" objectID="99266C8D-53A2-2E71-2B27-4E52AEFE3A28" name="Enderecamento" visible="false"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

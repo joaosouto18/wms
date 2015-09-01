@@ -174,9 +174,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.dthConferencia')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->where('es.codExpedicao = :idExpedicao')
-            ->andWhere('es.codStatus = :Status')
-            ->setParameter('idExpedicao', $idExpedicao)
-            ->setParameter('Status', $status);
+            ->setParameter('idExpedicao', $idExpedicao);
+
+
+        if ($status != null) {
+            $dql->andWhere('es.codStatus = :Status')
+                ->setParameter('Status', $status);
+        }
         return $dql->getQuery()->getResult();
     }
 
@@ -606,7 +610,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (isset($endereco) && !empty($endereco)) {
                             $depositoEnderecoEn = $produtoVolume->getEndereco();
                         } else {
-                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
+                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $produtoVolume->getId());
                             foreach ($enderecosPulmao as $enderecoPulmao) {
                                 $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
                             }
@@ -620,6 +624,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             foreach ($arrayVolumes as $volumeEntity) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasNaoFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
+
+                                $endereco = $volumeEntity->getEndereco();
+                                if (isset($endereco) && !empty($endereco)) {
+                                    $depositoEnderecoEn = $volumeEntity->getEndereco();
+                                } else {
+                                    $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
+                                    foreach ($enderecosPulmao as $enderecoPulmao) {
+                                        $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                                    }
+                                    $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                                }
+
                                 $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,1,$volumeEntity,null,$codReferencia,$etiquetaMae,$depositoEnderecoEn);
                                 if ($codReferencia == null) {
                                     $codReferencia = $idEtiqueta;
@@ -730,7 +746,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     //pega o codigo de picking do produto ou caso o produto nao tenha picking pega o FIFO da reserva de saida (pulmao)
-    public function getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao)
+    public function getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $idVolume = 0)
     {
         $produtoId = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
@@ -755,6 +771,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                   GROUP BY MSP.COD_DEPOSITO_ENDERECO) MS ON MS.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 WHERE REE.COD_EXPEDICAO = $idExpedicao
                 AND REP.COD_PRODUTO = '$produtoId' AND REP.DSC_GRADE = '$grade'
+                AND NVL(REP.COD_PRODUTO_VOLUME,0) = '$idVolume'
                 AND RE.IND_ATENDIDA = 'N'
                 GROUP BY RE.COD_DEPOSITO_ENDERECO";
 
@@ -1307,6 +1324,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         }
 
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
+        $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
+        $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
+
+        if ($pedidosNaoCancelados == 0) {
+            $qtdCorte     = $this->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
+            $qtdEtiquetas = $this->getEtiquetasByStatus(null,$idExpedicao);
+            if ($qtdCorte == $qtdEtiquetas) {
+                $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
+                $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
+                $this->_em->flush();
+            }
+        }
+
+
         return true;
     }
 
@@ -1525,5 +1557,36 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->_em->flush($pedidoProdutoEntity);
         }
     }
+
+    public function getEtiquetasReentrega($idExpedicao, $codStatus = null) {
+        $SQL = "
+        SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
+               PROD.COD_PRODUTO,
+               PROD.DSC_GRADE,
+               PROD.DSC_PRODUTO PRODUTO,
+               NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
+               PES.NOM_PESSOA as CLIENTE
+         FROM REENTREGA R
+         LEFT JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSP ON NFSP.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+         LEFT JOIN PEDIDO P ON P.COD_PEDIDO = NFSP.COD_PEDIDO
+         LEFT JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
+         LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = P.COD_PEDIDO
+         LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
+         LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
+         LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = ES.COD_PRODUTO AND PROD.DSC_GRADE = ES.DSC_GRADE
+         LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+         WHERE 1 = 1
+           AND C.COD_EXPEDICAO = $idExpedicao
+        ";
+
+        if ($codStatus != null) {
+            $SQL = $SQL . " AND ES.COD_STATUS = $codStatus";
+        }
+
+        $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
+        $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 
 }

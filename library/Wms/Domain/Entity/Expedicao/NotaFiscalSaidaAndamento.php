@@ -7,24 +7,24 @@ use Wms\Domain\Entity\Expedicao;
 /**
  * Andamento
  *
- * @Table(name="ANDAMENTO_NOTA_FISCAL_SAIDA")
- * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\AndamentoNotaFiscalSaidaRepository")
+ * @Table(name="NOTA_FISCAL_SAIDA_ANDAMENTO")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository")
  */
-class AndamentoNotaFiscalSaida
+class NotaFiscalSaidaAndamento
 {
 
     /**
      * @var integer $id
      *
-     * @Column(name="COD_ANDAMENTO_NOTA_FISCAL", type="integer", nullable=false)
+     * @Column(name="COD_NF_SAIDA_ANDAMENTO", type="integer", nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_ANDAMENTO_NOTA_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_NF_SAIDA_ANDAMENTO_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Epedicao\NotaFiscalSaida")
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\NotaFiscalSaida")
      * @JoinColumn(name="COD_NOTA_FISCAL_SAIDA", referencedColumnName="COD_NOTA_FISCAL_SAIDA")
      */
     protected $NotaFiscalSaida;

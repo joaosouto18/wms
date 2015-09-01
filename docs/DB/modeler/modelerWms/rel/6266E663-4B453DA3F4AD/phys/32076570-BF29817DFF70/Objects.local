@@ -1,0 +1,27 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
+   <object objectType="TSpace" objectID="7A7A026D-C00D-3446-8617-AFCC8F863034" name="SYSTEM" seqName="seg_0"/>
+   <object objectType="TSpace" objectID="871C4C5D-BE71-443C-67C0-D18B51129A69" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
+   <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
+   <object objectType="User" objectID="098240DE-14F6-BBBF-88A5-76D582395DF1" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="SType" objectID="47E390DE-0671-C4B1-8428-0F45CBEE18F8" name="SDO_GEOMETRY" seqName="seg_0"/>
+   <object objectType="SType" objectID="F72C39E0-D1CA-8821-2AD7-A1E95A37D3D1" name="XMLTYPE" seqName="seg_0"/>
+   <object objectType="Table" objectID="0E54A90F-8D3B-0843-2848-0C7EB8A0D7FF" name="NOTA_FISCAL" seqName="seg_0"/>
+   <object objectType="Table" objectID="1AFDF068-5E7E-7634-0DE3-451BF8BD4E12" name="ETIQUETA_SEPARACAO_ANDAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="4D05CD13-F97C-70EB-03A8-2BE3D42075C6" name="NOTA_FISCAL_SAIDA_PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="51CB9681-DDD7-EAD0-CDA8-091E59499BCD" name="NOTA_FISCAL_SAIDA_ANDAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="6F8BAEFA-558E-6E57-F658-EFED8715FD70" name="USUARIO" seqName="seg_0"/>
+   <object objectType="Table" objectID="9B87AD5C-EF9A-3585-407E-CB1A9595A9A3" name="RECEBIMENTO_REENTREGA_NF" seqName="seg_0"/>
+   <object objectType="Table" objectID="AF16A5E9-9EE1-55F2-8971-02E5797AB9B9" name="CONF_RECEB_REENTREGA" seqName="seg_0"/>
+   <object objectType="Table" objectID="B30E7D4C-5D55-93B2-EF16-853231641DDD" name="PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="BD080373-A6D4-8F77-E585-8FC1C9FB720F" name="NOTA_FISCAL_SAIDA" seqName="seg_0"/>
+   <object objectType="Table" objectID="C27C8AC5-A6E5-105A-AD57-CE1D6C3A0309" name="PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="C517C179-BE1C-6121-57B1-A8F91294CF22" name="NOTA_FISCAL_SAIDA_PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="CC0F7FEA-8C63-49D8-01D9-21C9B386B791" name="RECEBIMENTO_REENTREGA" seqName="seg_0"/>
+   <object objectType="Table" objectID="DC8B7879-7E12-F053-FEF5-7A6B8E330E2D" name="ETIQUETA_SEPARACAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="E50EE04A-0BD7-0288-3317-E83805DDBC2B" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Segment" objectID="5185187E-6A4E-7BF6-10D2-17424B976FDE" name="Storage2" seqName="seg_0"/>
+   <object objectType="Segment" objectID="7AD1DB7A-95B2-10ED-4E9A-C5A979225668" name="Storage4" seqName="seg_0"/>
+   <object objectType="Segment" objectID="788D525F-C375-DDAA-A2FB-2ADED244A17C" name="Storage60" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>

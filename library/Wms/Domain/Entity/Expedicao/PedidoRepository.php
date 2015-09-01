@@ -162,9 +162,9 @@ class PedidoRepository extends EntityRepository
             foreach ($etiquetas as $etiqueta){
                 /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
                 $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
+
                 if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
-                    if (($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_ETIQUETA_GERADA) ||
-                        ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO)) {
+                    if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
                         $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_CORTADO);
                     } else {
                         $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
@@ -174,19 +174,6 @@ class PedidoRepository extends EntityRepository
             $this->_em->flush();
             $this->gerarEtiquetasById($idPedido, EtiquetaSeparacao::STATUS_CORTADO);
             $this->cancelaPedido($idPedido);
-
-            $expedicao = $this->getCargaByPedido($idPedido);
-            $idExpedicao = $expedicao['id'];
-
-            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
-            $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
-            $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
-
-            if ($pedidosNaoCancelados == 0) {
-                $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
-                $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
-            }
-
             $this->removeReservaEstoque($idPedido);
 
         } catch (Exception $e) {

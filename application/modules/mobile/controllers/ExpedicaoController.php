@@ -25,6 +25,21 @@ class Mobile_ExpedicaoController extends Action
                 $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
                 $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
                 $this->view->operacao = $operacao['operacao'];
+                if (isset($operacao['placa'])) {
+                    $this->view->placa = $operacao['placa'];
+                }
+                if (isset($operacao['carga'])) {
+                    $this->view->carga = $operacao['carga'];
+                }
+                if (isset($operacao['parcialmenteFinalizado'])) {
+                    $sessaoColetor = new \Zend_Session_Namespace('coletor');
+                    if ($operacao['parcialmenteFinalizado'] == true) {
+                        $sessaoColetor->parcialmenteFinalizado = true;
+                    } else {
+                        $sessaoColetor->parcialmenteFinalizado = true;
+                    }
+                }
+
                 $this->view->expedicao = $operacao['expedicao'];
                 $this->view->url = $operacao['url'];
             } catch (\Exception $e) {
@@ -175,7 +190,9 @@ class Mobile_ExpedicaoController extends Action
         $dscVolume = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio')->find($volume)->getDescricao();
 
         $codPessoa = $clienteEn[0]->getPessoa()->getNome();
-		$pedido = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga()[0]->getPedido()[0]->getId();
+        $cargas = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga();
+        $pedidos = $cargas[0]->getPedido();
+		$pedido = $pedidos[0]->getId();
 
         $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
@@ -206,7 +223,8 @@ class Mobile_ExpedicaoController extends Action
         $qtd = $this->_getParam('qtd');
         $idExpedicao = $this->_getParam('idExpedicao');
 
-        $embalagemEntity = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras))[0];
+        $embalagens = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+        $embalagemEntity = $embalagens[0];
         $this->view->codProduto = $embalagemEntity->getProduto()->getId();
         $this->view->grade = $embalagemEntity->getProduto()->getGrade();
         $this->view->descricao = $embalagemEntity->getProduto()->getDescricao();
@@ -715,7 +733,7 @@ class Mobile_ExpedicaoController extends Action
                 $mensagem = 'Etiqueta de transbordo já conferida';
             } else {
                 $this->_helper->messenger('info', 'Etiqueta  com status '. $etiqueta[0]['status']);
-                $mensagem = 'Etiqueta com status '. $etiqueta[0]['status'];
+                $mensagem = 'Etiqueta:'. $etiquetaSeparacao .' - com status '. $etiqueta[0]['status'];
             }
 
             $msg=$mensagem;
@@ -770,6 +788,12 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
+        if (($etiqueta[0]['embalado'] == 'S') && (is_null($volume))) {
+            $msg = "A etiqueta " . $etiquetaSeparacao . " precisa de um volume informado pois é Embalado";
+            $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+            $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+        }
+
         $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
 
         if ($this->_request->isXmlHttpRequest()) {
@@ -810,7 +834,12 @@ class Mobile_ExpedicaoController extends Action
             if ($Expedicao->possuiEmbalado() == true) {
                 $this->_forward('tipo-conferencia','expedicao','mobile', array('placa' => $Expedicao->getPlaca()));
             }
-
+            $acao = "Expedição:";
+            $sessaoColetor = new \Zend_Session_Namespace('coletor');
+            if ($sessaoColetor->parcialmenteFinalizado == true) {
+                $acao = "Expedição de Transbordo:";
+            }
+            $this->view->acao = $acao;
             $this->view->volume = $this->_getParam('volume', null);
             $this->view->idTipoVolume = $this->_getParam('idTipoVolume', null);
             $this->view->placa = $Expedicao->getPlaca();

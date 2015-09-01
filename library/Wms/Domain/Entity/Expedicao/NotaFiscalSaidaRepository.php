@@ -17,17 +17,20 @@ class NotaFiscalSaidaRepository extends EntityRepository
     public function getNotaFiscalOuCarga($data)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nfs.numeroNf', 'c.id carga', 'nfs.serieNf', 'nfs.id')
+            ->select('nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id' , 'pj.cnpj','pes.nome')
             ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
             ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
             ->innerJoin('nfsp.pedido', 'p')
-            ->innerJoin('p.carga', 'c');
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('nfs.pessoa','pes')
+            ->innerJoin('wms:Pessoa\Juridica','pj', 'WITH','pj.id = pes.id');
+
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
-            $sql->andWhere("c.id = $data[carga]");
+            $sql->andWhere("c.codCargaExterno = $data[carga]");
         }
-        $sql->groupBy('nfs.numeroNf', 'c.id', 'nfs.serieNf', 'nfs.id');
+        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id','pj.cnpj','pes.nome');
 
         return $sql->getQuery()->getResult();
     }

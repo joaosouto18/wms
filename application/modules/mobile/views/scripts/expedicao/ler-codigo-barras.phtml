@@ -132,7 +132,7 @@
 
 <?php if (isset($this->idExpedicao))  : ?>
 
-    <p>Expedição:<?php echo $this->idExpedicao ?>
+    <p><?php echo $this->acao . " " .$this->idExpedicao ?>
         <?php if (isset($this->volume))  : ?>
             Volume: <?php echo $this->volume ?>
         <?php endif; ?>

@@ -127,7 +127,7 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
-                'label' => 'Gerar Cortes',
+                'label' => 'Cortar Etiqueta',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
                 'actionName' => 'index',
@@ -136,6 +136,17 @@ class Expedicao extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO";
                 }
+            ))
+            ->addAction(array(
+                'label' => 'Cortar Pedido',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'corte-antecipado-ajax',
+                'pkIndex' => 'id',
+                'cssClass' => 'dialogAjax',
+                'condition' => function ($row) {
+                        return $row['status'] != "FINALIZADO";
+                    }
             ))
             ->addAction(array(
                 'label' => 'Imprimir',

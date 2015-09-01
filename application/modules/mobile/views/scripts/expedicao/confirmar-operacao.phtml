@@ -8,6 +8,12 @@
             <dl>
                 <label style="font-size: 15px"><?php echo $this->operacao ?></label>
                 <label style="font-size: 15px">Expedição: <?php echo $this->expedicao ?></label>
+                <?php if (isset($this->carga) && ($this->carga != null)) { ?>
+                    <label style="font-size: 15px">Carga: <?php echo $this->carga ?></label>
+                <?php } ?>
+                <?php if (isset($this->placa) && ($this->placa != null)) { ?>
+                    <label style="font-size: 15px">Placa: <?php echo $this->placa ?></label>
+                <?php } ?>
                 <a class="finalizar" href="<?php echo $this->url ?>" >INICIAR</a>
             </dl>
         </fieldset>
