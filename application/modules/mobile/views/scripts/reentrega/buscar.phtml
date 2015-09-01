@@ -1,14 +1,18 @@
 <form id="formGrid" method="post" action="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'gerar-recebimento')) ?>">
 
-    <table>
+    <table style="margin-left: 2%; width: 90%; margin-right: 2%; margin-top: 2%; margin-bottom: 5%">
         <tbody><tr>
             <td colspan="1"></td>
-            <td width=""><span>Notas Fiscais</span></td>
+            <td><span><b>Nota Fiscai</b></span></td>
+            <td><span><b>Carga</b></span></td>
+            <td><span><b>Emitente</b></span></td>
         </tr>
         <?php foreach($this->notasFiscaisByCarga as $notaFiscal) : ?>
             <tr>
                 <td><input type="checkbox" value="<?php echo $notaFiscal['id'] ?>" name="mass-id[]"></td>
-                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['numeroNf'].' - '.$notaFiscal['carga'] ?></td>
+                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['numeroNf']. "/" . $notaFiscal['serieNf']?></td>
+                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['carga'] ?></td>
+                <td style="text-align:left">&nbsp;<?php echo $notaFiscal['cnpj'] . " - " . $notaFiscal['nome'] ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
