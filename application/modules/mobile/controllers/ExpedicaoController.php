@@ -31,6 +31,15 @@ class Mobile_ExpedicaoController extends Action
                 if (isset($operacao['carga'])) {
                     $this->view->carga = $operacao['carga'];
                 }
+                if (isset($operacao['parcialmenteFinalizado'])) {
+                    $sessaoColetor = new \Zend_Session_Namespace('coletor');
+                    if ($operacao['parcialmenteFinalizado'] == true) {
+                        $sessaoColetor->parcialmenteFinalizado = true;
+                    } else {
+                        $sessaoColetor->parcialmenteFinalizado = true;
+                    }
+                }
+
                 $this->view->expedicao = $operacao['expedicao'];
                 $this->view->url = $operacao['url'];
             } catch (\Exception $e) {
@@ -825,7 +834,12 @@ class Mobile_ExpedicaoController extends Action
             if ($Expedicao->possuiEmbalado() == true) {
                 $this->_forward('tipo-conferencia','expedicao','mobile', array('placa' => $Expedicao->getPlaca()));
             }
-
+            $acao = "Expedição:";
+            $sessaoColetor = new \Zend_Session_Namespace('coletor');
+            if ($sessaoColetor->parcialmenteFinalizado == true) {
+                $acao = "Expedição de Transbordo:";
+            }
+            $this->view->acao = $acao;
             $this->view->volume = $this->_getParam('volume', null);
             $this->view->idTipoVolume = $this->_getParam('idTipoVolume', null);
             $this->view->placa = $Expedicao->getPlaca();

@@ -1956,7 +1956,7 @@ class ExpedicaoRepository extends EntityRepository
                         $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
                         $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
                         $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
-                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga);
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado'=>true);
                     }
                 case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                     $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
@@ -1998,7 +1998,7 @@ class ExpedicaoRepository extends EntityRepository
 
                         $operacao = "Conferencia de Embalados";
                         $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/idTipoVolume/$idTipoVolume";
-                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'carga'=>$carga);
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'carga'=>$carga, 'parcialmenteFinalizado'=>false);
                     } else {
                         $operacao = "Conferencia de Etiquetas de Separação";
                         $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
@@ -2014,11 +2014,11 @@ class ExpedicaoRepository extends EntityRepository
                     $operacao = "Expedição de Transbordo";
                     $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
 
-                    return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga);
+                    return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
                     break;
             }
 
-            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'parcialmenteFinalizado'=>false);
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE) {
             //ETIQUETA MÃE
