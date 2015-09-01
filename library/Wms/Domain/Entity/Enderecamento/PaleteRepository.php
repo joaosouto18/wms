@@ -552,8 +552,7 @@ class PaleteRepository extends EntityRepository
                 $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
 
                 if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
-                    $dataValidade = new \Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
-                    $volumes['dataValidade'] = $dataValidade->toString('dd/MM/Y');
+                    $volumes['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
                 }
 
                 //TRAVA PARA GERAR NO MAXIMO A QUANTIDADE TOTAL DA NOTA ENQUANTO O RECEBIMENTO NÃO TIVER SIDO FINALIZADO
@@ -590,6 +589,7 @@ class PaleteRepository extends EntityRepository
     }
 
     public function salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd){
+        $dataValidade = new \DateTime($volumes['dataValidade']);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
         $paleteEn->setUnitizador($unitizadorEn);
@@ -608,7 +608,7 @@ class PaleteRepository extends EntityRepository
             $paleteProduto->setQtdEnderecada(0);
             $paleteProduto->setCodProdutoEmbalagem($volume['COD_PRODUTO_EMBALAGEM']);
             $paleteProduto->setCodProdutoVolume($volume['COD_PRODUTO_VOLUME']);
-            $paleteProduto->setValidade($volumes['dataValidade']);
+            $paleteProduto->setValidade($dataValidade);
             $this->_em->persist($paleteProduto);
         }
     }
