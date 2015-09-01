@@ -25,6 +25,12 @@ class Mobile_ExpedicaoController extends Action
                 $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
                 $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
                 $this->view->operacao = $operacao['operacao'];
+                if (isset($operacao['placa'])) {
+                    $this->view->placa = $operacao['placa'];
+                }
+                if (isset($operacao['carga'])) {
+                    $this->view->carga = $operacao['carga'];
+                }
                 $this->view->expedicao = $operacao['expedicao'];
                 $this->view->url = $operacao['url'];
             } catch (\Exception $e) {
