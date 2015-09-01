@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
+use Core\Grid\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Doctrine\ORM\Query;
@@ -566,6 +567,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $this->getEntityManager()->beginTransaction();
         $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        $filialRepository = $this->getEntityManager()->getRepository('wms:Filial');
 
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
@@ -583,7 +585,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
-            foreach($pedidosProdutos as $pedidoProduto) {
+            foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
                 /** @var \Wms\Domain\Entity\Produto $produtoEntity */
@@ -605,19 +607,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         return $a->getCodigoSequencial() < $b->getCodigoSequencial();
                     });
 
-                    foreach ($produtoEntity->getVolumes() as $produtoVolume) {
-                        $endereco = $produtoVolume->getEndereco();
-                        if (isset($endereco) && !empty($endereco)) {
-                            $depositoEnderecoEn = $produtoVolume->getEndereco();
-                        } else {
-                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $produtoVolume->getId());
-                            foreach ($enderecosPulmao as $enderecoPulmao) {
-                                $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
-                            }
-                            $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
-                        }
-                    }
-
                     if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
                         for($i=0;$i<$quantidade;$i++) {
                             $codReferencia = null;
@@ -629,11 +618,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($endereco) && !empty($endereco)) {
                                     $depositoEnderecoEn = $volumeEntity->getEndereco();
                                 } else {
-                                    $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
-                                    foreach ($enderecosPulmao as $enderecoPulmao) {
-                                        $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                                    $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
+                                    if ($filial == null) {
+                                        throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
                                     }
-                                    $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                                    if ($filial->getIndUtilizaRessuprimento() == "S") {
+                                        $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
+                                        $idDepositoEndereco = null;
+                                        foreach ($enderecosPulmao as $enderecoPulmao) {
+                                            $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                                        }
+                                        if ($idDepositoEndereco != null) {
+                                            $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                                        }
+                                    }
                                 }
 
                                 $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,1,$volumeEntity,null,$codReferencia,$etiquetaMae,$depositoEnderecoEn);
@@ -644,6 +642,26 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     } else {
                         foreach ($arrayVolumes as $volumeEntity) {
+                            $endereco = $volumeEntity->getEndereco();
+                            if (isset($endereco) && !empty($endereco)) {
+                                $depositoEnderecoEn = $volumeEntity->getEndereco();
+                            } else {
+                                $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
+                                if ($filial == null) {
+                                    throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                                }
+                                if ($filial->getIndUtilizaRessuprimento() == "S") {
+                                    $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
+                                    $idDepositoEndereco = null;
+                                    foreach ($enderecosPulmao as $enderecoPulmao) {
+                                        $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                                    }
+                                    if ($idDepositoEndereco != null) {
+                                        $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                                    }
+                                }
+                            }
+
                             $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                             $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,$quantidade,$volumeEntity,null,$pedidoProduto,$depositoEnderecoEn);
                         }
@@ -662,7 +680,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if ($endereco != null){
                             $depositoEnderecoEn = $endereco;
                         } else {
-                            $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
+                            $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
+                            if ($filial == null) {
+                                throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                            }
+                            if ($filial->getIndUtilizaRessuprimento() == "S") {
+                                $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
+                            }
                         }
                         if ($embalagem->getIsPadrao() == "S") {
                             $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
