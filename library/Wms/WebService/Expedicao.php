@@ -951,7 +951,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 throw new \Exception('Nota Fiscal '. $numeroNf . ' / ' . $serieNF . " ja se encontra na " . strtolower($tipoCarga->getSigla()) . " " . $numeroCarga);
             }
 
-            $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA, true, $cargaEn->getExpedicao());
+            $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::REENTREGA_DEFINIDA, true, $cargaEn->getExpedicao());
 
             $reentregaEn = new Expedicao\Reentrega();
                 $reentregaEn->setIndEtiquetaMapaGerado("N");
