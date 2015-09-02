@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityRepository,
 use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\NotaFiscal;
 
 class EtiquetaSeparacaoRepository extends EntityRepository
 {
@@ -538,24 +539,44 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     public function gerarMapaEtiquetaReentrega($idExpedicao){
-        $reentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Reentrega");
-        $nfProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaidaPedido");
-        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+        $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
+        $reentregaRepo   = $this->getEntityManager()->getRepository("wms:Expedicao\Reentrega");
+        $nfProdutoRepo   = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaidaPedido");
+        $nfSaidaRepo     = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
+        $expedicaoRepo   = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $produtoRepo     = $this->getEntityManager()->getRepository("wms:Produto");
 
         $produtos = $reentregaRepo->getItemNotasByExpedicao($idExpedicao);
+        $expedicaoEn = $expedicaoRepo->find($idExpedicao);
+
         foreach ($produtos as $produto) {
             $numNF = $produto['COD_NOTA_FISCAL_SAIDA'];
             $qtdReentregue = $produto['QUANTIDADE'];
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
-            $expedicaoEn = $expedicaoRepo->find($idExpedicao);
-            $produtoEn = $produtoRepo->findOneBy(array('codProduto' =>$codProduto,'grade'=> $grade));
+            $produtoEn = $produtoRepo->findOneBy(array('id' =>$codProduto,'grade'=> $grade));
             $pedidos = $nfProdutoRepo->findBy(array('codNotaFiscalSaida'=>$numNF));
 
             $qtdMapa = $this->defineEtiquetaReentrega($pedidos,$codProduto,$grade,$qtdReentregue);
             $this->geraMapaReentrega($produtoEn, $qtdMapa, $expedicaoEn);
+
         }
+
+        $reentregas = $reentregaRepo->getReentregasByExpedicao($idExpedicao);
+        foreach ($reentregas as $reentrega) {
+            $numNF = $reentrega['COD_NOTA_FISCAL_SAIDA'];
+            $numReentrega = $reentrega['COD_REENTREGA'];
+            $nfSaidaEn = $nfSaidaRepo->findOneBy(array('id'=>$numNF));
+
+            $reentregaEn = $reentregaRepo->findOneBy(array('id'=>$numReentrega));
+                $reentregaEn->setIndEtiquetaMapaGerado('S');
+                $this->getEntityManager()->persist($reentregaEn);
+
+            $andamentoNFRepo->save($nfSaidaEn, NotaFiscalSaida::REENTREGA_EM_SEPARACAO, false, $expedicaoEn);
+        }
+
+        $this->getEntityManager()->flush();
     }
 
     /**

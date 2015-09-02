@@ -13,6 +13,7 @@ class NotaFiscalSaida
     const DEVOLVIDO_PARA_REENTREGA = 554;
     const EXPEDIDO_REENTREGA = 555;
     const REENTREGA_DEFINIDA = 562;
+    const REENTREGA_EM_SEPARACAO = 563;
 
     /**
      * @Id
