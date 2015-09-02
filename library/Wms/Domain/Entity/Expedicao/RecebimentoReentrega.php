@@ -10,6 +10,10 @@ use Zend\Stdlib\Configurator;
  */
 class RecebimentoReentrega
 {
+    const RECEBIMENTO_INICIADO = 559;
+    const RECEBIMENTO_CANCELADO = 560;
+    const RECEBIMENTO_CONCLUIDO = 561;
+
 
     /**
      * @Id

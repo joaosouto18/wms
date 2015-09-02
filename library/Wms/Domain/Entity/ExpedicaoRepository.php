@@ -1937,6 +1937,8 @@ class ExpedicaoRepository extends EntityRepository
                 throw new \Exception("Nenhuma Etiqueta de Separação encontrada com o codigo de barras " . $codBarras);
             }
             $idExpedicao = 0;
+            $placa = "";
+            $carga = "";
             switch ($etiquetaSeparacao->getStatus()->getId()){
                 case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
                     throw new \Exception("Etiqueta pendente de impresão");
@@ -1951,8 +1953,10 @@ class ExpedicaoRepository extends EntityRepository
                     $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
                     if ($etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
                         $operacao = "Recebimento de Transbordo";
-                        $url = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
-                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+                        $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                        $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                        $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado'=>true);
                     }
                 case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                     $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
@@ -1994,6 +1998,7 @@ class ExpedicaoRepository extends EntityRepository
 
                         $operacao = "Conferencia de Embalados";
                         $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/idTipoVolume/$idTipoVolume";
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'carga'=>$carga, 'parcialmenteFinalizado'=>false);
                     } else {
                         $operacao = "Conferencia de Etiquetas de Separação";
                         $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
@@ -2005,12 +2010,15 @@ class ExpedicaoRepository extends EntityRepository
                 case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO:
                     $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
                     $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
-
+                    $carga = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
                     $operacao = "Expedição de Transbordo";
                     $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
+
+                    return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
                     break;
             }
-            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+
+            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'parcialmenteFinalizado'=>false);
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE) {
             //ETIQUETA MÃE

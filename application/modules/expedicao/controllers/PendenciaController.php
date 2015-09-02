@@ -11,7 +11,8 @@ class Expedicao_PendenciaController  extends Action
         $placaCarga  = $this->getRequest()->getParam('placa');
         $transbordo  = $this->getRequest()->getParam('transbordo');
         $embalado    = $this->getRequest()->getParam('embalado');
-        $status      = $this->getRequest()->getParam('status');
+        $tipo        = $this->getRequest()->getParam('tipo', null);
+        $carga       = $this->getRequest()->getParam('carga', null);
 
         $this->view->showReport = true;
         if (isset($status) && ($status != null)) {
@@ -20,20 +21,37 @@ class Expedicao_PendenciaController  extends Action
             $this->view->showReport = false;
         } else {
             $label = "Etiquetas pendentes de conferência";
-            if (is_null($placaCarga))    {
-                $status = "522,523";
-                $expedicaoEn = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
-                if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
-                    $status = "522,523,526";
-                }
-            } else {
-                $status = "522,523,526,532";
+        }
+
+        if (is_null($placaCarga))    {
+            $status = "522,523";
+            $expedicaoEn = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
+            if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
+                $status = "522,523,526";
             }
+        } else {
+            $status = "522,523,526,532";
+        }
+
+        switch($tipo) {
+            case 'recebido' :
+                $status = "526";
+            break;
+            case 'expedido' :
+                $status = "532";
+            break;
+            case 'conferida' :
+                $status = "523";
+            break;
+            default:
+                $status = $status;
+            break;
         }
 
         $GridCortes = new PendentesGrid();
         $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,$label,$embalado)
             ->render();
+        $this->view->tipo = $tipo;
     }
 
     public function recebimentoAction() {
@@ -49,6 +67,7 @@ class Expedicao_PendenciaController  extends Action
         $placaCarga  = $this->getRequest()->getParam('placa');
         $transbordo  = $this->getRequest()->getParam('transbordo');
         $embalado    = $this->getRequest()->getParam('embalado');
+        $tipo        = $this->getRequest()->getParam('tipo', null);
 
         if (is_null($placaCarga))    {
             $status = "522,523";
@@ -60,12 +79,25 @@ class Expedicao_PendenciaController  extends Action
             $status = "522,523,526,532";
         }
 
+        switch($tipo) {
+            case 'recebido' :
+                $status = "526";
+                break;
+            case 'expedido' :
+                $status = "532";
+                break;
+            default:
+                $status = $status;
+                break;
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,$status,"Array",$placaCarga,$transbordo,$embalado);
-
+        $quebraRelatorio = $this->getSystemParameterValue("QUEBRA_CARGA_REL_PEND_EXP");
+        $modeloRelatorio = $this->getSystemParameterValue("MODELO_RELATORIOS");
         $RelCarregamento    = new ProdutosSemConferenciaReport("L","mm","A4");
-        $RelCarregamento->imprimir($idExpedicao, $result);
+        $RelCarregamento->imprimir($idExpedicao, $result, $modeloRelatorio, $quebraRelatorio);
     }
 
     public function relatorioAction(){

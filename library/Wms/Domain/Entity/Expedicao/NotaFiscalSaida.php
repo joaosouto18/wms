@@ -12,8 +12,6 @@ class NotaFiscalSaida
     const NOTA_FISCAL_EMITIDA = 553;
     const DEVOLVIDO_PARA_REENTREGA = 554;
     const EXPEDIDO_REENTREGA = 555;
-    const FINALIZADO = 556;
-    const RECEBIDA = 557;
 
     /**
      * @Id

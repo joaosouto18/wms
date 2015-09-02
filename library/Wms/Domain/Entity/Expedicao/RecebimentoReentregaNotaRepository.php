@@ -11,6 +11,8 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
     {
         /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
         $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+        $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
 
         foreach ($params['mass-id'] as $notaFiscal) {
             $notaFiscalEn = $notaFiscalSaidaRepo->findOneBy(array('id' => $notaFiscal));
@@ -19,6 +21,9 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
             $recebimentoReentregaNotaEn->setRecebimentoReentrega($recebimentoReentregaEn);
             $recebimentoReentregaNotaEn->setNotaFiscalSaida($notaFiscalEn);
             $this->_em->persist($recebimentoReentregaNotaEn);
+
+            $andamentoNFRepo->save($notaFiscalEn, RecebimentoReentrega::RECEBIMENTO_INICIADO);
+
         }
 
         $this->_em->flush();
@@ -28,7 +33,7 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
 
     public function getRecebimentoReentregaByNota()
     {
-        $status = NotaFiscalSaida::NOTA_FISCAL_EMITIDA;
+        $status = RecebimentoReentrega::RECEBIMENTO_INICIADO;
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('nfs.numeroNf', 'rr.id recebimento')
             ->from('wms:Expedicao\RecebimentoReentregaNota', 'rrn')

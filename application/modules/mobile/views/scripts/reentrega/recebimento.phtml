@@ -1,1 +1,18 @@
 <?php echo $this->form; ?>
+<?php if (count($this->notasFiscais) >0) {?>
+<div style="margin-top: 5pt">
+    <form class="saveForm">
+        <fieldset>
+            <legend>Recebimentos Gerados</legend>
+            <ul class="menu">
+                <?php foreach($this->notasFiscais as $notaFiscal) : ?>
+                    <li>
+                        <a href="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'reconferir-produtos', 'id' => $notaFiscal['recebimento'])); ?>" > <?php echo 'Recebimento '.$notaFiscal['recebimento'] ?></a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+
+        </fieldset>
+    </form>
+</div>
+<?php }?>
