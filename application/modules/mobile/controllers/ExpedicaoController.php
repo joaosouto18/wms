@@ -36,7 +36,7 @@ class Mobile_ExpedicaoController extends Action
                     if ($operacao['parcialmenteFinalizado'] == true) {
                         $sessaoColetor->parcialmenteFinalizado = true;
                     } else {
-                        $sessaoColetor->parcialmenteFinalizado = true;
+                        $sessaoColetor->parcialmenteFinalizado = false;
                     }
                 }
 
