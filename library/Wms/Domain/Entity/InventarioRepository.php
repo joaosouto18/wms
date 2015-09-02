@@ -346,9 +346,15 @@ class InventarioRepository extends EntityRepository
     {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+        /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $inventarioContagemEnderecoRepo */
+        $inventarioContagemEnderecoRepo = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
         foreach($enderecos as $endereco) {
             $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
             if ($inventarioEndEn) {
+                $inventarioContagemEnderecoEn = $inventarioContagemEnderecoRepo->findBy(array('inventarioEndereco' => $inventarioEndEn));
+                foreach ($inventarioContagemEnderecoEn as $inventarioContEnd) {
+                    $this->_em->remove($inventarioContEnd);
+                }
                 $this->_em->remove($inventarioEndEn);
             }
         }
