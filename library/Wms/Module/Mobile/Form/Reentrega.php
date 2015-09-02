@@ -15,7 +15,6 @@ class Reentrega extends Form
         $this->setAction($this->getView()->url(array('controller' => 'reentrega', 'action' => 'buscar')));
 
         $em = $this->getEm();
-
         $this->addElement('text', 'carga', array(
                     'label' => 'Código carga',
                     'class' => 'carga',
@@ -31,7 +30,7 @@ class Reentrega extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('carga', 'notaFiscal', 'submit'), 'recebimento');
+                ->addDisplayGroup(array('carga', 'notaFiscal', 'submit'), 'recebimento',array('legend' => 'Gerar Recebimento'));
     }
 
 }

@@ -10,12 +10,12 @@ class RecebimentoReentregaRepository extends EntityRepository
     public function verificaRecebimento($data)
     {
         $notas = implode(',', $data['mass-id']);
-        $notaFiscalEmitida = NotaFiscalSaida::NOTA_FISCAL_EMITIDA;
+        $recebimentoIniciado = RecebimentoReentrega::RECEBIMENTO_INICIADO;
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('rr.id')
             ->from('wms:Expedicao\RecebimentoReentrega', 'rr')
             ->innerJoin('wms:Expedicao\RecebimentoReentregaNota', 'rrn', 'WITH', 'rr.id = rrn.recebimentoReentrega')
-            ->where("rrn.notaFiscalSaida IN ($notas) AND rr.status = $notaFiscalEmitida");
+            ->where("rrn.notaFiscalSaida IN ($notas) AND rr.status = $recebimentoIniciado");
         return $sql->getQuery()->getResult();
     }
 
@@ -25,7 +25,7 @@ class RecebimentoReentregaRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
         $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-        $siglaEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::NOTA_FISCAL_EMITIDA));
+        $siglaEn = $siglaRepo->findOneBy(array('id' => RecebimentoReentrega::RECEBIMENTO_INICIADO));
 
         /** @var \Wms\Domain\Entity\Usuario $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
@@ -45,44 +45,51 @@ class RecebimentoReentregaRepository extends EntityRepository
 
     public function finalizarConferencia($data)
     {
-        $this->getEntityManager()->beginTransaction();
+        try {
 
-        /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
-        $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
-        $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
-        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
-        $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
-        $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
+            $this->getEntityManager()->beginTransaction();
 
-        $getQtdProdutosByNota = $notaFiscalSaidaRepo->getQtdProdutoByNota($data);
+            /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
+            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+            /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+            $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
+            $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
+            /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+            $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
+            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
+            $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
 
-        foreach ($getQtdProdutosByNota as $produto) {
-            if ($produto['QTD_TOTAL'] != 0) {
+
+            $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
+
+            //VERIFICA SE TEVE ALGUMA DIVERGENCIA NO RECEBIMENTO
+            $getQtdProdutosDivergentes = $notaFiscalSaidaRepo->getQtdProdutoDivergentesByNota($data);
+            if (count($getQtdProdutosDivergentes) > 0) {
                 $recebimentoReentregaEn->setNumeroConferencia($recebimentoReentregaEn->getNumeroConferencia() + 1);
                 $this->_em->persist($recebimentoReentregaEn);
                 $this->_em->flush();
                 $this->_em->clear();
                 $this->getEntityManager()->commit();
-                $mensagem = utf8_encode('Existem produtos com conferência errada!');
+                $mensagem = utf8_encode('Existem produtos com divergencia na conferencia');
                 throw new \Exception($mensagem);
             }
-        }
 
-        try {
             //alterar o status do recebimento para finalizado
-            $siglaRecebimentoEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::FINALIZADO));
-            $recebimentoReentregaEn->setStatus($siglaRecebimentoEn);
+            $statusRecebimentoFinalizadoEn = $siglaRepo->findOneBy(array('id' => RecebimentoReentrega::RECEBIMENTO_CONCLUIDO));
+            $statusNfFinalizadaEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA));
+
+            $recebimentoReentregaEn->setStatus($statusRecebimentoFinalizadoEn);
             $this->_em->persist($recebimentoReentregaEn);
 
-            //alterar o status da nota fiscal para recebida
-            $siglaNotaEn = $siglaRepo->findOneBy(array('id' => NotaFiscalSaida::RECEBIDA));
-            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
-            $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
-            $recebimentoReentregaNotaEn = $recebimentoReentregaNotaRepo->findBy(array('recebimentoReentrega' => $recebimentoReentregaEn->getId()));
-            $notaFiscalSaidaEn = $notaFiscalSaidaRepo->findOneBy(array('id' => $recebimentoReentregaNotaEn->getNotaFiscalSaida()));
-            $notaFiscalSaidaEn->setStatus($siglaNotaEn);
-            $this->_em->persist($notaFiscalSaidaEn);
+            //GRAVO O ANDAMENTO DE CADA NOTA FALANDO QUE FOI FINALIZADO O RECEBIMENTO
+            $notas = $recebimentoReentregaNotaRepo->findBy(array('recebimentoReentrega' => $recebimentoReentregaEn->getId()));
+            foreach ($notas as $nota){
+                $nfEntity = $nota->getNotaFiscalSaida();
+                $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO);
+                $nfEntity->setStatus($statusNfFinalizadaEn);
+                $this->getEntityManager()->persist($nfEntity);
+            }
 
             $this->_em->flush();
             $this->_em->clear();

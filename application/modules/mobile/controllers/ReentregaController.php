@@ -13,12 +13,16 @@ class Mobile_ReentregaController extends Action
 
     public function recebimentoAction()
     {
+        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
+        $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
+        $this->view->notasFiscais = $recebimentoReentregaNotaRepo->getRecebimentoReentregaByNota();
         $this->view->form = new FormReentrega;
     }
 
     public function buscarAction()
     {
         $params = $this->_getAllParams();
+
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
@@ -35,6 +39,7 @@ class Mobile_ReentregaController extends Action
                 $this->_redirect('/mobile/reentrega/recebimento');
             }
         }
+
     }
 
     public function gerarRecebimentoAction()
@@ -47,7 +52,7 @@ class Mobile_ReentregaController extends Action
         //verifica se a nota fiscal ja foi gerada
         $verificaRecebimento = $recebimentoReentregaRepo->verificaRecebimento($params);
         if (count($verificaRecebimento) > 0) {
-            $this->addFlashMessage('success', 'Nota fiscal ja gerada e em conferencia!');
+            $this->addFlashMessage('success', 'Nota fiscal ja se encontra em processo de reconferencia!');
             $this->redirect('recebimento', 'reentrega', 'mobile');
         }
 
@@ -63,14 +68,7 @@ class Mobile_ReentregaController extends Action
         $ordemServicoRepo->criarOsByReentrega($recebimentoReentregaEn);
 
         $this->addFlashMessage('success', 'Recebimento de Reentrega gerado com sucesso!');
-        $this->redirect('reconferencia', 'reentrega', 'mobile');
-    }
-
-    public function reconferenciaAction()
-    {
-        /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
-        $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
-        $this->view->notasFiscais = $recebimentoReentregaNotaRepo->getRecebimentoReentregaByNota();
+        $this->redirect('reconferir-produtos', 'reentrega', 'mobile',array('id'=>$recebimentoReentregaEn->getId()));
     }
 
     public function reconferirProdutosAction()
@@ -83,7 +81,9 @@ class Mobile_ReentregaController extends Action
             try {
                 /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
                 $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
-                $result = $conferenciaRecebimentoReentregaRepo->save($params);
+                $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
+                $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
+
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
@@ -100,11 +100,59 @@ class Mobile_ReentregaController extends Action
             /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
             $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
             $result = $recebimentoReentregaRepo->finalizarConferencia($params);
+
+            $this->addFlashMessage('error', "Notas Fiscais Recebidas com sucesso");
+            $this->_redirect('/mobile/reentrega/recebimento');
+
         } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
         }
 
-        $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
     }
+
+    public function cancelarConferenciaAction(){
+
+        try {
+            $this->getEntityManager()->beginTransaction();
+
+            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
+            $recebimentoReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\RecebimentoReentrega");
+            /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNfRepo */
+            $recebimentoReentregaNfRepo = $this->getEntityManager()->getRepository("wms:Expedicao\RecebimentoReentregaNota");
+            /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+            $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
+            /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
+            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+
+            $params = $this->_getAllParams();
+            $idRecebimento = $params['id'];
+            $siglaEn = $siglaRepo->findOneBy(array('id' => \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO));
+
+            $recebimentoEn = $recebimentoReentregaRepo->findOneBy(array('id'=>$idRecebimento));
+            $notas = $recebimentoReentregaNfRepo->findBy(array('recebimentoReentrega'=>$idRecebimento));
+
+            foreach ($notas as $nfReceb) {
+                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO);
+            }
+            $recebimentoEn->setStatus($siglaEn);
+
+            $this->getEntityManager()->persist($recebimentoEn);
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
+            $this->addFlashMessage('success', 'Recebimento '. $recebimentoEn->getId() . " cancelado com sucesso");
+            $this->redirect('recebimento', 'reentrega', 'mobile');
+
+        } catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->redirect('recebimento', 'reentrega', 'mobile');
+
+        }
+
+
+
+    }
+
 }
 

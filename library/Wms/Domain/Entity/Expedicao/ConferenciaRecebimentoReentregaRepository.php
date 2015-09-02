@@ -31,7 +31,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
                 $produtoId = $produtoEmbalagemEn->getProduto();
                 $grade = $produtoEmbalagemEn->getGrade();
             } else {
-                throw new \Exception(utf8_encode('Código do Produto não cadastrado!'));
+                throw new \Exception(utf8_encode('CÃ³digo do Produto nÃ£o cadastrado!'));
             }
 
             /** @var \Wms\Domain\Entity\Produto $produtoRepo */
@@ -49,7 +49,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
             //verifica se o produto existe no recebimento selecionado
             $getProdutosByRecebimento = $recebimentoReentregaRepo->getProdutosByRecebimento($data['id'], $produtoId, $grade);
             if (count($getProdutosByRecebimento) == 0) {
-                throw new \Exception(utf8_encode('Produto não encontrado para esse recebimento!'));
+                throw new \Exception(utf8_encode('Produto nÃ£o encontrado para esse recebimento!'));
             }
 
             $conferenciaRecebimentoReentregaEn = new ConferenciaRecebimentoReentrega();
@@ -69,6 +69,8 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
             $this->_em->flush();
             $this->_em->clear();
             $this->getEntityManager()->commit();
+
+            return $produtoEn;
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
