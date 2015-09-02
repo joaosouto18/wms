@@ -56,6 +56,14 @@ class Mobile_ReentregaController extends Action
             $this->redirect('recebimento', 'reentrega', 'mobile');
         }
 
+        //verifica se as notas já foram recebidas e estão pendentes de expedição
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
+            if ($recebimentoReentregaRepo->verificaNotaExpedida($params) == false) {
+                $this->addFlashMessage('error', 'Foram selecionados notas fiscais já recebidas que estão pendentes de expedição!');
+                $this->redirect('recebimento', 'reentrega', 'mobile');
+            }
+        }
+
         //caso a nota nao tenha sido gerada salva os dados nas tabelas RECEBIMENTO_REENTREGA, RECEBIMENTO_REENTREGA_NOTA e ORDEM_SERVICO
         $recebimentoReentregaEn = $recebimentoReentregaRepo->save();
 

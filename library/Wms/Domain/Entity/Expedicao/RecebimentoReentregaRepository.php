@@ -7,6 +7,22 @@ use Wms\Domain\Entity\NotaFiscal;
 
 class RecebimentoReentregaRepository extends EntityRepository
 {
+    public function verificaNotaExpedida ($data) {
+        $notas = implode(',', $data['mass-id']);
+        $notaRecebida = NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA;
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('nfs.id')
+            ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
+            ->where("nfs.id IN ($notas) AND nfs.status = $notaRecebida");
+
+        $result =$sql->getQuery()->getArrayResult();
+        if (count($result) == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function verificaRecebimento($data)
     {
         $notas = implode(',', $data['mass-id']);
