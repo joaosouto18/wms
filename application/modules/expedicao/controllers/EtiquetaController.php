@@ -277,6 +277,8 @@ class Expedicao_EtiquetaController  extends Action
     protected function gerarMapaEtiqueta($idExpedicao, $central, $cargas) {
 
         try {
+            $this->getEntityManager()->beginTransaction();
+
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
             $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
@@ -295,8 +297,10 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
             }
 
-            $EtiquetaRepo->gerarMapaEtiqueta($pedidosProdutos,null,1);
+            $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,1);
+            $this->getEntityManager()->commit();
         } catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
     }

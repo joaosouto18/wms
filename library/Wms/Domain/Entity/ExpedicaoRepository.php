@@ -490,7 +490,7 @@ class ExpedicaoRepository extends EntityRepository
         $qtdEtiquetasPendenteConferencia = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $expedicaoEn, $central);
         $qtdEtiquetasPendenteImpressão = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $expedicaoEn, $central);
 
-        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA')) {
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
 
             $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
             if (count($qtdEtiquetasPendenteReentrega) >0) {
@@ -1187,8 +1187,10 @@ class ExpedicaoRepository extends EntityRepository
                                       INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO '.$cond.' '.$whereSubQuery.')
                               GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    CASE WHEN (SUM(CASE WHEN P.IND_ETIQUETA_MAPA_GERADO = \'N\' THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\' ELSE \'\' END AS IMPRIMIR
+                                    CASE WHEN (SUM(CASE WHEN (P.IND_ETIQUETA_MAPA_GERADO = \'N\') OR (R.IND_ETIQUETA_MAPA_GERADO = \'N\') THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\'
+                                            ELSE \'\' END AS IMPRIMIR
                                FROM CARGA C
+                               LEFT JOIN REENTREGA R ON R.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN (SELECT C.COD_EXPEDICAO, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
                                             FROM ETIQUETA_SEPARACAO ES

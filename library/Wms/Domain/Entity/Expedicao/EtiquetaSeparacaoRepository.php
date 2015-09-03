@@ -461,7 +461,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $codPedido = $pedido->getCodPedido();
             $etiquetas = $etiquetaRepo->findBy(array('pedido' => $codPedido,'codProduto' => $codProduto,'dscGrade' => $grade));
             foreach ($etiquetas as $etiqueta) {
-                if ($etiqueta->getCodStatus == EtiquetaSeparacao::STATUS_CORTADO) {continue;}
+                if ($etiqueta->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) {continue;}
                 if ($etiqueta->getCodReferencia() != null) {continue;}
                 if ($qtdReentregue <= 0) {continue;}
 
@@ -584,7 +584,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param int $status
      * @return int
      */
-    public function gerarMapaEtiqueta(array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idModeloSeparacao)
+    public function gerarMapaEtiqueta($idExpedicao, array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idModeloSeparacao)
     {
         $this->getEntityManager()->beginTransaction();
         $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
@@ -599,13 +599,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
             $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
 
-            $expedicaoEntity = $pedidosProdutos[0]->getPedido()->getCarga()->getExpedicao();
-            $idExpedicao = $expedicaoEntity->getId();
-
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
+
             foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
