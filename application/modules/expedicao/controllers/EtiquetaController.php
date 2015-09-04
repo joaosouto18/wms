@@ -75,7 +75,7 @@ class Expedicao_EtiquetaController  extends Action
 
         $linkReentrega = "";
         if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') =='S') {
-            $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao);
             if (count($qtdReentrega) >0){
                 $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
             }

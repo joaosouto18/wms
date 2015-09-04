@@ -150,6 +150,17 @@ class EtiquetaSeparacao
      */
     protected $depositoEndereco;
 
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Reentrega")
+     * @JoinColumn(name="COD_REENTREGA", referencedColumnName="COD_REENTREGA")
+     */
+    protected $reentrega;
+
+    /**
+     * @Column(name="COD_REENTREGA", type="integer", nullable=false)
+     */
+    protected $codReentrega;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -393,6 +404,38 @@ class EtiquetaSeparacao
     public function setDepositoEndereco($depositoEndereco)
     {
         $this->depositoEndereco = $depositoEndereco;
+    }
+
+    /**
+     * @param mixed $codReentrega
+     */
+    public function setCodReentrega($codReentrega)
+    {
+        $this->codReentrega = $codReentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodReentrega()
+    {
+        return $this->codReentrega;
+    }
+
+    /**
+     * @param mixed $reentrega
+     */
+    public function setReentrega($reentrega)
+    {
+        $this->reentrega = $reentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReentrega()
+    {
+        return $this->reentrega;
     }
 
 }

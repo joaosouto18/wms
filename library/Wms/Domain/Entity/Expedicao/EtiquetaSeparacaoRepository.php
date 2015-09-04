@@ -452,10 +452,28 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
 
-    public function defineEtiquetaReentrega ($pedidos ,$codProduto, $grade, $qtdReentregar) {
-        $etiquetaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao");
+    public function geraEtiquetaReentrega ($etiquetaSeparacanEn, $reentregaEn) {
         $statusReentrega = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+
+        $etiquetaSeparacanEn->setReentrega($reentregaEn);
+        $etiquetaSeparacanEn->setCodReentrega($reentregaEn);
+        $this->getEntityManager()->persist($etiquetaSeparacanEn);
+
+        $etiquetaReentrega = new EtiquetaSeparacaoReentrega();
+            $etiquetaReentrega->setStatus($statusReentrega);
+            $etiquetaReentrega->setCodStatus($statusReentrega->getId());
+            $etiquetaReentrega->setEtiquetaSeparacao($etiquetaSeparacanEn);
+            $etiquetaReentrega->setCodEtiquetaSeparacao($etiquetaSeparacanEn->getId());
+            $etiquetaReentrega->setCodReentrega($reentregaEn->getId());
+            $etiquetaReentrega->setReentrega($reentregaEn);
+        $this->getEntityManager()->persist($etiquetaReentrega);
+    }
+
+    public function defineEtiquetaReentrega ($pedidos ,$codProduto, $grade, $qtdReentregar, $numReentrega) {
+        $etiquetaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao");
+        $reentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Reentrega");
         $qtdReentregue = $qtdReentregar;
+        $reentregaEn = $reentregaRepo->findOneBy(array('id'=>$numReentrega));
 
         foreach ($pedidos as $pedido) {
             $codPedido = $pedido->getCodPedido();
@@ -465,15 +483,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if ($etiqueta->getCodReferencia() != null) {continue;}
                 if ($qtdReentregue <= 0) {continue;}
 
-                $etiqueta->setCodStatus($statusReentrega->getId());
-                $etiqueta->setStatus($statusReentrega);
-                $this->getEntityManager()->persist($etiqueta);
+                $this->geraEtiquetaReentrega($etiqueta,$reentregaEn);
                 $qtdReentregue = $qtdReentregue - $etiqueta->getQtdProduto();
                 $etiquetasReferentes = $etiquetaRepo->findBy(array('codReferencia'=>$etiqueta->getId()));
                 foreach ($etiquetasReferentes as $etiquetaVolume) {
-                    $etiquetaVolume->setCodStatus($statusReentrega->getId());
-                    $etiquetaVolume->setStatus($statusReentrega);
-                    $this->getEntityManager()->persist($etiquetaVolume);
+                    $this->geraEtiquetaReentrega($etiquetaVolume,$reentregaEn);
                 }
             }
         }
@@ -555,11 +569,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $qtdReentregue = $produto['QUANTIDADE'];
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
+            $numReentrega = $produto['COD_REENTREGA'];
+
             $produtoEn = $produtoRepo->findOneBy(array('id' =>$codProduto,'grade'=> $grade));
             $pedidos = $nfProdutoRepo->findBy(array('codNotaFiscalSaida'=>$numNF));
 
-            $qtdMapa = $this->defineEtiquetaReentrega($pedidos,$codProduto,$grade,$qtdReentregue);
-            $this->geraMapaReentrega($produtoEn, $qtdMapa, $expedicaoEn);
+            $qtdMapa = $this->defineEtiquetaReentrega($pedidos,$codProduto,$grade,$qtdReentregue, $numReentrega);
+            $this->geraMapaReentrega($produtoEn, $qtdMapa, $expedicaoEn, $numReentrega);
 
         }
 
@@ -1610,10 +1626,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
                PES.NOM_PESSOA as CLIENTE
          FROM REENTREGA R
-         LEFT JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSP ON NFSP.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
-         LEFT JOIN PEDIDO P ON P.COD_PEDIDO = NFSP.COD_PEDIDO
-         LEFT JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
-         LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = P.COD_PEDIDO
+         LEFT JOIN CARGA C ON C.COD_CARGA = R.COD_CARGA
+         LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_REENTREGA = R.COD_REENTREGA
+         LEFT JOIN ETIQUETA_SEPARACAO_REENTREGA ESR ON ESR.COD_ETIQUETA_SEPARACAO = ES.COD_ETIQUETA_SEPARACAO
+         LEFT JOIN PEDIDO P ON ES.COD_PEDIDO = P.COD_PEDIDO
          LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
          LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
          LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = ES.COD_PRODUTO AND PROD.DSC_GRADE = ES.DSC_GRADE
@@ -1623,7 +1639,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         ";
 
         if ($codStatus != null) {
-            $SQL = $SQL . " AND ES.COD_STATUS = $codStatus";
+            $SQL = $SQL . " AND ESR.COD_STATUS = $codStatus";
         }
 
         $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
