@@ -1904,6 +1904,10 @@ class ExpedicaoRepository extends EntityRepository
         $tipoEtiqueta  = null;
 
         if (strlen($codBarras) >2){
+            if ((substr($codBarras,0,2)) == "39") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
+            }
+
             if ((substr($codBarras,0,2)) == "69") {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
             }
@@ -1942,84 +1946,93 @@ class ExpedicaoRepository extends EntityRepository
             $idExpedicao = 0;
             $placa = "";
             $carga = "";
-            switch ($etiquetaSeparacao->getStatus()->getId()){
-                case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
-                    throw new \Exception("Etiqueta pendente de impresão");
-                    break;
-                case EtiquetaSeparacao::STATUS_CORTADO:
-                    throw new \Exception("Etiqueta Cortada");
-                    break;
-                case EtiquetaSeparacao::STATUS_PENDENTE_CORTE:
-                    throw new \Exception("Etiqueta Pendente de Corte");
-                    break;
-                case EtiquetaSeparacao::STATUS_CONFERIDO:
-                    $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
-                    if ($etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
-                        $operacao = "Recebimento de Transbordo";
-                        $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
-                        $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
-                        $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
-                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado'=>true);
-                    }
-                case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
-                    $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
 
-                    $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-                    $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
-                    if ($modeloSeparacao == null) throw new \Exception("Modelo de Separação não encontrado");
-                    $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
+            if ($etiquetaSeparacao->getReentrega() != null) {
+                $idExpedicao = $etiquetaSeparacao->getReentrega()->getCarga()->getExpedicao()->getId();
 
-                    $embalado = false;
-                    if ($embalagem != null) {
-                        if ($modeloSeparacao->getTipoDefaultEmbalado() == "P") {
-                            if ($embalagem->getEmbalado() == "S") {
-                                $embalado = true;
-                            }
-                        } else {
-                            $embalagens = $etiquetaSeparacao->getProduto()->getEmbalagens();
-                            foreach ($embalagens as $emb){
-                                if ($emb->getIsPadrao() == "S") {
-                                    if ($embalagem->getQuantidade() < $emb->getQuantidade()) {
-                                        $embalado = true;
-                                    }
-                                    break;
+                $operacao = "Conferencia de Etiqueta de Reentrega";
+                $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
+            } else {
+                switch ($etiquetaSeparacao->getStatus()->getId()){
+                    case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
+                        throw new \Exception("Etiqueta pendente de impresão");
+                        break;
+                    case EtiquetaSeparacao::STATUS_CORTADO:
+                        throw new \Exception("Etiqueta Cortada");
+                        break;
+                    case EtiquetaSeparacao::STATUS_PENDENTE_CORTE:
+                        throw new \Exception("Etiqueta Pendente de Corte");
+                        break;
+                    case EtiquetaSeparacao::STATUS_CONFERIDO:
+                        $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+                        if ($etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
+                            $operacao = "Recebimento de Transbordo";
+                            $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                            $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                            $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado'=>true);
+                        }
+                    case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
+                        $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+
+                        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+                        $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
+                        if ($modeloSeparacao == null) throw new \Exception("Modelo de Separação não encontrado");
+                        $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
+
+                        $embalado = false;
+                        if ($embalagem != null) {
+                            if ($modeloSeparacao->getTipoDefaultEmbalado() == "P") {
+                                if ($embalagem->getEmbalado() == "S") {
+                                    $embalado = true;
                                 }
+                            } else {
+                                $embalagens = $etiquetaSeparacao->getProduto()->getEmbalagens();
+                                foreach ($embalagens as $emb){
+                                    if ($emb->getIsPadrao() == "S") {
+                                        if ($embalagem->getQuantidade() < $emb->getQuantidade()) {
+                                            $embalado = true;
+                                        }
+                                        break;
+                                    }
+                                }
+
+                            }
+                        }
+
+                        if ($embalado == true) {
+
+                            if ($modeloSeparacao->getTipoQuebraVolume() == "C") {
+                                $idCliente     = $etiquetaSeparacao->getPedido()->getPessoa()->getCodClienteExterno();
+                                $idTipoVolume = $idCliente;
+                            } else {
+                                $idCarga       = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                                $idTipoVolume = $idCarga;
                             }
 
-                        }
-                    }
-
-                    if ($embalado == true) {
-
-                        if ($modeloSeparacao->getTipoQuebraVolume() == "C") {
-                            $idCliente     = $etiquetaSeparacao->getPedido()->getPessoa()->getCodClienteExterno();
-                            $idTipoVolume = $idCliente;
+                            $operacao = "Conferencia de Embalados";
+                            $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/idTipoVolume/$idTipoVolume";
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'carga'=>$carga, 'parcialmenteFinalizado'=>false);
                         } else {
-                            $idCarga       = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
-                            $idTipoVolume = $idCarga;
+                            $operacao = "Conferencia de Etiquetas de Separação";
+                            $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
                         }
+                        break;
+                    case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO:
+                        throw new \Exception("Etiqueta já Expedida no Transbordo");
+                        break;
+                    case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO:
+                        $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+                        $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                        $carga = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                        $operacao = "Expedição de Transbordo";
+                        $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
 
-                        $operacao = "Conferencia de Embalados";
-                        $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/idTipoVolume/$idTipoVolume";
-                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'carga'=>$carga, 'parcialmenteFinalizado'=>false);
-                    } else {
-                        $operacao = "Conferencia de Etiquetas de Separação";
-                        $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
-                    }
-                    break;
-                case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO:
-                    throw new \Exception("Etiqueta já Expedida no Transbordo");
-                    break;
-                case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO:
-                    $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
-                    $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
-                    $carga = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
-                    $operacao = "Expedição de Transbordo";
-                    $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
-
-                    return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
-                    break;
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
+                        break;
+                }
             }
+
 
             return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'parcialmenteFinalizado'=>false);
         }
