@@ -389,6 +389,7 @@ class EnderecoRepository extends EntityRepository
                 $produto = $dql->getQuery()->getArrayResult();
             }
         }
+
         return $produto;
 
     }
@@ -915,6 +916,23 @@ class EnderecoRepository extends EntityRepository
         if ($flush == true) {
             $this->_em->flush();
         }
+    }
+
+    public function getEnderecoByDthValidade($idProduto, $grade)
+    {
+        $sql = "SELECT NVL(PV.COD_PRODUTO_VOLUME,PE.COD_PRODUTO_EMBALAGEM) PRODUTOVOLUME, NVL(PE.COD_PRODUTO,PV.COD_PRODUTO), NVL(PE.DSC_GRADE, PV.DSC_GRADE),
+                PP.DTH_VALIDADE, P.UMA, DE.COD_DEPOSITO_ENDERECO, DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_APARTAMENTO
+                FROM PALETE_PRODUTO PP
+                INNER JOIN PALETE P ON P.UMA = PP.UMA
+                INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = P.COD_DEPOSITO_ENDERECO
+                LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PP.COD_PRODUTO_EMBALAGEM
+                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
+                WHERE NVL(PE.COD_PRODUTO,PV.COD_PRODUTO) = '$idProduto' AND NVL(PE.DSC_GRADE, PV.DSC_GRADE) = '$grade'
+                GROUP BY NVL(PV.COD_PRODUTO_VOLUME,PE.COD_PRODUTO_EMBALAGEM), NVL(PE.COD_PRODUTO,PV.COD_PRODUTO), NVL(PE.DSC_GRADE, PV.DSC_GRADE), PP.DTH_VALIDADE,
+                P.UMA, DE.COD_DEPOSITO_ENDERECO, DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_APARTAMENTO
+                ORDER BY PP.DTH_VALIDADE ASC";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

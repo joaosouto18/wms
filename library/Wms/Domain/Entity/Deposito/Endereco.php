@@ -159,6 +159,12 @@ class Endereco
     protected $inventarioBloqueado;
 
     /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $validade;
+
+    /**
      * @param string $ativo
      */
     public function setAtivo($ativo)
@@ -437,6 +443,22 @@ class Endereco
     public function setInventarioBloqueado($inventarioBloqueado)
     {
         $this->inventarioBloqueado = $inventarioBloqueado;
+    }
+
+    /**
+     * @return date
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param date $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
     }
 
 }
