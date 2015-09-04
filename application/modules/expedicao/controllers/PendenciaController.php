@@ -114,10 +114,16 @@ class Expedicao_PendenciaController  extends Action
 
     public function pendenciaReentregaAjaxAction(){
         $idExpedicao    = $this->getRequest()->getParam('id');
+        $todas    = $this->getRequest()->getParam('todas');
+
+        $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
+        if (isset($todas) && ($todas != null)) {
+            $status = null;
+        }
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+        $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
         $grid = new \Wms\Module\Web\Grid\Expedicao\ReentregaPendente();
         $this->view->grid = $grid->init($pendencias);
     }

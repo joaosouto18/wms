@@ -52,6 +52,45 @@
                                 </td>
                             </tr>
                         <?php }?>
+
+                        <?php if ($this->qtdReentrega>0) {?>
+                            <tr>
+                                <td colspan="4">
+                                    <table style="margin-top: 10px" class="gTable grid-expedicao-etiquetas">
+                                        <caption>Etiquetas de Reentrega</caption>
+                                        <tbody>
+                                        <tr class="gTTitle">
+                                            <td colspan="1"></td>
+                                            <td width=""><span><b>Qtd. Etiquetas</b></span></td>
+                                            <td width=""><span><b>Etq. Conferidas</b></span></td>
+                                            <td width=""><span><b>Etq. Pendentes</b></span></td>
+                                            <td width=""><span><b>% Conferencia</b></span></td>
+                                        </tr>
+                                        <tr class="gTResultSet">
+                                            <td class="gTdOpcRow">
+                                                <div class="gOpcRow">
+                                                    <ul>
+                                                        <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                                            <ul>
+                                                                <li><a href="<?php echo "/expedicao/pendencia/pendencia-reentrega-ajax/id/" . $this->idExpedicao; ?>" class="dialogAjax" title="" target="_self">Visualizar Etiquetas</a></li>
+                                                                <li><a href="<?php echo "/expedicao/pendencia/pendencia-reentrega-ajax/todas/s/id/" . $this->idExpedicao; ?>" class="dialogAjax" title="" target="_self">Visualizar Pendencias</a></li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                            <td width = ""><span><?php echo $this->qtdReentrega;?></span></td>
+                                            <td width = ""><span><?php echo $this->qtdConferidoReentrega;?></span></td>
+                                            <td width = ""><span><?php echo $this->qtdPendenteReentrega;?></span></td>
+                                            <td width = ""><span><?php echo $this->percentualReentrega;?></span></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        <?php }?>
+
+
                         <?php if (isset($this->gridMapas)) {?>
                             <tr>
                                 <td colspan="4">
