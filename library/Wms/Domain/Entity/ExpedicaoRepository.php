@@ -277,8 +277,7 @@ class ExpedicaoRepository extends EntityRepository
                                     p.descricao";
                 break;
             case 2:
-                $order = " ORDER BY c.placaExpedicao,
-                                    ls.descricao,
+                $order = " ORDER BY ls.descricao,
                                     e.rua,
                                     e.predio,
                                     e.nivel,
