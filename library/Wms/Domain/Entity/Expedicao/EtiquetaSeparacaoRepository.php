@@ -354,6 +354,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codEstoque, es.pontoTransbordo,
                     emb.embalado,
+                    exp.id as reentregaExpedicao,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                     CASE WHEN emb.CBInterno    IS NULL THEN vol.CBInterno ELSE emb.CBInterno END as CBInterno,
                     CASE WHEN emb.codigoBarras IS NULL THEN vol.codigoBarras ELSE emb2.codigoBarras END as codBarrasProduto
@@ -361,6 +362,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'es.codStatus = s.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
+            ->leftJoin('etq.reentrega','r')
+            ->leftJoin('r.carga','c')
+            ->leftJoin('c.expedicao','exp')
             ->leftJoin('etq.produtoEmbalagem','emb')
             ->leftJoin('wms:Produto\Embalagem','emb2', 'WITH', 'emb.codProduto = emb2.codProduto
                                                             AND emb.quantidade = emb2.quantidade

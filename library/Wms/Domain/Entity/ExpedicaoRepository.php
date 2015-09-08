@@ -579,7 +579,7 @@ class ExpedicaoRepository extends EntityRepository
 
                         $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
                         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
-                        $this->getEntityManager()->flush();
+                        $this->getiEntityManager()->flush();
                         $this->getEntityManager()->commit();
                         return 0;
                     }
@@ -590,7 +590,11 @@ class ExpedicaoRepository extends EntityRepository
                     }
                 }
             }
-            
+
+            if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
+                $this->finalizarReentrega($idExpedicao);
+            }
+
             $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao);
             $this->getEntityManager()->commit();
             return $result;
@@ -598,6 +602,29 @@ class ExpedicaoRepository extends EntityRepository
             $this->getEntityManager()->rollback();
             return $e->getMessage();
         }
+    }
+
+    public function finalizarReentrega($idExpedicao) {
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+        $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
+        $reentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Reentrega");
+        $nfSaidaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaida");
+        $notasFiscais = $reentregaRepo->getReentregasByExpedicao($idExpedicao);
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+        $expedicaoEn = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
+        $status = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(ExpedicaoEntity\NotaFiscalSaida::EXPEDIDO_REENTREGA);
+
+        foreach ($notasFiscais as $notaFiscal) {
+            $nfEn = $nfSaidaRepo->findOneBy(array('id'=>$notaFiscal['COD_NOTA_FISCAL_SAIDA']));
+            $nfEn->setStatus($status);
+            $nfEn->setCodStatus($status->getId());
+            $this->getEntityManager()->persist($nfEn);
+
+            $andamentoNFRepo->save($nfEn, NotaFiscalSaida::REENTREGA_EM_SEPARACAO, false, $expedicaoEn);
+        }
+
+        $this->getEntityManager()->flush();
     }
 
     public function validaVolumesPatrimonio($idExpedicao){

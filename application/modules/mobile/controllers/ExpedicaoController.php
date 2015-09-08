@@ -366,10 +366,11 @@ class Mobile_ExpedicaoController extends Action
             }
 
             return false;
-        } else {
-            if ($etiqueta[0]['codExpedicao'] != $idExpedicao) {
-                $msg='Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
+        }
 
+        if ($etiqueta[0]['reentregaExpedicao'] != null) {
+            if ($etiqueta[0]['reentregaExpedicao'] != $idExpedicao) {
+                $msg='Etiqueta de reentrega'.$codigoBarras.' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
                 if ($this->bloquearOs=='S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
 
@@ -385,20 +386,43 @@ class Mobile_ExpedicaoController extends Action
                     die();
                 }
                 return false;
+            } else {
+                return $etiqueta;
             }
         }
 
-        //Se o tipo de conferencia for nao embalado, nao se pode bipar produtos que devem ser embalados
-        if ($tipoConferencia == 'naoembalado' && $etiqueta[0]['embalado'] == 'S') {
-            $msg='Produtos embalados devem ser vinculados a um patrimônio';
-            $this->gravaAndamentoExpedicao($msg,$idExpedicao);
-            if ($this->bloquearOs=='S'){
-                $this->createXml('error',$msg);
+        if ($etiqueta[0]['codExpedicao'] != $idExpedicao) {
+            $msg='Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
+
+            if ($this->bloquearOs=='S') {
+                $this->bloqueioOs($idExpedicao, $msg, false);
+
+                if ($this->_request->isXmlHttpRequest()) {
+                    $this->createXml('error', $msg, $this->createUrlMobile());
+                } else {
+                    $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                    die();
+                }
             } else {
-                $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+                $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                 die();
             }
+            return false;
         }
+
+
+        //Se o tipo de conferencia for nao embalado, nao se pode bipar produtos que devem ser embalados
+            if ($tipoConferencia == 'naoembalado' && $etiqueta[0]['embalado'] == 'S') {
+                $msg='Produtos embalados devem ser vinculados a um patrimônio';
+                $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+                if ($this->bloquearOs=='S'){
+                    $this->createXml('error',$msg);
+                } else {
+                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                    die();
+                }
+            }
 
         //Verifico se a etiqueta pertence a carga selecionada
         if  (!is_null($idTipoVolume) && !empty($idTipoVolume)) {
@@ -468,6 +492,42 @@ class Mobile_ExpedicaoController extends Action
         }
 
         return $etiqueta;
+    }
+
+    public function validaStatusReentrega ($etiqueta) {
+
+        $etiquetaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao");
+        $nfSaidaPedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaidaPedido");
+        $esReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacaoReentrega");
+
+        if ($this->getSystemParameterValue('CONFERE_RECEBIMENTO_REENTREGA') == 'S'){
+            $etiquetaEn = $etiquetaRepo->findOneBy(array('id'=>$etiqueta[0]['codBarras']));
+            $pedido = $etiquetaEn->getPedido();
+            $nfSaidaPedidoPedido = $nfSaidaPedidoRepo->findBy(array('codPedido'=>$pedido->getId()));
+            foreach ($nfSaidaPedidoPedido as $nfSaida) {
+                $nfSaidaEn= $nfSaida->getNotaFiscalSaida();
+                $statusNf =$nfSaidaEn->getStatus()->getId();
+                if ($statusNf != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
+                    return array('result'=>false,'msg'=> "Nota Fiscal de reentrega" . $nfSaidaEn->getNumeroNf() . "/". $nfSaidaEn->getSerieNf() . " ainda não foi recebida");
+                }
+            }
+        }
+
+        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiquetaEn[0]['codBarras'],
+                                                           'codReentrega'=>$etiquetaEn[0]['reentregaExpedicao']));
+
+        if ($esReentregaEn->getCodStatus() != EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA ) {
+            return array('result'=>false,'msg'=> "Etiqueta de Separação de Reentrega" . $etiqueta[0]['codBarras'] . " já foi conferida");
+        }
+
+        $siglaEn = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id'=>EtiquetaSeparacao::STATUS_CONFERIDO));
+
+        $esReentregaEn->setStatus($siglaEn);
+        $esReentregaEn->setCodStatus($siglaEn->getId());
+        $this->getEntityManager()->persist($esReentregaEn);
+        $this->getEntityManager()->flush();
+
+        return array('result'=>true,'msg'=> "Etiqueta de Conferida com sucesso");
     }
 
     public function validaStatusEtiqueta($idExpedicao, $status, $sessaoColetor,$etiqueta=null)
@@ -725,7 +785,34 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
+        if ($etiqueta[0]['reentregaExpedicao'] == null) {
+            $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
+        } else {
+            $return = $this->validaStatusReentrega($etiqueta);
+            if ($return['result'] == false) {
+                $msg= $return['msg'];
+                $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+                if ($this->bloquearOs=='S'){
+                    if ($this->_request->isXmlHttpRequest()) {
+                        $this->createXml("error", $msg);
+                    } else {
+                        $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                    }
+                } else {
+                    $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                }
+                return false;
+            } else {
+                if ($this->_request->isXmlHttpRequest()) {
+                    $this->createXml('success', 'Etiqueta conferida com sucesso');
+                } else {
+                    $this->addFlashMessage('success', 'Etiqueta conferida com sucesso');
+                    $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                }
+                return true;
+            }
+
+        }
 
         if ($return == false) {
             if ($etiqueta[0]['status'] == 'EXPEDIDO TRANSBORDO') {
