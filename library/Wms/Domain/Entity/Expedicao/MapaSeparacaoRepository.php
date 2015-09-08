@@ -77,10 +77,10 @@ class MapaSeparacaoRepository extends EntityRepository
                 (CASE WHEN MSP.IND_CONFERIDO = 'S'
                   THEN '100%'
                   ELSE
-                    (CASE WHEN NVL(SUM(MSC.QTD_CONFERIDA),0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) > 100
+                    (CASE WHEN NVL(MSC.QTD_CONFERIDA,0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) > 100
                     THEN '100%'
                     ELSE
-                      CAST(NVL(SUM(MSC.QTD_CONFERIDA),0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) AS NUMBER(6,2)) || '%' END) END) AS PERCENTUAL,
+                      CAST(NVL(MSC.QTD_CONFERIDA,0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) AS NUMBER(6,2)) || '%' END) END) AS PERCENTUAL,
                       MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
                 LEFT JOIN (
