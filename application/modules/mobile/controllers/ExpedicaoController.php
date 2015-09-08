@@ -513,8 +513,8 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiquetaEn[0]['codBarras'],
-                                                           'codReentrega'=>$etiquetaEn[0]['reentregaExpedicao']));
+        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta[0]['codBarras'],
+                                                           'codReentrega'=>$etiqueta[0]['codReentrega']));
 
         if ($esReentregaEn->getCodStatus() != EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA ) {
             return array('result'=>false,'msg'=> "Etiqueta de Separação de Reentrega" . $etiqueta[0]['codBarras'] . " já foi conferida");
@@ -792,12 +792,8 @@ class Mobile_ExpedicaoController extends Action
             if ($return['result'] == false) {
                 $msg= $return['msg'];
                 $this->gravaAndamentoExpedicao($msg,$idExpedicao);
-                if ($this->bloquearOs=='S'){
-                    if ($this->_request->isXmlHttpRequest()) {
-                        $this->createXml("error", $msg);
-                    } else {
-                        $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-                    }
+                if ($this->_request->isXmlHttpRequest()) {
+                    $this->createXml("error", $msg);
                 } else {
                     $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                 }
@@ -825,15 +821,12 @@ class Mobile_ExpedicaoController extends Action
 
             $msg=$mensagem;
             $this->gravaAndamentoExpedicao($msg,$idExpedicao);
-            if ($this->bloquearOs=='S'){
-                if ($this->_request->isXmlHttpRequest()) {
-                    $this->createXml("error", $msg);
-                } else {
-                    $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-                }
+            if ($this->_request->isXmlHttpRequest()) {
+                $this->createXml("error", $msg);
             } else {
                 $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
             }
+
             return false;
         }
 

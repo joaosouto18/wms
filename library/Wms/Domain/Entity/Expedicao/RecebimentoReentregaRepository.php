@@ -102,7 +102,7 @@ class RecebimentoReentregaRepository extends EntityRepository
             $notas = $recebimentoReentregaNotaRepo->findBy(array('recebimentoReentrega' => $recebimentoReentregaEn->getId()));
             foreach ($notas as $nota){
                 $nfEntity = $nota->getNotaFiscalSaida();
-                $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO);
+                $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CONCLUIDO);
                 $nfEntity->setStatus($statusNfFinalizadaEn);
                 $this->getEntityManager()->persist($nfEntity);
             }

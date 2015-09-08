@@ -291,13 +291,15 @@ class Expedicao_EtiquetaController  extends Action
             $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
 
             if (count($pedidosProdutos) == 0) {
-                if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)  return;
-                if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) return;
-                $cargas = implode(',',$cargas);
-                $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
+                if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
+                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
+                    $cargas = implode(',',$cargas);
+                    $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
+                }
+            } else {
+                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,1);
             }
 
-            $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,1);
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
