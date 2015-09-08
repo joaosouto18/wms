@@ -72,13 +72,16 @@ class MapaSeparacaoRepository extends EntityRepository
                 (CASE WHEN MSP.IND_CONFERIDO = 'S'
                   THEN NVL(SUM(MSP.QTD_TOTAL),0)
                   ELSE
-                  NVL(SUM(MSC.QTD_CONFERIDA),0)
+                  NVL(MSC.QTD_CONFERIDA,0)
                   END) AS QTD_CONF,
                 (CASE WHEN MSP.IND_CONFERIDO = 'S'
                   THEN '100%'
                   ELSE
-                  CAST(NVL(SUM(MSC.QTD_CONFERIDA),0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) AS NUMBER(6,2)) || '%'
-                END) AS PERCENTUAL, MS.COD_EXPEDICAO
+                    (CASE WHEN NVL(MSC.QTD_CONFERIDA,0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) > 100
+                    THEN '100%'
+                    ELSE
+                      CAST(NVL(MSC.QTD_CONFERIDA,0) * 100 / NVL(SUM(MSP.QTD_TOTAL),0) AS NUMBER(6,2)) || '%' END) END) AS PERCENTUAL,
+                      MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
                 LEFT JOIN (
                   SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS.COD_MAPA_SEPARACAO
@@ -91,7 +94,7 @@ class MapaSeparacaoRepository extends EntityRepository
                   INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   GROUP BY MS.COD_MAPA_SEPARACAO, MSP.COD_MAPA_SEPARACAO_PRODUTO, MSP.IND_CONFERIDO ) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 WHERE MS.COD_EXPEDICAO = $idExpedicao
-                GROUP BY MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, MS.DSC_QUEBRA, MS.COD_EXPEDICAO, MSP.IND_CONFERIDO";
+                GROUP BY MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, MS.DSC_QUEBRA, MS.COD_EXPEDICAO, MSP.IND_CONFERIDO, MSC.QTD_CONFERIDA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

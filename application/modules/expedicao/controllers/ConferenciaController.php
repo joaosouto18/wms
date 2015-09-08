@@ -12,6 +12,7 @@ class Expedicao_ConferenciaController extends Action
         $ExpedicaoRepo   = $this->em->getRepository('wms:Expedicao');
         $cargas = $ExpedicaoRepo->getCargas($idExpedicao);
         $centrais = $ExpedicaoRepo->getCentralEntregaPedidos($idExpedicao);
+        $this->view->idExpedicao = $idExpedicao;
         $this->view->centraisEntrega = $centrais;
         $this->view->cargas = $cargas;
     }
@@ -34,7 +35,7 @@ class Expedicao_ConferenciaController extends Action
 
             if (isset($params['codCargaExterno']) && !empty($params['codCargaExterno'])) {
                 $cargaRepo = $this->em->getRepository('wms:Expedicao\Carga');
-                $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $params['codCargaExterno']));
+                $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $params['codCargaExterno'], 'expedicao'=>$idExpedicao));
                 $idExpedicao = $entityCarga->getExpedicao()->getId();
             }
             $redirect = false;

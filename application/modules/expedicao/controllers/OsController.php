@@ -56,6 +56,18 @@ class Expedicao_OsController extends Action
                 ),
                 'tag' => 'a'
             );
+            $buttons[] = array(
+                'label' => 'Reentrega Pend.',
+                'cssClass' => 'dialogAjax',
+                'urlParams' => array(
+                    'module' => 'expedicao',
+                    'controller' => 'pendencia',
+                    'action' => 'pendencia-reentrega-ajax',
+                    'id' => $idExpedicao
+                ),
+                'tag' => 'a'
+            );
+
             if ($ExpedicaoRepo->getProdutosEmbalado($idExpedicao)> 0) {
                 $buttons[] = array(
                     'label' => 'Embalados Pend. Conf.',
@@ -101,7 +113,7 @@ class Expedicao_OsController extends Action
         $buttons[] =  array(
             'label' => 'Voltar para Busca de Expedições',
             'cssClass' => 'btnBack',
-            //'urlParams'=>array_merge($s->url,array('control'=>'roll')),
+            'urlParams'=>array_merge($s->url,array('control'=>'roll')),
             'tag' => 'a'
         );
 
@@ -140,11 +152,35 @@ class Expedicao_OsController extends Action
         $this->view->qtdTotalVolumePatrimonio = $qtdTotalVolumePatrimonio[0]['qtdTotal'];
         $this->view->qtdConferidaVolumePatrimonio = $qtdConferidaVolumePatrimonio[0]['qtdConferida'];
 
+        $qtdReentrega = 0;
+        $percentualReentrega = 0;
+        $qtdPendenteReentrega = 0;
+        $qtdConferidasReentrega = 0;
+
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S'){
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+            $qtdReentrega         = count($pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, null));
+            $qtdPendenteReentrega = count($pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA));
+            $qtdConferidasReentrega = count($pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO));
+
+            if ($qtdReentrega > 0) {
+                $percentualReentrega = ($qtdConferidasReentrega / $qtdReentrega) * 100;
+            }
+        }
+        $percentualReentrega = number_format($percentualReentrega,2) . '%';
+
+        $this->view->qtdReentrega = $qtdReentrega;
+        $this->view->percentualReentrega = $percentualReentrega;
+        $this->view->qtdConferidoReentrega = $qtdConferidasReentrega;
+        $this->view->qtdPendenteReentrega = $qtdPendenteReentrega;
+
         $resumoByPlacaCarga = $EtiquetaSeparacaoRepo->getCountGroupByCentralPlaca($idExpedicao);
         foreach ($resumoByPlacaCarga as $key => $resumo) {
-            $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga']);
-            $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga']) + $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'];
-            $resumoByPlacaCarga[$key]['qtdConferidas']         = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_CONFERIDO,          $idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga']) + $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'];
+            $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']);
+            $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']) + $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'];
+            $resumoByPlacaCarga[$key]['qtdConferidas']         = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_CONFERIDO,          $idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']) + $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'];
         }
         $this->view->resumoPlacaCarga    = $resumoByPlacaCarga;
 

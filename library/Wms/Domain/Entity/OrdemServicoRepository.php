@@ -300,5 +300,24 @@ class OrdemServicoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function criarOsByReentrega($recebimentoReentregaEn)
+    {
+        $em = $this->getEntityManager();
+        $atividadeEntity = $em->getReference('wms:Atividade', 15);
+
+        $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+        $pessoaEntity = $em->getReference('wms:Pessoa', $idPessoa);
+
+        $ordemServicoEn = new OrdemServico();
+        $ordemServicoEn->setDataInicial(new \DateTime);
+        $ordemServicoEn->setAtividade($atividadeEntity);
+        $ordemServicoEn->setRecebimentoReentrega($recebimentoReentregaEn);
+        $ordemServicoEn->setDscObservacao('Recebimento de Reentrega');
+        $ordemServicoEn->setPessoa($pessoaEntity);
+
+        $this->_em->persist($ordemServicoEn);
+        $this->_em->flush();
+    }
+
 }
 

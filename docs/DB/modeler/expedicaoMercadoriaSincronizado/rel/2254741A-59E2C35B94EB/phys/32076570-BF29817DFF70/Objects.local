@@ -1,9 +1,11 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
+   <object objectType="TSpace" objectID="997932F1-332E-E983-EA35-547E52154E9E" name="" seqName="seg_0"/>
    <object objectType="TSpace" objectID="F9C65FCE-5ECC-02FB-B244-0945805943E6" name="TS_WSM_ADM_D" seqName="seg_0"/>
+   <object objectType="User" objectID="6A931AEF-B06B-AC2A-EDD5-D3DCEFA1236A" name="" seqName="seg_0"/>
+   <object objectType="User" objectID="9FBACB12-A545-A1E4-5A77-A970262DA84D" name="WMS_ADM" seqName="seg_0"/>
    <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
    <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
-   <object objectType="User" objectID="9FBACB12-A545-A1E4-5A77-A970262DA84D" name="WMS_ADM" seqName="seg_0"/>
    <object objectType="Table" objectID="1B23E9D9-0A0A-765B-B1A2-2969470D4598" name="PRODUTO" seqName="seg_0"/>
    <object objectType="Table" objectID="2137B832-DB03-74C3-7734-F00A52772493" name="PEDIDO" seqName="seg_0"/>
    <object objectType="Table" objectID="38AD27FF-DEAF-D37D-E451-348C2BE648A6" name="PRODUTO_PEDIDO" seqName="seg_0"/>
@@ -13,11 +15,14 @@
    <object objectType="Table" objectID="7F757114-2006-69E4-BBDF-6B34E62DC1C6" name="EXPEDICAO" seqName="seg_0"/>
    <object objectType="Table" objectID="A8C95595-F67F-A0DC-9BB1-8904A98CB2B7" name="BOX" seqName="seg_0"/>
    <object objectType="Table" objectID="BDFBC93D-0AE0-AABC-6E3C-E5842A55D9C5" name="PRODUTO_EMBALAGEM" seqName="seg_0"/>
-   <object objectType="Segment" objectID="BA19E0FD-C520-9513-CEC9-41881DE8E355" name="Storage1" seqName="seg_0"/>
    <object objectType="Segment" objectID="43122670-BBD0-2427-A45B-B97FF8C1604D" name="Storage12" seqName="seg_0"/>
+   <object objectType="Segment" objectID="4402BEF7-0ACA-414C-E334-974C8EE01051" name="" seqName="seg_0"/>
    <object objectType="Segment" objectID="626B9F59-B283-7F84-0CD4-532B0E937FE3" name="Storage13" seqName="seg_0"/>
+   <object objectType="Segment" objectID="78EA5B69-76AF-29BE-7A7F-EF537169E4DC" name="" seqName="seg_0"/>
    <object objectType="Segment" objectID="7F874BB5-718C-5B12-DE10-81E42D9385F4" name="Storage2" seqName="seg_0"/>
+   <object objectType="Segment" objectID="8D019F43-DA2E-998E-94C0-4AF34DDCCC09" name="" seqName="seg_0"/>
    <object objectType="Segment" objectID="9870F2F9-B10F-57CE-658A-AD6EAE4150BF" name="Storage3" seqName="seg_0"/>
-   <object objectType="Segment" objectID="D98F3DC3-C247-FF4B-AA90-5507E7737CE1" name="Storage6" seqName="seg_0"/>
+   <object objectType="Segment" objectID="BA19E0FD-C520-9513-CEC9-41881DE8E355" name="Storage1" seqName="seg_0"/>
    <object objectType="Segment" objectID="C68E1DFD-2917-C987-1A27-DEF03F524389" name="Storage9" seqName="seg_0"/>
+   <object objectType="Segment" objectID="D98F3DC3-C247-FF4B-AA90-5507E7737CE1" name="Storage6" seqName="seg_0"/>
 </oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>

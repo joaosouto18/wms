@@ -230,8 +230,8 @@ class EtiquetaSeparacao extends Pdf
                 // font
                 $this->SetFont('Arial','B',17);
                 //Go to 1.5 cm from bottom
-                //$this->SetY(16.5);
-                //$this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
+                $this->SetY(16.5);
+                $this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
 
                 break;
             default:
@@ -246,8 +246,8 @@ class EtiquetaSeparacao extends Pdf
                 // font
                 $this->SetFont('Arial','B',17);
                 //Go to 1.5 cm from bottom
-                //$this->SetY(16.5);
-                //$this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
+                $this->SetY(16.5);
+                $this->Cell(20, 3, $etiqueta['sequencia'], 0, 1, "L");
                 break;
         }
     }

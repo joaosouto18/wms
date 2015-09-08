@@ -64,16 +64,28 @@ class Expedicao_EtiquetaController  extends Action
 
         $linkEtiqueta = "";
         $linkMapa = "";
+
         if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0)
             $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
         if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)
             $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
 
-            if (($linkMapa != "") &&($linkEtiqueta != "")) {
-                $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta;
-            } else {
-                $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta;
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+        $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+        $linkReentrega = "";
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') =='S') {
+            $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao);
+            if (count($qtdReentrega) >0){
+                $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
             }
+        }
+
+        if (($linkMapa != "") && ($linkEtiqueta != "")) {
+            $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta .$linkReentrega ;
+        } else {
+            $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
+        }
 
         $this->addFlashMessage('success', $mensagem );
         $this->_redirect('/expedicao');
@@ -117,6 +129,12 @@ class Expedicao_EtiquetaController  extends Action
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Etiquetas Impressas', $idExpedicao);
             }
+        }
+        if ($tipo == "reentrega") {
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','P');
         }
     }
 
@@ -258,22 +276,33 @@ class Expedicao_EtiquetaController  extends Action
      */
     protected function gerarMapaEtiqueta($idExpedicao, $central, $cargas) {
 
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-        $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
-
-        if (count($pedidosProdutos) == 0) {
-            if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)  return;
-            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) return;
-            $cargas = implode(',',$cargas);
-            $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
-        }
-
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         try {
-            $EtiquetaRepo->gerarMapaEtiqueta($pedidosProdutos,null,1);
+            $this->getEntityManager()->beginTransaction();
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+            $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+            if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
+                $EtiquetaRepo->gerarMapaEtiquetaReentrega($idExpedicao);
+            }
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+            $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
+            $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
+
+            if (count($pedidosProdutos) == 0) {
+                if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
+                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
+                    $cargas = implode(',',$cargas);
+                    $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
+                }
+            } else {
+                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,1);
+            }
+
+            $this->getEntityManager()->commit();
         } catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
     }

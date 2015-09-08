@@ -18,7 +18,12 @@ class EtiquetaSeparacao
     const STATUS_EXPEDIDO_TRANSBORDO = 531;
     const STATUS_PRIMEIRA_CONFERENCIA = 551;
     const STATUS_SEGUNDA_CONFERENCIA = 552;
+    const STATUS_PENDENTE_REENTREGA = 558;
 
+    const PREFIXO_ETIQUETA_SEPARACAO = 10;
+    const PREFIXO_ETIQUETA_MAE = 11;
+    const PREFIXO_MAPA_SEPARACAO = 12;
+    const PREFIXO_ETIQUETA_VOLUME = 13;
 
     /**
      * @Id
@@ -133,6 +138,28 @@ class EtiquetaSeparacao
      * @JoinColumn(name="COD_ETIQUETA_MAE", referencedColumnName="COD_ETIQUETA_MAE")
      */
     protected $etiquetaMae;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
+     * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
+     */
+    protected $codDepositoEndereco;
+
+    /**
+     * @Column(name="COD_DEPOSITO_ENDERECO", type="integer", nullable=false)
+     */
+    protected $depositoEndereco;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Reentrega")
+     * @JoinColumn(name="COD_REENTREGA", referencedColumnName="COD_REENTREGA")
+     */
+    protected $reentrega;
+
+    /**
+     * @Column(name="COD_REENTREGA", type="integer", nullable=false)
+     */
+    protected $codReentrega;
 
     public function setDataConferencia($dataConferencia)
     {
@@ -345,6 +372,70 @@ class EtiquetaSeparacao
     public function getEtiquetaMae()
     {
         return $this->etiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodDepositoEndereco()
+    {
+        return $this->codDepositoEndereco;
+    }
+
+    /**
+     * @param mixed $codDepositoEndereco
+     */
+    public function setCodDepositoEndereco($codDepositoEndereco)
+    {
+        $this->codDepositoEndereco = $codDepositoEndereco;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDepositoEndereco()
+    {
+        return $this->depositoEndereco;
+    }
+
+    /**
+     * @param mixed $depositoEndereco
+     */
+    public function setDepositoEndereco($depositoEndereco)
+    {
+        $this->depositoEndereco = $depositoEndereco;
+    }
+
+    /**
+     * @param mixed $codReentrega
+     */
+    public function setCodReentrega($codReentrega)
+    {
+        $this->codReentrega = $codReentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodReentrega()
+    {
+        return $this->codReentrega;
+    }
+
+    /**
+     * @param mixed $reentrega
+     */
+    public function setReentrega($reentrega)
+    {
+        $this->reentrega = $reentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReentrega()
+    {
+        return $this->reentrega;
     }
 
 }

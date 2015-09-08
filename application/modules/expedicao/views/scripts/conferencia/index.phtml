@@ -6,7 +6,8 @@
             type: 'POST',
             data: {
                 codCargaExterno: $('.codCargaExternoo').val(),
-                centrais: $('input[type="radio"]:checked').val()
+                centrais: $('input[type="radio"]:checked').val(),
+                id: $('.idExpedicao').val()
             },
             success: function(data){
                 if (data.result) {
@@ -25,6 +26,8 @@
     });
 </script>
 <form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' ))?>">
+    <input type="hidden" id="idExpedicao" name="idExpedicao" class="idExpedicao" value="<?php echo $this->idExpedicao; ?>">
+
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <tbody>
