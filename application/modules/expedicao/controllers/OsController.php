@@ -101,7 +101,7 @@ class Expedicao_OsController extends Action
         $buttons[] =  array(
             'label' => 'Voltar para Busca de Expedições',
             'cssClass' => 'btnBack',
-            //'urlParams'=>array_merge($s->url,array('control'=>'roll')),
+            'urlParams'=>array_merge($s->url,array('control'=>'roll')),
             'tag' => 'a'
         );
 
