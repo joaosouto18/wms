@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityRepository;
 
 class NotaFiscalSaidaAndamentoRepository extends EntityRepository
 {
-    public function save($notaFiscalEn, $idStatus, $integracao = false, $expedicaoEn = null, $observacao = "" )
+    public function save($notaFiscalEn, $idStatus, $integracao = false, $expedicaoEn = null, $reentregaEn = null, $observacao = "" )
     {
         $usuarioEn = null;
         if ($integracao == false) {
@@ -22,6 +22,7 @@ class NotaFiscalSaidaAndamentoRepository extends EntityRepository
             $andamentoNotaFiscalSaidaEn->setStatus($statusEn);
             $andamentoNotaFiscalSaidaEn->setData(new \DateTime);
             $andamentoNotaFiscalSaidaEn->setObservacao($observacao);
+            $andamentoNotaFiscalSaidaEn->setReentrega($reentregaEn);
         $this->getEntityManager()->persist($andamentoNotaFiscalSaidaEn);
     }
 

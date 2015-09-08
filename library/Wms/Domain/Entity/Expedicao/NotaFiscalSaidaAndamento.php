@@ -60,6 +60,12 @@ class NotaFiscalSaidaAndamento
     protected $observacao;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\REENTREGA")
+     * @JoinColumn(name="COD_REENTREGA", referencedColumnName="COD_REENTREGA")
+     */
+    protected $reentrega;
+
+    /**
      * @return int
      */
     public function getId()
@@ -169,6 +175,22 @@ class NotaFiscalSaidaAndamento
     public function setObservacao($observacao)
     {
         $this->observacao = $observacao;
+    }
+
+    /**
+     * @param mixed $reentrega
+     */
+    public function setReentrega($reentrega)
+    {
+        $this->reentrega = $reentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReentrega()
+    {
+        return $this->reentrega;
     }
 
 }

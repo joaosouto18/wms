@@ -593,7 +593,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $reentregaEn->setIndEtiquetaMapaGerado('S');
                 $this->getEntityManager()->persist($reentregaEn);
 
-            $andamentoNFRepo->save($nfSaidaEn, NotaFiscalSaida::REENTREGA_EM_SEPARACAO, false, $expedicaoEn);
+            $andamentoNFRepo->save($nfSaidaEn, NotaFiscalSaida::REENTREGA_EM_SEPARACAO, false, $expedicaoEn, $reentregaEn);
         }
 
         $this->getEntityManager()->flush();

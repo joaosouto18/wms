@@ -617,11 +617,12 @@ class ExpedicaoRepository extends EntityRepository
 
         foreach ($notasFiscais as $notaFiscal) {
             $nfEn = $nfSaidaRepo->findOneBy(array('id'=>$notaFiscal['COD_NOTA_FISCAL_SAIDA']));
+            $reentregaEn = $reentregaRepo->findOneBy(array('id'=>$notaFiscal['COD_REENTREGA']));
             $nfEn->setStatus($status);
             $nfEn->setCodStatus($status->getId());
             $this->getEntityManager()->persist($nfEn);
 
-            $andamentoNFRepo->save($nfEn, NotaFiscalSaida::REENTREGA_EM_SEPARACAO, false, $expedicaoEn);
+            $andamentoNFRepo->save($nfEn, NotaFiscalSaida::REENTREGA_EM_SEPARACAO, false, $expedicaoEn, $reentregaEn);
         }
 
         $this->getEntityManager()->flush();
