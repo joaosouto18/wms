@@ -136,18 +136,18 @@ class EnderecoRepository extends EntityRepository
                             $dscEndereco = EnderecoUtil::formatar($dscEndereco);
 
                             $enderecoEntity->setRua($auxRua)
-                            ->setPredio($auxPredio)
-                            ->setNivel($auxNivel)
-                            ->setApartamento($auxApto)
-                            ->setSituacao($situacao)
-                            ->setDeposito($deposito)
-                            ->setCaracteristica($caracteristica)
-                            ->setEstruturaArmazenagem($estruturaArmazenagem)
-                            ->setTipoEndereco($tipoEndereco)
-                            ->setStatus($status)
-                            ->setAreaArmazenagem($areaArmazenagem)
-                            ->setDescricao($dscEndereco)
-                            ->setAtivo($ativo);
+                                ->setPredio($auxPredio)
+                                ->setNivel($auxNivel)
+                                ->setApartamento($auxApto)
+                                ->setSituacao($situacao)
+                                ->setDeposito($deposito)
+                                ->setCaracteristica($caracteristica)
+                                ->setEstruturaArmazenagem($estruturaArmazenagem)
+                                ->setTipoEndereco($tipoEndereco)
+                                ->setStatus($status)
+                                ->setAreaArmazenagem($areaArmazenagem)
+                                ->setDescricao($dscEndereco)
+                                ->setAtivo($ativo);
 
 
                             $em->persist($enderecoEntity);
@@ -389,7 +389,6 @@ class EnderecoRepository extends EntityRepository
                 $produto = $dql->getQuery()->getArrayResult();
             }
         }
-
         return $produto;
 
     }
@@ -428,14 +427,14 @@ class EnderecoRepository extends EntityRepository
             $unitizadorEn = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador")->find($unitizador);
             $larguraUnitizador = $unitizadorEn->getLargura(false) * 100;
             $query = $query . " AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $larguraUnitizador)";
-		}
+        }
 
-		if ($ocupado == 'D') {
+        if ($ocupado == 'D') {
             $query = $query . " AND DE.IND_DISPONIVEL = 'S'";
-		}
-		if ($ocupado == 'O') {
+        }
+        if ($ocupado == 'O') {
             $query = $query . " AND DE.IND_DISPONIVEL = 'N'";
-		}
+        }
 
         if (!empty ($inicialRua)) {
             $query = $query . " AND DE.NUM_RUA >= $inicialRua";
@@ -485,7 +484,7 @@ class EnderecoRepository extends EntityRepository
         $query = $query . "  ORDER BY (LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO), DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL";
 
         $array = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
-       return $array;
+        return $array;
 
     }
 
@@ -877,7 +876,7 @@ class EnderecoRepository extends EntityRepository
 
     public function getImprimirEndereco($enderecos)
     {
-       $query = "
+        $query = "
            SELECT DISTINCT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
            FROM DEPOSITO_ENDERECO DEP
            LEFT JOIN PRODUTO_EMBALAGEM PE ON DEP.COD_DEPOSITO_ENDERECO =  PE.COD_DEPOSITO_ENDERECO
@@ -916,23 +915,6 @@ class EnderecoRepository extends EntityRepository
         if ($flush == true) {
             $this->_em->flush();
         }
-    }
-
-    public function getEnderecoByDthValidade($idProduto, $grade)
-    {
-        $sql = "SELECT NVL(PV.COD_PRODUTO_VOLUME,PE.COD_PRODUTO_EMBALAGEM) PRODUTOVOLUME, NVL(PE.COD_PRODUTO,PV.COD_PRODUTO), NVL(PE.DSC_GRADE, PV.DSC_GRADE),
-                PP.DTH_VALIDADE, P.UMA, DE.COD_DEPOSITO_ENDERECO, DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_APARTAMENTO
-                FROM PALETE_PRODUTO PP
-                INNER JOIN PALETE P ON P.UMA = PP.UMA
-                INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = P.COD_DEPOSITO_ENDERECO
-                LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PP.COD_PRODUTO_EMBALAGEM
-                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
-                WHERE NVL(PE.COD_PRODUTO,PV.COD_PRODUTO) = '$idProduto' AND NVL(PE.DSC_GRADE, PV.DSC_GRADE) = '$grade'
-                GROUP BY NVL(PV.COD_PRODUTO_VOLUME,PE.COD_PRODUTO_EMBALAGEM), NVL(PE.COD_PRODUTO,PV.COD_PRODUTO), NVL(PE.DSC_GRADE, PV.DSC_GRADE), PP.DTH_VALIDADE,
-                P.UMA, DE.COD_DEPOSITO_ENDERECO, DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_APARTAMENTO
-                ORDER BY PP.DTH_VALIDADE ASC";
-
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

@@ -8,18 +8,16 @@ class Enderecamento_MovimentacaoController extends Action
 
     public function indexAction()
     {
-		$this->configurePage();
+        $this->configurePage();
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
-		$form->init($utilizaGrade);
+        $form->init($utilizaGrade);
         $request = $this->getRequest();
         $data = $this->_getAllParams();
-
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepository */
         $EstoqueRepository   = $this->_em->getRepository('wms:Enderecamento\Estoque');
-
 
         if (isset($data['return'])) {
             $idEndereco = $data['idEndereco'];
@@ -33,19 +31,7 @@ class Enderecamento_MovimentacaoController extends Action
         } else {
             if ($request->isPost()) {
                 try {
-
-                    $grade = trim($data['grade']);
-                    if ($data['grade'] == '')
-                        $grade = "UNICA";
-
-                    $idProduto = trim($data['idProduto']);
-
-                    $endereco = $enderecoRepo->getEnderecoByDthValidade($idProduto, $grade);
                     $this->getEntityManager()->beginTransaction();
-                    $data['rua'] = $endereco[0]['NUM_RUA'];
-                    $data['predio'] = $endereco[0]['NUM_PREDIO'];
-                    $data['nivel'] = $endereco[0]['NUM_NIVEL'];
-                    $data['apto'] = $endereco[0]['NUM_APARTAMENTO'];
                     $result = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
                     if ($result == null) {
                         throw new Exception("Endereço não encontrado.");
@@ -64,6 +50,11 @@ class Enderecamento_MovimentacaoController extends Action
                         }
                     }
 
+                    $grade = trim($data['grade']);
+                    if ($data['grade'] == '')
+                        $data['grade'] = "UNICA";
+
+                    $idProduto = trim($data['idProduto']);
                     $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto, 'grade'=>$grade));
 
                     if ($produtoEn == null) {
@@ -78,6 +69,7 @@ class Enderecamento_MovimentacaoController extends Action
                     $params['tipo'] = 'M';
                     $params['unitizador'] = $unitizadorEn;
                     $params['estoqueRepo'] = $EstoqueRepository;
+                    $params['validade'] = $data['validade'];
 
                     if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                         $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$idProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
@@ -188,7 +180,7 @@ class Enderecamento_MovimentacaoController extends Action
         $grade = trim($grade);
         $codProduto = trim($codProduto);
         if ($grade == "") {
-            $grade == "UNICA";
+            $grade = "UNICA";
         }
 
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
@@ -224,6 +216,28 @@ class Enderecamento_MovimentacaoController extends Action
         }
     }
 
+    public function getValidadeAction()
+    {
+        $codProduto = $this->_getParam('idProduto');
+        $grade = $this->_getParam('grade');
+        $grade = trim($grade);
+        $codProduto = trim($codProduto);
+        if ($grade == "") {
+            $grade = "UNICA";
+        }
+
+        $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => "$codProduto", 'grade' => "$grade"));
+
+        if (isset($produtoEn)) {
+            $validade = $produtoEn->getValidade();
+            echo $this->_helper->json($validade);
+        } else {
+            return $this->_helper->json(false);
+        }
+
+
+    }
+
 
     /**
      * Traz o resumo de estoque pelo produto ou rua
@@ -246,18 +260,18 @@ class Enderecamento_MovimentacaoController extends Action
     public function saldoAction()
     {
 
-		$params = $this->_getAllParams();
-		
-		if ((isset($params['tipo'])) && ($params['tipo'] == 'C')) {
-			/** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
-			$SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
-			$saldo = $SaldoCompletoRepository->saldo($this->_getAllParams());
-		} else {
-			/** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
-			$SaldoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldo');
-			$saldo = $SaldoRepository->saldo($this->_getAllParams());
-		}
-		
+        $params = $this->_getAllParams();
+
+        if ((isset($params['tipo'])) && ($params['tipo'] == 'C')) {
+            /** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
+            $SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
+            $saldo = $SaldoCompletoRepository->saldo($this->_getAllParams());
+        } else {
+            /** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
+            $SaldoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldo');
+            $saldo = $SaldoRepository->saldo($this->_getAllParams());
+        }
+
         $file = '';
 
         foreach($saldo as $produto) {

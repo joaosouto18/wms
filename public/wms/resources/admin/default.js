@@ -273,6 +273,11 @@ $(document).ready(function(){
     });
 
     function getVolumes(idProduto,grade){
+        $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
+            if (data == 'S') {
+                $('#validade').parent().show();
+            }
+        });
         $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
             if (dataReturn.length > 0) {
                 var options = '<option selected value="">Selecione um agrupador de volumes...</option>';

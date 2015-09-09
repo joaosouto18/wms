@@ -23,19 +23,46 @@ class Cadastro extends Form
                 'label' => 'Cod. produto',
                 'class' => 'focus',
             ));
-            if ($utilizaGrade == "S") {
-                $this->addElement('text', 'grade', array(
-                    'size' => 12,
-                    'label' => 'Grade',
-                ));
-            } else {
-                $this->addElement('hidden', 'grade', array(
-                    'label' => 'Grade',
-                    'value' => 'UNICA'
-                ));
-            }
-            $this->addElement('select', 'volumes', array(
-                'label' => 'Volumes',
+        if ($utilizaGrade == "S") {
+            $this->addElement('text', 'grade', array(
+                'size' => 12,
+                'label' => 'Grade',
+            ));
+        } else {
+            $this->addElement('hidden', 'grade', array(
+                'label' => 'Grade',
+                'value' => 'UNICA'
+            ));
+        }
+        $this->addElement('text', 'validade', array(
+            'label' => 'Data Validade',
+        ));
+        $this->addElement('select', 'volumes', array(
+            'label' => 'Volumes',
+        ))
+            ->addElement('text', 'rua', array(
+                'size' => 3,
+                'label' => 'Rua',
+                'maxlength' => '2',
+                'class' => 'ctrSize',
+            ))
+            ->addElement('text', 'predio', array(
+                'size' => 3,
+                'maxlength' => '3',
+                'label' => 'Prédio',
+                'class' => 'ctrSize',
+            ))
+            ->addElement('text', 'nivel', array(
+                'size' => 3,
+                'maxlength' => '2',
+                'label' => 'Nível',
+                'class' => 'ctrSize',
+            ))
+            ->addElement('text', 'apto', array(
+                'size' => 3,
+                'maxlength' => '2',
+                'label' => 'Apto',
+                'class' => 'ctrSize',
             ))
             ->addElement('text', 'quantidade', array(
                 'size' => 8,
@@ -47,7 +74,7 @@ class Cadastro extends Form
                 'label' => 'Buscar Estoque',
                 'decorators' => array('ViewHelper')
             ))
-			->addElement('select', 'idNormaPaletizacao', array(
+            ->addElement('select', 'idNormaPaletizacao', array(
                 'label' => 'Unitizador',
                 'mostrarSelecione' => true,
                 'multiOptions' => $normasPaletizacao,
@@ -61,7 +88,7 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
+            ->addDisplayGroup(array('idProduto', 'grade', 'validade', 'volumes','rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
 
             );
 

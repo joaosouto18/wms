@@ -121,6 +121,14 @@ class EstoqueRepository extends EntityRepository
             $idUma = $params['uma'];
         }
 
+        $validade = null;
+        if (isset($params['validade']) and !is_null($params['validade'])) {
+            $validade = new \Zend_Date($params['validade']);
+            $validade = $validade->toString('Y-MM-dd');
+
+            $validade = new \DateTime($validade);
+        }
+
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
         if ($estoqueEn == NULL) {
             $novaQtd = $qtd;
@@ -133,6 +141,8 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setUnitizador($unitizadorEn);
             $estoqueEn->setProdutoEmbalagem($embalagemEn);
             $estoqueEn->setProdutoVolume($volumeEn);
+            $estoqueEn->setValidade($validade);
+
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto  = $produtoEn->getDescricao();
         } else {
@@ -141,6 +151,7 @@ class EstoqueRepository extends EntityRepository
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto  = $estoqueEn->getProduto()->getDescricao();
             $estoqueEn->setQtd($novaQtd);
+            $estoqueEn->setValidade($validade);
         }
 
         if ($novaQtd + $qtdReserva < 0) {
