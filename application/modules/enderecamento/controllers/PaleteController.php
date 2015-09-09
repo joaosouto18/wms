@@ -82,6 +82,9 @@ class Enderecamento_PaleteController extends Action
         $param['grade']         = $params['grade'];
         $param['paletes']        = $paletesArray;
 
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $param['dataValidade'] = $notaFiscalRepo->buscaRecebimentoProduto($param['idRecebimento'], null, $param['codProduto'], $param['grade']);
+
         $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
         $Uma->imprimir($param, $this->getSystemParameterValue("MODELO_RELATORIOS"));
     }
