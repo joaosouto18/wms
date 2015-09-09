@@ -86,7 +86,9 @@ class MapaSeparacao extends Pdf
             $this->AddPage();
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial',  null, 8);
-                $endereco = $produto->getProdutoEmbalagem()->getEndereco();
+                //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
+
+                $endereco = $produto->getCodDepositoEndereco();
                 $dscEndereco = "";
                 if ($endereco != null) {
                     $dscEndereco = $endereco->getDescricao();

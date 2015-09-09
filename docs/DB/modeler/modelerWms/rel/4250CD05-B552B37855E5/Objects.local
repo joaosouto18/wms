@@ -1,0 +1,20 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="3BB804E5-E9B7-2B0B-26D0-72C0D797DCC5" name="WMS_ADM" seqName="seg_0"/>
+   <object objectType="Table" objectID="594033C6-56D3-4444-9C0C-9597C8DE732E" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="AF6D7769-755C-730E-0A21-A6509017779A" name="ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="666833CC-8E0A-99BB-78AB-B25C71B57DDE" name="HISTORICO_ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="DD1C158B-71D3-D451-EE73-27AE4718EDF7" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Table" objectID="D614EAF3-3F7A-1828-D9F5-1D5FE7B8FF58" name="PALETE" seqName="seg_0"/>
+   <object objectType="Table" objectID="10272AEB-1A0F-C7C8-9A07-2E540CDDE12D" name="UNITIZADOR" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="240B20C2-92D0-05C3-33E1-A5BE0AB815C5" name="ESTOQUE_DEPOSITO_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="FD6D27B6-1E65-C185-05D5-BBB8BDDEA99B" name="ESTOQUE_PRODUTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="B8741BDF-0437-43B3-E6A1-68E455C0F1F6" name="ESTOQUE_UMA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="E9BC9208-DDA2-A6A5-7875-45D308850FE8" name="ESTOQUE_UNITIZADOR_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="77B5C285-DEF6-5F87-5731-D3E3CE3765EA" name="HISTORICO_ESTOQUE_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="88EF9640-B172-F370-1062-74256752290E" name="HISTORICO_ESTOQUE_OS_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="87B510A1-D9AD-3FDF-A422-3AEE4C6F324E" name="HISTORICO_ESTOQUE_PRODUTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="F1233CAB-ECB8-3AC4-2274-D1011CBF0D35" name="PALETE_DEPOSITO_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="0C90450F-548D-D69D-1381-7A617D7455F2" name="PALETE_PRODUTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="B727DED9-3EB9-D39A-B054-6C98F23A9696" name="PALETE_UNITIZADOR_FK" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

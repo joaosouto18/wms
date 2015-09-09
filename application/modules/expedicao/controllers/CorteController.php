@@ -60,5 +60,15 @@ class Expedicao_CorteController  extends Action
 
     }
 
+    public function corteAntecipadoAjaxAction(){
+        $id = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($id);
+
+        $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
+        $this->view->grid = $grid->init($produtos, $id);
+    }
 
 }

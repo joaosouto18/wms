@@ -52,6 +52,10 @@ class Produtividade_CarregamentoController  extends Action
             'render' => 'SimOrNao',
         ));
         $grid->setShowExport(false);
+        $grid->setShowPager(true);
+        $pager = new \Core\Grid\Pager(count($source),1,2000);
+        $grid->setpager($pager);
+        $grid->setShowPager(false);
         $grid->addMassAction('index', 'Vincular a Expedicao');
 
         $this->view->grid = $grid->build();

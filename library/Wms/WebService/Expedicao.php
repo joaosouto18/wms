@@ -76,6 +76,39 @@ class carga {
     public $pedidos = array();
 }
 
+class pedidoFaturado {
+    /** @var string */
+    public $codPedido;
+    /** @var string */
+    public $tipoPedido;
+}
+
+class notaFiscal {
+    /** @var pedidoFaturado[] */
+    public $pedidos;
+    /** @var integer */
+    public $numeroNf;
+        /** @var string */
+    public $serieNf;
+    /** @var string */
+    public $cnpjEmitente;
+    /** @var double */
+    public $valorVenda;
+    /** @var notaFiscalProduto[] */
+    public $itens;
+}
+
+class notaFiscalProduto {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var integer */
+    public $qtd;
+    /** @var double */
+    public $valorVenda;
+}
+
 class Wms_WebService_Expedicao extends Wms_WebService
 {
 
@@ -204,7 +237,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             return true;
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
     }
 
@@ -277,6 +310,24 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         $pedidoRepository->cancelar($idPedido);
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
+        $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo  */
+        $etiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+        $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
+        $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
+        if ($pedidosNaoCancelados == 0) {
+            $qtdCorte     = $etiquetaSeparacaoRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
+            $qtdEtiquetas = $etiquetaSeparacaoRepo->getEtiquetasByStatus(null,$idExpedicao);
+            if ($qtdCorte == $qtdEtiquetas) {
+                $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
+                $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
+                $this->_em->flush();
+            }
+        }
+
 
         return true;
     }
@@ -531,6 +582,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'codPedido' => $enPedido->getId(),
                 'pedido' => $enPedido,
                 'produto' => $enProduto,
+                'valorVenda' =>$produto['valorVenda'],
                 'grade' => $produto['grade'],
                 'quantidade' => $produto['qtde']
             );
@@ -735,6 +787,186 @@ class Wms_WebService_Expedicao extends Wms_WebService
             throw new \Exception('Tipo de Carga não encontrado');
         }
         return $siglaTipoCarga;
+    }
+
+    /**
+     *  Recebe as notas fiscais emitidas da empresa
+     *
+     * @param notaFiscal[] nf Array de objetos nota fiscal
+     * @return boolean Se as notas fiscais foram salvas com sucesso
+     */
+    public function informarNotaFiscal ($nf)
+    {
+        try {
+            $this->_em->beginTransaction();
+            /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+            $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
+            $produtoRepo = $this->_em->getRepository("wms:Produto");
+            $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
+            $nfRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaida");
+            $pessoaJuridicaRepo    = $this->_em->getRepository('wms:Pessoa\Juridica');
+
+            if ((count($nf) == 0) || ($nf == null)) {
+                throw new \Exception("Nenhuma nota fiscal informada");
+            }
+
+            /* @var notaFiscal $notaFiscal */
+            foreach ($nf as $notaFiscal) {
+
+                $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $notaFiscal->cnpjEmitente));
+                $pessoaEn = $pessoaJuridicaRepo->findOneBy(array('cnpj' => $cnpjEmitente));
+
+                if (is_null($pessoaEn)) {
+                    throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
+                }
+
+                $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
+
+                if ($nfEn != null) {
+                    throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
+                }
+
+                $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
+
+                $nfEntity = new Expedicao\NotaFiscalSaida();
+                $nfEntity->setNumeroNf($notaFiscal->numeroNf);
+                $nfEntity->setCodPessoa($pessoaEn->getId());
+                $nfEntity->setPessoa($pessoaEn);
+                $nfEntity->setSerieNf($notaFiscal->serieNf);
+                $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                $nfEntity->setStatus($statusEn);
+                $this->_em->persist($nfEntity);
+
+                $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true);
+
+                if ((count($notaFiscal->pedidos) == 0) || ($notaFiscal->pedidos == null)) {
+                    throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
+                }
+
+                /* @var pedidoFaturado $pedidoNf */
+                foreach ($notaFiscal->pedidos as $pedidoNf) {
+                    $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
+                    $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
+                    $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
+                    $pedidoEn = $pedidoRepo->findOneBy(array('id' => $pedidoNf->codPedido));
+
+                    if ($pedidoEn == null) {
+                        throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
+                    }
+
+                    $nfPedidoEntity->setCodPedido($notaFiscal->pedido);
+                    $nfPedidoEntity->setPedido($pedidoEn);
+                    $this->_em->persist($nfPedidoEntity);
+                }
+
+                if ((count($notaFiscal->itens) == 0) || ($notaFiscal->itens == null)) {
+                    throw new \Exception("Nenhuma produto informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
+                }
+
+                /* @var notaFiscalProduto $itemNotaFiscal */
+                foreach ($notaFiscal->itens as $itemNotaFiscal) {
+                    $itemNfEntity = new Expedicao\NotaFiscalSaidaProduto();
+
+                    $idProduto = $itemNotaFiscal->codProduto;
+                    $idProduto = ProdutoUtil::formatar($idProduto);
+                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => trim($itemNotaFiscal->grade)));
+
+                    if ($produtoEn == null) {
+                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
+                    }
+
+                    $itemNfEntity->setCodProduto($produtoEn->getId());
+                    $itemNfEntity->setGrade($produtoEn->getGrade());
+                    $itemNfEntity->setProduto($produtoEn);
+                    $itemNfEntity->setCodNotaFiscalSaida($nfEntity->getId());
+                    $itemNfEntity->setNotaFiscalSaida($nfEntity);
+                    $itemNfEntity->setValorVenda($itemNotaFiscal->valorVenda);
+                    $itemNfEntity->setQuantidade($itemNotaFiscal->qtd);
+
+                    $this->_em->persist($itemNfEntity);
+                }
+            }
+            $this->_em->flush();
+            $this->_em->commit();
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+        return true;
+    }
+
+    /**
+     *  Recebe as notas fiscais emitidas da empresa
+     *
+     * @param string $cnpjEmitente
+     * @param integer $numeroNf
+     * @param string $serieNF
+     * @param integer $numeroCarga
+     * @param string $tipoCarga
+     * @return boolean Se as notas fiscais foram salvas com sucesso
+     */
+    public function definirReentrega ($cnpjEmitente, $numeroNf, $serieNF, $numeroCarga, $tipoCarga)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
+        $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
+        $notaFiscalRepository = $this->_em->getRepository('wms:Expedicao\NotaFiscalSaida');
+        $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
+        $reentregaRepository = $this->_em->getRepository('wms:Expedicao\Reentrega');
+        $pessoaJuridicaRepository = $this->_em->getRepository('wms:Pessoa\Juridica');
+
+        try {
+            if (!isset($tipoCarga) or trim($tipoCarga) == "" or $tipoCarga == null) {
+                $tipoCarga = "C";
+            }
+            $tipoCarga = trim($tipoCarga);
+            $tipoCarga = $this->verificaTipoCarga($tipoCarga);
+
+            $cnpjEmitente = trim(str_replace(array(".", "-", "/"), "", $cnpjEmitente));
+            $pessoaEn = $pessoaJuridicaRepository->findOneBy(array('cnpj' => $cnpjEmitente));
+
+            if (is_null($pessoaEn)) {
+                throw new \Exception("Emitente não encontrado para o cnpj " . $cnpjEmitente);
+            }
+
+            $notaFiscalEn = $notaFiscalRepository->findOneBy(array('numeroNf' =>  (int) trim($numeroNf),
+                                                                   'codPessoa' => $pessoaEn->getId(),
+                                                                   'serieNf' => trim($serieNF)));
+
+            $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno' => trim($numeroCarga),
+                                                         'tipoCarga' => $tipoCarga->getId()));
+
+            if (is_null($notaFiscalEn)) {
+                throw new \Exception('Nota Fiscal ' . $numeroNf . " / " . $serieNF . " não encontrada");
+            }
+
+            if (is_null($cargaEn)) {
+                throw new \Exception(strtolower($tipoCarga->getSigla()) . " " . $numeroCarga . " não encontrada");
+            }
+
+            $reentregaEn = $reentregaRepository->findOneBy(array('codNotaFiscalSaida' => $notaFiscalEn->getId(),
+                                                                 'codCarga' => $cargaEn->getId()));
+
+            if ($reentregaEn != null) {
+                throw new \Exception('Nota Fiscal '. $numeroNf . ' / ' . $serieNF . " ja se encontra na " . strtolower($tipoCarga->getSigla()) . " " . $numeroCarga);
+            }
+
+            $reentregaEn = new Expedicao\Reentrega();
+                $reentregaEn->setIndEtiquetaMapaGerado("N");
+                $reentregaEn->setCarga($cargaEn);
+                $reentregaEn->setCodCarga($cargaEn->getId());
+                $reentregaEn->setNotaFiscalSaida($notaFiscalEn);
+                $reentregaEn->setCodNotaFiscalSaida($notaFiscalEn->getId());
+                $reentregaEn->setDataReentrega(new \DateTime());
+            $this->_em->persist($reentregaEn);
+
+            $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::REENTREGA_DEFINIDA, true, $cargaEn->getExpedicao(), $reentregaEn);
+
+            $this->_em->flush();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+
+        return true;
     }
 
 }

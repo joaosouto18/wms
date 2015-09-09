@@ -38,28 +38,41 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $this->exportPDF($produtosSemPicking,'Produtos-sem-picking','Produtos Sem Picking - Expedições: ' . $strExpedicao,'P');
     }
 
+    public function relatorioSemEstoqueAjaxAction(){
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $expedicoes = $this->_getParam("expedicoes");
+        $expedicoes = explode(",",$expedicoes);
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+        $this->exportPDF($verificaDisponibilidadeEstoquePedido,'sem-estoque','Produtos sem estoque','P');
+    }
+
+
     public function gerarAction()
     {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicao");
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+
+        if (count($verificaDisponibilidadeEstoquePedido) > 0){
+            $idExp = $expedicoes = implode(',', $expedicoes);
+
+            $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+            $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+
+            $this->addFlashMessage("error", $mensagem);
+            $this->redirect("index","onda-ressuprimento","expedicao");
+        }
+
         try {
             ini_set('max_execution_time', 300);
                 $result = $expedicaoRepo->gerarOnda($expedicoes);
             ini_set('max_execution_time', 30);
 
             if ($result['resultado'] == false) {
-                if ($result['observacao'] == 'Existem produtos sem picking nesta(s) expedição(ões)'){
-                    $strExpedicao = "";
-                    foreach ($expedicoes as $expedicao){
-                        $strExpedicao = $strExpedicao . $expedicao;
-                        if ($expedicao != end($expedicoes)) $strExpedicao = $strExpedicao . ",";
-                    }
-                    $link = '<a href="' . $this->view->url(array('module'=>'expedicao','controller' => 'onda-ressuprimento', 'action' => 'sem-dados', 'expedicoes' => $strExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
-                    $this->addFlashMessage("error",$result['observacao'] . " - " . $link);
-                }  else {
-                    $this->addFlashMessage("error",$result['observacao']);
-                }
+                $this->addFlashMessage("error",$result['observacao']);
             } else {
                 $this->addFlashMessage("success",$result['observacao']);
             }

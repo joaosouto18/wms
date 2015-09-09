@@ -1,11 +1,10 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
    <object objectType="TSpace" objectID="15EED60F-64B1-7333-5AF7-9AF74E41124F" name="SYSTEM" seqName="seg_0"/>
+   <object objectType="User" objectID="AFEF3974-17E1-42AB-9D38-D6F2C3DC783C" name="WMS_LOCAL" seqName="seg_0"/>
    <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
    <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
-   <object objectType="User" objectID="AFEF3974-17E1-42AB-9D38-D6F2C3DC783C" name="WMS_LOCAL" seqName="seg_0"/>
    <object objectType="SType" objectID="47E390DE-0671-C4B1-8428-0F45CBEE18F8" name="SDO_GEOMETRY" seqName="seg_0"/>
-   <object objectType="SType" objectID="F72C39E0-D1CA-8821-2AD7-A1E95A37D3D1" name="XMLTYPE" seqName="seg_0"/>
    <object objectType="Table" objectID="113CA6F2-EE7A-00C6-847B-9C5C5FF6992E" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
    <object objectType="Table" objectID="1A73832D-8DFF-C881-161D-6648746626F5" name="RESERVA_ESTOQUE_ONDA_RESSUP" seqName="seg_0"/>
    <object objectType="Table" objectID="25A044A4-7199-8970-B8A1-7CEDF04F9D45" name="EXPEDICAO" seqName="seg_0"/>
