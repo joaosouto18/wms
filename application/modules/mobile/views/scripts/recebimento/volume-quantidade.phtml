@@ -38,7 +38,7 @@
             </td>
             <td><input type="text" maxlength="15" size="10" class="required focus" id="qtdConferida" name="qtdConferida" value="" /></td>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <td><input type="date" maxlength="10" size="10" class="required focus" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>" /></td>
+                <td><input type="text" maxlength="10" size="10" class="required focus date" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>" /></td>
             <?php endif; ?>
         </tr>
 

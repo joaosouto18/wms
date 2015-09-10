@@ -34,7 +34,7 @@ class Cadastro extends Form
                 'value' => 'UNICA'
             ));
         }
-        $this->addElement('text', 'validade', array(
+        $this->addElement('date', 'validade', array(
             'label' => 'Data Validade',
         ));
         $this->addElement('select', 'volumes', array(
