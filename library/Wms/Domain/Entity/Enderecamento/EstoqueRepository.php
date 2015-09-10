@@ -24,7 +24,7 @@ class EstoqueRepository extends EntityRepository
      $params['usuario'];      - entidade de usuario - wms:Usuario
      $params['estoqueRepo'];  - Estoque Repository - wms:Deposito\EnderecoRepository
      */
-    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false)
+    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
     {
         $em = $this->getEntityManager();
 
@@ -125,8 +125,9 @@ class EstoqueRepository extends EntityRepository
         if (isset($params['validade']) and !is_null($params['validade'])) {
             $validade = new \Zend_Date($params['validade']);
             $validade = $validade->toString('Y-MM-dd');
-
             $validade = new \DateTime($validade);
+        } elseif (isset($dataValidade) and !is_null($dataValidade)) {
+            $validade = new \DateTime($dataValidade['dataValidade']);
         }
 
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE

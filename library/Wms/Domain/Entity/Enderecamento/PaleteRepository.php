@@ -614,7 +614,7 @@ class PaleteRepository extends EntityRepository
     }
 
 
-    public function finalizar(array $paletes, $idPessoa, $formaConferencia = OrdemServicoEntity::MANUAL)
+    public function finalizar(array $paletes, $idPessoa, $formaConferencia = OrdemServicoEntity::MANUAL, $dataValidade = null)
     {
         if (count($paletes) <= 0 || empty($idPessoa)) {
             throw new Exception('Usuario ou palete não informados');
@@ -648,7 +648,7 @@ class PaleteRepository extends EntityRepository
                         $idPalete = $paleteEn->getId();
                         $idUnitizador = $paleteEn->getUnitizador()->getId();
                         $this->getEntityManager()->clear();
-                        $reservaEstoqueRepo->efetivaReservaEstoque($idEstoque,$produtosArray,"E","U",$idPalete,$idPessoa,$retorno['id'],$idUnitizador);
+                        $reservaEstoqueRepo->efetivaReservaEstoque($idEstoque,$produtosArray,"E","U",$idPalete,$idPessoa,$retorno['id'],$idUnitizador,null,$dataValidade);
                     }
                 }
             }

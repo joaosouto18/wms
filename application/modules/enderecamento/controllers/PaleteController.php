@@ -118,7 +118,11 @@ class Enderecamento_PaleteController extends Action
         if ($paletes != null) {
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
-            if ($paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'))) {
+
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($id, null, $codigo, $grade);
+
+            if ($paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'), null, $dataValidade)) {
                 $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
             } else {
                 $this->addFlashMessage('info', 'Não foram feitos endereçamentos');

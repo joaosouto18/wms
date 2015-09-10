@@ -100,8 +100,8 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-    public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null){
-
+    public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null, $dataValidade=null)
+    {
         if ($usuarioEn == NULL)  {
             $auth = \Zend_Auth::getInstance();
             $usuarioSessao = $auth->getIdentity();
@@ -138,7 +138,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
             $params['estoqueRepo'] = $estoqueRepo;
-            $estoqueRepo->movimentaEstoque($params, false);
+            $estoqueRepo->movimentaEstoque($params, false, null, $dataValidade);
         }
 
         if ($reservaEstoqueEn != NULL) {
@@ -150,7 +150,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return true;
     }
 
-    public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false)
+    public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false,$dataValidade = null)
     {
         $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem, $idOs);
         if ($reservaEstoqueEn == NULL)  {
@@ -177,7 +177,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        return $this->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn ,$osEn,$unitizadorEn);
+        return $this->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn ,$osEn,$unitizadorEn,$dataValidade);
     }
 
     public function reabrirReservaEstoque($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $throwException = false )
