@@ -67,6 +67,13 @@ class Palete
     protected $produtos;
 
     /**
+     *@Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $validade;
+
+
+    /**
      * @param mixed $codStatus
      */
     public function setCodStatus($codStatus)
@@ -207,6 +214,22 @@ class Palete
             $arrayProdutos[] = $arrayProduto;
         }
         return $arrayProdutos;
+    }
+
+    /**
+     * @return date
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param date $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
     }
 
 }

@@ -623,6 +623,9 @@ class PaleteRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
+        if (isset($dataValidade) and !is_null($dataValidade)) {
+            $validade = new \DateTime($dataValidade['dataValidade']);
+        }
         $ok = false;
         foreach($paletes as $paleteId) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
@@ -630,11 +633,13 @@ class PaleteRepository extends EntityRepository
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
                 if ($formaConferencia == OrdemServicoEntity::COLETOR) {
                     $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
+                    $paleteEn->setValidade($validade);
                     $this->_em->persist($paleteEn);
                     $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
                 } else {
                     if ($paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
                         $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
+                        $paleteEn->setValidade($validade);
                         $this->_em->persist($paleteEn);
                         $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
                     }
