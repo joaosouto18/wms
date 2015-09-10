@@ -24,6 +24,7 @@
                     <td>Grade</td>
                     <td>Unidade</td>
                     <td>Quantidade</td>
+                    <td>Data Validade</td>
                     <td>Qtde. Avaria</td>
                 </tr>
             </thead>
@@ -69,6 +70,18 @@
                             ));
                             ?>
                         </td>
+
+                        <td>
+                            <?php
+                            echo $this->formHidden("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
+                                'class' => "qtdNF",
+                            ));
+                            echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
+                                'class' => "dataValidade",
+                            ));
+                            ?>
+                        </td>
+
                         <td>
                             <?php
                             echo $this->formHidden("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(

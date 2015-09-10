@@ -281,7 +281,8 @@ class RecebimentoRepository extends EntityRepository
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null)
+    {
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
 
         // ordem servico
@@ -310,12 +311,16 @@ class RecebimentoRepository extends EntityRepository
                         $idEmbalagem = $unMedida[$idProduto][$grade];
                     }
 
+                    $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
+                    $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                    $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+
                     $qtdNF = (int) $qtdNFs[$idProduto][$grade];
                     $qtdConferida = (int) $qtdConferida;
                     $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
 
                     if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico, $idEmbalagem);
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico,$idEmbalagem,$dataValidade);
                     }
 
                     $qtdConferida = (int) $qtdConferida * $quantidade;
@@ -329,8 +334,11 @@ class RecebimentoRepository extends EntityRepository
                     $qtdConferida = (int) $qtdConferida;
                     $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
 
+                    $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
+                    $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                    $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
                     if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico, null);
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico, null, $dataValidade);
                     }
 
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
@@ -1092,24 +1100,8 @@ class RecebimentoRepository extends EntityRepository
         return $recebimentoStatus;
     }
 
-    public function gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtd,$idRecebimento, $idOs, $idEmbalagem) {
+    public function gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtd,$idRecebimento, $idOs, $idEmbalagem, $dataValidade = null) {
         $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-
-        //$embalagens = $produtoEntity->getEmbalagens();
-        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
-        /*
-        foreach ($embalagens as $embalagem) {
-            if ($embalagem->getIsPadrao()=="S") {
-                $dadosLogisticos = $embalagem->getDadosLogisticos();
-                if (count($dadosLogisticos) >0){
-                    $norma = $dadosLogisticos[0]->getNormaPaletizacao()->getId();
-                } else {
-                    $norma = null;
-                }
-                $this->gravarConferenciaItemEmbalagem($idRecebimento,$idOs,$embalagem->getId(),$qtd,$norma);
-            }
-        }
-        */
 
         if (isset($idEmbalagem)) {
 
@@ -1122,19 +1114,15 @@ class RecebimentoRepository extends EntityRepository
                 } else {
                     $norma = null;
                 }
-            $this->gravarConferenciaItemEmbalagem($idRecebimento,$idOs,$idEmbalagem,$qtd,$norma);
+            $this->gravarConferenciaItemEmbalagem($idRecebimento,$idOs,$idEmbalagem,$qtd,$norma,$dataValidade);
         } else {
             $volumes = $produtoEntity->getVolumes();
             /** @var \Wms\Domain\Entity\Produto\Volume $volume */
             foreach ($volumes as $volume) {
                 $norma = $volume->getNormaPaletizacao()->getId();
-                $this->gravarConferenciaItemVolume($idRecebimento,$idOs,$volume->getId(),$qtd,$norma);
+                $this->gravarConferenciaItemVolume($idRecebimento,$idOs,$volume->getId(),$qtd,$norma,$dataValidade);
             }
-
         }
-
-
-
     }
 
     public function alteraNormaPaletizacaoRecebimento ($codRecebimento, $codProduto, $grade, $codOs, $idNorma) {

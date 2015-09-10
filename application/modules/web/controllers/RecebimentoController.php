@@ -298,7 +298,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     /**
      * Conferencia (salva o produto e a quantidade conferida do recebimento)
      */
-    public function conferenciaAction() {
+    public function conferenciaAction()
+    {
         //adding default buttons to the page
         Page::configure(array(
             'buttons' => array(
@@ -368,9 +369,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
                 $unMedida = $this->getRequest()->getParam('unMedida');
+                $dataValidade = $this->getRequest()->getParam('dataValidade');
 
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];
