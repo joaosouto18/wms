@@ -60,7 +60,7 @@ class NotaFiscalSaidaAndamento
     protected $observacao;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\REENTREGA")
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Reentrega")
      * @JoinColumn(name="COD_REENTREGA", referencedColumnName="COD_REENTREGA")
      */
     protected $reentrega;
