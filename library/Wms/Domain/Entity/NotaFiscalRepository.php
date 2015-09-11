@@ -78,7 +78,7 @@ class NotaFiscalRepository extends EntityRepository
     public function getItemConferencia($idRecebimento)
     {
         $sql = "
-            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade 
+            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util
             FROM nota_fiscal nf
             INNER JOIN nota_fiscal_item nfi ON (nf.cod_nota_fiscal = nfi.cod_nota_fiscal)
             INNER JOIN produto p ON (p.cod_produto = nfi.cod_produto AND p.dsc_grade = nfi.dsc_grade)
@@ -93,7 +93,7 @@ class NotaFiscalRepository extends EntityRepository
                     AND rc.dsc_grade = nfi.dsc_grade
                     AND rc.qtd_divergencia = 0
                 )
-           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto
+           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util
            ORDER BY nfi.cod_produto, nfi.dsc_grade";
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

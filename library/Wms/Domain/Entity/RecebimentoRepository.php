@@ -311,9 +311,13 @@ class RecebimentoRepository extends EntityRepository
                         $idEmbalagem = $unMedida[$idProduto][$grade];
                     }
 
-                    $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
-                    $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
-                    $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
+                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
+                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                    } else {
+                        $dataValidade['dataValidade'] = null;
+                    }
 
                     $qtdNF = (int) $qtdNFs[$idProduto][$grade];
                     $qtdConferida = (int) $qtdConferida;
@@ -334,9 +338,13 @@ class RecebimentoRepository extends EntityRepository
                     $qtdConferida = (int) $qtdConferida;
                     $qtdAvaria = (int) $qtdAvarias[$idProduto][$grade];
 
-                    $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
-                    $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
-                    $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
+                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
+                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                    } else {
+                        $dataValidade['dataValidade'] = null;
+                    }
                     if ($gravaRecebimentoVolumeEmbalagem == true) {
                         $this->gravarRecebimentoEmbalagemVolume($idProduto,$grade,$qtdConferida,$idRecebimento,$idOrdemServico, null, $dataValidade);
                     }

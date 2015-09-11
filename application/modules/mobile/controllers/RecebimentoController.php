@@ -251,25 +251,61 @@ class Mobile_RecebimentoController extends Action
     {
         $request = $this->getRequest();
         $params = $this->_getAllParams();
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
-        if ($request->isPost()) {
-            $idRecebimento = $params['idRecebimento'];
-            $idOrdemServico = $params['idOrdemServico'];
-            $idProdutoVolume = $params['idProdutoVolume'];
-            $idProdutoEmbalagem = $params['idProdutoEmbalagem'];
-            $qtdConferida = $params['qtdConferida'];
-            $idNormaPaletizacao = $params['idNormaPaletizacao'];
-            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
-            $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
-            $idProduto = $params['idProduto'];
-            $grade = $params['grade'];
+        if ($request->isGet()) {
+            $this->view->idOrdemServico = $params['idOrdemServico'];
+            $this->view->qtdNFs = $params['qtdNFs'];
+            $this->view->qtdAvarias = $params['qtdAvarias'];
+            $this->view->qtdConferidas = $params['qtdConferidas'];
+            $this->view->idConferente = $params['idConferente'];
+            $this->view->unMedida = $params['unMedida'];
+            $this->view->dataValidade = $params['dataValidade'];
+            $this->view->conferenciaCega = $params['conferenciaCega'];
+        } else if ($request->isPost()) {
+
             $senhaDigitada = $params['senhaConfirmacao'];
             $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
             $submit = $params['btnFinalizar'];
 
+            if ($params['conferenciaCega'] == true) {
+                $idOrdemServico = unserialize($params['idOrdemServico']);
+                $qtdNFs = unserialize($params['qtdNFs']);
+                $qtdAvarias = unserialize($params['qtdAvarias']);
+                $qtdConferidas = unserialize($params['qtdConferidas']);
+                $idConferente = unserialize($params['idConferente']);
+                $unMedida = unserialize($params['unMedida']);
+                $dataValidade = unserialize($params['dataValidade']);
+            } else {
+                $idRecebimento = $params['idRecebimento'];
+                $idOrdemServico = $params['idOrdemServico'];
+                $idProdutoVolume = $params['idProdutoVolume'];
+                $idProdutoEmbalagem = $params['idProdutoEmbalagem'];
+                $qtdConferida = $params['qtdConferida'];
+                $idNormaPaletizacao = $params['idNormaPaletizacao'];
+                $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+                $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
+                $idProduto = $params['idProduto'];
+                $grade = $params['grade'];
+            }
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
+                    if ($params['conferenciaCega'] == true) {
+                        $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
+
+                        if ($result['exception'] != null) {
+                            throw $result['exception'];
+                        }
+                        if ($result['message'] != null) {
+                            $this->addFlashMessage('success', $result['message']);
+                        }
+                        if ($result['concluido'] == true) {
+                            $this->redirect('index','recebimento','web');
+                        } else {
+                            $this->redirect('divergencia','recebimento','web',array('id' => $idOrdemServico));
+                        }
+                    }
                     // gravo conferencia do item
                     if (isset($idProdutoVolume)) {
                         $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
@@ -281,12 +317,14 @@ class Mobile_RecebimentoController extends Action
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 } else {
                     $this->addFlashMessage('error', 'Senha informada não é válida');
-                    $this->_redirect('/mobile/recebimento/ler-codigo-barras/idRecebimento/'.$idRecebimento);
+                    if ($params['conferenciaCega'] == true) {
+                        $this->redirect('conferencia','recebimento','web',array('idOrdemServico' => $idOrdemServico));
+                    } else {
+                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                    }
                 }
             }
         }
-
-
     }
 
 }

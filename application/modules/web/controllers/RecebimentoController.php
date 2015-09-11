@@ -371,6 +371,22 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $unMedida = $this->getRequest()->getParam('unMedida');
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
 
+                $hoje = new Zend_Date;
+                foreach ($dataValidade as $idProduto => $grades) {
+                    foreach ($grades as $grade => $validade) {
+                        $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                        $PeriodoUtil = $hoje->addDay($produtoEn->getDiasVidaUtil());
+                        $validade = new Zend_Date($validade);
+                        if ($validade <= $PeriodoUtil) {
+                            //Autoriza Recebimento?
+                            $this->redirect('autoriza-recebimento', 'recebimento', 'mobile', array(
+                                'idOrdemServico' => serialize($idOrdemServico), 'qtdNFs' => serialize($qtdNFs),
+                                'qtdAvarias' => serialize($qtdAvarias), 'qtdConferidas' => serialize($qtdConferidas),
+                                'idConferente' => serialize($idConferente), 'gravaRecebimentoVolumeEmbalagem' => true,
+                                'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade), 'conferenciaCega' => true));
+                        }
+                    }
+                }
                 // executa os dados da conferencia
                 $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 

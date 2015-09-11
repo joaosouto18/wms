@@ -70,18 +70,18 @@
                             ));
                             ?>
                         </td>
-
                         <td>
-                            <?php
-                            echo $this->formHidden("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
-                                'class' => "qtdNF",
-                            ));
-                            echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
-                                'class' => "dataValidade",
-                            ));
-                            ?>
+                            <?php if ($produto['possui_validade'] == 'S') : ?>
+                                <?php
+                                echo $this->formHidden("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
+                                    'class' => "qtdNF",
+                                ));
+                                echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
+                                    'class' => "dataValidade",
+                                ));
+                                ?>
+                            <?php endif; ?>
                         </td>
-
                         <td>
                             <?php
                             echo $this->formHidden("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(
