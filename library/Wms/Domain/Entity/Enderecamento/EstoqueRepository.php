@@ -268,7 +268,8 @@ class EstoqueRepository extends EntityRepository
                        TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
                        P.DSC_PRODUTO,
                        E.UMA,
-                       E.UNITIZADOR
+                       E.UNITIZADOR,
+                       E.DTH_VALIDADE
                   FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                                NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),E.COD_PRODUTO) as COD_PRODUTO,
                                NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),E.DSC_GRADE) as DSC_GRADE,
@@ -282,8 +283,9 @@ class EstoqueRepository extends EntityRepository
                                NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
                                E.DTH_PRIMEIRA_MOVIMENTACAO,
                                E.UMA,
-                               UN.DSC_UNITIZADOR AS UNITIZADOR
-                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR,
+                               UN.DSC_UNITIZADOR AS UNITIZADOR,
+                               E.DTH_VALIDADE
+                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR, DTH_VALIDADE,
                                        E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE E) E
                           LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = E.COD_UNITIZADOR
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
@@ -344,7 +346,7 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND E.COD_VOLUME = " . $parametros['volume'];
         }
 
-        $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO";
+        $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (isset($maxResult) && !empty($maxResult)) {
