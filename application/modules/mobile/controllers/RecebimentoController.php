@@ -146,8 +146,17 @@ class Mobile_RecebimentoController extends Action
             /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
             $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
             $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
-            $idProduto = $produtoVolumeEn->getCodProduto();
-            $grade = $produtoVolumeEn->getGrade();
+            if ($produtoVolumeEn == null) {
+                /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
+                $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+                $produtoEmbEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
+                $idProduto = $produtoEmbEn->getProduto()->getId();
+                $grade = $produtoEmbEn->getProduto()->getGrade();
+            } else {
+                $idProduto = $produtoVolumeEn->getCodProduto();
+                $grade = $produtoVolumeEn->getGrade();
+            }
+
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
                 $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
