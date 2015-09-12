@@ -158,7 +158,7 @@ class Mobile_RecebimentoController extends Action
             }
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
-            if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
+            if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
                 $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
                 $dataValidade = $dataValidade->toString('dd/MM/Y');
                 $this->view->dataValidade = $dataValidade;
@@ -263,7 +263,7 @@ class Mobile_RecebimentoController extends Action
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
-        if ($request->isGet()) {
+        if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
             $this->view->qtdNFs = $params['qtdNFs'];
             $this->view->qtdAvarias = $params['qtdAvarias'];
@@ -272,8 +272,8 @@ class Mobile_RecebimentoController extends Action
             $this->view->unMedida = $params['unMedida'];
             $this->view->dataValidade = $params['dataValidade'];
             $this->view->conferenciaCega = $params['conferenciaCega'];
-        } else if ($request->isPost()) {
-
+        }
+        if ($request->isPost()) {
             $senhaDigitada = $params['senhaConfirmacao'];
             $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
             $submit = $params['btnFinalizar'];
