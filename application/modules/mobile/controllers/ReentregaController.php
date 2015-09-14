@@ -141,7 +141,7 @@ class Mobile_ReentregaController extends Action
             $notas = $recebimentoReentregaNfRepo->findBy(array('recebimentoReentrega'=>$idRecebimento));
 
             foreach ($notas as $nfReceb) {
-                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO);
+                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO,false,null,null,$recebimentoEn);
             }
             $recebimentoEn->setStatus($siglaEn);
 
