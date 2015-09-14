@@ -49,13 +49,13 @@ class Cadastro extends Form
             ->addElement('text', 'predio', array(
                 'size' => 3,
                 'maxlength' => '3',
-                'label' => 'Prédio',
+                'label' => 'Predio',
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'nivel', array(
                 'size' => 3,
                 'maxlength' => '2',
-                'label' => 'Nível',
+                'label' => 'Nivel',
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'apto', array(
