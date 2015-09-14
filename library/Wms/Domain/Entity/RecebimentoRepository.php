@@ -536,16 +536,28 @@ class RecebimentoRepository extends EntityRepository
 
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-        $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
-        $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto(null, null, $idProduto, $grade);
+        $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
+        $recebimentoEntity = $ordemServicoEntity->getRecebimento();
+
+        $produtoEmbalagemEntity = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+
+        if (isset($produtoEmbalagemEntity) && !empty($produtoEmbalagemEntity)) {
+            $recebimentoEmbalagemEntity = $em->getRepository('wms:Recebimento\Embalagem')->findOneBy(array('recebimento' => $recebimentoEntity, 'embalagem' => $produtoEmbalagemEntity));
+            if (isset($recebimentoEmbalagemEntity) && !empty($recebimentoEmbalagemEntity)) {
+                $buscaDataProdutos = array();
+                $buscaDataProdutos['dataValidade'] = $recebimentoEmbalagemEntity->getDataValidade();
+            }
+        } else {
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+            $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEntity->getId(), null, $idProduto, $grade);
+        }
 
         if(count($buscaDataProdutos) > 0) {
             $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
+        } else {
+            $dataValidade = null;
         }
-
-        $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
-        $recebimentoEntity = $ordemServicoEntity->getRecebimento();
 
         $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
 
@@ -561,16 +573,6 @@ class RecebimentoRepository extends EntityRepository
                 ->setDataValidade($dataValidade);
 
         $em->persist($conferenciaEntity);
-
-        //SUPOSTA CORREÇÃO DO BUG QUE COLOCA TODOS OS PALETES COMO RECEBIDO
-        //if ($qtdDivergencia == 0) {
-        //    $paletes = $em->getRepository("wms:Enderecamento\Palete")->findBy(array('recebimento' => $recebimentoEntity->getId(), 'codProduto' => $idProduto, 'grade' => $grade, 'codStatus' => Palete::STATUS_EM_ENDERECAMENTO));
-        //    foreach ($paletes as $key => $palete) {
-        //        $palete->setCodStatus(Palete::STATUS_RECEBIDO);
-        //        $em->persist($palete);
-        //    }
-        //}
-
         $em->flush();
 
         return $qtdDivergencia;
@@ -595,7 +597,11 @@ class RecebimentoRepository extends EntityRepository
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
         $produtoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idProdutoEmbalagem);
-        $validade = new \DateTime($params['dataValidade']);
+        if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
+            $validade = new \DateTime($params['dataValidade']);
+        } else {
+            $validade = null;
+        }
 
         $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity)
                 ->setOrdemServico($ordemServicoEntity)
@@ -631,7 +637,11 @@ class RecebimentoRepository extends EntityRepository
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
         $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idProdutoVolume);
-        $validade = new \DateTime($params['dataValidade']);
+        if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
+            $validade = new \DateTime($params['dataValidade']);
+        } else {
+            $validade = null;
+        }
 
         $recebimentoVolumeEntity->setRecebimento($recebimentoEntity)
                 ->setOrdemServico($ordemServicoEntity)

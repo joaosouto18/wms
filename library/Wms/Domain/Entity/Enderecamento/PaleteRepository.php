@@ -553,6 +553,8 @@ class PaleteRepository extends EntityRepository
 
                 if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
                     $dataValidade = $getDataValidadeUltimoProduto['dataValidade'];
+                } else {
+                    $dataValidade = null;
                 }
 
                 //TRAVA PARA GERAR NO MAXIMO A QUANTIDADE TOTAL DA NOTA ENQUANTO O RECEBIMENTO NÃO TIVER SIDO FINALIZADO
