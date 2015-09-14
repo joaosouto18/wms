@@ -208,25 +208,28 @@ class Mobile_RecebimentoController extends Action
                 $this->_helper->messenger('error', 'Informe uma data de validade correta');
                 $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
             }
+
             $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
             $hoje = new Zend_Date;
-            $PeriodoUtil = $hoje->addDay($shelfLife);
-            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
-
-            // caso embalagem
-            if ($this->_hasParam('idProdutoEmbalagem')) {
-                if ($params['dataValidade'] >= $PeriodoUtil) {
-                    // gravo conferencia do item
-                    $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
-                    $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
-                    $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
-                } else {
+            if (!is_null($shelfLife)) {
+                $PeriodoUtil = $hoje->addDay($shelfLife);
+                if ($params['dataValidade'] <= $PeriodoUtil) {
                     //autoriza recebimento?
                     $this->redirect('autoriza-recebimento', 'recebimento', null, array(
                         'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoEmbalagem' => $idProdutoEmbalagem,
                         'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
                         'idProduto' => $idProduto, 'grade' => $grade));
                 }
+            }
+
+            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+
+            // caso embalagem
+            if ($this->_hasParam('idProdutoEmbalagem')) {
+                // gravo conferencia do item
+                $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
+                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
+                $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
 
             } 
             
