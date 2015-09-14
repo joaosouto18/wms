@@ -62,7 +62,7 @@ class RecebimentoReentregaRepository extends EntityRepository
     public function finalizarConferencia($data)
     {
         try {
-
+            $falha = true;
             $this->getEntityManager()->beginTransaction();
 
             /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
@@ -88,6 +88,7 @@ class RecebimentoReentregaRepository extends EntityRepository
                 $this->_em->clear();
                 $this->getEntityManager()->commit();
                 $mensagem = utf8_encode('Existem produtos com divergencia na conferencia');
+                $falha = false;
                 throw new \Exception($mensagem);
             }
 
@@ -111,7 +112,7 @@ class RecebimentoReentregaRepository extends EntityRepository
             $this->_em->clear();
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
+            if ($falha == true) $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
     }
