@@ -622,7 +622,7 @@ class NotaFiscalRepository extends EntityRepository
             ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
             ->leftJoin('rv.volume', 'pv')
             ->leftJoin('re.embalagem', 'pe')
-            ->where("(pv.codProduto = '$idProduto' and pv.grade = '$grade')")
+            ->where("(pv.codProduto = '$idProduto' and pv.grade = '$grade') or (pe.codProduto = '$idProduto' and pe.grade = '$grade')")
             ->orderBy('id', 'DESC');
         if (isset($idRecebimento) && !empty($idRecebimento)) {
             $sql->andWhere("r.id = $idRecebimento");
