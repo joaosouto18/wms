@@ -332,13 +332,16 @@ class InventarioRepository extends EntityRepository
     public function verificaReservas($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('d.id, re.tipoReserva, re.dataReserva, d.descricao')
+            ->select('prod.id, re.tipoReserva, re.dataReserva, d.descricao')
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
             ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
+            ->leftJoin('re.produtos','rep')
+            ->leftJoin('rep.produto','prod')
             ->andWhere("re.atendida = 'N'")
             ->andWhere("ie.inventario = $idInventario")
-            ->groupBy('d.id, re.tipoReserva, re.dataReserva, d.descricao');
+            ->groupBy('prod.id, re.tipoReserva, re.dataReserva, d.descricao')
+            ->distinct(true);
         return $source->getQuery()->getResult();
     }
 
