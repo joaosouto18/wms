@@ -69,7 +69,11 @@ class Enderecamento_MovimentacaoController extends Action
                     $params['tipo'] = 'M';
                     $params['unitizador'] = $unitizadorEn;
                     $params['estoqueRepo'] = $EstoqueRepository;
-                    $params['validade'] = $data['validade'];
+                    if (isset($data['validade']) && !empty($data['validade'])) {
+                        $params['validade'] = $data['validade'];
+                    } else {
+                        $params['validade'] = null;
+                    }
 
                     if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                         $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$idProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
