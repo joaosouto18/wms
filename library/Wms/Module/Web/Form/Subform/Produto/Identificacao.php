@@ -100,22 +100,24 @@ class Identificacao extends SubForm
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
                 );
 
-                if ($modeloRecebimento[0]->getControleValidade() == 'S') {
-                    $this
-                        ->addElement('select', 'validade', array(
-                        'label' => 'Possui validade (S/N)',
-                        'multiOptions' => array(
-                            'S' => 'S',
-                            'N' => 'N'
-                        )))
-                        ->addElement('text', 'diasVidaUtil', array(
-                            'label' => 'Dias para Vencimento',
-                            'size' => 10,
-                            'maxlength' => 4
-                        ))
-                        ->addDisplayGroup(
-                            array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
-                        );
+                if (isset($modeloRecebimento) && count($modeloRecebimento) > 0) {
+                    if ($modeloRecebimento[0]->getControleValidade() == 'S') {
+                        $this
+                            ->addElement('select', 'validade', array(
+                                'label' => 'Possui validade (S/N)',
+                                'multiOptions' => array(
+                                    'S' => 'S',
+                                    'N' => 'N'
+                                )))
+                            ->addElement('text', 'diasVidaUtil', array(
+                                'label' => 'Dias para Vencimento',
+                                'size' => 10,
+                                'maxlength' => 4
+                            ))
+                            ->addDisplayGroup(
+                                array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
+                            );
+                    }
                 }
 
     }
