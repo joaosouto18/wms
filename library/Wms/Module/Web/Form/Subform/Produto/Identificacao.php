@@ -21,7 +21,7 @@ class Identificacao extends SubForm
         $linhasSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao')->getIdValue();
         $unitizadores = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdDescricaoAssoc();
         $tiposComercializacao = $this->getEm()->getRepository('wms:Produto\TipoComercializacao')->getIdDescricao();
-        $modeloRecebimento = $this->getEm()->getRepository('wms:Recebimento\ModeloRecebimento')->findOneBy(array('id' => 10));
+        $modeloRecebimento = $this->getEm()->getRepository('wms:Recebimento\ModeloRecebimento')->findAll();
 
         $this->addElement('hidden', 'unitizadores', array(
                     'value' => json_encode($unitizadores),
@@ -100,7 +100,7 @@ class Identificacao extends SubForm
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
                 );
 
-                if ($modeloRecebimento->getControleValidade() == 'S') {
+                if ($modeloRecebimento[0]->getControleValidade() == 'S') {
                     $this->addElement('select', 'validade', array(
                         'label' => 'Possui validade (S/N)',
                         'multiOptions' => array(
