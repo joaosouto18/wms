@@ -17,13 +17,13 @@ class ConferenciaCega extends Report {
 
         $recebimentoEntity = $em->getRepository('wms:Recebimento')->find($idRecebimento);
         $itens = $em->getRepository('wms:NotaFiscal')->buscarItensConferenciaCega($idRecebimento);
-        
+
         //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
         $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
         $placaVeiculo = '';
-            if ($notaFiscalEntity)
-                $placaVeiculo = $notaFiscalEntity->getPlaca();
+        if ($notaFiscalEntity)
+            $placaVeiculo = $notaFiscalEntity->getPlaca();
 
         //geracao de relatorio
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -34,8 +34,8 @@ class ConferenciaCega extends Report {
 
         // header
         $pdf->setTitle(utf8_decode('Relatório de Conferência Cega'))
-                ->setLabelHeight(6)
-                ->setColHeight(7);
+            ->setLabelHeight(6)
+            ->setColHeight(7);
 
         $tmpItens = array();
 
@@ -84,11 +84,6 @@ class ConferenciaCega extends Report {
 
             $produto = $item['CODIGO'] . ' - ' . $item['GRADE'] . ' - ' . $item['DESCRICAO'];
 
-            $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $item['CODIGO'], $item['GRADE']);
-            $dataValidade = new \DateTime($dataValidade['dataValidade']);
-            $dataValidade = $dataValidade->format('d/m/Y');
-
-
             if( isset( $tmpItens[$produto][$dscItem] ) ) {
                 continue;
             }
@@ -99,7 +94,7 @@ class ConferenciaCega extends Report {
                 $pdf->addCol(1, 50, '', 0, 1, 'L');
                 $pdf->addCol(1, 148, utf8_decode($produto), 1, 0, 'L');
                 $pdf->addCol(7, 25, '', 1, 0, 'R');
-                $pdf->addCol(8, 100, 'Validade: '.$dataValidade, 1, 1, 'L');
+                $pdf->addCol(8, 100, '', 1, 1, 'R');
 
                 $notas = $notaFiscalRepo->getNotaFiscalByProduto($idRecebimento,$item['CODIGO'],$item['GRADE']);
                 if ($item['DSC_UNITIZADOR']) {
@@ -139,8 +134,8 @@ class ConferenciaCega extends Report {
         }
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output();
+            ->render()
+            ->Output();
     }
 
 }
