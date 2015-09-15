@@ -773,7 +773,7 @@ class NotaFiscalRepository extends EntityRepository
 
         return $entity;
     }
-    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao) {
+    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -821,6 +821,7 @@ class NotaFiscalRepository extends EntityRepository
                 ->setFornecedor($fornecedorEntity)
                 ->setBonificacao($bonificacao)
                 ->setStatus($statusEntity)
+                ->setObservacao($observacao)
                 ->setPlaca($placa);
 
             if (count($itens) > 0) {                //itera nos itens das notas
