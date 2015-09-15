@@ -20,8 +20,10 @@ $.Controller.extend('Wms.Controllers.Produto',
         //oculta campo de dias para vencimento
         if ($('#produto-validade').val() == 'S') {
             $('#produto-diasVidaUtil').show();
+            $('#produto-diasVidaUtil').parent().show();
         } else if ($('#produto-validade').val() == 'N') {
             $('#produto-diasVidaUtil').hide();
+            $('#produto-diasVidaUtil').parent().hide();
         }
 
         
@@ -267,8 +269,10 @@ $.Controller.extend('Wms.Controllers.Produto',
 
     '#produto-validade change' : function() {
         if ($('#produto-validade').val() == 'S') {
+            $('#produto-diasVidaUtil').parent().show();
             $('#produto-diasVidaUtil').show();
         } else if ($('#produto-validade').val() == 'N') {
+            $('#produto-diasVidaUtil').parent().hide();
             $('#produto-diasVidaUtil').hide();
         }
     },

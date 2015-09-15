@@ -101,13 +101,13 @@ class Identificacao extends SubForm
                 );
 
                 if ($modeloRecebimento[0]->getControleValidade() == 'S') {
-                    $this->addElement('select', 'validade', array(
+                    $this
+                        ->addElement('select', 'validade', array(
                         'label' => 'Possui validade (S/N)',
                         'multiOptions' => array(
                             'S' => 'S',
                             'N' => 'N'
-                        ),
-                    ))
+                        )))
                         ->addElement('text', 'diasVidaUtil', array(
                             'label' => 'Dias para Vencimento',
                             'size' => 10,
