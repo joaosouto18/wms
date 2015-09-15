@@ -195,7 +195,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             });
 
             function getVolumes(idProduto,grade){
-                $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+prodId+"/grade/"+encodeURIComponent(grade), function(data){
+                $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
                     if (data == 'S') {
                         $('#validade').parent().show();
                     }
