@@ -170,7 +170,11 @@ class Web_ProdutoController extends Crud {
 
                 $validade = strtoupper($params['produto']['validade']);
                 $entity->setValidade($validade);
-                $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
+                if ($validade == 'N' || $params['produto']['diasVidaUtil'] == null || empty($params['produto']['diasVidaUtil'])) {
+                    $entity->setDiasVidaUtil(0);
+                } else {
+                    $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
+                }
 
                 $this->repository->save($entity, $this->getRequest()->getParams());
                 $this->em->flush();

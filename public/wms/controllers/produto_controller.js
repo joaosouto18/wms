@@ -17,6 +17,13 @@ $.Controller.extend('Wms.Controllers.Produto',
         this.validarEmbalagens();
         //checo tipo comercializacao/volumes
         this.validarVolumes();
+        //oculta campo de dias para vencimento
+        if ($('#produto-validade').val() == 'S') {
+            $('#produto-diasVidaUtil').show();
+        } else if ($('#produto-validade').val() == 'N') {
+            $('#produto-diasVidaUtil').hide();
+        }
+
         
         //checa quantidade de volumes
         $(".btnSave").off('click').click(function(e) {
@@ -257,7 +264,15 @@ $.Controller.extend('Wms.Controllers.Produto',
         this.validarVolumes();
         this.pesoTotal();
     },
-    
+
+    '#produto-validade change' : function() {
+        if ($('#produto-validade').val() == 'S') {
+            $('#produto-diasVidaUtil').show();
+        } else if ($('#produto-validade').val() == 'N') {
+            $('#produto-diasVidaUtil').hide();
+        }
+    },
+
     /**
      * Calcula o peso de todos os volumes e altera na aba produto
      */

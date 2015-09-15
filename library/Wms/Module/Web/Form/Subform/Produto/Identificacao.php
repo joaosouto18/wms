@@ -21,6 +21,7 @@ class Identificacao extends SubForm
         $linhasSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao')->getIdValue();
         $unitizadores = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdDescricaoAssoc();
         $tiposComercializacao = $this->getEm()->getRepository('wms:Produto\TipoComercializacao')->getIdDescricao();
+        $modeloRecebimento = $this->getEm()->getRepository('wms:Recebimento\ModeloRecebimento')->findOneBy(array('id' => 10));
 
         $this->addElement('hidden', 'unitizadores', array(
                     'value' => json_encode($unitizadores),
@@ -97,22 +98,26 @@ class Identificacao extends SubForm
                 ))                             
                 ->addDisplayGroup(
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
-                )
-                ->addElement('select', 'validade', array(
-                    'label' => 'Possui validade (S/N)',
-                    'multiOptions' => array(
-                        'S' => 'S',
-                        'N' => 'N'
-                    ),
-                ))
-                ->addElement('text', 'diasVidaUtil', array(
-                        'label' => 'Dias para Vencimento',
-                        'size' => 10,
-                        'maxlength' => 4
-                ))
-                ->addDisplayGroup(
-                        array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
                 );
+
+                if ($modeloRecebimento->getControleValidade() == 'S') {
+                    $this->addElement('select', 'validade', array(
+                        'label' => 'Possui validade (S/N)',
+                        'multiOptions' => array(
+                            'S' => 'S',
+                            'N' => 'N'
+                        ),
+                    ))
+                        ->addElement('text', 'diasVidaUtil', array(
+                            'label' => 'Dias para Vencimento',
+                            'size' => 10,
+                            'maxlength' => 4
+                        ))
+                        ->addDisplayGroup(
+                            array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
+                        );
+                }
+
     }
 
     public function setDefaultsFromEntity(ProdutoEntity $produto)

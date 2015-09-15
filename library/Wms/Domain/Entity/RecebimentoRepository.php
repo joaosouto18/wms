@@ -544,8 +544,7 @@ class RecebimentoRepository extends EntityRepository
         if (isset($produtoEmbalagemEntity) && !empty($produtoEmbalagemEntity)) {
             $recebimentoEmbalagemEntity = $em->getRepository('wms:Recebimento\Embalagem')->findOneBy(array('recebimento' => $recebimentoEntity, 'embalagem' => $produtoEmbalagemEntity));
             if (isset($recebimentoEmbalagemEntity) && !empty($recebimentoEmbalagemEntity)) {
-                $buscaDataProdutos = array();
-                $buscaDataProdutos['dataValidade'] = $recebimentoEmbalagemEntity->getDataValidade();
+                $dataValidade = $recebimentoEmbalagemEntity->getDataValidade();
             }
         } else {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
@@ -555,8 +554,6 @@ class RecebimentoRepository extends EntityRepository
 
         if(count($buscaDataProdutos) > 0) {
             $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
-        } else {
-            $dataValidade = null;
         }
 
         $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);

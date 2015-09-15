@@ -211,18 +211,17 @@ class Mobile_RecebimentoController extends Action
 
             $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
             $hoje = new Zend_Date;
-            if (!is_null($shelfLife)) {
-                $PeriodoUtil = $hoje->addDay($shelfLife);
-                if ($params['dataValidade'] <= $PeriodoUtil) {
-                    //autoriza recebimento?
-                    $this->redirect('autoriza-recebimento', 'recebimento', null, array(
-                        'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoEmbalagem' => $idProdutoEmbalagem,
-                        'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
-                        'idProduto' => $idProduto, 'grade' => $grade));
-                }
+            $PeriodoUtil = $hoje->addDay($shelfLife);
+            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+            if ($params['dataValidade'] <= $PeriodoUtil) {
+                //autoriza recebimento?
+                $this->redirect('autoriza-recebimento', 'recebimento', null, array(
+                    'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoEmbalagem' => $idProdutoEmbalagem,
+                    'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
+                    'idProduto' => $idProduto, 'grade' => $grade));
             }
 
-            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+
 
             // caso embalagem
             if ($this->_hasParam('idProdutoEmbalagem')) {
