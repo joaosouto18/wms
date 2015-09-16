@@ -814,15 +814,15 @@ class NotaFiscalRepository extends EntityRepository
 
             //inserção de nova NF
             $notaFiscalEntity = new NotaFiscalEntity;
-            $notaFiscalEntity->setNumero($numero)
-                ->setSerie($serie)
-                ->setDataEntrada(new \DateTime)
-                ->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao))
-                ->setFornecedor($fornecedorEntity)
-                ->setBonificacao($bonificacao)
-                ->setStatus($statusEntity)
-                ->setObservacao($observacao)
-                ->setPlaca($placa);
+            $notaFiscalEntity->setNumero($numero);
+            $notaFiscalEntity->setSerie($serie);
+            $notaFiscalEntity->setDataEntrada(new \DateTime);
+            $notaFiscalEntity->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao));
+            $notaFiscalEntity->setFornecedor($fornecedorEntity);
+            $notaFiscalEntity->setBonificacao($bonificacao);
+            $notaFiscalEntity->setStatus($statusEntity);
+            $notaFiscalEntity->setObservacao($observacao);
+            $notaFiscalEntity->setPlaca($placa);
 
             if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
