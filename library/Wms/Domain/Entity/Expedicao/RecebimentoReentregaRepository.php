@@ -62,7 +62,7 @@ class RecebimentoReentregaRepository extends EntityRepository
     public function finalizarConferencia($data)
     {
         try {
-
+            $falha = true;
             $this->getEntityManager()->beginTransaction();
 
             /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
@@ -88,6 +88,7 @@ class RecebimentoReentregaRepository extends EntityRepository
                 $this->_em->clear();
                 $this->getEntityManager()->commit();
                 $mensagem = utf8_encode('Existem produtos com divergencia na conferencia');
+                $falha = false;
                 throw new \Exception($mensagem);
             }
 
@@ -102,7 +103,7 @@ class RecebimentoReentregaRepository extends EntityRepository
             $notas = $recebimentoReentregaNotaRepo->findBy(array('recebimentoReentrega' => $recebimentoReentregaEn->getId()));
             foreach ($notas as $nota){
                 $nfEntity = $nota->getNotaFiscalSaida();
-                $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO);
+                $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CONCLUIDO, null,null, $recebimentoReentregaEn);
                 $nfEntity->setStatus($statusNfFinalizadaEn);
                 $this->getEntityManager()->persist($nfEntity);
             }
@@ -111,7 +112,7 @@ class RecebimentoReentregaRepository extends EntityRepository
             $this->_em->clear();
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
+            if ($falha == true) $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
     }

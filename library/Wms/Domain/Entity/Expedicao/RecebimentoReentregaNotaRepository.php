@@ -14,15 +14,22 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
         $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
 
+        $statusNfEmitida = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id'=>NotaFiscalSaida::NOTA_FISCAL_EMITIDA));
+
         foreach ($params['mass-id'] as $notaFiscal) {
             $notaFiscalEn = $notaFiscalSaidaRepo->findOneBy(array('id' => $notaFiscal));
+
+            if ($notaFiscalEn->getStatus()->getId() == NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
+                $notaFiscalEn->setStatus($statusNfEmitida);
+                $this->getEntityManager()->persist($notaFiscalEn);
+            }
 
             $recebimentoReentregaNotaEn = new RecebimentoReentregaNota();
             $recebimentoReentregaNotaEn->setRecebimentoReentrega($recebimentoReentregaEn);
             $recebimentoReentregaNotaEn->setNotaFiscalSaida($notaFiscalEn);
             $this->_em->persist($recebimentoReentregaNotaEn);
 
-            $andamentoNFRepo->save($notaFiscalEn, RecebimentoReentrega::RECEBIMENTO_INICIADO);
+            $andamentoNFRepo->save($notaFiscalEn, RecebimentoReentrega::RECEBIMENTO_INICIADO,false, null, null, $recebimentoReentregaEn);
 
         }
 

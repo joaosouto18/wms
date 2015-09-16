@@ -843,7 +843,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
                 }
 
-
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {
                     $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
@@ -951,8 +950,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 throw new \Exception('Nota Fiscal '. $numeroNf . ' / ' . $serieNF . " ja se encontra na " . strtolower($tipoCarga->getSigla()) . " " . $numeroCarga);
             }
 
-            $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::REENTREGA_DEFINIDA, true, $cargaEn->getExpedicao());
-
             $reentregaEn = new Expedicao\Reentrega();
                 $reentregaEn->setIndEtiquetaMapaGerado("N");
                 $reentregaEn->setCarga($cargaEn);
@@ -961,6 +958,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $reentregaEn->setCodNotaFiscalSaida($notaFiscalEn->getId());
                 $reentregaEn->setDataReentrega(new \DateTime());
             $this->_em->persist($reentregaEn);
+
+            $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::REENTREGA_DEFINIDA, true, $cargaEn->getExpedicao(), $reentregaEn);
+
             $this->_em->flush();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
