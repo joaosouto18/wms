@@ -635,7 +635,9 @@ class PaleteRepository extends EntityRepository
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
                 if ($formaConferencia == OrdemServicoEntity::COLETOR) {
                     $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                    $paleteEn->setValidade($validade);
+                    if (isset($validade) && !empty($validade)) {
+                        $paleteEn->setValidade($validade);
+                    }
                     $this->_em->persist($paleteEn);
                     $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
                 } else {

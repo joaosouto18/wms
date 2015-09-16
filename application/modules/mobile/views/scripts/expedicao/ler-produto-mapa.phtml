@@ -1,5 +1,4 @@
 <script>
-
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetaSeparacao').value != "") {
@@ -33,17 +32,17 @@
 
                     <table>
                         <tr>
-                            <?php if ($this->exibeQtd == true) {?>
+                            <?php if ($this->exibeQtd == true) : ?>
                                 <td><label for="qtd" class="field required">*Qtd</label></td>
-                            <?}?>
+                            <?php endif; ?>
                             <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
                         </tr>
                         <tr>
-                            <?php if ($this->exibeQtd == true) {?>
+                            <?php if ($this->exibeQtd == true) : ?>
                                 <td>
                                     <input type="text" name="qtd" id="qtd" value="1" size="7" maxlength="100" style="width: 80%"></div>
                                 </td>
-                            <?}?>
+                            <?php endif; ?>
                             <td>
                                 <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%"></div>
                             </td>
@@ -51,12 +50,11 @@
                     </table>
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
-            <?php if ($this->idVolume != "") {?>
+            <?php if ($this->idVolume != "") :?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
-            <?}?>
+            <?php endif; ?>
 
         </fieldset>
     </dd>
 </form>
-

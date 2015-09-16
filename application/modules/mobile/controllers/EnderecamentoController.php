@@ -216,7 +216,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->validaEnderecoPicking($codBarras, $paleteEn, $nivel);
+        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica());
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
 
@@ -233,11 +233,11 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn, $nivel)
+    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd)
     {
 
         //Se for picking do produto entao o nivel poderá ser escolhido
-        if ($nivel == '00') {
+        if ($caracteristicaEnd == '37') {
 
             $produtosEn = $paleteEn->getProdutos();
             $produto = $produtosEn[0];
