@@ -627,6 +627,8 @@ class PaleteRepository extends EntityRepository
 
         if (isset($dataValidade) and !is_null($dataValidade)) {
             $validade = new \DateTime($dataValidade['dataValidade']);
+        } else {
+            $validade = null;
         }
         $ok = false;
         foreach($paletes as $paleteId) {
