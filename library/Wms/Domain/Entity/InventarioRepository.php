@@ -350,9 +350,9 @@ class InventarioRepository extends EntityRepository
             $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
             if ($inventarioEndEn) {
                 $this->_em->remove($inventarioEndEn);
-                $this->_em->flush();
             }
         }
+        $this->_em->flush();
     }
 
     public function bloqueiaEnderecos($id)
