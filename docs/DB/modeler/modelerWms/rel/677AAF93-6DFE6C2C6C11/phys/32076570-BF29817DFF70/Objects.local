@@ -1,0 +1,18 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
+   <object objectType="TSpace" objectID="0080B969-AFE5-D222-B621-CF5A55DCFBCF" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
+   <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
+   <object objectType="User" objectID="47DEE85C-E32C-503B-B6B2-FA0A30EA9842" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="SType" objectID="47E390DE-0671-C4B1-8428-0F45CBEE18F8" name="SDO_GEOMETRY" seqName="seg_0"/>
+   <object objectType="SType" objectID="F72C39E0-D1CA-8821-2AD7-A1E95A37D3D1" name="XMLTYPE" seqName="seg_0"/>
+   <object objectType="Table" objectID="2FF64A5E-B07E-1ACA-379C-FA5D70A3E42F" name="MODELO_ENDERECAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="6A00F14E-04D1-3286-7962-640A652065DF" name="MODELO_END_EST_ARMAZ" seqName="seg_0"/>
+   <object objectType="Table" objectID="6C5CB9B7-D9AE-51CA-9B28-723D97D765EC" name="MODELO_END_TIPO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="907559D8-DBEB-2731-9C90-E74205091156" name="MODELO_END_AREA_ARMAZ" seqName="seg_0"/>
+   <object objectType="Table" objectID="BF91ED6A-2675-918E-6F2F-965FA1B1EEE2" name="TIPO_EST_ARMAZ" seqName="seg_0"/>
+   <object objectType="Table" objectID="FACF852D-3F7D-1119-9997-595C1727038D" name="TIPO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="FFA0F31A-9468-F725-04C0-928352D322B1" name="AREA_ARMAZENAGEM" seqName="seg_0"/>
+   <object objectType="Segment" objectID="C088A1F9-6138-0F4C-49CC-D3A4271D9743" name="Storage2" seqName="seg_0"/>
+   <object objectType="Segment" objectID="A530E1B4-C7D1-3795-0D52-9495F95A9959" name="Storage4" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>

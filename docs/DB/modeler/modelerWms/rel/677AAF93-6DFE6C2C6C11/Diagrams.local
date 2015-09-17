@@ -1,4 +1,4 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <oracle.dbtools.crest.model.design.relational.RelationalDesign>
-   <object objectType="main_view" objectID="C4BDE754-9C3D-EE47-48BD-9C9F9154A20D" name="Reentrega" visible="false"/>
+   <object objectType="main_view" objectID="69F1913B-C964-C2F5-FA4E-B907B19652F5" name="Enderecamento_Automatico" visible="true"/>
 </oracle.dbtools.crest.model.design.relational.RelationalDesign>

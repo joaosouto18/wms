@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="9B7DD28F-D33E-66CC-D91A-09C30476F48C" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="Table" objectID="FFA0F31A-9468-F725-04C0-928352D322B1" name="AREA_ARMAZENAGEM" seqName="seg_0"/>
+   <object objectType="Table" objectID="2FF64A5E-B07E-1ACA-379C-FA5D70A3E42F" name="MODELO_ENDERECAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="907559D8-DBEB-2731-9C90-E74205091156" name="MODELO_END_AREA_ARMAZ" seqName="seg_0"/>
+   <object objectType="Table" objectID="6A00F14E-04D1-3286-7962-640A652065DF" name="MODELO_END_EST_ARMAZ" seqName="seg_0"/>
+   <object objectType="Table" objectID="6C5CB9B7-D9AE-51CA-9B28-723D97D765EC" name="MODELO_END_TIPO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="FACF852D-3F7D-1119-9997-595C1727038D" name="TIPO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="BF91ED6A-2675-918E-6F2F-965FA1B1EEE2" name="TIPO_EST_ARMAZ" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="93572E1A-B5A6-881A-1FEC-886ED22FDBCF" name="M_END_TIPO_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="67E0B759-3E37-E285-2D8D-0CF697257D3C" name="TIPO_ENDERECO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="88CF3850-8ED3-A732-BC3D-BDA3B7848E7C" name="M_END_AREA_ARMAZENAGEM_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="F9B5C7C9-DDBE-78DC-2373-C7D1BAED595B" name="M_END_EST_ARMAZ_M_END_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="7E605718-B1C7-479E-E891-5E40746F3095" name="M_END_MODELO_ENDERECAMENTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="9F3FA3F7-C2FB-3EA8-BDAE-5C0EAA82813F" name="M_END_TIPO_EST_ARMAZ_FK" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>
