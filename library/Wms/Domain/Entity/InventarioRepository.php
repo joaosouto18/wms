@@ -332,7 +332,7 @@ class InventarioRepository extends EntityRepository
     public function verificaReservas($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select("d.id, prod.id as produto, prod.grade as grade, re.tipoReserva, re.dataReserva, d.descricao,
+            ->select("d.id, prod.id as produto, prod.grade as grade, re.dataReserva, d.descricao,
             CONCAT(
                 CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:'
                      WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:'
@@ -341,7 +341,8 @@ class InventarioRepository extends EntityRepository
                 END
             ,
                 NVL(exp.id,NVL(ressup.id,NVL(palete.id,'')))
-            ) as origemReserva
+            ) as origemReserva,
+            CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva
             ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
