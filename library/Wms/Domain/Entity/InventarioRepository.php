@@ -336,7 +336,7 @@ class InventarioRepository extends EntityRepository
             CASE WHEN exp.id IS NOT NULL THEN CONCAT('Expedição Código:', exp.id) as origemReserva
                  WHEN ressup.id IS NOT NULL THEN CONCAT('Ressuprimento OS:', ressup.id) as origemReserva
                  WHEN palete.id IS NOT NULL THEN CONCAT('Palete :', palete.id) as origemReserva
-                 ELSE 'Não foi possível identificar a operação'
+                 ELSE CONCAT('Não foi possível identificar a operação','') as origemReserva
             END as origemReserva
             ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
