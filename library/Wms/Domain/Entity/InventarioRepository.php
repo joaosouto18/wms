@@ -333,9 +333,9 @@ class InventarioRepository extends EntityRepository
     {
         $source = $this->_em->createQueryBuilder()
             ->select("d.id, prod.id as produto, prod.grade as grade, re.tipoReserva, re.dataReserva, d.descricao,
-            CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:' || exp.id
-                 WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:' || ressup.id
-                 WHEN palete.id IS NOT NULL THEN 'Palete :' || palete.id
+            CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:' & exp.id
+                 WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:' & ressup.id
+                 WHEN palete.id IS NOT NULL THEN 'Palete :' & palete.id
                  ELSE 'Não foi possível identificar a operação'
             END as origemReserva
             ")
