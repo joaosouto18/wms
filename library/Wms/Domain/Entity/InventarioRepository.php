@@ -347,8 +347,7 @@ class InventarioRepository extends EntityRepository
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueOnda','reond','WITH','reond.reservaEstoque = re.id')
             ->leftJoin('reexp.expedicao','exp')
             ->leftJoin('reond.ondaRessuprimentoOs','ressup')
-            ->leftJoin('reend.ondaRessuprimentoOs','palete')
-
+            ->leftJoin('reend.palete','palete')
             ->leftJoin('re.produtos','rep')
             ->leftJoin('rep.produto','prod')
             ->andWhere("re.atendida = 'N'")
