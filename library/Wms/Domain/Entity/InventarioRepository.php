@@ -352,7 +352,6 @@ class InventarioRepository extends EntityRepository
             ->leftJoin('rep.produto','prod')
             ->andWhere("re.atendida = 'N'")
             ->andWhere("ie.inventario = $idInventario")
-            ->groupBy('prod.id, re.tipoReserva, re.dataReserva, d.descricao')
             ->distinct(true);
         return $source->getQuery()->getResult();
     }
