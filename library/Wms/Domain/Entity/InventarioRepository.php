@@ -333,11 +333,18 @@ class InventarioRepository extends EntityRepository
     {
         $source = $this->_em->createQueryBuilder()
             ->select("d.id, prod.id as produto, prod.grade as grade, re.tipoReserva, re.dataReserva, d.descricao,
-            CASE WHEN exp.id IS NOT NULL THEN CONCAT('Expedição Código:', exp.id) as origemReserva
-                 WHEN ressup.id IS NOT NULL THEN CONCAT('Ressuprimento OS:', ressup.id) as origemReserva
-                 WHEN palete.id IS NOT NULL THEN CONCAT('Palete :', palete.id) as origemReserva
-                 ELSE CONCAT('Não foi possível identificar a operação','') as origemReserva
-            END as origemReserva
+
+            CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:'
+                 WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:'
+                 WHEN palete.id IS NOT NULL THEN 'Palete :'
+                 ELSE 'Não foi possível identificar a operação'
+            END as origemReserva,
+
+            CASE WHEN exp.id IS NOT NULL THEN exp.id
+                 WHEN ressup.id IS NOT NULL THEN ressup.id
+                 WHEN palete.id IS NOT NULL THEN palete.id
+                 ELSE ''
+            END as origemReserva1
             ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
