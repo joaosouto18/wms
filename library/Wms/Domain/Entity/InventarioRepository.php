@@ -337,7 +337,8 @@ class InventarioRepository extends EntityRepository
                  WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:'
                  WHEN palete.id IS NOT NULL THEN 'Palete :'
                  ELSE 'Não foi possível identificar a operação'
-            END as origemReserva
+            END as origemReserva,
+            NVL(exp.id,NVL(ressup.id,NVL(palete.id,''))) as idOrigem
             ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
