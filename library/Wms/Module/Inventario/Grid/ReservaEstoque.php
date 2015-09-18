@@ -19,19 +19,19 @@ class ReservaEstoque extends Grid
             ))
             ->addColumn(array(
                 'label' => 'Produto',
-                'index' => 'id',
+                'index' => 'produto',
             ))
             ->addColumn(array(
                 'label' => 'Grade',
-                'index' => 'id',
-            ))
-            ->addColumn(array(
-                'label' => 'Origem',
-                'index' => 'id',
+                'index' => 'grade',
             ))
             ->addColumn(array(
                 'label' => 'Endereço com reserva de estoque',
                 'index' => 'descricao',
+            ))
+            ->addColumn(array(
+                'label' => 'Operação',
+                'index' => 'origemReserva',
             ))
             ->addColumn(array(
                 'label' => 'Tipo reserva',

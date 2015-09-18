@@ -332,13 +332,13 @@ class InventarioRepository extends EntityRepository
     public function verificaReservas($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('d.id, prod.id as produto, prod.grade as grade, re.tipoReserva, re.dataReserva, d.descricao,
+            ->select("d.id, prod.id as produto, prod.grade as grade, re.tipoReserva, re.dataReserva, d.descricao,
             CASE WHEN exp.id IS NOT NULL THEN exp.id
                  WHEN ressup.id IS NOT NULL THEN ressup.id
                  WHEN palete.id IS NOT NULL THEN palete.id
                  ELSE 0
             END as origemReserva
-            ')
+            ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
             ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
