@@ -113,6 +113,8 @@ class Expedicao_OsController extends Action
 
         if ($resumoConferencia['qtdConferidas'] == NULL) {
             $qtdConferidas = 0;
+        } else if ($resumoConferencia['qtdConferidas'] > $qtdEtiqueta) {
+            $qtdConferidas = $qtdEtiqueta;
         } else {
             $qtdConferidas = $resumoConferencia['qtdConferidas'];
         }
