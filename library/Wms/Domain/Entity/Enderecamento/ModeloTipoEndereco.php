@@ -5,14 +5,17 @@ namespace Wms\Domain\Entity\Enderecamento;
 
 /**
  * @Table(name="MODELO_END_TIPO_ENDERECO")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Enderecamento\ModeloTipoEnderecoRepository")
  */
 class ModeloTipoEndereco
 {
 
     /**
     * @Id
-    * @Column(name="COD_MODELO_END_TIPO_ENDERECO", type="int", nullable=false)
-    * @var int
+    * @Column(name="COD_MODELO_END_TIPO_ENDERECO", type="integer", nullable=false)
+    * @GeneratedValue(strategy="SEQUENCE")
+    * @SequenceGenerator(sequenceName="SQ_MODELO_END_TIPO_ENDERECO_01", allocationSize=1, initialValue=1)
+     * @var int
     */
     protected $id;
 
@@ -29,8 +32,8 @@ class ModeloTipoEndereco
     protected $tipoEndereco;
 
     /**
-     * @Column(name="COD_PRIORIDADE", type="int")
-     * @var
+     * @Column(name="COD_PRIORIDADE", type="integer")
+     * @int
      */
     protected $prioridade;
 

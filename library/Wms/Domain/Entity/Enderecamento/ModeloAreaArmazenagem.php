@@ -4,14 +4,18 @@ namespace Wms\Domain\Entity\Enderecamento;
 
 
 /**
- * @Table(name="MODELO_ENDERECAMENTO")
+ * @Table(name="MODELO_END_AREA_ARMAZ")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Enderecamento\ModeloAreaArmazenagemRepository")
  */
 class ModeloAreaArmazenagem
 {
 
     /**
     * @Id
-    * @Column(name="COD_MODELO_END_AREA_ARMAZ", type="int", nullable=false)
+    * @Column(name="COD_MODELO_END_AREA_ARMAZ", type="integer", nullable=false)
+    * @Entity(repositoryClass="Wms\Domain\Entity\Enderecamento\ModeloAreaArmazenagemRepository")
+    * @GeneratedValue(strategy="SEQUENCE")
+    * @SequenceGenerator(sequenceName="SQ_MODELO_END_AREA_ARMAZ_01", allocationSize=1, initialValue=1)
     * @var int
     */
     protected $id;
@@ -29,7 +33,7 @@ class ModeloAreaArmazenagem
     protected $areaArmazenagem;
 
     /**
-     * @Column(name="COD_PRIORIDADE", type="int")
+     * @Column(name="COD_PRIORIDADE", type="integer")
      * @var int
      */
     protected $prioridade;
