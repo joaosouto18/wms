@@ -1153,4 +1153,40 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     }
 
+    public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade) {
+        $SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM TIPO_ENDERECO TP
+                    LEFT JOIN PRODUTO_END_TIPO_ENDERECO P
+                      ON P.COD_TIPO_ENDERECO = TP.COD_TIPO_ENDERECO
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_TIPO_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade) {
+        $SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM AREA_ARMAZENAGEM TP
+                    LEFT JOIN PRODUTO_END_AREA_ARMAZENAGEM P
+                      ON P.COD_AREA_ARMAZENAGEM = TP.COD_AREA_ARMAZENAGEM
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_AREA_ARMAZENAGEM";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade) {
+        $SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM TIPO_EST_ARMAZ TP
+                    LEFT JOIN PRODUTO_END_TIPO_EST_ARMAZ P
+                      ON P.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_TIPO_EST_ARMAZ";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 }
