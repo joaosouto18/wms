@@ -32,7 +32,7 @@ class UMA extends Pdf
         }
 
         $this->layout($params['paletes'], $produtoEn,$modelo,$params);
-        $this->Output('UMA-'.$idRecebimento.'-'.$codProduto.'.pdf','D');
+        $this->Output('UMA-'.$idRecebimento.'-'.$codProduto.'.pdf','I');
     }
 
     protected function layout($paletes,$produtoEn,$modelo,$params = null)

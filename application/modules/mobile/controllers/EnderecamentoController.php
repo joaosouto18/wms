@@ -394,5 +394,40 @@ class Mobile_EnderecamentoController extends Action
         $this->addFlashMessage('success','Palete Endereçado com sucesso');
         $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
     }
+
+    public function listarPaletesAction(){
+        $idRecebimento = $this->_getParam("id");
+
+    }
+
+    public function imprimirUmaAction(){
+
+        $idRecebimento = $this->_getParam("id");
+        $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
+
+        $dadosPalete = array();
+        $dadosPalete['endereco'] = '01.00.000.01';
+        $dadosPalete['idUma']    = '1231';
+        $dadosPalete['picking']  = '01.00.000.00';
+        $dadosPalete['qtd']      = 123;
+        $paletesArray = array(0=>$dadosPalete);
+
+        $param = array();
+        $param['idRecebimento'] = $idRecebimento;
+        $param['codProduto']    = '3908040';
+        $param['grade']         = 'PRETO...';
+
+        $param['codProduto']    = '10993';
+        $param['grade']         = 'UNICA';
+
+        $param['paletes']       = $paletesArray;
+        $param['dataValidade']  = null;
+
+        $Uma->imprimir($param, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+
+        //$this->redirect('ler-codigo-barras','recebimento','mobile',array('idRecebimento'=>$idRecebimento));
+    }
+
+
 }
 

@@ -96,6 +96,8 @@ INSERT INTO recurso_acao (cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_a
 VALUES (SQ_RECURSO_ACAO_01.NEXTVAL, (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'enderecamento:modelo'),
 (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'delete'), 'Prioridade de Estrutura de Armazenagem');
 
+
+
 CREATE TABLE PRODUTO_END_TIPO_EST_ARMAZ
   (
     COD_PRODUTO_END_TIPO_EST_ARMAZ NUMBER (8) NOT NULL ,
