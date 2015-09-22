@@ -121,7 +121,10 @@ class EstoqueRepository extends EntityRepository
             $idUma = $params['uma'];
         }
 
-        $validade = $estoqueEn->getValidade();
+        $validade = null;
+        if (isset($estoqueEn) && is_object($estoqueEn)) {
+            $validade = $estoqueEn->getValidade();
+        }
         if ($qtd > 0 ) {
             if (isset($params['validade']) and !is_null($params['validade'])) {
                 $validade = new \Zend_Date($params['validade']);

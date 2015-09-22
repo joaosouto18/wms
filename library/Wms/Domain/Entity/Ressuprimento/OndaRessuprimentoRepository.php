@@ -231,6 +231,10 @@ class OndaRessuprimentoRepository extends EntityRepository
             $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
+                if (!isset($embalagensEn[0])) {
+                    throw new \Exception("Produto ".$codProduto." Grade ".$grade." não possui embalagem cadastrada!");
+                }
+
                 $embalagem = $embalagensEn[0];
 
                 $idPicking = null;
