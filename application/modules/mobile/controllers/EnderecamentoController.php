@@ -417,8 +417,8 @@ class Mobile_EnderecamentoController extends Action
         $param['codProduto']    = '3908040';
         $param['grade']         = 'PRETO...';
 
-        $param['codProduto']    = '10993';
-        $param['grade']         = 'UNICA';
+        $param['codProduto']    = '688037';
+        $param['grade']         = 'IMB/PRET';
 
         $param['paletes']       = $paletesArray;
         $param['dataValidade']  = null;
