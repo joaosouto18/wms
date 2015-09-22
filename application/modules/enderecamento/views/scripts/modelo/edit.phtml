@@ -16,6 +16,7 @@
                 <fieldset>
                     <legend>Area de Armazenagem</legend>
                     <div>
+                        <?php $i = 0; ?>
                         <?php foreach ($this->areaArmazenagens as $key => $areaArmazenagem) : ?>
                             <?php echo $areaArmazenagem->getDescricao(); ?>
                             <div class="fieldset-right">
@@ -36,6 +37,7 @@
 
                 <fieldset>
                     <legend>Estrutura de Armazenagem</legend>
+                    <?php $i = 0; ?>
                     <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
                         <?php echo $estruturaArmazenagem->getDescricao(); ?>
                         <div class="fieldset-right">
@@ -57,7 +59,7 @@
             <div class="fieldset-right">
                 <fieldset>
                     <legend>Tipos de Enderecos</legend>
-
+                    <?php $i = 0; ?>
                     <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
                         <?php echo $tipoEndereco->getDescricao(); ?>
                         <div class="fieldset-right">
