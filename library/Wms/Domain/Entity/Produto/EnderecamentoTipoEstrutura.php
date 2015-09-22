@@ -40,10 +40,10 @@ class EnderecamentoTipoEstrutura
     protected $prioridade;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Armazenagem\Estrutura\Tipo")
-     * @JoinColumn(name="COD_TIPO_EST_ARMAZ", referencedColumnName="COD_TIPO_EST_ARMAZ")
+     * @Column(name="COD_TIPO_EST_ARMAZ", type="integer", length=60, nullable=false)
+     * @var integer quantidade de itens esta embalagem contém
      */
-    protected $tipoEstruturaArmazenagem;
+    protected $codTipoEstrutura;
 
     /**
      * @param string $codProduto
@@ -59,6 +59,22 @@ class EnderecamentoTipoEstrutura
     public function getCodProduto()
     {
         return $this->codProduto;
+    }
+
+    /**
+     * @param int $codTipoEstrutura
+     */
+    public function setCodTipoEstrutura($codTipoEstrutura)
+    {
+        $this->codTipoEstrutura = $codTipoEstrutura;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCodTipoEstrutura()
+    {
+        return $this->codTipoEstrutura;
     }
 
     /**
@@ -107,22 +123,6 @@ class EnderecamentoTipoEstrutura
     public function getPrioridade()
     {
         return $this->prioridade;
-    }
-
-    /**
-     * @param mixed $tipoEstruturaArmazenagem
-     */
-    public function setTipoEstruturaArmazenagem($tipoEstruturaArmazenagem)
-    {
-        $this->tipoEstruturaArmazenagem = $tipoEstruturaArmazenagem;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTipoEstruturaArmazenagem()
-    {
-        return $this->tipoEstruturaArmazenagem;
     }
 
 }

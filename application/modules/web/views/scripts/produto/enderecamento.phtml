@@ -39,28 +39,28 @@ $tipoEndereco = $this->element->tpEndereco->getValue();
                                 </fieldset>
                             </td>
                             <td style="vertical-align: top; width: 30%; padding-right: 7pt">
-                                <fieldset id="fieldset-areaArmazenagem">
+                                <fieldset id="fieldset-estruturaArmazenagem">
                                     <legend>Estrutura de Armazenagem</legend>
                                     <table class="gTable">
                                         <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
                                         <?php foreach ($tipoEstrutura as $estrutura):?>
                                             <tr class="gTResultSet">
                                                 <td><?php echo $estrutura['DESCRICAO'] ?></td>
-                                                <td><?php echo '<input style="width:40px;" type="text" name="areaArmazenagem[' . $estrutura['ID'] . ']" value="' . $estrutura['VALUE'].'">' ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="estruturaArmazenagem[' . $estrutura['ID'] . ']" value="' . $estrutura['VALUE'].'">' ?></td>
                                             </tr>
                                         <?php endforeach ?>
                                     </table>
                                 </fieldset>
                             </td>
                             <td style="vertical-align: top; width: 30%">
-                                <fieldset id="fieldset-areaArmazenagem">
+                                <fieldset id="fieldset-tipoEndereco">
                                     <legend>Tipo de Endereço</legend>
                                     <table class="gTable">
                                         <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
                                         <?php foreach ($tipoEndereco as $tipo):?>
                                             <tr class="gTResultSet">
                                                 <td><?php echo $tipo['DESCRICAO'] ?></td>
-                                                <td><?php echo '<input style="width:40px;" type="text" name="areaArmazenagem[' . $tipo['ID'] . ']" value="' . $tipo['VALUE'].'">' ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="tipoEndereco[' . $tipo['ID'] . ']" value="' . $tipo['VALUE'].'">' ?></td>
                                             </tr>
                                         <?php endforeach ?>
                                     </table>

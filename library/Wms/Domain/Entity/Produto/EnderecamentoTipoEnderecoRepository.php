@@ -4,7 +4,7 @@ namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\ORM\EntityRepository;
 
-class EnderecamentoTipoEstruturaRepository extends EntityRepository
+class EnderecamentoTipoEnderecoRepository extends EntityRepository
 {
 
 }

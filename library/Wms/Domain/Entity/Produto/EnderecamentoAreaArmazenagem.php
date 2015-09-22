@@ -15,9 +15,9 @@ class EnderecamentoAreaArmazenagem
 
     /**
      * @Id
-     * @Column(name="COD_PRODUTO_END_TIPO_EST_ARMAZ", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO_END_AREA_ARMAZ", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_PROD_END_TIPO_EST_ARMAZ", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_PROD_END_AREA_ARMAZENAGEM", allocationSize=1, initialValue=1)
      */
     protected $id;
 
@@ -40,25 +40,25 @@ class EnderecamentoAreaArmazenagem
     protected $prioridade;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\AreaArmazenagem")
-     * @JoinColumn(name="COD_AREA_ARMAZENAGEM", referencedColumnName="COD_AREA_ARMAZENAGEM")
+     * @Column(name="COD_AREA_ARMAZENAGEM", type="integer", length=60, nullable=false)
+     * @var integer quantidade de itens esta embalagem contém
      */
-    protected $areaArmazenagem;
+    protected $codAreaArmazenagem;
 
     /**
-     * @param mixed $areaArmazenagem
+     * @param int $codAreaArmazenagem
      */
-    public function setAreaArmazenagem($areaArmazenagem)
+    public function setCodAreaArmazenagem($codAreaArmazenagem)
     {
-        $this->areaArmazenagem = $areaArmazenagem;
+        $this->codAreaArmazenagem = $codAreaArmazenagem;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getAreaArmazenagem()
+    public function getCodAreaArmazenagem()
     {
-        return $this->areaArmazenagem;
+        return $this->codAreaArmazenagem;
     }
 
     /**

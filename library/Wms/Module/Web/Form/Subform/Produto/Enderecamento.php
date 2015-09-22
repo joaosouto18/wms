@@ -21,7 +21,7 @@ class Enderecamento extends SubForm
 
         $this->addElement('text', 'enderecoReferencia', array(
             'label' => 'Endereço de Referencia',
-            'alt' => 'enderecoReferencia',
+            'alt' => 'endereco',
             'size' => 20,
             'placeholder' => '00.000.00.00',
         ));

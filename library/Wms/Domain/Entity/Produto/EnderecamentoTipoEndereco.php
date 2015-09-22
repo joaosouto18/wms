@@ -15,9 +15,9 @@ class EnderecamentoTipoEndereco
 
     /**
      * @Id
-     * @Column(name="COD_PRODUTO_END_TIPO_EST_ARMAZ", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO_END_TIPO_ENDERECO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_PROD_END_TIPO_EST_ARMAZ", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_PROD_END_TIPO_ENDERECO", allocationSize=1, initialValue=1)
      */
     protected $id;
 
@@ -40,10 +40,10 @@ class EnderecamentoTipoEndereco
     protected $prioridade;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco\Tipo")
-     * @JoinColumn(name="COD_TIPO_ENDERECO", referencedColumnName="COD_TIPO_ENDERECO")
+     * @Column(name="COD_TIPO_ENDERECO", type="integer", length=60, nullable=false)
+     * @var integer quantidade de itens esta embalagem contém
      */
-    protected $tipoEndereco;
+    protected $codTipoEndereco;
 
     /**
      * @param string $codProduto
@@ -59,6 +59,22 @@ class EnderecamentoTipoEndereco
     public function getCodProduto()
     {
         return $this->codProduto;
+    }
+
+    /**
+     * @param int $codTipoEndereco
+     */
+    public function setCodTipoEndereco($codTipoEndereco)
+    {
+        $this->codTipoEndereco = $codTipoEndereco;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCodTipoEndereco()
+    {
+        return $this->codTipoEndereco;
     }
 
     /**
@@ -107,22 +123,6 @@ class EnderecamentoTipoEndereco
     public function getPrioridade()
     {
         return $this->prioridade;
-    }
-
-    /**
-     * @param mixed $tipoEndereco
-     */
-    public function setTipoEndereco($tipoEndereco)
-    {
-        $this->tipoEndereco = $tipoEndereco;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTipoEndereco()
-    {
-        return $this->tipoEndereco;
     }
 
 }

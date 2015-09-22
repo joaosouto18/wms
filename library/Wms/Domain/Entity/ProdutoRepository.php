@@ -52,6 +52,44 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       return $produtosSemPicking;
   }
 
+  private function setParamEndAutomatico( $produtoEn, $values, $tipo) {
+      if ($tipo == 'AreaArmazenagem') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoAreaArmazenagem');
+      }
+      if ($tipo == 'TipoEndereco') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEndereco');
+      }
+      if ($tipo == 'TipoEstrutura') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEstrutura');
+      }
+
+      $registros = $repo->findBy(array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
+      foreach ($registros as $registro) {
+          $this->getEntityManager()->remove($registro);
+      }
+
+      foreach ($values as $key=> $value) {
+          if (($value != "") && (is_numeric($value))) {
+              if ($tipo == 'AreaArmazenagem') {
+                  $sequencia = new ProdutoEntity\EnderecamentoAreaArmazenagem();
+                  $sequencia->setCodAreaArmazenagem($key);
+              }
+              if ($tipo == 'TipoEndereco') {
+                  $sequencia = new ProdutoEntity\EnderecamentoTipoEndereco();
+                  $sequencia->setCodTipoEndereco($key);
+              }
+              if ($tipo == 'TipoEstrutura') {
+                  $sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
+                  $sequencia->setCodTipoEstrutura($key);
+              }
+              $sequencia->setCodProduto($produtoEn->getId());
+              $sequencia->setGrade($produtoEn->getGrade());
+              $sequencia->setPrioridade($value);
+              $this->getEntityManager()->persist($sequencia);
+          }
+      }
+  }
+
   public function save(ProdutoEntity $produtoEntity, array $values) {
 
 	extract($values['produto']);
@@ -60,6 +98,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	$em->beginTransaction();
 
 	try {
+
+      $dscEndereco = $values['enderecamento']['enderecoReferencia'];
+      if ($dscEndereco != "") {
+          $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
+          if ($enderecoEn == null) {
+              throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+          } else {
+              $produtoEntity->setEnderecoReferencia($enderecoEn);
+          }
+      } else {
+          $produtoEntity->setEnderecoReferencia(null);
+      }
+
+      $this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
+      $this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
+      $this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
+
 	  $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
 	  $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
 
