@@ -13,7 +13,9 @@ class Modelo extends Form
             ->setAttribs(array(
                 'method' => 'POST',
                 'id' => 'modelo-enderecamento'
-            ));
+            ))
+            ->addElement('text', '');
+
     }
 
 

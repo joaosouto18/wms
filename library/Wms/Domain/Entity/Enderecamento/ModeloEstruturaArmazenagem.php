@@ -4,13 +4,16 @@ namespace Wms\Domain\Entity\Enderecamento;
 
 /**
  * @Table(name="MODELO_END_EST_ARMAZ")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Enderecamento\ModeloEstruturaArmazenagemRepository")
  */
 class ModeloEstruturaArmazenagem
 {
 
     /**
      * @Id
-     * @Column(name="COD_MODELO_END_EST_ARMAZ", type="int", nullable=false)
+     * @Column(name="COD_MODELO_END_EST_ARMAZ", type="integer", nullable=false)
+     * @GeneratedValue(strategy="SEQUENCE")
+     * @SequenceGenerator(sequenceName="SQ_MODELO_END_EST_ARMAZ_01", allocationSize=1, initialValue=1)
      * @var int
      */
     protected $id;
@@ -22,14 +25,14 @@ class ModeloEstruturaArmazenagem
     protected $modeloEnderecamento;
 
     /**
-     * @Column(name="COD_TIPO_EST_ARMAZ", type="integer", nullable=false)
-     * @var int
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Armazenagem\Estrutura\Tipo")
+     * @JoinColumn(name="COD_TIPO_EST_ARMAZ", referencedColumnName="COD_TIPO_EST_ARMAZ")
      */
     protected $tipoEstruturaArmazenagem;
 
     /**
-     * @Column(name="COD_PRIORIDADE", type="int")
-     * @var
+     * @Column(name="COD_PRIORIDADE", type="integer")
+     * @var int
      */
     protected $prioridade;
 
@@ -66,7 +69,7 @@ class ModeloEstruturaArmazenagem
     }
 
     /**
-     * @return int
+     * @return mixed
      */
     public function getTipoEstruturaArmazenagem()
     {
@@ -74,7 +77,7 @@ class ModeloEstruturaArmazenagem
     }
 
     /**
-     * @param int $tipoEstruturaArmazenagem
+     * @param mixed $tipoEstruturaArmazenagem
      */
     public function setTipoEstruturaArmazenagem($tipoEstruturaArmazenagem)
     {

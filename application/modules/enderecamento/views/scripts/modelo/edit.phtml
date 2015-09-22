@@ -1,0 +1,80 @@
+<form id="modelo-separacao-form" class="saveForm" method="post" action="" novalidate="novalidate">
+    <fieldset id="fieldset-modelo">
+        <legend>Prioridades</legend>
+        <div>
+            <label for="descricao">Descricao</label>
+            <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
+            <label for="endereco">Endereco</label>
+            <input type="text" id="rua" name="rua" size="2" maxlength="2">
+            <input type="text" id="predio" name="predio" size="3" maxlength="3">
+            <input type="text" id="nivel" name="nivel" size="2" maxlength="2">
+            <input type="text" id="apartamento" name="apartamento" size="2" maxlength="2">
+        </div>
+
+        <div class="fieldsets">
+            <div class="fieldset-left">
+                <fieldset>
+                    <legend>Area de Armazenagem</legend>
+                    <div>
+                        <?php foreach ($this->areaArmazenagens as $key => $areaArmazenagem) : ?>
+                            <?php echo $areaArmazenagem->getDescricao(); ?>
+                            <div class="fieldset-right">
+                                <?php foreach ($this->populaAreaArmazenagens as $populaAraArmazenagem) : ?>
+                                    <?php $i = 0; ?>
+                                    <?php if ($populaAraArmazenagem->getAreaArmazenagem()->getId() == $areaArmazenagem->getId()) : ?>
+                                        <input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" value="<?php echo $populaAraArmazenagem->getPrioridade(); ?>">
+                                        <?php $i = 1; break; ?>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                                <?php if ($i == 0) : ?>
+                                    <input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]">
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Estrutura de Armazenagem</legend>
+                    <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
+                        <?php echo $estruturaArmazenagem->getDescricao(); ?>
+                        <div class="fieldset-right">
+                            <?php foreach($this->populaEstruturaArmazenagens as $populaEstruturaArmazenagem) : ?>
+                                <?php $i = 0; ?>
+                                <?php if ($populaEstruturaArmazenagem->getTipoEstruturaArmazenagem()->getId() == $estruturaArmazenagem->getId()) : ?>
+                                    <input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" value="<?php echo $populaEstruturaArmazenagem->getPrioridade(); ?>">
+                                    <?php $i = 1; break; ?>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <?php if ($i == 0) : ?>
+                                <input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]">
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </fieldset>
+            </div>
+
+            <div class="fieldset-right">
+                <fieldset>
+                    <legend>Tipos de Enderecos</legend>
+
+                    <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
+                        <?php echo $tipoEndereco->getDescricao(); ?>
+                        <div class="fieldset-right">
+                            <?php foreach ($this->populaTipoEndereco as $populaTipoEnd) : ?>
+                                <?php $i = 0; ?>
+                                <?php if ($populaTipoEnd->getTipoEndereco()->getId() == $tipoEndereco->getId()) : ?>
+                                    <input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" value="<?php echo $populaTipoEnd->getPrioridade(); ?>">
+                                    <?php $i = 1; break; ?>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <?php if ($i == 0) : ?>
+                                <input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]">
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </fieldset>
+            </div>
+        </div>
+    </fieldset>
+</form>

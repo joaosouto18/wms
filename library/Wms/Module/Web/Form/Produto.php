@@ -8,7 +8,8 @@ use Wms\Module\Web\Form,
     Wms\Module\Web\Form\Subform\Produto\Identificacao as IdentificacaoForm,
     Wms\Module\Web\Form\Subform\Produto\Embalagem as EmbalagemForm,
     Wms\Module\Web\Form\Subform\Produto\Volume as VolumeForm,
-    Wms\Module\Web\Form\Subform\Produto\DadosLogisticos as DadosLogisticosForm;
+    Wms\Module\Web\Form\Subform\Produto\DadosLogisticos as DadosLogisticosForm,
+    Wms\Module\Web\Form\Subform\Produto\Enderecamento as EnderecamentoForm;
 
 /**
  * Description of Produto
@@ -30,6 +31,8 @@ class Produto extends Form
         $this->addSubFormTab('Embalagens', new EmbalagemForm, 'embalagem', 'produto/embalagem-form.phtml');
         $this->addSubFormTab('Volumes', new VolumeForm, 'volume', 'produto/volume-form.phtml');
         $this->addSubFormTab('Dados Logísticos', new DadosLogisticosForm, 'dadoLogistico', 'produto/dado-logistico-form.phtml');
+        $this->addSubFormTab('Enderecamento', new EnderecamentoForm, 'enderecamento', 'produto/enderecamento.phtml');
+
     }
 
     /**
@@ -41,6 +44,8 @@ class Produto extends Form
         $this->getSubForm('produto')->setDefaultsFromEntity($produto);
         $this->getSubForm('embalagem')->setDefaultsFromEntity($produto);
         $this->getSubForm('volume')->setDefaultsFromEntity($produto);
+        $this->getSubForm('enderecamento')->setDefaultsFromEntity($produto);
+
     }
 
 }

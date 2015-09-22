@@ -52,6 +52,44 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       return $produtosSemPicking;
   }
 
+  private function setParamEndAutomatico( $produtoEn, $values, $tipo) {
+      if ($tipo == 'AreaArmazenagem') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoAreaArmazenagem');
+      }
+      if ($tipo == 'TipoEndereco') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEndereco');
+      }
+      if ($tipo == 'TipoEstrutura') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEstrutura');
+      }
+
+      $registros = $repo->findBy(array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
+      foreach ($registros as $registro) {
+          $this->getEntityManager()->remove($registro);
+      }
+
+      foreach ($values as $key=> $value) {
+          if (($value != "") && (is_numeric($value))) {
+              if ($tipo == 'AreaArmazenagem') {
+                  $sequencia = new ProdutoEntity\EnderecamentoAreaArmazenagem();
+                  $sequencia->setCodAreaArmazenagem($key);
+              }
+              if ($tipo == 'TipoEndereco') {
+                  $sequencia = new ProdutoEntity\EnderecamentoTipoEndereco();
+                  $sequencia->setCodTipoEndereco($key);
+              }
+              if ($tipo == 'TipoEstrutura') {
+                  $sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
+                  $sequencia->setCodTipoEstrutura($key);
+              }
+              $sequencia->setCodProduto($produtoEn->getId());
+              $sequencia->setGrade($produtoEn->getGrade());
+              $sequencia->setPrioridade($value);
+              $this->getEntityManager()->persist($sequencia);
+          }
+      }
+  }
+
   public function save(ProdutoEntity $produtoEntity, array $values) {
 
 	extract($values['produto']);
@@ -60,6 +98,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	$em->beginTransaction();
 
 	try {
+
+      $dscEndereco = $values['enderecamento']['enderecoReferencia'];
+      if ($dscEndereco != "") {
+          $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
+          if ($enderecoEn == null) {
+              throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+          } else {
+              $produtoEntity->setEnderecoReferencia($enderecoEn);
+          }
+      } else {
+          $produtoEntity->setEnderecoReferencia(null);
+      }
+
+      $this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
+      $this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
+      $this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
+
 	  $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
 	  $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
 
@@ -1151,6 +1206,42 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         return $dql->getQuery()->getResult();
 
+    }
+
+    public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade) {
+        $SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM TIPO_ENDERECO TP
+                    LEFT JOIN PRODUTO_END_TIPO_ENDERECO P
+                      ON P.COD_TIPO_ENDERECO = TP.COD_TIPO_ENDERECO
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_TIPO_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade) {
+        $SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM AREA_ARMAZENAGEM TP
+                    LEFT JOIN PRODUTO_END_AREA_ARMAZENAGEM P
+                      ON P.COD_AREA_ARMAZENAGEM = TP.COD_AREA_ARMAZENAGEM
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_AREA_ARMAZENAGEM";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade) {
+        $SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM TIPO_EST_ARMAZ TP
+                    LEFT JOIN PRODUTO_END_TIPO_EST_ARMAZ P
+                      ON P.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_TIPO_EST_ARMAZ";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
 }

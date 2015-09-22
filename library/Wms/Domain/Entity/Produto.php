@@ -124,6 +124,12 @@ class Produto
      */
     protected $validade;
 
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco", cascade={"persist"})
+     * @JoinColumn(name="COD_ENDERECO_REF_END_AUTO", referencedColumnName="COD_DEPOSITO_ENDERECO")
+     */
+    protected $enderecoReferencia;
+
     public function __construct()
     {
         $this->volumes = new ArrayCollection;
@@ -364,6 +370,22 @@ class Produto
     public function setValidade($validade)
     {
         $this->validade = $validade;
+    }
+
+    /**
+     * @param mixed $enderecoReferencia
+     */
+    public function setEnderecoReferencia($enderecoReferencia)
+    {
+        $this->enderecoReferencia = $enderecoReferencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEnderecoReferencia()
+    {
+        return $this->enderecoReferencia;
     }
 
 }
