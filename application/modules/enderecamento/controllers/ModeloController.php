@@ -62,7 +62,7 @@ class Enderecamento_ModeloController extends Action
             if ($this->getRequest()->isPost()) {
                 $params = $this->getRequest()->getParams();
                 $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-                $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $params['rua'].'.'.$params['predio'].'.'.$params['nivel'].'.'.$params['apartamento']));
+                $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $params['endereco']));
                 if (!isset($depositoEnderecoEn)) {
                     $this->_helper->messenger('error', 'Insira um Endereço Válido.');
                     $this->_redirect('enderecamento/modelo/index');
@@ -160,7 +160,7 @@ class Enderecamento_ModeloController extends Action
 
                 $params = $this->getRequest()->getParams();
                 $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-                $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $params['rua'].'.'.$params['predio'].'.'.$params['nivel'].'.'.$params['apartamento']));
+                $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $params['endereco']));
                 if (!isset($depositoEnderecoEn)) {
                     $this->_helper->messenger('error', 'Insira um Endereço Válido.');
                     $this->_redirect('enderecamento/modelo/index');
