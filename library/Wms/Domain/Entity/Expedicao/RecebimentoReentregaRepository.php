@@ -125,7 +125,7 @@ class RecebimentoReentregaRepository extends EntityRepository
             ->from('wms:Expedicao\RecebimentoReentrega', 'rr')
             ->innerJoin('wms:Expedicao\RecebimentoReentregaNota', 'rrn', 'WITH', 'rr.id = rrn.recebimentoReentrega')
             ->innerJoin('rrn.notaFiscalSaida', 'nfs')
-            ->innerJoin('wms:Expedicao\NotafiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+            ->innerJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
             ->where("rr.id = $recebimentoReentrega AND nfsp.codProduto = '$produtoId' AND nfsp.grade = '$grade'");
 
         return $sql->getQuery()->getResult();
