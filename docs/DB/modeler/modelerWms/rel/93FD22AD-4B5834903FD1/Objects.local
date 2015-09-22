@@ -2,28 +2,28 @@
 <oracle.dbtools.crest.model.design.relational.RelationalDesign>
    <object objectType="SchemaObject" objectID="FE8237F4-F32B-BB83-C732-22C6848C2D12" name="WMS_LOCAL" seqName="seg_0"/>
    <object objectType="Table" objectID="113CA6F2-EE7A-00C6-847B-9C5C5FF6992E" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
-   <object objectType="Table" objectID="37EC34AD-4408-5C96-9D59-B529E6C4AAF9" name="ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="1A73832D-8DFF-C881-161D-6648746626F5" name="RESERVA_ESTOQUE_ONDA_RESSUP" seqName="seg_0"/>
    <object objectType="Table" objectID="25A044A4-7199-8970-B8A1-7CEDF04F9D45" name="EXPEDICAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="2B192898-CF31-3330-5294-CC71740EEA27" name="RESERVA_ESTOQUE_ENDERECAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="37EC34AD-4408-5C96-9D59-B529E6C4AAF9" name="ESTOQUE" seqName="seg_0"/>
    <object objectType="Table" objectID="5F09D4BA-5DAE-E437-53B9-3EBAAE650AA3" name="ONDA_RESSUPRIMENTO" seqName="seg_0"/>
    <object objectType="Table" objectID="5FADD783-C1D7-19D9-34C5-DAA6B376CA1C" name="ONDA_RESSUPRIMENTO_OS" seqName="seg_0"/>
+   <object objectType="Table" objectID="8234113F-89A0-3A68-33E4-32466E35075B" name="RESERVA_ESTOQUE_EXPEDICAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="D2F5DB25-BD15-5833-C8AB-FDEA9C84E9EB" name="RESERVA_ESTOQUE" seqName="seg_0"/>
    <object objectType="Table" objectID="D77D166B-F290-A323-D848-605F45E86B14" name="ONDA_RESSUPRIMENTO_PEDIDO" seqName="seg_0"/>
    <object objectType="Table" objectID="E3597E68-97BC-AEB1-03AA-2C98CB13F76B" name="ORDEM_SERVICO" seqName="seg_0"/>
-   <object objectType="Table" objectID="D2F5DB25-BD15-5833-C8AB-FDEA9C84E9EB" name="RESERVA_ESTOQUE" seqName="seg_0"/>
-   <object objectType="Table" objectID="2B192898-CF31-3330-5294-CC71740EEA27" name="RESERVA_ESTOQUE_ENDERECAMENTO" seqName="seg_0"/>
-   <object objectType="Table" objectID="8234113F-89A0-3A68-33E4-32466E35075B" name="RESERVA_ESTOQUE_EXPEDICAO" seqName="seg_0"/>
-   <object objectType="Table" objectID="1A73832D-8DFF-C881-161D-6648746626F5" name="RESERVA_ESTOQUE_ONDA_RESSUP" seqName="seg_0"/>
    <object objectType="FKIndexAssociation" objectID="13B883B1-F460-E2B8-AC6E-E5D8A28364C0" name="ESTOQUE_DEPOSITO_ENDERECO_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="F311FD9D-7B48-8DC1-B986-0F3088C8BECB" name="FK_ORDSE_EXPED" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="26D7A8BF-6377-66B7-C8B3-F445841F4AB9" name="FK_OS_ONDA_OS" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="9703E540-2381-EF68-D5FB-3663E5E37FD5" name="OND_RES_OS_DEP_END_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="8CFF6796-AC02-91B2-14B6-FFA205BB16D1" name="OND_RES_OS_OND_RES_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="BE396ABC-3009-EC8C-22EF-B105A4E3DBEB" name="OND_RES_OS_OS_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="75C611DF-3D6F-7FF3-78A2-BF7370E71084" name="OND_RES_PED_OND_RES_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="4193706B-224B-C86D-E8B0-B8C8FF98E617" name="RES_EST_DEP_END_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="802C1313-F966-0330-B32E-B0A085C50D30" name="RES_EST_EXP_EXP_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="C9EE9BDC-85C5-83C3-2F30-1698BB285BAD" name="RES_EST_EXP_RES_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="AB9DF665-6800-187C-54B3-FC850ADF6688" name="RES_EST_OND_RES_OND_OS_FK" seqName="seg_0"/>
-   <object objectType="FKIndexAssociation" objectID="F2409614-7353-4E1B-FD51-CB6F24DF009F" name="RES_EST_OND_RES_OS_FK" seqName="seg_0"/>
    <object objectType="FKIndexAssociation" objectID="17584853-C8A1-0BBE-E6A5-4E2E65E823E9" name="RES_EST_OND_RES_RES_EST_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="26D7A8BF-6377-66B7-C8B3-F445841F4AB9" name="FK_OS_ONDA_OS" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="4193706B-224B-C86D-E8B0-B8C8FF98E617" name="RES_EST_DEP_END_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="75C611DF-3D6F-7FF3-78A2-BF7370E71084" name="OND_RES_PED_OND_RES_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="802C1313-F966-0330-B32E-B0A085C50D30" name="RES_EST_EXP_EXP_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="8CFF6796-AC02-91B2-14B6-FFA205BB16D1" name="OND_RES_OS_OND_RES_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="9703E540-2381-EF68-D5FB-3663E5E37FD5" name="OND_RES_OS_DEP_END_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="AB9DF665-6800-187C-54B3-FC850ADF6688" name="RES_EST_OND_RES_OND_OS_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="BE396ABC-3009-EC8C-22EF-B105A4E3DBEB" name="OND_RES_OS_OS_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="C9EE9BDC-85C5-83C3-2F30-1698BB285BAD" name="RES_EST_EXP_RES_FK" seqName="seg_0"/>
    <object objectType="FKIndexAssociation" objectID="D1CF2934-6922-8863-3D24-2056D1C82D73" name="RES_EST_RES_EST_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="F2409614-7353-4E1B-FD51-CB6F24DF009F" name="RES_EST_OND_RES_OS_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="F311FD9D-7B48-8DC1-B986-0F3088C8BECB" name="FK_ORDSE_EXPED" seqName="seg_0"/>
 </oracle.dbtools.crest.model.design.relational.RelationalDesign>
