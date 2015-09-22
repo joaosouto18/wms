@@ -83,20 +83,21 @@ class Mobile_ReentregaController extends Action
     {
         $params = $this->_getAllParams();
         $this->view->id = $params['id'];
-        $this->view->form = new FormConferirProdutosReentrega;
 
-        if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
-            try {
-                /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
-                $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
-                $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
-                $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
+        if (isset($params['submit'])) {
+            if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
+                try {
+                    /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
+                    $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
+                    $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
+                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
 
-            } catch (\Exception $e) {
-                $this->_helper->messenger('error', $e->getMessage());
+                } catch (\Exception $e) {
+                    $this->_helper->messenger('error', utf8_decode($e->getMessage()));
+                }
+            } else {
+                $this->_helper->messenger('error', 'Preencha todos os campos corretamente');
             }
-        } else {
-            $this->_helper->messenger('error', 'Preencha todos os campos corretamente');
         }
     }
 
@@ -141,7 +142,7 @@ class Mobile_ReentregaController extends Action
             $notas = $recebimentoReentregaNfRepo->findBy(array('recebimentoReentrega'=>$idRecebimento));
 
             foreach ($notas as $nfReceb) {
-                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO);
+                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO,false,null,null,$recebimentoEn);
             }
             $recebimentoEn->setStatus($siglaEn);
 
