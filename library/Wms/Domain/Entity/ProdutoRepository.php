@@ -1208,10 +1208,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     }
 
-    public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade) {
+    public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+
         $SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM TIPO_ENDERECO TP
-                    LEFT JOIN PRODUTO_END_TIPO_ENDERECO P
+                    $join JOIN PRODUTO_END_TIPO_ENDERECO P
                       ON P.COD_TIPO_ENDERECO = TP.COD_TIPO_ENDERECO
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
@@ -1220,10 +1226,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
-    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade) {
+    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+
         $SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM AREA_ARMAZENAGEM TP
-                    LEFT JOIN PRODUTO_END_AREA_ARMAZENAGEM P
+                   $join JOIN PRODUTO_END_AREA_ARMAZENAGEM P
                       ON P.COD_AREA_ARMAZENAGEM = TP.COD_AREA_ARMAZENAGEM
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
@@ -1232,10 +1244,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
-    public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade) {
+    public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade, $inner = false) {
+
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
         $SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM TIPO_EST_ARMAZ TP
-                    LEFT JOIN PRODUTO_END_TIPO_EST_ARMAZ P
+                   $join JOIN PRODUTO_END_TIPO_EST_ARMAZ P
                       ON P.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'

@@ -1041,7 +1041,7 @@ class PaleteRepository extends EntityRepository
         return $query->getQuery()->getResult();
     }
 
-    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento) {
+    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete) {
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
@@ -1050,9 +1050,9 @@ class PaleteRepository extends EntityRepository
 
         $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto, 'grade'=>$dscGrade));
 
-        $endAreaArmazenagem = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$dscGrade);
-        $endTipoEstrutura   = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($codProduto,$dscGrade);
-        $endTipoEndereco    = $produtoRepo->getSequenciaEndAutomaticoTpEndereco($codProduto,$dscGrade);
+        $endAreaArmazenagem = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$dscGrade,true);
+        $endTipoEstrutura   = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($codProduto,$dscGrade,true);
+        $endTipoEndereco    = $produtoRepo->getSequenciaEndAutomaticoTpEndereco($codProduto,$dscGrade,true);
 
         $codModelo = $this->getSystemParameterValue('MODELO_ENDERECAMENTO_PADRAO');
         $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$codRecebimento));
@@ -1068,12 +1068,17 @@ class PaleteRepository extends EntityRepository
             $enderecoReferencia = $modeloEnderecamento->getCodReferencia();
         }
 
-        $ruaReferencia = $enderecoReferencia->getRua();
-        $predioReferencia = $enderecoReferencia->getPredio();
-        $nivelReferencia = $enderecoReferencia->getNivel();
-        $apartamentoReferencia = $enderecoReferencia->getApartamento();
 
-        if (count($endAreaArmazenagem >0)) {
+        if ($enderecoReferencia != null) {
+            $ruaReferencia = $enderecoReferencia->getRua();
+            $predioReferencia = $enderecoReferencia->getPredio();
+            $nivelReferencia = $enderecoReferencia->getNivel();
+            $apartamentoReferencia = $enderecoReferencia->getApartamento();
+        } else {
+            return null;
+        }
+
+        if (count($endAreaArmazenagem) >0) {
             $sqlArea = " INNER JOIN PRODUTO_END_AREA_ARMAZENAGEM AA
                             ON AA.COD_PRODUTO = '$codProduto' AND AA.DSC_GRADE = '$dscGrade'
                            AND AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
@@ -1089,9 +1094,9 @@ class PaleteRepository extends EntityRepository
                                     ON TE.COD_PRODUTO = '$codProduto' AND TE.DSC_GRADE = '$dscGrade'
                                    AND TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO";
         } else {
-            $sqlArea = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE, COD_TIPO_ENDERECO
+            $sqlTipoEndereco = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE, COD_TIPO_ENDERECO
                                       FROM MODELO_END_TIPO_ENDERECO
-                                     WHERE COD_MODELO_ENDERECAMENTO = $codModelo) AA
+                                     WHERE COD_MODELO_ENDERECAMENTO = $codModelo) TE
                                 ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
         }
 
@@ -1122,7 +1127,8 @@ class PaleteRepository extends EntityRepository
                   $sqlTipoEstrutura
                   WHERE DE.IND_ATIVO = 'S'
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
-                        AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= 150)
+                    AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
+                    AND DE.IND_DISPONIVEL = 'S'
                     AND ROWNUM = 1
                ORDER BY ET.NUM_PRIORIDADE, AA.NUM_PRIORIDADE, TE.NUM_PRIORIDADE, DIF_RUA,DIF_PREDIO,DIF_NIVEL,DIF_APARTAMENTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);

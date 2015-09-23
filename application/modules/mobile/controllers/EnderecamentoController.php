@@ -399,6 +399,7 @@ class Mobile_EnderecamentoController extends Action
         $idRecebimento = $this->_getParam("id");
 
         try {
+            $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
@@ -425,18 +426,36 @@ class Mobile_EnderecamentoController extends Action
                         $tmp['dscGrade'] = $tmpPalete['DSC_GRADE'];
                         $tmp['dscProduto'] = $tmpPalete['DSC_PRODUTO'];
                         $tmp['idEndereco'] = 0;
-                        $tmp['endereco'] = '01.001.00.01';
+                        $tmp['endereco'] = '';
                         $tmp['motivoNaoLiberar'] = '';
+
                         if ($tmpPalete['QTD_VOL_TOTAL'] > $tmpPalete['QTD_VOL_CONFERIDO']) {
                             $tmp['motivoNaoLiberar'] = 'Aguardando conf. todos volumes';
                         }
 
+                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
+                        $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
+                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$idRecebimento,$larguraPalete);
+                        if ($sugestaoEndereco != null) {
+                            $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                            $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
+                            $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+                            $this->getEntityManager()->flush();
+                        }
+
+                        if (($tmp['motivoNaoLiberar'] == '') && ($tmp['idEndereco'] == 0)) {
+                            $tmp['motivoNaoLiberar'] = 'Sem Sugestão de Endereço';
+                        }
                         $paletes[] = $tmp;
+
                     }
                 }
             }
+
             $this->view->paletes = $paletes;
+            $this->getEntityManager()->commit();
         } catch(Exception $e) {
+            $this->getEntityManager()->rollback();
             $this->addFlashMessage('error',$e->getMessage());
         }
 
