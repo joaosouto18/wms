@@ -1,10 +1,10 @@
 <form id="modelo-separacao-form" class="saveForm" method="post" action="" novalidate="novalidate">
     <fieldset id="fieldset-modelo">
-        <legend>Prioridades</legend>
+        <legend><?php echo utf8_encode('Endereçamento Automático') ?></legend>
         <div>
             <label for="descricao">Descricao</label>
             <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
-            <label for="endereco">Endereco</label>
+            <label for="endereco"><?php echo utf8_encode('Endereço de Referência'); ?></label>
             <input type="text" id="endereco" name="endereco">
         </div>
 
@@ -68,44 +68,30 @@
                                         <legend>Tipos de Enderecos</legend>
                                         <table class="gTable">
                                             <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
-
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $tipoEndereco->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaTipoEndereco as $populaTipoEnd) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaTipoEnd->getTipoEndereco()->getId() == $tipoEndereco->getId()) : ?>
+                                                            <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" value="<?php echo $populaTipoEnd->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
                                         </table>
                                     </fieldset>
                                 </td>
-
-
-
-
-
                             </tr>
                         </table>
                     </fieldset>
                 </td>
             </tr>
         </table>
-
-        <div class="fieldsets">
-            <div class="fieldset-right">
-                <fieldset>
-                    <legend>Tipos de Enderecos</legend>
-                    <?php $i = 0; ?>
-                    <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
-                        <?php echo $tipoEndereco->getDescricao(); ?>
-                        <div class="fieldset-right">
-                            <?php foreach ($this->populaTipoEndereco as $populaTipoEnd) : ?>
-                                <?php $i = 0; ?>
-                                <?php if ($populaTipoEnd->getTipoEndereco()->getId() == $tipoEndereco->getId()) : ?>
-                                    <input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" value="<?php echo $populaTipoEnd->getPrioridade(); ?>">
-                                    <?php $i = 1; break; ?>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                            <?php if ($i == 0) : ?>
-                                <input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]">
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </fieldset>
-            </div>
-        </div>
     </fieldset>
 </form>
