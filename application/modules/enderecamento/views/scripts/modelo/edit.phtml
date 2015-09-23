@@ -6,7 +6,7 @@
             <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
             <label for="endereco"><?php echo utf8_encode('Endereço de Referência'); ?></label>
             <?php if (!empty($this->modelo->getCodReferencia()->getDescricao())) : ?>
-                <input type="text" id="endereco" name="endereco" value="<?php echo $this->modelo->getCodReferencia()->getDescricao(); ?>">
+                <input type="text" id="endereco" name="endereco" alt="endereco" placeholder="00.000.00.00" value="<?php echo $this->modelo->getCodReferencia()->getDescricao(); ?>">
             <?php else : ?>
                 <input type="text" id="endereco" name="endereco">
             <?php endif; ?>
