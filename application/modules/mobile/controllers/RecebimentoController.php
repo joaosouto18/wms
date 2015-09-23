@@ -203,50 +203,54 @@ class Mobile_RecebimentoController extends Action
             $notaFiscalItemEntity = $notaFiscalItemRepo->find($idItem);
             $idProduto = $notaFiscalItemEntity->getProduto()->getId();
             $grade = $notaFiscalItemEntity->getGrade();
+            $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
 
-            if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
-                $this->_helper->messenger('error', 'Informe uma data de validade correta');
-                $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+            if ($produtoEn->getValidade() == "S") {
+                if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
+                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                }
+
+                $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
+                $hoje = new Zend_Date;
+                $PeriodoUtil = $hoje->addDay($shelfLife);
+
+                $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+                if ($params['dataValidade'] <= $PeriodoUtil) {
+                    //autoriza recebimento?
+                    $arrayRedirect = array(
+                        'idRecebimento' => $idRecebimento,
+                        'idOrdemServico' => $idOrdemServico,
+                        'qtdConferida' => $qtdConferida,
+                        'idNormaPaletizacao' => $idNormaPaletizacao,
+                        'dataValidade' => $params['dataValidade'],
+                        'idProduto' => $idProduto, 'grade' => $grade);
+
+                    if ($this->_hasParam('idProdutoEmbalagem')) {
+                        $arrayRedirect['idProdutoEmbalagem'] = $idProdutoEmbalagem;
+                    }
+
+                    if ($this->_hasParam('idProdutoVolume')) {
+                        $arrayRedirect['idProdutoVolume'] = $idProdutoVolume;
+                    }
+                    $this->redirect('autoriza-recebimento', 'recebimento', null, $arrayRedirect );
+                }
+                $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
+            } else {
+                $params['dataValidade'] = null;
             }
-
-            $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
-            $hoje = new Zend_Date;
-            $PeriodoUtil = $hoje->addDay($shelfLife);
-            $params['dataValidade'] = new Zend_Date($params['dataValidade']);
-            if ($params['dataValidade'] <= $PeriodoUtil) {
-                //autoriza recebimento?
-                $this->redirect('autoriza-recebimento', 'recebimento', null, array(
-                    'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoEmbalagem' => $idProdutoEmbalagem,
-                    'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
-                    'idProduto' => $idProduto, 'grade' => $grade));
-            }
-
-
 
             // caso embalagem
             if ($this->_hasParam('idProdutoEmbalagem')) {
                 // gravo conferencia do item
-                $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
                 $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
                 $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
-
             } 
             
             // caso volume
             if ($this->_hasParam('idProdutoVolume')) {
-                if ($params['dataValidade'] >= $PeriodoUtil) {
-                    // gravo conferencia do item
-                    $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
-                    $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
-                    $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
-                } else {
-                   //Autoriza Recebimento?
-                    $this->redirect('autoriza-recebimento', 'recebimento', null, array(
-                        'idRecebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico, 'idProdutoVolume' => $idProdutoVolume,
-                        'qtdConferida' => $qtdConferida, 'idNormaPaletizacao' => $idNormaPaletizacao, 'dataValidade' => $params['dataValidade'],
-                        'idProduto' => $idProduto, 'grade' => $grade));
-                }
-
+                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
+                $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // tudo certo, redireciono para a nova leitura

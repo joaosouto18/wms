@@ -128,9 +128,9 @@ class PaleteRepository extends EntityRepository
 
     }
 
-    public function getPaletes ($idRecebimento, $idProduto, $grade) {
+    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true) {
 
-        $this->gerarPaletes($idRecebimento,$idProduto,$grade);
+        $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
         $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
         return $paletes;
     }
@@ -449,7 +449,7 @@ class PaleteRepository extends EntityRepository
         return $qtd - $qtdTotalEnd;
     }
 
-    public function gerarPaletes ($idRecebimento, $idProduto, $grade)
+    public function gerarPaletes ($idRecebimento, $idProduto, $grade, $throwException = true)
     {
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
         $conferenciaRepo    = $this->getEntityManager()->getRepository('wms:Recebimento\Conferencia');
@@ -484,7 +484,9 @@ class PaleteRepository extends EntityRepository
         }
 
         if (count($qtdRecebida) <= 0) {
-            throw new Exception("O recebimento do produto $idProduto não possui unitizador ou ainda não foi conferido");
+            if ($throwException == true) {
+                throw new Exception("O recebimento do produto $idProduto não possui unitizador ou ainda não foi conferido");
+            }
         }
 
         foreach ($qtdEnderecada as $enderecado) {

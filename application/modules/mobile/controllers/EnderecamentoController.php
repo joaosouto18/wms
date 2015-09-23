@@ -398,6 +398,49 @@ class Mobile_EnderecamentoController extends Action
     public function listarPaletesAction(){
         $idRecebimento = $this->_getParam("id");
 
+        try {
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo    = $this->em->getRepository('wms:Produto');
+
+            $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+
+            $paletes = array();
+            foreach ($produtos as $produto) {
+                $codProduto = $produto['codigo'];
+                $grade      = $produto['grade'];
+
+                $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false);
+                foreach ($tmpPaletes as $tmpPalete) {
+                    if ($tmpPalete['IND_IMPRESSO'] != 'S') {
+                        $tmp = array();
+                        $tmp['uma'] = $tmpPalete['UMA'];
+                        $tmp['unitizador'] = $tmpPalete['UNITIZADOR'];
+                        $tmp['qtd'] = $tmpPalete['QTD'];
+                        $tmp['produto'] = $tmpPalete['COD_PRODUTO'] . ' / ' . $tmpPalete['DSC_GRADE'] . ' - ' . $tmpPalete['DSC_PRODUTO'];
+                        $tmp['codProduto'] = $tmpPalete['COD_PRODUTO'];
+                        $tmp['dscGrade'] = $tmpPalete['DSC_GRADE'];
+                        $tmp['dscProduto'] = $tmpPalete['DSC_PRODUTO'];
+                        $tmp['idEndereco'] = 0;
+                        $tmp['endereco'] = '01.001.00.01';
+                        $tmp['motivoNaoLiberar'] = '';
+                        if ($tmpPalete['QTD_VOL_TOTAL'] > $tmpPalete['QTD_VOL_CONFERIDO']) {
+                            $tmp['motivoNaoLiberar'] = 'Aguardando conf. todos volumes';
+                        }
+
+                        $paletes[] = $tmp;
+                    }
+                }
+            }
+            $this->view->paletes = $paletes;
+        } catch(Exception $e) {
+            $this->addFlashMessage('error',$e->getMessage());
+        }
+
+
     }
 
     public function imprimirUmaAction(){
