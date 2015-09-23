@@ -407,6 +407,38 @@ class Mobile_EnderecamentoController extends Action
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo    = $this->em->getRepository('wms:Produto');
 
+            $paletesSelecionados = $this->_getParam('palete');
+
+            if ($this->_getParam('imprimir') != null) {
+                if (count($paletesSelecionados) >0) {
+                    $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
+                    $Uma->imprimirPaletes ($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            if ($this->_getParam('trocarNorma') != null) {
+                if (count($paletesSelecionados) >0) {
+                    foreach ($paletesSelecionados as $idPalete) {
+                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$idPalete));
+                        $produto = $paleteEn->getProdutos();
+                        $codProduto     = $produto[0]->getProduto()->getId();
+                        $grade          = $produto[0]->getProduto()->getGrade();
+                        $codRecebimento = $paleteEn->getRecebimento()->getId();
+                        if ($paleteEn->getImpresso() == 'N') {
+                            $paleteRepo->desfazerPalete($idPalete);
+                            $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO);
+                            $this->getEntityManager()->persist($paleteEn);
+                            $this->getEntityManager()->flush();
+                        }
+                        $paleteRepo->alterarNorma($codProduto,$grade,$codRecebimento,$idPalete);
+                    }
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
             $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
 
             $paletes = array();
@@ -450,6 +482,10 @@ class Mobile_EnderecamentoController extends Action
 
                     }
                 }
+            }
+
+            if (count($paletes) == 0) {
+                $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
             }
 
             $this->view->paletes = $paletes;
