@@ -96,7 +96,13 @@ class Recebimento extends Grid
                     'condition' => function ($row) {
                         return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR) && $row['idOrdemServicoColetor']);
                     }
+                ))->addAction(array(
+                    'label' => 'Parametros do Recebimento',
+                    'actionName' => 'parametros-ajax',
+                    'pkIndex' => 'id',
+                    'cssClass' => 'dialogAjax'
                 ))
+
                 ->addAction(array(
                     'label' => 'Visualizar Ordem de Serviço',
                     'title' => 'Ordens de Serviço do Recebimento',

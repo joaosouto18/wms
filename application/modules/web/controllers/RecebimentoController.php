@@ -1287,4 +1287,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $form;
     }
 
+    public function parametrosAjaxAction(){
+
+    }
+
 }
