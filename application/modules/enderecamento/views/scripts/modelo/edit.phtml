@@ -48,6 +48,7 @@
                                             <?php $i = 0; ?>
                                             <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
                                                 <tr class="gTResultSet">
+                                                    <td><?php echo $estruturaArmazenagem->getDescricao(); ?></td>
                                                     <?php foreach($this->populaEstruturaArmazenagens as $populaEstruturaArmazenagem) : ?>
                                                         <?php $i = 0; ?>
                                                         <?php if ($populaEstruturaArmazenagem->getTipoEstruturaArmazenagem()->getId() == $estruturaArmazenagem->getId()) : ?>
