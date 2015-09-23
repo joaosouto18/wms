@@ -448,7 +448,9 @@ class Mobile_EnderecamentoController extends Action
 
                 $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false);
                 foreach ($tmpPaletes as $tmpPalete) {
-                    if ($tmpPalete['IND_IMPRESSO'] != 'S') {
+                    if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
+                        ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
+                        ($tmpPalete['COD_SIGLA'] != Palete::STATUS_CANCELADO)) {
                         $tmp = array();
                         $tmp['uma'] = $tmpPalete['UMA'];
                         $tmp['unitizador'] = $tmpPalete['UNITIZADOR'];
@@ -466,13 +468,18 @@ class Mobile_EnderecamentoController extends Action
                         }
 
                         $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
-                        $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
-                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$idRecebimento,$larguraPalete);
-                        if ($sugestaoEndereco != null) {
-                            $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
-                            $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
-                            $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
-                            $this->getEntityManager()->flush();
+                        if ($paleteEn->getDepositoEndereco() == null) {
+                            $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
+                            $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$idRecebimento,$larguraPalete);
+                            if ($sugestaoEndereco != null) {
+                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
+                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+                                $this->getEntityManager()->flush();
+                            }
+                        } else {
+                            $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
+                            $tmp['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
                         }
 
                         if (($tmp['motivoNaoLiberar'] == '') && ($tmp['idEndereco'] == 0)) {
