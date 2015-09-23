@@ -128,9 +128,9 @@ class PaleteRepository extends EntityRepository
 
     }
 
-    public function getPaletes ($idRecebimento, $idProduto, $grade) {
+    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true) {
 
-        $this->gerarPaletes($idRecebimento,$idProduto,$grade);
+        $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
         $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
         return $paletes;
     }
@@ -449,7 +449,7 @@ class PaleteRepository extends EntityRepository
         return $qtd - $qtdTotalEnd;
     }
 
-    public function gerarPaletes ($idRecebimento, $idProduto, $grade)
+    public function gerarPaletes ($idRecebimento, $idProduto, $grade, $throwException = true)
     {
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
         $conferenciaRepo    = $this->getEntityManager()->getRepository('wms:Recebimento\Conferencia');
@@ -484,7 +484,9 @@ class PaleteRepository extends EntityRepository
         }
 
         if (count($qtdRecebida) <= 0) {
-            throw new Exception("O recebimento do produto $idProduto não possui unitizador ou ainda não foi conferido");
+            if ($throwException == true) {
+                throw new Exception("O recebimento do produto $idProduto não possui unitizador ou ainda não foi conferido");
+            }
         }
 
         foreach ($qtdEnderecada as $enderecado) {
@@ -1037,6 +1039,163 @@ class PaleteRepository extends EntityRepository
             ->distinct(true);
 
         return $query->getQuery()->getResult();
+    }
+
+    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete) {
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+        $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
+        $modeloEnderecamentoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo');
+
+        $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto, 'grade'=>$dscGrade));
+
+        $endAreaArmazenagem = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$dscGrade,true);
+        $endTipoEstrutura   = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($codProduto,$dscGrade,true);
+        $endTipoEndereco    = $produtoRepo->getSequenciaEndAutomaticoTpEndereco($codProduto,$dscGrade,true);
+
+        $codModelo = $this->getSystemParameterValue('MODELO_ENDERECAMENTO_PADRAO');
+        $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$codRecebimento));
+        $modeloEnderecamento = $recebimentoEn->getModeloEnderecamento();
+
+        if ($modeloEnderecamento != null) {
+            $codModelo= $modeloEnderecamento->getId();
+        }
+
+        $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+        if ($enderecoReferencia == null) {
+            $modeloEnderecamento = $modeloEnderecamentoRepo->findOneBy(array('id'=>$codModelo));
+            $enderecoReferencia = $modeloEnderecamento->getCodReferencia();
+        }
+
+
+        if ($enderecoReferencia != null) {
+            $ruaReferencia = $enderecoReferencia->getRua();
+            $predioReferencia = $enderecoReferencia->getPredio();
+            $nivelReferencia = $enderecoReferencia->getNivel();
+            $apartamentoReferencia = $enderecoReferencia->getApartamento();
+        } else {
+            return null;
+        }
+
+        if (count($endAreaArmazenagem) >0) {
+            $sqlArea = " INNER JOIN PRODUTO_END_AREA_ARMAZENAGEM AA
+                            ON AA.COD_PRODUTO = '$codProduto' AND AA.DSC_GRADE = '$dscGrade'
+                           AND AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
+        } else {
+            $sqlArea = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE , COD_AREA_ARMAZENAGEM
+                                      FROM MODELO_END_AREA_ARMAZ
+                                     WHERE COD_MODELO_ENDERECAMENTO = $codModelo) AA
+                                ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
+        }
+
+        if (count($endTipoEndereco)>0) {
+            $sqlTipoEndereco = " INNER JOIN PRODUTO_END_TIPO_ENDERECO TE
+                                    ON TE.COD_PRODUTO = '$codProduto' AND TE.DSC_GRADE = '$dscGrade'
+                                   AND TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO";
+        } else {
+            $sqlTipoEndereco = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE, COD_TIPO_ENDERECO
+                                      FROM MODELO_END_TIPO_ENDERECO
+                                     WHERE COD_MODELO_ENDERECAMENTO = $codModelo) TE
+                                ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
+        }
+
+        if (count($endTipoEstrutura)>0){
+            $sqlTipoEstrutura = " INNER JOIN PRODUTO_END_TIPO_EST_ARMAZ ET
+                                     ON ET.COD_PRODUTO = '$codProduto' AND ET.DSC_GRADE = '$dscGrade'
+                                    AND ET.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ";
+        } else{
+            $sqlTipoEstrutura = " INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE, COD_TIPO_EST_ARMAZ
+                                                FROM MODELO_END_EST_ARMAZ
+                                               WHERE COD_MODELO_ENDERECAMENTO = $codModelo) ET
+                                          ON ET.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ";
+        }
+
+        $SQL = " SELECT DE.COD_DEPOSITO_ENDERECO,
+                        DE.DSC_DEPOSITO_ENDERECO,
+                        ABS(DE.NUM_RUA - $ruaReferencia) as DIF_RUA,
+                        ABS(DE.NUM_PREDIO - $predioReferencia) as DIF_PREDIO,
+                        ABS(DE.NUM_NIVEL - $nivelReferencia) as DIF_NIVEL,
+                        ABS(DE.NUM_APARTAMENTO - $apartamentoReferencia) as DIF_APARTAMENTO
+                   FROM DEPOSITO_ENDERECO DE
+                  INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
+                     ON LONGARINA.NUM_PREDIO  = DE.NUM_PREDIO
+                    AND LONGARINA.NUM_NIVEL   = DE.NUM_NIVEL
+                    AND LONGARINA.NUM_RUA     = DE.NUM_RUA
+                  $sqlArea
+                  $sqlTipoEndereco
+                  $sqlTipoEstrutura
+                  WHERE DE.IND_ATIVO = 'S'
+                    AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
+                    AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
+                    AND DE.IND_DISPONIVEL = 'S'
+                    AND ROWNUM = 1
+               ORDER BY ET.NUM_PRIORIDADE, AA.NUM_PRIORIDADE, TE.NUM_PRIORIDADE, DIF_RUA,DIF_PREDIO,DIF_NIVEL,DIF_APARTAMENTO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($result)>0) {
+            return $result[0];
+        } else {
+            return null;
+        }
+    }
+
+    public function alterarNorma($codProduto, $grade, $idRecebimento, $idUma) {
+
+        $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+        $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
+
+        $result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade);
+        $idNorma = $result['idNorma'];
+
+        if ($idNorma == NULL) {
+            $this->addFlashMessage('error',"O Produto $codProduto, grade $grade não possuí norma de paletização");
+            return false;
+        }
+
+        /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimento $recebimentoEn */
+        $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento\VQtdRecebimento")->findOneBy(array('codRecebimento' => $idRecebimento, 'codProduto'=>$codProduto, 'grade'=>$grade));
+        $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento'=> $idRecebimento,'codProduto'=>$codProduto,'grade'=>$grade));
+
+        if (($recebimentoEn == NULL) && ($conferenciaEn == NULL)){
+            $this->addFlashMessage('error',"Nenhuma quantidade conferida para o produto $codProduto, grade $grade");
+            return false;
+        }
+
+        try {
+            if ($recebimentoEn == null) {
+                $idOs = $conferenciaRepo->getLastOsConferencia($idRecebimento,$codProduto,$grade);
+                $idNormaAntiga = 'Nenhuma Norma';
+                $qtdNormaAntiga = 0;
+            } else {
+                $normaAntigaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id'=>$recebimentoEn->getCodNormaPaletizacao()));
+                if ($normaAntigaEn == null) {
+                    $idNormaAntiga = "";
+                    $qtdNormaAntiga = "SEM NORMA ANTIGA";
+                } else {
+                    $idNormaAntiga = $normaAntigaEn->getId();
+                    $qtdNormaAntiga = $normaAntigaEn->getNumNorma();
+                }
+
+                $idOs = $recebimentoEn->getCodOs();
+            }
+
+            $recebimentoRepo->alteraNormaPaletizacaoRecebimento($idRecebimento,$codProduto,$grade,$idOs, $idNorma);
+
+            /** @var \Wms\Domain\Entity\Enderecamento\AndamentoRepository $andamentoRepo */
+            $andamentoRepo  = $this->_em->getRepository('wms:Enderecamento\Andamento');
+            $msg = "Norma de paletização trocada com sucesso para a da unidade " . $result['unidade'] ." (" . $result['unitizador'] . ")  | Norma: ". $idNormaAntiga . "(" .  $qtdNormaAntiga . ") -> " . $result['idNorma'] . "(" . $result['qtdNorma'] . ") ";
+            $andamentoRepo->save($msg, $idRecebimento, $codProduto, $grade);
+
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo  = $this->_em->getRepository('wms:Enderecamento\Palete');
+            $paleteRepo->deletaPaletesRecebidos($idRecebimento,$codProduto, $grade);
+            //$this->addFlashMessage('success',"Norma de paletização para o produto $codProduto, grade $grade alterada com sucesso neste recebimento");
+            return true;
+        } catch (\Exception $ex) {
+            $this->addFlashMessage('error',$ex->getMessage());
+            return false;
+        }
+
     }
 
 }

@@ -10,6 +10,54 @@ use
 class UMA extends Pdf
 {
 
+    public function imprimirPaletes($paletes, $modelo) {
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        $paleteRepository = $em->getRepository('wms:Enderecamento\Palete');
+        $embalagemRepo    = $em->getRepository("wms:Produto\Embalagem");
+        $volumeRepo       = $em->getRepository("wms:Produto\Volume");
+
+        $this->SetMargins(7, 7, 0);
+
+        foreach ($paletes as $codPalete){
+            $paleteEn = $paleteRepository->findOneBy(array('id'=>$codPalete));
+
+            $idRecebimento  = $paleteEn->getRecebimento()->getId();
+            $produtos = $paleteEn->getProdutos();
+            $produtoEn = $produtos[0]->getProduto();
+
+            $dadosPalete = array();
+            $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
+            $dadosPalete['idUma']    = $paleteEn->getId();
+            $dadosPalete['qtd']      = $produtos[0]->getQtd();
+
+            if (($produtos[0]->getCodProdutoEmbalagem() == NULL)) {
+                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $produtos[0]->getCodProdutoVolume()));
+            } else {
+                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $produtos[0]->getCodProdutoEmbalagem()));
+            }
+            if ($embalagemEn->getEndereco() != null) {
+                $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
+            }
+
+            $paletesArray = array(0=>$dadosPalete);
+
+            $param = array();
+            $param['idRecebimento'] = $idRecebimento;
+            $param['codProduto']    = $produtoEn->getId();
+            $param['grade']         = $produtoEn->getGrade();
+            $param['paletes']       = $paletesArray;
+            $param['dataValidade']  = null;
+
+            $this->layout($param['paletes'], $produtoEn,$modelo,$param);
+        }
+        $this->Output('UMA-'.$idRecebimento.'.pdf','D');
+
+    }
+
     public function imprimir(array $params = array(),$modelo)
     {
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -32,7 +80,7 @@ class UMA extends Pdf
         }
 
         $this->layout($params['paletes'], $produtoEn,$modelo,$params);
-        $this->Output('UMA-'.$idRecebimento.'-'.$codProduto.'.pdf','I');
+        $this->Output('UMA-'.$idRecebimento.'-'.$codProduto.'.pdf','D');
     }
 
     protected function layout($paletes,$produtoEn,$modelo,$params = null)

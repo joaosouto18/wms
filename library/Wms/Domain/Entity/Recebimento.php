@@ -102,7 +102,14 @@ class Recebimento
      * @OneToMany(targetEntity="Wms\Domain\Entity\Recebimento\Andamento", mappedBy="recebimento", cascade={"persist", "merge"})
      */
     protected $andamentos;
-    
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Enderecamento\Modelo")
+     * @JoinColumn(name="COD_MODELO_ENDERECAMENTO", referencedColumnName="COD_MODELO_ENDERECAMENTO")
+     */
+    protected $modeloEnderecamento;
+
+
     /**
      * lista de tipos os status
      * @var array
@@ -278,6 +285,22 @@ class Recebimento
     {
         $this->filial = $filial;
         return $this;
+    }
+
+    /**
+     * @param mixed $modeloEnderecamento
+     */
+    public function setModeloEnderecamento($modeloEnderecamento)
+    {
+        $this->modeloEnderecamento = $modeloEnderecamento;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getModeloEnderecamento()
+    {
+        return $this->modeloEnderecamento;
     }
 
 }

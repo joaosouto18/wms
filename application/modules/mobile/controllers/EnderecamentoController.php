@@ -398,6 +398,111 @@ class Mobile_EnderecamentoController extends Action
     public function listarPaletesAction(){
         $idRecebimento = $this->_getParam("id");
 
+        try {
+            $this->getEntityManager()->beginTransaction();
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo    = $this->em->getRepository('wms:Produto');
+
+            $paletesSelecionados = $this->_getParam('palete');
+
+            if ($this->_getParam('imprimir') != null) {
+                if (count($paletesSelecionados) >0) {
+                    $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
+                    $Uma->imprimirPaletes ($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            if ($this->_getParam('trocarNorma') != null) {
+                if (count($paletesSelecionados) >0) {
+                    foreach ($paletesSelecionados as $idPalete) {
+                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$idPalete));
+                        $produto = $paleteEn->getProdutos();
+                        $codProduto     = $produto[0]->getProduto()->getId();
+                        $grade          = $produto[0]->getProduto()->getGrade();
+                        $codRecebimento = $paleteEn->getRecebimento()->getId();
+                        if ($paleteEn->getImpresso() == 'N') {
+                            $paleteRepo->desfazerPalete($idPalete);
+                            $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO);
+                            $this->getEntityManager()->persist($paleteEn);
+                            $this->getEntityManager()->flush();
+                        }
+                        $paleteRepo->alterarNorma($codProduto,$grade,$codRecebimento,$idPalete);
+                    }
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+
+            $paletes = array();
+            foreach ($produtos as $produto) {
+                $codProduto = $produto['codigo'];
+                $grade      = $produto['grade'];
+
+                $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false);
+                foreach ($tmpPaletes as $tmpPalete) {
+                    if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
+                        ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
+                        ($tmpPalete['COD_SIGLA'] != Palete::STATUS_CANCELADO)) {
+                        $tmp = array();
+                        $tmp['uma'] = $tmpPalete['UMA'];
+                        $tmp['unitizador'] = $tmpPalete['UNITIZADOR'];
+                        $tmp['qtd'] = $tmpPalete['QTD'];
+                        $tmp['produto'] = $tmpPalete['COD_PRODUTO'] . ' / ' . $tmpPalete['DSC_GRADE'] . ' - ' . $tmpPalete['DSC_PRODUTO'];
+                        $tmp['codProduto'] = $tmpPalete['COD_PRODUTO'];
+                        $tmp['dscGrade'] = $tmpPalete['DSC_GRADE'];
+                        $tmp['dscProduto'] = $tmpPalete['DSC_PRODUTO'];
+                        $tmp['idEndereco'] = 0;
+                        $tmp['endereco'] = '';
+                        $tmp['motivoNaoLiberar'] = '';
+
+                        if ($tmpPalete['QTD_VOL_TOTAL'] > $tmpPalete['QTD_VOL_CONFERIDO']) {
+                            $tmp['motivoNaoLiberar'] = 'Aguardando conf. todos volumes';
+                        }
+
+                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
+                        if ($paleteEn->getDepositoEndereco() == null) {
+                            $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
+                            $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$idRecebimento,$larguraPalete);
+                            if ($sugestaoEndereco != null) {
+                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
+                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+                                $this->getEntityManager()->flush();
+                            }
+                        } else {
+                            $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
+                            $tmp['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
+                        }
+
+                        if (($tmp['motivoNaoLiberar'] == '') && ($tmp['idEndereco'] == 0)) {
+                            $tmp['motivoNaoLiberar'] = 'Sem Sugestão de Endereço';
+                        }
+                        $paletes[] = $tmp;
+
+                    }
+                }
+            }
+
+            if (count($paletes) == 0) {
+                $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
+            }
+
+            $this->view->paletes = $paletes;
+            $this->getEntityManager()->commit();
+        } catch(Exception $e) {
+            $this->getEntityManager()->rollback();
+            $this->addFlashMessage('error',$e->getMessage());
+        }
+
+
     }
 
     public function imprimirUmaAction(){

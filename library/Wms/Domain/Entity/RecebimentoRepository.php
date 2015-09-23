@@ -1296,4 +1296,24 @@ class RecebimentoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function insertModeloInRecebimento($params)
+    {
+        $idRecebimento = $params['id'];
+
+        /** @var \Wms\Domain\Entity\Enderecamento\ModeloRepository $modeloEnderecamentoRepo */
+        $modeloEnderecamentoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo');
+        $modeloEnderecamentoEn = $modeloEnderecamentoRepo->findAll();
+
+        $entity = $this->getEntityManager()->getReference('wms:Recebimento', $idRecebimento);
+
+        if ($params['recebimento']['recebimento'] == 'S' && isset($modeloEnderecamentoEn)) {
+            $entity->setModeloEnderecamento($modeloEnderecamentoEn[0]);
+        } else {
+            $entity->setModeloEnderecamento(null);
+        }
+        $this->getEntityManager()->persist($entity);
+        $this->getEntityManager()->flush();
+        return $entity;
+    }
 }
