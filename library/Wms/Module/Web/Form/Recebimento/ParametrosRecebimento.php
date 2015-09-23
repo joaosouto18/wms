@@ -14,14 +14,14 @@ class ParametrosRecebimento extends Form
 
         $form = new SubForm;
         $form->addElement('select', 'recebimento', array(
-            'label' => 'Modelo de Endereçamento',
+            'label' => 'Possui Modelo de Endereçamento?',
             'multiOptions' => array(
                 'S' => 'SIM',
                 'N' => 'NÃO'
             )))
             ->addElement('submit', 'salvar', array(
                 'class' => 'btn',
-                'style' => 'display:block',
+                'decorators' => array('ViewHelper'),
                 'label' => 'Salvar',
             ));
         $form->addDisplayGroup(array('recebimento', 'salvar'), 'parametroRecebimento');
