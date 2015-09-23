@@ -1287,7 +1287,29 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $form;
     }
 
-    public function parametrosAjaxAction(){
+    public function parametrosAjaxAction()
+    {
+        $this->view->form = $form = new RecebimentoForm\ParametrosRecebimento();
+    }
+
+    public function salvaParametrosAjaxAction()
+    {
+        $params = $this->_getAllParams();
+        $form = new RecebimentoForm\ParametrosRecebimento();
+        try {
+            $idRecebimento = $this->_getParam('id',0);
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+                /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+                $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
+                $recebimentoRepo->insertModeloInRecebimento($params);
+
+                $this->addFlashMessage('success', 'Modelo de Endereçamento alterado com sucesso.');
+                $this->_redirect('/recebimento');
+            }
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
 
     }
 
