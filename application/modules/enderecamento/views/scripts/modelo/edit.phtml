@@ -5,7 +5,11 @@
             <label for="descricao">Descricao</label>
             <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
             <label for="endereco"><?php echo utf8_encode('Endereço de Referência'); ?></label>
-            <input type="text" id="endereco" name="endereco">
+            <?php if (!empty($this->modelo->getCodReferencia()->getDescricao())) : ?>
+                <input type="text" id="endereco" name="endereco" value="<?php echo $this->modelo->getCodReferencia()->getDescricao(); ?>">
+            <?php else : ?>
+                <input type="text" id="endereco" name="endereco">
+            <?php endif; ?>
         </div>
 
         <table>
