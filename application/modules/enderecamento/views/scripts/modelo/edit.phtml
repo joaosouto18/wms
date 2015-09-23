@@ -1,79 +1,97 @@
 <form id="modelo-separacao-form" class="saveForm" method="post" action="" novalidate="novalidate">
     <fieldset id="fieldset-modelo">
-        <legend>Prioridades</legend>
+        <legend><?php echo utf8_encode('Endereçamento Automático') ?></legend>
         <div>
             <label for="descricao">Descricao</label>
             <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
-            <label for="endereco">Endereco</label>
+            <label for="endereco"><?php echo utf8_encode('Endereço de Referência'); ?></label>
             <input type="text" id="endereco" name="endereco">
         </div>
 
-        <div class="fieldsets">
-            <div class="fieldset-left">
-                <fieldset>
-                    <legend>Area de Armazenagem</legend>
-                    <div>
-                        <?php $i = 0; ?>
-                        <?php foreach ($this->areaArmazenagens as $key => $areaArmazenagem) : ?>
-                            <?php echo $areaArmazenagem->getDescricao(); ?>
-                            <div class="fieldset-right">
-                                <?php foreach ($this->populaAreaArmazenagens as $populaAraArmazenagem) : ?>
-                                    <?php $i = 0; ?>
-                                    <?php if ($populaAraArmazenagem->getAreaArmazenagem()->getId() == $areaArmazenagem->getId()) : ?>
-                                        <input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" value="<?php echo $populaAraArmazenagem->getPrioridade(); ?>">
-                                        <?php $i = 1; break; ?>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                                <?php if ($i == 0) : ?>
-                                    <input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]">
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </fieldset>
+        <table>
+            <tr>
+                <td>
+                    <fieldset id="enderecamento">
+                        <legend><?php echo utf8_encode('Sequencia de Endereçamento') ?></legend>
+                        <table style="width: 100%">
+                            <tr>
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                    <fieldset id="fieldset-areaArmazenagem">
+                                        <legend>Area de Armazenagem</legend>
+                                        <table class="gTable">
+                                            <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->areaArmazenagens as $key => $areaArmazenagem) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $areaArmazenagem->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaAreaArmazenagens as $populaAraArmazenagem) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaAraArmazenagem->getAreaArmazenagem()->getId() == $areaArmazenagem->getId()) : ?>
+                                                            <td><input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" value="<?php echo $populaAraArmazenagem->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
 
-                <fieldset>
-                    <legend>Estrutura de Armazenagem</legend>
-                    <?php $i = 0; ?>
-                    <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
-                        <?php echo $estruturaArmazenagem->getDescricao(); ?>
-                        <div class="fieldset-right">
-                            <?php foreach($this->populaEstruturaArmazenagens as $populaEstruturaArmazenagem) : ?>
-                                <?php $i = 0; ?>
-                                <?php if ($populaEstruturaArmazenagem->getTipoEstruturaArmazenagem()->getId() == $estruturaArmazenagem->getId()) : ?>
-                                    <input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" value="<?php echo $populaEstruturaArmazenagem->getPrioridade(); ?>">
-                                    <?php $i = 1; break; ?>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                            <?php if ($i == 0) : ?>
-                                <input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]">
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </fieldset>
-            </div>
-
-            <div class="fieldset-right">
-                <fieldset>
-                    <legend>Tipos de Enderecos</legend>
-                    <?php $i = 0; ?>
-                    <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
-                        <?php echo $tipoEndereco->getDescricao(); ?>
-                        <div class="fieldset-right">
-                            <?php foreach ($this->populaTipoEndereco as $populaTipoEnd) : ?>
-                                <?php $i = 0; ?>
-                                <?php if ($populaTipoEnd->getTipoEndereco()->getId() == $tipoEndereco->getId()) : ?>
-                                    <input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" value="<?php echo $populaTipoEnd->getPrioridade(); ?>">
-                                    <?php $i = 1; break; ?>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                            <?php if ($i == 0) : ?>
-                                <input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]">
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </fieldset>
-            </div>
-        </div>
+                                <td style="vertical-align: top; width: 30%" >
+                                    <fieldset id="fieldset-tipoEndereco">
+                                        <legend>Estrutura de Armazenagem</legend>
+                                        <table class="gTable">
+                                            <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
+                                                <tr class="gTResultSet">
+                                                    <?php foreach($this->populaEstruturaArmazenagens as $populaEstruturaArmazenagem) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaEstruturaArmazenagem->getTipoEstruturaArmazenagem()->getId() == $estruturaArmazenagem->getId()) : ?>
+                                                            <td><input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" value="<?php echo $populaEstruturaArmazenagem->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+                                <td style="vertical-align: top; width: 30%">
+                                    <fieldset id="fieldset-tipoEndereco">
+                                        <legend>Tipos de Enderecos</legend>
+                                        <table class="gTable">
+                                            <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $tipoEndereco->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaTipoEndereco as $populaTipoEnd) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaTipoEnd->getTipoEndereco()->getId() == $tipoEndereco->getId()) : ?>
+                                                            <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" value="<?php echo $populaTipoEnd->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </td>
+            </tr>
+        </table>
     </fieldset>
 </form>
