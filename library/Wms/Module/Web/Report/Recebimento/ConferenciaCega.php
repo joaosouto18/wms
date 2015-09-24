@@ -60,7 +60,7 @@ class ConferenciaCega extends Report {
         $pdf->addLabel(1, 2, '', 0, 0, 'L');
         $pdf->addLabel(2, 23, 'Quantidade', 'B', 0, 'C');
         $pdf->addLabel(1, 2, '', 0, 0, 'L');
-        $pdf->addLabel(3, 100, utf8_decode('Observação'), 'B', 1, 'L');
+        $pdf->addLabel(3, 100, utf8_decode('Data de Validade'), 'B', 1, 'L');
 
         $produtoGradeAnterior = '';
         $dscUnitizadorAnterior = '';

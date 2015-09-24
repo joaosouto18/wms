@@ -29,7 +29,7 @@ class RecebimentoReentregaNotaRepository extends EntityRepository
             $recebimentoReentregaNotaEn->setNotaFiscalSaida($notaFiscalEn);
             $this->_em->persist($recebimentoReentregaNotaEn);
 
-            $andamentoNFRepo->save($notaFiscalEn, RecebimentoReentrega::RECEBIMENTO_INICIADO);
+            $andamentoNFRepo->save($notaFiscalEn, RecebimentoReentrega::RECEBIMENTO_INICIADO,false, null, null, $recebimentoReentregaEn);
 
         }
 

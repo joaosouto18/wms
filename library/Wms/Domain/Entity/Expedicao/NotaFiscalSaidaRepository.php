@@ -74,7 +74,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
                AND CONF.COD_RECEBIMENTO_REENTREGA = NFPROD.COD_RECEBIMENTO_REENTREGA
               LEFT JOIN PRODUTO P ON P.COD_PRODUTO = NFPROD.COD_PRODUTO AND P.DSC_GRADE = NFPROD.DSC_GRADE
              WHERE NFPROD.COD_RECEBIMENTO_REENTREGA = $idRecebimentoReentrega
-               AND CONF.QTD_CONFERIDA <> NFPROD.QTD_NOTA
+               AND NVL(CONF.QTD_CONFERIDA,0) <> NVL(NFPROD.QTD_NOTA,0)
         ";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);

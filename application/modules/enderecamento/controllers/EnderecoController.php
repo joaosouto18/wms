@@ -93,7 +93,7 @@ class Enderecamento_EnderecoController extends Action
                 $tipoEstruturaArmazenamento = $enderecoRepo->getTipoArmazenamentoByEndereco($idEndereco);
                 if ($tipoEstruturaArmazenamento[0]['COD_TIPO_EST_ARMAZ'] == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
                     foreach ($paletes as $palete) {
-                        $paleteRepo->alocaEnderecoPaleteByBlocado($palete, $idEndereco);
+                        $paleteRepo->alocaEnderecoPalete($palete, $idEndereco);
                     }
 
                 } elseif ($idPalete != 'on') {

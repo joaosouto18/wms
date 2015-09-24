@@ -264,46 +264,46 @@ class ExpedicaoRepository extends EntityRepository
 
         $expedicoes = implode(',', $expedicoes);
 
-        $sql = "SELECT * FROM (
-                SELECT DISTINCT
-                       PEDIDO.COD_PRODUTO AS Codigo,
-                       PEDIDO.DSC_GRADE AS Grade,
-                       PROD.DSC_PRODUTO as Produto,
-                       NVL(E.QTD,0) AS Estoque,
-                       (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
-       FROM (SELECT SUM(PP.QUANTIDADE - PP.QTD_CORTADA) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
-               FROM PEDIDO P
-              INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-              INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-              WHERE P.CENTRAL_ENTREGA = $central
-              GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
-  LEFT JOIN (SELECT PROD.COD_PRODUTO,
-                    PROD.DSC_GRADE,
-                    NVL(QTD.QTD,0) AS QTD
-              FROM (SELECT DISTINCT E.COD_PRODUTO, E.DSC_GRADE, NVL(PV.COD_PRODUTO_VOLUME,0) AS VOLUME
-                      FROM ESTOQUE E
-                      LEFT JOIN PRODUTO_VOLUME PV ON E.COD_PRODUTO = PV.COD_PRODUTO AND E.DSC_GRADE = PV.DSC_GRADE) PROD
-                      LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
-                                        NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
-                                   FROM ESTOQUE E
-                                  GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) QTD
-                        ON QTD.COD_PRODUTO = PROD.COD_PRODUTO
-                       AND QTD.DSC_GRADE = PROD.DSC_GRADE
-                       AND QTD.VOLUME = PROD.VOLUME) E ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE
-  LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE
-               FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)
-                       FROM RESERVA_ESTOQUE RE
-                       INNER JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                      INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                      WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
-                      GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)) MAX_RES
-              GROUP BY COD_PRODUTO, DSC_GRADE) REP
-         ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
-  LEFT JOIN PRODUTO PROD
-         ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
-      WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
-        AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido <0) PROD
-      ORDER BY Codigo, Grade, Produto
+        $sql = "
+         SELECT *
+           FROM (SELECT DISTINCT
+                        PEDIDO.COD_PRODUTO AS Codigo,
+                        PEDIDO.DSC_GRADE AS Grade,
+                        PROD.DSC_PRODUTO as Produto,
+                        NVL(E.QTD,0) AS Estoque,
+                        (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
+                   FROM (SELECT SUM(PP.QUANTIDADE - PP.QTD_CORTADA) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
+                           FROM PEDIDO P
+                          INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                          INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                          WHERE P.CENTRAL_ENTREGA = $central
+                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
+              LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
+                           FROM PRODUTO P
+                           LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+                           LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
+                                             NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
+                                        FROM ESTOQUE E
+                                       GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
+                                  ON E.COD_PRODUTO = P.COD_PRODUTO
+                                 AND E.DSC_GRADE = P.DSC_GRADE
+                                 AND E.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE) E
+                     ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE
+              LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE
+                           FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)
+                                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                                  INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                  WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
+                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)) MAX_RES
+                          GROUP BY COD_PRODUTO, DSC_GRADE) REP
+                     ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
+              LEFT JOIN PRODUTO PROD
+                     ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
+                  WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
+                    AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido <0) PROD
+                  ORDER BY Codigo, Grade, Produto
         ";
 
         return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
