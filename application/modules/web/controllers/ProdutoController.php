@@ -169,6 +169,10 @@ class Web_ProdutoController extends Crud {
                 }
 
                 $validade = strtoupper($params['produto']['validade']);
+                if ($validade != 'S') {
+                    $validade = 'N';
+                }
+
                 $entity->setValidade($validade);
                 if ($validade == 'N' || $params['produto']['diasVidaUtil'] == null || empty($params['produto']['diasVidaUtil'])) {
                     $entity->setDiasVidaUtil(0);
