@@ -1289,24 +1289,39 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     public function parametrosAjaxAction()
     {
-        $this->view->form = $form = new RecebimentoForm\ParametrosRecebimento();
+        $form = new RecebimentoForm\ParametrosRecebimento();
+        $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
+        $idRecebimento = $this->_getParam('id');
+        $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$idRecebimento));
+        $form->setDefaultsFromEntity($recebimentoEn);
+        $this->view->form = $form;
     }
 
     public function salvaParametrosAjaxAction()
     {
         $params = $this->_getAllParams();
         $form = new RecebimentoForm\ParametrosRecebimento();
+
+        $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
         try {
-            $idRecebimento = $this->_getParam('id',0);
+            $idRecebimento = $this->_getParam('id');
+            $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$idRecebimento));
 
             if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-                /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-                $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
-                $recebimentoRepo->insertModeloInRecebimento($params);
+
+                $idModelo = $params['recebimento']['modelo'];
+                $modeloEn = null;
+                if ($idModelo != "") {
+                    $modeloEn = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo')->findOneBy(array('id'=>$idModelo));
+                }
+                $recebimentoEn->setModeloEnderecamento($modeloEn);
+                $this->getEntityManager()->persist($recebimentoEn);
+                $this->getEntityManager()->flush();
 
                 $this->addFlashMessage('success', 'Modelo de Endereçamento alterado com sucesso.');
                 $this->_redirect('/recebimento');
             }
+        $this->view->form = $form;
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }

@@ -46,4 +46,13 @@ class ModeloRepository extends EntityRepository
         return $source->getQuery()->getArrayResult();
     }
 
+    public function getIdValue() {
+        $valores = array();
+
+        foreach ($this->findAll() as $entity)
+            $valores[$entity->getId()] = $entity->getDescricao();
+
+        return $valores;
+    }
+
 }
