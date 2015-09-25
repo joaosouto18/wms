@@ -89,7 +89,7 @@ class Expedicao_EtiquetaController  extends Action
 
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
-                $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
+                $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao("L");
                 $mapa->imprimir($idExpedicao);
             } else {
                 $this->addFlashMessage('info', 'Todos os mapas ja foram impressos');
