@@ -219,9 +219,6 @@ class OndaRessuprimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
 
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-        $etiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
         $arraySaidaPicking = array();
         $arraySaidaPulmao = array();
 
@@ -231,66 +228,62 @@ class OndaRessuprimentoRepository extends EntityRepository
             $grade = $produto['DSC_GRADE'];
             $qtd = $produto['QTD']* -1;
 
-            $produtosCortados = $etiquetaRepo->getProdutosCortadosByExpedicao($codExpedicao, $codProduto, $grade);
+            $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+            if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+                $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
+                if (!isset($embalagensEn[0])) {
+                    throw new \Exception("Produto ".$codProduto." Grade ".$grade." não possui embalagem cadastrada!");
+                }
 
-            if ($produtosCortados[0]['QTD_CORTADA'] <= 0) {
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-                if ($produtoEn->getTipoComercializacao()->getId() == 1) {
-                    $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
-                    if (!isset($embalagensEn[0])) {
-                        throw new \Exception("Produto ".$codProduto." Grade ".$grade." não possui embalagem cadastrada!");
-                    }
+                $embalagem = $embalagensEn[0];
 
-                    $embalagem = $embalagensEn[0];
+                $idPicking = null;
+                if ($embalagem->getEndereco() != null) {
+                    $idPicking = $embalagem->getEndereco()->getId();
+                }
+                $saidaProduto = array(
+                    'idPicking' => $idPicking,
+                    'idExpedicao' => $codExpedicao,
+                    'produtos' => array(array('codProdutoEmbalagem'=>$embalagem->getId(),
+                        'codProdutoVolume'=>null,
+                        'codProduto'=>$codProduto,
+                        'grade'=>$grade,
+                        'qtd'=>$qtd)));
 
+                if ($idPicking == null) {
+                    $arraySaidaPulmao[] = $saidaProduto;
+                } else {
+                    $arraySaidaPicking[] = $saidaProduto;
+                }
+            } else {
+                $normas = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getNormasByProduto($codProduto,$grade);
+                foreach ($normas as $norma) {
+                    $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($norma->getId(),$codProduto,$grade);
+                    $produtosArray = array();
                     $idPicking = null;
-                    if ($embalagem->getEndereco() != null) {
-                        $idPicking = $embalagem->getEndereco()->getId();
+                    foreach ($volumes as $volume) {
+                        $produtoArray = array(
+                            'codProdutoEmbalagem' => null,
+                            'codProdutoVolume' => $volume->getId(),
+                            'codProduto' =>$codProduto,
+                            'grade' => $grade,
+                            'qtd' => $qtd
+                        );
+                        $produtosArray[] = $produtoArray;
+                        if ($volume->getEndereco() != null) {
+                            $idPicking = $volume->getEndereco()->getId();
+                        }
                     }
                     $saidaProduto = array(
                         'idPicking' => $idPicking,
                         'idExpedicao' => $codExpedicao,
-                        'produtos' => array(array('codProdutoEmbalagem'=>$embalagem->getId(),
-                            'codProdutoVolume'=>null,
-                            'codProduto'=>$codProduto,
-                            'grade'=>$grade,
-                            'qtd'=>$qtd)));
+                        'produtos' => $produtosArray
+                    );
 
-                    if ($idPicking == null) {
-                        $arraySaidaPulmao[] = $saidaProduto;
-                    } else {
+                    if ($idPicking != null) {
                         $arraySaidaPicking[] = $saidaProduto;
-                    }
-                } else {
-                    $normas = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getNormasByProduto($codProduto,$grade);
-                    foreach ($normas as $norma) {
-                        $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($norma->getId(),$codProduto,$grade);
-                        $produtosArray = array();
-                        $idPicking = null;
-                        foreach ($volumes as $volume) {
-                            $produtoArray = array(
-                                'codProdutoEmbalagem' => null,
-                                'codProdutoVolume' => $volume->getId(),
-                                'codProduto' =>$codProduto,
-                                'grade' => $grade,
-                                'qtd' => $qtd
-                            );
-                            $produtosArray[] = $produtoArray;
-                            if ($volume->getEndereco() != null) {
-                                $idPicking = $volume->getEndereco()->getId();
-                            }
-                        }
-                        $saidaProduto = array(
-                            'idPicking' => $idPicking,
-                            'idExpedicao' => $codExpedicao,
-                            'produtos' => $produtosArray
-                        );
-
-                        if ($idPicking != null) {
-                            $arraySaidaPicking[] = $saidaProduto;
-                        } else {
-                            $arraySaidaPulmao[] = $saidaProduto;
-                        }
+                    } else {
+                        $arraySaidaPulmao[] = $saidaProduto;
                     }
                 }
             }

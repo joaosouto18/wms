@@ -1652,5 +1652,4 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $result;
     }
 
-
 }
