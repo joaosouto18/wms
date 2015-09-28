@@ -69,7 +69,7 @@ class ExpedicaoRepository extends EntityRepository
     {
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
-                         SUM (PP.QUANTIDADE) as QTD
+                         SUM (NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA)) as QTD
                     FROM PEDIDO P
                     LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                     LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
@@ -77,6 +77,7 @@ class ExpedicaoRepository extends EntityRepository
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND P.CENTRAL_ENTREGA = $filialExterno
+                          AND (SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA)) > 0
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -86,7 +87,7 @@ class ExpedicaoRepository extends EntityRepository
     {
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
-                         SUM (PP.QUANTIDADE) as QTD,
+                         SUM (NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA)) as QTD,
                          E.COD_EXPEDICAO
                     FROM PEDIDO P
                     LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
@@ -96,6 +97,7 @@ class ExpedicaoRepository extends EntityRepository
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND P.CENTRAL_ENTREGA = $filialExterno
+                          AND SUM (NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA)) as QTD
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE,E.COD_EXPEDICAO";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
