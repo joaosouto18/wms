@@ -1,6 +1,7 @@
 {
     "require": {
-        "zendframework/zendframework1": "1.12.3"
+        "zendframework/zendframework1": "1.12.3",
+        "phpdocumentor/phpdocumentor": "2.*"
     },
     "config": {
         "vendor-dir" : "library"

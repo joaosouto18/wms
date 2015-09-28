@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>API Documentation</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+    <link href="../css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/prism.css" rel="stylesheet" media="all"/>
+    <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+    <!--[if lt IE 9]>
+    <script src="../js/html5.js"></script>
+    <![endif]-->
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/ui/1.10.4/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.smooth-scroll.js"></script>
+    <script src="../js/prism.min.js"></script>
+    <!-- TODO: Add http://jscrollpane.kelvinluck.com/ to style the scrollbars for browsers not using webkit-->
+    <script type="text/javascript">
+    function loadExternalCodeSnippets() {
+        Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+            var src = pre.getAttribute('data-src');
+            var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+            var language = 'php';
+
+            var code = document.createElement('code');
+            code.className = 'language-' + language;
+
+            pre.textContent = '';
+
+            code.textContent = 'Loading…';
+
+            pre.appendChild(code);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open('GET', src, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if (xhr.status < 400 && xhr.responseText) {
+                        code.textContent = xhr.responseText;
+
+                        Prism.highlightElement(code);
+                    }
+                    else if (xhr.status >= 400) {
+                        code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+                    }
+                    else {
+                        code.textContent = '✖ Error: File does not exist or is empty';
+                    }
+                }
+            };
+
+            xhr.send(null);
+        });
+    }
+
+    $(document).ready(function(){
+        loadExternalCodeSnippets();
+    });
+    $('#source-view').on('shown', function () {
+        loadExternalCodeSnippets();
+    })
+</script>
+
+    <link rel="shortcut icon" href="../images/favicon.ico"/>
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="../images/apple-touch-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="../images/apple-touch-icon-114x114.png"/>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <i class="icon-ellipsis-vertical"></i>
+            </a>
+            <a class="brand" href="../index.html">API Documentation</a>
+
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                                        <li class="dropdown" id="charts-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Charts <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../graphs/class.html">
+                                    <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" id="reports-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Reports <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../reports/errors.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">169</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/markers.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/deprecated.html">
+                                                                                                            <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div class="go_to_top">-->
+    <!--<a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>-->
+    <!--</div>-->
+</div>
+
+<div id="___" class="container-fluid">
+        <section class="row-fluid">
+        <div class="span2 sidebar">
+                                <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-130992902"></a>
+                                <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
+            </div>
+            <div id="namespace-130992902" class="accordion-body collapse in">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/carga.html">carga</a></li>
+                                                    <li class="class"><a href="../classes/classe.html">classe</a></li>
+                                                    <li class="class"><a href="../classes/classes.html">classes</a></li>
+                                                    <li class="class"><a href="../classes/cliente.html">cliente</a></li>
+                                                    <li class="class"><a href="../classes/fabricante.html">fabricante</a></li>
+                                                    <li class="class"><a href="../classes/fabricantes.html">fabricantes</a></li>
+                                                    <li class="class"><a href="../classes/fornecedor.html">fornecedor</a></li>
+                                                    <li class="class"><a href="../classes/fornecedores.html">fornecedores</a></li>
+                                                    <li class="class"><a href="../classes/grade.html">grade</a></li>
+                                                    <li class="class"><a href="../classes/grades.html">grades</a></li>
+                                                    <li class="class"><a href="../classes/Item.html">Item</a></li>
+                                                    <li class="class"><a href="../classes/Item.html">Item</a></li>
+                                                    <li class="class"><a href="../classes/Itens.html">Itens</a></li>
+                                                    <li class="class"><a href="../classes/itensNf.html">itensNf</a></li>
+                                                    <li class="class"><a href="../classes/itinerario.html">itinerario</a></li>
+                                                    <li class="class"><a href="../classes/Nota.html">Nota</a></li>
+                                                    <li class="class"><a href="../classes/notaFiscal.html">notaFiscal</a></li>
+                                                    <li class="class"><a href="../classes/notaFiscal.html">notaFiscal</a></li>
+                                                    <li class="class"><a href="../classes/notaFiscalProduto.html">notaFiscalProduto</a></li>
+                                                    <li class="class"><a href="../classes/NotasFiscais.html">NotasFiscais</a></li>
+                                                    <li class="class"><a href="../classes/pedido.html">pedido</a></li>
+                                                    <li class="class"><a href="../classes/pedidoFaturado.html">pedidoFaturado</a></li>
+                                                    <li class="class"><a href="../classes/pedidos.html">pedidos</a></li>
+                                                    <li class="class"><a href="../classes/produto.html">produto</a></li>
+                                                    <li class="class"><a href="../classes/produto.html">produto</a></li>
+                                                    <li class="class"><a href="../classes/produtos.html">produtos</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Expedicao.html">Wms_WebService_Expedicao</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Fabricante.html">Wms_WebService_Fabricante</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Filial.html">Wms_WebService_Filial</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Fornecedor.html">Wms_WebService_Fornecedor</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_NotaFiscal.html">Wms_WebService_NotaFiscal</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Produto.html">Wms_WebService_Produto</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_ProdutoClasse.html">Wms_WebService_ProdutoClasse</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Recebimento.html">Wms_WebService_Recebimento</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_TipoPedidoExpedicao.html">Wms_WebService_TipoPedidoExpedicao</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Transportador.html">Wms_WebService_Transportador</a></li>
+                                                    <li class="class"><a href="../classes/Wms_WebService_Veiculo.html">Wms_WebService_Veiculo</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </section>
+    <section class="row-fluid">
+        <div class="span10 offset2">
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <nav>
+                                                <a href="../namespaces/default.html">\</a> <i class="icon-level-up"></i>
+                                            </nav>
+                    <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
+
+                    <h1><small>\</small>Wms_WebService_Produto</h1>
+                    <p><em></em></p>
+                    
+                    
+                                        
+                    <section id="summary">
+                        <h2>Summary</h2>
+                        <section class="row-fluid heading">
+                            <section class="span4">
+                                <a href="#methods">Methods</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#properties">Properties</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#constants">Constants</a>
+                            </section>
+                        </section>
+                        <section class="row-fluid public">
+                            <section class="span4">
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_buscar" class="">buscar()</a><br />
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_salvar" class="">salvar()</a><br />
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_excluir" class="">excluir()</a><br />
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_listar" class="">listar()</a><br />
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_salvarCompleto" class="">salvarCompleto()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No public properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No constants found</em>
+                                                            </section>
+                        </section>
+                        <section class="row-fluid protected">
+                            <section class="span4">
+                                                                    <em>No protected methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No protected properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                        <section class="row-fluid private">
+                            <section class="span4">
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_removeCaracteres" class="">removeCaracteres()</a><br />
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_getFabricante" class="">getFabricante()</a><br />
+                                                                    <a href="../classes/Wms_WebService_Produto.html#method_getClasse" class="">getClasse()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No private properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                    </section>
+                </div>
+                <aside class="span4 detailsbar">
+                                        
+                    
+                    <dl>
+                        <dt>File</dt>
+                            <dd><a href="../files/Produto.html"><div class="path-wrapper">Produto.php</div></a></dd>
+                                                <dt>Package</dt>
+                            <dd><div class="namespace-wrapper">Default</div></dd>
+                                                <dt>Class hierarchy</dt>
+                            <dd class="hierarchy">
+                                                                                                                                                                                                                                                                                                
+                                        <div class="namespace-wrapper">\Wms_WebService</div>
+                                                                                                    <div class="namespace-wrapper">\Wms_WebService_Produto</div>
+                            </dd>
+
+                        
+                        
+                        
+                        
+                                                                        </dl>
+                    <h2>Tags</h2>
+                    <table class="table table-condensed">
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
+                                        </table>
+                </aside>
+            </div>
+
+                        
+                        
+                                    <a id="methods" name="methods"></a>
+            <div class="row-fluid">
+                <div class="span8 content class"><h2>Methods</h2></div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_buscar" name="method_buscar" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">buscar()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">buscar(string  <span class="argument">$idProduto</span>, string  <span class="argument">$grade</span>) : \produto|\Exception</pre>
+                <p><em>Retorna um Produto específico no WMS pelo seu ID</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idProduto </td>
+                                <td><p>ID do Produto</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$grade </td>
+                                <td><p>Grade do Produto</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    <a href="../classes/produto.html">\produto</a>|\Exception
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_salvar" name="method_salvar" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">salvar()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">salvar(string  <span class="argument">$idProduto</span>, string  <span class="argument">$descricao</span>, string  <span class="argument">$grade</span>, string  <span class="argument">$idFabricante</span>, string  <span class="argument">$tipo</span>, string  <span class="argument">$idClasse</span>) : boolean</pre>
+                <p><em>Salva um Produto no WMS. Se o Produto não existe, insere, senão, altera</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idProduto </td>
+                                <td><p>ID do produto</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$descricao </td>
+                                <td><p>Descrição</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$grade </td>
+                                <td><p>Grade</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idFabricante </td>
+                                <td><p>ID do fabricante</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$tipo </td>
+                                <td><p>1 =&gt; Unitário, 2 =&gt; Composto, 3 =&gt; Kit | Hoje não está sendo utilizado</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idClasse </td>
+                                <td><p>ID da classe do produto</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>Se o produto foi inserido com sucesso ou não</p>
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_excluir" name="method_excluir" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">excluir()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">excluir(string  <span class="argument">$idProduto</span>, string  <span class="argument">$grade</span>) : boolean|\Exception</pre>
+                <p><em>Exclui um Produto do WMS</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idProduto </td>
+                                <td><p>ID do produto</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$grade </td>
+                                <td><p>Grade</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    boolean|\Exception
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_listar" name="method_listar" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">listar()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">listar() : \produtos|\Exception</pre>
+                <p><em>Lista todos os Produtos cadastrados no sistema</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    <a href="../classes/produtos.html">\produtos</a>|\Exception
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_salvarCompleto" name="method_salvarCompleto" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">salvarCompleto()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">salvarCompleto(string  <span class="argument">$idProduto</span>, string  <span class="argument">$descricao</span>, integer  <span class="argument">$idFabricante</span>, integer  <span class="argument">$tipo</span>, integer  <span class="argument">$idClasse</span>, array  <span class="argument">$grades</span>, array  <span class="argument">$classes</span>, array  <span class="argument">$fabricante</span>) : array</pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idProduto </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>string</td>
+                                <td>$descricao </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>integer</td>
+                                <td>$idFabricante </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>integer</td>
+                                <td>$tipo </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>integer</td>
+                                <td>$idClasse </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>array</td>
+                                <td>$grades </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>array</td>
+                                <td>$classes </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td>array</td>
+                                <td>$fabricante </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_removeCaracteres" name="method_removeCaracteres" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">removeCaracteres()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">removeCaracteres(  <span class="argument">$value</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$value </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getFabricante" name="method_getFabricante" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">getFabricante()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getFabricante(string  <span class="argument">$idFabricante</span>) : boolean|\Wms\Domain\Entity\Fabricante</pre>
+                <p><em>Checa se um fabricante existe</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idFabricante </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    boolean|\Wms\Domain\Entity\Fabricante
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getClasse" name="method_getClasse" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">getClasse()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getClasse(string  <span class="argument">$idClasse</span>) : boolean|\Wms\Domain\Entity\Produto\Classe</pre>
+                <p><em>Checa se uma classe existe</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$idClasse </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    boolean|\Wms\Domain\Entity\Produto\Classe
+                                    				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    </div>
+    </section>
+
+    <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="source-view-label">Produto.php</h3>
+        </div>
+        <div class="modal-body">
+            <pre data-src="../files/Produto.php.txt" class="language-php line-numbers"></pre>
+        </div>
+    </div>
+
+    <footer class="row-fluid">
+        <section class="span10 offset2">
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <section class="row-fluid footer-sections">
+                        <section class="span4">
+                                                        <h1><i class="icon-code"></i></h1>
+                            <div>
+                                <ul>
+                                                                    </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-bar-chart"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../graphs/class.html">Class Hierarchy Diagram</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-pushpin"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../reports/errors.html">Errors</a></li>
+                                    <li><a href="../reports/markers.html">Markers</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <hr />
+                    Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
+                    on September 28th, 2015 at 16:19.
+                </section>
+            </section>
+        </section>
+    </footer>
+</div>
+
+</body>
+</html>
