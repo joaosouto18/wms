@@ -633,12 +633,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $produtoEntity  = $pedidoProduto->getProduto();
                 $quantidade     = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
 
+                $pedidoEntity->setIndEtiquetaMapaGerado("S");
+                $this->getEntityManager()->persist($pedidoEntity);
+
                 if ($quantidade <= 0) {
                     continue;
                 }
-
-                $pedidoEntity->setIndEtiquetaMapaGerado("S");
-                $this->getEntityManager()->persist($pedidoEntity);
 
                 if ($produtoEntity->getVolumes()->count() > 0) {
                     $arrayVolumes = $produtoEntity->getVolumes()->toArray();
