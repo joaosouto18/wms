@@ -4,271 +4,111 @@ use Wms\Domain\Entity\Expedicao,
     Core\Util\Produto as ProdutoUtil,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 
-/**
- * Classe Cliente
- * @ignore
- */
-class cliente
-{
-    /**
-     * @var string
-     * @internal
-     */
+class cliente {
+    /** @var string */
     public $codCliente;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $nome;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $cpf_cnpj;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $tipoPessoa;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $logradouro;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $numero;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $bairro;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $cidade;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $uf;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $complemento;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $referencia;
 }
 
-/**
- * Classe Itinerario
- */
-class itinerario
-{
-    /**
-     * @var string
-     * @internal
-     */
+class itinerario {
+    /** @var string */
     public $idItinerario;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $nomeItinerario;
 }
 
-/**
- * Classe Produto
- */
-class produto
-{
-    /**
-     * @var string
-     * @internal
-     */
+class produto {
+    /** @var string */
     public $codProduto;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $grade;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $quantidade;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $quantidadeAtendida;
 }
 
-/**
- * Classe Pedido
- */
-class pedido
-{
-    /**
-     * @var string
-     * @internal
-     */
+class pedido {
+    /** @var string */
     public $codPedido;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $linhaEntrega;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var itinerario */
     public $itinerario;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var cliente */
     public $cliente;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var produto[] */
     public $produtos = array();
 }
 
-/**
- * Classe Pedidos
- */
 class pedidos {
-    /**
-     * @var pedidos[]
-     * @internal
-     */
+    /** @var pedido[] */
     public $pedidos = array();
 }
 
-/**
- * Class Carga
- */
-class carga
-{
-    /**
-     * @var string
-     * @internal
-     */
+class carga {
+    /** @var string */
     public $codCarga;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $tipo;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $situacao;
-    /**
-     * @var pedidos[]
-     * @internal
-     */
+    /** @var pedido[] */
     public $pedidos = array();
 }
 
-/**
- * Class pedidoFaturado
- */
-class pedidoFaturado
-{
-    /**
-     * @var string
-     * @internal
-     */
+class pedidoFaturado {
+    /** @var string */
     public $codPedido;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $tipoPedido;
 }
 
-/**
- * Class notaFiscal
- */
-class notaFiscal
-{
-    /**
-     * @var pedidoFaturado[]
-     * @internal
-     */
+class notaFiscal {
+    /** @var pedidoFaturado[] */
     public $pedidos;
-    /**
-     * @var integer
-     * @internal
-     */
+    /** @var integer */
     public $numeroNf;
-    /**
-     * @var string
-     * @internal
-     */
+        /** @var string */
     public $serieNf;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $cnpjEmitente;
-    /**
-     * @var double
-     * @internal
-     */
+    /** @var double */
     public $valorVenda;
-    /**
-     * @var itens[]
-     * @internal
-     */
+    /** @var notaFiscalProduto[] */
     public $itens;
 }
 
-/**
- * Class notaFiscalProduto
- */
-class notaFiscalProduto
-{
-    /**
-     * @var string
-     * @internal
-     */
+class notaFiscalProduto {
+    /** @var string */
     public $codProduto;
-    /**
-     * @var string
-     * @internal
-     */
+    /** @var string */
     public $grade;
-    /**
-     * @var integer
-     * @internal
-     */
+    /** @var integer */
     public $qtd;
-    /**
-     * @var double
-     * @internal
-     */
+    /** @var double */
     public $valorVenda;
 }
 
-
-/**
- * Class notaFiscalProduto
- * @package Webservices
- * @subpackage Expedicao
- * @version 3.5.0
- */
 class Wms_WebService_Expedicao extends Wms_WebService
 {
 
@@ -370,14 +210,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      *  Se existir retorna código da expedição senão Insere na tabela expedição
      *  Insere na tabela de carga com o numero da expedição
      *
-     * @example example1.php Counting in action.
-     * @example http://example.com/example2.phps Counting in action by a 3rd party.
-     * @example "My Own Example.php" My counting.
-     * @link https://www.dropbox.com/s/xztchchb29dvxa4/integra%C3%A7%C3%A3o%20NF.jpg?dl=0
-     * @param mixed[] $cargas informacoes das cargas com os pedidos
-     * @package Webservice\Expedicao
-     * @api
-     *
+     * @param array cargas informacoes das cargas com os pedidos
      * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviar($cargas)
@@ -816,10 +649,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     }
 
-    /**
-     * @param $cliente
-     * @return object|\Wms\Domain\Entity\Pessoa\Papel\Cliente
-     */
     protected function findClienteByCodigoExterno ($cliente) {
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
         $ClienteRepo    = $this->_em->getRepository('wms:Pessoa\Papel\Cliente');
