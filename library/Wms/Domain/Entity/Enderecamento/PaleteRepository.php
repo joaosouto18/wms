@@ -963,6 +963,10 @@ class PaleteRepository extends EntityRepository
         return $query->getQuery()->getArrayResult();
     }
 
+    public function validaTroca ($recebimento, $codProduto, $grade) {
+        return true;
+    }
+
     public function realizaTroca($recebimento, array $umas)
     {
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
