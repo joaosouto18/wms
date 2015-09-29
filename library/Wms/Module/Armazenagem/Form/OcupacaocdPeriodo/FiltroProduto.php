@@ -18,8 +18,8 @@ class FiltroProduto extends Form
             'label' => 'Rua Final',
         ))
         ->addElement('select', 'tipoRelatorio', array(
-            'mostrarSelecione' => false,
-//            'title' => 'Tipo Relatório',
+            'mostrarSelecione' => true,
+            'label' => 'Tipo Relatorio',
             'multiOptions' => array(
                 'options' => array(
                     'C' => 'Classe',
@@ -28,11 +28,12 @@ class FiltroProduto extends Form
                 )
             ),
         ))
-        ->addElement('button', 'btnBuscar', array(
+        ->addElement('submit', 'buscar', array(
             'label' => 'Buscar',
+            'class' => 'btn',
+            'decorators' => array('ViewHelper'),
         ));
-
-        $this->addDisplayGroup(array('ruaInicial', 'ruaFinal', 'tipoRelatorio', 'btnBuscar'), 'identificacao', array('legend' => 'Busca'));
+        $this->addDisplayGroup(array('ruaInicial', 'ruaFinal', 'tipoRelatorio', 'buscar'), 'identificacao', array('legend' => 'Busca'));
     }
 
 }
