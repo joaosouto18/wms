@@ -7,7 +7,6 @@ use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
-use Wms\Module\Web\Grid\Recebimento;
 
 class PaleteRepository extends EntityRepository
 {
@@ -964,43 +963,85 @@ class PaleteRepository extends EntityRepository
     }
 
     public function validaTroca ($recebimento, $codProduto, $grade) {
-        return true;
+        $params = array('id'=>$recebimento,
+                        'codigo'=>$codProduto,
+                        'grade'=>$grade);
+
+        $paletes = $this->getPaletesByProdutoAndGrade($params);
+        foreach ($paletes as $palete){
+            if ($palete['impresso'] == 'S') {
+                $msg = "Existem paletes já impressos para este produto no novo recebimento";
+                return array('result'=>false,
+                             'msg'=>$msg);
+            }
+            if (($palete['codStatus'] == Palete::STATUS_ENDERECADO) || ($palete['codStatus'] == Palete::STATUS_EM_ENDERECAMENTO)) {
+                $msg = "Existem paletes em endereçamento ou endereçados para este produto no novo recebimento";
+                return array('result'=>false,
+                             'msg'=>$msg);
+            }
+        }
+
+        return array('result'=>true,
+                     'msg'=>'');
     }
 
-    public function realizaTroca($recebimento, array $umas)
+    public function realizaTroca($novoRecebimento, array $umas, $recebimentoAntigo, $codProduto, $grade)
     {
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-        $usuarioEn = $usuarioRepo->find($idUsuario);
+        $this->getEntityManager()->beginTransaction();
+        try {
 
-        foreach($umas as $uma)
-        {
-            $entity = $this->find($uma);
-            $entRecebimento = $this->_em->getReference('wms:Recebimento', $recebimento);
-            $entity->setStatus($entity->getStatus());
-            $entity->setRecebimento($entRecebimento);
+            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+            $usuarioEn = $usuarioRepo->find($idUsuario);
 
-            if ($entRecebimento->getStatus()->getId() == RecebimentoEntity::STATUS_FINALIZADO) {
-                /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-                $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+            //DELETA OS PALETES DESNECESSARIOS NO NOVO RECEBIMENTO
+            $this->deletaPaletesEmRecebimento($novoRecebimento,$codProduto,$grade);
+            $this->deletaPaletesRecebidos($novoRecebimento,$codProduto,$grade);
 
-                $reservaEstoqueEnderecamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
-                $reservaEstoque = $reservaEstoqueEnderecamentoRepo->findOneBy(array('palete'=> $uma));
+            //TROCA OS PALETES DO RECEBIMENTO AUTAL PARA O NOVO RECEBIMENTO
+            foreach($umas as $uma)
+            {
+                //TROCO A UMA PARA O NOVO RECEBIMENTO
+                $entity = $this->find($uma);
+                $entRecebimento = $this->_em->getReference('wms:Recebimento', $novoRecebimento);
+                $entity->setStatus($entity->getStatus());
+                $entity->setRecebimento($entRecebimento);
 
-                $reservaEstoqueEn = $reservaEstoque->getReservaEstoque();
-                if ($reservaEstoqueEn->getAtendida() == 'N') {
-                    $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,"E",$uma,$usuarioEn);
+                $produtos = $entity->getProdutos();
+                $produtoEn = $produtos[0]->getProduto();
+
+                //EFETIVO A RESERVA DE ESTOQUE CASO NECESSARIO
+                if ($entRecebimento->getStatus()->getId() == RecebimentoEntity::STATUS_FINALIZADO) {
+                    /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+                    $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+                    $reservaEstoqueEnderecamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
+                    $reservaEstoque = $reservaEstoqueEnderecamentoRepo->findOneBy(array('palete'=> $uma));
+
+                    $reservaEstoqueEn = $reservaEstoque->getReservaEstoque();
+                    if ($reservaEstoqueEn->getAtendida() == 'N') {
+                        $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,"E",$uma,$usuarioEn);
+                    }
                 }
 
+                $this->_em->persist($entity);
+
+                //GRAVO ANDAMENTO FALANDO QUE REALIZOU A TROCA DO RECEBIMENTO
+                $andamento = new Andamento();
+                    $andamento->setDataAndamento(new \DateTime());
+                    $andamento->setProduto($produtoEn);
+                    $andamento->setUsuario($usuarioEn);
+                    $andamento->setRecebimento($entRecebimento);
+                    $andamento->setDscObservacao("UMA " . $uma . " trocada do recebimento " . $recebimentoAntigo . " para o recebimento " . $novoRecebimento);
+                $this->getEntityManager()->persist($andamento);
             }
 
-            $this->_em->persist($entity);
-        }
-        try {
             $this->_em->flush();
+            $this->getEntityManager()->commit();
             return true;
         } catch(Exception $e) {
+            $this->getEntityManager()->rollback();
             throw new $e->getMessage();
         }
     }
@@ -1008,7 +1049,7 @@ class PaleteRepository extends EntityRepository
     public function getPaletesByProdutoAndGrade($params)
     {
         $query = $this->getEntityManager()->createQueryBuilder()
-            ->select("pa.id, u.descricao unitizador, pp.qtd, sigla.sigla status, de.descricao endereco, pa.impresso")
+            ->select("pa.id, u.descricao unitizador, pp.qtd, sigla.sigla status, de.descricao endereco, pa.impresso, p.codStatus")
             ->from("wms:Enderecamento\Palete", "pa")
             ->innerJoin('pa.unitizador', 'u')
             ->innerJoin('pa.recebimento', 'receb')
@@ -1017,9 +1058,21 @@ class PaleteRepository extends EntityRepository
             ->leftJoin('pa.depositoEndereco', 'de')
             ->setParameter('recebimento', $params['id'])
             ->setParameter('produto', $params['codigo'])
+            ->setParameter('grade', $params['grade'])
             ->andWhere('pp.codProduto = :produto')
+            ->andWhere('pp.grade = :grade')
             ->andWhere('pa.recebimento = :recebimento')
             ->distinct(true);
+
+        if (isset($params['idStatus']) && (!is_null($params['idStatus']))){
+            $query->setParameter('idStatus',$params['idStatus'])
+                  ->andWhere('p.codStatus = :idStatus');
+        }
+
+        if (isset($params['impresso']) && (!is_null($params['impresso']))){
+            $query->setParameter('indImpresso',$params['impresso'])
+                ->andWhere('p.impresso = :indImpresso');
+        }
 
         return $query->getQuery()->getResult();
     }

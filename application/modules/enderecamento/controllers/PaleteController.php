@@ -302,17 +302,21 @@ class Enderecamento_PaleteController extends Action
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
         $existeRecebimento = $recebimentoRepo->find($novoRecebimento);
 
-        $codProduto = $params['codigo'];
-        $grade      = $params['grade'];
+        $idRecebimentoAntigo = $params['id'];
+        $codProduto          = $params['codigo'];
+        $grade               = $params['grade'];
 
         if ($existeRecebimento == null) {
             return 'Recebimento inexistente!';
         }
 
         if ($paleteRepo->validaTroca($novoRecebimento,$codProduto,$grade) == true) {
-            if ($paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'])) {
+            $result = $paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'], $idRecebimentoAntigo, $codProduto,$grade);
+            if ($result['result'] == true) {
                 $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
                 $this->addFlashMessage('success', 'Troca realizada com sucesso');
+            } else {
+                $this->addFlashMessage('error', $result['msg']);
             }
         }
 
