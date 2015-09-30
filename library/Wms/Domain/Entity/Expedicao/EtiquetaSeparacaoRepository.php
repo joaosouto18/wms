@@ -439,6 +439,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $enEtiquetaSeparacao = new EtiquetaSeparacao();
         $enEtiquetaSeparacao->setStatus($statusEntity);
+        $enEtiquetaSeparacao->setDataGeracao(new \DateTime());
 
         if ( !empty($dadosEtiqueta['codEtiquetaMae']) ){
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMae $EtiquetaMaeRepo */
@@ -1102,7 +1103,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        if(count($result) >0) {
+        if(count($result) > 0) {
             $mapaSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao")->find($result[0]['COD_MAPA_SEPARACAO']);
         } else {
             $mapaSeparacao = new MapaSeparacao();
