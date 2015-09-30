@@ -356,8 +356,24 @@ class Mobile_ExpedicaoController extends Action
         $etiquetaRepo  = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $etiqueta = $etiquetaRepo->getEtiquetaByExpedicaoAndId($codigoBarras);
         if (count($etiqueta) == 0) {
+
+
             $msg = 'Etiqueta '.$codigoBarras.' não encontrada';
             $this->gravaAndamentoExpedicao($msg,$idExpedicao);
+
+            $this->getSystemParameterValue('SENHA_FINALIZAR_EXPEDICAO');
+            $this->createXml('error', $msg, "/mobile/expedicao/bloquear-etiqueta-inexistente-ajax/idExpedicao/$idExpedicao");
+
+
+
+
+
+
+
+
+
+
+
             if ($this->bloquearOs=='S') {
                 $this->createXml('error', 'Etiqueta '.$codigoBarras.' não encontrada');
             } else {
@@ -1033,6 +1049,25 @@ class Mobile_ExpedicaoController extends Action
         $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
         $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil('EQP.CARREGAMENTO');
         $this->view->idExpedicao    = $idExpedicao;
+    }
+
+    public function bloquearEtiquetaInexistenteAjaxAction()
+    {
+        $this->view->form = $form = new \Wms\Module\Mobile\Form\BloquearEtiqueta();
+
+        $values = $form->getParams();
+
+        if ($values) {
+            $params = $this->_getAllParams();
+            if ($this->getSystemParameterValue('SENHA_FINALIZAR_EXPEDICAO') == $params['senha']) {
+                $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $params['idExpedicao']));
+            } else {
+                $this->_helper->messenger('error', 'Senha Incorreta!');
+                $this->redirect('bloquear-etiqueta-inexistente-ajax', 'expedicao','mobile', array('idExpedicao' => $params['idExpedicao']));
+            }
+
+        }
+
     }
 
 }
