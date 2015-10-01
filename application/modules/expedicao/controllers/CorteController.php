@@ -47,7 +47,7 @@ class Expedicao_CorteController  extends Action
                 $EtiquetaRepo->cortar($etiquetaEntity);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao);
+                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao, false, true, $codBarra);
                 $this->addFlashMessage('success', 'Etiqueta cortada com sucesso');
 
             }else {

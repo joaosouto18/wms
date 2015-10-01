@@ -146,7 +146,7 @@ class EtiquetaSeparacao extends Pdf
                 $em->persist($etiquetaEntity);
 
                 $andamentoRepo  = $em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Reimpressão da etiqueta:'.$etiqueta['codBarras'], $etiqueta['codExpedicao']);
+                $andamentoRepo->save('Reimpressão da etiqueta:'.$etiqueta['codBarras'], $etiqueta['codExpedicao'], false, true,$etiqueta['codBarras']);
 
             } catch(Exception $e) {
                 echo $e->getMessage();

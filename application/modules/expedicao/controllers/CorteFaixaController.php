@@ -34,7 +34,7 @@ class Expedicao_CorteFaixaController  extends Action
                             if ($etiquetaInicial == "") $etiquetaInicial = $etiquetaEn->getId();
                             $etiquetaFinal = $etiquetaEn->getId();
                             $expedicaoId = $etiquetaEn->getPedido()->getCarga()->getExpedicao()->getId();
-                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId);
+                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId, false, true, $etiquetaEn->getId());
                         }
                         $this->addFlashMessage('success',"Etiquetas cortadas com sucesso");
                         $this->redirect('index','corte-faixa','expedicao');

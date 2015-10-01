@@ -103,6 +103,9 @@ class Expedicao_EtiquetaController  extends Action
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
                 $mapa->imprimir($idExpedicao);
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+                $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+                $andamentoRepo->save('Mapas Impressos', $idExpedicao);
             } else {
                 $this->addFlashMessage('info', 'Todos os mapas ja foram impressos');
                 $this->_redirect('/expedicao');
@@ -210,9 +213,9 @@ class Expedicao_EtiquetaController  extends Action
                 $Etiqueta->reimprimir($etiquetaEntity, $motivo, $modelo);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao);
+                $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao, false, true, $codBarra);
 
-            }else {
+            } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
                 $this->_redirect('/expedicao/etiqueta/reimprimir/id/'.$idExpedicao);
             }
@@ -267,7 +270,7 @@ class Expedicao_EtiquetaController  extends Action
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-            $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao);
+            $andamentoRepo->save('Reimpressão do Mapa:'.$codBarra, $idExpedicao, false, true, $codBarra);
         }
     }
 
