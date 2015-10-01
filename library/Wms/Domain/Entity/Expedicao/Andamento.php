@@ -60,6 +60,12 @@ class Andamento
     protected $codBarras;
 
     /**
+     * @Column(name="COD_BARRAS_PRODUTO", type="string")
+     * @var string
+     */
+    protected $codBarrasProduto;
+
+    /**
      * @param \Wms\Domain\Entity\Expedicao\datetime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
@@ -151,6 +157,22 @@ class Andamento
     public function setCodBarras($codBarras)
     {
         $this->codBarras = $codBarras;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCodBarrasProduto()
+    {
+        return $this->codBarrasProduto;
+    }
+
+    /**
+     * @param string $codBarrasProduto
+     */
+    public function setCodBarrasProduto($codBarrasProduto)
+    {
+        $this->codBarrasProduto = $codBarrasProduto;
     }
 
 }

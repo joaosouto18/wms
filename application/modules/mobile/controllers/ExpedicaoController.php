@@ -640,10 +640,21 @@ class Mobile_ExpedicaoController extends Action
         }
     }
 
-    protected function gravaAndamentoExpedicao ($motivo, $idExpedicao, $codigoBarras = null){
+    protected function gravaAndamentoExpedicao ($motivo, $idExpedicao, $codigoBarras = null)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $etiquetaEn = $EtiquetaRepo->findOneBy(array('id' => $codigoBarras));
+
+        if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
+            $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
+        } else {
+            $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
         $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        $andamentoRepo->save($motivo, $idExpedicao, null, null, $codigoBarras);
+        $andamentoRepo->save($motivo, $idExpedicao, false, true, $codigoBarras, $codBarrasProdutos);
     }
 
     protected function desbloqueioOs($idExpedicao, $motivo)

@@ -145,8 +145,14 @@ class EtiquetaSeparacao extends Pdf
                 $etiquetaEntity->setReimpressao($motivo);
                 $em->persist($etiquetaEntity);
 
+                if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
+                } else {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoVolume()->getCodigoBarras();
+                }
+
                 $andamentoRepo  = $em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Reimpressão da etiqueta:'.$etiqueta['codBarras'], $etiqueta['codExpedicao'], false, true,$etiqueta['codBarras']);
+                $andamentoRepo->save('Reimpressão da etiqueta:'.$etiqueta['codBarras'], $etiqueta['codExpedicao'], false, true,$etiqueta['codBarras'], $codBarrasProdutos);
 
             } catch(Exception $e) {
                 echo $e->getMessage();

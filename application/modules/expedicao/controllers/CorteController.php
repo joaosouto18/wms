@@ -45,9 +45,16 @@ class Expedicao_CorteController  extends Action
                     $this->_redirect('/expedicao');
                 }
                 $EtiquetaRepo->cortar($etiquetaEntity);
+
+                if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
+                } else {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoVolume()->getCodigoBarras();
+                }
+
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao, false, true, $codBarra);
+                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                 $this->addFlashMessage('success', 'Etiqueta cortada com sucesso');
 
             }else {

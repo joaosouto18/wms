@@ -211,10 +211,15 @@ class Expedicao_EtiquetaController  extends Action
                     $this->_redirect('/expedicao');
                 }
                 $Etiqueta->reimprimir($etiquetaEntity, $motivo, $modelo);
+
+                if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
+                } else {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoVolume()->getCodigoBarras();
+                }
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao, false, true, $codBarra);
-
+                $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
             } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
                 $this->_redirect('/expedicao/etiqueta/reimprimir/id/'.$idExpedicao);
@@ -263,7 +268,7 @@ class Expedicao_EtiquetaController  extends Action
             }
             $mapaSeparacaoEntity = $mapaRepo->findOneBy(array('id' => $codBarra));
             if ($mapaSeparacaoEntity == null ) {
-                $this->addFlashMessage('error', "Etiqueta $codBarra não encontrada");
+                $this->addFlashMessage('error', "Mapa $codBarra não encontrado");
                 $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
             }
             $mapa->imprimir($idExpedicao, 523, $codBarra);
