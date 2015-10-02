@@ -204,9 +204,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
      * @param Itens  $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
+     * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
     {
         try{
             $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -234,7 +235,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
+            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
                 return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -252,9 +253,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
+     * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -267,7 +269,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao);
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

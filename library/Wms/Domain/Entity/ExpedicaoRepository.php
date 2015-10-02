@@ -1590,85 +1590,83 @@ class ExpedicaoRepository extends EntityRepository
         $dataFim = $params['dataFim'];
         $statusCancelado = \Wms\Domain\Entity\Expedicao::STATUS_CANCELADO;
 
-        $sql = "SELECT E.COD_EXPEDICAO as \"COD.EXPEDICAO\",
-                       E.DSC_PLACA_EXPEDICAO \"PLACA EXPEDICAO\",
-                       TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY HH24:MI:SS') \"DTH. INICIO EXPEDICAO\",
-                       TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI:SS') \"DTH. FINAL EXPEDICAO\",
-                       S.DSC_SIGLA \"STATUS EXPEDICAO\",
-                       C.COD_CARGA_EXTERNO as \"CARGA\",
-                       C.CENTRAL_ENTREGA as \"CENTRAL ENTREGA CARGA\",
-                       C.DSC_PLACA_CARGA \"PLACA CARGA\",
-                       (SELECT COUNT (PP.COD_PEDIDO_PRODUTO) FROM PEDIDO PED
-                           INNER JOIN ETIQUETA_SEPARACAO ETI ON PED.COD_PEDIDO = ETI.COD_PEDIDO WHERE PED.COD_CARGA = C.COD_CARGA) \"QTD. ETIQUETAS CARGA\",
-                       P.COD_PEDIDO \"PEDIDO\",
-                       S2.DSC_SIGLA AS \"TIPO PEDIDO\",
-                       I.DSC_ITINERARIO \"ITINERARIO\",
-                       P.DSC_LINHA_ENTREGA \"LINHA DE ENTREGA\",
-                       P.CENTRAL_ENTREGA as \"CENTRAL ENTREGA PEDIDO\",
-                       P.PONTO_TRANSBORDO as \"PONTO DE TRANSBORDO PEDIDO\",
-                       PP.COD_PRODUTO \"COD. PRODUTO\",
-                       PP.DSC_GRADE \"GRADE\",
-                       PROD.DSC_PRODUTO \"PRODUTO\",
-                       F.NOM_FABRICANTE \"FABRICANTE\",
-                       LS.DSC_LINHA_SEPARACAO \"LINHA SEPARACAO\",
-                       TO_CHAR(ES.DTH_CONFERENCIA,'DD/MM/YYYY HH24:MI:SS') \"DTH CONFERENCIA ETIQUETA\",
-                       ES.COD_ETIQUETA_SEPARACAO \"ETIQUETA SEPARACAO\",
-                       SES.DSC_SIGLA \"STATUS ETIQUETA\",
-                       NVL(PDL.NUM_PESO, PV.NUM_PESO) \"PESO\",
-                       NVL(PDL.NUM_LARGURA, PV.NUM_LARGURA) \"LARGURA\",
-                       NVL(PDL.NUM_ALTURA, PV.NUM_ALTURA) \"ALTURA\",
-                       NVL(PDL.NUM_PROFUNDIDADE, PV.NUM_PROFUNDIDADE) \"PROFUNDIDADE\",
-                       NVL(PDL.NUM_CUBAGEM, PV.NUM_CUBAGEM) \"CUBAGEM\",
-                       NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) \"EMBALAGEM/VOLUME\",
-					   NVL(DE1.DSC_DEPOSITO_ENDERECO, DE2.DSC_DEPOSITO_ENDERECO) \"END.PICKING\",
-                       OS.COD_OS \"OS\",
-                       CONFERENTE.NOM_PESSOA \"CONFERENTE\",
-                       CASE WHEN OS.COD_FORMA_CONFERENCIA = 'C' THEN 'COLETOR'
-                            ELSE 'MANUAL'
-                       END AS \"TIPO CONFERENCIA\",
-                       ES.COD_OS_TRANSBORDO \"OS TRANSBORDO\",
-                       CONFERENTE_TRANSBORDO.NOM_PESSOA \"CONFERENTE TRANSBORDO\",
-                       CLIENTE.NOM_PESSOA \"CLIENTE\",
-                       CLIENTE.DSC_ENDERECO \"ENDERECO CLIENTE\",
-                       CLIENTE.NOM_LOCALIDADE \"CIDADE CLIENTE\",
-                       CLIENTE.DSC_SIGLA \"ESTADO CLIENTE\",
-                       CLIENTE.NOM_BAIRRO \"NOME BAIRRO\"
-                 FROM EXPEDICAO E
-                INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                INNER JOIN SIGLA S ON E.COD_STATUS = S.COD_SIGLA
-                INNER JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA
-                INNER JOIN SIGLA S2 ON S2.COD_SIGLA = P.COD_TIPO_PEDIDO
-                INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
-                INNER JOIN PEDIDO_PRODUTO PP ON P.COD_PEDIDO = PP.COD_PEDIDO
-                 LEFT JOIN PRODUTO PROD ON PP.COD_PRODUTO = PROD.COD_PRODUTO AND PP.DSC_GRADE  = PROD.DSC_GRADE
-                 LEFT JOIN FABRICANTE F ON F.COD_FABRICANTE = PROD.COD_FABRICANTE
-                 LEFT JOIN LINHA_SEPARACAO LS ON PROD.COD_LINHA_SEPARACAO = LS.COD_LINHA_SEPARACAO
-                 LEFT JOIN ETIQUETA_SEPARACAO ES ON PP.COD_PEDIDO = ES.COD_PEDIDO AND PP.COD_PRODUTO = ES.COD_PRODUTO
-                 LEFT JOIN SIGLA SES ON SES.COD_SIGLA = ES.COD_STATUS
-                 LEFT JOIN PRODUTO_VOLUME PV ON ES.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
-                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
-				 LEFT JOIN DEPOSITO_ENDERECO DE1 ON DE1.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
-				 LEFT JOIN DEPOSITO_ENDERECO DE2 ON DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                 LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
-                 LEFT JOIN ORDEM_SERVICO OS ON ES.COD_OS = OS.COD_OS
-                 LEFT JOIN ORDEM_SERVICO OS2 ON ES.COD_OS_TRANSBORDO = OS2.COD_OS
-                 LEFT JOIN (SELECT CONF.COD_CONFERENTE, PE.NOM_PESSOA
-                              FROM CONFERENTE CONF
-                             INNER JOIN PESSOA PE ON CONF.COD_CONFERENTE = PE.COD_PESSOA) CONFERENTE ON OS.COD_PESSOA = CONFERENTE.COD_CONFERENTE
-                LEFT JOIN (SELECT CONF2.COD_CONFERENTE, PE2.NOM_PESSOA
-                             FROM CONFERENTE CONF2
-                            INNER JOIN PESSOA PE2 ON CONF2.COD_CONFERENTE = PE2.COD_PESSOA) CONFERENTE_TRANSBORDO ON OS2.COD_PESSOA = CONFERENTE_TRANSBORDO.COD_CONFERENTE
-                LEFT JOIN (SELECT CL.COD_PESSOA,
-                                  PE.NOM_PESSOA,
-                                  PENDERECO.DSC_ENDERECO,
-                                  PENDERECO.NOM_LOCALIDADE,
-                                  S.DSC_SIGLA,
-                                  PENDERECO.NOM_BAIRRO
-                             FROM CLIENTE CL
-                            INNER JOIN PESSOA PE ON CL.COD_PESSOA = PE.COD_PESSOA
-                            INNER JOIN PESSOA_ENDERECO PENDERECO ON PE.COD_PESSOA = PENDERECO.COD_PESSOA
-                            INNER JOIN SIGLA S ON PENDERECO.COD_UF = S.COD_SIGLA) CLIENTE
-                  ON P.COD_PESSOA = CLIENTE.COD_PESSOA
+        $sql = "  SELECT E.COD_EXPEDICAO as \"COD.EXPEDICAO\",
+                         E.DSC_PLACA_EXPEDICAO \"PLACA EXPEDICAO\",
+                         TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY HH24:MI:SS') \"DTH. INICIO EXPEDICAO\",
+                         TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI:SS') \"DTH. FINAL EXPEDICAO\",
+                         S.DSC_SIGLA \"STATUS EXPEDICAO\",
+                         C.COD_CARGA_EXTERNO as \"CARGA\",
+                         C.CENTRAL_ENTREGA as \"CENTRAL ENTREGA CARGA\",
+                         C.DSC_PLACA_CARGA \"PLACA CARGA\",
+                         (SELECT COUNT (PP.COD_PEDIDO_PRODUTO) FROM PEDIDO PED
+                             INNER JOIN ETIQUETA_SEPARACAO ETI ON PED.COD_PEDIDO = ETI.COD_PEDIDO WHERE PED.COD_CARGA = C.COD_CARGA) \"QTD. ETIQUETAS CARGA\",
+                         P.COD_PEDIDO \"PEDIDO\",
+                         S2.DSC_SIGLA AS \"TIPO PEDIDO\",
+                         I.DSC_ITINERARIO \"ITINERARIO\",
+                         P.DSC_LINHA_ENTREGA \"LINHA DE ENTREGA\",
+                         P.CENTRAL_ENTREGA as \"CENTRAL ENTREGA PEDIDO\",
+                         P.PONTO_TRANSBORDO as \"PONTO DE TRANSBORDO PEDIDO\",
+                         PP.COD_PRODUTO \"COD. PRODUTO\",
+                         PP.DSC_GRADE \"GRADE\",
+                         PROD.DSC_PRODUTO \"PRODUTO\",
+                         F.NOM_FABRICANTE \"FABRICANTE\",
+                         LS.DSC_LINHA_SEPARACAO \"LINHA SEPARACAO\",
+                         TO_CHAR(ES.DTH_CONFERENCIA,'DD/MM/YYYY HH24:MI:SS') \"DTH CONFERENCIA ETIQUETA\",
+                         ES.COD_ETIQUETA_SEPARACAO \"ETIQUETA SEPARACAO\",
+                         SES.DSC_SIGLA \"STATUS ETIQUETA\",
+                         NVL(PDL.NUM_PESO, PV.NUM_PESO) \"PESO\",
+                         NVL(PDL.NUM_LARGURA, PV.NUM_LARGURA) \"LARGURA\",
+                         NVL(PDL.NUM_ALTURA, PV.NUM_ALTURA) \"ALTURA\",
+                         NVL(PDL.NUM_PROFUNDIDADE, PV.NUM_PROFUNDIDADE) \"PROFUNDIDADE\",
+                         NVL(PDL.NUM_CUBAGEM, PV.NUM_CUBAGEM) \"CUBAGEM\",
+                         NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) \"EMBALAGEM/VOLUME\",
+                                   NVL(DE1.DSC_DEPOSITO_ENDERECO, DE2.DSC_DEPOSITO_ENDERECO) \"END.PICKING\",
+                               OS.COD_OS \"OS\",
+                               CONFERENTE.NOM_PESSOA \"CONFERENTE\",
+                               CASE WHEN OS.COD_FORMA_CONFERENCIA = 'C' THEN 'COLETOR'
+                                    ELSE 'MANUAL'
+                               END AS \"TIPO CONFERENCIA\",
+                               ES.COD_OS_TRANSBORDO \"OS TRANSBORDO\",
+                               CONFERENTE_TRANSBORDO.NOM_PESSOA \"CONFERENTE TRANSBORDO\",
+                               CLIENTE.COD_CLIENTE_EXTERNO \"CODIGO CLIENTE\",
+                               CLIENTE.NOM_PESSOA \"CLIENTE\",
+                               ENDERECO.DSC_ENDERECO \"ENDERECO CLIENTE\",
+                               ENDERECO.NOM_LOCALIDADE \"CIDADE CLIENTE\",
+                               UF.DSC_SIGLA \"ESTADO CLIENTE\",
+                               ENDERECO.NOM_BAIRRO \"NOME BAIRRO\"
+                         FROM EXPEDICAO E
+                        INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                        INNER JOIN SIGLA S ON E.COD_STATUS = S.COD_SIGLA
+                        INNER JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA
+                        INNER JOIN SIGLA S2 ON S2.COD_SIGLA = P.COD_TIPO_PEDIDO
+                        INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
+                        INNER JOIN PEDIDO_PRODUTO PP ON P.COD_PEDIDO = PP.COD_PEDIDO
+                         LEFT JOIN PRODUTO PROD ON PP.COD_PRODUTO = PROD.COD_PRODUTO AND PP.DSC_GRADE  = PROD.DSC_GRADE
+                         LEFT JOIN FABRICANTE F ON F.COD_FABRICANTE = PROD.COD_FABRICANTE
+                         LEFT JOIN LINHA_SEPARACAO LS ON PROD.COD_LINHA_SEPARACAO = LS.COD_LINHA_SEPARACAO
+                         LEFT JOIN ETIQUETA_SEPARACAO ES ON PP.COD_PEDIDO = ES.COD_PEDIDO AND PP.COD_PRODUTO = ES.COD_PRODUTO
+                         LEFT JOIN SIGLA SES ON SES.COD_SIGLA = ES.COD_STATUS
+                         LEFT JOIN PRODUTO_VOLUME PV ON ES.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
+                         LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
+                 LEFT JOIN DEPOSITO_ENDERECO DE1 ON DE1.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+                 LEFT JOIN DEPOSITO_ENDERECO DE2 ON DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
+                         LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                         LEFT JOIN ORDEM_SERVICO OS ON ES.COD_OS = OS.COD_OS
+                         LEFT JOIN ORDEM_SERVICO OS2 ON ES.COD_OS_TRANSBORDO = OS2.COD_OS
+                         LEFT JOIN (SELECT CONF.COD_CONFERENTE, PE.NOM_PESSOA
+                                      FROM CONFERENTE CONF
+                                     INNER JOIN PESSOA PE ON CONF.COD_CONFERENTE = PE.COD_PESSOA) CONFERENTE ON OS.COD_PESSOA = CONFERENTE.COD_CONFERENTE
+                        LEFT JOIN (SELECT CONF2.COD_CONFERENTE, PE2.NOM_PESSOA
+                                     FROM CONFERENTE CONF2
+                                    INNER JOIN PESSOA PE2 ON CONF2.COD_CONFERENTE = PE2.COD_PESSOA) CONFERENTE_TRANSBORDO ON OS2.COD_PESSOA = CONFERENTE_TRANSBORDO.COD_CONFERENTE
+                        LEFT JOIN PEDIDO_ENDERECO ENDERECO ON ENDERECO.COD_PEDIDO = P.COD_PEDIDO
+                        LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
+                        LEFT JOIN (SELECT CL.COD_PESSOA,
+                                          CL.COD_CLIENTE_EXTERNO,
+                                          PE.NOM_PESSOA
+                                     FROM CLIENTE CL
+                                    INNER JOIN PESSOA PE ON CL.COD_PESSOA = PE.COD_PESSOA) CLIENTE
+                          ON P.COD_PESSOA = CLIENTE.COD_PESSOA
                WHERE (E.COD_STATUS <> $statusCancelado)
                  AND ((E.DTH_INICIO >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
                  AND (E.DTH_INICIO <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
