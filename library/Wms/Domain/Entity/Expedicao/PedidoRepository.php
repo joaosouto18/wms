@@ -163,8 +163,7 @@ class PedidoRepository extends EntityRepository
                 /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
                 $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
                 if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
-                    if (($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_ETIQUETA_GERADA) ||
-                        ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO)) {
+                    if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
                         $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_CORTADO);
                     } else {
                         $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
