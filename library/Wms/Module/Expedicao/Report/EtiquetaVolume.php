@@ -78,25 +78,26 @@ class EtiquetaVolume extends eFPDF
             $this->AddPage();
 
             //monta o restante dos dados da etiqueta
-            $this->SetFont('Arial', 'B', 8);
-            $impressao = utf8_decode("EXP: $volume[expedicao] CLIENTE: $volume[quebra]\n");
+            $this->SetFont('Arial', 'B', 11.7);
+//            $impressao = utf8_decode("EXP: $volume[expedicao] CLI: $volume[quebra]\n");
+//            $volume['quebra'] = "TOMAZ GOMIDE NUNES - PREÇO REVENDA";
+            $impressao = utf8_decode(substr("CLI: $volume[quebra]\n",0,40));
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
 
-
-            $this->SetFont('Arial', 'B', 10);
+            $this->SetFont('Arial', 'B', 13);
             $impressao = utf8_decode("Pedido:");
             $this->SetY(15);
             $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 15);
+            $this->SetFont('Arial', 'B', 17);
             $impressao = utf8_decode("\n$volume[pedido]");
             $this->SetY(15);
             $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 8);
-            $impressao = utf8_decode("Código                     Produto                                           Qtd.\n");
+            $this->SetFont('Arial', 'B', 10);
+            $impressao = utf8_decode("Código                    Produto                         Qtd.\n");
             $this->SetX(5);
             $this->SetY(6);
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
@@ -133,7 +134,7 @@ class EtiquetaVolume extends eFPDF
                 $y = $y + 2;
             }
 
-            $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 87, 1.5, 20,5);
+            $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 87, 35, 20,5);
 
             $dsc = utf8_decode($volume['volume']) .' - '.utf8_decode($volume['descricao']);
             $lentxt = $this->GetStringWidth($dsc);

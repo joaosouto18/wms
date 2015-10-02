@@ -88,7 +88,7 @@ class Inventario extends Grid
                 'cssClass' => '',
                 'pkIndex' => 'id',
                 'condition' => function ($row) {
-                    return $row['qtdInvetariado'] == 0 && $row['status'] != "CANCELADO";
+                    return $row['status'] != "FINALIZADO" && $row['status'] != "CANCELADO";
                 },
             ))
             ->addAction(array(
