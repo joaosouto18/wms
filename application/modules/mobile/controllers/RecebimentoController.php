@@ -138,7 +138,7 @@ class Mobile_RecebimentoController extends Action
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
             if ($itemNF == null)
-                throw new \Exception('Nenhum produto encontrado com este Código de Barras.');
+                throw new \Exception('Nenhum produto encontrado no Recebimento com este Código de Barras. - ' . $codigoBarras);
 
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);

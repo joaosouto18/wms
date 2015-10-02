@@ -31,10 +31,17 @@ class Expedicao_CorteFaixaController  extends Action
                     try {
                         foreach ($etiquetas as $etiquetaEn) {
                             $EtiquetaRepo->cortar($etiquetaEn);
+
+                            if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
+                                $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
+                            } else {
+                                $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
+                            }
+
                             if ($etiquetaInicial == "") $etiquetaInicial = $etiquetaEn->getId();
                             $etiquetaFinal = $etiquetaEn->getId();
                             $expedicaoId = $etiquetaEn->getPedido()->getCarga()->getExpedicao()->getId();
-                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId);
+                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId, false, true, $etiquetaEn->getId(),$codBarrasProdutos);
                         }
                         $this->addFlashMessage('success',"Etiquetas cortadas com sucesso");
                         $this->redirect('index','corte-faixa','expedicao');

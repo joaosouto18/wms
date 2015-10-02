@@ -161,6 +161,11 @@ class EtiquetaSeparacao
      */
     protected $codReentrega;
 
+    /**
+     * @Column(name="DTH_GERACAO", type="date", nullable=true)
+     */
+    protected $dataGeracao;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -436,6 +441,22 @@ class EtiquetaSeparacao
     public function getReentrega()
     {
         return $this->reentrega;
+    }
+
+    /**
+     * @return date
+     */
+    public function getDataGeracao()
+    {
+        return $this->dataGeracao;
+    }
+
+    /**
+     * @param date $dataGeracao
+     */
+    public function setDataGeracao($dataGeracao)
+    {
+        $this->dataGeracao = $dataGeracao;
     }
 
 }

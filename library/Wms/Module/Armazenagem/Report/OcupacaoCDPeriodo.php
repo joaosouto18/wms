@@ -64,19 +64,22 @@ class OcupacaoCDPeriodo extends Pdf
 
         $total_existente=0;
         $total_ocupado=0;
-        $total_percentual = 0;
+        $totalExistenteGeral = 0;
+        $totalOcupadoGeral = 0;
+        $totalPercentualGeral = 0;
         if (count($produtos) > 0) {
             $dataAnterior = $produtos[0]['DATA_ESTOQUE'];
         }
         $this->SetFont('Arial', 'B', 8);
 
-        foreach ($produtos as $ocupacao) {
+        if (count($produtos) > 0) {
+            foreach ($produtos as $ocupacao) {
 
-            if ($dataAnterior != $ocupacao['DATA_ESTOQUE']) {
-                //$this->Ln();
-                $dataAnterior = $ocupacao['DATA_ESTOQUE'];
+                if ($dataAnterior != $ocupacao['DATA_ESTOQUE']) {
+                    //$this->Ln();
+                    $dataAnterior = $ocupacao['DATA_ESTOQUE'];
 
-                $total_percentual = ($total_ocupado * 100) / $total_existente;
+                    $total_percentual = ($total_ocupado * 100) / $total_existente;
 
                     $this->Cell(55, 5, '' ,0, 0);
                     $this->Cell(50, 5, $total_existente ,0, 0, "C");
@@ -86,29 +89,27 @@ class OcupacaoCDPeriodo extends Pdf
                     $this->Line(10,$this->GetY(), 200,$this->GetY());
                     $this->Ln();
 
-                $total_existente=0;
-                $total_ocupado=0;
-                $total_percentual = 0;
+                    $total_existente=0;
+                    $total_ocupado=0;
 
+                }
+                $total_existente = $ocupacao['PALETES_EXISTENTES'] + $total_existente;
+                $total_ocupado = $ocupacao['PALETES_OCUPADOS'] + $total_ocupado;
+
+                $this->Cell(25, 5, $ocupacao['DATA_ESTOQUE'] ,0, 0, "C");
+                $this->Cell(30, 5, $ocupacao['RUA'] ,0, 0, "C");
+                $this->Cell(50, 5, $ocupacao['PALETES_EXISTENTES'] ,0, 0, "C");
+                $this->Cell(50, 5, $ocupacao['PALETES_OCUPADOS'] ,0, 0, "C");
+                $this->Cell(40, 5, number_format($ocupacao['PERCENTUAL_OCUPADOS'],2,'.',',') . " %" ,0, 1, "C");
             }
 
-            $total_existente = $ocupacao['PALETES_EXISTENTES'] + $total_existente;
-            $total_ocupado = $ocupacao['PALETES_OCUPADOS'] + $total_ocupado;
-
-            $this->Cell(25, 5, $ocupacao['DATA_ESTOQUE'] ,0, 0, "C");
-            $this->Cell(30, 5, $ocupacao['RUA'] ,0, 0, "C");
-            $this->Cell(50, 5, $ocupacao['PALETES_EXISTENTES'] ,0, 0, "C");
-            $this->Cell(50, 5, $ocupacao['PALETES_OCUPADOS'] ,0, 0, "C");
-            $this->Cell(40, 5, $ocupacao['PERCENTUAL_OCUPADOS'] . " %" ,0, 1, "C");
         }
 
-        $total_percentual = ($total_ocupado * 100) / $total_existente;
-
-        $this->Ln();
-        $this->Cell(55, 5, '' ,0, 0);
-        $this->Cell(50, 5, $total_existente ,0, 0, "C");
-        $this->Cell(50, 5, $total_ocupado ,0, 0, "C");
-        $this->Cell(40, 5, number_format($total_percentual, 2, '.', ',') . " %" ,0, 1, "C");
+//        $this->Ln();
+//        $this->Cell(55, 5, 'Totais Gerais' ,0, 0);
+//        $this->Cell(50, 5, $totalExistenteGeral ,0, 0, "C");
+//        $this->Cell(50, 5, $totalOcupadoGeral ,0, 0, "C");
+//        $this->Cell(40, 5, number_format($totalPercentualGeral, 2, '.', ',') . " %" ,0, 1, "C");
 
         $this->Output('OcupacaoCDPeriodo.pdf','D');
     }

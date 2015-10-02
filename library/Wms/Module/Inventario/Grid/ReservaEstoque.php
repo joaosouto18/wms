@@ -18,8 +18,20 @@ class ReservaEstoque extends Grid
                 'index' => 'id',
             ))
             ->addColumn(array(
-                'label' => 'Endereço com reserva de estoque',
+                'label' => 'Produto',
+                'index' => 'produto',
+            ))
+            ->addColumn(array(
+                'label' => 'Grade',
+                'index' => 'grade',
+            ))
+            ->addColumn(array(
+                'label' => 'Endereço',
                 'index' => 'descricao',
+            ))
+            ->addColumn(array(
+                'label' => 'Operação',
+                'index' => 'origemReserva',
             ))
             ->addColumn(array(
                 'label' => 'Tipo reserva',

@@ -118,7 +118,12 @@ class NotaFiscal
      * @var string
      */
     protected $bonificacao;
-    
+
+    /**
+     * @Column(name="DSC_OBSERVACAO", type="string", nullable=true)
+     */
+    protected $observacao;
+
     public function __construct()
     {
         $this->itens = new ArrayCollection;
@@ -249,5 +254,20 @@ class NotaFiscal
         return $this;
     }
 
+    /**
+     * @param mixed $observacao
+     */
+    public function setObservacao($observacao)
+    {
+        $this->observacao = $observacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getObservacao()
+    {
+        return $this->observacao;
+    }
 
 }
