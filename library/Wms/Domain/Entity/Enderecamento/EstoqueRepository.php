@@ -610,10 +610,10 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueConsolidado($params)
     {
-        $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha Separação",
-                       E.COD_PRODUTO as "Código",
+        $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha Separacao",
+                       E.COD_PRODUTO as "Codigo",
                        E.DSC_GRADE as "Grade",
-                       SubSTR(P.DSC_PRODUTO,0,60) as "Descrição",
+                       SubSTR(P.DSC_PRODUTO,0,60) as "Descricao",
                        MIN(E.QTD) as "Qtd"
                   FROM (SELECT PROD.COD_PRODUTO,
                                PROD.DSC_GRADE,

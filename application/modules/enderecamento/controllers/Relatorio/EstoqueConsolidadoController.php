@@ -11,7 +11,6 @@ class Enderecamento_Relatorio_EstoqueConsolidadoController extends Action
 
         if ($values)
         {
-
             $EstoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
             $estoqueDados = $EstoqueRepo->getEstoqueConsolidado($values);
             $this->exportCSV($estoqueDados, 'Estoque_Consolidado', true);
