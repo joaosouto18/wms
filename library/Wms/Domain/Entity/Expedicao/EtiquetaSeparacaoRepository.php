@@ -1634,7 +1634,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function getEtiquetasReentrega($idExpedicao, $codStatus = null) {
+    public function getEtiquetasReentrega($idExpedicao, $codStatus = null, $central = null) {
         $SQL = "
         SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
                PROD.COD_PRODUTO,
@@ -1657,6 +1657,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if ($codStatus != null) {
             $SQL = $SQL . " AND ESR.COD_STATUS = $codStatus";
+        }
+
+        if ($central != null) {
+            $SQL = $SQL . " AND P.PONTO_TRANSBORDO = $central";
         }
 
         $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
