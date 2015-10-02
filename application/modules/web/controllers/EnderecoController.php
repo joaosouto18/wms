@@ -77,6 +77,10 @@ class Web_EnderecoController extends Crud
 
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
             $grid->addMassAction('mass-delete', 'Remover');
+            $grid->addMassAction('bloquear', 'Bloquear');
+            $grid->addMassAction('desbloquear', 'Desbloquear');
+            $grid->addMassAction('ativar', 'Ativar');
+            $grid->addMassAction('desativar', 'Desativar');
             $grid->addColumn(array(
                 'label' => 'Endereço',
                 'index' => 'descricao'
@@ -276,15 +280,13 @@ class Web_EnderecoController extends Crud
      */
     public function bloquearAction()
     {
+        $massId = $this->_getParam('mass-id');
         try {
-            $id = $this->getRequest()->getParam('id');
-
-            if ($id == null)
-                throw new \Exception('Id deve ser enviado pra bloquear');
-
-            $entity = $this->repository->findOneBy(array($this->pkField => $id));
-            $entity->setSituacao('B');
-            $this->em->persist($entity);
+            foreach ($massId as $id) {
+                $entity = $this->repository->findOneBy(array($this->pkField => $id));
+                $entity->setSituacao('B');
+                $this->em->persist($entity);
+            }
             $this->em->flush();
 
             return $this->redirect('index');
@@ -298,15 +300,13 @@ class Web_EnderecoController extends Crud
      */
     public function desbloquearAction()
     {
+        $massId = $this->_getParam('mass-id');
         try {
-            $id = $this->getRequest()->getParam('id');
-
-            if ($id == null)
-                throw new \Exception('Id deve ser enviado pra bloquear');
-
-            $entity = $this->repository->findOneBy(array($this->pkField => $id));
-            $entity->setSituacao('D');
-            $this->em->persist($entity);
+            foreach ($massId as $id) {
+                $entity = $this->repository->findOneBy(array($this->pkField => $id));
+                $entity->setSituacao('D');
+                $this->em->persist($entity);
+            }
             $this->em->flush();
 
             return $this->redirect('index');
@@ -376,18 +376,17 @@ class Web_EnderecoController extends Crud
      */
     public function ativarAction()
     {
+        $massId = $this->_getParam('mass-id');
+
         try {
-            $id = $this->getRequest()->getParam('id');
-
-            if ($id == null)
-                throw new \Exception('Id deve ser enviado pra desativar');
-
+        foreach ($massId as $id) {
             $entity = $this->repository->findOneBy(array($this->pkField => $id));
-            $entity->setStatus('D');
+            $entity->setAtivo('S');
             $this->em->persist($entity);
-            $this->em->flush();
+        }
+        $this->em->flush();
 
-            return $this->redirect('index');
+        return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
@@ -398,15 +397,14 @@ class Web_EnderecoController extends Crud
      */
     public function desativarAction()
     {
+        $massId = $this->_getParam('mass-id');
         try {
-            $id = $this->getRequest()->getParam('id');
 
-            if ($id == null)
-                throw new \Exception('Id deve ser enviado pra desativar');
-
-            $entity = $this->repository->findOneBy(array($this->pkField => $id));
-            $entity->setStatus('O');
-            $this->em->persist($entity);
+            foreach ($massId as $id) {
+                $entity = $this->repository->findOneBy(array($this->pkField => $id));
+                $entity->setAtivo('N');
+                $this->em->persist($entity);
+            }
             $this->em->flush();
 
             return $this->redirect('index');
