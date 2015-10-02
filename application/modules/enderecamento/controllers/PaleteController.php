@@ -309,13 +309,22 @@ class Enderecamento_PaleteController extends Action
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
         $existeRecebimento = $recebimentoRepo->find($novoRecebimento);
 
+        $idRecebimentoAntigo = $params['id'];
+        $codProduto          = $params['codigo'];
+        $grade               = $params['grade'];
+
         if ($existeRecebimento == null) {
             return 'Recebimento inexistente!';
         }
 
-        if ($paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'])) {
-            $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
-            $this->addFlashMessage('success', 'Troca realizada com sucesso');
+        if ($paleteRepo->validaTroca($novoRecebimento,$codProduto,$grade) == true) {
+            $result = $paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'], $idRecebimentoAntigo, $codProduto,$grade);
+            if ($result['result'] == true) {
+                $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
+                $this->addFlashMessage('success', 'Troca realizada com sucesso');
+            } else {
+                $this->addFlashMessage('error', $result['msg']);
+            }
         }
 
         $url = '/enderecamento/produto/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']);

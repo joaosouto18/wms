@@ -54,6 +54,18 @@ class Andamento
     protected $dscObservacao;
 
     /**
+     * @Column(name="COD_BARRAS_ETIQUETA_SEPARACAO", type="string")
+     * @var string
+     */
+    protected $codBarras;
+
+    /**
+     * @Column(name="COD_BARRAS_PRODUTO", type="string")
+     * @var string
+     */
+    protected $codBarrasProduto;
+
+    /**
      * @param \Wms\Domain\Entity\Expedicao\datetime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
@@ -131,5 +143,36 @@ class Andamento
         return $this->usuario;
     }
 
+    /**
+     * @return string
+     */
+    public function getCodBarras()
+    {
+        return $this->codBarras;
+    }
+
+    /**
+     * @param string $codBarras
+     */
+    public function setCodBarras($codBarras)
+    {
+        $this->codBarras = $codBarras;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCodBarrasProduto()
+    {
+        return $this->codBarrasProduto;
+    }
+
+    /**
+     * @param string $codBarrasProduto
+     */
+    public function setCodBarrasProduto($codBarrasProduto)
+    {
+        $this->codBarrasProduto = $codBarrasProduto;
+    }
 
 }

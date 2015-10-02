@@ -27,6 +27,7 @@ class Inventario_IndexController  extends Action
                 return false;
             }
             $reservas = $inventarioRepo->verificaReservas($id);
+            ini_set('max_execution_time', 3000);
             if (count($reservas) > 0) {
                 $grdReservas = new \Wms\Module\Inventario\Grid\ReservaEstoque();
                 $this->view->grid = $grdReservas->init($reservas);

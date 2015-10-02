@@ -287,6 +287,8 @@ class OndaRessuprimentoRepository extends EntityRepository
                     }
                 }
             }
+
+
         }
 
         return array(

@@ -794,7 +794,7 @@ class NotaFiscalRepository extends EntityRepository
 
         return $entity;
     }
-    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao) {
+    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -835,14 +835,15 @@ class NotaFiscalRepository extends EntityRepository
 
             //inserção de nova NF
             $notaFiscalEntity = new NotaFiscalEntity;
-            $notaFiscalEntity->setNumero($numero)
-                ->setSerie($serie)
-                ->setDataEntrada(new \DateTime)
-                ->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao))
-                ->setFornecedor($fornecedorEntity)
-                ->setBonificacao($bonificacao)
-                ->setStatus($statusEntity)
-                ->setPlaca($placa);
+            $notaFiscalEntity->setNumero($numero);
+            $notaFiscalEntity->setSerie($serie);
+            $notaFiscalEntity->setDataEntrada(new \DateTime);
+            $notaFiscalEntity->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao));
+            $notaFiscalEntity->setFornecedor($fornecedorEntity);
+            $notaFiscalEntity->setBonificacao($bonificacao);
+            $notaFiscalEntity->setStatus($statusEntity);
+            $notaFiscalEntity->setObservacao($observacao);
+            $notaFiscalEntity->setPlaca($placa);
 
             if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
@@ -874,6 +875,28 @@ class NotaFiscalRepository extends EntityRepository
         }
     }
 
+    public function getObservacoesNotasByProduto ($codRecebimento, $codProduto, $grade) {
+        $SQL = "SELECT DISTINCT DSC_OBSERVACAO
+                  FROM NOTA_FISCAL_ITEM NFI
+                  LEFT JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                 WHERE NF.COD_RECEBIMENTO = $codRecebimento
+                   AND NFI.COD_PRODUTO = '$codProduto'
+                   AND NFI.DSC_GRADE = '$grade'
+                   AND LENGTH(DSC_OBSERVACAO) > 0 ";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $array = array();
+        foreach($result as $nota) {
+            $array[] = TRIM($nota['DSC_OBSERVACAO']);
+        };
+
+        if (count($result) == 0) {
+            return "";
+        } else {
+            return " - " . implode(', ',$array);
+        }
+
+    }
+
     public function getNotaFiscalByProduto($codRecebimento, $codProduto, $grade) {
         $SQL = "SELECT NF.NUM_NOTA_FISCAL as NF, NF.COD_SERIE_NOTA_FISCAL as SERIE
                   FROM NOTA_FISCAL_ITEM NFI
@@ -887,8 +910,6 @@ class NotaFiscalRepository extends EntityRepository
             $array[] = TRIM($nota['NF']) . '/' . TRIM($nota['SERIE']);
         };
         return implode(', ',$array);
-
-        return 'teste';
     }
 
 }

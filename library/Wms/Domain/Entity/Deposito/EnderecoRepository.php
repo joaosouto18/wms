@@ -724,32 +724,64 @@ class EnderecoRepository extends EntityRepository
         $tipoPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
 
         $sqlWhere = "";
-        if ($ruaFinal != "") {
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
             $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA <= " . $ruaFinal." ";
         }
-        if ($ruaInicial != "") {
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
             $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA >= " . $ruaInicial." ";
         }
+        $sqlWhereDepEnd = "";
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
+            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA <= " . $ruaFinal." ";
+        }
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
+            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA >= " . $ruaInicial." ";
+        }
 
-        $sql= " SELECT TO_CHAR(HIST.DTH_ESTOQUE,'DD/MM/YYYY') as DATA_ESTOQUE,
-                       DE.NUM_RUA as RUA,
-                       HIST.OCUPADO as PALETES_OCUPADOS,
-                       DE.QTD_EXISTENTES as PALETES_EXISTENTES,
-                       ROUND((( HIST.OCUPADO/ DE.QTD_EXISTENTES) * 100),2) AS PERCENTUAL_OCUPADOS
-                  FROM (
-                     SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_EXISTENTES, DE.NUM_RUA
-                       FROM DEPOSITO_ENDERECO DE WHERE DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
-                      GROUP BY DE.NUM_RUA) DE
-                RIGHT JOIN (
-                     SELECT COUNT(DISTINCT PE.COD_DEPOSITO_ENDERECO) as OCUPADO, PE.DTH_ESTOQUE, DE.NUM_RUA
-                       FROM POSICAO_ESTOQUE PE
-                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
-                      WHERE PE.COD_DEPOSITO_ENDERECO IS NOT NULL AND DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
-                       AND (PE.DTH_ESTOQUE BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
-                   GROUP BY DE.NUM_RUA, PE.DTH_ESTOQUE) HIST
-                   ON HIST.NUM_RUA = DE.NUM_RUA
-                   $sqlWhere
-                   ORDER BY HIST.DTH_ESTOQUE, DE.NUM_RUA";
+//        $sql= " SELECT TO_CHAR(HIST.DTH_ESTOQUE,'DD/MM/YYYY') as DATA_ESTOQUE,
+//                       DE.NUM_RUA as RUA,
+//                       HIST.OCUPADO as PALETES_OCUPADOS,
+//                       DE.QTD_EXISTENTES as PALETES_EXISTENTES,
+//                       ROUND((( HIST.OCUPADO/ DE.QTD_EXISTENTES) * 100),2) AS PERCENTUAL_OCUPADOS
+//                  FROM (
+//                     SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_EXISTENTES, DE.NUM_RUA
+//                       FROM DEPOSITO_ENDERECO DE WHERE DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
+//                      GROUP BY DE.NUM_RUA) DE
+//                RIGHT JOIN (
+//                     SELECT COUNT(DISTINCT PE.COD_DEPOSITO_ENDERECO) as OCUPADO, PE.DTH_ESTOQUE, DE.NUM_RUA
+//                       FROM POSICAO_ESTOQUE PE
+//                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+//                      WHERE PE.COD_DEPOSITO_ENDERECO IS NOT NULL AND DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
+//                       AND (PE.DTH_ESTOQUE BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
+//                   GROUP BY DE.NUM_RUA, PE.DTH_ESTOQUE) HIST
+//                   ON HIST.NUM_RUA = DE.NUM_RUA
+//                   $sqlWhere
+//                   ORDER BY HIST.DTH_ESTOQUE, DE.NUM_RUA";
+
+        $sql = "SELECT  HIST.DATA_ESTOQUE,
+                        DE.NUM_RUA as RUA,
+                        HIST.OCUPADO as PALETES_OCUPADOS,
+                        DE.QTD_EXISTENTES as PALETES_EXISTENTES,
+                        ROUND((( HIST.OCUPADO/ DE.QTD_EXISTENTES) * 100),2) AS PERCENTUAL_OCUPADOS
+                    FROM (
+                       SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_EXISTENTES, DE.NUM_RUA
+                         FROM DEPOSITO_ENDERECO DE WHERE DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
+                        GROUP BY DE.NUM_RUA) DE
+                  RIGHT JOIN (
+
+                      SELECT COUNT(DISTINCT E.COD_DEPOSITO_ENDERECO) as OCUPADO, TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY') AS DATA_ESTOQUE, DE.NUM_RUA
+                        FROM ESTOQUE E
+                        LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = E.COD_UNITIZADOR
+                        LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE
+                        LEFT JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                           WHERE E.COD_DEPOSITO_ENDERECO IS NOT NULL AND DE.COD_CARACTERISTICA_ENDERECO <> 37
+                            AND (E.DTH_PRIMEIRA_MOVIMENTACAO BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
+                            $sqlWhereDepEnd
+                        GROUP BY DE.NUM_RUA, TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY')) HIST
+
+                        ON HIST.NUM_RUA = DE.NUM_RUA
+                        $sqlWhere
+                        ORDER BY DATA_ESTOQUE, DE.NUM_RUA";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;

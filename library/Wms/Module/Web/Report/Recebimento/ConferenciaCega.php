@@ -96,17 +96,18 @@ class ConferenciaCega extends Report {
                 $pdf->addCol(7, 25, '', 1, 0, 'R');
                 $pdf->addCol(8, 100, '', 1, 1, 'R');
 
+                $observacoes = $notaFiscalRepo->getObservacoesNotasByProduto($idRecebimento,$item['CODIGO'],$item['GRADE']);
                 $notas = $notaFiscalRepo->getNotaFiscalByProduto($idRecebimento,$item['CODIGO'],$item['GRADE']);
                 if ($item['DSC_UNITIZADOR']) {
                     $pdf->addCol(4, 45, $dscUnitizador, $bordaUnitizador, 0, 'R');
                     $pdf->addCol(5, 105, $normaPaletizacao, $bordaUnitizador, 0, 'L');
-                    $pdf->addCol(1,55,'NF: ' . $notas,0,1,'L');
+                    $pdf->addCol(1,55,'NF: ' . $notas . $observacoes,0,1,'L');
                     $pdf->addCol(6, 45, $dscItem, 0, 0, 'R');
                     $pdf->addCol(7, 45, $endereco, 0, 0, 'L');
                 } else {
                     $pdf->addCol(1, 55, utf8_decode('Não possui dados logísticos.'), 0, 0, 'R');
                     $pdf->addCol(1,95,'',0,0,'L');
-                    $pdf->addCol(1,55,'NF: ' . $notas,0,0,'L');
+                    $pdf->addCol(1,55,'NF: ' . $notas . $observacoes,0,0,'L');
                 }
 
                 $produtoGradeAnterior = $produto;
