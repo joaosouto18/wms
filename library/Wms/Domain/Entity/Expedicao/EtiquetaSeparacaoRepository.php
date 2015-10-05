@@ -798,7 +798,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
                 else {
-                    $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
+                    $view = \Zend_layout::getMvcInstance()->getView();
+                    $link = '<a href="' . $view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
                     $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
                     throw new \Exception($mensagem);
                 }
