@@ -418,7 +418,7 @@ class ExpedicaoRepository extends EntityRepository
             ->where("e.id = :IdExpedicao")
             ->andWhere("vol.id IS NULL")
             ->andWhere("emb.id IS NULL")
-            ->andWhere('(NVL(pp.quantidade,0) - NVL(pp.qtdCortada,0)) > 0')
+            ->andWhere('(pp.quantidade - pp.qtdCortada) > 0')
             ->setParameter("IdExpedicao", $idExpedicao);
 
         $result = $queryBuilder->getQuery()->getResult();
