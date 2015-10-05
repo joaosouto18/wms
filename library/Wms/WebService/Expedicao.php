@@ -615,9 +615,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
                     $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
 
-                    if ($qtdTotal != $qtdCortadas) {
-                        throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas");
-                    }
+                    //if ($qtdTotal != $qtdCortadas) {
+                    //    throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                    //}
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
                     $PedidoRepo->remove($PedidoEntity);
