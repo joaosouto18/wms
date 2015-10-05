@@ -612,8 +612,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
                     ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
 
-                    $qtdTotal = $EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']);
-                    $qtdCortadas = $EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO);
+                    $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
+                    $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
 
                     if ($qtdTotal != $qtdCortadas) {
                         throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas");
