@@ -608,20 +608,27 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if ($PedidoEntity != null) {
                 $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
                 $statusEntity = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
+
+                $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
+                $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
+
                 if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
                     ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
+                    ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
+                    ($qtdCortadas == $qtdTotal)) {
 
-                    $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
-                    $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
-
-                    //if ($qtdTotal != $qtdCortadas) {
-                    //    throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                    //}
+                    if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
+                        throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
+                    }
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
                     $PedidoRepo->remove($PedidoEntity);
+
                 } else {
+                    if ($qtdTotal != $qtdCortadas) {
+                        throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                    }
+
                     throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
                 }
             }
