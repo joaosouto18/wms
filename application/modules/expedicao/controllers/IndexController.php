@@ -246,5 +246,42 @@ class Expedicao_IndexController  extends Action
         $declaracaoReport->imprimir($result);
     }
 
+    public function acertarReservaEstoqueAjaxAction()
+    {
+        set_time_limit(0);
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+        $reservaEstoqueExpedicaoRepo = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao');
+        $reservaEstoqueExpedicao = $reservaEstoqueExpedicaoRepo->findAll();
+
+        foreach ($reservaEstoqueExpedicao as $reservaEstoqueExpedicaoEn) {
+            $idExpedicao = $reservaEstoqueExpedicaoEn->getExpedicao()->getId();
+            $idReservaEstoque = $reservaEstoqueExpedicaoEn->getReservaEstoque()->getId();
+            $sql = "SELECT P.COD_PEDIDO FROM PEDIDO P
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    INNER JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
+                    INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE AND REP.COD_PRODUTO = PP.COD_PRODUTO AND REP.DSC_GRADE = PP.DSC_GRADE
+                    WHERE E.COD_EXPEDICAO = $idExpedicao
+                    AND RE.COD_RESERVA_ESTOQUE = $idReservaEstoque";
+
+            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            $codPedido = $result[0]['COD_PEDIDO'];
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
+
+            $reservaEstoqueExpedicaoEn->setPedido($pedidoEn);
+            $this->_em->persist($reservaEstoqueExpedicaoEn);
+            $this->_em->flush();
+
+        }
+        var_dump('success');exit;
+
+
+    }
+
 
 }
