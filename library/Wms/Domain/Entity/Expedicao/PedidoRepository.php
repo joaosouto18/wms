@@ -201,9 +201,19 @@ class PedidoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $etiquetas = $EtiquetaRepo->findBy(array('pedido'=>$pedidoEntity));
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         foreach($etiquetas as $etiqueta) {
             $this->_em->remove($etiqueta);
+            $this->_em->flush();
+        }
+
+        $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+        $etiquetasConf = $EtiquetaConfRepo->findBy(array('pedido'=>$pedidoEntity));
+
+        foreach($etiquetasConf as $etiquetaConf) {
+            $this->_em->remove($etiquetaConf);
             $this->_em->flush();
         }
 
@@ -247,6 +257,9 @@ class PedidoRepository extends EntityRepository
         if (isset($ondaRessuprimentoPedidoEn) && !empty($ondaRessuprimentoPedidoEn)) {
             $this->_em->remove($ondaRessuprimentoPedidoEn);
         }
+
+        $andamentoRepo->save("Pedido removido da expedição via WebService", $pedidoEntity->getCarga()->getExpedicao(),false,true,null,null,true);
+
         $this->_em->remove($pedidoEntity);
         $this->_em->flush();
     }
