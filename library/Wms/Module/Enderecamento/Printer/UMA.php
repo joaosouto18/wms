@@ -146,7 +146,7 @@ class UMA extends Pdf
         $this->Cell(35,40,"",0,0);
 
         $this->SetFont('Arial', 'B', 32);
-        if ($params['dataValidade'] != null) {
+        if (isset($params['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
