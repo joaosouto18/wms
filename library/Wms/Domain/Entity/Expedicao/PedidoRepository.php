@@ -258,7 +258,7 @@ class PedidoRepository extends EntityRepository
             $this->_em->remove($ondaRessuprimentoPedidoEn);
         }
 
-        $andamentoRepo->save("Pedido removido da expedição via WebService", $pedidoEntity->getCarga()->getExpedicao(),false,true,null,null,true);
+        $andamentoRepo->save("Pedido ". $pedidoEntity->getId() ."  removido da expedição " .  $pedidoEntity->getCarga()->getExpedicao()->getId() . "via WebService", $pedidoEntity->getCarga()->getExpedicao(),false,true,null,null,true);
 
         $this->_em->remove($pedidoEntity);
         $this->_em->flush();
