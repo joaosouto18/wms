@@ -248,7 +248,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $dql->andwhere("emb.embalado = 'S'");
             }
             if ($embalado == "N") {
-                $dql->andwhere("(emb.embalado = 'N' OR emb IS NULL)");
+                $dql->andwhere("(emb.embalado = 'N' OR emb.embalado IS NULL)");
             }
         }
 

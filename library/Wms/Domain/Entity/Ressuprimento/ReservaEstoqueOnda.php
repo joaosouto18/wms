@@ -10,7 +10,7 @@ class ReservaEstoqueOnda
 
     /**
      * @Id
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOS")
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs")
      * @JoinColumn(name="COD_ONDA_RESSUPRIMENTO_OS", referencedColumnName="COD_ONDA_RESSUPRIMENTO_OS")
      */
     protected $ondaRessuprimentoOs;

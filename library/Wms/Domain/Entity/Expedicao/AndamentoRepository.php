@@ -11,10 +11,13 @@ class AndamentoRepository extends EntityRepository
      * @param $idExpedicao
      * @param bool $usuarioId
      */
-    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true, $codigoBarras = null, $codBarrasProdutos = null)
+    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true, $codigoBarras = null, $codBarrasProdutos = null, $integracao = false)
     {
-        $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
-        $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+        $usuario = null;
+        if ($integracao == false) {
+            $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+        }
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo  = $this->_em->getRepository('wms:Expedicao');

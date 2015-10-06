@@ -1414,8 +1414,9 @@ class ExpedicaoRepository extends EntityRepository
             $source->addSelect("(
              SELECT COUNT(es2.id)
                FROM wms:Expedicao\EtiquetaConferencia es2
-              LEFT JOIN es2.pedido ped2
-              LEFT JOIN ped2.carga c2
+               LEFT JOIN es2.pedido ped2
+               LEFT JOIN ped2.carga c2
+              INNER JOIN wms:Expedicao\EtiquetaSeparacao ess WITH es2.codEtiquetaSeparacao = ess.id
               WHERE c2.codExpedicao = e.id
                 AND es2.codStatus in ( ". Expedicao::STATUS_SEGUNDA_CONFERENCIA . " )
               GROUP BY c2.codExpedicao
