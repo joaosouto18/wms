@@ -143,7 +143,6 @@ class Expedicao_IndexController  extends Action
 
     public function desagruparcargaAction ()
     {
-        //var_dump($this->_getAllParams()); exit;
         $params = $this->_getAllParams();
 
         if (isset($params['placa']) && !empty($params['placa'])) {
@@ -176,7 +175,7 @@ class Expedicao_IndexController  extends Action
                 }
                 $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
                 $expedicaoAntiga = $cargaEn->getCodExpedicao();
-                $expedicaoEn = $ExpedicaoRepo->save($cargaEn->getCodCargaExterno());
+                $expedicaoEn = $ExpedicaoRepo->save($placa);
                 $cargaEn->setExpedicao($expedicaoEn);
                 $cargaEn->setSequencia(1);
                 $cargaEn->setPlacaCarga($placa);
@@ -201,9 +200,10 @@ class Expedicao_IndexController  extends Action
                 $this->_helper->messenger('error', $e->getMessage());
             }
             $this->redirect("index",'index','expedicao');
+        } elseif (isset($params['salvar']) && empty($params['placa'])) {
+            $this->_helper->messenger('error', 'É necessário digitar uma placa');
+            $this->redirect("index",'index','expedicao');
         }
-
-
     }
 
     public function semEstoqueReportAction(){
