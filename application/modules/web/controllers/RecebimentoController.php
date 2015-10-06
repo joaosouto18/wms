@@ -1069,6 +1069,18 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $filtroNotaFiscalForm;
 
         $params = $filtroNotaFiscalForm->getParams();
+        if (!$params) {
+            $dataI1 = new \DateTime;
+            $dataI2 = new \DateTime;
+            $params = array(
+                'dataEntradaInicial' => $dataI1->format('d/m/Y'),
+                'dataEntradaFinal' => $dataI2->format('d/m/Y'),
+                'idFornecedor'=>'',
+                'numero'=>'',
+                'serie'=>''
+            );
+            $filtroNotaFiscalForm->populate($params);
+        }
 
         if ($params) {
 
