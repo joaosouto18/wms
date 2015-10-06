@@ -35,7 +35,7 @@ class EtiquetaConferenciaRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('e.codStatus,e.id')
             ->from('wms:Expedicao\EtiquetaConferencia','e')
-            ->leftJoin("wms:Expedicao\EtiquetaSeparacao",'es','WITH','e.codEtiquetaSeparacao = es.id')
+            ->innerJoin("wms:Expedicao\EtiquetaSeparacao",'es','WITH','e.codEtiquetaSeparacao = es.id')
             ->innerJoin("wms:Expedicao\Pedido",'p','WITH','e.pedido = p.id')
             ->where('e.codExpedicao = :idExpedicao')
             ->andwhere('e.codStatus = :status')

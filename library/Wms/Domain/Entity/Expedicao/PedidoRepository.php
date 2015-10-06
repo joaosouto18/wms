@@ -209,6 +209,7 @@ class PedidoRepository extends EntityRepository
             $this->_em->flush();
         }
 
+        /*
         $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
         $etiquetasConf = $EtiquetaConfRepo->findBy(array('pedido'=>$pedidoEntity));
 
@@ -216,6 +217,7 @@ class PedidoRepository extends EntityRepository
             $this->_em->remove($etiquetaConf);
             $this->_em->flush();
         }
+        */
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
         $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
