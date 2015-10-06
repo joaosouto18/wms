@@ -34,6 +34,11 @@ class Expedicao_EtiquetaController  extends Action
         $central        = $this->getRequest()->getParam('central');
         $cargas         = $this->getRequest()->getParam('cargas');
 
+        if (!isset($cargas)) {
+            $this->addFlashMessage('error', 'É necessário informar uma carga');
+            $this->_redirect('/expedicao');
+        }
+
         if (empty($idExpedicao) || empty($central)) {
             $this->_redirect('/');
         }
