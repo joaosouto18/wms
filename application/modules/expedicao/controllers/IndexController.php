@@ -251,7 +251,7 @@ class Expedicao_IndexController  extends Action
         set_time_limit(0);
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
         $reservaEstoqueExpedicaoRepo = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao');
-        $reservaEstoqueExpedicao = $reservaEstoqueExpedicaoRepo->findAll();
+        $reservaEstoqueExpedicao = $reservaEstoqueExpedicaoRepo->findBy(array('pedido' => null));
 
         foreach ($reservaEstoqueExpedicao as $reservaEstoqueExpedicaoEn) {
             $idExpedicao = $reservaEstoqueExpedicaoEn->getExpedicao()->getId();
@@ -276,9 +276,8 @@ class Expedicao_IndexController  extends Action
             $reservaEstoqueExpedicaoEn->setPedido($pedidoEn);
             $this->_em->persist($reservaEstoqueExpedicaoEn);
             $this->_em->flush();
-
         }
-        var_dump('success');exit;
+        var_dump('sucesso!');exit;
 
 
     }
