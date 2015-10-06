@@ -135,9 +135,12 @@ class UMA extends Pdf
         $codigoProduto = $produtoEn->getId();
         $descricaoProduto = $produtoEn->getDescricao();
 
-        if (strlen($descricaoProduto) >= 20) {
-            $font_size = 48;
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
         }
+
         $this->SetFont('Arial', 'B', $font_size);
 
         $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
@@ -146,7 +149,7 @@ class UMA extends Pdf
         $this->Cell(35,40,"",0,0);
 
         $this->SetFont('Arial', 'B', 32);
-        if ($params['dataValidade'] != null) {
+        if (isset($params['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
@@ -181,9 +184,11 @@ class UMA extends Pdf
 
 
         if (strlen($descricaoProduto) >= 42) {
-            $font_size = 38;
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
         }
-        
+
         $this->SetFont('Arial', 'B', $font_size);
 
         $this->MultiCell($line_width, 20, $descricaoProduto, 0, 'C');
@@ -202,7 +207,7 @@ class UMA extends Pdf
 
         $this->SetFont('Arial', 'B', 32);
 
-        if ($params['dataValidade'] != null) {
+        if (isset($params['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
