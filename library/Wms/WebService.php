@@ -29,7 +29,6 @@ class Wms_WebService
 
     public function trimArray($array)
     {
-        return $array;
         /*foreach($array as &$value)
             is_array($value) ? $this->trimArray($value):$value=trim($value);
         unset($value);*/
