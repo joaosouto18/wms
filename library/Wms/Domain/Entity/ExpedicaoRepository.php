@@ -1162,8 +1162,8 @@ class ExpedicaoRepository extends EntityRepository
 
         $sql='  SELECT E.COD_EXPEDICAO AS "id",
                        E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
-                       to_char(E.DTH_INICIO,\'dd/mm/yyyy hh:mi:ss\') AS "dataInicio",
-                       to_char(E.DTH_FINALIZACAO,\'dd/mm/yyyy hh:mi:ss\') AS "dataFinalizacao",
+                       to_char(E.DTH_INICIO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataInicio",
+                       to_char(E.DTH_FINALIZACAO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataFinalizacao",
                        C.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
                        P.IMPRIMIR AS "imprimir",
@@ -1992,13 +1992,31 @@ class ExpedicaoRepository extends EntityRepository
                         throw new \Exception("Etiqueta Pendente de Corte");
                         break;
                     case EtiquetaSeparacao::STATUS_CONFERIDO:
-                        $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
-                        if ($etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
-                            $operacao = "Recebimento de Transbordo";
-                            $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
-                            $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
-                            $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
-                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado'=>true);
+                        $expedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao();
+                        $idExpedicao = $expedicao->getId();
+                        $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                        $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                        $idStatus = $expedicao->getStatus()->getId();
+
+                        if ($idStatus == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
+                            $idFilialExterno = $etiquetaSeparacao->getPedido()->getPontoTransbordo();
+                            $filialEn = $this->getEntityManager()->getRepository("wms:Filial")->findOneBy(array('codExterno'=>$idFilialExterno));
+                            if ($filialEn == null) {
+                                throw new \Exception("Nenhuma filial encontrada com o código " . $idFilialExterno);
+                            }
+
+                            if ($filialEn->getIndRecTransbObg() == "S") {
+                                $operacao = "Recebimento de Transbordo";
+                                $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
+                            } else {
+                                $operacao    = "Expedição de Transbordo";
+                                $url =       "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
+                            }
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
+
+                        }
+                        if ($idStatus == Expedicao::STATUS_FINALIZADO) {
+                            throw new \Exception("Expedição Finalizada");
                         }
                     case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                         $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
@@ -2047,7 +2065,19 @@ class ExpedicaoRepository extends EntityRepository
                         }
                         break;
                     case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO:
-                        throw new \Exception("Etiqueta já Expedida no Transbordo");
+                        $expedicaoEn = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao();
+
+                        if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
+                            throw new \Exception("Expedição já finalizada");
+                        } else {
+                            $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+                            $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                            $carga       = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                            $operacao    = "Expedição de Transbordo";
+                            $url =       "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
+
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
+                        }
                         break;
                     case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO:
                         $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();

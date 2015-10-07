@@ -28,7 +28,7 @@ class Web_EnderecoController extends Crud
             $mascaraEndereco = \Wms\Util\Endereco::mascara();
 
             $source = $this->em->createQueryBuilder()
-                ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco")
+                ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
                 ->from('wms:Deposito\Endereco', 'e')
                 ->innerJoin('e.caracteristica', 'c')
                 ->innerJoin('e.areaArmazenagem', 'a')
@@ -115,6 +115,11 @@ class Web_EnderecoController extends Crud
                     'label' => 'Disponibilidade',
                     'index' => 'ativo',
                     'render' => 'AtivoOrInativo'
+                ))
+                ->addcolumn(array(
+                    'label' => 'En Bloqueado',
+                    'index' => 'inventarioBloqueado',
+                    'render' => 'SimOrNao'
                 ))
                 ->addAction(array(
                     'label' => 'Editar',

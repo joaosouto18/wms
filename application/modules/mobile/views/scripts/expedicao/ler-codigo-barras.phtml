@@ -133,6 +133,9 @@
 <?php if (isset($this->idExpedicao))  : ?>
 
     <p><?php echo $this->acao . " " .$this->idExpedicao ?>
+        <?php if ($this->acao == "Expedição de Transbordo:") :?>
+            <br>Placa: <?php echo $this->placa ?><br>
+        <?php endif; ?>
         <?php if (isset($this->volume))  : ?>
             Volume: <?php echo $this->volume ?>
         <?php endif; ?>

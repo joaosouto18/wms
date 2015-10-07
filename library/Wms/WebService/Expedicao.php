@@ -955,7 +955,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                                                                  'codCarga' => $cargaEn->getId()));
 
             if ($reentregaEn != null) {
-                throw new \Exception('Nota Fiscal '. $numeroNf . ' / ' . $serieNF . " ja se encontra na " . strtolower($tipoCarga->getSigla()) . " " . $numeroCarga);
+                return true;
+                //throw new \Exception('Nota Fiscal '. $numeroNf . ' / ' . $serieNF . " ja se encontra na " . strtolower($tipoCarga->getSigla()) . " " . $numeroCarga);
             }
 
             $reentregaEn = new Expedicao\Reentrega();

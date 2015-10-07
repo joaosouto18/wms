@@ -48,7 +48,7 @@ class PosicaoEstoqueResumidoRepository extends EntityRepository
         return true;
     }
 
-    public function gravarResumoEstoque(){
+    public function     gravarResumoEstoque(){
         $em = $this->getEntityManager();
         $dtEstoque = new \DateTime();
 
@@ -61,6 +61,7 @@ class PosicaoEstoqueResumidoRepository extends EntityRepository
         $estoqueAtualResumido = $EnderecoRepo->getOcupacaoRuaReport($params);
 
         foreach ($estoqueAtualResumido as $rua) {
+
             $numRua = $rua['NUM_RUA'];
             $posExistentes = $rua['POS_EXISTENTES'];
             $posOcupadas = ($rua['POS_EXISTENTES'] - $rua['POS_DISPONIVEIS']);
