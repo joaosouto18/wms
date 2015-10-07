@@ -38,7 +38,7 @@ class Expedicao_PendenciaController  extends Action
                 $status = "526";
             break;
             case 'expedido' :
-                $status = "532";
+                $status = "532,523,526,522";
             break;
             case 'conferida' :
                 $status = "523";
@@ -49,7 +49,7 @@ class Expedicao_PendenciaController  extends Action
         }
 
         $GridCortes = new PendentesGrid();
-        $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,$label,$embalado)
+        $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,$label,$embalado, $carga)
             ->render();
         $this->view->tipo = $tipo;
     }
