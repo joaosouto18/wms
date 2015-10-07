@@ -94,6 +94,9 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             });
         });
 
+        $("#filtro-expedicao-mercadoria-form #submit").click(function() {
+            $("#filtro-expedicao-mercadoria-form").attr('action', '/expedicao/index');
+        });
 
     }
 
