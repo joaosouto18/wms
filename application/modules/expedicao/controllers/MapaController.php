@@ -21,4 +21,12 @@ class Expedicao_MapaController  extends Action
         $grid = new \Wms\Module\Web\Grid\Expedicao\ConferenciaProdutoMapa();
         $this->view->grid = $grid->init($idMapa,$idProduto,$grade,$nomConferencia);
     }
+
+    public function pendentesConferenciaAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+
+        $grid = new \Wms\Module\Expedicao\Grid\MapasPendentes();
+        $this->view->grid = $grid->init($idExpedicao)->render();
+    }
 }

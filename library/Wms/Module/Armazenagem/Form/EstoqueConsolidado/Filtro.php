@@ -22,11 +22,16 @@ class Filtro extends Form
                      'multiOptions' => $repoLinhaSeparacao->getIdValue()
                 ))
                 ->addElement('submit', 'submit', array(
-                    'label' => 'Buscar',
+                    'label' => 'Imprimir CSV',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('grandeza', 'submit'), 'identificacao', array('legend' => 'Busca'));
+            ->addElement('submit', 'exportPdf', array(
+                'label' => 'Imprimir PDF',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper'),
+            ))
+                ->addDisplayGroup(array('grandeza', 'submit', 'exportPdf'), 'identificacao', array('legend' => 'Busca'));
     }
 
 }
