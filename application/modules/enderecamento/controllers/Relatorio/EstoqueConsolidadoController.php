@@ -16,7 +16,7 @@ class Enderecamento_Relatorio_EstoqueConsolidadoController extends Action
             if (isset($values['submit'])) {
                 $this->exportCSV($estoqueDados, 'Estoque_Consolidado', true);
             } else if (isset($values['exportPdf'])) {
-                $this->exportPDF($estoqueDados,'estoqueConsolidado','RELATÓRIO DE ESTOQUE POR PRODUTO CONSOLIDADO',"P");
+                $this->exportPDF($estoqueDados,'estoqueConsolidado','RELATORIO DE ESTOQUE POR PRODUTO CONSOLIDADO',"P");
             }
         }
 
