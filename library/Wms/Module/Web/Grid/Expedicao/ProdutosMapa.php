@@ -1,8 +1,9 @@
 <?php
 
 namespace Wms\Module\Web\Grid\Expedicao;
-          
 
+
+use Core\Grid\Pager;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento;
@@ -23,8 +24,12 @@ class ProdutosMapa extends Grid
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
         $mapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $array = $mapaRepo->getResumoConferenciaMapaProduto($idMapa);
-        $this->showPager = false;
-        $this->showExport = false;
+        $this->setShowExport(false);
+        $this->setShowPager(true);
+        $pager = new Pager(count($array), 1, 100);
+        $this->setpager($pager);
+        $this->setShowPager(false);
+
         $this->setSource(new \Core\Grid\Source\ArraySource($array))
             ->setId('expedicao-mapas-grid')
             ->setAttrib('class', 'grid-expedicao-pendencias')
