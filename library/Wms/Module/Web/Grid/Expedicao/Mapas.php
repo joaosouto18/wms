@@ -60,7 +60,13 @@ class Mapas extends Grid
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => 'COD_MAPA_SEPARACAO'
                 ))
-                ;
+                ->addAction(array(
+                    'label' => 'Visualizar Mapas sem Conferencia',
+                    'moduleName' => 'expedicao',
+                    'controllername' => 'mapa',
+                    'actionName' => 'pendentes-conferencia',
+                    'cssClass' => 'dialogAjax',
+                ));
 
         return $this;
     }
