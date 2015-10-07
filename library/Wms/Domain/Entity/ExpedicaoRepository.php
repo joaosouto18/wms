@@ -1162,8 +1162,8 @@ class ExpedicaoRepository extends EntityRepository
 
         $sql='  SELECT E.COD_EXPEDICAO AS "id",
                        E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
-                       to_char(E.DTH_INICIO,\'dd/mm/yyyy hh:mi:ss\') AS "dataInicio",
-                       to_char(E.DTH_FINALIZACAO,\'dd/mm/yyyy hh:mi:ss\') AS "dataFinalizacao",
+                       to_char(E.DTH_INICIO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataInicio",
+                       to_char(E.DTH_FINALIZACAO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataFinalizacao",
                        C.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
                        P.IMPRIMIR AS "imprimir",
