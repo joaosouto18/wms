@@ -18,14 +18,11 @@ class FiltroProduto extends Form
             'label' => 'Rua Final',
         ))
         ->addElement('select', 'tipoRelatorio', array(
-            'mostrarSelecione' => true,
+            'mostrarSelecione' => false,
             'label' => 'Tipo Relatorio',
             'multiOptions' => array(
-                'options' => array(
                     'C' => 'Classe',
                     'P' => 'Produto'
-
-                )
             ),
         ))
         ->addElement('submit', 'buscar', array(
