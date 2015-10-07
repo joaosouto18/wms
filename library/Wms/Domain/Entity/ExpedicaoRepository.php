@@ -2000,7 +2000,7 @@ class ExpedicaoRepository extends EntityRepository
 
                         if ($idStatus == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
                             $idFilialExterno = $etiquetaSeparacao->getPedido()->getPontoTransbordo();
-                            $filialEn = $this->getEntityManager()->getRepository("Filial")->findOneBy(array('codExterno'=>$idFilialExterno));
+                            $filialEn = $this->getEntityManager()->getRepository("wms:Filial")->findOneBy(array('codExterno'=>$idFilialExterno));
                             if ($filialEn == null) {
                                 throw new \Exception("Nenhuma filial encontrada com o código " . $idFilialExterno);
                             }

@@ -475,8 +475,10 @@ class Mobile_ExpedicaoController extends Action
                 return false;
             }
             if ($etiqueta[0]['placaCarga'] != $placa) {
+                $msg = 'Etiqueta não pertence a placa ' . $placa;
+
                 $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
-                $this->bloqueioOs($idExpedicao, 'Etiqueta não pertence a placa ' . $placa, false);
+                $this->bloqueioOs($idExpedicao, $msg, false);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('error', 'Etiqueta não pertence a placa ' . $placa, $this->createUrlMobile());
                 } else {
