@@ -311,7 +311,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $pedidoRepository->cancelar($idPedido);
-
+            throw new \Exception("Chegou aqui");
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
             $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo  */
