@@ -294,40 +294,44 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
-        $idCargaExterno = trim ($idCargaExterno);
-        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
-        $tipoCarga = trim($tipoCarga);
-        $tipoPedido = trim($tipoPedido);
-        $idPedido = trim($idPedido);
+        try {
+            $idCargaExterno = trim ($idCargaExterno);
+            if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+            $tipoCarga = trim($tipoCarga);
+            $tipoPedido = trim($tipoPedido);
+            $idPedido = trim($idPedido);
 
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
-        $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+            $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
 
-        /** @var \Wms\Domain\Entity\Expedicao\Pedido $EntPedido */
-        $EntPedido = $pedidoRepository->find($idPedido);
-        if ($EntPedido->getConferido() == 1) {
-            throw new \Exception("Pedido $idPedido já conferido");
-        }
-
-        $pedidoRepository->cancelar($idPedido);
-
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
-        $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo  */
-        $etiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
-        $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
-        $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
-        if ($pedidosNaoCancelados == 0) {
-            $qtdCorte     = $etiquetaSeparacaoRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
-            $qtdEtiquetas = $etiquetaSeparacaoRepo->getEtiquetasByStatus(null,$idExpedicao);
-            if ($qtdCorte == $qtdEtiquetas) {
-                $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
-                $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
-                $this->_em->flush();
+            /** @var \Wms\Domain\Entity\Expedicao\Pedido $EntPedido */
+            $EntPedido = $pedidoRepository->find($idPedido);
+            if ($EntPedido->getConferido() == 1) {
+                throw new \Exception("Pedido $idPedido já conferido");
             }
-        }
 
+            $pedidoRepository->cancelar($idPedido);
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
+            $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo  */
+            $etiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+            $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
+            $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
+            if ($pedidosNaoCancelados == 0) {
+                $qtdCorte     = $etiquetaSeparacaoRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
+                $qtdEtiquetas = $etiquetaSeparacaoRepo->getEtiquetasByStatus(null,$idExpedicao);
+                if ($qtdCorte == $qtdEtiquetas) {
+                    $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
+                    $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
+                    $this->_em->flush();
+                }
+            }
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
 
         return true;
     }
