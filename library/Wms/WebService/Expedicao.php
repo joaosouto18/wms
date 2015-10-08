@@ -295,6 +295,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
         try {
+            $this->_em->commit();
+            throw new \Exception("Chegou aqui");
+
             $idCargaExterno = trim ($idCargaExterno);
             if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
             $tipoCarga = trim($tipoCarga);
@@ -311,7 +314,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $pedidoRepository->cancelar($idPedido);
-            throw new \Exception("Chegou aqui");
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
             $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo  */
