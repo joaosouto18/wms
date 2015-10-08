@@ -294,10 +294,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
-        throw new \Exception("Chegou aqui");
 
         try {
-            $this->_em->commit();
+            $this->_em->beginTransaction();
+            throw new \Exception("Chegou aqui");
 
             $idCargaExterno = trim ($idCargaExterno);
             if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
