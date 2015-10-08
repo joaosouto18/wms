@@ -38,7 +38,7 @@ class Expedicao_PendenciaController  extends Action
                 $status = "526";
             break;
             case 'expedido' :
-                $status = "532";
+                $status = "532,523,526,522";
             break;
             case 'conferida' :
                 $status = "523";
@@ -49,7 +49,7 @@ class Expedicao_PendenciaController  extends Action
         }
 
         $GridCortes = new PendentesGrid();
-        $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,$label,$embalado)
+        $this->view->gridCortes = $GridCortes->init($idExpedicao, $status, $placaCarga, $transbordo,$label,$embalado, $carga)
             ->render();
         $this->view->tipo = $tipo;
     }
@@ -68,6 +68,7 @@ class Expedicao_PendenciaController  extends Action
         $transbordo  = $this->getRequest()->getParam('transbordo');
         $embalado    = $this->getRequest()->getParam('embalado');
         $tipo        = $this->getRequest()->getParam('tipo', null);
+        $carga       = $this->getRequest()->getParam('carga', null);
 
         if (is_null($placaCarga))    {
             $status = "522,523";
@@ -84,7 +85,7 @@ class Expedicao_PendenciaController  extends Action
                 $status = "526";
                 break;
             case 'expedido' :
-                $status = "532";
+                $status = "532,523,526,522";
                 break;
             default:
                 $status = $status;
@@ -93,7 +94,7 @@ class Expedicao_PendenciaController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,$status,"Array",$placaCarga,$transbordo,$embalado);
+        $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,$status,"Array",$placaCarga,$transbordo,$embalado, $carga);
         $quebraRelatorio = $this->getSystemParameterValue("QUEBRA_CARGA_REL_PEND_EXP");
         $modeloRelatorio = $this->getSystemParameterValue("MODELO_RELATORIOS");
         $RelCarregamento    = new ProdutosSemConferenciaReport("L","mm","A4");
