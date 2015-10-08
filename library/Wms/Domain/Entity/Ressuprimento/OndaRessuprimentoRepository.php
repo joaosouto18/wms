@@ -227,6 +227,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
             $qtd = $produto['QTD']* -1;
+            $codPedido = $produto['COD_PEDIDO'];
 
             $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
@@ -244,6 +245,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $saidaProduto = array(
                     'idPicking' => $idPicking,
                     'idExpedicao' => $codExpedicao,
+                    'idPedido' => $codPedido,
                     'produtos' => array(array('codProdutoEmbalagem'=>$embalagem->getId(),
                         'codProdutoVolume'=>null,
                         'codProduto'=>$codProduto,
@@ -277,6 +279,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $saidaProduto = array(
                         'idPicking' => $idPicking,
                         'idExpedicao' => $codExpedicao,
+                        'idPedido' => $codPedido,
                         'produtos' => $produtosArray
                     );
 

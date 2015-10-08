@@ -88,17 +88,17 @@ class ExpedicaoRepository extends EntityRepository
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
                          SUM (NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) as QTD,
-                         E.COD_EXPEDICAO
-                    FROM PEDIDO P
-                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
+                         E.COD_EXPEDICAO, PED.COD_PEDIDO
+                    FROM PEDIDO PED
+                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = PED.COD_PEDIDO
+                    LEFT JOIN CARGA          C ON C.COD_CARGA = PED.COD_CARGA
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     LEFT JOIN PRODUTO        P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
-                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
+                    WHERE PED.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
-                          AND P.CENTRAL_ENTREGA = $filialExterno
+                          AND PED.CENTRAL_ENTREGA = $filialExterno
                           AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE,E.COD_EXPEDICAO";
+                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, E.COD_EXPEDICAO, PED.COD_PEDIDO";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }

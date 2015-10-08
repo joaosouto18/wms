@@ -18,7 +18,7 @@ class ReservaEstoqueRepository extends EntityRepository
      * produtos[0]['grade'] = 'Grade do Produto'
      * produtos[0]['qtd'] = '10' ou '-10'
     */
-    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "" )
+    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "", $idPedido = null)
     {
         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
@@ -44,7 +44,7 @@ class ReservaEstoqueRepository extends EntityRepository
         } else if ($origemReserva == "U") {
             return $this->addReservaEstoqueUma($enderecoEn,$produtos,$tipoReserva,$idOrigem,$usuarioEn,$observacao);
         } else if ($origemReserva == "E") {
-            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao);
+            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao,$idPedido);
         }
     }
 
@@ -315,7 +315,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return $reservaEstoqueEn;
     }
 
-    private function addReservaEstoqueExpedicao ($enderecoEn, $produtos, $idExpedicao, $usuarioReserva, $observacoes){
+    private function addReservaEstoqueExpedicao ($enderecoEn, $produtos, $idExpedicao, $usuarioReserva, $observacoes, $idPedido = null){
 
         $reservaEstoqueEn = $this->findReservaEstoque($enderecoEn->getId(),$produtos,"S","E",$idExpedicao);
 
@@ -334,11 +334,14 @@ class ReservaEstoqueRepository extends EntityRepository
         } else {
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
             $expedicaoEn = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
+            $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $idPedido));
 
             $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,"S",$usuarioReserva,$observacoes);
             $reservaEstoqueExpedicao = new \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao();
             $reservaEstoqueExpedicao->setExpedicao($expedicaoEn);
             $reservaEstoqueExpedicao->setReservaEstoque($reservaEstoqueEn);
+            $reservaEstoqueExpedicao->setPedido($pedidoEn);
             $this->getEntityManager()->persist($reservaEstoqueExpedicao);
         }
         return $reservaEstoqueEn;
