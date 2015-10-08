@@ -118,12 +118,13 @@ class PedidoRepository extends EntityRepository
     public function gerarEtiquetasById($idPedido, $status)
     {
         $pedidosProdutos = $this->findPedidosProdutosSemEtiquetaById($idPedido);
-
         if ($pedidosProdutos != null) {
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
             $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $pedidoEn = $this->findOneBy(array('id'=>$idPedido));
+            $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
-            if ($EtiquetaSeparacaoRepo->gerarEtiquetas($pedidosProdutos, $status) > 0 ) {
+            if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao) > 0 ) {
                 throw new \Exception ("Existem produtos sem definição de volume");
             }
             return true;
