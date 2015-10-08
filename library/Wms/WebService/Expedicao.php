@@ -297,7 +297,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         try {
             $this->_em->beginTransaction();
-            throw new \Exception("Chegou aqui");
+            //throw new \Exception("Chegou aqui");
 
             $idCargaExterno = trim ($idCargaExterno);
             if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
