@@ -94,10 +94,14 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 });
             });
 
-            $("#busca-expedicoes").click(function() {
-                $("#busca-expedicoes").attr('action', '/expedicao/index');
+            $("#filtro-expedicao-mercadoria-form #submit").click(function() {
+                var url = location.href;
+                console.log(url.indexOf("index"));
+                if (url.indexOf("index") == 27) {
+                    console.log(url);
+                    $("#filtro-expedicao-mercadoria-form").attr('action', '/expedicao/index');
+                }
             });
-
 
         }
 
