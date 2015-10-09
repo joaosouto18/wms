@@ -94,6 +94,10 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 });
             });
 
+            $("#busca-expedicoes").click(function() {
+                $("#busca-expedicoes").attr('action', '/expedicao/index');
+            });
+
 
         }
 
