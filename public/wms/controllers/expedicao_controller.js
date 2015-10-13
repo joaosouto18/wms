@@ -97,7 +97,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             $("#filtro-expedicao-mercadoria-form #submit").click(function() {
                 var url = location.href;
                 console.log(url.indexOf("expedicao/index"));
-                if (url.indexOf("expedicao/index") == 17) {
+                if (url.indexOf("expedicao/index") == 19) {
                     console.log(url);
                     $("#filtro-expedicao-mercadoria-form").attr('action', '/expedicao/index');
                 }
