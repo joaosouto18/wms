@@ -34,6 +34,10 @@ class ReservaEstoque extends Grid
                 'index' => 'origemReserva',
             ))
             ->addColumn(array(
+                'label' => 'Pedido',
+                'index' => 'pedido',
+            ))
+            ->addColumn(array(
                 'label' => 'Tipo reserva',
                 'index' => 'tipoReserva',
             ))

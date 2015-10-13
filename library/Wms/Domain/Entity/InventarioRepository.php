@@ -334,15 +334,16 @@ class InventarioRepository extends EntityRepository
         $source = $this->_em->createQueryBuilder()
             ->select("d.id, prod.id as produto, prod.grade as grade, re.dataReserva, d.descricao,
             CONCAT(
-                CASE WHEN ped.id IS NOT NULL THEN 'Pedido Código:'
+                CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:'
                      WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:'
                      WHEN palete.id IS NOT NULL THEN 'Palete :'
                      ELSE 'Não foi possível identificar a operação'
                 END
             ,
-                NVL(ped.id,NVL(ressup.id,NVL(palete.id,'')))
+                NVL(exp.id,NVL(ressup.id,NVL(palete.id,'')))
             ) as origemReserva,
-            CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva
+            CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva,
+            NVL(ped.id,'') as pedido
             ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
@@ -351,6 +352,7 @@ class InventarioRepository extends EntityRepository
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueEnderecamento','reend','WITH','reend.reservaEstoque = re.id')
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueOnda','reond','WITH','reond.reservaEstoque = re.id')
             ->leftJoin('reexp.pedido','ped')
+            ->leftJoin('reexp.expedicao', 'exp')
             ->leftJoin('reond.ondaRessuprimentoOs','ressup')
             ->leftJoin('reend.palete','palete')
             ->leftJoin('re.produtos','rep')
