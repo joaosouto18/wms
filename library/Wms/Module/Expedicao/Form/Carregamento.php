@@ -14,15 +14,18 @@ class Carregamento extends Form
                 ))
                 ->addElement('text', 'codExpedicao', array(
                     'size' => 10,
-                    'label' => 'Código da Expedição',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Expedição',
+                ))
+                ->addElement('text', 'codCarga', array(
+                    'size' => 10,
+                    'label' => 'Carga',
                 ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-            ->addDisplayGroup(array('codExpedicao', 'submit'), 'identificacao', array('legend' => 'Expedição')
+            ->addDisplayGroup(array('codExpedicao','codCarga', 'submit'), 'identificacao', array('legend' => 'Expedição')
         );
     }
 

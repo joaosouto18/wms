@@ -17,9 +17,19 @@ class Expedicao_CarregamentoController  extends Action
             $codExpedicao = $params['codExpedicao'];
         }
 
+        $codCarga = null;
+        if (isset($params['codCarga'])) {
+            $codCarga = $params['codCarga'];
+
+            $cargaEn = $this->getEntityManager()->getRepository("wms:Expedicao\Carga")->findOneBy(array('codCargaExterno'=>$codCarga));
+            if ($cargaEn != null) {
+                $codExpedicao = $cargaEn->getExpedicao()->getId();
+            }
+        }
+
         $this->buttons($codExpedicao);
 
-        if ($codExpedicao) {
+        if ($codExpedicao || $codCarga) {
             $form->populate($params);
             if (isset($params['pedido'])) {
                 /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
@@ -47,6 +57,7 @@ class Expedicao_CarregamentoController  extends Action
             }
         }
         $this->view->codExpedicao = $codExpedicao;
+        $this->view->codCarga = $codCarga;
         $this->view->form = $form;
     }
 

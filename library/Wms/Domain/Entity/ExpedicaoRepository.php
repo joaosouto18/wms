@@ -1677,7 +1677,7 @@ class ExpedicaoRepository extends EntityRepository
         return $resultado;
     }
 
-    public function getCarregamentoByExpedicao($codExpedicao, $codStatus = null)
+    public function getCarregamentoByExpedicao($codExpedicao, $codStatus = null, $codCargaExterno = null)
     {
         $source = $this->_em->createQueryBuilder()
             ->select("ped.id              as pedido,
@@ -1702,8 +1702,12 @@ class ExpedicaoRepository extends EntityRepository
             ->groupBy("ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
             ->orderBy('car.codCargaExterno, ped.sequencia,  it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome ');
 
-        if (!is_null($codExpedicao)) {
+        if (!is_null($codExpedicao) && ($codExpedicao != "")) {
             $source->andWhere("car.codExpedicao = " . $codExpedicao);
+        }
+
+        if (!is_null($codCargaExterno) && ($codCargaExterno != "")) {
+            $source->andWhere("car.codCargaExterno = " . $codCargaExterno);
         }
 
         if ($codStatus != NULL){
