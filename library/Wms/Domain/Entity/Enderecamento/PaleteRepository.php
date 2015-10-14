@@ -488,6 +488,11 @@ class PaleteRepository extends EntityRepository
             }
         }
 
+        $qtdTotalConferido = 0;
+        foreach ($qtdRecebida as $recebido) {
+            $qtdTotalConferido = $qtdTotalConferido + $recebido['QTD'];
+        }
+
         foreach ($qtdEnderecada as $enderecado) {
             foreach ($qtdRecebida as $key => $recebido) {
                 if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
@@ -502,7 +507,7 @@ class PaleteRepository extends EntityRepository
             $qtdLimite = $this->getQtdLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn, $qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo, $recebimentoEn, $statusEn);
+        $this->salvaNovosPaletes($produtoEn, $qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo, $recebimentoEn, $statusEn, $qtdTotalConferido);
 
         $this->_em->flush();
         $this->_em->clear();
@@ -533,7 +538,13 @@ class PaleteRepository extends EntityRepository
         }
     }
 
-    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn){
+    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido){
+
+        //QUANTIDADE DA NOTA
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
+            $nfRepo    = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+            $qtdNotaFiscal = $nfRepo->getQtdByProduto($recebimentoEn->getId(),$idProduto,$grade);
+
         foreach ($qtdRecebida as $unitizador) {
             $idNorma = $unitizador['COD_NORMA_PALETIZACAO'];
             if ($unitizador['QTD'] > 0) {
@@ -583,7 +594,7 @@ class PaleteRepository extends EntityRepository
 
                 if ($qtdUltimoPalete > 0) {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
-                    if ($recebimentoFinalizado == true) {
+                    if ($recebimentoFinalizado == true || ($qtdTotalConferido == $qtdNotaFiscal)) {
                         $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$qtdUltimoPalete, $dataValidade);
                     }
                 }
