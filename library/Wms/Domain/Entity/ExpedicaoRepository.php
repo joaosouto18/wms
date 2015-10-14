@@ -528,7 +528,10 @@ class ExpedicaoRepository extends EntityRepository
         $MapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
 
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
-        if ($this->validaCargaFechada($idExpedicao) == false) return 'Existem cargas com pendencias de fechamento';
+        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+        }
 
         if ($this->validaPedidosImpressos($idExpedicao) == false) {
             return 'Existem produtos sem etiquetas impressas';
@@ -555,8 +558,9 @@ class ExpedicaoRepository extends EntityRepository
                     return $result;
                 }
             } else {
-                if ($this->validaCargaFechada($idExpedicao) == false){
-                    return 'Existem cargas com pendencias de fechamento';
+                $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+                if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+                    return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
                 }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
@@ -651,12 +655,13 @@ class ExpedicaoRepository extends EntityRepository
     private function validaCargaFechada($idExpedicao) {
         $cargas = $this->getCargas($idExpedicao);
 
+        $codCargaExterno = array();
         foreach($cargas as $carga) {
             if ($carga->getDataFechamento() == null) {
-                return false;
+                $codCargaExterno[] = $carga->getCodCargaExterno();
             }
         }
-        return true;
+        return implode(', ', $codCargaExterno);
     }
 
         /**
@@ -665,8 +670,9 @@ class ExpedicaoRepository extends EntityRepository
      */
     private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
     {
-        if ($this->validaCargaFechada($idExpedicao) == false) {
-            return 'Existem cargas com pendencias de fechamento';
+        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
