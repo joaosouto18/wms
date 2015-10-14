@@ -92,8 +92,9 @@ class GerarEtiqueta extends eFPDF
         }
 
         $this->AddPage();
-        $this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
-        $this->Ln(3);
+        $this->MultiCell(100,2.7,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
+        //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
+        $this->Ln(1.5);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(3);
         $this->Cell(100, 0, 'Fabricante: ' . utf8_decode($produto['fabricante']) . $fornecedor, 0, 0);
