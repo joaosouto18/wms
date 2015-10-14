@@ -488,6 +488,11 @@ class PaleteRepository extends EntityRepository
             }
         }
 
+        $qtdTotalConferido = 0;
+        foreach ($qtdRecebida as $recebido) {
+            $qtdTotalConferido = $qtdTotalConferido + $recebido['QTD'];
+        }
+
         foreach ($qtdEnderecada as $enderecado) {
             foreach ($qtdRecebida as $key => $recebido) {
                 if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
@@ -502,7 +507,7 @@ class PaleteRepository extends EntityRepository
             $qtdLimite = $this->getQtdLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn, $qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo, $recebimentoEn, $statusEn);
+        $this->salvaNovosPaletes($produtoEn, $qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo, $recebimentoEn, $statusEn, $qtdTotalConferido);
 
         $this->_em->flush();
         $this->_em->clear();
@@ -533,7 +538,13 @@ class PaleteRepository extends EntityRepository
         }
     }
 
-    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn){
+    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido){
+
+        //QUANTIDADE DA NOTA
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
+            $nfRepo    = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+            $qtdNotaFiscal = $nfRepo->getQtdByProduto($recebimentoEn->getId(),$idProduto,$grade);
+
         foreach ($qtdRecebida as $unitizador) {
             $idNorma = $unitizador['COD_NORMA_PALETIZACAO'];
             if ($unitizador['QTD'] > 0) {
@@ -583,7 +594,7 @@ class PaleteRepository extends EntityRepository
 
                 if ($qtdUltimoPalete > 0) {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
-                    if ($recebimentoFinalizado == true) {
+                    if ($recebimentoFinalizado == true || ($qtdTotalConferido == $qtdNotaFiscal)) {
                         $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$qtdUltimoPalete, $dataValidade);
                     }
                 }
@@ -1098,6 +1109,62 @@ class PaleteRepository extends EntityRepository
         }
 
         return $query->getQuery()->getResult();
+    }
+
+    public function getSugestaoEnderecoPalete ($paleteEn) {
+
+        /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
+        $normaPaletizacaoRepo = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao");
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+        $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
+        $produtos = $paleteEn->getProdutos();
+        $codNormaPaletizacao = $produtos[0]->getCodNormaPaletizacao();
+        $normaPaletizacaoEn = $normaPaletizacaoRepo->findOneBy(array('id'=>$codNormaPaletizacao));
+
+        $qtdPaleteProduto = $produtos[0]->getQtd();
+        $sugestaoEndereco = null;
+
+        //FAÇO A VALIDAÇÂO PARA ALOCAR NO PICKING SOMENTE SE FOR UM PALETE INCOMPLETO
+        if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto) {
+            $embalagem   = $produtos[0]->getEmbalagemEn();
+            $pickingEn   = $embalagem->getEndereco();
+            $codProduto  = $produtos[0]->getCodProduto();
+            $grade       = $produtos[0]->getGrade();
+            $capacidadePicking = $embalagem->getCapacidadePicking();
+
+            //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
+            if ($pickingEn != Null) {
+                $idVolume = null;
+                $volumes = array();
+                if ($produtos[0]->getCodProdutoVolume() != NULL) {
+                    $idVolume = $produtos[0]->getCodProdutoVolume();
+                    foreach ($produtos as $volume){
+                        $volumes[] = $volume->getCodProdutoVolume();
+                    }
+                }
+
+                $SaldoPicking = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto,$grade,$pickingEn->getId(), $volumes);
+                $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume,$pickingEn->getId(),"E");
+                $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $pickingEn->getId(),"S");
+
+                //ENDEREÇO NO PICKING SOMENTE SE A QUANTIDADE DO PALETE + O ESTOQUE NÂO PASSAR A CAPACIDADE
+                if (($SaldoPicking + $reservaEntradaPicking + $reservaSaidaPicking + $qtdPaleteProduto) <= $capacidadePicking) {
+                    $sugestaoEndereco = array('COD_DEPOSITO_ENDERECO'=>$pickingEn->getId(),
+                        'DSC_DEPOSITO_ENDERECO'=>$pickingEn->getDescricao());
+                }
+            }
+        }
+
+        //SE FOR UM PALETE COMPLETO, VAI BUSCAR UM ENDEREÇO NO PULMÃO
+        if ($sugestaoEndereco != null) {
+            $sugestaoEndereco = $this->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$paleteEn->getRecebimento()->getId(),$larguraPalete);
+        }
+
+        return $sugestaoEndereco;
     }
 
     public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete) {
