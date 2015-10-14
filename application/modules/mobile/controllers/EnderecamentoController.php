@@ -404,8 +404,6 @@ class Mobile_EnderecamentoController extends Action
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
-            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-            $produtoRepo    = $this->em->getRepository('wms:Produto');
 
             $paletesSelecionados = $this->_getParam('palete');
 
@@ -471,8 +469,9 @@ class Mobile_EnderecamentoController extends Action
 
                         $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
                         if ($paleteEn->getDepositoEndereco() == null) {
-                            $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
-                            $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$idRecebimento,$larguraPalete);
+
+                            $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
+
                             if ($sugestaoEndereco != null) {
                                 $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
                                 $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
