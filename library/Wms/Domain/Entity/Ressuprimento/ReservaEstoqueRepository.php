@@ -379,7 +379,7 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     public function getResumoReservasNaoAtendidasByParams($params) {
-        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO
+        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO || ' Pedido: ' || REEXP.COD_PEDIDO
                             WHEN REOND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Ressuprimento: '  || OOS.COD_ONDA_RESSUPRIMENTO
                             WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA || ' Recebimento: ' || P.COD_RECEBIMENTO
                        END AS ORIGEM,
@@ -387,9 +387,10 @@ class ReservaEstoqueRepository extends EntityRepository
                        CASE WHEN REP.QTD_RESERVADA >= 0 THEN 'ENTRADA'
                             ELSE 'SAÍDA'
                        END AS TIPO,
-                       REP.QTD_RESERVADA
+                       REP.QTD_RESERVADA,
+                       REEXP.COD_PEDIDO
                   FROM RESERVA_ESTOQUE RE
-                 INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN RESERVA_ESTOQUE_ENDERECAMENTO REEND ON REEND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN PALETE P ON REEND.UMA = P.UMA
                   LEFT JOIN RESERVA_ESTOQUE_ONDA_RESSUP REOND ON REOND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
