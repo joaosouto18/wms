@@ -1,14 +1,14 @@
 <form id="modelo-separacao-form" class="saveForm" method="post" action="" novalidate="novalidate">
     <fieldset id="fieldset-modelo">
-        <legend><?php echo utf8_encode('Endereçamento Automático') ?></legend>
+        <legend>EndereÃ§amento AutomÃ¡tico</legend>
         <div>
             <label for="descricao">Descricao</label>
             <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
-            <label for="endereco"><?php echo utf8_encode('Endereço de Referência'); ?></label>
-            <?php if (!empty($this->modelo->getCodReferencia()->getDescricao())) : ?>
+            <label for="endereco">EndereÃ§o de ReferÃªncia</label>
+            <?php if ($this->modelo->getCodReferencia() != null) : ?>
                 <input type="text" id="endereco" name="endereco" alt="endereco" placeholder="00.000.00.00" value="<?php echo $this->modelo->getCodReferencia()->getDescricao(); ?>">
             <?php else : ?>
-                <input type="text" id="endereco" name="endereco">
+                <input type="text" id="endereco" name="endereco" alt="endereco" placeholder="00.000.00.00">
             <?php endif; ?>
         </div>
 
@@ -16,14 +16,14 @@
             <tr>
                 <td>
                     <fieldset id="enderecamento">
-                        <legend><?php echo utf8_encode('Sequencia de Endereçamento') ?></legend>
+                        <legend>Sequencia de EndereÃ§amento</legend>
                         <table style="width: 100%">
                             <tr>
                                 <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                     <fieldset id="fieldset-areaArmazenagem">
                                         <legend>Area de Armazenagem</legend>
                                         <table class="gTable">
-                                            <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
+                                            <tr class="gTTitle"><td>DescriÃ§Ã£o</td><td>SequÃªncia</td></tr>
                                             <?php $i = 0; ?>
                                             <?php foreach ($this->areaArmazenagens as $key => $areaArmazenagem) : ?>
                                                 <tr class="gTResultSet">
@@ -48,7 +48,7 @@
                                     <fieldset id="fieldset-tipoEndereco">
                                         <legend>Estrutura de Armazenagem</legend>
                                         <table class="gTable">
-                                            <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
+                                            <tr class="gTTitle"><td>DescriÃ§Ã£o</td><td>SequÃªncia</td></tr>
                                             <?php $i = 0; ?>
                                             <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
                                                 <tr class="gTResultSet">
@@ -72,7 +72,7 @@
                                     <fieldset id="fieldset-tipoEndereco">
                                         <legend>Tipos de Enderecos</legend>
                                         <table class="gTable">
-                                            <?php echo utf8_encode('<tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>') ?>
+                                            <tr class="gTTitle"><td>DescriÃ§Ã£o</td><td>SequÃªncia</td></tr>
                                             <?php $i = 0; ?>
                                             <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
                                                 <tr class="gTResultSet">

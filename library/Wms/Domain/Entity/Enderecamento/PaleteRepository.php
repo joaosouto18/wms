@@ -1188,7 +1188,6 @@ class PaleteRepository extends EntityRepository
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
-                    AND ROWNUM = 1
                ORDER BY ET.NUM_PRIORIDADE, AA.NUM_PRIORIDADE, TE.NUM_PRIORIDADE, DIF_RUA,DIF_PREDIO,DIF_NIVEL,DIF_APARTAMENTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($result)>0) {
