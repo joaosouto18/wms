@@ -1324,4 +1324,17 @@ class PaleteRepository extends EntityRepository
 
     }
 
+    public function getQtdTotalByPicking($codProduto, $grade)
+    {
+        $sql = "SELECT SUM(PP.QTD) AS QUANTIDADE, (SUM(NVL(REP.QTD_RESERVADA,0)) + SUM(PP.QTD)) AS QUANTIDADE_TOTAL
+                FROM PALETE_PRODUTO PP
+                INNER JOIN PALETE P ON PP.UMA = P.UMA
+                INNER JOIN DEPOSITO_ENDERECO DE ON P.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                WHERE PP.COD_PRODUTO = '$codProduto' AND PP.DSC_GRADE = '$grade'";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
