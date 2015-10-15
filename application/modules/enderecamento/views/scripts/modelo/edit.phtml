@@ -44,7 +44,7 @@
                                     </fieldset>
                                 </td>
 
-                                <td style="vertical-align: top; width: 30%" >
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                     <fieldset id="fieldset-tipoEndereco">
                                         <legend>Estrutura de Armazenagem</legend>
                                         <table class="gTable">
@@ -68,7 +68,7 @@
                                         </table>
                                     </fieldset>
                                 </td>
-                                <td style="vertical-align: top; width: 30%">
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                     <fieldset id="fieldset-tipoEndereco">
                                         <legend>Tipos de Enderecos</legend>
                                         <table class="gTable">
@@ -92,6 +92,32 @@
                                         </table>
                                     </fieldset>
                                 </td>
+
+                                <td style="vertical-align: top; width: 30%">
+                                    <fieldset id="fieldset-caracteristicaEndereco">
+                                        <legend>Caracteristica</legend>
+                                        <table class="gTable">
+                                            <tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->caracteristicaEndereco as $key => $caracteristicaEndereco) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $caracteristicaEndereco->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaCaracteristicaEndereco as $populaCaracteristicaEnd) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaCaracteristicaEnd->getCaracteristicaEndereco()->getId() == $caracteristicaEndereco->getId()) : ?>
+                                                            <td><input type="text" id="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" name="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" value="<?php echo $populaCaracteristicaEnd->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" name="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+
                             </tr>
                         </table>
                     </fieldset>

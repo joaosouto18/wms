@@ -4,7 +4,7 @@ echo $this->headLink()->appendStylesheet('/css/admin/form/dadoLogisticoForm.css'
 $areaArmazenagem = $this->element->area->getValue();
 $tipoEstrutura = $this->element->estrutura->getValue();
 $tipoEndereco = $this->element->tpEndereco->getValue();
-
+$caracteristicaEndereco = $this->element->caracEndereco->getValue();
 ?>
 <div id="produto-enderecamento-automatico">
     <dd id="identification-element">
@@ -12,7 +12,7 @@ $tipoEndereco = $this->element->tpEndereco->getValue();
             <legend>Endereçamento Automático</legend>
             <table style="width: 100%">
                 <tr>
-                   <td colspan="3">
+                   <td colspan="4">
                        <div class="field">
                             <?php echo $this->element->enderecoReferencia;?>
                        </div>
@@ -52,7 +52,7 @@ $tipoEndereco = $this->element->tpEndereco->getValue();
                                     </table>
                                 </fieldset>
                             </td>
-                            <td style="vertical-align: top; width: 30%">
+                            <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                 <fieldset id="fieldset-tipoEndereco">
                                     <legend>Tipo de Endereço</legend>
                                     <table class="gTable">
@@ -61,6 +61,20 @@ $tipoEndereco = $this->element->tpEndereco->getValue();
                                             <tr class="gTResultSet">
                                                 <td><?php echo $tipo['DESCRICAO'] ?></td>
                                                 <td><?php echo '<input style="width:40px;" type="text" name="tipoEndereco[' . $tipo['ID'] . ']" value="' . $tipo['VALUE'].'">' ?></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </table>
+                                </fieldset>
+                            </td>
+                            <td style="vertical-align: top; width: 30%">
+                                <fieldset id="fieldset-tipoEndereco">
+                                    <legend>Caracteristica</legend>
+                                    <table class="gTable">
+                                        <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
+                                        <?php foreach ($caracteristicaEndereco as $caracteristica):?>
+                                            <tr class="gTResultSet">
+                                                <td><?php echo $caracteristica['DESCRICAO'] ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="caracteristicaEndereco[' . $caracteristica['ID'] . ']" value="' . $caracteristica['VALUE'].'">' ?></td>
                                             </tr>
                                         <?php endforeach ?>
                                     </table>

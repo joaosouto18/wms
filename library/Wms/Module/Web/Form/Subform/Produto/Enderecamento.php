@@ -32,7 +32,9 @@ class Enderecamento extends SubForm
 
         $this->addElement('hidden', 'tpEndereco');
 
-        $this->addDisplayGroup(array('id','area','estrutura','tpEndereco'), 'identificacao', array('legend' => 'Filtros de Busca'));
+        $this->addElement('hidden', 'caracEndereco');
+
+        $this->addDisplayGroup(array('id','area','estrutura','tpEndereco','caracEndereco'), 'identificacao', array('legend' => 'Filtros de Busca'));
 
     }
 
@@ -48,6 +50,7 @@ class Enderecamento extends SubForm
         $areaArmaz = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($produto->getId(),$produto->getGrade());
         $estArmaz = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($produto->getId(),$produto->getGrade());
         $tipoEndereco = $produtoRepo->getSequenciaEndAutomaticoTpEndereco ($produto->getId(),$produto->getGrade());
+        $caracteristicaEndereco = $produtoRepo->getSequenciaEndAutomaticoCaracEndereco ($produto->getId(),$produto->getGrade());
 
         $enderecoReferencia = $produto->getEnderecoReferencia();
         if ($enderecoReferencia != null) {
@@ -60,7 +63,8 @@ class Enderecamento extends SubForm
             'enderecoReferencia' => $enderecoReferencia,
             'area' => $areaArmaz,
             'estrutura' => $estArmaz,
-            'tpEndereco' => $tipoEndereco
+            'tpEndereco' => $tipoEndereco,
+            'caracEndereco' => $caracteristicaEndereco
         );
         $this->setDefaults($values);
     }
