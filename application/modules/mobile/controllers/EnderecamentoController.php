@@ -448,7 +448,7 @@ class Mobile_EnderecamentoController extends Action
                 $codProduto = $produto['codigo'];
                 $grade      = $produto['grade'];
 
-                $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false);
+                $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false, true);
                 foreach ($tmpPaletes as $tmpPalete) {
                     if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
                         ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
