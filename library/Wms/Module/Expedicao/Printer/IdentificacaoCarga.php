@@ -35,11 +35,11 @@ class IdentificacaoCarga extends Pdf
         $this->SetFont('Arial',  "B", 60);
         $this->Cell(65,  22, utf8_decode("Placa: "),0,0);
         $this->SetFont('Arial',  null, 60);
-        $this->Cell(20,  22, utf8_decode($codCargaExterno),0,1);
+        $this->Cell(20,  22, utf8_decode($cargaEn->getPlacaCarga()),0,1);
         $this->SetFont('Arial',  "B", 60);
         $this->Cell(70,  22, utf8_decode("Carga: ") ,0,0);
         $this->SetFont('Arial',  null, 60);
-        $this->Cell(20,  22, utf8_decode($cargaEn->getPlacaCarga()),0,1);
+        $this->Cell(20,  22, utf8_decode($codCargaExterno),0,1);
 
         $y = $this->GetY();
         $x = $this->GetX();
