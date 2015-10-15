@@ -52,7 +52,7 @@ class IdentificacaoCarga extends Pdf
 
         $this->SetX($x);
         $this->SetY($y);
-        
+
         //$this->Line(0,$this->GetY(),500,$this->GetY());
         $this->Cell(20,20,"",0,1);
         $this->SetFont('Arial',  null, 80);
