@@ -58,6 +58,9 @@ class Enderecamento_ModeloController extends Action
         $tipoEnderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco\Tipo");
         $this->view->tiposEndereco = $tipoEnderecoRepo->findAll();
 
+        $caracteristicaEnderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco\Caracteristica");
+        $this->view->caracteristicaEndereco = $caracteristicaEnderecoRepo->findAll();
+
         try {
             if ($this->getRequest()->isPost()) {
                 $params = $this->getRequest()->getParams();
@@ -110,6 +113,17 @@ class Enderecamento_ModeloController extends Action
                         $modeloTipoEnderecoRepo->insert($params);
                     }
                 }
+
+                /** @var \Wms\Domain\Entity\Enderecamento\ModeloCaracteristicaEnderecoRepository $modeloCaracteristicaEnderecoRepo */
+                $modeloCaracteristicaEnderecoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\ModeloCaracteristicaEndereco');
+
+                foreach ($params['caracteristicaEndereco'] as $key => $caracteristicaEndereco) {
+                    if (isset($caracteristicaEndereco) && !empty($caracteristicaEndereco)) {
+                        $params['idCaracteristicaEndereco'] = $key;
+                        $params['prioridadeCaracteristicaEndereco'] = $caracteristicaEndereco;
+                        $modeloCaracteristicaEnderecoRepo->insert($params);
+                    }
+                }
                 $this->em->flush();
 
                 $this->_helper->messenger('success', 'Modelo cadastrado com sucesso.');
@@ -155,10 +169,14 @@ class Enderecamento_ModeloController extends Action
             $tipoEnderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco\Tipo");
             $this->view->tiposEndereco = $tipoEnderecoRepo->findAll();
 
+            $caracteristicaEnderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco\Caracteristica");
+            $this->view->caracteristicaEndereco = $caracteristicaEnderecoRepo->findAll();
+
             $this->view->modelo = $entity = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo')->findOneBy(array('id' => $id));
             $this->view->populaTipoEndereco = $this->getEntityManager()->getRepository('wms:Enderecamento\ModeloTipoEndereco')->findBy(array('modeloEnderecamento' => $id));
             $this->view->populaAreaArmazenagens = $entityModeloAreaArmazenagem = $this->getEntityManager()->getRepository('wms:Enderecamento\ModeloAreaArmazenagem')->findBy(array('modeloEnderecamento' => $id));
             $this->view->populaEstruturaArmazenagens = $entityModeloEstruturaArmazenagem = $this->getEntityManager()->getRepository('wms:Enderecamento\ModeloEstruturaArmazenagem')->findBy(array('modeloEnderecamento' => $id));
+            $this->view->populaCaracteristicaEndereco = $this->getEntityManager()->getRepository('wms:Enderecamento\ModeloCaracteristicaEndereco')->findBy(array('modeloEnderecamento' => $id));
 
             if ($this->getRequest()->isPost()) {
 
@@ -216,6 +234,19 @@ class Enderecamento_ModeloController extends Action
                         $modeloTipoEnderecoRepo->insert($params);
                     }
                 }
+
+                /** @var \Wms\Domain\Entity\Enderecamento\ModeloCaracteristicaEnderecoRepository $modeloCaracteristicaEnderecoRepo */
+                $modeloCaracteristicaEnderecoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\ModeloCaracteristicaEndereco');
+                $modeloCaracteristicaEnderecoRepo->delete($params);
+
+                foreach ($params['caracteristicaEndereco'] as $key => $caracteristicaEndereco) {
+                    if (isset($caracteristicaEndereco) && !empty($caracteristicaEndereco)) {
+                        $params['idCaracteristicaEndereco'] = $key;
+                        $params['prioridadeCaracteristicaEndereco'] = $caracteristicaEndereco;
+                        $modeloCaracteristicaEnderecoRepo->insert($params);
+                    }
+                }
+
                 $this->em->flush();
 
                 $this->_helper->messenger('success', 'Registro alterado com sucesso');

@@ -478,7 +478,7 @@ class Mobile_EnderecamentoController extends Action
                                 $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
                                 $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
 
-                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura() * 100);
+                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
 
                                 if ($permiteEnderecar == true) {
                                     $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);

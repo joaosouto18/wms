@@ -19,7 +19,9 @@ class Enderecamento_PaleteController extends Action
         $produtoEn = $this->em->getRepository("wms:Produto")->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository   = $this->em->getRepository('wms:Produto');
-        $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+        $this->view->endPicking = $picking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+
+        $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
         try {
             $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade);

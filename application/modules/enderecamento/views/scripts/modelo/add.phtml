@@ -1,10 +1,10 @@
 <form id="modelo-separacao-form" class="saveForm" method="post" action="" novalidate="novalidate">
     <fieldset id="fieldset-modelo">
-        <legend><?php echo utf8_encode('EndereÁamento Autom·tico') ?></legend>
+        <legend>'Endere√ßamento Autom√°tico'</legend>
         <div>
-            <label for="descricao"><?php echo utf8_encode('DescriÁ„o') ?></label>
+            <label for="descricao">Descri√ß√£o</label>
             <input type="text" id="descricao" name="descricao">
-            <label for="endereco"><?php echo utf8_encode('EndereÁo de ReferÍncia'); ?></label>
+            <label for="endereco">Endere√ßo de Referencia</label>
             <input type="text" id="endereco" alt="endereco" name="endereco" placeholder="00.000.00.00">
         </div>
 
@@ -12,14 +12,14 @@
             <tr>
                 <td>
                     <fieldset id="enderecamento">
-                        <legend><?php echo utf8_encode('Sequencia de EndereÁamento') ?></legend>
+                        <legend>Sequencia de Endere√ßamento</legend>
                         <table style="width: 100%">
                             <tr>
                                 <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                     <fieldset id="fieldset-areaArmazenagem">
                                         <legend>Area de Armazenagem</legend>
                                         <table class="gTable">
-                                            <?php echo utf8_encode('<tr class="gTTitle"><td>DescriÁ„o</td><td>SequÍncia</td></tr>') ?>
+                                            <tr class="gTTitle"><td>Descri√ß√£o</td><td>Sequencia</td></tr>
                                             <?php foreach ($this->areaArmazenagens as $areaArmazenagem) : ?>
                                                 <tr class="gTResultSet">
                                                     <td><?php echo $areaArmazenagem->getDescricao(); ?></td>
@@ -29,11 +29,11 @@
                                         </table>
                                     </fieldset>
                                 </td>
-                                <td style="vertical-align: top; width: 30%">
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                     <fieldset id="fieldset-tipoEndereco">
                                         <legend>Estrutura de Armazenagem</legend>
                                         <table class="gTable">
-                                            <?php echo utf8_encode('<tr class="gTTitle"><td>DescriÁ„o</td><td>SequÍncia</td></tr>') ?>
+                                            <tr class="gTTitle"><td>Descri√ß√£o</td><td>Sequencia</td></tr>
                                             <?php foreach ($this->estruturaArmazenagens as $estruturaArmazenagem) : ?>
                                                 <tr class="gTResultSet">
                                                     <td><?php echo $estruturaArmazenagem->getDescricao(); ?></td>
@@ -43,15 +43,29 @@
                                         </table>
                                     </fieldset>
                                 </td>
-                                <td style="vertical-align: top; width: 30%">
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
                                     <fieldset id="fieldset-tipoEndereco">
                                         <legend>Tipos de Enderecos</legend>
                                         <table class="gTable">
-                                            <?php echo utf8_encode('<tr class="gTTitle"><td>DescriÁ„o</td><td>SequÍncia</td></tr>') ?>
+                                            <tr class="gTTitle"><td>Descri√ß√£o</td><td>Sequencia</td></tr>
                                             <?php foreach ($this->tiposEndereco as $tipoEndereco) : ?>
                                                 <tr class="gTResultSet">
                                                     <td><?php echo $tipoEndereco->getDescricao(); ?></td>
                                                     <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]"></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+                                <td style="vertical-align: top; width: 30%">
+                                    <fieldset id="fieldset-tipoEndereco">
+                                        <legend>Caracteristica</legend>
+                                        <table class="gTable">
+                                            <tr class="gTTitle"><td>Descri√ß√£o</td><td>Sequencia</td></tr>
+                                            <?php foreach ($this->caracteristicaEndereco as $caracteristicaEndereco) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $caracteristicaEndereco->getDescricao(); ?></td>
+                                                    <td><input type="text" id="caracteristcaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" name="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]"></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </table>

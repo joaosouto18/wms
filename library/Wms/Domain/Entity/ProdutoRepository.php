@@ -62,6 +62,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       if ($tipo == 'TipoEstrutura') {
           $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEstrutura');
       }
+      if ($tipo == 'CaracteristicaEndereco') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoCaracteristicaEndereco');
+      }
 
       $registros = $repo->findBy(array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
       foreach ($registros as $registro) {
@@ -81,6 +84,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
               if ($tipo == 'TipoEstrutura') {
                   $sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
                   $sequencia->setCodTipoEstrutura($key);
+
+              }
+              if ($tipo == 'CaracteristicaEndereco') {
+                  $sequencia = new ProdutoEntity\EnderecamentoCaracteristicaEndereco();
+                  $sequencia->setCodCaracteristica($key);
               }
               $sequencia->setCodProduto($produtoEn->getId());
               $sequencia->setGrade($produtoEn->getGrade());
@@ -114,8 +122,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       $this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
       $this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
       $this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
+      $this->setParamEndAutomatico($produtoEntity,$values['caracteristicaEndereco'],'CaracteristicaEndereco');
 
-	  $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
+        $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
 	  $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
 
       $produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
@@ -1206,6 +1215,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         return $dql->getQuery()->getResult();
 
+    }
+
+    public function getSequenciaEndAutomaticoCaracEndereco($codProduto,$grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+
+        $SQL = "  SELECT TP.COD_CARACTERISTICA_ENDERECO as ID, TP.DSC_CARACTERISTICA_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM CARACTERISTICA_ENDERECO TP
+                    $join JOIN PRODUTO_END_CARACT_END P
+                      ON P.COD_CARACTERISTICA_ENDERECO = TP.COD_CARACTERISTICA_ENDERECO
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_CARACTERISTICA_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
