@@ -13,17 +13,41 @@ class IdentificacaoCarga extends Pdf
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
-        $cargaRepo = $em->getRepository("wms:Expedicao\Carga")->findOneBy(array('codCargaExterno'=>$codCargaExterno,
+        $cargaEn = $em->getRepository("wms:Expedicao\Carga")->findOneBy(array('codCargaExterno'=>$codCargaExterno,
                                                                                 'codExpedicao'=>$idExpedicao));
+
+        $expedicaoRepo = $em->getRepository("wms:Expedicao");
+        $itinerarios = $expedicaoRepo->getItinerarios($idExpedicao,$cargaEn->getId());
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        $this->SetFont('Arial',  null, 8);
+        $arrayItinerario = array();
+        foreach ($itinerarios as $itinerario) {
+            $arrayItinerario[] = $itinerario['descricao'];
+        }
+
         $this->AddPage();
-        $this->Cell(20, 4, "teste",0,1);
-        $this->Cell(20, 4, $idExpedicao,0,1);
-        $this->Cell(20, 4, $codCargaExterno,0,1);
+        $this->SetFont('Arial',  "B", 60);
+        $this->Cell(115, 30, utf8_decode("Expedição: "),0,0);
+        $this->SetFont('Arial',  null, 60);
+        $this->Cell(20, 30, utf8_decode($idExpedicao),0,1);
+        $this->SetFont('Arial',  "B", 60);
+        $this->Cell(65, 30, utf8_decode("Placa: "),0,0);
+        $this->SetFont('Arial',  null, 60);
+        $this->Cell(20, 30, utf8_decode($codCargaExterno),0,1);
+        $this->SetFont('Arial',  "B", 60);
+        $this->Cell(70, 30, utf8_decode("Carga: ") ,0,0);
+        $this->SetFont('Arial',  null, 60);
+        $this->Cell(20, 30, utf8_decode($cargaEn->getPlacaCarga()),0,1);
+
+
+
+        //$this->Line(0,$this->GetY(),500,$this->GetY());
+        $this->Cell(20,20,"",0,1);
+        $this->SetFont('Arial',  null, 80);
+        $this->MultiCell("280","25",utf8_decode(implode($arrayItinerario,",")),0,"C");
+
         $this->Output('IdentificaçãoCarga.pdf','D');
 
     }

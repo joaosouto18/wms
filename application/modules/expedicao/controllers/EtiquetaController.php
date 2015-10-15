@@ -101,7 +101,7 @@ class Expedicao_EtiquetaController  extends Action
         $codCargaExterno    = $this->getRequest()->getParam('carga');
         $idExpedicao        = $this->getRequest()->getParam('id');
 
-        $pdf = new \Wms\Module\Expedicao\Printer\IdentificacaoCarga();
+        $pdf = new \Wms\Module\Expedicao\Printer\IdentificacaoCarga("L");
         $pdf->imprimir($idExpedicao,$codCargaExterno);
 
     }
