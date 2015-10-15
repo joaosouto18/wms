@@ -1126,14 +1126,15 @@ class PaleteRepository extends EntityRepository
         $normaPaletizacaoEn = $normaPaletizacaoRepo->findOneBy(array('id'=>$codNormaPaletizacao));
 
         $qtdPaleteProduto = $produtos[0]->getQtd();
+        $codProduto  = $produtos[0]->getCodProduto();
+        $grade       = $produtos[0]->getGrade();
+
         $sugestaoEndereco = null;
 
         //FAÇO A VALIDAÇÂO PARA ALOCAR NO PICKING SOMENTE SE FOR UM PALETE INCOMPLETO
         if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto) {
             $embalagem   = $produtos[0]->getEmbalagemEn();
             $pickingEn   = $embalagem->getEndereco();
-            $codProduto  = $produtos[0]->getCodProduto();
-            $grade       = $produtos[0]->getGrade();
             $capacidadePicking = $embalagem->getCapacidadePicking();
 
             //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
