@@ -1160,7 +1160,7 @@ class PaleteRepository extends EntityRepository
         }
 
         //SE FOR UM PALETE COMPLETO, VAI BUSCAR UM ENDEREÇO NO PULMÃO
-        if ($sugestaoEndereco != null) {
+        if ($sugestaoEndereco == null) {
             $sugestaoEndereco = $this->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$paleteEn->getRecebimento()->getId(),$larguraPalete);
         }
 

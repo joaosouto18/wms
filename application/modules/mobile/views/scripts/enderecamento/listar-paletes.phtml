@@ -19,7 +19,7 @@
                 }
                 $this->color = !($this->color);?>
                 <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
-                    <td><?php if ($liberado == true) {?><input name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="true"/> <?php }?></td>
+                    <td> <input name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
                     <td style="padding-bottom: 3pt;padding-top: 3pt">
                         <table style="width: 100%">
                             <tr>
