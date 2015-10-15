@@ -404,6 +404,8 @@ class Mobile_EnderecamentoController extends Action
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
 
             $paletesSelecionados = $this->_getParam('palete');
 
@@ -475,8 +477,15 @@ class Mobile_EnderecamentoController extends Action
                             if ($sugestaoEndereco != null) {
                                 $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
                                 $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
-                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
-                                $this->getEntityManager()->flush();
+
+                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura() * 100);
+
+                                if ($permiteEnderecar == true) {
+                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+                                    $this->getEntityManager()->flush();
+                                } else {
+                                    $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
+                                }
                             }
                         } else {
                             $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
