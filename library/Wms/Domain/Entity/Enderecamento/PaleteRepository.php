@@ -1180,6 +1180,7 @@ class PaleteRepository extends EntityRepository
         $endAreaArmazenagem = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$dscGrade,true);
         $endTipoEstrutura   = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($codProduto,$dscGrade,true);
         $endTipoEndereco    = $produtoRepo->getSequenciaEndAutomaticoTpEndereco($codProduto,$dscGrade,true);
+        $endCaracEndereco   = $produtoRepo->getSequenciaEndAutomaticoCaracEndereco($codProduto,$dscGrade,true);
 
         $codModelo = $this->getSystemParameterValue('MODELO_ENDERECAMENTO_PADRAO');
         $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$codRecebimento));
@@ -1189,12 +1190,35 @@ class PaleteRepository extends EntityRepository
             $codModelo= $modeloEnderecamento->getId();
         }
 
+        //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
         $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+
+
+        //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
+        $embalagens = $produtoEn->getEmbalagens();
+        $volumes = $produtoEn->getVolumes();
+            if ($enderecoReferencia != null) {
+                foreach ($embalagens as $embalagem) {
+                    if ($embalagem->getEndereco() != null) {
+                        $enderecoReferencia = $embalagem->getEndereco();
+                        break;
+                    }
+                }
+            }
+            if ($enderecoReferencia != null) {
+                foreach ($volumes as $volume) {
+                    if ($volume->getEndereco() != null) {
+                        $enderecoReferencia = $volume->getEndereco();
+                        break;
+                    }
+                }
+            }
+
+        //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
         if ($enderecoReferencia == null) {
             $modeloEnderecamento = $modeloEnderecamentoRepo->findOneBy(array('id'=>$codModelo));
             $enderecoReferencia = $modeloEnderecamento->getCodReferencia();
         }
-
 
         if ($enderecoReferencia != null) {
             $ruaReferencia = $enderecoReferencia->getRua();
@@ -1210,10 +1234,10 @@ class PaleteRepository extends EntityRepository
                             ON AA.COD_PRODUTO = '$codProduto' AND AA.DSC_GRADE = '$dscGrade'
                            AND AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
         } else {
-            $sqlArea = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE , COD_AREA_ARMAZENAGEM
-                                      FROM MODELO_END_AREA_ARMAZ
-                                     WHERE COD_MODELO_ENDERECAMENTO = $codModelo) AA
-                                ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
+            $sqlArea = " INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE , COD_AREA_ARMAZENAGEM
+                                       FROM MODELO_END_AREA_ARMAZ
+                                      WHERE COD_MODELO_ENDERECAMENTO = $codModelo) AA
+                                 ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
         }
 
         if (count($endTipoEndereco)>0) {
@@ -1222,9 +1246,9 @@ class PaleteRepository extends EntityRepository
                                    AND TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO";
         } else {
             $sqlTipoEndereco = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE, COD_TIPO_ENDERECO
-                                      FROM MODELO_END_TIPO_ENDERECO
-                                     WHERE COD_MODELO_ENDERECAMENTO = $codModelo) TE
-                                ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
+                                              FROM MODELO_END_TIPO_ENDERECO
+                                             WHERE COD_MODELO_ENDERECAMENTO = $codModelo) TE
+                                        ON TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO";
         }
 
         if (count($endTipoEstrutura)>0){
@@ -1238,12 +1262,24 @@ class PaleteRepository extends EntityRepository
                                           ON ET.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ";
         }
 
+        if (count($endCaracEndereco)>0) {
+            $sqlCaracEndereco = " INNER JOIN PRODUTO_END_CARACT_END CE
+                                     ON CE.COD_PRODUTO = '$codProduto' AND CE.DSC_GRADE = '$dscGrade'
+                                    AND CE.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO";
+        } else {
+            $sqlCaracEndereco = "INNER JOIN (SELECT COD_PRIORIDADE AS NUM_PRIORIDADE, COD_CARACTERISTICA_ENDERECO
+                                               FROM MODELO_END_CARACT_END
+                                              WHERE COD_MODELO_ENDERECAMENTO = $codModelo) CE
+                                         ON CE.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO";
+        }
+
         $SQL = " SELECT DE.COD_DEPOSITO_ENDERECO,
                         DE.DSC_DEPOSITO_ENDERECO,
                         ABS(DE.NUM_RUA - $ruaReferencia) as DIF_RUA,
                         ABS(DE.NUM_PREDIO - $predioReferencia) as DIF_PREDIO,
                         ABS(DE.NUM_NIVEL - $nivelReferencia) as DIF_NIVEL,
-                        ABS(DE.NUM_APARTAMENTO - $apartamentoReferencia) as DIF_APARTAMENTO
+                        ABS(DE.NUM_APARTAMENTO - $apartamentoReferencia) as DIF_APARTAMENTO,
+                        (LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) as LARG_DISPONIVEL
                    FROM DEPOSITO_ENDERECO DE
                   INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
                      ON LONGARINA.NUM_PREDIO  = DE.NUM_PREDIO
@@ -1252,11 +1288,32 @@ class PaleteRepository extends EntityRepository
                   $sqlArea
                   $sqlTipoEndereco
                   $sqlTipoEstrutura
+                  $sqlCaracEndereco
                   WHERE DE.IND_ATIVO = 'S'
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
-               ORDER BY ET.NUM_PRIORIDADE, AA.NUM_PRIORIDADE, TE.NUM_PRIORIDADE, DIF_RUA,DIF_PREDIO,DIF_NIVEL,DIF_APARTAMENTO";
+               ORDER BY CE.NUM_PRIORIDADE,
+                        LARG_DISPONIVEL,
+                        ET.NUM_PRIORIDADE,
+                        AA.NUM_PRIORIDADE,
+                        TE.NUM_PRIORIDADE,
+                        DIF_RUA,
+                        DIF_PREDIO,
+                        DIF_NIVEL,
+                        DIF_APARTAMENTO";
+
+        /*
+         * ORDENAÇÂO ATUAL
+         * 1-> Caracteristica de Endereço (Picking/Pulmão)
+         * 2-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
+         * 3-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
+         * 4-> Area de Armazenagem
+         * 5-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
+         * 6-> Proximidade de Picking (Rua, Predio, Nivel e Apartamento)
+         */
+
+
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($result)>0) {
             return $result[0];
