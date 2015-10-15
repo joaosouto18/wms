@@ -1120,7 +1120,7 @@ class PaleteRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
-        $larguraPalete = $paleteEn->getUnitizador()->getLargura() * 100;
+        $larguraPalete = $paleteEn->getUnitizador()->getLargura(false) * 100;
         $produtos = $paleteEn->getProdutos();
         $codNormaPaletizacao = $produtos[0]->getCodNormaPaletizacao();
         $normaPaletizacaoEn = $normaPaletizacaoRepo->findOneBy(array('id'=>$codNormaPaletizacao));
