@@ -29,8 +29,14 @@ class UMA extends Pdf
             $produtos = $paleteEn->getProdutos();
             $produtoEn = $produtos[0]->getProduto();
 
+            $dscEndereco = "";
+            if ($paleteEn->getDepositoEndereco() != null) {
+                $dscEndereco =  $paleteEn->getDepositoEndereco()->getDescricao();
+            }
+            ;
+
             $dadosPalete = array();
-            $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
+            $dadosPalete['endereco'] = $dscEndereco;
             $dadosPalete['idUma']    = $paleteEn->getId();
             $dadosPalete['qtd']      = $produtos[0]->getQtd();
 

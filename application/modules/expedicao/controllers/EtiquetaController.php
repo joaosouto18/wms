@@ -97,7 +97,17 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
-    public function gerarPdfAjaxAction(){
+    public function etiquetaCargaAjaxAction(){
+        $codCargaExterno    = $this->getRequest()->getParam('carga');
+        $idExpedicao        = $this->getRequest()->getParam('id');
+
+        $pdf = new \Wms\Module\Expedicao\Printer\IdentificacaoCarga("L");
+        $pdf->imprimir($idExpedicao,$codCargaExterno);
+
+    }
+
+
+        public function gerarPdfAjaxAction(){
         $central        = $this->getRequest()->getParam('central');
         $idExpedicao    = $this->getRequest()->getParam('id');
         $tipo    = $this->getRequest()->getParam('tipo');

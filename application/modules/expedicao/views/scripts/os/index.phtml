@@ -111,6 +111,7 @@
                 <table class="gTable">
                     <tbody>
                        <tr calss = "">
+                           <td colspan="1"></td>
                            <td width=""><span><b>Placa</b></span></td>
                            <td width=""><span><b>Carga</b></span></td>
                            <td width=""><span><b>Ponto de Transbordo</b></span></td>
@@ -122,6 +123,17 @@
                        </tr>
                        <?php foreach($this->resumoPlacaCarga as $resumo) : ?>
                            <tr calss = "">
+                               <td class="gTdOpcRow">
+                                   <div class="gOpcRow">
+                                       <ul>
+                                           <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                               <ul>
+                                                   <li><a href="<?php echo "/expedicao/etiqueta/etiqueta-carga-ajax/id/" . $this->idExpedicao . "/carga/" . $resumo['codCargaExterno'] ; ?>" class="pdf" title="" target="_self">Imprimir Identificação</a></li>
+                                               </ul>
+                                           </li>
+                                       </ul>
+                                   </div>
+                               </td>
                                <td width=""><span><?php echo $resumo['placaCarga'];            ?></span></td>
                                <td width="" title="Sequencia da carga representada pelo número dentro do ()"><span><?php echo $resumo['codCargaExterno'];            ?>(<?php echo $resumo['sequencia'];            ?>)</span></td>
                                <td width=""><span><?php echo $resumo['pontoTransbordo'];            ?></span></td>

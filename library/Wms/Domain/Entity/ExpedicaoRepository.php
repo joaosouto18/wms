@@ -941,7 +941,7 @@ class ExpedicaoRepository extends EntityRepository
      * @param $idExpedicao
      * @return array
      */
-    public function getItinerarios($idExpedicao)
+    public function getItinerarios($idExpedicao, $carga= null)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
                 ->select('i.id, i.descricao')
@@ -952,6 +952,11 @@ class ExpedicaoRepository extends EntityRepository
                 ->where('e.id = :idExpedicao')
                 ->distinct(true)
                 ->setParameter('idExpedicao', $idExpedicao);
+
+        if ($carga != null) {
+            $source->andWhere("c.id = " . $carga);
+        }
+
         return $source->getQuery()->getArrayResult();
     }
 
