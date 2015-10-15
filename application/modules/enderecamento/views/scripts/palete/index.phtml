@@ -15,6 +15,7 @@
             <caption>Recebimento <?php echo $this->idRecebimento ?> - <?php echo "Paletes do Produto $this->codProduto - $this->produto / $this->grade"?></caption>
             <p>Endereço de picking:
                 <?php if (is_array($this->endPicking)) echo $this->endPicking[0]; ?>
+                - Saldo: <?php if (is_array($this->qtdTotal)) echo $this->qtdTotal[0]['QUANTIDADE'].' ('.$this->qtdTotal[0]['QUANTIDADE_TOTAL'].')' ?>
             </p>
             <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             <tbody>
@@ -43,7 +44,7 @@
                         <td><?php echo $palete['UMA'] ?></td>
                         <td><?php echo $palete['UNITIZADOR'] ?></td>
                         <td><?php echo $palete['VOLUMES'] ?></td>
-                        <td><?php echo $palete['QTD']  ?></td>
+                        <td><?php echo $palete['QTD'] ?></td>
                         <td><?php echo $palete['STATUS'] ?></td>
                         <td>
                             <?php if ($palete['ENDERECO'] == NULL) {echo "";} else { echo $palete['ENDERECO'];} ?>
