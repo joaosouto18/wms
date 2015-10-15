@@ -56,7 +56,7 @@ class EtiquetaVolume extends eFPDF
 
         $type     = 'code128';
         $black    = '000000';
-        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.8,18);
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),1,18);
 
         $this->Text($x2,$y2 ,$dsc, 0, 0);
 
