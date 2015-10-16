@@ -22,6 +22,16 @@ class UMA extends Pdf
 
         $this->SetMargins(7, 7, 0);
 
+        $palete = '';
+        foreach ($paletes as $value) {
+            if ($value != end($paletes)) {
+                $palete .= $value.',';
+            } else {
+                $palete .= $value;
+            }
+        }
+
+        $paletes = explode(',',$palete);
         foreach ($paletes as $codPalete){
             $paleteEn = $paleteRepository->findOneBy(array('id'=>$codPalete));
 

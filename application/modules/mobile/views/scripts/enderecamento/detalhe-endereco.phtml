@@ -1,0 +1,48 @@
+﻿<form id="enderecamento-form" method="post" class="saveForm">
+    <div style="font-size: 14pt; font-weight: bolder">
+        Paletes
+        <input type="submit" name="imprimir" class="finalizar" style="margin-top: 0pt; margin-bottom: 4pt" value="Imprimir">
+    </div>
+
+    <div id="quantidade-grid" class="grid">
+        <table style="width: 100%">
+            <tbody>
+                <table style="width: 100%">
+                    <tr>
+                        <td colspan="3"><b><?php echo $this->paletes[0]['produto'] ?></b></td>
+                    </tr>
+
+                    <?php
+                    foreach ($this->paletes as $key => $palete):
+                        $fontColor = "black";
+                        $liberado = true;
+                        if ($palete['motivoNaoLiberar'] != '') {
+                            $fontColor = "gray";
+                            $liberado = false;
+                        }
+                        $this->color = !($this->color);?>
+                        <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
+                            <td> <input name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/>
+                            <?php echo "<b>UMA:</b> " . $palete['uma'] ?>
+                            </td>
+
+                            <td style="padding-bottom: 3pt;padding-top: 3pt">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <input type="hidden" name="<?php echo 'endereco[' . $palete['uma'] . ']'?>" value="<?php echo $palete['idEndereco'] ?>">
+                                    </tr>
+                                    <tr>
+
+                                        <td colspan="3"> <b></b><?php if ($palete['motivoNaoLiberar'] == '') {echo $palete['endereco'];} else { echo $palete['motivoNaoLiberar'];} ?></td>
+                                        <td><?php echo "<b>Qtd:<b> " . $palete['qtd']  ?></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            </tbody>
+        </table>
+    </div>
+
+</form>

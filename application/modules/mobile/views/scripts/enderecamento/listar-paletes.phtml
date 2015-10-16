@@ -19,7 +19,7 @@
                 }
                 $this->color = !($this->color);?>
                 <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
-                    <td> <input name="palete[]" value="<?php echo $palete['uma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
+                    <td> <input name="palete[]" value="<?php echo $palete['allUma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
                     <td style="padding-bottom: 3pt;padding-top: 3pt">
                         <table style="width: 100%">
                             <tr>
@@ -28,13 +28,9 @@
                                 </td>
                             </tr>
                             <tr>
-                                <!--<td><?php //echo "<b>UMA:</b> " . $palete['uma'] ?></td>-->
                                 <td><?php echo $palete['unitizador'] ?></td>
                                 <td><?php echo "<b>Qtd:<b> " . $palete['qtd']  ?></td>
-                                <td><input id="submit" type="submit" value="Mais" name="submit" class="btn"> </td>
-                            </tr>
-                            <tr>
-                                <!--<td colspan="3"> <b>Endereço: </b><?php //if ($palete['motivoNaoLiberar'] == '') {echo $palete['endereco'];} else { echo $palete['motivoNaoLiberar'];} ?></td>-->
+                                <td><a href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'enderecamento', 'action' => 'detalhe-endereco', 'produto' => $palete['codProduto'], 'grade' => $palete['dscGrade'])) ?>"> <input class="btn" type="button" value="Mais"></a></td>
                             </tr>
                         </table>
                     </td>

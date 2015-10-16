@@ -127,12 +127,12 @@ class PaleteRepository extends EntityRepository
 
     }
 
-    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true, $endPaleteMobile = false)
+    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true, $endPaleteMobile = false, $detalhePalete = false)
     {
 
         $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
         if ($endPaleteMobile == true) {
-            $paletes = $this->getPaletesByUnitizador($idRecebimento,$idProduto,$grade);
+            $paletes = $this->getPaletesByUnitizador($idRecebimento,$idProduto,$grade,$detalhePalete);
         } else {
             $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
         }
@@ -140,11 +140,15 @@ class PaleteRepository extends EntityRepository
         return $paletes;
     }
 
-    public function getPaletesByUnitizador ($idRecebimento = null, $idProduto = null, $grade = null, $statusPalete = null, $statusRecebimento = null, $dtInicioRecebimento1 = null, $dtInicioRecebimento2 = null, $dtFinalRecebimento1 = null, $dtFinalRecebimento2 = null, $uma = null) {
-        $SQL = " SELECT DISTINCT
-                        MAX(P.UMA) as UMA,
-                        U.DSC_UNITIZADOR as UNITIZADOR,
-                        SUM(DISTINCT QTD.QTD) as QTD,
+    public function getPaletesByUnitizador ($idRecebimento = null, $idProduto = null, $grade = null,$detalhePalete = false) {
+        if ($detalhePalete == true) {
+            $SQL = " SELECT DISTINCT MAX(P.UMA) as UMA,";
+        } else {
+            $SQL = " SELECT LISTAGG(P.UMA, ',') WITHIN GROUP (ORDER BY PRODUTO.COD_PRODUTO, PRODUTO.DSC_GRADE) as UMA,";
+        }
+
+        $SQL .= " U.DSC_UNITIZADOR as UNITIZADOR,
+                        SUM(QTD.QTD) as QTD,
                         P.IND_IMPRESSO,
                         PRODUTO.COD_PRODUTO,
                         PRODUTO.DSC_GRADE,
@@ -152,11 +156,21 @@ class PaleteRepository extends EntityRepository
                         R.COD_RECEBIMENTO,
                         S.COD_SIGLA as COD_SIGLA,
                         NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
-                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO
-                   FROM PALETE P
+                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO";
+
+                        if ($detalhePalete == true) {
+                            $SQL .= ",DE.DSC_DEPOSITO_ENDERECO as ENDERECO";
+                        }
+
+         $SQL .= " FROM PALETE P
                    LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
-                   LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
-                   LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
+                   LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA";
+
+        if ($detalhePalete == true) {
+            $SQL .= " LEFT JOIN DEPOSITO_ENDERECO DE ON P.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO";
+        }
+
+         $SQL .= " LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
                    INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                    INNER JOIN PRODUTO ON PRODUTO.COD_PRODUTO = PP.COD_PRODUTO AND PP.DSC_GRADE = PRODUTO.DSC_GRADE
                    INNER JOIN (SELECT MIN(PP.QTD) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
@@ -176,9 +190,15 @@ class PaleteRepository extends EntityRepository
         if (($idRecebimento != null) && $idRecebimento != "") {
             $SQL .= " AND P.COD_RECEBIMENTO = '$idRecebimento'";
         }
-        $SQL .= " GROUP BY U.DSC_UNITIZADOR, P.IND_IMPRESSO, S.COD_SIGLA,
+        if ($detalhePalete == false) {
+            $SQL .= " GROUP BY U.DSC_UNITIZADOR, P.IND_IMPRESSO, S.COD_SIGLA,
                     PRODUTO.COD_PRODUTO, PRODUTO.DSC_GRADE, PRODUTO.DSC_PRODUTO, R.COD_RECEBIMENTO,
                     QTD_VOL.QTD, QTD_VOL_CONFERIDO.QTD";
+        } else {
+            $SQL .= " GROUP BY P.UMA, DE.DSC_DEPOSITO_ENDERECO, QTD.QTD, U.DSC_UNITIZADOR,
+                    P.IND_IMPRESSO, S.COD_SIGLA, PRODUTO.COD_PRODUTO, PRODUTO.DSC_GRADE, PRODUTO.DSC_PRODUTO,
+                    R.COD_RECEBIMENTO, QTD_VOL.QTD, QTD_VOL_CONFERIDO.QTD";
+        }
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

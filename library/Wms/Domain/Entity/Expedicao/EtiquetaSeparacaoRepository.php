@@ -1314,7 +1314,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     /**
      * @param $etiquetaEntity
      */
-    public function cortar($etiquetaEntity)
+    public function cortar($etiquetaEntity, $corteTodosVolumes = false)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -1337,7 +1337,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
                 if ($etiqueta->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
-                    $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                    if ($corteTodosVolumes == true) {
+                        $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_CORTADO);
+                    } else {
+                        $this->alteraStatus($etiqueta,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                    }
                 }
             }
         }
