@@ -621,13 +621,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
                     ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
-                    ($qtdCortadas == $qtdTotal)) {
+                    ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
 
+                    //($qtdCortadas == $qtdTotal)) {
+                    /*
                     if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
                         throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
                     }
-
+                    */
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
                     $PedidoRepo->remove($PedidoEntity);
 
