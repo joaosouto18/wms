@@ -127,11 +127,11 @@ class PaleteRepository extends EntityRepository
 
     }
 
-    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true, $variable = false)
+    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true, $endPaleteMobile = false)
     {
 
         $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
-        if ($variable == true) {
+        if ($endPaleteMobile == true) {
             $paletes = $this->getPaletesByUnitizador($idRecebimento,$idProduto,$grade);
         } else {
             $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
@@ -142,24 +142,20 @@ class PaleteRepository extends EntityRepository
 
     public function getPaletesByUnitizador ($idRecebimento = null, $idProduto = null, $grade = null, $statusPalete = null, $statusRecebimento = null, $dtInicioRecebimento1 = null, $dtInicioRecebimento2 = null, $dtFinalRecebimento1 = null, $dtFinalRecebimento2 = null, $uma = null) {
         $SQL = " SELECT DISTINCT
-                        P.UMA,
+                        MAX(P.UMA) as UMA,
                         U.DSC_UNITIZADOR as UNITIZADOR,
-                        SUM(QTD.QTD) as QTD,
-                        S.DSC_SIGLA as STATUS,
-                        DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                        SUM(DISTINCT QTD.QTD) as QTD,
                         P.IND_IMPRESSO,
                         PRODUTO.COD_PRODUTO,
                         PRODUTO.DSC_GRADE,
                         PRODUTO.DSC_PRODUTO,
                         R.COD_RECEBIMENTO,
                         S.COD_SIGLA as COD_SIGLA,
-                        PROD.VOLUMES,
                         NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
                         NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO
                    FROM PALETE P
                    LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
                    LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
-                   LEFT JOIN DEPOSITO_ENDERECO DE ON P.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                    LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
                    INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                    INNER JOIN PRODUTO ON PRODUTO.COD_PRODUTO = PP.COD_PRODUTO AND PP.DSC_GRADE = PRODUTO.DSC_GRADE
@@ -170,12 +166,6 @@ class PaleteRepository extends EntityRepository
                    INNER JOIN (SELECT COUNT(COD_PALETE_PRODUTO) QTD, UMA
                                  FROM PALETE_PRODUTO
                                 GROUP BY UMA) QTD_VOL_CONFERIDO ON QTD_VOL_CONFERIDO.UMA = P.UMA
-                   INNER JOIN (SELECT PP.UMA,
-                                      LISTAGG(NVL(PV.DSC_VOLUME,PE.DSC_EMBALAGEM), ', ') WITHIN GROUP (ORDER BY PP.UMA) VOLUMES
-                                 FROM PALETE_PRODUTO PP
-                                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
-                                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PP.COD_PRODUTO_EMBALAGEM
-                                GROUP BY PP.UMA) PROD ON PROD.UMA = P.UMA
                    WHERE 1 = 1 ";
         if (($idProduto != NULL) && ($idProduto != "")) {
             $SQL .= " AND PRODUTO.COD_PRODUTO = '$idProduto'";
@@ -186,30 +176,9 @@ class PaleteRepository extends EntityRepository
         if (($idRecebimento != null) && $idRecebimento != "") {
             $SQL .= " AND P.COD_RECEBIMENTO = '$idRecebimento'";
         }
-        if (($uma != null) && ($uma != "")) {
-            $SQL .= " AND P.UMA = '$uma'";
-        }
-        if (($statusPalete != Null) && ($statusPalete != "")) {
-            $SQL .= " AND P.COD_STATUS = '$statusPalete'";
-        }
-        if (($statusRecebimento != NUll) && ($statusRecebimento != "")) {
-            $SQL .= " AND R.COD_STATUS = '$statusPalete'";
-        }
-        if (($dtInicioRecebimento1 != NULL) && ($dtInicioRecebimento1 != "")){
-            $SQL .= " AND R.DTH_INICIO_RECEB >= TO_DATE('$dtInicioRecebimento1 00:00','DD-MM-YYYY HH24:MI')";
-        }
-        if (($dtInicioRecebimento2 != NULL) &&($dtInicioRecebimento2 != "")) {
-            $SQL .= " AND R.DTH_INICIO_RECEB <= TO_DATE('$dtInicioRecebimento2 23:59','DD-MM-YYYY HH24:MI')";
-        }
-        if (($dtFinalRecebimento1 != NULL) && ($dtFinalRecebimento1 != "")) {
-            $SQL .= " AND R.DTH_FINAL_RECEB >= TO_DATE('$dtFinalRecebimento1 00:00','DD-MM-YYYY HH24:MI')";
-        }
-        if (($dtFinalRecebimento2 != NULL) && ($dtFinalRecebimento2 != "")) {
-            $SQL .= " AND R.DTH_FINAL_RECEB <= TO_DATE('$dtFinalRecebimento2 23:59','DD-MM-YYYY HH24:MI')";
-        }
-        $SQL .= " GROUP BY U.DSC_UNITIZADOR, P.UMA, S.DSC_SIGLA, DE.DSC_DEPOSITO_ENDERECO,
-                    P.IND_IMPRESSO, PRODUTO.COD_PRODUTO, PRODUTO.DSC_GRADE, PRODUTO.DSC_PRODUTO, R.COD_RECEBIMENTO, S.COD_SIGLA, PROD.VOLUMES,
-                    QTD_VOL.QTD, QTD_VOL_CONFERIDO.QTD ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
+        $SQL .= " GROUP BY U.DSC_UNITIZADOR, P.IND_IMPRESSO, S.COD_SIGLA,
+                    PRODUTO.COD_PRODUTO, PRODUTO.DSC_GRADE, PRODUTO.DSC_PRODUTO, R.COD_RECEBIMENTO,
+                    QTD_VOL.QTD, QTD_VOL_CONFERIDO.QTD";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
