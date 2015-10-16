@@ -4,7 +4,8 @@ use Wms\Module\Web\Controller\Action,
 
 class Expedicao_CorteFaixaController  extends Action
 {
-    public function indexAction() {
+    public function indexAction()
+    {
         $LeituraColetor = new LeituraColetor();
 
         $codBarrasInicial = $this->getRequest()->getParam('codBarrasInicial');
@@ -30,7 +31,7 @@ class Expedicao_CorteFaixaController  extends Action
                     /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
                     try {
                         foreach ($etiquetas as $etiquetaEn) {
-                            $EtiquetaRepo->cortar($etiquetaEn);
+                            $EtiquetaRepo->cortar($etiquetaEn, true);
 
                             if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
                                 $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
