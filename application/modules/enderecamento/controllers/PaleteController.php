@@ -21,7 +21,12 @@ class Enderecamento_PaleteController extends Action
         $ProdutoRepository   = $this->em->getRepository('wms:Produto');
         $this->view->endPicking = $picking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
-        $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
+        $this->view->qtdTotal = $xxx = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
+
+        $abc = $this->_getParam('abc');
+        if (isset($abc)) {
+            $this->exportPDF($xxx,'pendencias-reentrega','Reentregas na expedição','P');
+        }
 
         try {
             $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade);
