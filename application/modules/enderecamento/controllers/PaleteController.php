@@ -23,11 +23,6 @@ class Enderecamento_PaleteController extends Action
 
         $this->view->qtdTotal = $xxx = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
-        $abc = $this->_getParam('abc');
-        if (isset($abc)) {
-            $this->exportPDF($xxx,'pendencias-reentrega','Reentregas na expedição','P');
-        }
-
         try {
             $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade);
         } catch(Exception $e) {
