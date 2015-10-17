@@ -618,7 +618,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                  * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
                  * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
                  */
-                $sonoshow = true;
+                $sonoshow = false;
 
                 if ($sonoshow == true) {
 
