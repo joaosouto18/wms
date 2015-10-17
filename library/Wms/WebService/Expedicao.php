@@ -222,6 +222,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
+            $ProdutoRepo = $this->_em->getRepository('wms:Produto');
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
+            $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+            $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
             $this->_em->beginTransaction();
             foreach($cargas as $k1 => $carga) {
@@ -232,8 +239,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
                     }
                 }
-                $this->checkProductsExists($carga['pedidos']);
-                $this->checkPedidosExists($carga['pedidos']);
+                $this->checkProductsExists($ProdutoRepo, $carga['pedidos']);
+                $this->checkPedidosExists($PedidoRepo, $EtiquetaRepo, $carga['pedidos']);
+                $this->_em->flush();
+
                 $this->saveCarga($carga);
             }
             $this->_em->flush();
@@ -606,14 +615,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkPedidosExists(array $pedidos) {
-
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
-        $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
+    protected function checkPedidosExists($PedidoRepo, $EtiquetaRepo, array $pedidos) {
         foreach ($pedidos as $pedido) {
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
             if ($PedidoEntity != null) {
@@ -622,12 +624,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
                  * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
                  * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
                  */
-                $sonoshow = true;
+                $sonoshow = false;
 
                 if ($sonoshow == true) {
 
-                    $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
-                    $PedidoRepo->remove($PedidoEntity);
+                    $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
+                    $PedidoRepo->remove($PedidoEntity,false);
 
                 } else {
 
@@ -646,8 +648,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                             throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
                         }
 
-                        $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
-                        $PedidoRepo->remove($PedidoEntity);
+                        $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
+                        $PedidoRepo->remove($PedidoEntity,false);
 
                     } else {
                         if ($qtdTotal != $qtdCortadas) {
@@ -665,8 +667,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkProductsExists(array $pedidos) {
-        $ProdutoRepo = $this->_em->getRepository('wms:Produto');
+    protected function checkProductsExists($ProdutoRepo, array $pedidos) {
 
         foreach($pedidos as $pedido) {
 
@@ -802,7 +803,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => trim($carga['codCargaExterno']), 'tipoCarga' => $tipoCarga->getId()));
         if ($entityCarga == null) {
-            $entityCarga = $CargaRepo->save($carga);
+            $entityCarga = $CargaRepo->save($carga,false);
         }
         return $entityCarga;
     }
