@@ -136,7 +136,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (!is_array($array)) {throw new \Exception("Formato de dados incorreto - Não está formatado como JSON");}
 
             $arrayCargas = $array['cargas'];
-            return $this->enviar($arrayCargas);
+            ini_set('max_execution_time', 300);
+                $result = $this->enviar($arrayCargas);
+            ini_set('max_execution_time', 30);
+
+            return $result;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -618,7 +622,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                  * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
                  * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
                  */
-                $sonoshow = false;
+                $sonoshow = true;
 
                 if ($sonoshow == true) {
 
