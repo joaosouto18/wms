@@ -613,27 +613,26 @@ class Wms_WebService_Expedicao extends Wms_WebService
         foreach ($pedidos as $pedido) {
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
             if ($PedidoEntity != null) {
-                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
-                $statusEntity = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
-
-                $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
-                $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
-
-
                 /*
                  * PEDIDO DA SONOSHOW, ELES QUEREM LIBERAR O SISTEMA SEM VALIDAR O CORTE, ISTO NÂO DEVE SER PARAMETRO
                  * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
                  * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
                  */
-
                 $sonoshow = true;
 
-                if ($sonoshow) {
+                if ($sonoshow == true) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
                     $PedidoRepo->remove($PedidoEntity);
 
                 } else {
+
+                    $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
+                    $statusEntity = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
+
+                    $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
+                    $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
+
                     if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
                         ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
                         ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
