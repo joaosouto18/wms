@@ -619,24 +619,40 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
                 $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
 
-                if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
-                    ($qtdCortadas == $qtdTotal)) {
 
-                    if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
-                        throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
-                    }
+                /*
+                 * PEDIDO DA SONOSHOW, ELES QUEREM LIBERAR O SISTEMA SEM VALIDAR O CORTE, ISTO NÂO DEVE SER PARAMETRO
+                 * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
+                 * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
+                 */
+
+                $sonoshow = true;
+
+                if ($sonoshow) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
                     $PedidoRepo->remove($PedidoEntity);
 
                 } else {
-                    if ($qtdTotal != $qtdCortadas) {
-                        throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                    }
+                    if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
+                        ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
+                        ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
+                        ($qtdCortadas == $qtdTotal)) {
 
-                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+                        if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
+                            throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
+                        }
+
+                        $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
+                        $PedidoRepo->remove($PedidoEntity);
+
+                    } else {
+                        if ($qtdTotal != $qtdCortadas) {
+                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                        }
+
+                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+                    }
                 }
             }
         }
