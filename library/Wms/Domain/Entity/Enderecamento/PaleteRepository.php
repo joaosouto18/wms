@@ -1385,11 +1385,23 @@ class PaleteRepository extends EntityRepository
 
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        if (count($result)>0) {
-            return $result[0];
-        } else {
-            return null;
+
+        foreach ($result as $value) {
+            $dscDepositoEndereco = substr($value['DSC_DEPOSITO_ENDERECO'], 0, -2);
+            $dscDepositoEndereco = $dscDepositoEndereco.'%';
+
+            $query = " SELECT COD_DEPOSITO_ENDERECO, DSC_DEPOSITO_ENDERECO
+                       FROM DEPOSITO_ENDERECO
+                       WHERE DSC_DEPOSITO_ENDERECO LIKE '$dscDepositoEndereco'";
+
+            $retorno = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
+
+            if ((count($retorno) == 2 && $tamanhoPalete == 160) || (count($retorno) >= 3 && $tamanhoPalete == 100)) {
+                return $value;
+            }
         }
+
+        return null;
     }
 
     public function alterarNorma($codProduto, $grade, $idRecebimento, $idUma) {
