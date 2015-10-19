@@ -369,8 +369,8 @@ class Mobile_ExpedicaoController extends Action
                     die();
                 }
             } else {
-                $this->_helper->messenger('info', 'Etiqueta '.$codigoBarras.' não encontrada');
-                $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                $this->createXml("error", $msg);
+                die();
             }
 
             return false;
@@ -390,7 +390,7 @@ class Mobile_ExpedicaoController extends Action
                         die();
                     }
                 } else {
-                    $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
+                    $this->createXml("error", $msg);
                     die();
                 }
                 return false;
@@ -413,7 +413,7 @@ class Mobile_ExpedicaoController extends Action
                     die();
                 }
             } else {
-                $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
+                $this->createXml("error", $msg);
                 die();
             }
             return false;
@@ -427,7 +427,7 @@ class Mobile_ExpedicaoController extends Action
                 if ($this->bloquearOs=='S'){
                     $this->createXml('error',$msg);
                 } else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                    $this->createXml("error",$msg);
                     die();
                 }
             }
@@ -862,6 +862,7 @@ class Mobile_ExpedicaoController extends Action
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
                 $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
                 $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
+                //$this->_helper->messenger('info', $msg);
 
                 if ($this->bloquearOs=='S'){
                     $this->bloqueioOs($idExpedicao, $msg, false);
@@ -872,7 +873,7 @@ class Mobile_ExpedicaoController extends Action
                         die();
                     }
                 } else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                    $this->createXml("error",$msg);
                     die();
                 }
                 return false;

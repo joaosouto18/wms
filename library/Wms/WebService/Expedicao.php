@@ -136,7 +136,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (!is_array($array)) {throw new \Exception("Formato de dados incorreto - Não está formatado como JSON");}
 
             $arrayCargas = $array['cargas'];
-            return $this->enviar($arrayCargas);
+            ini_set('max_execution_time', 300);
+                $result = $this->enviar($arrayCargas);
+            ini_set('max_execution_time', 30);
+
+            return $result;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -218,6 +222,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
+            $ProdutoRepo = $this->_em->getRepository('wms:Produto');
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
+            $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+            $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
             $this->_em->beginTransaction();
             foreach($cargas as $k1 => $carga) {
@@ -228,8 +239,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
                     }
                 }
-                $this->checkProductsExists($carga['pedidos']);
-                $this->checkPedidosExists($carga['pedidos']);
+                $this->checkProductsExists($ProdutoRepo, $carga['pedidos']);
+                $this->checkPedidosExists($PedidoRepo, $EtiquetaRepo, $carga['pedidos']);
+                $this->_em->flush();
+
                 $this->saveCarga($carga);
             }
             $this->_em->flush();
@@ -602,41 +615,49 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkPedidosExists(array $pedidos) {
-
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
-        $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
+    protected function checkPedidosExists($PedidoRepo, $EtiquetaRepo, array $pedidos) {
         foreach ($pedidos as $pedido) {
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
             if ($PedidoEntity != null) {
-                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
-                $statusEntity = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
+                /*
+                 * PEDIDO DA SONOSHOW, ELES QUEREM LIBERAR O SISTEMA SEM VALIDAR O CORTE, ISTO NÂO DEVE SER PARAMETRO
+                 * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
+                 * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
+                 */
+                $sonoshow = false;
 
-                $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
-                $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
+                if ($sonoshow == true) {
 
-                if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
-                    ($qtdCortadas == $qtdTotal)) {
-
-                    if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
-                        throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
-                    }
-
-                    $PedidoRepo->removeReservaEstoque($pedido['codPedido']);
-                    $PedidoRepo->remove($PedidoEntity);
+                    $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
+                    $PedidoRepo->remove($PedidoEntity,false);
 
                 } else {
-                    if ($qtdTotal != $qtdCortadas) {
-                        throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                    }
 
-                    throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+                    $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
+                    $statusEntity = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
+
+                    $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
+                    $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
+
+                    if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
+                        ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
+                        ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
+                        ($qtdCortadas == $qtdTotal)) {
+
+                        if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
+                            throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
+                        }
+
+                        $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
+                        $PedidoRepo->remove($PedidoEntity,false);
+
+                    } else {
+                        if ($qtdTotal != $qtdCortadas) {
+                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                        }
+
+                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+                    }
                 }
             }
         }
@@ -646,8 +667,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkProductsExists(array $pedidos) {
-        $ProdutoRepo = $this->_em->getRepository('wms:Produto');
+    protected function checkProductsExists($ProdutoRepo, array $pedidos) {
 
         foreach($pedidos as $pedido) {
 
@@ -783,7 +803,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => trim($carga['codCargaExterno']), 'tipoCarga' => $tipoCarga->getId()));
         if ($entityCarga == null) {
-            $entityCarga = $CargaRepo->save($carga);
+            $entityCarga = $CargaRepo->save($carga,false);
         }
         return $entityCarga;
     }

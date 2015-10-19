@@ -197,7 +197,7 @@ class PedidoRepository extends EntityRepository
     /**
      * @param Pedido $pedidoEntity
      */
-    public function remove(Pedido $pedidoEntity) {
+    public function remove(Pedido $pedidoEntity, $runFlush = true) {
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -207,7 +207,10 @@ class PedidoRepository extends EntityRepository
 
         foreach($etiquetas as $etiqueta) {
             $this->_em->remove($etiqueta);
-            $this->_em->flush();
+
+            if ($runFlush == true) {
+                $this->_em->flush();
+            }
         }
 
         /*
@@ -240,7 +243,9 @@ class PedidoRepository extends EntityRepository
                 $this->_em->remove($mapaSeparacaoEn);
 
                 $this->_em->remove($mapaSeparacaoProdutoEn);
-                $this->_em->flush();
+                if ($runFlush == true) {
+                    $this->_em->flush();
+                }
             }
         }
 
@@ -250,7 +255,9 @@ class PedidoRepository extends EntityRepository
 
         foreach ($pedidosProduto as $pedidoProduto) {
             $this->_em->remove($pedidoProduto);
-            $this->_em->flush();
+            if ($runFlush == true) {
+                $this->_em->flush();
+            }
         }
 
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaRessuprimentoPedidoRepo */
@@ -264,7 +271,9 @@ class PedidoRepository extends EntityRepository
         ///andamentoRepo->save("Pedido ". $pedidoEntity->getId() ."  removido da expedição " .  $pedidoEntity->getCarga()->getExpedicao()->getId() . "via WebService", $pedidoEntity->getCarga()->getExpedicao(),false,true,null,null,true);
 
         $this->_em->remove($pedidoEntity);
-        $this->_em->flush();
+        if ($runFlush == true) {
+            $this->_em->flush();
+        }
     }
 
 
@@ -284,7 +293,7 @@ class PedidoRepository extends EntityRepository
        }
     }
 
-    public function removeReservaEstoque($idPedido)
+    public function removeReservaEstoque($idPedido, $runFlush = true)
     {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
         $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
@@ -327,7 +336,9 @@ class PedidoRepository extends EntityRepository
             }
         }
 
-        $this->_em->flush();
+        if ($runFlush == true) {
+            $this->_em->flush();
+        }
     }
 
 
