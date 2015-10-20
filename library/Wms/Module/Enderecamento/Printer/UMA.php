@@ -11,6 +11,7 @@ class UMA extends Pdf
 {
 
     public function imprimirPaletes($paletes, $modelo) {
+        ini_set('max_execution_time', 3000);
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
