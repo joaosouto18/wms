@@ -51,10 +51,18 @@ class Enderecamento extends SubForm
         $estArmaz = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($produto->getId(),$produto->getGrade());
         $tipoEndereco = $produtoRepo->getSequenciaEndAutomaticoTpEndereco ($produto->getId(),$produto->getGrade());
         $caracteristicaEndereco = $produtoRepo->getSequenciaEndAutomaticoCaracEndereco ($produto->getId(),$produto->getGrade());
+        $embalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
+        $volumeRepo = $this->getEm()->getRepository('wms:Produto\Volume');
+        $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
+        $volumeEn = $volumeRepo->findOneBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
 
         $enderecoReferencia = $produto->getEnderecoReferencia();
         if ($enderecoReferencia != null) {
             $enderecoReferencia = $enderecoReferencia->getDescricao();
+        } else if (isset($embalagemEn) && !empty($embalagemEn)) {
+            $enderecoReferencia = $embalagemEn->getEndereco()->getDescricao();
+        } else if (isset($volumeEn) && !empty($volumeEn)) {
+            $enderecoReferencia = $volumeEn->getEndereco()->getDescricao();
         }
 
         $values = array(
