@@ -1232,7 +1232,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_CARACTERISTICA_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+
+		foreach ($result as $value) {
+			if ($value['VALUE'] != null) {
+				return $result;
+			} else if ($value['DESCRICAO'] == 'PICKING') {
+				$value['VALUE'] = 1;
+			}
+		}
+
+		return $result;
     }
 
     public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
