@@ -1233,6 +1233,14 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                    ORDER BY TP.DSC_CARACTERISTICA_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
+		foreach ($result as $key => $value) {
+			if ($value['VALUE'] != null) {
+				return $result;
+			} else if ($value['DESCRICAO'] == 'PICKING') {
+				$result[$key]['VALUE'] = 1;
+			}
+		}
+
 		return $result;
     }
 
