@@ -397,6 +397,7 @@ class Mobile_EnderecamentoController extends Action
 
     public function listarPaletesAction()
     {
+        ini_set('max_execution_time', 3000);
         $idRecebimento = $this->_getParam("id");
 
         try {
