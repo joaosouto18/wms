@@ -60,9 +60,15 @@ class Enderecamento extends SubForm
         if ($enderecoReferencia != null) {
             $enderecoReferencia = $enderecoReferencia->getDescricao();
         } else if (isset($embalagemEn) && !empty($embalagemEn)) {
-            $enderecoReferencia = $embalagemEn->getEndereco()->getDescricao();
+            $embalagemEn = $embalagemEn->getEndereco();
+            if (isset($embalagemEn) && !empty($embalagemEn)) {
+                $enderecoReferencia = $embalagemEn->getDescricao();
+            }
         } else if (isset($volumeEn) && !empty($volumeEn)) {
-            $enderecoReferencia = $volumeEn->getEndereco()->getDescricao();
+            $volumeEn = $volumeEn->getEndereco();
+            if (isset($volumeEn) && !empty($volumeEn)) {
+                $enderecoReferencia = $volumeEn->getDescricao();
+            }
         }
 
         $values = array(
