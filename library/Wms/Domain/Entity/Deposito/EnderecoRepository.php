@@ -663,6 +663,10 @@ class EnderecoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
         $enderecoEn = $this->findOneBy(array('id'=>$idEndereco));
+	if ($enderecoEn == null) {
+	   var_dump($idEndereco);
+	   exit;
+	}
         $rua = $enderecoEn->getRua();
         $predio = $enderecoEn->getPredio();
         $nivel = $enderecoEn->getNivel();

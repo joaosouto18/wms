@@ -477,7 +477,7 @@ class Mobile_EnderecamentoController extends Action
                         if ($paleteEn->getDepositoEndereco() == null) {
 
                             $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
-
+			    
                             if ($sugestaoEndereco != null) {
                                 foreach($sugestaoEndereco as $sugestao) {
 
