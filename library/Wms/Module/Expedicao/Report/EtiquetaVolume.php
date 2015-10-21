@@ -78,11 +78,11 @@ class EtiquetaVolume extends eFPDF
             $this->AddPage();
 
             //monta o restante dos dados da etiqueta
-            $this->SetFont('Arial', 'B', 11.7);
+            $this->SetFont('Arial', 'B', 12.5);
 //            $impressao = utf8_decode("EXP: $volume[expedicao] CLI: $volume[quebra]\n");
 //            $volume['quebra'] = "TOMAZ GOMIDE NUNES - PREÇO REVENDA";
-            $impressao = utf8_decode(substr("CLI: $volume[quebra]\n",0,40));
-            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+            $impressao = utf8_decode(substr("CLI: $volume[quebra]\n",0,50));
+            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 13);
             $impressao = utf8_decode("Pedido:");
@@ -90,26 +90,27 @@ class EtiquetaVolume extends eFPDF
             $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 17);
+            $this->SetFont('Arial', 'B', 30);
+            $volume['pedido'] = 2611;
             $impressao = utf8_decode("\n$volume[pedido]");
-            $this->SetY(15);
+            $this->SetY(17);
             $this->SetX(82);
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 10);
-            $impressao = utf8_decode("Código                    Produto                         Qtd.\n");
+            $this->SetFont('Arial', 'B', 7);
+            $impressao = utf8_decode("Código                          Produto                                                    Qtd.\n");
             $this->SetX(5);
-            $this->SetY(6);
+            $this->SetY(10);
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
 
             //linha horizontal entre codigo produto quantidade e a descricao dos dados
-            $this->Line(0,10,150,10);
+            $this->Line(0,14,150,14);
             //linha vertical entre o codigo e a descrição do produto
-            $this->Line(19,10,19,100);
+            $this->Line(19,14,19,100);
             //linha vertical entre a descrição do produto e a quantidade
-            $this->Line(73,10,73,100);
+            $this->Line(73,14,73,100);
             //linha vertical entre a quantidade e o numero do pedido
-            $this->Line(82,10,82,100);
+            $this->Line(82,14,82,100);
             //linha horizontal entre o numero do pedido e o cod de barras
             $this->Line(82,30,150,30);
 
