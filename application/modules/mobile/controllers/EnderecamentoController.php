@@ -480,9 +480,8 @@ class Mobile_EnderecamentoController extends Action
 
                             if ($sugestaoEndereco != null) {
                                 foreach($sugestaoEndereco as $sugestao) {
-
-                                    $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
-                                    $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
+                                    $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                                    $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
 
                                     $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
                                     if ($permiteEnderecar == true) {
@@ -491,14 +490,6 @@ class Mobile_EnderecamentoController extends Action
                                         break;
                                     }
                                 }
-
-
-//                            if ($permiteEnderecar == true) {
-//                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
-//                                $this->getEntityManager()->flush();
-//                            } else {
-//                                $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
-//                            }
                             }
                         } else {
                             $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
@@ -524,7 +515,6 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->rollback();
             $this->addFlashMessage('error',$e->getMessage());
         }
-
 
     }
 
@@ -609,9 +599,8 @@ class Mobile_EnderecamentoController extends Action
 
                         if ($sugestaoEndereco != null) {
                             foreach($sugestaoEndereco as $sugestao) {
-
-                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
-                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
+                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
 
                                 $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
                                 if ($permiteEnderecar == true) {
@@ -620,17 +609,6 @@ class Mobile_EnderecamentoController extends Action
                                     break;
                                 }
                             }
-
-
-
-
-
-//                            if ($permiteEnderecar == true) {
-//                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
-//                                $this->getEntityManager()->flush();
-//                            } else {
-//                                $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
-//                            }
                         }
                     } else {
                         $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
