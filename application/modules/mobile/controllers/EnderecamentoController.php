@@ -479,17 +479,26 @@ class Mobile_EnderecamentoController extends Action
                             $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
 
                             if ($sugestaoEndereco != null) {
-                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
-                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
+                                foreach($sugestaoEndereco as $sugestao) {
 
-                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
+                                    $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
+                                    $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
 
-                                if ($permiteEnderecar == true) {
-                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
-                                    $this->getEntityManager()->flush();
-                                } else {
-                                    $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
+                                    $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
+                                    if ($permiteEnderecar == true) {
+                                        $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
+                                        $this->getEntityManager()->flush();
+                                        break;
+                                    }
                                 }
+
+
+//                            if ($permiteEnderecar == true) {
+//                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+//                                $this->getEntityManager()->flush();
+//                            } else {
+//                                $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
+//                            }
                             }
                         } else {
                             $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
