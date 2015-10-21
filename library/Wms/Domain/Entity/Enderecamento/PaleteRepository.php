@@ -1208,7 +1208,7 @@ class PaleteRepository extends EntityRepository
             $capacidadePicking = $embalagem->getCapacidadePicking();
 
             //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
-            if ($pickingEn != Null) {
+            if ($pickingEn != null) {
                 $idVolume = null;
                 $volumes = array();
                 if ($produtos[0]->getCodProdutoVolume() != NULL) {
@@ -1224,8 +1224,10 @@ class PaleteRepository extends EntityRepository
 
                 //ENDEREÇO NO PICKING SOMENTE SE A QUANTIDADE DO PALETE + O ESTOQUE NÂO PASSAR A CAPACIDADE
                 if (($SaldoPicking + $reservaEntradaPicking + $reservaSaidaPicking + $qtdPaleteProduto) <= $capacidadePicking) {
-                    $sugestaoEndereco = array('COD_DEPOSITO_ENDERECO'=>$pickingEn->getId(),
-                        'DSC_DEPOSITO_ENDERECO'=>$pickingEn->getDescricao());
+                    $sugestaoEndereco = array(
+                        'COD_DEPOSITO_ENDERECO'=>$pickingEn->getId(),
+                        'DSC_DEPOSITO_ENDERECO'=>$pickingEn->getDescricao()
+                    );
                 }
             }
         }
@@ -1386,22 +1388,22 @@ class PaleteRepository extends EntityRepository
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        foreach ($result as $value) {
-            $dscDepositoEndereco = substr($value['DSC_DEPOSITO_ENDERECO'], 0, -2);
-            $dscDepositoEndereco = $dscDepositoEndereco.'%';
+//        foreach ($result as $value) {
+//            $dscDepositoEndereco = substr($value['DSC_DEPOSITO_ENDERECO'], 0, -2);
+//            $dscDepositoEndereco = $dscDepositoEndereco.'%';
+//
+//            $query = " SELECT COD_DEPOSITO_ENDERECO, DSC_DEPOSITO_ENDERECO
+//                       FROM DEPOSITO_ENDERECO
+//                       WHERE DSC_DEPOSITO_ENDERECO LIKE '$dscDepositoEndereco'";
+//
+//            $retorno = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
-            $query = " SELECT COD_DEPOSITO_ENDERECO, DSC_DEPOSITO_ENDERECO
-                       FROM DEPOSITO_ENDERECO
-                       WHERE DSC_DEPOSITO_ENDERECO LIKE '$dscDepositoEndereco'";
+//            if ((count($retorno) == 2 && $tamanhoPalete == 160) || (count($retorno) >= 3 && $tamanhoPalete == 100)) {
+//                return $value;
+//            }
+//        }
 
-            $retorno = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-
-            if ((count($retorno) == 2 && $tamanhoPalete == 160) || (count($retorno) >= 3 && $tamanhoPalete == 100)) {
-                return $value;
-            }
-        }
-
-        return null;
+        return $result;
     }
 
     public function alterarNorma($codProduto, $grade, $idRecebimento, $idUma) {
