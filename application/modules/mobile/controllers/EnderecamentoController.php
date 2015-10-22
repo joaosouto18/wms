@@ -45,8 +45,8 @@ class Mobile_EnderecamentoController extends Action
 
             if (count($result) == 0)
             {
-               $this->addFlashMessage('error', 'Nenhum produto encontrado para este picking');
-               $this->_redirect('/mobile/enderecamento/leitura-picking');
+                $this->addFlashMessage('error', 'Nenhum produto encontrado para este picking');
+                $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
             $existeEstoque = false;
@@ -72,21 +72,21 @@ class Mobile_EnderecamentoController extends Action
                 $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
-              $contagem = $this->em->getRepository("wms:Enderecamento\RelatorioPicking")->findBy(array('depositoEndereco'=>$enderecoEn));
+            $contagem = $this->em->getRepository("wms:Enderecamento\RelatorioPicking")->findBy(array('depositoEndereco'=>$enderecoEn));
 
-              if ($contagem != NULL)
-              {
-                     $this->addFlashMessage('error', 'O endereço informado já foi bipado');
-                     $this->_redirect('/mobile/enderecamento/leitura-picking');
-              }
+            if ($contagem != NULL)
+            {
+                $this->addFlashMessage('error', 'O endereço informado já foi bipado');
+                $this->_redirect('/mobile/enderecamento/leitura-picking');
+            }
 
-              else
-              {
-                 $contagem = new \Wms\Domain\Entity\Enderecamento\RelatorioPicking();
-                 $contagem->setDepositoEndereco($enderecoEn);
-                 $this->em->persist($contagem);
-                 $this->em->flush();
-              }
+            else
+            {
+                $contagem = new \Wms\Domain\Entity\Enderecamento\RelatorioPicking();
+                $contagem->setDepositoEndereco($enderecoEn);
+                $this->em->persist($contagem);
+                $this->em->flush();
+            }
 
         }
     }
@@ -479,16 +479,16 @@ class Mobile_EnderecamentoController extends Action
                             $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
 			    
                             if ($sugestaoEndereco != null) {
-                                foreach($sugestaoEndereco as $sugestao) {
-                                    $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
-                                    $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
+                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
 
-                                    $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
-                                    if ($permiteEnderecar == true) {
-                                        $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
-                                        $this->getEntityManager()->flush();
-                                        break;
-                                    }
+                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
+
+                                if ($permiteEnderecar == true) {
+                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+                                    $this->getEntityManager()->flush();
+                                } else {
+                                    $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
                                 }
                             }
                         } else {
@@ -515,6 +515,7 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->rollback();
             $this->addFlashMessage('error',$e->getMessage());
         }
+
 
     }
 
@@ -599,8 +600,9 @@ class Mobile_EnderecamentoController extends Action
 
                         if ($sugestaoEndereco != null) {
                             foreach($sugestaoEndereco as $sugestao) {
-                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
-                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
+
+                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
 
                                 $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
                                 if ($permiteEnderecar == true) {
@@ -609,6 +611,17 @@ class Mobile_EnderecamentoController extends Action
                                     break;
                                 }
                             }
+
+
+
+
+
+//                            if ($permiteEnderecar == true) {
+//                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+//                                $this->getEntityManager()->flush();
+//                            } else {
+//                                $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
+//                            }
                         }
                     } else {
                         $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
