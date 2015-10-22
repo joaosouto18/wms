@@ -379,7 +379,7 @@ class EtiquetaSeparacao extends Pdf
         $this->AddPage();
         $yImage = 33;
 
-        $this->total=$countEtiquetas;
+        $this->total = $countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
         $this->SetFont('Arial', 'B', 9);
@@ -391,10 +391,19 @@ class EtiquetaSeparacao extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         $impressao  = utf8_decode("\n\nPEDIDO:$etiqueta[pedido]\n");
-        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 9);
+        $this->MultiCell(100, 1.7, $impressao, 0, 'L');
+        $this->SetFont('Arial', 'B', 18);
+        $etiqueta['codClienteExterno'] = '50500';
+        $etiqueta['cliente'] = 'ADEGA QUINTA DO LAGO';
+        if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 30) {
+            $this->SetFont('Arial', 'B', 13);
+        } else if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 20) {
+            $this->SetFont('Arial', 'B', 15);
+        } else {
+            $this->SetFont('Arial', 'B', 18);
+        }
         $impressao = substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
-        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        $this->MultiCell(100, 10, $impressao, 0, 'L');
         $this->SetFont('Arial', 'B', 9);
         $impressao = "CODIGO:$etiqueta[codProduto] - EXP:$etiqueta[codExpedicao] \n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
@@ -405,7 +414,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, $yImage, 68,17);
-        $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 4.1, 1.5, 20,5);
+        $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 90, 1.5, 20, 5);
         $this->SetFont('Arial', 'B', 13);
         $this->SetY(36);
         $this->Cell(20, 3,   utf8_decode($etiqueta['tipoComercializacao']). $qtdEmbalagem, 0, 1, "L");
