@@ -127,15 +127,11 @@ class PaleteRepository extends EntityRepository
 
     }
 
-    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true, $endPaleteMobile = false, $detalhePalete = false)
+    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true)
     {
-
         $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
-        if ($endPaleteMobile == true) {
-            $paletes = $this->getPaletesByUnitizador($idRecebimento,$idProduto,$grade,$detalhePalete);
-        } else {
-            $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
-        }
+        $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
+        $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
 
         return $paletes;
     }
@@ -1265,11 +1261,10 @@ class PaleteRepository extends EntityRepository
         //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
         $enderecoReferencia = $produtoEn->getEnderecoReferencia();
 
-
         //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
         $embalagens = $produtoEn->getEmbalagens();
         $volumes = $produtoEn->getVolumes();
-            if ($enderecoReferencia != null) {
+            if ($enderecoReferencia == null) {
                 foreach ($embalagens as $embalagem) {
                     if ($embalagem->getEndereco() != null) {
                         $enderecoReferencia = $embalagem->getEndereco();
@@ -1277,7 +1272,7 @@ class PaleteRepository extends EntityRepository
                     }
                 }
             }
-            if ($enderecoReferencia != null) {
+            if ($enderecoReferencia == null) {
                 foreach ($volumes as $volume) {
                     if ($volume->getEndereco() != null) {
                         $enderecoReferencia = $volume->getEndereco();
@@ -1385,23 +1380,13 @@ class PaleteRepository extends EntityRepository
          * 6-> Proximidade de Picking (Rua, Predio, Nivel e Apartamento)
          */
 
-
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-//        foreach ($result as $value) {
-//            $dscDepositoEndereco = substr($value['DSC_DEPOSITO_ENDERECO'], 0, -2);
-//            $dscDepositoEndereco = $dscDepositoEndereco.'%';
-//
-//            $query = " SELECT COD_DEPOSITO_ENDERECO, DSC_DEPOSITO_ENDERECO
-//                       FROM DEPOSITO_ENDERECO
-//                       WHERE DSC_DEPOSITO_ENDERECO LIKE '$dscDepositoEndereco'";
-//
-//            $retorno = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-
-//            if ((count($retorno) == 2 && $tamanhoPalete == 160) || (count($retorno) >= 3 && $tamanhoPalete == 100)) {
-//                return $value;
-//            }
-//        }
+        if (count($result)>0) {
+            return $result[0];
+        } else {
+            return null;
+        }
 
         return $result;
     }

@@ -13,24 +13,20 @@
             foreach ($this->paletes as $palete):
                 $fontColor = "black";
                 $liberado = true;
-                if ($palete['motivoNaoLiberar'] != '') {
-                    $fontColor = "gray";
-                    $liberado = false;
-                }
                 $this->color = !($this->color);?>
                 <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
-                    <td> <input name="palete[]" value="<?php echo $palete['allUma'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
+                    <td> <input name="palete[]" value="<?php echo $palete['ALL_UMA'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
                     <td style="padding-bottom: 3pt;padding-top: 3pt">
                         <table style="width: 100%">
                             <tr>
-                                <td colspan="3"><b><?php echo $palete['produto'] ?></b>
-                                    <input type="hidden" name="<?php echo 'endereco[' . $palete['uma'] . ']'?>" value="<?php echo $palete['idEndereco'] ?>">
+                                <td colspan="3">
+                                    <b><?php echo $palete['DSC_PRODUTO'] ?></b>
                                 </td>
                             </tr>
-                            <tr>
-                                <td><?php echo $palete['unitizador'] ?></td>
-                                <td><?php echo "<b>Qtd:<b> " . $palete['qtd']  ?></td>
-                                <td><a href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'enderecamento', 'action' => 'detalhe-endereco', 'produto' => $palete['codProduto'], 'grade' => $palete['dscGrade'])) ?>"> <input class="btn" type="button" value="Mais"></a></td>
+                            <tr>'
+                                <td><?php echo $palete['DSC_UNITIZADOR'] ?></td>
+                                <td><?php echo "<b>Qtd:<b> " . $palete['QTD']  ?></td>
+                                <td><a href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'enderecamento', 'action' => 'detalhe-endereco', 'produto' => $palete['COD_PRODUTO'], 'grade' => $palete['DSC_GRADE'])) ?>"> <input class="btn" type="button" value="Mais"></a></td>
                             </tr>
                         </table>
                     </td>
