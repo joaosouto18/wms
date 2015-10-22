@@ -456,9 +456,7 @@ class Mobile_EnderecamentoController extends Action
                         ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
                         ($tmpPalete['COD_SIGLA'] != Palete::STATUS_CANCELADO)) {
                         $tmp = array();
-                        $tmp['uma'] = explode(',', $tmpPalete['UMA']);
-                        $tmp['uma'] = $tmp['uma'][0];
-                        $tmp['allUma'] = $tmpPalete['UMA'];
+                        $tmp['uma'] = $tmpPalete['UMA'];
                         $tmp['unitizador'] = $tmpPalete['UNITIZADOR'];
                         $tmp['qtd'] = $tmpPalete['QTD'];
                         $tmp['produto'] = $tmpPalete['COD_PRODUTO'] . ' / ' . $tmpPalete['DSC_GRADE'] . ' - ' . $tmpPalete['DSC_PRODUTO'];
@@ -509,13 +507,44 @@ class Mobile_EnderecamentoController extends Action
                 $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
             }
 
-            $this->view->paletes = $paletes;
+            $paletesResumo = $this->getPaletesExibirResumo($idRecebimento);
+
+            $this->view->paletes = $paletesResumo;
             $this->getEntityManager()->commit();
         } catch(Exception $e) {
             $this->getEntityManager()->rollback();
             $this->addFlashMessage('error',$e->getMessage());
         }
+    }
 
+    public function getPaletesExibirResumo($codRecebimento){
+        $statusEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
+        $SQL = "SELECT LISTAGG(UMA, ', ') WITHIN GROUP (ORDER BY UMA) ALL_UMA,
+                       COD_PRODUTO,
+                       DSC_GRADE,
+                       DSC_PRODUTO,
+                       DSC_UNITIZADOR,
+                       SUM(QTD) as QTD
+                  FROM (
+                SELECT DISTINCT PROD.COD_PRODUTO,
+                                PROD.DSC_GRADE,
+                                PROD.DSC_PRODUTO,
+                                PP.UMA,
+                                PP.QTD,
+                                UN.DSC_UNITIZADOR
+                  FROM PALETE_PRODUTO PP
+                  LEFT JOIN PALETE P ON P.UMA = PP.UMA
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = P.COD_UNITIZADOR
+                 WHERE P.COD_RECEBIMENTO = $codRecebimento
+                   AND P.COD_STATUS = $statusEnderecamento
+                   AND P.IND_IMPRESSO = 'N'
+                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL)
+                GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
+
+        $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
 
     }
 
