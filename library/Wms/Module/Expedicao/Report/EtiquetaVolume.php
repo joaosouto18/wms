@@ -114,7 +114,7 @@ class EtiquetaVolume extends eFPDF
             //linha horizontal entre o numero do pedido e o cod de barras
             $this->Line(82,30,150,30);
 
-            $y = 18;
+            $y = 15;
             $this->SetFont('Arial', 'B', 7);
 
             foreach ($volume['produtos'] as $produtos) {
