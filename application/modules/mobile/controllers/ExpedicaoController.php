@@ -1021,6 +1021,11 @@ class Mobile_ExpedicaoController extends Action
         return $this->bloquearOs;
     }
 
+    public function expedicaoCarregamentoAction()
+    {
+
+    }
+
     public function carregamentoAction()
     {
         $operadores     = $this->_getParam('mass-id');
