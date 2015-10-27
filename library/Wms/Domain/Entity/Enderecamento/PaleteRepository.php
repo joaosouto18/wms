@@ -130,7 +130,6 @@ class PaleteRepository extends EntityRepository
     public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true)
     {
         $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
-        $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
         $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
 
         return $paletes;
@@ -1236,7 +1235,8 @@ class PaleteRepository extends EntityRepository
         return $sugestaoEndereco;
     }
 
-    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete) {
+    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete)
+    {
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
@@ -1294,6 +1294,15 @@ class PaleteRepository extends EntityRepository
             $apartamentoReferencia = $enderecoReferencia->getApartamento();
         } else {
             return null;
+        }
+
+        if ($tamanhoPalete == 100) {
+            $whereTamanho = " AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete
+                                AND (LONGARINA.OCUPADO = 0 OR LONGARINA.OCUPADO = 100 OR LONGARINA.OCUPADO = 200
+                                OR LONGARINA.OCUPADO = 300)) ";
+        } else if ($tamanhoPalete == 160) {
+            $whereTamanho = " AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete
+                                AND (LONGARINA.OCUPADO = 0 OR LONGARINA.OCUPADO = 160 OR LONGARINA.OCUPADO = 320)) ";
         }
 
         if (count($endAreaArmazenagem) >0) {
@@ -1358,7 +1367,7 @@ class PaleteRepository extends EntityRepository
                   $sqlCaracEndereco
                   WHERE DE.IND_ATIVO = 'S'
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
-                    AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
+                    $whereTamanho
                     AND DE.IND_DISPONIVEL = 'S'
                ORDER BY CE.NUM_PRIORIDADE,
                         LARG_DISPONIVEL,
@@ -1388,7 +1397,6 @@ class PaleteRepository extends EntityRepository
             return null;
         }
 
-        return $result;
     }
 
     public function alterarNorma($codProduto, $grade, $idRecebimento, $idUma) {
