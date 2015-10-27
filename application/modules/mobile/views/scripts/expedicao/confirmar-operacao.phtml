@@ -15,6 +15,7 @@
                     <label style="font-size: 15px">Placa: <?php echo $this->placa ?></label>
                 <?php } ?>
                 <a class="finalizar" href="<?php echo $this->url ?>" >INICIAR</a>
+                <a class="finalizarAmarelo" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'carregamento', 'idExpedicao' => $this->expedicao)) ?>" >EQUIPE</a>
             </dl>
         </fieldset>
     </dd>
