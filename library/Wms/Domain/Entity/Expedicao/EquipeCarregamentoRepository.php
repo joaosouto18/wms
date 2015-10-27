@@ -53,4 +53,22 @@ class EquipeCarregamentoRepository extends EntityRepository
         return true;
     }
 
+    public function getEquipeCarregamento($params)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('ec.id equipe, ec.dataVinculo, e.id expedicao, pf.nome')
+            ->from('wms:Expedicao\EquipeCarregamento', 'ec')
+            ->innerJoin('ec.expedicao', 'e')
+            ->innerJoin('ec.usuario', 'u')
+            ->innerJoin('u.pessoa', 'pf');
+        if (isset($params['idExpedicao']) && !empty($params['idExpedicao'])) {
+            $sql->andWhere("e.id = $params[idExpedicao]");
+        }
+        if (isset($params['pessoa']) && !empty($params['pessoa'])) {
+            $sql->andWhere("pf.id = $params[pessoa]");
+        }
+
+        return $sql->getQuery()->getResult();
+    }
+
 }

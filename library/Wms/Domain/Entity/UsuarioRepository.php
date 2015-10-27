@@ -174,6 +174,18 @@ class UsuarioRepository extends AtorRepository {
         return $source->getQuery()->getResult();
     }
 
+    public function selectUsuario($perfil)
+    {
+        $result = $this->getUsuarioByPerfil($perfil);
+
+        $usuarios = array();
+        foreach ($result as $usuario) {
+            $usuarios[$usuario['id']] = $usuario['nome'];
+        }
+
+        return $usuarios;
+    }
+
     public function getIdPerfil($perfil)
     {
         $source = $this->_em->createQueryBuilder()
