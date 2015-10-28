@@ -91,7 +91,6 @@ class EtiquetaVolume extends eFPDF
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 30);
-            $volume['pedido'] = 2611;
             $impressao = utf8_decode("\n$volume[pedido]");
             $this->SetY(17);
             $this->SetX(82);
