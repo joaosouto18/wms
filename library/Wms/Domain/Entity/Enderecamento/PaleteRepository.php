@@ -1264,22 +1264,22 @@ class PaleteRepository extends EntityRepository
         //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
         $embalagens = $produtoEn->getEmbalagens();
         $volumes = $produtoEn->getVolumes();
-            if ($enderecoReferencia == null) {
-                foreach ($embalagens as $embalagem) {
-                    if ($embalagem->getEndereco() != null) {
-                        $enderecoReferencia = $embalagem->getEndereco();
-                        break;
-                    }
+        if ($enderecoReferencia == null) {
+            foreach ($embalagens as $embalagem) {
+                if ($embalagem->getEndereco() != null) {
+                    $enderecoReferencia = $embalagem->getEndereco();
+                    break;
                 }
             }
-            if ($enderecoReferencia == null) {
-                foreach ($volumes as $volume) {
-                    if ($volume->getEndereco() != null) {
-                        $enderecoReferencia = $volume->getEndereco();
-                        break;
-                    }
+        }
+        if ($enderecoReferencia == null) {
+            foreach ($volumes as $volume) {
+                if ($volume->getEndereco() != null) {
+                    $enderecoReferencia = $volume->getEndereco();
+                    break;
                 }
             }
+        }
 
         //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
         if ($enderecoReferencia == null) {
@@ -1294,15 +1294,6 @@ class PaleteRepository extends EntityRepository
             $apartamentoReferencia = $enderecoReferencia->getApartamento();
         } else {
             return null;
-        }
-
-        if ($tamanhoPalete == 100) {
-            $whereTamanho = " AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete
-                                AND (LONGARINA.OCUPADO = 0 OR LONGARINA.OCUPADO = 100 OR LONGARINA.OCUPADO = 200
-                                OR LONGARINA.OCUPADO = 300)) ";
-        } else if ($tamanhoPalete == 160) {
-            $whereTamanho = " AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete
-                                AND (LONGARINA.OCUPADO = 0 OR LONGARINA.OCUPADO = 160 OR LONGARINA.OCUPADO = 320)) ";
         }
 
         if (count($endAreaArmazenagem) >0) {
@@ -1367,7 +1358,7 @@ class PaleteRepository extends EntityRepository
                   $sqlCaracEndereco
                   WHERE DE.IND_ATIVO = 'S'
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
-                    $whereTamanho
+                    AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
                ORDER BY CE.NUM_PRIORIDADE,
                         LARG_DISPONIVEL,
