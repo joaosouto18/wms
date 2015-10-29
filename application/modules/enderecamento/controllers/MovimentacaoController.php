@@ -349,7 +349,7 @@ class Enderecamento_MovimentacaoController extends Action
         $params = $this->_getAllParams();
 
         try {
-            if (isset($params['endereco']) && !empty($params['endereco']) && isset($params['uma']) && !empty($params['uma'])) {
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
                 $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
                 $result = $paleteRepo->updateUmaByEndereco($params);
