@@ -83,10 +83,14 @@ class Inventario_ParcialController extends Action
         $values = $form->getParams();
 
         if ($values) {
+            /** @var \Wms\Domain\Entity\InventarioRepository $InventarioRepo */
+            $InventarioRepo = $this->_em->getRepository('wms:Inventario');
 
-            if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
-                /** @var \Wms\Domain\Entity\InventarioRepository $InventarioRepo */
-                $InventarioRepo = $this->_em->getRepository('wms:Inventario');
+            if ($values['busca'] == 'Buscar/mass-imprimir') {
+                $result = $InventarioRepo->impressaoInventarioByEndereco($values['mass-id']);
+                $this->exportPDF($result,'Relatório Inventário', 'Inventário', 'P');
+            } elseif (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
+
                 if (empty($idInventario)) {
                     $enInventario   = $InventarioRepo->save();
                     $idInventario   = $enInventario->getId();
