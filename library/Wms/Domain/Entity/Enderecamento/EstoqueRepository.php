@@ -258,7 +258,7 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
-    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true){
+    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true, $orderBy = null){
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
@@ -351,7 +351,12 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND E.COD_VOLUME = " . $parametros['volume'];
         }
 
-        $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE";
+        $SQLOrderBy = "";
+        if ($orderBy != null) {
+            $SQLOrderBy = $orderBy;
+        } else {
+            $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE";
+        }
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (isset($maxResult) && !empty($maxResult)) {
