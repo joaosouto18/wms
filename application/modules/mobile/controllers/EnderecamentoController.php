@@ -708,25 +708,170 @@ class Mobile_EnderecamentoController extends Action
 
     public function movimentacaoAction()
     {
-        $params = $this->_getAllParams();
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $nivel = $this->_getParam('nivel');
+
+        $this->view->codigoBarras = $codigoBarras;
+        $this->view->nivel = $nivel;
+    }
+
+    public function umaByEnderecoAction()
+    {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $nivel = $this->_getParam('nivel');
+        $this->view->codigoBarras = $codigoBarras;
 
         try {
-            if (isset($params['endereco']) && !empty($params['endereco']) && isset($params['uma']) && !empty($params['uma'])) {
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-                $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
-                $result = $paleteRepo->updateUmaByEndereco($params);
-
-                if ($result == true) {
-                    $this->addFlashMessage('success','Endereço alterado com sucesso!');
-                }
+            if ($codigoBarras) {
+                $LeituraColetor = new LeituraColetor();
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
             }
 
-        } catch (\Exception $e) {
-            $this->addFlashMessage('error',$e->getMessage());
-            return false;
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+            $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
 
+            if ($result == NULL) {
+                throw new \Exception ("Endereço selecionado está vazio");
+            } else {
+                $idEstoque = $result[0]['id'];
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+                $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
+                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $result[0]['idEndereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
+
+                if (count($verificaReservaSaida) > 0) {
+                    throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
+                }
+
+                if ($result[0]['uma']) {
+                    $this->_redirect('/mobile/enderecamento/endereco-uma/cb/' . $idEstoque);
+                } else {
+                    $this->_redirect('/mobile/enderecamento/endereco-produto/cb/' . $idEstoque );
+                }
+            }
+        }  catch (\Exception $e) {
+            throw new \Exception ($e->getMessage());
         }
 
+    }
+
+    public function enderecoProdutoAction()
+    {
+        $idEstoque = $this->_getParam('cb');
+        $this->view->cb = $idEstoque;
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque")->findOneBy(array('id'=>$idEstoque));
+
+        $rua         = $estoqueEn->getDepositoEndereco()->getRua();
+        $predio      = $estoqueEn->getDepositoEndereco()->getPredio();
+        $nivel       = $estoqueEn->getDepositoEndereco()->getNivel();
+        $apartamento = $estoqueEn->getDepositoEndereco()->getApartamento();
+        $idEstoque   = $estoqueEn->getDepositoEndereco()->getId();
+
+        $this->view->rua = $rua;
+        $this->view->predio = $predio;
+        $this->view->nivel = $nivel;
+        $this->view->apartamento = $apartamento;
+
+    }
+
+    public function enderecoUmaAction()
+    {
+        $idEstoque = $this->_getParam('cb');
+        $this->view->cb = $idEstoque;
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque")->findOneBy(array('id'=>$idEstoque));
+
+        $rua         = $estoqueEn->getDepositoEndereco()->getRua();
+        $predio      = $estoqueEn->getDepositoEndereco()->getPredio();
+        $nivel       = $estoqueEn->getDepositoEndereco()->getNivel();
+        $apartamento = $estoqueEn->getDepositoEndereco()->getApartamento();
+        $idEstoque   = $estoqueEn->getDepositoEndereco()->getId();
+
+        $this->view->rua = $rua;
+        $this->view->predio = $predio;
+        $this->view->nivel = $nivel;
+        $this->view->apartamento = $apartamento;
+    }
+
+    public function enderecoDestinoAction()
+    {
+        $this->view->codigoBarrasUMA = $this->_getParam('codigoBarrasUMA');
+        $this->view->etiquetaProduto = $this->_getParam('etiquetaProduto');
+        $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
+
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
+        $this->view->qtd = $qtd = $estoqueEn->getQtd();
+    }
+
+    public function confirmaEnderecamentoAction()
+    {
+        $params = array();
+        $params['qtd'] = $this->_getParam('qtd');
+        $params['uma'] = $this->_getParam('uma');
+        $params['etiquetaProduto'] = $this->_getParam('etiquetaProduto');
+        $params['idEstoque'] = $this->_getParam('cb');
+        $params['novoEndereco'] = $this->_getParam('novoEndereco');
+        $params['nivel'] = $this->_getParam('nivel');
+
+        try {
+
+            if ($params['novoEndereco']) {
+                $LeituraColetor = new LeituraColetor();
+                $params['novoEndereco'] = $LeituraColetor->retiraDigitoIdentificador($params['novoEndereco']);
+            }
+
+            $params['novoEndereco'] = $this->getEnderecoNivel($params['novoEndereco'], $params['nivel']);
+
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
+
+            if (isset($params['uma']) && !empty($params['uma'])) {
+                $LeituraColetor = new LeituraColetor();
+                $params['uma'] = $LeituraColetor->retiraDigitoIdentificador($params['uma']);
+            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+                $LeituraColetor = new LeituraColetor();
+                $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
+            }
+
+            $paleteRepo->updateUmaByEndereco($params);
+            $this->addFlashMessage('success', 'Endereço alterado com sucesso!');
+            $this->_redirect('/mobile/enderecamento/movimentacao');
+
+        }  catch (\Exception $e) {
+            throw new \Exception ($e->getMessage());
+        }
+    }
+
+    private function getEnderecoNivel($dscEndereco, $nivel)
+    {
+        if (strlen($dscEndereco) < 8) {
+            $rua = 0;
+            $predio = 0;
+            $nivel = 0;
+            $apartamento = 0;
+        } else {
+            $dscEndereco = str_replace('.','',$dscEndereco);
+            if (strlen($dscEndereco) == 8){
+                $tempEndereco = "0" . $dscEndereco;
+            } else {
+                $tempEndereco = $dscEndereco;
+            }
+            $rua = intval( substr($tempEndereco,0,2));
+            $predio = intval(substr($tempEndereco,2,3));
+            $apartamento = intval(substr($tempEndereco,7,2));
+        }
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        return $enderecoRepo->findOneBy(array('rua' => $rua, 'predio' => $predio, 'apartamento' => $apartamento, 'nivel' => $nivel));
     }
 
 

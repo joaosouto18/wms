@@ -1464,45 +1464,27 @@ class PaleteRepository extends EntityRepository
 
     public function updateUmaByEndereco($params)
     {
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
-        $paleteEn = $paleteRepo->find($params['uma']);
-
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
-        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $params['endereco']));
-
-
-//deve verificar se o novo endereço nao tem reserva de entrada
-
-
         try {
-            if (!isset($enderecoEn) || empty($enderecoEn)) {
+            if (!isset($params['novoEndereco']) || empty($params['novoEndereco'])) {
                 throw new \Exception ("Novo endereço não encontrado!");
             }
-            if (!isset($paleteEn) || empty($paleteEn)) {
-                throw new \Exception ("UMA não encontrada!");
-            }
+
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
             $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-            $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $paleteEn->getDepositoEndereco(), 'tipoReserva' => 'S', 'atendida' => 'N'));
-            $verificaReservaEntrada = $reservaEstoqueRepo->findBy(array('endereco' => $enderecoEn, 'tipoReserva' => 'E', 'atendida' => 'N'));
+            $verificaReservaEntrada = $reservaEstoqueRepo->findBy(array('endereco' => $params['novoEndereco'], 'tipoReserva' => 'E', 'atendida' => 'N'));
 
             if (count($verificaReservaEntrada) > 0) {
                 throw new \Exception("Existe reserva de Entrada para o novo endereço que ainda não foi atendida!");
             }
 
-            if (count($verificaReservaSaida) > 0) {
-                throw new \Exception ("Existe Reserva de Saída para essa UMA que ainda não foi atendida!");
-            }
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueEn = $this->getEntityManager()->getReference('wms:enderecamento\Estoque', $params['idEstoque']);
+            $estoqueEn->setQtd($params['qtd']);
+            $estoqueEn->setDepositoEndereco($params['novoEndereco']);
+            $this->_em->persist($estoqueEn);
+            $this->_em->flush();
 
-            if (isset($enderecoEn) && !empty($enderecoEn) && isset($paleteEn) && !empty($paleteEn)) {
-                $paleteEn->setDepositoEndereco($enderecoEn);
-                $this->_em->persist($paleteEn);
-                $this->_em->flush();
 
-                return true;
-            }
 
         } catch (\Exception $e) {
             throw new \Exception ($e->getMessage());
