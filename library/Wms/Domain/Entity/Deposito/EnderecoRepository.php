@@ -646,8 +646,8 @@ class EnderecoRepository extends EntityRepository
     }
 
     public function getValidaTamanhoEndereco($idEndereco, $larguraPalete) {
-        $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoReservaLongarina");
-        $estoqueRepo     = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoLongarina");
+        $estoqueRepo     = $this->getEntityMdanager()->getRepository("wms:Enderecamento\Estoque");
 
         $tamanhoUnitizadorAlocado = 0;
         $estoquesEn = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco));
@@ -663,10 +663,7 @@ class EnderecoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
         $enderecoEn = $this->findOneBy(array('id'=>$idEndereco));
-	if ($enderecoEn == null) {
-	   var_dump($idEndereco);
-	   exit;
-	}
+
         $rua = $enderecoEn->getRua();
         $predio = $enderecoEn->getPredio();
         $nivel = $enderecoEn->getNivel();
