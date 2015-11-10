@@ -1361,10 +1361,10 @@ class PaleteRepository extends EntityRepository
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
                ORDER BY CE.NUM_PRIORIDADE,
-                        LARG_DISPONIVEL,
                         ET.NUM_PRIORIDADE,
                         AA.NUM_PRIORIDADE,
                         TE.NUM_PRIORIDADE,
+                        LARG_DISPONIVEL,
                         DIF_RUA,
                         DIF_PREDIO,
                         DIF_NIVEL,
@@ -1373,10 +1373,10 @@ class PaleteRepository extends EntityRepository
         /*
          * ORDENAÇÂO ATUAL
          * 1-> Caracteristica de Endereço (Picking/Pulmão)
-         * 2-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
-         * 3-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
-         * 4-> Area de Armazenagem
-         * 5-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
+         * 2-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
+         * 3-> Area de Armazenagem
+         * 4-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
+         * 5-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
          * 6-> Proximidade de Picking (Rua, Predio, Nivel e Apartamento)
          */
 
