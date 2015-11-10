@@ -46,6 +46,13 @@ class ExpedicaoVolumePatrimonio
     protected $tipoVolume;
 
     /**
+     * @var Wms\Domain\Entity\Usuario $usuario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
+     * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
+     */
+    protected $usuario;
+
+    /**
      * @param mixed $tipoVolume
      */
     public function setTipoVolume($tipoVolume)
@@ -109,6 +116,22 @@ class ExpedicaoVolumePatrimonio
     public function getVolumePatrimonio()
     {
         return $this->volumePatrimonio;
+    }
+
+    /**
+     * @return Wms\Domain\Entity\Usuario
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * @param Wms\Domain\Entity\Usuario $usuario
+     */
+    public function setUsuario($usuario)
+    {
+        $this->usuario = $usuario;
     }
 
 }

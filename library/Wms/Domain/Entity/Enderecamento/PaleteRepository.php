@@ -1484,8 +1484,6 @@ class PaleteRepository extends EntityRepository
             $this->_em->persist($estoqueEn);
             $this->_em->flush();
 
-
-
         } catch (\Exception $e) {
             throw new \Exception ($e->getMessage());
         }

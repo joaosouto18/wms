@@ -38,6 +38,8 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $entityVolPatrimonio    = $volumePatrimonioRepo->findOneBy(array('id' => $volume));
             $expedicaoRepo          = $em->getRepository('wms:Expedicao');
             $entityExpedicao        = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+            $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
 
             $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
 
@@ -46,6 +48,7 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
                 $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
                 $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
                 $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
+                $enExpVolumePatrimonio->setUsuario($usuario);
                 $em->persist($enExpVolumePatrimonio);
             }
 

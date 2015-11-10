@@ -88,9 +88,39 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'uma', 'submit', 'buscarestoque'), 'identificacao', array('legend' => '')
 
-            );
+            ->addElement('text', 'ruaDestino', array(
+                'size' => 3,
+                'label' => 'Rua Destino',
+                'maxlength' => '2',
+                'class' => 'ctrSize',
+            ))
+            ->addElement('text', 'predioDestino', array(
+                'size' => 3,
+                'maxlength' => '3',
+                'label' => 'Predio Destino',
+                'class' => 'ctrSize',
+            ))
+            ->addElement('text', 'nivelDestino', array(
+                'size' => 3,
+                'maxlength' => '2',
+                'label' => 'Nivel Destino',
+                'class' => 'ctrSize',
+            ))
+            ->addElement('text', 'aptoDestino', array(
+                'size' => 3,
+                'maxlength' => '2',
+                'label' => 'Apto Destino',
+                'class' => 'ctrSize',
+            ))
+
+            ->addElement('submit', 'transferir', array(
+                'label' => 'Transferir',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper')
+            ))
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'uma', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
+            ->addDisplayGroup(array('ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }
 

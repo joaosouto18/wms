@@ -14,8 +14,46 @@ class Enderecamento_MovimentacaoController extends Action
         $form->init($utilizaGrade);
         $request = $this->getRequest();
         $data = $this->_getAllParams();
+        $transferir = $this->_getParam('transferir');
+
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+
+        if (isset($transferir) && !empty($transferir)) {
+            try {
+                $data['idEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+
+                $estoqueRepo = $idEmbalagemOrVolume = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+                $data['idEstoque'] = $estoqueRepo->findOneBy(array('depositoEndereco' => $data['idEndereco']))->getId();
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+                $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
+                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $data['idEndereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
+
+                if (count($verificaReservaSaida) > 0) {
+                    throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
+                }
+
+                $data['novoEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+                $data['qtd'] = $data['quantidade'];
+
+                /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+                $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
+                $paleteRepo->updateUmaByEndereco($data);
+
+                $this->addFlashMessage('success','Endereço alterado com sucesso!');
+                $this->_redirect('/enderecamento/movimentacao');
+
+
+
+
+            } catch(Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+            }
+
+        }
+
+
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepository */
         $EstoqueRepository   = $this->_em->getRepository('wms:Enderecamento\Estoque');
 
@@ -367,4 +405,4 @@ class Enderecamento_MovimentacaoController extends Action
 
     }
 
-} 
+}
