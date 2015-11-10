@@ -1348,7 +1348,7 @@ class PaleteRepository extends EntityRepository
                         ABS(DE.NUM_APARTAMENTO - $apartamentoReferencia) as DIF_APARTAMENTO,
                         (LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) as LARG_DISPONIVEL
                    FROM DEPOSITO_ENDERECO DE
-                  INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
+                  INNER JOIN V_OCUP_RESERVA_LONGARINA LONGARINA
                      ON LONGARINA.NUM_PREDIO  = DE.NUM_PREDIO
                     AND LONGARINA.NUM_NIVEL   = DE.NUM_NIVEL
                     AND LONGARINA.NUM_RUA     = DE.NUM_RUA

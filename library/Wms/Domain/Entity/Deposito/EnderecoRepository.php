@@ -415,7 +415,7 @@ class EnderecoRepository extends EntityRepository
           INNER JOIN AREA_ARMAZENAGEM AA        ON DE.COD_AREA_ARMAZENAGEM = AA.COD_AREA_ARMAZENAGEM
           INNER JOIN TIPO_EST_ARMAZ TP          ON DE.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
           INNER JOIN TIPO_ENDERECO TE           ON DE.COD_TIPO_ENDERECO = TE.COD_TIPO_ENDERECO
-          INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
+          INNER JOIN V_OCUP_RESERVA_LONGARINA LONGARINA
 		          ON LONGARINA.NUM_PREDIO = DE.NUM_PREDIO
                  AND LONGARINA.NUM_NIVEL  = DE.NUM_NIVEL
                  AND LONGARINA.NUM_RUA    = DE.NUM_RUA
@@ -646,7 +646,7 @@ class EnderecoRepository extends EntityRepository
     }
 
     public function getValidaTamanhoEndereco($idEndereco, $larguraPalete) {
-        $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoLongarina");
+        $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoReservaLongarina");
         $estoqueRepo     = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
         $tamanhoUnitizadorAlocado = 0;
@@ -947,39 +947,6 @@ class EnderecoRepository extends EntityRepository
         if ($flush == true) {
             $this->_em->flush();
         }
-    }
-
-    public function getEnderecoAproximado($params)
-    {
-        $picking = EnderecoEntity\Caracteristica::PICKING;
-        $query = "SELECT DE.COD_DEPOSITO_ENDERECO,
-                DE.DSC_DEPOSITO_ENDERECO,
-                ABS(DE.NUM_RUA - 01) as DIF_RUA,
-                ABS(DE.NUM_PREDIO - 003) as DIF_PREDIO,
-                ABS(DE.NUM_NIVEL - 00) as DIF_NIVEL,
-                ABS(DE.NUM_APARTAMENTO - 01) as DIF_APARTAMENTO
-           FROM DEPOSITO_ENDERECO DE
-          INNER JOIN PRODUTO_END_AREA_ARMAZENAGEM AA
-             ON AA.COD_PRODUTO = '$params[idProduto]' AND AA.DSC_GRADE = '$params[grade]'
-            AND AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM
-          INNER JOIN PRODUTO_END_TIPO_ENDERECO TE
-             ON TE.COD_PRODUTO = '$params[idProduto]' AND TE.DSC_GRADE = '$params[grade]'
-            AND TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO
-         INNER JOIN PRODUTO_END_TIPO_EST_ARMAZ ET
-             ON ET.COD_PRODUTO = '$params[idProduto]' AND ET.DSC_GRADE = '$params[grade]'
-            AND ET.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ
-          INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
-             ON LONGARINA.NUM_PREDIO  = DE.NUM_PREDIO
-            AND LONGARINA.NUM_NIVEL   = DE.NUM_NIVEL
-            AND LONGARINA.NUM_RUA     = DE.NUM_RUA
-          WHERE DE.IND_ATIVO = 'S'
-            AND ((DE.COD_CARACTERISTICA_ENDERECO != $picking) OR (DE.COD_TIPO_EST_ARMAZ = 26))
-		        AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= 150)
-            AND ROWNUM = 1
-       ORDER BY ET.NUM_PRIORIDADE, AA.NUM_PRIORIDADE, TE.NUM_PRIORIDADE, DIF_RUA,DIF_PREDIO,DIF_NIVEL,DIF_APARTAMENTO";
-
-        $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
     }
 
 }
