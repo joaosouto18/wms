@@ -1021,12 +1021,24 @@ class Mobile_ExpedicaoController extends Action
         return $this->bloquearOs;
     }
 
+    public function expedicaoCarregamentoAction()
+    {
+
+    }
+
     public function carregamentoAction()
     {
         $operadores     = $this->_getParam('mass-id');
         $idExpedicao    = $this->_getParam('idExpedicao');
         $sessao = new \Zend_Session_Namespace('coletor');
         $central        = $sessao->centralSelecionada;
+
+        $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
+        $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+        if (!$entityExpedicao) {
+            $this->addFlashMessage('error', 'Expedição não encontrada!');
+            $this->redirect('expedicao-carregamento', 'expedicao', 'mobile');
+        }
 
         if ($operadores && $idExpedicao) {
 
@@ -1043,7 +1055,7 @@ class Mobile_ExpedicaoController extends Action
 
         /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
         $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
-        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil('EQP.CARREGAMENTO');
+        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil('AUXILIAR EXPEDICAO');
         $this->view->idExpedicao    = $idExpedicao;
     }
 

@@ -393,9 +393,9 @@ class EtiquetaSeparacao extends Pdf
         $impressao  = utf8_decode("\n\nPEDIDO:$etiqueta[pedido]\n");
         $this->MultiCell(100, 1.7, $impressao, 0, 'L');
         $this->SetFont('Arial', 'B', 18);
-        $etiqueta['codClienteExterno'] = '50500';
-        $etiqueta['cliente'] = 'ADEGA QUINTA DO LAGO';
-        if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 30) {
+        if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 35) {
+            $this->SetFont('Arial', 'B', 11);
+        } else if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 30) {
             $this->SetFont('Arial', 'B', 13);
         } else if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 20) {
             $this->SetFont('Arial', 'B', 15);

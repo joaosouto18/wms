@@ -319,5 +319,27 @@ class OrdemServicoRepository extends EntityRepository
         $this->_em->flush();
     }
 
+    public function saveByInventarioManual()
+    {
+        $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+        $pessoaEntity = $this->getEntityManager()->getReference('wms:Pessoa', $idPessoa);
+
+        $em = $this->getEntityManager();
+        $atividadeEntity = $em->getReference('wms:Atividade', AtividadeEntity::INVENTARIO);
+
+        $ordemServicoEn = new OrdemServico();
+        $ordemServicoEn->setDataInicial(new \DateTime());
+        $ordemServicoEn->setAtividade($atividadeEntity);
+        $ordemServicoEn->setDscObservacao('Inventário Manual');
+        $ordemServicoEn->setPessoa($pessoaEntity);
+        $ordemServicoEn->setFormaConferencia('M');
+
+        $this->_em->persist($ordemServicoEn);
+        $this->_em->flush();
+
+        return $ordemServicoEn;
+
+    }
+
 }
 

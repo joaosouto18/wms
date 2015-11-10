@@ -706,6 +706,29 @@ class Mobile_EnderecamentoController extends Action
         //$this->redirect('ler-codigo-barras','recebimento','mobile',array('idRecebimento'=>$idRecebimento));
     }
 
+    public function movimentacaoAction()
+    {
+        $params = $this->_getAllParams();
+
+        try {
+            if (isset($params['endereco']) && !empty($params['endereco']) && isset($params['uma']) && !empty($params['uma'])) {
+                /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+                $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
+                $result = $paleteRepo->updateUmaByEndereco($params);
+
+                if ($result == true) {
+                    $this->addFlashMessage('success','Endereço alterado com sucesso!');
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error',$e->getMessage());
+            return false;
+
+        }
+
+    }
+
 
 }
 

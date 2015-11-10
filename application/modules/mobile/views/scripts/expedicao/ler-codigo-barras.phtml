@@ -191,6 +191,7 @@
                 <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
             </div>
     <?php endif; ?>
+    <a class="finalizarAmarelo" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'carregamento', 'idExpedicao' => $this->idExpedicao)) ?>" >Equipe</a>
 
 <?php } else { ?>
     <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras')); ?>">Confirmar</a>

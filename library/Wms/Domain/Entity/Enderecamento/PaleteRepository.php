@@ -130,7 +130,6 @@ class PaleteRepository extends EntityRepository
     public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true)
     {
         $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
-        $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
         $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
 
         return $paletes;
@@ -1236,7 +1235,8 @@ class PaleteRepository extends EntityRepository
         return $sugestaoEndereco;
     }
 
-    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete) {
+    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete)
+    {
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
@@ -1264,22 +1264,22 @@ class PaleteRepository extends EntityRepository
         //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
         $embalagens = $produtoEn->getEmbalagens();
         $volumes = $produtoEn->getVolumes();
-            if ($enderecoReferencia == null) {
-                foreach ($embalagens as $embalagem) {
-                    if ($embalagem->getEndereco() != null) {
-                        $enderecoReferencia = $embalagem->getEndereco();
-                        break;
-                    }
+        if ($enderecoReferencia == null) {
+            foreach ($embalagens as $embalagem) {
+                if ($embalagem->getEndereco() != null) {
+                    $enderecoReferencia = $embalagem->getEndereco();
+                    break;
                 }
             }
-            if ($enderecoReferencia == null) {
-                foreach ($volumes as $volume) {
-                    if ($volume->getEndereco() != null) {
-                        $enderecoReferencia = $volume->getEndereco();
-                        break;
-                    }
+        }
+        if ($enderecoReferencia == null) {
+            foreach ($volumes as $volume) {
+                if ($volume->getEndereco() != null) {
+                    $enderecoReferencia = $volume->getEndereco();
+                    break;
                 }
             }
+        }
 
         //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
         if ($enderecoReferencia == null) {
@@ -1348,7 +1348,7 @@ class PaleteRepository extends EntityRepository
                         ABS(DE.NUM_APARTAMENTO - $apartamentoReferencia) as DIF_APARTAMENTO,
                         (LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) as LARG_DISPONIVEL
                    FROM DEPOSITO_ENDERECO DE
-                  INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
+                  INNER JOIN V_OCUP_RESERVA_LONGARINA LONGARINA
                      ON LONGARINA.NUM_PREDIO  = DE.NUM_PREDIO
                     AND LONGARINA.NUM_NIVEL   = DE.NUM_NIVEL
                     AND LONGARINA.NUM_RUA     = DE.NUM_RUA
@@ -1361,10 +1361,10 @@ class PaleteRepository extends EntityRepository
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
                ORDER BY CE.NUM_PRIORIDADE,
-                        LARG_DISPONIVEL,
                         ET.NUM_PRIORIDADE,
                         AA.NUM_PRIORIDADE,
                         TE.NUM_PRIORIDADE,
+                        LARG_DISPONIVEL,
                         DIF_RUA,
                         DIF_PREDIO,
                         DIF_NIVEL,
@@ -1373,10 +1373,10 @@ class PaleteRepository extends EntityRepository
         /*
          * ORDENAÇÂO ATUAL
          * 1-> Caracteristica de Endereço (Picking/Pulmão)
-         * 2-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
-         * 3-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
-         * 4-> Area de Armazenagem
-         * 5-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
+         * 2-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
+         * 3-> Area de Armazenagem
+         * 4-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
+         * 5-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
          * 6-> Proximidade de Picking (Rua, Predio, Nivel e Apartamento)
          */
 
@@ -1388,7 +1388,6 @@ class PaleteRepository extends EntityRepository
             return null;
         }
 
-        return $result;
     }
 
     public function alterarNorma($codProduto, $grade, $idRecebimento, $idUma) {
@@ -1461,6 +1460,54 @@ class PaleteRepository extends EntityRepository
                 WHERE PP.COD_PRODUTO = '$codProduto' AND PP.DSC_GRADE = '$grade'";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function updateUmaByEndereco($params)
+    {
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+        $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
+        $paleteEn = $paleteRepo->find($params['uma']);
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $params['endereco']));
+
+
+//deve verificar se o novo endereço nao tem reserva de entrada
+
+
+        try {
+            if (!isset($enderecoEn) || empty($enderecoEn)) {
+                throw new \Exception ("Novo endereço não encontrado!");
+            }
+            if (!isset($paleteEn) || empty($paleteEn)) {
+                throw new \Exception ("UMA não encontrada!");
+            }
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
+            $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $paleteEn->getDepositoEndereco(), 'tipoReserva' => 'S', 'atendida' => 'N'));
+            $verificaReservaEntrada = $reservaEstoqueRepo->findBy(array('endereco' => $enderecoEn, 'tipoReserva' => 'E', 'atendida' => 'N'));
+
+            if (count($verificaReservaEntrada) > 0) {
+                throw new \Exception("Existe reserva de Entrada para o novo endereço que ainda não foi atendida!");
+            }
+
+            if (count($verificaReservaSaida) > 0) {
+                throw new \Exception ("Existe Reserva de Saída para essa UMA que ainda não foi atendida!");
+            }
+
+            if (isset($enderecoEn) && !empty($enderecoEn) && isset($paleteEn) && !empty($paleteEn)) {
+                $paleteEn->setDepositoEndereco($enderecoEn);
+                $this->_em->persist($paleteEn);
+                $this->_em->flush();
+
+                return true;
+            }
+
+        } catch (\Exception $e) {
+            throw new \Exception ($e->getMessage());
+        }
+
     }
 
 }

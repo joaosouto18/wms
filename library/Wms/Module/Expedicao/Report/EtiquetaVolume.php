@@ -91,7 +91,6 @@ class EtiquetaVolume extends eFPDF
             $this->MultiCell(100, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 30);
-            $volume['pedido'] = 2611;
             $impressao = utf8_decode("\n$volume[pedido]");
             $this->SetY(17);
             $this->SetX(82);
@@ -114,7 +113,7 @@ class EtiquetaVolume extends eFPDF
             //linha horizontal entre o numero do pedido e o cod de barras
             $this->Line(82,30,150,30);
 
-            $y = 8;
+            $y = 12;
             $this->SetFont('Arial', 'B', 7);
 
             foreach ($volume['produtos'] as $produtos) {

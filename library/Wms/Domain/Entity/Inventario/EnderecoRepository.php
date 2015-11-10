@@ -36,6 +36,7 @@ class EnderecoRepository extends EntityRepository
 
             $em->persist($enInvEndereco);
             $em->commit();
+//            $em->flush();
 
         } catch(\Exception $e) {
             $em->rollback();

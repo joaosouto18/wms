@@ -246,5 +246,17 @@ class Expedicao_IndexController  extends Action
         $declaracaoReport->imprimir($result);
     }
 
+    public function equipeCarregamentoAction()
+    {
+        $form = new \Wms\Module\Expedicao\Form\EquipeCarregamento();
+        $this->view->form = $form;
+
+        $params = $this->_getAllParams();
+        $grid = new \Wms\Module\Expedicao\Grid\EquipeCarregamento();
+        $this->view->grid = $grid->init($params)
+            ->render();
+
+    }
+
 
 }

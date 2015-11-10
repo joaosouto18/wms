@@ -21,7 +21,11 @@ class Mobile_ArmazenagemController  extends Action
             4 => array (
                 'url' => 'enderecamento_automatico/lista-recebimento',
                 'label' => 'ENDEREÇAMENTO AUTOMÁTICO',
-            )
+            ),
+            5 => array (
+                'url' => 'enderecamento/movimentacao',
+                'label' => 'TRANSFERÊNCIA DE ESTOQUE',
+            ),
 
         );
         $this->view->menu = $menu;

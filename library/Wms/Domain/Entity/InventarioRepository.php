@@ -408,4 +408,15 @@ class InventarioRepository extends EntityRepository
         $this->_em->flush();
     }
 
+    public function impressaoInventarioByEndereco($idEndereco)
+    {
+        $idEndereco = implode(',',$idEndereco);
+
+        $sql = "SELECT DSC_DEPOSITO_ENDERECO AS ENDERECO , NVL('', '') AS PRODUTO, NVL('', '') AS QUANTIDADE
+                FROM DEPOSITO_ENDERECO
+                WHERE COD_DEPOSITO_ENDERECO IN ($idEndereco)
+                ORDER BY DSC_DEPOSITO_ENDERECO ASC ";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
