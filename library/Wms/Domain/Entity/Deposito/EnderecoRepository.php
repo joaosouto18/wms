@@ -647,7 +647,7 @@ class EnderecoRepository extends EntityRepository
 
     public function getValidaTamanhoEndereco($idEndereco, $larguraPalete) {
         $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoLongarina");
-        $estoqueRepo     = $this->getEntityMdanager()->getRepository("wms:Enderecamento\Estoque");
+        $estoqueRepo     = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
         $tamanhoUnitizadorAlocado = 0;
         $estoquesEn = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco));
