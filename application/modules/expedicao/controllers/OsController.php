@@ -217,6 +217,9 @@ class Expedicao_OsController extends Action
 
         $this->view->verificaReconferencia = $verificaReconferencia;
 
+        /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonioRepository $expVolPatrimonioRepo */
+        $expVolPatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+        $this->view->conferenciaVolumePatrimonio = $expVolPatrimonioRepo->findBy(array('expedicao' => $idExpedicao));
     }
 
     public function relatorioAction()
