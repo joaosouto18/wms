@@ -406,11 +406,20 @@ class Mobile_EnderecamentoController extends Action
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
 
             $paletesSelecionados = $this->_getParam('palete');
 
+            $repositorios = array(
+                'enderecoRepo'            => $this->getEntityManager()->getRepository("wms:Deposito\Endereco"),
+                'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+                'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+                'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+                'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+                'recebimentoRepo'         => $recebimentoRepo,
+                'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'),
+            );
+
+            //METODO PARA IMPRIMIR OS PALETES
             if ($this->_getParam('imprimir') != null) {
                 if (count($paletesSelecionados) > 0) {
                     $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
@@ -420,6 +429,7 @@ class Mobile_EnderecamentoController extends Action
                 }
             }
 
+            //METODO PARA ALTERAR A NORMA DE PALETIZAÇÂO CASO CONFERIDO ERRADO
             if ($this->_getParam('trocarNorma') != null) {
                 if (count($paletesSelecionados) >0) {
                     foreach ($paletesSelecionados as $idPalete) {
@@ -443,71 +453,23 @@ class Mobile_EnderecamentoController extends Action
                 }
             }
 
+            //IDENTIFICO OS PRODUTOS DO RECEBIMENTO
             $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
 
-            $paletes = array();
+            //GERAR OS PALETES PARA CADA PRODUTO DO RECEBIMENTO INDIVIDUALMENTE
             foreach ($produtos as $produto) {
                 $codProduto = $produto['codigo'];
                 $grade      = $produto['grade'];
 
-                $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false, true);
-                foreach ($tmpPaletes as $tmpPalete) {
-                    if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
-                        ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
-                        ($tmpPalete['COD_SIGLA'] != Palete::STATUS_CANCELADO)) {
-                        $tmp = array();
-                        $tmp['uma'] = $tmpPalete['UMA'];
-                        $tmp['unitizador'] = $tmpPalete['UNITIZADOR'];
-                        $tmp['qtd'] = $tmpPalete['QTD'];
-                        $tmp['produto'] = $tmpPalete['COD_PRODUTO'] . ' / ' . $tmpPalete['DSC_GRADE'] . ' - ' . $tmpPalete['DSC_PRODUTO'];
-                        $tmp['codProduto'] = $tmpPalete['COD_PRODUTO'];
-                        $tmp['dscGrade'] = $tmpPalete['DSC_GRADE'];
-                        $tmp['dscProduto'] = $tmpPalete['DSC_PRODUTO'];
-                        $tmp['idEndereco'] = 0;
-                        $tmp['endereco'] = '';
-                        $tmp['motivoNaoLiberar'] = '';
-
-                        if ($tmpPalete['QTD_VOL_TOTAL'] > $tmpPalete['QTD_VOL_CONFERIDO']) {
-                            $tmp['motivoNaoLiberar'] = 'Aguardando conf. todos volumes';
-                        }
-
-                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
-                        if ($paleteEn->getDepositoEndereco() == null) {
-
-                            $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
-			    
-                            if ($sugestaoEndereco != null) {
-                                $tmp['idEndereco'] = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
-                                $tmp['endereco'] = $sugestaoEndereco['DSC_DEPOSITO_ENDERECO'];
-
-                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
-
-                                if ($permiteEnderecar == true) {
-                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
-                                    $this->getEntityManager()->flush();
-                                } else {
-                                    $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
-                                }
-                            }
-                        } else {
-                            $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
-                            $tmp['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
-                        }
-
-                        if (($tmp['motivoNaoLiberar'] == '') && ($tmp['idEndereco'] == 0)) {
-                            $tmp['motivoNaoLiberar'] = 'Sem Sugestão de Endereço';
-                        }
-                        $paletes[] = $tmp;
-
-                    }
-                }
-            }
-
-            if (count($paletes) == 0) {
-                $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
+                //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
+                $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false, true);
+                $paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
             }
 
             $paletesResumo = $this->getPaletesExibirResumo($idRecebimento);
+            if (count($paletesResumo) == 0) {
+                $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
+            }
 
             $this->view->paletes = $paletesResumo;
             $this->getEntityManager()->commit();
