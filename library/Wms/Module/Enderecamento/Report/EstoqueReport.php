@@ -61,7 +61,8 @@ class EstoqueReport extends Pdf
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepo */
         $EstoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
 
-        $estoqueReport = $EstoqueRepo->getEstoqueAndVolumeByParams($params);
+        $SQLorder = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, DE.DSC_DEPOSITO_ENDERECO DESC, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE ";
+        $estoqueReport = $EstoqueRepo->getEstoqueAndVolumeByParams($params, null, true, $SQLorder);
         $this->Ln();
         $codProdutoAnderior = null;
         $gradeAnterior = null;
