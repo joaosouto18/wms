@@ -1055,7 +1055,7 @@ class Mobile_ExpedicaoController extends Action
 
         /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
         $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
-        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil('AUXILIAR EXPEDICAO');
+        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
         $this->view->idExpedicao    = $idExpedicao;
     }
 

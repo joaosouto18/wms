@@ -799,16 +799,22 @@ class PaleteRepository extends EntityRepository
         $this->_em->flush();
     }
 
-    public function alocaEnderecoPalete($idPalete, $idEndereco) {
+    public function alocaEnderecoPalete($idPalete, $idEndereco, $repositorios = null) {
 
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-
-        /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoRepo */
-        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+        if ($repositorios == null) {
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoRepo */
+            $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        } else {
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoRepo */
+            $enderecoRepo = $repositorios['enderecoRepo'];
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
+        }
 
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
-        $paleteEn = $paleteRepo->find($idPalete);
+        $paleteEn = $this->find($idPalete);
 
         if ($paleteEn == NULL) {
             throw new \Exception("Palete $idPalete não encontrado");
@@ -829,9 +835,6 @@ class PaleteRepository extends EntityRepository
         $enderecoAntigoEn = $paleteEn->getDepositoEndereco();
 
         $arrayProdutos = $paleteEn->getProdutosArray();
-
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
         if ($enderecoAntigoEn != NULL) {
             $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigoEn,$qtdAdjacente,"LIBERAR");
@@ -1176,117 +1179,125 @@ class PaleteRepository extends EntityRepository
         return $query->getQuery()->getResult();
     }
 
-    public function getSugestaoEnderecoPalete ($paleteEn) {
+    /*
+     * Método para pegar o endereço sugerido para o determinado palete
+     * Primeiro verifica se é um palete de sobra ou palete completo
+     * Se for palete de sobra, tenta endereçar primeiro no picking se couber
+     * Se for palete completo ou palete de sobra que não coube no picking, então pega a sugestão de endereço baseada nos cadastros
+     * Retorna no final do método, o endereço sugerido
+
+     * @param $paleteEn = Entidade de Enderecamento\Palete
+     * @param $repositorios = array(
+            'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+            'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+            'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+            'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+            'recebimentoRepo'         => $this->getEntityManager()->getRepository('wms:Recebimento'),
+            'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'),
+      )
+     */
+    public function getSugestaoEnderecoPalete ($paleteEn, $repositorios) {
 
         /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
-        $normaPaletizacaoRepo = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao");
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
 
-        $larguraPalete = $paleteEn->getUnitizador()->getLargura(false) * 100;
-        $produtos = $paleteEn->getProdutos();
-        $codNormaPaletizacao = $produtos[0]->getCodNormaPaletizacao();
-        $normaPaletizacaoEn = $normaPaletizacaoRepo->findOneBy(array('id'=>$codNormaPaletizacao));
-
-        $qtdPaleteProduto = $produtos[0]->getQtd();
-        $codProduto  = $produtos[0]->getCodProduto();
-        $grade       = $produtos[0]->getGrade();
+        $produtosPalete = $paleteEn->getProdutos();
+        $codProduto          = $produtosPalete[0]->getCodProduto();
+        $grade               = $produtosPalete[0]->getGrade();
+        $qtdPaleteProduto    = $produtosPalete[0]->getQtd();
+        $codNormaPaletizacao = $produtosPalete[0]->getCodNormaPaletizacao();
+        $normaPaletizacaoEn  = $normaPaletizacaoRepo->findOneBy(array('id'=>$codNormaPaletizacao));
+        $larguraPalete       = $paleteEn->getUnitizador()->getLargura(false) * 100;
 
         $sugestaoEndereco = null;
 
-        //FAÇO A VALIDAÇÂO PARA ALOCAR NO PICKING SOMENTE SE FOR UM PALETE INCOMPLETO
+        //SE FOR UM PALETE DE SOBRA, ENTÃO TENTO ALOCAR PRIMEIRO NO PICKING
         if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto) {
-            $embalagem   = $produtos[0]->getEmbalagemEn();
-            $pickingEn   = $embalagem->getEndereco();
-            $capacidadePicking = $embalagem->getCapacidadePicking();
-
-            //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
-            if ($pickingEn != null) {
-                $idVolume = null;
-                $volumes = array();
-                if ($produtos[0]->getCodProdutoVolume() != NULL) {
-                    $idVolume = $produtos[0]->getCodProdutoVolume();
-                    foreach ($produtos as $volume){
-                        $volumes[] = $volume->getCodProdutoVolume();
-                    }
-                }
-
-                $SaldoPicking = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto,$grade,$pickingEn->getId(), $volumes);
-                $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume,$pickingEn->getId(),"E");
-                $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $pickingEn->getId(),"S");
-
-                //ENDEREÇO NO PICKING SOMENTE SE A QUANTIDADE DO PALETE + O ESTOQUE NÂO PASSAR A CAPACIDADE
-                if (($SaldoPicking + $reservaEntradaPicking + $reservaSaidaPicking + $qtdPaleteProduto) <= $capacidadePicking) {
-                    $sugestaoEndereco = array(
-                        'COD_DEPOSITO_ENDERECO'=>$pickingEn->getId(),
-                        'DSC_DEPOSITO_ENDERECO'=>$pickingEn->getDescricao()
-                    );
-                }
-            }
+            $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
         }
 
-        //SE FOR UM PALETE COMPLETO, VAI BUSCAR UM ENDEREÇO NO PULMÃO
+        //SE FOR UM PALETE COMPLETO OU PALETE DE SOBRA QUE NÃO COUBE NO PICKING, VAI BUSCAR UM ENDEREÇO NO PULMÃO
         if ($sugestaoEndereco == null) {
-            $sugestaoEndereco = $this->getSugestaoEnderecoByProdutoAndRecebimento($codProduto,$grade,$paleteEn->getRecebimento()->getId(),$larguraPalete);
+            $sugestaoEndereco = $this->getSugestaoEnderecoPulmao($codProduto,$grade,$paleteEn->getRecebimento()->getId(),$larguraPalete, $repositorios);
         }
 
         return $sugestaoEndereco;
     }
 
-    public function getSugestaoEnderecoByProdutoAndRecebimento ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete)
+    public function getSugestaoEnderecoPicking ($codProduto, $grade, $produtosPalete, $repositorios){
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $repositorios['estoqueRepo'];
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
+
+        $embalagem   = $produtosPalete[0]->getEmbalagemEn();
+        $qtdPaleteProduto = $produtosPalete[0]->getQtd();
+
+        $pickingEn   = $embalagem->getEndereco();
+        $capacidadePicking = $embalagem->getCapacidadePicking();
+
+        //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
+        if ($pickingEn != null) {
+            $idVolume = null;
+            $volumes = array();
+            if ($produtosPalete[0]->getCodProdutoVolume() != NULL) {
+                $idVolume = $produtosPalete[0]->getCodProdutoVolume();
+                foreach ($produtosPalete as $volume){
+                    $volumes[] = $volume->getCodProdutoVolume();
+                }
+            }
+
+            $SaldoPicking = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto,$grade,$pickingEn->getId(), $volumes);
+            $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume,$pickingEn->getId(),"E");
+            $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $pickingEn->getId(),"S");
+
+            //ENDEREÇO NO PICKING SOMENTE SE A QUANTIDADE DO PALETE + O ESTOQUE NÂO PASSAR A CAPACIDADE
+            if (($SaldoPicking + $reservaEntradaPicking + $reservaSaidaPicking + $qtdPaleteProduto) <= $capacidadePicking) {
+                $sugestaoEndereco = array(
+                    'COD_DEPOSITO_ENDERECO'=>$pickingEn->getId(),
+                    'DSC_DEPOSITO_ENDERECO'=>$pickingEn->getDescricao()
+                );
+                return $sugestaoEndereco;
+            }
+        }
+
+        return null;
+    }
+
+
+    /*
+     * Retornar um unico endereço de sugestão para endereçamento baseado no cadastro do produto
+     * Verifico primeiro as configurações do cadastro do produto, se as mesmas estiverem em branca, então verifico as configurações do modelo de endereçamento
+
+         * ORDENAÇÂO ATUAL DA VARREDURA DOS ENDEREÇOS
+         * 1-> Caracteristica de Endereço (Picking/Pulmão)
+         * 2-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
+         * 3-> Area de Armazenagem
+         * 4-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
+         * 5-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
+         * 6-> Proximidade de Picking (Rua, Predio, Nivel e Apartamento)
+
+     */
+    public function getSugestaoEnderecoPulmao ($codProduto, $dscGrade, $codRecebimento, $tamanhoPalete, $repositorios)
     {
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-        $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
-        $modeloEnderecamentoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo');
-
+        $produtoRepo = $repositorios['produtoRepo'];
+        $recebimentoRepo = $repositorios['recebimentoRepo'];
+        $modeloEnderecamentoRepo = $repositorios['modeloEnderecamentoRepo'];
         $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto, 'grade'=>$dscGrade));
 
-        $endAreaArmazenagem = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$dscGrade,true);
-        $endTipoEstrutura   = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($codProduto,$dscGrade,true);
-        $endTipoEndereco    = $produtoRepo->getSequenciaEndAutomaticoTpEndereco($codProduto,$dscGrade,true);
-        $endCaracEndereco   = $produtoRepo->getSequenciaEndAutomaticoCaracEndereco($codProduto,$dscGrade,true);
-
-        $codModelo = $this->getSystemParameterValue('MODELO_ENDERECAMENTO_PADRAO');
+        //PEGA O MODELO DE ENDEREÇAMENTO PARA USO FUTURO NA FUNÇÃO
         $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$codRecebimento));
-        $modeloEnderecamento = $recebimentoEn->getModeloEnderecamento();
-
-        if ($modeloEnderecamento != null) {
-            $codModelo= $modeloEnderecamento->getId();
+        if ($recebimentoEn->getModeloEnderecamento() != null) {
+            $codModelo= $recebimentoEn->getModeloEnderecamento()->getId();
+        } else {
+            $codModelo = $this->getSystemParameterValue('MODELO_ENDERECAMENTO_PADRAO');
         }
+        $modeloEnderecamentoEn = $modeloEnderecamentoRepo->findOneBy(array('id'=>$codModelo));
 
-        //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
-        $enderecoReferencia = $produtoEn->getEnderecoReferencia();
-
-        //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
-        $embalagens = $produtoEn->getEmbalagens();
-        $volumes = $produtoEn->getVolumes();
-        if ($enderecoReferencia == null) {
-            foreach ($embalagens as $embalagem) {
-                if ($embalagem->getEndereco() != null) {
-                    $enderecoReferencia = $embalagem->getEndereco();
-                    break;
-                }
-            }
-        }
-        if ($enderecoReferencia == null) {
-            foreach ($volumes as $volume) {
-                if ($volume->getEndereco() != null) {
-                    $enderecoReferencia = $volume->getEndereco();
-                    break;
-                }
-            }
-        }
-
-        //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
-        if ($enderecoReferencia == null) {
-            $modeloEnderecamento = $modeloEnderecamentoRepo->findOneBy(array('id'=>$codModelo));
-            $enderecoReferencia = $modeloEnderecamento->getCodReferencia();
-        }
-
+        //PEGO O ENDEREÇO DE REFERENCIA DE PROXIMIDADE
+        $enderecoReferencia = $produtoRepo->getEnderecoReferencia($produtoEn,$modeloEnderecamentoEn);
         if ($enderecoReferencia != null) {
             $ruaReferencia = $enderecoReferencia->getRua();
             $predioReferencia = $enderecoReferencia->getPredio();
@@ -1296,6 +1307,8 @@ class PaleteRepository extends EntityRepository
             return null;
         }
 
+        //VERIFICO SE O PRODUTO TEM ALGUMA CONFIGURAÇÃO DE PRIORIDADE POR AREA DE ARMAZENAGEM, SE TIVER USO A DO PRODUTO, CASO CONTRARIO USO A DO MODELO
+        $endAreaArmazenagem = $produtoRepo->getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$dscGrade,true);
         if (count($endAreaArmazenagem) >0) {
             $sqlArea = " INNER JOIN PRODUTO_END_AREA_ARMAZENAGEM AA
                             ON AA.COD_PRODUTO = '$codProduto' AND AA.DSC_GRADE = '$dscGrade'
@@ -1307,6 +1320,8 @@ class PaleteRepository extends EntityRepository
                                  ON AA.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM";
         }
 
+        //VERIFICO SE O PRODUTO TEM ALGUMA CONFIGURAÇÃO DE PRIORIDADE POR TIPO DE ENDEREÇO, SE TIVER USO A DO PRODUTO, CASO CONTRARIO USO A DO MODELO
+        $endTipoEndereco    = $produtoRepo->getSequenciaEndAutomaticoTpEndereco($codProduto,$dscGrade,true);
         if (count($endTipoEndereco)>0) {
             $sqlTipoEndereco = " INNER JOIN PRODUTO_END_TIPO_ENDERECO TE
                                     ON TE.COD_PRODUTO = '$codProduto' AND TE.DSC_GRADE = '$dscGrade'
@@ -1318,6 +1333,8 @@ class PaleteRepository extends EntityRepository
                                         ON TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO";
         }
 
+        //VERIFICO SE O PRODUTO TEM ALGUMA CONFIGURAÇÃO DE PRIORIDADE POR TIPO DE ESTRUTURA, SE TIVER USO A DO PRODUTO, CASO CONTRARIO USO A DO MODELO
+        $endTipoEstrutura   = $produtoRepo->getSequenciaEndAutomaticoTpEstrutura($codProduto,$dscGrade,true);
         if (count($endTipoEstrutura)>0){
             $sqlTipoEstrutura = " INNER JOIN PRODUTO_END_TIPO_EST_ARMAZ ET
                                      ON ET.COD_PRODUTO = '$codProduto' AND ET.DSC_GRADE = '$dscGrade'
@@ -1329,6 +1346,8 @@ class PaleteRepository extends EntityRepository
                                           ON ET.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ";
         }
 
+        //VERIFICO SE O PRODUTO TEM ALGUMA CONFIGURAÇÃO DE PRIORIDADE POR TIPO DE ESTRUTURA, SE TIVER USO A DO PRODUTO, CASO CONTRARIO USO A DO MODELO
+        $endCaracEndereco   = $produtoRepo->getSequenciaEndAutomaticoCaracEndereco($codProduto,$dscGrade,true);
         if (count($endCaracEndereco)>0) {
             $sqlCaracEndereco = " INNER JOIN PRODUTO_END_CARACT_END CE
                                      ON CE.COD_PRODUTO = '$codProduto' AND CE.DSC_GRADE = '$dscGrade'
@@ -1340,6 +1359,7 @@ class PaleteRepository extends EntityRepository
                                          ON CE.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO";
         }
 
+        //EXECUTA QUERY PARA VERIFICAR ENDEREÇOS DISPONIVEIS
         $SQL = " SELECT DE.COD_DEPOSITO_ENDERECO,
                         DE.DSC_DEPOSITO_ENDERECO,
                         ABS(DE.NUM_RUA - $ruaReferencia) as DIF_RUA,
@@ -1370,18 +1390,9 @@ class PaleteRepository extends EntityRepository
                         DIF_NIVEL,
                         DIF_APARTAMENTO";
 
-        /*
-         * ORDENAÇÂO ATUAL
-         * 1-> Caracteristica de Endereço (Picking/Pulmão)
-         * 2-> Estrutura de Armazenagem (Porta Palete/Blocado/Mezanino)
-         * 3-> Area de Armazenagem
-         * 4-> Tipo de Endereço (Meio/Inteiro/Inteiro Especial)
-         * 5-> Menor Espaço Disponivel no Deposito (Melhorar Ocupação do Depósito)
-         * 6-> Proximidade de Picking (Rua, Predio, Nivel e Apartamento)
-         */
-
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
+        //RETORNA UM UNICO ENDEREÇO DE SUGESTÃO
         if (count($result)>0) {
             return $result[0];
         } else {
@@ -1488,6 +1499,59 @@ class PaleteRepository extends EntityRepository
             throw new \Exception ($e->getMessage());
         }
 
+    }
+
+    /*
+     * Método apenas para alocar o endereço sugerido ao palete
+     * Só aloca endereço sugerido para os paletes que tiverem :
+     * -> todos os volumes conferidos;
+     * -> palete que não tenha sido endereçado;
+     * -> palete sem endereço sugerido setado;
+
+     * @param $paleteEn = array (
+           'IND_IMPRESSO' = Indicativo se ja foi impresso ou não,
+           'COD_SIGLA' = Sigla do palete,
+           'UMA' = Código do Palete,
+           'QTD_VOL_TOTAL' = Quantidade de volumes presentes na norma de paletização do palete (Para produtos volumes),
+           'QTD_VOL_CONFERIDO' = Quantidade de volumes no palete (para produtos volume)
+
+     * @param $repositorios = array(
+            'enderecoRepo'            => $this->getEntityManager()->getRepository("wms:Deposito\Endereco"),
+            'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+            'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+            'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+            'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+            'recebimentoRepo'         => $this->getEntityManager()->getRepository('wms:Recebimento'),
+            'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'),
+      )
+
+     */
+    public function alocaEnderecoAutomaticoPaletes($paletes = array(), $repositorios){
+        foreach ($paletes as $palete) {
+
+            //SÓ TRABALHA NO ENDEREÇAMENTO AUTOMATICO OS PALETES QUE NÂO FORAM IMPRESSOS E NÃO ESTÃO ENDEREÇADOS
+            if (($palete['IND_IMPRESSO'] != 'S') &&
+                ($palete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
+                ($palete['COD_SIGLA'] != Palete::STATUS_CANCELADO)) {
+                $idUma = $palete['UMA'];
+
+                //SO VAI DAR SUGESTÃO DE ENDEREÇO PARA OS PALETES QUE POSSUEM TODOS OS VOLUMES CONFERIDOS
+                if ($palete['QTD_VOL_TOTAL'] == $palete['QTD_VOL_CONFERIDO']) {
+                    $paleteEn = $this->findOneBy(array('id'=>$idUma));
+
+                    //SÓ FAÇO A SUGESTÃO DE ENDEREÇO PARA PALETES QUE AINDA NÂO TEM ENDEREÇO SUGERIDO
+                    if ($paleteEn->getDepositoEndereco() == null) {
+                        $sugestaoEndereco = $this->getSugestaoEnderecoPalete($paleteEn, $repositorios);
+                        if ($sugestaoEndereco != null) {
+                            $idEnderecoSugerido = $sugestaoEndereco['COD_DEPOSITO_ENDERECO'];
+                            $this->alocaEnderecoPalete($idUma,$idEnderecoSugerido, $repositorios);
+                            $this->getEntityManager()->flush();
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 }

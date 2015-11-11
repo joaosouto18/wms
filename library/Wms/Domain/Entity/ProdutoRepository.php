@@ -1290,4 +1290,39 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
+    public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
+        $enderecoReferencia = null;
+
+        //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
+        $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+
+        //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
+        if ($enderecoReferencia == null) {
+            $embalagens = $produtoEn->getEmbalagens();
+            foreach ($embalagens as $embalagem) {
+                if ($embalagem->getEndereco() != null) {
+                    $enderecoReferencia = $embalagem->getEndereco();
+                    break;
+                }
+            }
+        }
+        if ($enderecoReferencia == null) {
+            $volumes = $produtoEn->getVolumes();
+            foreach ($volumes as $volume) {
+                if ($volume->getEndereco() != null) {
+                    $enderecoReferencia = $volume->getEndereco();
+                    break;
+                }
+            }
+        }
+
+        //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
+        if ($enderecoReferencia == null) {
+            $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
+        }
+
+        return $enderecoReferencia;
+    }
+
+
 }
