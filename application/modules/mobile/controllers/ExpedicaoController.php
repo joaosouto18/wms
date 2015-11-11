@@ -43,7 +43,7 @@ class Mobile_ExpedicaoController extends Action
                 $this->view->expedicao = $operacao['expedicao'];
                 $this->view->url = $operacao['url'];
             } catch (\Exception $e) {
-                $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error',$e->getMessage() . " - " . $e->getTraceAsString());
                 $this->_redirect('mobile/expedicao/index');
             }
         } else {
