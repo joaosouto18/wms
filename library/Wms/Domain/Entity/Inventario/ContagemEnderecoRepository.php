@@ -56,7 +56,7 @@ class ContagemEnderecoRepository extends EntityRepository
 
             $em->persist($contagemEndEn);
             $em->commit();
-//            $em->flush();
+            $em->flush();
 
         } catch(\Exception $e) {
             $em->rollback();
