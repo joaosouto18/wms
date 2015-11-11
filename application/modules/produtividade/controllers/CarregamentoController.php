@@ -35,7 +35,7 @@ class Produtividade_CarregamentoController  extends Action
             ->innerJoin('u.depositos', 'd')
             ->innerJoin('u.perfis', 'p')
             ->orderBy('pf.nome')
-            ->andWhere("p.nome = 'EQP.CARREGAMENTO'");
+            ->andWhere("p.id = '" . $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO") . "'");
 
         $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
         $grid->addColumn(array(
