@@ -432,20 +432,23 @@ class Mobile_EnderecamentoController extends Action
             //METODO PARA ALTERAR A NORMA DE PALETIZAÇÂO CASO CONFERIDO ERRADO
             if ($this->_getParam('trocarNorma') != null) {
                 if (count($paletesSelecionados) >0) {
-                    foreach ($paletesSelecionados as $idPalete) {
-                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$idPalete));
-                        if ($paleteEn != null) {
-                            $produto = $paleteEn->getProdutos();
-                            $codProduto     = $produto[0]->getProduto()->getId();
-                            $grade          = $produto[0]->getProduto()->getGrade();
-                            $codRecebimento = $paleteEn->getRecebimento()->getId();
-                            if ($paleteEn->getImpresso() == 'N') {
-                                $paleteRepo->desfazerPalete($idPalete);
-                                $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO);
-                                $this->getEntityManager()->persist($paleteEn);
-                                $this->getEntityManager()->flush();
+                    foreach ($paletesSelecionados as $paletes) {
+                        $idPaletes = explode(',',$paletes);
+                        foreach ($idPaletes as $idPalete) {
+                            $paleteEn = $paleteRepo->findOneBy(array('id'=>$idPalete));
+                            if ($paleteEn != null) {
+                                $produto = $paleteEn->getProdutos();
+                                $codProduto     = $produto[0]->getProduto()->getId();
+                                $grade          = $produto[0]->getProduto()->getGrade();
+                                $codRecebimento = $paleteEn->getRecebimento()->getId();
+                                if ($paleteEn->getImpresso() == 'N') {
+                                    $paleteRepo->desfazerPalete($idPalete);
+                                    $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO);
+                                    $this->getEntityManager()->persist($paleteEn);
+                                    $this->getEntityManager()->flush();
+                                }
+                                $paleteRepo->alterarNorma($codProduto,$grade,$codRecebimento,$idPalete);
                             }
-                            $paleteRepo->alterarNorma($codProduto,$grade,$codRecebimento,$idPalete);
                         }
                     }
                 } else {
