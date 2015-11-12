@@ -482,6 +482,7 @@ class Mobile_EnderecamentoController extends Action
     public function getPaletesExibirResumo($codRecebimento){
         $statusEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
         $SQL = "SELECT LISTAGG(UMA, ', ') WITHIN GROUP (ORDER BY UMA) ALL_UMA,
+                       COUNT(DISTINCT UMA) as QTD_UMA,
                        COD_PRODUTO,
                        DSC_GRADE,
                        DSC_PRODUTO,
