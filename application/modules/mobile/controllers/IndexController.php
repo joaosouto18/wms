@@ -29,6 +29,10 @@ class Mobile_IndexController  extends Action
             6 => array(
                 'url' => '/mobile/reentrega/recebimento',
                 'label' => 'REENTREGA',
+            ),
+            7 => array(
+                'url' => '/mobile/recebimento-transbordo/produtividade',
+                'label' => 'PRODUTIVIDADE',
             )
 
         );

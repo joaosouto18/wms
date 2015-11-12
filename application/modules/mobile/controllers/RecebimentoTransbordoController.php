@@ -229,5 +229,76 @@ class Mobile_RecebimentoTransbordoController extends Action
         }
     }
 
+    public function produtividadeAction()
+    {
+
+    }
+
+    public function equipeProdutividadeRecebimentoAction()
+    {
+        $operadores     = $this->_getParam('mass-id');
+        $idExpedicao    = $this->_getParam('idExpedicao');
+        $sessao = new \Zend_Session_Namespace('coletor');
+//        $central        = $sessao->centralSelecionada;
+
+        $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
+        $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+
+        if ($operadores && $idExpedicao) {
+
+            if (!$entityExpedicao) {
+                $this->addFlashMessage('error', 'Expedição não encontrada!');
+                $this->_redirect('/mobile/recebimento-transbordo/equipe-produtividade-recebimento');
+            }
+
+            /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransRepo */
+            $equipeRecebTransRepo = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
+            try {
+                $equipeRecebTransRepo->vinculaOperadores($idExpedicao,$operadores);
+                $this->_helper->messenger('success', 'Operadores vinculados ao recebimento com sucesso');
+                $this->_redirect('mobile');
+            } catch(Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+            }
+        }
+
+        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
+        $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
+        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO"));
+        $this->view->idExpedicao    = $idExpedicao;
+
+    }
+
+    public function equipeProdutividadeExpedicaoAction()
+    {
+        $operadores     = $this->_getParam('mass-id');
+        $idcarga    = $this->_getParam('idCarga');
+
+        $cargaRepo        = $this->em->getRepository('wms:Expedicao\Carga');
+        $entityCarga      = $cargaRepo->findOneBy(array('codCargaExterno' => $idcarga));
+
+        if ($operadores && $idcarga) {
+
+            if (!$entityCarga) {
+                $this->addFlashMessage('error', 'Carga não encontrada!');
+                $this->_redirect('/mobile/recebimento-transbordo/equipe-produtividade-expedicao');
+            }
+
+            /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipeExpTransbordoRepository */
+            $equipeExpTransbordoRepository = $this->em->getRepository('wms:Expedicao\EquipeExpedicaoTransbordo');
+            try {
+                $equipeExpTransbordoRepository->vinculaOperadores($idcarga,$operadores);
+                $this->_helper->messenger('success', 'Operadores vinculados a expedição com sucesso');
+                $this->_redirect('mobile');
+            } catch(Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+            }
+        }
+
+        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
+        $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
+        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
+    }
+
 }
 
