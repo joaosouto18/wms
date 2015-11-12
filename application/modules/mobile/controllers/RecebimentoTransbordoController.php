@@ -238,8 +238,6 @@ class Mobile_RecebimentoTransbordoController extends Action
     {
         $operadores     = $this->_getParam('mass-id');
         $idExpedicao    = $this->_getParam('idExpedicao');
-        $sessao = new \Zend_Session_Namespace('coletor');
-//        $central        = $sessao->centralSelecionada;
 
         $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
         $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
@@ -272,22 +270,30 @@ class Mobile_RecebimentoTransbordoController extends Action
     public function equipeProdutividadeExpedicaoAction()
     {
         $operadores     = $this->_getParam('mass-id');
-        $idcarga    = $this->_getParam('idCarga');
+        $placa          = $this->_getParam('placa');
+        $idExpedicao    = $this->_getParam('idExpedicao');
 
         $cargaRepo        = $this->em->getRepository('wms:Expedicao\Carga');
-        $entityCarga      = $cargaRepo->findOneBy(array('codCargaExterno' => $idcarga));
+        $entityCarga      = $cargaRepo->findOneBy(array('placaCarga' => $placa));
 
-        if ($operadores && $idcarga) {
+        if ($operadores) {
 
-            if (!$entityCarga) {
-                $this->addFlashMessage('error', 'Carga não encontrada!');
+            if (isset($entityCarga) && empty($idExpedicao)) {
+                $idExpedicao = $entityCarga->getExpedicao()->getId();
+            }
+
+            $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
+            $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+
+            if (!$entityExpedicao) {
+                $this->addFlashMessage('error', 'Expedição não encontrada!');
                 $this->_redirect('/mobile/recebimento-transbordo/equipe-produtividade-expedicao');
             }
 
             /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipeExpTransbordoRepository */
             $equipeExpTransbordoRepository = $this->em->getRepository('wms:Expedicao\EquipeExpedicaoTransbordo');
             try {
-                $equipeExpTransbordoRepository->vinculaOperadores($idcarga,$operadores);
+                $equipeExpTransbordoRepository->vinculaOperadores($idExpedicao,$operadores);
                 $this->_helper->messenger('success', 'Operadores vinculados a expedição com sucesso');
                 $this->_redirect('mobile');
             } catch(Exception $e) {

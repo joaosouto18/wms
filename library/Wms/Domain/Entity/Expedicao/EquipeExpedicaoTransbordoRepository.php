@@ -5,17 +5,17 @@ use Doctrine\ORM\EntityRepository;
 
 class EquipeExpedicaoTransbordoRepository extends EntityRepository
 {
-    public function vinculaOperadores($idcarga, array $operadores)
+    public function vinculaOperadores($expedicao, array $operadores)
     {
         $em = $this->_em;
         $em->beginTransaction();
         try {
-            $cargaRepo              = $em->getRepository('wms:Expedicao\Carga');
-            $entityCarga            = $cargaRepo->findOneBy(array('codCargaExterno' => $idcarga));
+            $expedicaoRepo        = $em->getRepository('wms:Expedicao');
+            $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $expedicao));
             $usuarioRepo            = $em->getRepository('wms:Usuario');
 
             foreach($operadores as $idOperador) {
-                $enDescarga = $this->findBy(array('carga' => $idcarga, 'usuario' => $idOperador));
+                $enDescarga = $this->findBy(array('expedicao' => $expedicao, 'usuario' => $idOperador));
                 if ($enDescarga) {
                     continue;
                 }
@@ -23,7 +23,7 @@ class EquipeExpedicaoTransbordoRepository extends EntityRepository
                 $entityUsuario          = $usuarioRepo->findOneBy(array('pessoa' => $idOperador));
                 $enCarregamento = new EquipeExpedicaoTransbordo();
                 $enCarregamento->setDataVinculo(new \DateTime());
-                $enCarregamento->setCarga($entityCarga);
+                $enCarregamento->setExpedicao($entityExpedicao);
                 $enCarregamento->setUsuario($entityUsuario);
                 $em->persist($enCarregamento);
             }

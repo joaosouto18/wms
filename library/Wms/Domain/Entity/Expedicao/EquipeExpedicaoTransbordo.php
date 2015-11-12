@@ -24,10 +24,10 @@ class EquipeExpedicaoTransbordo
     protected $dataVinculo;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Carga")
-     * @JoinColumn(name="COD_CARGA", referencedColumnName="COD_CARGA")
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao")
+     * @JoinColumn(name="COD_EXPEDICAO", referencedColumnName="COD_EXPEDICAO")
      */
-    protected $carga;
+    protected $expedicao;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
@@ -54,17 +54,17 @@ class EquipeExpedicaoTransbordo
     /**
      * @return mixed
      */
-    public function getCarga()
+    public function getExpedicao()
     {
-        return $this->carga;
+        return $this->expedicao;
     }
 
     /**
-     * @param mixed $carga
+     * @param mixed $expedicao
      */
-    public function setCarga($carga)
+    public function setExpedicao($expedicao)
     {
-        $this->carga = $carga;
+        $this->expedicao = $expedicao;
     }
 
     /**
