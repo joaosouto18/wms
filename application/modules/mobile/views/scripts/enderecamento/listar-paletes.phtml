@@ -24,7 +24,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td><?php echo $palete['DSC_UNITIZADOR'] ?></td>
+                                <td><?php echo $palete['QTD_UMA'] . " x " . $palete['DSC_UNITIZADOR'] ?></td>
                                 <td><?php echo "<b>Qtd:<b> " . $palete['QTD']  ?></td>
                                 <td><a href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'enderecamento', 'action' => 'detalhe-endereco', 'produto' => $palete['COD_PRODUTO'], 'grade' => $palete['DSC_GRADE'])) ?>"> <input class="btn" type="button" value="Mais"></a></td>
                             </tr>
