@@ -242,6 +242,13 @@ class Mobile_RecebimentoTransbordoController extends Action
         $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
         $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
 
+        if (isset($idExpedicao)) {
+            /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
+            $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
+            $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
+            $this->view->idExpedicao    = $idExpedicao;
+        }
+
         if ($operadores && $idExpedicao) {
 
             if (!$entityExpedicao) {
@@ -259,12 +266,6 @@ class Mobile_RecebimentoTransbordoController extends Action
                 $this->addFlashMessage('error', $e->getMessage());
             }
         }
-
-        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
-        $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
-        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO"));
-        $this->view->idExpedicao    = $idExpedicao;
-
     }
 
     public function equipeProdutividadeExpedicaoAction()
@@ -273,14 +274,7 @@ class Mobile_RecebimentoTransbordoController extends Action
         $placa          = $this->_getParam('placa');
         $idExpedicao    = $this->_getParam('idExpedicao');
 
-        $cargaRepo        = $this->em->getRepository('wms:Expedicao\Carga');
-        $entityCarga      = $cargaRepo->findOneBy(array('placaCarga' => $placa));
-
         if ($operadores) {
-
-            if (isset($entityCarga) && empty($idExpedicao)) {
-                $idExpedicao = $entityCarga->getExpedicao()->getId();
-            }
 
             $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
             $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
@@ -293,7 +287,7 @@ class Mobile_RecebimentoTransbordoController extends Action
             /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipeExpTransbordoRepository */
             $equipeExpTransbordoRepository = $this->em->getRepository('wms:Expedicao\EquipeExpedicaoTransbordo');
             try {
-                $equipeExpTransbordoRepository->vinculaOperadores($idExpedicao,$operadores);
+                $equipeExpTransbordoRepository->vinculaOperadores($idExpedicao,$operadores,$placa);
                 $this->_helper->messenger('success', 'Operadores vinculados a expedição com sucesso');
                 $this->_redirect('mobile');
             } catch(Exception $e) {

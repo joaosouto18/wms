@@ -1,21 +1,27 @@
 <form id="formGrid" method="post" action="">
     <table>
         <tbody>
-        <tr>
-            <td width=""><span><?php echo utf8_encode('Expedição'); ?></span></td>
-        </tr>
-        <td><input type="text" name="idExpedicao" id="idExpedicao"></td>
 
-        <tr>
-            <td colspan="1"></td>
-            <td width=""><span>Nome Usuario</span></td>
-        </tr>
-        <?php foreach($this->operadores as $operador) : ?>
+        <?php if (!isset($this->idExpedicao)) : ?>
             <tr>
-                <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
-                <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+                <td width=""><span><?php echo utf8_encode('Expedição'); ?></span></td>
             </tr>
-        <?php endforeach; ?>
+            <td><input type="text" name="idExpedicao" id="idExpedicao"></td>
+        <?php elseif (isset($this->idExpedicao)) : ?>
+            <input type="hidden" value="<?php echo $this->idExpedicao ?>" name="idExpedicao" id="idExpedicao">
+            <tr>
+                <td colspan="1"></td>
+                <td width=""><span>Nome Usuario</span></td>
+            </tr>
+            <?php foreach($this->operadores as $operador) : ?>
+                <tr>
+                    <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                    <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+
 
         </tbody>
     </table>

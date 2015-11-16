@@ -19,7 +19,7 @@ class Mobile_ExpedicaoController extends Action
 
     public function confirmarOperacaoAction()
     {
-        $codBarras = $this->_getParam('codigoBarras');
+        $this->view->codBarras = $codBarras = $this->_getParam('codigoBarras');
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
             try {
                 $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -1028,24 +1028,55 @@ class Mobile_ExpedicaoController extends Action
 
     public function carregamentoAction()
     {
-        $operadores     = $this->_getParam('mass-id');
-        $idExpedicao    = $this->_getParam('idExpedicao');
-        $sessao = new \Zend_Session_Namespace('coletor');
-        $central        = $sessao->centralSelecionada;
+        //OBTER OS PARAMETROS
+        $leituraColetor       = new LeituraColetor();
+        $operadores           = $this->_getParam('mass-id');
+        $idExpedicao          = $this->_getParam('idExpedicao');
+        $this->view->operacao = $this->_getParam('operacao');
 
-        $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
-        $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+        //OBTER OS REPOSITORIOS
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo           = $this->em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
+        $UsuarioRepo             = $this->_em->getRepository('wms:Usuario');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+        $etiquetaRepo            = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+        $codBarras               = $leituraColetor->retiraDigitoIdentificador($this->_getParam('codBarras'));
+        $etiquetaEn              = $etiquetaRepo->findOneBy(array('id' => $codBarras));
+        $entityExpedicao         = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+
         if (!$entityExpedicao) {
             $this->addFlashMessage('error', 'Expedição não encontrada!');
             $this->redirect('expedicao-carregamento', 'expedicao', 'mobile');
         }
+        $placa = null;
+
+        //VERIFICA QUAL O STATUS DA ETIQUETA E EXIBE A EQUIPE CORRETA
+        switch ($etiquetaEn->getStatus()->getId()) {
+            case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
+                $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
+                /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransbRepo */
+                $equipe                     = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
+                break;
+            case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
+                $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
+                /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipe */
+                $equipe                     = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
+                $placa                      = str_replace('-','',$this->_getParam('placa'));
+                break;
+            default:
+                $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
+                /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
+                $equipe                     = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+                break;
+        }
+
 
         if ($operadores && $idExpedicao) {
 
-            /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
-            $carregamentoRepo = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
             try {
-                $carregamentoRepo->vinculaOperadores($idExpedicao,$operadores);
+                $equipe->vinculaOperadores($idExpedicao,$operadores,$placa);
                 $this->_helper->messenger('success', 'Operadores vinculados a expedicao com sucesso');
                 $this->_redirect('mobile');
             } catch(Exception $e) {
@@ -1053,9 +1084,6 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
-        $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
-        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
         $this->view->idExpedicao    = $idExpedicao;
     }
 

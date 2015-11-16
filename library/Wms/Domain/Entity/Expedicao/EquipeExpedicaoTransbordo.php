@@ -36,6 +36,11 @@ class EquipeExpedicaoTransbordo
     protected $usuario;
 
     /**
+     * @Column(name="DSC_PLACA_CARGA", type="string", nullable=false)
+     */
+    protected $placa;
+
+    /**
      * @param mixed $dataVinculo
      */
     public function setDataVinculo($dataVinculo)
@@ -99,4 +104,19 @@ class EquipeExpedicaoTransbordo
         return $this->usuario;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getPlaca()
+    {
+        return $this->placa;
+    }
+
+    /**
+     * @param mixed $placa
+     */
+    public function setPlaca($placa)
+    {
+        $this->placa = $placa;
+    }
 }

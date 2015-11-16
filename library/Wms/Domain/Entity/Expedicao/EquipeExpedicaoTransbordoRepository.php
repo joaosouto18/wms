@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityRepository;
 
 class EquipeExpedicaoTransbordoRepository extends EntityRepository
 {
-    public function vinculaOperadores($expedicao, array $operadores)
+    public function vinculaOperadores($expedicao, array $operadores, $placa)
     {
         $em = $this->_em;
         $em->beginTransaction();
@@ -20,11 +20,12 @@ class EquipeExpedicaoTransbordoRepository extends EntityRepository
                     continue;
                 }
 
-                $entityUsuario          = $usuarioRepo->findOneBy(array('pessoa' => $idOperador));
+                $entityUsuario  = $usuarioRepo->findOneBy(array('pessoa' => $idOperador));
                 $enCarregamento = new EquipeExpedicaoTransbordo();
                 $enCarregamento->setDataVinculo(new \DateTime());
                 $enCarregamento->setExpedicao($entityExpedicao);
                 $enCarregamento->setUsuario($entityUsuario);
+                $enCarregamento->setPlaca($placa);
                 $em->persist($enCarregamento);
             }
             $em->flush();
