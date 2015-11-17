@@ -1508,6 +1508,8 @@ class PaleteRepository extends EntityRepository
                     $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
                     $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $volumeEn->getCodProduto(), 'grade' => $volumeEn->getGrade()));
                 }
+            } else {
+                throw new \Exception('Produto ou UMA não encontrado');
             }
 
             foreach ($estoques as $estoque) {

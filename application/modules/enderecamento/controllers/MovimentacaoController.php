@@ -23,6 +23,10 @@ class Enderecamento_MovimentacaoController extends Action
             try {
                 $data['idEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
 
+                if (!isset($data['idEndereco']) || empty($data['idEndereco'])) {
+                    throw new \Exception("Endereço não encontrado");
+                }
+
                 $estoqueRepo = $idEmbalagemOrVolume = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
                 $data['idEstoque'] = $estoqueRepo->findOneBy(array('depositoEndereco' => $data['idEndereco']))->getId();
 
