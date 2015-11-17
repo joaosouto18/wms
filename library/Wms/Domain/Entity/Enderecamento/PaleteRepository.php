@@ -1491,9 +1491,24 @@ class PaleteRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
             $estoquesEn = $estoqueRepo->findOneBy(array('id' => $params['idEstoque']));
+
             $enderecoAntigo = $estoquesEn->getDepositoEndereco()->getId();
 
-            $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo));
+            if (isset($params['uma']) && !empty($params['uma'])) {
+                $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'uma' => $params['uma']));
+            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+                $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+                if (isset($embalagemEn) && !empty($embalagemEn)) {
+                    $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'produtoEmbalagem' => $embalagemEn->getId()));
+                } else {
+                    /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+                    $volumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+                    $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+                    $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $volumeEn->getCodProduto(), 'grade' => $volumeEn->getGrade()));
+                }
+            }
 
             foreach ($estoques as $estoque) {
                 $estoqueEn = $this->getEntityManager()->getReference('wms:Enderecamento\Estoque', $estoque->getId());
