@@ -2,22 +2,36 @@
     <table>
         <tbody>
         <tr>
-            <td width=""><span><?php echo utf8_encode('Placa Carga'); ?></span></td>
-            <td width=""><span><?php echo utf8_encode('Expedição'); ?></span></td>
-        </tr>
-        <td><input type="text" name="placa" id="placa"></td>
-        <td><input type="text" name="idExpedicao" id="idExpedicao"></td>
-
-        <tr>
             <td colspan="1"></td>
-            <td width=""><span>Nome Usuario</span></td>
+            <td bgcolor="aqua" width=""><span><?php echo utf8_encode('EXPEDIÇÃO TRANSBORDO'); ?></span></td>
         </tr>
-        <?php foreach($this->operadores as $operador) : ?>
+
+        <?php if (!isset($this->idExpedicao) && empty($this->idExpedicao) && !isset($this->placa) && empty($this->placa)) : ?>
             <tr>
-                <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
-                <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+                <td width=""><span><?php echo utf8_encode('Placa Carga'); ?></span></td>
+                <td width=""><span><?php echo utf8_encode('Expedição'); ?></span></td>
             </tr>
-        <?php endforeach; ?>
+            <td><input type="text" name="placa" id="placa"></td>
+            <td><input type="text" name="idExpedicao" id="idExpedicao"></td>
+        <?php else : ?>
+            <tr>
+                <td colspan="1"></td>
+                <td width=""><span>Nome Usuario</span></td>
+            </tr>
+            <input type="hidden" value="<?php echo $this->idExpedicao ?>" name="idExpedicao" id="idExpedicao">
+            <input type="hidden" value="<?php echo $this->placa ?>" name="placa" id="placa">
+            <?php foreach($this->operadores as $operador) : ?>
+                <tr>
+                    <?php $usuarioChecked = $this->equipeRepo->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao)); ?>
+                    <?php if (count($usuarioChecked) > 0) : ?>
+                        <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked></td>
+                    <?php else :?>
+                        <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                    <?php endif; ?>
+                    <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
 
         </tbody>
     </table>

@@ -1029,12 +1029,13 @@ class Mobile_ExpedicaoController extends Action
     public function carregamentoAction()
     {
         //OBTER OS PARAMETROS
-        $leituraColetor       = new LeituraColetor();
-        $operadores           = $this->_getParam('mass-id');
-        $idExpedicao          = $this->_getParam('idExpedicao');
-        $this->view->operacao = $this->_getParam('operacao');
+        $leituraColetor          = new LeituraColetor();
+        $operadores              = $this->_getParam('mass-id');
+        $this->view->idExpedicao = $idExpedicao = $this->_getParam('idExpedicao');
+        $this->view->operacao    = $this->_getParam('operacao');
 
         //OBTER OS REPOSITORIOS
+
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo           = $this->em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
@@ -1057,18 +1058,18 @@ class Mobile_ExpedicaoController extends Action
             case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
                 $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
                 /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransbRepo */
-                $equipe                     = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
+                $this->view->equipe         = $equipe = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
                 break;
             case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
                 $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
                 /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipe */
-                $equipe                     = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
+                $this->view->equipe         = $equipe = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
                 $placa                      = str_replace('-','',$this->_getParam('placa'));
                 break;
             default:
                 $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
                 /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
-                $equipe                     = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+                $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
                 break;
         }
 

@@ -14,12 +14,12 @@ class EquipeCarregamentoRepository extends EntityRepository
             $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $expedicao));
             $usuarioRepo            = $em->getRepository('wms:Usuario');
 
-            foreach($operadores as $idOperador) {
-                $enDescarga = $this->findBy(array('expedicao' => $expedicao, 'usuario' => $idOperador));
-                if ($enDescarga) {
-                    continue;
-                }
+            $enDescarga = $this->findBy(array('expedicao' => $expedicao));
+            foreach ($enDescarga as $value) {
+                $em->remove($value);
+            }
 
+            foreach($operadores as $idOperador) {
                 $entityUsuario          = $usuarioRepo->findOneBy(array('pessoa' => $idOperador));
                 $enCarregamento = new EquipeCarregamento();
                 $enCarregamento->setDataVinculo(new \DateTime());

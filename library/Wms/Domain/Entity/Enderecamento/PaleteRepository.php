@@ -1489,10 +1489,19 @@ class PaleteRepository extends EntityRepository
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-            $estoqueEn = $this->getEntityManager()->getReference('wms:enderecamento\Estoque', $params['idEstoque']);
-            $estoqueEn->setQtd($params['qtd']);
-            $estoqueEn->setDepositoEndereco($params['novoEndereco']);
-            $this->_em->persist($estoqueEn);
+            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $estoquesEn = $estoqueRepo->findOneBy(array('id' => $params['idEstoque']));
+            $enderecoAntigo = $estoquesEn->getDepositoEndereco()->getId();
+
+            $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo));
+
+            foreach ($estoques as $estoque) {
+                $estoqueEn = $this->getEntityManager()->getReference('wms:Enderecamento\Estoque', $estoque->getId());
+                $estoqueEn->setQtd($params['qtd']);
+                $estoqueEn->setDepositoEndereco($params['novoEndereco']);
+                $this->_em->persist($estoqueEn);
+            }
+
             $this->_em->flush();
 
         } catch (\Exception $e) {

@@ -242,6 +242,9 @@ class Mobile_RecebimentoTransbordoController extends Action
         $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
         $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
 
+        /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransRepo */
+        $this->view->equipeRepo = $equipeRecebTransRepo = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
+
         if (isset($idExpedicao)) {
             /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
             $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
@@ -256,8 +259,6 @@ class Mobile_RecebimentoTransbordoController extends Action
                 $this->_redirect('/mobile/recebimento-transbordo/equipe-produtividade-recebimento');
             }
 
-            /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransRepo */
-            $equipeRecebTransRepo = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
             try {
                 $equipeRecebTransRepo->vinculaOperadores($idExpedicao,$operadores);
                 $this->_helper->messenger('success', 'Operadores vinculados ao recebimento com sucesso');
@@ -274,7 +275,19 @@ class Mobile_RecebimentoTransbordoController extends Action
         $placa          = $this->_getParam('placa');
         $idExpedicao    = $this->_getParam('idExpedicao');
 
-        if ($operadores) {
+        /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipeExpTransbordoRepository */
+        $this->view->equipeRepo = $equipeExpTransbordoRepository = $this->em->getRepository('wms:Expedicao\EquipeExpedicaoTransbordo');
+
+
+        if (isset($idExpedicao) && !empty($idExpedicao) && isset($placa) && !empty($placa)) {
+            /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
+            $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
+            $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
+            $this->view->idExpedicao    = $idExpedicao;
+            $this->view->placa          = $placa;
+        }
+
+        if ($operadores && $idExpedicao) {
 
             $expedicaoRepo        = $this->em->getRepository('wms:Expedicao');
             $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
@@ -284,8 +297,6 @@ class Mobile_RecebimentoTransbordoController extends Action
                 $this->_redirect('/mobile/recebimento-transbordo/equipe-produtividade-expedicao');
             }
 
-            /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipeExpTransbordoRepository */
-            $equipeExpTransbordoRepository = $this->em->getRepository('wms:Expedicao\EquipeExpedicaoTransbordo');
             try {
                 $equipeExpTransbordoRepository->vinculaOperadores($idExpedicao,$operadores,$placa);
                 $this->_helper->messenger('success', 'Operadores vinculados a expedição com sucesso');
@@ -294,10 +305,6 @@ class Mobile_RecebimentoTransbordoController extends Action
                 $this->addFlashMessage('error', $e->getMessage());
             }
         }
-
-        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
-        $UsuarioRepo                = $this->_em->getRepository('wms:Usuario');
-        $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
     }
 
 }

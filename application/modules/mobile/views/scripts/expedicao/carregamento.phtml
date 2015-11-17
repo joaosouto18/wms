@@ -12,7 +12,12 @@
         </tr>
         <?php foreach($this->operadores as $operador) : ?>
             <tr>
-                <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                <?php $operadorChecked = $this->equipe->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao)); ?>
+                <?php if (count($operadorChecked) > 0) : ?>
+                    <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked></td>
+                <?php else : ?>
+                    <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                <?php endif; ?>
                 <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
             </tr>
         <?php endforeach; ?>
