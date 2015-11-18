@@ -76,7 +76,6 @@ class Endereco extends Grid
 
         $this->setSource(new \Core\Grid\Source\Doctrine($source));
         $this->addMassAction('mass-select', 'Selecionar')
-             ->addMassAction('mass-imprimir', 'Imprimir Inventário')
             ->setShowExport(false);
 
         $this->addColumn(array(

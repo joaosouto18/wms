@@ -141,6 +141,20 @@ class Inventario extends Grid
                 'actionName' => 'view-andamento-ajax',
                 'cssClass' => 'view-andamento dialogAjax',
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Imprimir Endereços',
+                'modelName' => 'inventario',
+                'controllerName' => 'index',
+                'actionName' => 'imprimir-enderecos-ajax',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Digitação Inventario Manual',
+                'modelName' => 'inventario',
+                'controllerName' => 'index',
+                'actionName' => 'digitacao-inventario-ajax',
+                'pkIndex' => 'id'
             ));
 
         return $this;

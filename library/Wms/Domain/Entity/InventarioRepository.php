@@ -408,14 +408,46 @@ class InventarioRepository extends EntityRepository
         $this->_em->flush();
     }
 
-    public function impressaoInventarioByEndereco($idEndereco)
+    public function impressaoInventarioByEndereco($params, $idInventario)
     {
-        $idEndereco = implode(',',$idEndereco);
-
         $sql = "SELECT DSC_DEPOSITO_ENDERECO AS ENDERECO , NVL('', '') AS PRODUTO, NVL('', '') AS QUANTIDADE
-                FROM DEPOSITO_ENDERECO
-                WHERE COD_DEPOSITO_ENDERECO IN ($idEndereco)
-                ORDER BY DSC_DEPOSITO_ENDERECO ASC ";
+                FROM INVENTARIO I
+                INNER JOIN INVENTARIO_ENDERECO IE ON IE.COD_INVENTARIO = I.COD_INVENTARIO
+                INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                WHERE I.COD_INVENTARIO = $idInventario";
+
+        if (!empty($params['inicialRua'])) {
+            $sql .= " AND DE.NUM_RUA >= $params[inicialRua]";
+        }
+        if (!empty($params['finalRua'])) {
+            $sql .= " AND DE.NUM_RUA <= $params[finalRua]";
+        }
+        if (!empty($params['inicialPredio'])) {
+            $sql .= " AND DE.NUM_PREDIO >= $params[inicialPredio]";
+        }
+        if (!empty($params['finalPredio'])) {
+            $sql .= " AND DE.NUM_PREDIO <= $params[finalPredio]";
+        }
+        if (!empty($params['inicialNivel'])) {
+            $sql .= " AND DE.NUM_NIVEL <= $params[inicialNivel]";
+        }
+        if (!empty($params['finalNivel'])) {
+            $sql .= " AND DE.NUM_NIVEL >= $params[finalNivel]";
+        }
+        if (!empty($params['inicialApartamento'])) {
+            $sql .= " AND DE.NUM_APARTAMENTO >= $params[inicialApartamento]";
+        }
+        if (!empty($params['finalApartamento'])) {
+            $sql .= " AND DE.NUM_APARTAMENTO <= $params[finalApartamento]";
+        }
+        if (!empty($params['lado'])) {
+            if ($params['lado'] == "P")
+                $sql .= " AND MOD(DE.NUM_PREDIO) = 0";
+            if ($params['lado'] == "I")
+                $sql .= " AND MOD(DE.NUM_PREDIO) = 1";
+        }
+        $sql .= " ORDER BY DSC_DEPOSITO_ENDERECO ASC";
+
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 

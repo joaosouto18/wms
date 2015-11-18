@@ -1,5 +1,6 @@
 <?php
 use Wms\Module\Web\Controller\Action;
+use Wms\Module\Inventario\Form\FiltroImpressao as FiltroEnderecoForm;
 
 class Inventario_IndexController  extends Action
 {
@@ -97,6 +98,32 @@ class Inventario_IndexController  extends Action
     {
         $grid =  new \Wms\Module\Inventario\Grid\DetalheContagem();
         $this->view->grid = $grid->init($this->_getAllParams());
+    }
+
+    public function imprimirEnderecosAjaxAction()
+    {
+        $this->view->form = $form = new FiltroEnderecoForm();
+        $values = $form->getParams();
+        $idInventario = $this->_getParam('id');
+
+        if ($values) {
+            /** @var \Wms\Domain\Entity\InventarioRepository $InventarioRepo */
+            $InventarioRepo = $this->_em->getRepository('wms:Inventario');
+            $result = $InventarioRepo->impressaoInventarioByEndereco($values['identificacao'], $idInventario);
+            $this->exportPDF($result,'Relatório Inventário', 'Inventário', 'P');
+        }
+    }
+
+    public function digitacaoInventarioAjaxAction()
+    {
+        $this->view->form = $form = new FiltroEnderecoForm();
+        $values = $form->getParams();
+        $idInventario = $this->_getParam('id');
+
+        if ($values) {
+            
+        }
+
     }
 
 }
