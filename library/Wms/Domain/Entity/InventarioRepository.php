@@ -410,7 +410,7 @@ class InventarioRepository extends EntityRepository
 
     public function impressaoInventarioByEndereco($params, $idInventario)
     {
-        $sql = "SELECT DSC_DEPOSITO_ENDERECO AS ENDERECO , NVL('', '') AS PRODUTO, NVL('', '') AS QUANTIDADE
+        $sql = "SELECT DSC_DEPOSITO_ENDERECO AS ENDERECO , NVL('', '') AS PRODUTO, NVL('', '') AS GRADE, NVL('', '') AS QUANTIDADE
                 FROM INVENTARIO I
                 INNER JOIN INVENTARIO_ENDERECO IE ON IE.COD_INVENTARIO = I.COD_INVENTARIO
                 INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
@@ -442,9 +442,9 @@ class InventarioRepository extends EntityRepository
         }
         if (!empty($params['lado'])) {
             if ($params['lado'] == "P")
-                $sql .= " AND MOD(DE.NUM_PREDIO) = 0";
+                $sql .= " AND MOD(DE.NUM_PREDIO,2) = 0";
             if ($params['lado'] == "I")
-                $sql .= " AND MOD(DE.NUM_PREDIO) = 1";
+                $sql .= " AND MOD(DE.NUM_PREDIO,2) = 1";
         }
         $sql .= " ORDER BY DSC_DEPOSITO_ENDERECO ASC";
 

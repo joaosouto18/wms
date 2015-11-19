@@ -383,30 +383,4 @@ class Enderecamento_MovimentacaoController extends Action
         echo $this->_helper->json($result);
     }
 
-    public function alterarEnderecoAction()
-    {
-        $form = new \Wms\Module\Armazenagem\Form\Movimentacao\TransferenciaEndereco();
-        $this->view->form = $form;
-
-        $params = $this->_getAllParams();
-
-        try {
-            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-                $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
-                $result = $paleteRepo->updateUmaByEndereco($params);
-
-                if ($result == true) {
-                    $this->addFlashMessage('success','Endereço alterado com sucesso!');
-                }
-            }
-
-        } catch (\Exception $e) {
-            $this->addFlashMessage('error',$e->getMessage());
-            return false;
-
-        }
-
-    }
-
 }

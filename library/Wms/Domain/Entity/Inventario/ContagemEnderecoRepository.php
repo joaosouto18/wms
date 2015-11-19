@@ -41,7 +41,6 @@ class ContagemEnderecoRepository extends EntityRepository
 
             $contagemEndEn->setCodProdutoEmbalagem($params['codProdutoEmbalagem']);
 
-            $contagemEndEn->setQtdContada($params['qtd']);
             $contagemEndEn->setNumContagem($params['numContagem']);
             $contagemEndEn->setQtdContada($params['qtd']);
             $contagemEndEn->setQtdAvaria($params['qtdAvaria']);

@@ -84,7 +84,6 @@ class FiltroImpressao extends Form
                 )
             ));
 
-
         $formIdentificacao->addDisplayGroup(array(
             'inicialRua',
             'finalRua',

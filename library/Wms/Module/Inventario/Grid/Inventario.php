@@ -147,14 +147,20 @@ class Inventario extends Grid
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
                 'actionName' => 'imprimir-enderecos-ajax',
-                'pkIndex' => 'id'
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "LIBERADO";
+                },
             ))
             ->addAction(array(
                 'label' => 'Digitação Inventario Manual',
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
                 'actionName' => 'digitacao-inventario-ajax',
-                'pkIndex' => 'id'
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "LIBERADO";
+                },
             ));
 
         return $this;
