@@ -310,12 +310,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         try {
             $this->_em->beginTransaction();
-            //throw new \Exception("Chegou aqui");
 
-            $idCargaExterno = trim ($idCargaExterno);
-            if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
-            $tipoCarga = trim($tipoCarga);
-            $tipoPedido = trim($tipoPedido);
             $idPedido = trim($idPedido);
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
@@ -344,6 +339,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $this->_em->flush();
                 }
             }
+
+            $this->_em->commit();
+
         } catch (\Exception $e) {
             $this->_em->rollback();
             throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
