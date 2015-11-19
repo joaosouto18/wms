@@ -154,7 +154,6 @@ class PedidoRepository extends EntityRepository
      */
     public function cancelar($idPedido)
     {
-
         try {
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
             $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
