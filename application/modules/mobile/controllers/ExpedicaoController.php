@@ -1035,7 +1035,6 @@ class Mobile_ExpedicaoController extends Action
         $this->view->operacao    = $this->_getParam('operacao');
 
         //OBTER OS REPOSITORIOS
-
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo           = $this->em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
@@ -1053,26 +1052,31 @@ class Mobile_ExpedicaoController extends Action
         }
         $placa = null;
 
-        //VERIFICA QUAL O STATUS DA ETIQUETA E EXIBE A EQUIPE CORRETA
-        switch ($etiquetaEn->getStatus()->getId()) {
-            case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
-                $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
-                /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransbRepo */
-                $this->view->equipe         = $equipe = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
-                break;
-            case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
-                $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
-                /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipe */
-                $this->view->equipe         = $equipe = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
-                $placa                      = str_replace('-','',$this->_getParam('placa'));
-                break;
-            default:
-                $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
-                /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
-                $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
-                break;
+        if (!$etiquetaEn) {
+            $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
+            /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
+            $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+        } else {
+            //VERIFICA QUAL O STATUS DA ETIQUETA E EXIBE A EQUIPE CORRETA
+            switch ($etiquetaEn->getStatus()->getId()) {
+                case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
+                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
+                    /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransbRepo */
+                    $this->view->equipe         = $equipe = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
+                    break;
+                case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
+                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
+                    /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipe */
+                    $this->view->equipe         = $equipe = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
+                    $placa                      = str_replace('-','',$this->_getParam('placa'));
+                    break;
+                default:
+                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
+                    /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
+                    $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+                    break;
+            }
         }
-
 
         if ($operadores && $idExpedicao) {
 

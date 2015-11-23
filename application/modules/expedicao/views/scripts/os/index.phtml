@@ -113,8 +113,14 @@
                                         </tr>
                                         <?php foreach ($this->conferenciaVolumePatrimonio as $value) : ?>
                                             <?php
-                                            $dataFechamento = $value->getDataFechamento()->format('d/m/Y');
-                                            $dataConferencia = $value->getDataConferencia()->format('d/m/Y H:i:s');
+                                            $dataFechamento = $value->getDataFechamento();
+                                            if (isset($dataFechamento) && !empty($dataFechamento)) {
+                                                $dataFechamento = $dataFechamento->format('d/m/Y');
+                                            }
+                                            $dataConferencia = $value->getDataConferencia();
+                                            if (isset($dataConferencia) && !empty($dataConferencia)) {
+                                                $dataConferencia = $dataConferencia->format('d/m/Y H:i:s');
+                                            }
                                             $pessoa = $value->getUsuario();
 
                                             if (!isset($pessoa) || empty($pessoa)) {
