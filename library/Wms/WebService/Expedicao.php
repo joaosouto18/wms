@@ -129,6 +129,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviarJson ($cargas){
+
+        $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-enviarJson.log');
+        $logger = new Zend_Log($writer);
+
         try {
             $cargas = str_replace("/","",$cargas);
             $cargas = str_replace('\\','',$cargas);
@@ -137,11 +141,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $arrayCargas = $array['cargas'];
             ini_set('max_execution_time', 300);
-                $result = $this->enviar($arrayCargas);
+            $result = $this->enviar($arrayCargas);
+            $logger->debug($cargas);
+
             ini_set('max_execution_time', 30);
 
             return $result;
         } catch (\Exception $e) {
+            $logger->warn($e->getMessage());
             throw new \Exception($e->getMessage());
         }
     }
