@@ -135,39 +135,50 @@ class Inventario_IndexController  extends Action
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
 
-            $contagemOSEn = $contagemOSRepo->findOneBy(array('inventario' => $idInventario));
-            if (count($contagemOSEn) > 0) {
-                $ordemServicoEn = $contagemOSEn->getOs();
-                $params['codOs'] = $ordemServicoEn->getId();
-            } else {
-                $ordemServicoEn = $ordemServicoRepo->saveByInventarioManual();
-                $params['codOs'] = $ordemServicoEn->getId();
-                $contagemOSEn = $contagemOSRepo->save($params);
-            }
-
-            foreach ($params['endereco'] as $key => $value) {
-                $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $value));
-                $params['codProdutoVolume'] = null;
-                $params['codProdutoEmbalagem'] = null;
-                if (!empty($params['produto'][$key]) && !empty($params['grade'][$key])) {
-                    $params['codProduto'] = $params['produto'][$key];
-                    $params['grade'] = $params['grade'][$key];
-                    $params['qtd'] = $params['quantidade'][$key];
-                    $params['numContagem'] = 1;
-                    $params['idContagemOs'] = $contagemOSEn->getId();
-                    $volumeEn = $em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $params['codProduto'], 'grade' => $params['grade']));
-                    if (isset($volumeEn) && !empty($volumeEn)) {
-                        $params['codProdutoVolume'] = $volumeEn->getId();
-                    }
-                    $embalagemEn = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $params['codProduto'], 'grade' => $params['grade']));
-                    if (isset($embalagemEn) && !empty($embalagemEn)) {
-                        $params['codProdutoEmbalagem'] = $embalagemEn->getId();
-                    }
-                    $params['idInventarioEnd'] = $inventarioEndRepo->findOneBy(array('inventario' => $idInventario, 'depositoEndereco' => $enderecoEn))->getId();
-                    $params['qtdAvaria'] = null;
-
-                    $contagemEndEn = $contagemEndRepo->save($params);
+            try {
+                $contagemOSEn = $contagemOSRepo->findOneBy(array('inventario' => $idInventario));
+                if (count($contagemOSEn) > 0) {
+                    $ordemServicoEn = $contagemOSEn->getOs();
+                    $params['codOs'] = $ordemServicoEn->getId();
+                } else {
+                    $ordemServicoEn = $ordemServicoRepo->saveByInventarioManual();
+                    $params['codOs'] = $ordemServicoEn->getId();
+                    $contagemOSEn = $contagemOSRepo->save($params);
                 }
+
+                foreach ($params['endereco'] as $key => $value) {
+                    $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $value));
+                    $params['codProdutoVolume'] = null;
+                    $params['codProdutoEmbalagem'] = null;
+                    if (!empty($params['idProduto'][$key]) && !empty($params['grades'][$key]) && !empty($params['quantidade'][$key])) {
+                        $params['codProduto'] = $params['idProduto'][$key];
+                        $params['grade'] = $params['grades'][$key];
+                        $params['qtd'] = $params['quantidade'][$key];
+                        $params['numContagem'] = 1;
+                        $params['idContagemOs'] = $contagemOSEn->getId();
+                        $volumeEn = $em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $params['codProduto'], 'grade' => $params['grade']));
+                        if (isset($volumeEn) && !empty($volumeEn)) {
+                            $params['codProdutoVolume'] = $volumeEn->getId();
+                        }
+                        $embalagemEn = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $params['codProduto'], 'grade' => $params['grade']));
+                        if (isset($embalagemEn) && !empty($embalagemEn)) {
+                            $params['codProdutoEmbalagem'] = $embalagemEn->getId();
+                        }
+                        $params['idInventarioEnd'] = $inventarioEndRepo->findOneBy(array('inventario' => $idInventario, 'depositoEndereco' => $enderecoEn))->getId();
+                        $params['qtdAvaria'] = null;
+
+                        $contagemEndEn = $contagemEndRepo->save($params);
+                    }
+                }
+
+                if ($contagemEndEn) {
+                    $this->addFlashMessage('success', 'Produtos conferidos com sucesso para o inventário '.$params['codInventario']);
+                    $this->redirect('index');
+                }
+
+            } catch (\Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+                $this->redirect('index');
             }
         }
 

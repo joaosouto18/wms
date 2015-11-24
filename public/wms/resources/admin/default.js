@@ -250,6 +250,31 @@ $(document).ready(function(){
         location.href='/enderecamento/relatorio_estoque/consultar-produto';
     });
 
+    //auto completar a grade da tela de inventario no papel
+    $('.grade-inventario').autocomplete({
+        source: "/enderecamento/movimentacao/filtrar/idproduto/",
+        minLength: 0
+    });
+
+    $('.grade-inventario').keyup(function (e) {
+        console.log($(this).parent().parent().children().find('input.idProduto-inventario').val());
+        var produtoVal  = $(this).parent().parent().children().find('input.idProduto-inventario').val();
+        if (produtoVal == '') {
+            return false;
+        }
+
+        if (typeof  produtoVal == 'undefined') {
+            var produtoVal  = $("   #id").val();
+        }
+        $('.grade-inventario').autocomplete({
+            source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal
+        });
+    });
+
+
+
+
+
     grade.autocomplete({
         source: "/enderecamento/movimentacao/filtrar/idproduto/",
         minLength: 0
