@@ -136,20 +136,28 @@ class Wms_WebService_Expedicao extends Wms_WebService
         try {
             $cargas = str_replace("/","",$cargas);
             $cargas = str_replace('\\','',$cargas);
+
+            ini_set('max_execution_time', 3000);
+
             $array = json_decode($cargas, true);
             if (!is_array($array)) {throw new \Exception("Formato de dados incorreto - Não está formatado como JSON");}
 
             $arrayCargas = $array['cargas'];
-            ini_set('max_execution_time', 300);
             $result = $this->enviar($arrayCargas);
             $logger->debug($cargas);
 
             ini_set('max_execution_time', 30);
 
-            return $result;
+            if ($result == true) {
+                return true;
+            } else {
+                return false;
+            }
+
         } catch (\Exception $e) {
             $logger->warn($e->getMessage());
             throw new \Exception($e->getMessage());
+            return false;
         }
     }
 
@@ -229,15 +237,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
-            $ProdutoRepo = $this->_em->getRepository('wms:Produto');
-
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
-            $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-            $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
             $this->_em->beginTransaction();
+
+            $repositorios = array(
+                'produtoRepo'=> $this->_em->getRepository('wms:Produto'),
+                'pedidoRepo' => $this->_em->getRepository('wms:Expedicao\Pedido'),
+                'pedidoProdutoRepo' => $this->_em->getRepository('wms:Expedicao\PedidoProduto'),
+                'etiquetaRepo' => $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao'),
+                'expedicaoRepo' => $this->_em->getRepository('wms:Expedicao'),
+                'pedidoEnderecoRepo' => $this->_em->getRepository('wms:Expedicao\PedidoEndereco'),
+                'cargaRepo' => $this->_em->getRepository('wms:Expedicao\Carga'),
+                'clienteRepo' => $this->_em->getRepository('wms:Pessoa\Papel\Cliente'),
+                'pessoaJuridicaRepo' => $this->_em->getRepository('wms:Pessoa\Juridica'),
+                'pessoaFisicaRepo' => $this->_em->getRepository('wms:Pessoa\Fisica'),
+                'siglaRepo' => $this->_em->getRepository('wms:Util\Sigla'),
+                'itinerarioRepo' =>$this->_em->getRepository('wms:Expedicao\Itinerario')
+            );
+
             foreach($cargas as $k1 => $carga) {
                 foreach ($carga['pedidos'] as  $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
@@ -246,18 +262,20 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
                     }
                 }
-                $this->checkProductsExists($ProdutoRepo, $carga['pedidos']);
-                $this->checkPedidosExists($PedidoRepo, $EtiquetaRepo, $carga['pedidos']);
+                $this->checkProductsExists($repositorios, $carga['pedidos']);
+                $this->checkPedidosExists($repositorios, $carga['pedidos']);
+
                 $this->_em->flush();
 
-                $this->saveCarga($carga);
+                $this->saveCarga($repositorios, $carga);
             }
             $this->_em->flush();
             $this->_em->commit();
             return true;
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
+            return false;
         }
     }
 
@@ -497,7 +515,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $carga;
     }
 
-    protected function saveCarga($carga)
+    protected function saveCarga($repositorios, $carga)
     {
         //CASO OS CAMPOS SEJAM OMITIDOS, PREENCHO COM O VALOR PADRÃO
         if (!isset($carga['tipoCarga']) or $carga['tipoCarga'] == "") {
@@ -522,7 +540,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         );
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
-        $entityExpedicao = $this->findExpedicaoByPlacaExpedicao($carga['placaExpedicao']);
+        $entityExpedicao = $this->findExpedicaoByPlacaExpedicao($repositorios, $carga['placaExpedicao']);
 
         if (isset($expedicaoEntity) && is_object($expedicaoEntity)) {
             $hoje = new \DateTime("now");
@@ -532,14 +550,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         $arrayCarga['idExpedicao'] = $entityExpedicao;
-        $entityCarga = $this->findCargaByTipoCarga($arrayCarga);
+        $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
 
         foreach ($carga['pedidos'] as $pedido) {
-            $this->savePedido($pedido, $entityCarga);
+            $this->savePedido($repositorios, $pedido, $entityCarga);
         }
     }
 
-    protected function savePedido (array $pedido, $entityCarga) {
+    protected function savePedido ($repositorios, array $pedido, $entityCarga) {
         if (!isset($pedido['tipoPedido']) or $pedido['tipoPedido'] == "") {
             $pedido['tipoPedido'] = "ENTREGA";
         }
@@ -567,8 +585,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente = $cliente[0];
         }
 
-        $entityCliente          = $this->findClienteByCodigoExterno($cliente);
-        $entityItinerario       = $this->findItinerarioById($pedido['itinerario']);
+        $entityCliente          = $this->findClienteByCodigoExterno($repositorios,$cliente);
+        $entityItinerario       = $this->findItinerarioById($repositorios, $pedido['itinerario']);
 
         $arrayPedido = array (
             'codPedido' => $pedido['codPedido'],
@@ -581,18 +599,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'pontoTransbordo' => $pedido['pontoTransbordo'],
             'envioParaLoja' => $pedido['envioParaLoja']
         );
-        $entityPedido  = $this->findPedidoById($arrayPedido);
-        $this->savePedidoProduto($pedido['produtos'], $entityPedido);
+
+        $entityPedido  = $this->findPedidoById($repositorios, $arrayPedido);
+        $this->savePedidoProduto($repositorios, $pedido['produtos'], $entityPedido);
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepo */
-        $pedidoEnderecoRepo = $this->_em->getRepository('wms:Expedicao\PedidoEndereco');
+        $pedidoEnderecoRepo = $repositorios['pedidoEnderecoRepo '];
         $pedidoEnderecoRepo->save($entityPedido,$pedido['cliente']);
-
     }
 
-    protected function savePedidoProduto(array $produtos, Expedicao\Pedido $enPedido) {
-        $ProdutoRepo        = $this->_em->getRepository('wms:Produto');
-        $PedidoProdutoRepo  = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+    protected function savePedidoProduto($repositorios, array $produtos, Expedicao\Pedido $enPedido) {
+        $ProdutoRepo        = $repositorios['produtoRepo'];
+        $PedidoProdutoRepo  = $repositorios['pedidoProdutoRepo'];
 
         foreach ($produtos as $produto) {
             $idProduto = trim($produto['codProduto']);
@@ -611,7 +629,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'grade' => $produto['grade'],
                 'quantidade' => $produto['qtde']
             );
-
             $PedidoProdutoRepo->save($prod);
         }
     }
@@ -620,7 +637,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkPedidosExists($PedidoRepo, $EtiquetaRepo, array $pedidos) {
+    protected function checkPedidosExists($repositorios, array $pedidos) {
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
+        $PedidoRepo = $repositorios['pedidoRepo'];
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+        $EtiquetaRepo = $repositorios['etiquetaRepo'];
+
         foreach ($pedidos as $pedido) {
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
             if ($PedidoEntity != null) {
@@ -638,15 +662,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 } else {
 
-                    $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus()->getId();
-                    $statusEntity = $this->_em->getReference('wms:Util\Sigla', $statusExpedicao);
-
+                    $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus();
                     $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
                     $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
 
-                    if (($statusExpedicao == Expedicao::STATUS_FINALIZADO) ||
-                        ($statusExpedicao == Expedicao::STATUS_INTEGRADO) ||
-                        ($statusExpedicao == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
+                    if (($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
+                        ($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
+                        ($statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
                         ($qtdCortadas == $qtdTotal)) {
 
                         if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
@@ -661,7 +683,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                             throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                         }
 
-                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusEntity->getSigla()));
+                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
                     }
                 }
             }
@@ -672,7 +694,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkProductsExists($ProdutoRepo, array $pedidos) {
+    protected function checkProductsExists($repositorios, array $pedidos) {
+        $ProdutoRepo = $repositorios['produtoRepo'];
 
         foreach($pedidos as $pedido) {
 
@@ -688,9 +711,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     }
 
-    protected function findClienteByCodigoExterno ($cliente) {
-        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
-        $ClienteRepo    = $this->_em->getRepository('wms:Pessoa\Papel\Cliente');
+    protected function findClienteByCodigoExterno ($repositorios, $cliente) {
+        $ClienteRepo    = $repositorios['clienteRepo'];
         $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
 
         if ($entityCliente == null) {
@@ -699,7 +721,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 case 'J':
                     $cliente['pessoa']['tipo'] = 'J';
 
-                    $PessoaJuridicaRepo    = $this->_em->getRepository('wms:Pessoa\Juridica');
+                    $PessoaJuridicaRepo    = $repositorios['pessoaJuridicaRepo'];
                     $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
                     if ($entityPessoa) {
                         break;
@@ -713,7 +735,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     break;
                 case 'F':
 
-                    $PessoaFisicaRepo    = $this->_em->getRepository('wms:Pessoa\Fisica');
+                    $PessoaFisicaRepo    = $repositorios['pessoaFisicaRepo'];
                     $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
                     if ($entityPessoa) {
                         break;
@@ -725,7 +747,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     break;
             }
 
-            $SiglaRepo      = $this->_em->getRepository('wms:Util\Sigla');
+            $SiglaRepo      = $repositorios['siglaRepo'];
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
 
             $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
@@ -746,7 +768,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 
             if ($entityPessoa == null) {
-                $entityPessoa   = $ClienteRepo->persistirAtor($entityCliente, $cliente, true);
+                $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
             } else {
                 $entityCliente->setPessoa($entityPessoa);
             }
@@ -755,16 +777,15 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entityCliente->setCodClienteExterno($cliente['codCliente']);
 
             $this->_em->persist($entityCliente);
-            $this->_em->flush();
-
+            //$this->_em->flush();
         }
 
         return $entityCliente;
     }
 
-    protected function findPedidoById($pedido) {
+    protected function findPedidoById($repositorios, $pedido) {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
-        $PedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
+        $PedidoRepo     = $repositorios['pedidoRepo'];
         $entityPedido   = $PedidoRepo->find($pedido['codPedido']);
         if ($entityPedido == null) {
             $entityPedido = $PedidoRepo->save($pedido);
@@ -772,8 +793,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $entityPedido;
     }
 
-    protected function  findItinerarioById($Itinerario) {
-        $ItinerarioRepo = $this->_em->getRepository('wms:Expedicao\Itinerario');
+    protected function  findItinerarioById($repositorios, $Itinerario) {
+        $ItinerarioRepo = $repositorios['itinerarioRepo'];
         $itinerarioPadrao = 57;
         if ($Itinerario['idItinerario']== "") {
             $entityItinerario = $ItinerarioRepo->find($itinerarioPadrao);
@@ -786,8 +807,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $entityItinerario;
     }
 
-    protected function findExpedicaoByPlacaExpedicao($placaExpedicao) {
-        $ExpedicaoRepo      = $this->_em->getRepository('wms:Expedicao');
+    protected function findExpedicaoByPlacaExpedicao($repositorios, $placaExpedicao) {
+        $ExpedicaoRepo      = $repositorios['expedicaoRepo'];
         $entityExpedicao    = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
         if ($entityExpedicao == null) {
             $entityExpedicao= $ExpedicaoRepo->save($placaExpedicao);
@@ -800,9 +821,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $entityExpedicao;
     }
 
-    protected function findCargaByTipoCarga($carga) {
+    protected function findCargaByTipoCarga($repositorios, $carga) {
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $CargaRepo */
-        $CargaRepo = $this->_em->getRepository('wms:Expedicao\Carga');
+        $CargaRepo = $repositorios['cargaRepo'];
 
         $tipoCarga = $this->verificaTipoCarga($carga['codTipoCarga']);
 
