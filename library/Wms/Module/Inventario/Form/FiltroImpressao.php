@@ -12,9 +12,6 @@ class FiltroImpressao extends Form
 
     public function init()
     {
-
-        $em = $this->getEm();
-
         //form's attr
         $this->setAttribs(array('id' => 'filtro-impressao-form', 'class' => 'saveForm'))
             ->setMethod('get');
@@ -76,6 +73,15 @@ class FiltroImpressao extends Form
                 'multiOptions' => EnderecoEntity::$listaTipoLado,
                 'decorators' => array('ViewHelper'),
                 'class' => 'pequeno',
+            ))
+            ->addElement('select', 'status', array(
+                'mostrarSelecione' => false,
+                'multiOptions' => array(
+                    '1' => 'Há Inventariar',
+                    '2' => 'Inventariados',
+                ),
+                'value' => '1',
+                'decorators' => array('ViewHelper')
             ))
             ->addElement('button', 'btnBuscar', array(
                 'label' => 'Buscar',

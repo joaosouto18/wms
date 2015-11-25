@@ -1,4 +1,3 @@
-<?php $this->headScript()->appendFile("Wms.Controllers.Inventario"); ?>
 <?php echo $this->form; ?>
 <form id="digitacao-inventario-form" method="post" class="saveForm">
     <div id="digitacao-inventario-grid" class="grid">
@@ -20,14 +19,14 @@
                     <tr class="gTResultSet">
                 <?php endif; ?>
                     <td style="text-align: left"><?php echo $endereco['ENDERECO']; ?></td>
-                    <td style="text-align: left"><input type="text" name="idProduto[]" class="idProduto-inventario" size="10" class="focus"></td>
+                    <td style="text-align: left"><input type="text" name="idProduto[]" value="<?php echo $endereco['PRODUTO'] ?>" class="idProduto-inventario" size="10" class="focus"></td>
                 <?php if ($this->utilizaGrade == 'S') : ?>
-                    <td style="text-align: left"><input type="text" name="grades[]" size="12" class="grade-inventario"></td>
+                    <td style="text-align: left"><input type="text" name="grades[]" value="<?php echo $endereco['GRADE'] ?>" size="12" class="grade-inventario"></td>
                 <?php else : ?>
-                    <input type="hidden" value="UNICA" name="grades[]" size="12" class="grade">
+                    <input type="hidden" name="grades[]" value="UNICA" size="12" class="grade">
                 <?php endif; ?>
 
-                    <td style="text-align: left"><input type="text" name="quantidade[]" size="12"></td>
+                    <td style="text-align: left"><input type="text" name="quantidade[]" value="<?php echo $endereco['QUANTIDADE'] ?>" size="12"></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

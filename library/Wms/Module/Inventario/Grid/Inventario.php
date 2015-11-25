@@ -153,7 +153,7 @@ class Inventario extends Grid
                 },
             ))
             ->addAction(array(
-                'label' => 'Digitação Inventario Manual',
+                'label' => 'Digitação Inventário Manual',
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
                 'actionName' => 'digitacao-inventario-ajax',
