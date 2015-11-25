@@ -26,6 +26,13 @@ class ContagemEnderecoRepository extends EntityRepository
         $em->beginTransaction();
         try {
 
+            $inventarioEn = $em->getReference('wms:Inventario\Endereco',$params['idInventarioEnd']);
+            $contagemEnderecoEn = $em->getRepository('wms:Inventario\ContagemEndereco')->findOneBy(array('inventarioEndereco' => $inventarioEn));
+
+            if (isset($contagemEnderecoEn)) {
+                $em->remove($contagemEnderecoEn);
+            }
+
             $contagemEndEn = new ContagemEndereco();
 
             if ($params['codProdutoVolume'] != null) {
@@ -50,7 +57,6 @@ class ContagemEnderecoRepository extends EntityRepository
             $contagemOsEn = $em->getReference('wms:Inventario\ContagemOs',$params['idContagemOs']);
             $contagemEndEn->setContagemOs($contagemOsEn);
 
-            $inventarioEn = $em->getReference('wms:Inventario\Endereco',$params['idInventarioEnd']);
             $contagemEndEn->setInventarioEndereco($inventarioEn);
 
             $em->persist($contagemEndEn);
