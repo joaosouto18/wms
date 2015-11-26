@@ -156,7 +156,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         } catch (\Exception $e) {
             $logger->warn($e->getMessage());
-            throw new \Exception($e->getMessage());
+            $showTrace = true;
+            if ($showTrace == true) {
+                throw new \Exception($e->getMessage() . ' - Trace: ' . $e->getTraceAsString());
+            } else {
+                throw new \Exception($e->getMessage() .);
+            }
             return false;
         }
     }
