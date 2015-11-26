@@ -610,7 +610,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $this->savePedidoProduto($repositorios, $pedido['produtos'], $entityPedido);
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepo */
-        $pedidoEnderecoRepo = $repositorios['pedidoEnderecoRepo '];
+        $pedidoEnderecoRepo = $repositorios['pedidoEnderecoRepo'];
         $pedidoEnderecoRepo->save($entityPedido,$pedido['cliente']);
     }
 
