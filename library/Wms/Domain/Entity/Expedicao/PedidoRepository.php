@@ -46,7 +46,7 @@ class PedidoRepository extends EntityRepository
 
         } catch(\Exception $e) {
  //           $em->rollback();
-            throw new \Exception();
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 
         return $enPedido;
