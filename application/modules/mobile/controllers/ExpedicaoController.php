@@ -1053,7 +1053,7 @@ class Mobile_ExpedicaoController extends Action
         $placa = null;
 
         if (!$etiquetaEn) {
-            $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
+            $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
             /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
             $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
         } else {
@@ -1071,7 +1071,7 @@ class Mobile_ExpedicaoController extends Action
                     $placa                      = str_replace('-','',$this->_getParam('placa'));
                     break;
                 default:
-                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO"));
+                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
                     /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
                     $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
                     break;
