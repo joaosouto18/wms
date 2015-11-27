@@ -1151,7 +1151,7 @@ class PaleteRepository extends EntityRepository
     public function getPaletesByProdutoAndGrade($params)
     {
         $query = $this->getEntityManager()->createQueryBuilder()
-            ->select("pa.id, u.descricao unitizador, pp.qtd, sigla.sigla status, de.descricao endereco, pa.impresso, p.codStatus")
+            ->select("pa.id, u.descricao unitizador, pp.qtd, sigla.sigla status, de.descricao endereco, pa.impresso, pa.codStatus")
             ->from("wms:Enderecamento\Palete", "pa")
             ->innerJoin('pa.unitizador', 'u')
             ->innerJoin('pa.recebimento', 'receb')
