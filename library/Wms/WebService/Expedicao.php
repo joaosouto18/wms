@@ -560,6 +560,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         foreach ($carga['pedidos'] as $pedido) {
             $this->savePedido($repositorios, $pedido, $entityCarga);
+            $this->_em->flush();
         }
     }
 
