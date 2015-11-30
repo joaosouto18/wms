@@ -72,6 +72,11 @@ class Palete
      */
     protected $validade;
 
+    /**
+     * @Column(name="TIPO_ENDERECAMENTO", type="string")
+     * @var string
+     */
+    protected $tipoEnderecamento;
 
     /**
      * @param mixed $codStatus
@@ -230,6 +235,22 @@ class Palete
     public function setValidade($validade)
     {
         $this->validade = $validade;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTipoEnderecamento()
+    {
+        return $this->tipoEnderecamento;
+    }
+
+    /**
+     * @param string $tipoEnderecamento
+     */
+    public function setTipoEnderecamento($tipoEnderecamento)
+    {
+        $this->tipoEnderecamento = $tipoEnderecamento;
     }
 
 }

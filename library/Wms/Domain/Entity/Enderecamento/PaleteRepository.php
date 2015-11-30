@@ -127,9 +127,9 @@ class PaleteRepository extends EntityRepository
 
     }
 
-    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true)
+    public function getPaletes ($idRecebimento, $idProduto, $grade, $trowException = true, $tipoEnderecamento = 'A')
     {
-        $this->gerarPaletes($idRecebimento,$idProduto,$grade, $trowException);
+        $this->gerarPaletes($idRecebimento,$idProduto,$grade,$trowException,$tipoEnderecamento);
         $paletes = $this->getPaletesAndVolumes($idRecebimento,$idProduto,$grade);
 
         return $paletes;
@@ -513,7 +513,7 @@ class PaleteRepository extends EntityRepository
         return $qtd - $qtdTotalEnd;
     }
 
-    public function gerarPaletes ($idRecebimento, $idProduto, $grade, $throwException = true)
+    public function gerarPaletes ($idRecebimento, $idProduto, $grade, $throwException = true, $tipoEnderecamento = 'A')
     {
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
         $conferenciaRepo    = $this->getEntityManager()->getRepository('wms:Recebimento\Conferencia');
@@ -572,7 +572,7 @@ class PaleteRepository extends EntityRepository
             $qtdLimite = $this->getQtdLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn, $qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo, $recebimentoEn, $statusEn, $qtdTotalConferido);
+        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento);
 
         $this->_em->flush();
         $this->_em->clear();
@@ -603,7 +603,7 @@ class PaleteRepository extends EntityRepository
         }
     }
 
-    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido){
+    public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento = 'A'){
 
         //QUANTIDADE DA NOTA
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
@@ -654,20 +654,20 @@ class PaleteRepository extends EntityRepository
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
-                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$unitizador['NUM_NORMA'], $dataValidade);
+                    $this->salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$unitizador['NUM_NORMA'],$dataValidade,$tipoEnderecamento);
                 }
 
                 if ($qtdUltimoPalete > 0) {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
                     if ($recebimentoFinalizado == true || ($qtdTotalConferido == $qtdNotaFiscal)) {
-                        $this->salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$qtdUltimoPalete, $dataValidade);
+                        $this->salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$qtdUltimoPalete,$dataValidade,$tipoEnderecamento);
                     }
                 }
             }
         }
     }
 
-    public function salvarPaleteEntity($produtoEn, $recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade){
+    public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A'){
         $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
@@ -675,6 +675,7 @@ class PaleteRepository extends EntityRepository
         $paleteEn->setStatus($statusEn);
         $paleteEn->setImpresso('N');
         $paleteEn->setDepositoEndereco(null);
+        $paleteEn->setTipoEnderecamento($tipoEnderecamento);
         $this->_em->persist($paleteEn);
         foreach ($volumes as $volume) {
             $paleteProduto = new PaleteProduto();

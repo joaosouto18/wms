@@ -24,7 +24,7 @@ class Enderecamento_PaleteController extends Action
         $this->view->qtdTotal = $xxx = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
         try {
-            $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade);
+            $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,true,$tipoEnderecamento = 'M');
         } catch(Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
             $this->_redirect('/enderecamento/produto/index/id/'.$idRecebimento);

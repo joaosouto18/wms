@@ -465,7 +465,7 @@ class Mobile_EnderecamentoController extends Action
                 $grade      = $produto['grade'];
 
                 //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
-                $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false, true);
+                $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,false,$tipoEnderecamento = 'A');
                 $paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
             }
 
