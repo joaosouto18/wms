@@ -19,6 +19,7 @@ class Enderecamento_MovimentacaoController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
+        //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             try {
                 $data['idEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
@@ -48,15 +49,11 @@ class Enderecamento_MovimentacaoController extends Action
                 $this->addFlashMessage('success','Endereço alterado com sucesso!');
                 $this->_redirect('/enderecamento/movimentacao');
 
-
-
-
             } catch(Exception $e) {
                 $this->addFlashMessage('error', $e->getMessage());
             }
 
         }
-
 
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepository */
         $EstoqueRepository   = $this->_em->getRepository('wms:Enderecamento\Estoque');
@@ -81,7 +78,9 @@ class Enderecamento_MovimentacaoController extends Action
                     $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$result[0]['id']));
 
                     $unitizadorEn = null;
-                    if ($data['idNormaPaletizacao'] != NULL) {
+                    if ($data['idNormaPaletizacao'] == NULL) {
+                        throw new Exception("É necessário informar o Unitizador");
+                    } else if ($data['idNormaPaletizacao'] != NULL) {
                         $idUnitizador = $data['idNormaPaletizacao'];
                         $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                         $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
