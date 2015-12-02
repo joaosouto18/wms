@@ -162,6 +162,22 @@ class Expedicao_IndexController  extends Action
                 /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
                 $cargaEn = $CargaRepo->findOneBy(array('id'=>$idCarga));
 
+                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+                $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+                $pedidos = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaPedidoRepo */
+                $ondaPedidoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
+                foreach ($pedidos as $pedidoEn) {
+                    $ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
+
+                    if ($pedidoEn->getIndEtiquetaMapaGerado() == 'S') {
+                        throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados!');
+                    } else if (count($ondaPedidoEn) > 0) {
+                        throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
+                    }
+                }
+
                 $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao() ,null,null,$idCarga);
                 $countTotal = $EtiquetaRepo->countByStatus(null, $cargaEn->getExpedicao(),null,null,$idCarga);
 
@@ -181,9 +197,6 @@ class Expedicao_IndexController  extends Action
                 $cargaEn->setPlacaCarga($placa);
                 $this->_em->persist($cargaEn);
 
-                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-                $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
-                $pedidos = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
                 foreach ($pedidos as $pedido) {
                     $pedidoRepo->removeReservaEstoque($pedido->getId());
                 }
