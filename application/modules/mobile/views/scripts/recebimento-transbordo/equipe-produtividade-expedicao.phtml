@@ -22,7 +22,7 @@
             <input type="hidden" value="<?php echo $this->placa ?>" name="placa" id="placa">
             <?php foreach($this->operadores as $operador) : ?>
                 <tr>
-                    <?php $usuarioChecked = $this->equipeRepo->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao)); ?>
+                    <?php $usuarioChecked = $this->equipeRepo->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao, 'placa' => $this->placa)); ?>
                     <?php if (count($usuarioChecked) > 0) : ?>
                         <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked></td>
                     <?php else :?>

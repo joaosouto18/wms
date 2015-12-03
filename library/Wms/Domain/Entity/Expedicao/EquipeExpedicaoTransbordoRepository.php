@@ -14,7 +14,7 @@ class EquipeExpedicaoTransbordoRepository extends EntityRepository
             $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $expedicao));
             $usuarioRepo            = $em->getRepository('wms:Usuario');
 
-            $enDescarga = $this->findBy(array('expedicao' => $expedicao));
+            $enDescarga = $this->findBy(array('expedicao' => $expedicao, 'placa' => $placa));
             foreach ($enDescarga as $value) {
                 $em->remove($value);
             }
