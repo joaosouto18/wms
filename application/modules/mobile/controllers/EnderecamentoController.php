@@ -273,16 +273,13 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('error','Endereço bloqueado por inventário');
         }
 
-        if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
-            $this->createXml('error','Endereço já ocupado');
-        }
         $idPalete = $paleteEn->getId();
 
         //Se for endereco de picking nao existe regra de espaco nem o endereco fica indisponivel
         $enderecoAntigo = $paleteEn->getDepositoEndereco();
         $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
         $unitizadorEn = $paleteEn->getUnitizador();
-        if ($enderecoEn->getNivel() == '0') {
+        if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
                 throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
@@ -292,6 +289,9 @@ class Mobile_EnderecamentoController extends Action
             }
             $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
         } else {
+            if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
+                $this->createXml('error','Endereço já ocupado');
+            }
             if ($enderecoRepo->getValidaTamanhoEndereco($enderecoEn->getId(),$unitizadorEn->getLargura(false) * 100) == false) {
                 $this->createXml('error','Espaço insuficiente no endereço');
             }
