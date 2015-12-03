@@ -38,7 +38,7 @@ class CargaRepository extends EntityRepository
             }
 
         } catch(\Exception $e) {
-            throw new \Exception();
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 
         return $enCarga;
