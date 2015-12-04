@@ -711,9 +711,9 @@ class Mobile_EnderecamentoController extends Action
                 }
 
                 if ($result[0]['uma']) {
-                    $this->_redirect('/mobile/enderecamento/endereco-uma/cb/' . $idEstoque);
+                    $this->_redirect('/mobile/enderecamento/endereco-uma/cb/' . $idEstoque . '/end/' . $codigoBarras . '/nivelAntigo/' . $nivel);
                 } else {
-                    $this->_redirect('/mobile/enderecamento/endereco-produto/cb/' . $idEstoque );
+                    $this->_redirect('/mobile/enderecamento/endereco-produto/cb/' . $idEstoque . '/end/' . $codigoBarras . '/nivelAntigo/' . $nivel);
                 }
             }
         }  catch (\Exception $e) {
@@ -726,6 +726,8 @@ class Mobile_EnderecamentoController extends Action
     {
         $idEstoque = $this->_getParam('cb');
         $this->view->cb = $idEstoque;
+        $this->view->end = $this->_getParam('end');
+        $this->view->nivel = $this->_getParam('nivel');
 
         /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
         $estoqueEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque")->findOneBy(array('id'=>$idEstoque));
@@ -747,6 +749,8 @@ class Mobile_EnderecamentoController extends Action
     {
         $idEstoque = $this->_getParam('cb');
         $this->view->cb = $idEstoque;
+        $this->view->end = $this->_getParam('end');
+        $this->view->nivel = $this->_getParam('nivel');
 
         /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
         $estoqueEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque")->findOneBy(array('id'=>$idEstoque));
@@ -780,34 +784,113 @@ class Mobile_EnderecamentoController extends Action
     public function confirmaEnderecamentoAction()
     {
         $params = array();
-        $params['qtd'] = $this->_getParam('qtd');
+        $qtd = $this->_getParam('qtd');
         $params['uma'] = $this->_getParam('uma');
         $params['etiquetaProduto'] = $this->_getParam('etiquetaProduto');
         $params['idEstoque'] = $this->_getParam('cb');
-        $params['novoEndereco'] = $this->_getParam('novoEndereco');
-        $params['nivel'] = $this->_getParam('nivel');
+        $enderecoNovo = $this->_getParam('novoEndereco');
+        $nivelNovo = $this->_getParam('nivel');
+        $enderecoAntigo = $this->_getParam('end');
+        $nivelAntigo = $this->_getParam('nivelAntigo');
+
+        /** @var \Wms\Domain\Entity\Produto $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+        $volumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
         try {
 
-            if ($params['novoEndereco']) {
+            if ($enderecoNovo) {
                 $LeituraColetor = new LeituraColetor();
-                $params['novoEndereco'] = $LeituraColetor->retiraDigitoIdentificador($params['novoEndereco']);
+                $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
             }
 
-            $params['novoEndereco'] = $this->getEnderecoNivel($params['novoEndereco'], $params['nivel']);
-
-            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-            $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
+            if ($enderecoAntigo) {
+                $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo, $nivelAntigo);
+            }
 
             if (isset($params['uma']) && !empty($params['uma'])) {
-                $LeituraColetor = new LeituraColetor();
                 $params['uma'] = $LeituraColetor->retiraDigitoIdentificador($params['uma']);
-            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
-                $LeituraColetor = new LeituraColetor();
-                $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
+
+                /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+                $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+                $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo->getId()));
+                foreach ($estoqueEn as $estoque) {
+                    //INSERE NOVO ESTOQUE
+                    $params['qtd'] = $qtd;
+                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
+
+                    $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
+
+                    $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
+
+                    $estoqueRepo->movimentaEstoque($params);
+                    //RETIRA ESTOQUE
+                    $params['endereco'] = $enderecoAntigo;
+                    $params['qtd'] = $qtd * -1;
+                    $estoqueRepo->movimentaEstoque($params);
+
+                }
             }
 
-            $paleteRepo->updateUmaByEndereco($params);
+
+
+
+
+
+
+
+
+
+
+
+
+            else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+                $LeituraColetor = new LeituraColetor();
+                $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
+
+                $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+                $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+
+                if (isset($params['embalagem']) && !empty($params['embalagem'])) {
+                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto()));
+                    $params['qtd'] = $qtd;
+                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $estoqueRepo->movimentaEstoque($params);
+
+                    //RETIRA ESTOQUE
+                    $params['endereco'] = $enderecoAntigo;
+                    $params['qtd'] = $qtd * -1;
+                    $estoqueRepo->movimentaEstoque($params);
+                }
+
+                if (isset($volumeEn) && !empty($volumeEn)) {
+                    $norma = $volumeEn->getNormaPaletizacao()->getId();
+                    $codProduto = $volumeEn->getCodProduto();
+                    $grade = $volumeEn->getGrade();
+                    $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
+                    foreach ($volumes as $volume) {
+                        $params['qtd'] = $qtd;
+                        $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                        $params['volume'] = $volume;
+                        $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto()));
+                        $estoqueRepo->movimentaEstoque($params);
+
+
+                        //RETIRA ESTOQUE
+                        $params['endereco'] = $enderecoAntigo;
+                        $params['qtd'] = $qtd * -1;
+                        $estoqueRepo->movimentaEstoque($params);
+
+                    }
+                }
+            }
+
             $this->addFlashMessage('success', 'Endereço alterado com sucesso!');
             $this->_redirect('/mobile/enderecamento/movimentacao');
 

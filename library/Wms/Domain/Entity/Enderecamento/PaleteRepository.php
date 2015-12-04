@@ -1474,60 +1474,6 @@ class PaleteRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function updateUmaByEndereco($params)
-    {
-        try {
-            if (!isset($params['novoEndereco']) || empty($params['novoEndereco'])) {
-                throw new \Exception ("Novo endereço não encontrado!");
-            }
-
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-            $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-            $verificaReservaEntrada = $reservaEstoqueRepo->findBy(array('endereco' => $params['novoEndereco'], 'tipoReserva' => 'E', 'atendida' => 'N'));
-
-            if (count($verificaReservaEntrada) > 0) {
-                throw new \Exception("Existe reserva de Entrada para o novo endereço que ainda não foi atendida!");
-            }
-
-            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-            $estoquesEn = $estoqueRepo->findOneBy(array('id' => $params['idEstoque']));
-
-            $enderecoAntigo = $estoquesEn->getDepositoEndereco()->getId();
-
-            if (isset($params['uma']) && !empty($params['uma'])) {
-                $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'uma' => $params['uma']));
-            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
-                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-                $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
-                if (isset($embalagemEn) && !empty($embalagemEn)) {
-                    $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'produtoEmbalagem' => $embalagemEn->getId()));
-                } else {
-                    /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
-                    $volumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
-                    $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
-                    $estoques = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $volumeEn->getCodProduto(), 'grade' => $volumeEn->getGrade()));
-                }
-            } else {
-                throw new \Exception('Produto ou UMA não encontrado');
-            }
-
-            foreach ($estoques as $estoque) {
-                $estoqueEn = $this->getEntityManager()->getReference('wms:Enderecamento\Estoque', $estoque->getId());
-                $estoqueEn->setQtd($params['qtd']);
-                $estoqueEn->setDepositoEndereco($params['novoEndereco']);
-                $this->_em->persist($estoqueEn);
-            }
-
-            $this->_em->flush();
-
-        } catch (\Exception $e) {
-            throw new \Exception ($e->getMessage());
-        }
-
-    }
-
     /*
      * Método apenas para alocar o endereço sugerido ao palete
      * Só aloca endereço sugerido para os paletes que tiverem :

@@ -24,7 +24,7 @@
     <br>
     <div>
         <input type="submit" name="submit" id="submit" value="Buscar" />
-        <a class="finalizar" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'endereco-produto', 'cb' => $this->cb)); ?>">Alternar para Produto.</a>
+        <a class="finalizar" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'endereco-produto', 'cb' => $this->cb, 'end' => $this->end, 'nivelAntigo' => $this->nivel)); ?>">Alternar para Produto.</a>
     </div>
 </form>
 

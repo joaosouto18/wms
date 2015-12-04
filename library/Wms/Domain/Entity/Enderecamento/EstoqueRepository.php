@@ -86,13 +86,13 @@ class EstoqueRepository extends EntityRepository
         }
 
         $volumeEn = null;
-        if (isset($params['volume']) and !is_null($params['volume'])){
+        if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
             $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume'=>$volumeEn));
         }
 
         $embalagemEn = null;
-        if (isset($params['embalagem']) and !is_null($params['embalagem'])) {
+        if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
             $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
         }

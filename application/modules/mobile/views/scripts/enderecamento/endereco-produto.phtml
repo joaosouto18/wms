@@ -25,7 +25,7 @@
     <div>
         <input type="submit" name="submit" id="submit" value="Buscar" />
     </div>
-    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'endereco-uma', 'cb' => $this->cb)); ?>">Alternar para U.M.A.</a>
+    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'endereco-uma', 'cb' => $this->cb, 'end' => $this->end, 'nivelAntigo' => $this->nivel)); ?>">Alternar para U.M.A.</a>
 </form>
 
 <div class = "gPager">
