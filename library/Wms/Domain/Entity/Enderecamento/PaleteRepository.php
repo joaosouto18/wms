@@ -1389,7 +1389,7 @@ class PaleteRepository extends EntityRepository
                         DIF_RUA,
                         DIF_PREDIO,
                         DIF_NIVEL,
-                        DIF_APARTAMENTO";
+                        DE.NUM_APARTAMENTO";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
