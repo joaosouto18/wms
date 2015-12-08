@@ -1565,18 +1565,24 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->andWhere('i.id = :itinerario');
         }
 
-        if (!empty($parametros['dataInicio']) && !empty($parametros['dataFim'])) {
+        if (!empty($parametros['dataInicio'])) {
             $dataInicial1 = str_replace("/", "-", $parametros['dataInicio']);
             $dataI1 = new \DateTime($dataInicial1);
+            $dataI1->setTime(0,0);
 
+            $source->andWhere('e.dataInicio >= :dataInicio ')
+                   ->setParameter('dataInicio', $dataI1->format('Y-m-d H:i:s'));
+        }
+
+        if (!empty($parametros['dataFim'])) {
             $dataInicial2 = str_replace("/", "-", $parametros['dataFim']);
             $dataI2 = new \DateTime($dataInicial2);
+            $dataI2->setTime(23,59);
 
-            $source
-                ->setParameter('dataInicio', $dataI1->format('Y-m-d'))
-                ->setParameter('dataFim', $dataI2->format('Y-m-d'))
-                ->andWhere('e.dataInicio BETWEEN :dataInicio AND :dataFim');
+            $source->andWhere('e.dataInicio <= :dataFim ')
+                   ->setParameter('dataFim', $dataI2->format('Y-m-d H:i:s'));
         }
+
 
         return $source->getQuery()->getResult();
     }
