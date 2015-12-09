@@ -74,11 +74,15 @@ class Enderecamento_MovimentacaoController extends Action
                     $endereco = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
                     $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$endereco['id']));
 
-                    $estoqueEn = $EstoqueRepository->findOneBy(array('depositoEndereco' => $endereco['id']));
+                    $estoqueEn = $EstoqueRepository->findOneBy(array('depositoEndereco' => $endereco['id'],
+                        'codProduto' => $data['idProduto'], 'grade' => $data['grade']));
+
+                    //é uma entrada de estoque? Saída não precisa informar o unitizador
+                    $entradaEstoque = ($data['quantidade'] > 0);
                     $unitizadorEn = null;
-                    if ($data['idNormaPaletizacao'] == NULL && $estoqueEn->getUnitizador() == NULL) {
+                    if ($data['idNormaPaletizacao'] == NULL && $estoqueEn->getUnitizador() == NULL && $entradaEstoque) {
                         throw new Exception("É necessário informar o Unitizador");
-                    } else if ($data['idNormaPaletizacao'] != NULL) {
+                    } else if ($data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
                         $idUnitizador = $data['idNormaPaletizacao'];
                         $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                         $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));

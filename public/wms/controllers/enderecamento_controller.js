@@ -194,6 +194,11 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 }
             });
 
+            $('#rua, #predio, #nivel, #apto').focusout(function(event){
+                $('#endereco_origem').val($('#rua').val() +'.'+ $('#predio').val()
+                    +'.'+ $('#nivel').val() +'.'+ $('#apto').val());
+            });
+
             function getVolumes(idProduto,grade){
                 $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
                     if (data == 'S') {
