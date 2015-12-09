@@ -78,23 +78,29 @@ class Enderecamento_MovimentacaoController extends Action
             if ($request->isPost() && empty($transferir)) {
                 try {
                     $this->getEntityManager()->beginTransaction();
-                    $result = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
-                    if ($result == null) {
-                        throw new Exception("Endereço não encontrado.");
-                    }
-                    $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$result[0]['id']));
+                    $endereco = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
+                    $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$endereco['id']));
 
+                    $estoqueEn = $EstoqueRepository->findOneBy(array('depositoEndereco' => $endereco['id'],
+                        'codProduto' => $data['idProduto'], 'grade' => $data['grade']));
+
+                    //é uma entrada de estoque? Saída não precisa informar o unitizador
+                    $entradaEstoque = ($data['quantidade'] > 0);
                     $unitizadorEn = null;
-                    if ($data['idNormaPaletizacao'] != NULL) {
+                    if ($data['idNormaPaletizacao'] == NULL && $estoqueEn->getUnitizador() == NULL && $entradaEstoque) {
+                        throw new Exception("É necessário informar o Unitizador");
+                    } else if ($data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
                         $idUnitizador = $data['idNormaPaletizacao'];
                         $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                         $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
                         $larguraUnitizador = $unitizadorEn->getLargura(false) * 100;
-                        $permiteArmazenar = $enderecoRepo->getValidaTamanhoEndereco($result[0]['id'],$larguraUnitizador);
+                        $permiteArmazenar = $enderecoRepo->getValidaTamanhoEndereco($endereco['id'],$larguraUnitizador);
                         if ($permiteArmazenar == false) {
                             throw new Exception("Este palete não cabe no endereço informado.");
                         }
                     }
+
+
                     $grade = trim($data['grade']);
                     if ($data['grade'] == '')
                         $data['grade'] = "UNICA";
@@ -144,7 +150,7 @@ class Enderecamento_MovimentacaoController extends Action
 
                     $this->getEntityManager()->commit();
 
-                    $link = '/enderecamento/movimentacao/imprimir/endereco/'.$result[0]['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
+                    $link = '/enderecamento/movimentacao/imprimir/endereco/'.$endereco['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
                     if($request->isXmlHttpRequest()) {
                         if ($data['quantidade'] > 0) {
                             echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso', 'link' => $link));
