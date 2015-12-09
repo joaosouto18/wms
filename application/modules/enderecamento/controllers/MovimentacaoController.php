@@ -22,36 +22,50 @@ class Enderecamento_MovimentacaoController extends Action
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             try {
-                $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
-                $data['qtd'] = $data['quantidade'] * -1;
-
                 $grade = trim($data['grade']);
                 if ($data['grade'] == '')
                     $data['grade'] = "UNICA";
 
                 $idProduto = trim($data['idProduto']);
                 $data['produto'] = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-
                 $data['embalagem'] = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
-                $data['volume'] = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+                $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
 
                 /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
                 $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $data['endereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
+                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $enderecoEn, 'tipoReserva' => 'S', 'atendida' => 'N'));
 
                 if (count($verificaReservaSaida) > 0) {
                     throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
                 }
 
-                $estoqueRepo->movimentaEstoque($data);
+                if (isset($data['embalagem']) && !empty($data['embalagem'])) {
+                    $data['endereco'] = $enderecoEn;
+                    $data['qtd'] = $data['quantidade'] * -1;
+                    $estoqueRepo->movimentaEstoque($data);
+                    $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+                    $data['qtd'] = $data['quantidade'];
+                    $estoqueRepo->movimentaEstoque($data);
+                } else if (isset($data['volumes']) && ($data['volumes'] != "")) {
+                    $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
+                    if (count($volumes) <= 0) {
+                        throw new \Exception("Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
+                    }
+                    foreach ($volumes as $volume) {
+                        $data['endereco'] = $enderecoEn;
+                        $data['qtd'] = $data['quantidade'] * -1;
+                        $data['volume'] = $volume;
+                        $estoqueRepo->movimentaEstoque($data);
+                        $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+                        $data['qtd'] = $data['quantidade'];
+                        $estoqueRepo->movimentaEstoque($data);
+                    }
+                }
 
-                $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
-                $data['qtd'] = $data['quantidade'];
-                $params['validade'] = new DateTime();
-                $estoqueRepo->movimentaEstoque($data);
+
 
                 $this->addFlashMessage('success','Endereço alterado com sucesso!');
                 $this->_redirect('/enderecamento/movimentacao');
