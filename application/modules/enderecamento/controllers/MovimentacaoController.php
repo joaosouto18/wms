@@ -32,6 +32,9 @@ class Enderecamento_MovimentacaoController extends Action
                 $idProduto = trim($data['idProduto']);
                 $data['produto'] = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
+                $data['embalagem'] = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+                $data['volume'] = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+
                 /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
                 $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
@@ -47,6 +50,7 @@ class Enderecamento_MovimentacaoController extends Action
 
                 $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
                 $data['qtd'] = $data['quantidade'];
+                $params['validade'] = new DateTime();
                 $estoqueRepo->movimentaEstoque($data);
 
                 $this->addFlashMessage('success','Endereço alterado com sucesso!');
@@ -71,7 +75,7 @@ class Enderecamento_MovimentacaoController extends Action
             $data['apto'] = $enderecoEn->getApartamento();
             $form->populate($data);
         } else {
-            if ($request->isPost()) {
+            if ($request->isPost() && empty($transferir)) {
                 try {
                     $this->getEntityManager()->beginTransaction();
                     $result = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
