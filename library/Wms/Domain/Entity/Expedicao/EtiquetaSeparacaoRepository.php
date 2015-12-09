@@ -1565,24 +1565,41 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->andWhere('i.id = :itinerario');
         }
 
-        if (!empty($parametros['dataInicio'])) {
-            $dataInicial1 = str_replace("/", "-", $parametros['dataInicio']);
+        if (!empty($parametros['dataInicial1'])) {
+            $dataInicial1 = str_replace('/', '-', $parametros['dataInicial1']);
             $dataI1 = new \DateTime($dataInicial1);
             $dataI1->setTime(0,0);
-
-            $source->andWhere('e.dataInicio >= :dataInicio ')
-                   ->setParameter('dataInicio', $dataI1->format('Y-m-d H:i:s'));
+            $source
+                ->setParameter('dataInicial1', $dataI1->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataInicio >= :dataInicial1');
         }
 
-        if (!empty($parametros['dataFim'])) {
-            $dataInicial2 = str_replace("/", "-", $parametros['dataFim']);
+        if (!empty($parametros['dataInicial2'])) {
+            $dataInicial2 = str_replace('/', '-', $parametros['dataInicial2']);
             $dataI2 = new \DateTime($dataInicial2);
             $dataI2->setTime(23,59);
-
-            $source->andWhere('e.dataInicio <= :dataFim ')
-                   ->setParameter('dataFim', $dataI2->format('Y-m-d H:i:s'));
+            $source
+                ->setParameter('dataInicial2', $dataI2->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataInicio <= :dataInicial2');
         }
 
+        if (!empty($parametros['dataFinal1'])) {
+            $dataFinal1 = str_replace("/", "-", $parametros['dataFinal1']);
+            $dataF1 = new \DateTime($dataFinal1);
+            $dataF1->setTime(0,0);
+            $source
+                ->setParameter('dataFinal1', $dataF1->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataFinalizacao >= :dataFinal1');
+        }
+
+        if (!empty($parametros['dataFinal2'])) {
+            $dataFinal2 = str_replace("/", "-", $parametros['dataFinal2']);
+            $dataF2 = new \DateTime($dataFinal2);
+            $dataF2->setTime(23,59);
+            $source
+                ->setParameter('dataFinal2', $dataF2->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataFinalizacao <= :dataFinal2');
+        }
 
         return $source->getQuery()->getResult();
     }
