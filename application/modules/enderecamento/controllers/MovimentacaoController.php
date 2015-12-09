@@ -22,29 +22,32 @@ class Enderecamento_MovimentacaoController extends Action
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             try {
-                $data['idEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+                $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+                $data['qtd'] = $data['quantidade'] * -1;
 
-                if (!isset($data['idEndereco']) || empty($data['idEndereco'])) {
-                    throw new \Exception("Endereço não encontrado");
-                }
+                $grade = trim($data['grade']);
+                if ($data['grade'] == '')
+                    $data['grade'] = "UNICA";
 
-                $estoqueRepo = $idEmbalagemOrVolume = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-                $data['idEstoque'] = $estoqueRepo->findOneBy(array('depositoEndereco' => $data['idEndereco']))->getId();
+                $idProduto = trim($data['idProduto']);
+                $data['produto'] = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+
+                /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+                $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $data['idEndereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
+                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $data['endereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
 
                 if (count($verificaReservaSaida) > 0) {
                     throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
                 }
 
-                $data['novoEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
-                $data['qtd'] = $data['quantidade'];
+                $estoqueRepo->movimentaEstoque($data);
 
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-                $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
-                $paleteRepo->updateUmaByEndereco($data);
+                $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+                $data['qtd'] = $data['quantidade'];
+                $estoqueRepo->movimentaEstoque($data);
 
                 $this->addFlashMessage('success','Endereço alterado com sucesso!');
                 $this->_redirect('/enderecamento/movimentacao');
@@ -78,9 +81,7 @@ class Enderecamento_MovimentacaoController extends Action
                     $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$result[0]['id']));
 
                     $unitizadorEn = null;
-                    if ($data['idNormaPaletizacao'] == NULL) {
-                        throw new Exception("É necessário informar o Unitizador");
-                    } else if ($data['idNormaPaletizacao'] != NULL) {
+                    if ($data['idNormaPaletizacao'] != NULL) {
                         $idUnitizador = $data['idNormaPaletizacao'];
                         $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                         $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
@@ -90,7 +91,6 @@ class Enderecamento_MovimentacaoController extends Action
                             throw new Exception("Este palete não cabe no endereço informado.");
                         }
                     }
-
                     $grade = trim($data['grade']);
                     if ($data['grade'] == '')
                         $data['grade'] = "UNICA";
