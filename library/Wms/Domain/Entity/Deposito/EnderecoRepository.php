@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Deposito;
 
+use Bisna\Base\Service\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
     Wms\Util\Endereco as EnderecoUtil,
@@ -570,6 +571,9 @@ class EnderecoRepository extends EntityRepository
 
     public function getEndereco($rua, $predio, $nivel, $apto)
     {
+        if (empty($rua) || empty($predio) || empty($nivel) || empty($apto)) {
+            throw new Exception("É necessário informar todo o endereço");
+        }
         $source = $this->_em->createQueryBuilder()
             ->select("e.id, e.descricao")
             ->from('wms:Deposito\Endereco', 'e')
@@ -578,8 +582,11 @@ class EnderecoRepository extends EntityRepository
             ->andWhere("e.nivel = $nivel")
             ->andWhere("e.apartamento = $apto");
 
-        return $source->getQuery()->getResult();
-
+        $result =  $source->getQuery()->getSingleResult();
+        if ($result == null) {
+            throw new Exception("Endereço não encontrado.");
+        }
+        return $result;
     }
 
     public function getOcupacaoRuaReport($params)

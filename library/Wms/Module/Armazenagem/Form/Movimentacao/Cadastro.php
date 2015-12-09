@@ -89,6 +89,14 @@ class Cadastro extends Form
                 'decorators' => array('ViewHelper'),
             ))
 
+            ->addElement('text', 'endereco_origem', array(
+                'label' => 'Endereço Origem',
+                'alt' => 'endereco',
+                'size' => 20,
+                'disabled' => 'disabled',
+                'placeholder' => '00.000.00.00',
+            ))
+
             ->addElement('text', 'ruaDestino', array(
                 'size' => 3,
                 'label' => 'Rua Destino',
@@ -120,7 +128,7 @@ class Cadastro extends Form
                 'decorators' => array('ViewHelper')
             ))
             ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'uma', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
-            ->addDisplayGroup(array('ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
+            ->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }
 

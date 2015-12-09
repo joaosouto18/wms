@@ -158,6 +158,9 @@ class EstoqueRepository extends EntityRepository
             $dscProduto  = $estoqueEn->getProduto()->getDescricao();
             $estoqueEn->setQtd($novaQtd);
             $estoqueEn->setValidade($validade);
+            if (isset($unitizadorEn)) {
+                $estoqueEn->setUnitizador($unitizadorEn);
+            }
         }
 
         if ($novaQtd > 0) {
