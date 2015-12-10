@@ -79,10 +79,6 @@ class Cadastro extends Form
                 'mostrarSelecione' => true,
                 'multiOptions' => $normasPaletizacao,
             ))
-            ->addElement('text', 'uma', array(
-                'size' => 4,
-                'label' => 'UMA',
-            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Movimentar',
                 'class' => 'btn',
@@ -127,7 +123,7 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'uma', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
             ->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }
