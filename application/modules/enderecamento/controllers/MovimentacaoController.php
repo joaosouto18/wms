@@ -90,10 +90,11 @@ class Enderecamento_MovimentacaoController extends Action
                         $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                         $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
                         $larguraUnitizador = $unitizadorEn->getLargura(false) * 100;
+                        /*
                         $permiteArmazenar = $enderecoRepo->getValidaTamanhoEndereco($endereco['id'],$larguraUnitizador);
                         if ($permiteArmazenar == false) {
                             throw new Exception("Este palete não cabe no endereço informado.");
-                        }
+                        }*/
                     }
 
 
