@@ -15,8 +15,7 @@ class EstoqueReport extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(12,  5, utf8_decode("Código"), 1, 0);
         $this->Cell(21,  5, utf8_decode("Grade")   ,1, 0);
-        $this->Cell(100, 5, utf8_decode("Descrição") ,1, 0);
-        $this->Cell(60, 5, utf8_decode("Volumes") ,1, 1);
+        $this->Cell(160, 5, utf8_decode("Descrição") ,1, 1);
     }
 
     public function layout()
@@ -60,72 +59,79 @@ class EstoqueReport extends Pdf
 
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepo */
         $EstoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
+        $estoqueReport = $EstoqueRepo->getEstoqueGroupByVolumns($params);
 
-        $SQLorder = " ORDER BY E.QTD, E.COD_PRODUTO, E.DSC_GRADE, DE.DSC_DEPOSITO_ENDERECO, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE ";
-        $estoqueReport = $EstoqueRepo->getEstoqueAndVolumeByParams($params, null, true, $SQLorder);
         $this->Ln();
         $codProdutoAnderior = null;
         $gradeAnterior = null;
         $volumeAnterior = null;
-        $qtdAnterior = null;
-        $reservaSaidaAnterior = null;
-        $reservaEntradaAnterior = null;
 
         $qtdEstoque = 0;
         $qtdReservaEntrada = 0;
         $qtdReservaSaida = 0;
+
         foreach($estoqueReport as $produto) {
-            $volumeAnterior = $produto['VOLUME'] . ' - ' . $volumeAnterior;
-            if (($qtdAnterior != $produto['QTD']) || ($reservaSaidaAnterior != $produto['RESERVA_SAIDA']) || ($reservaEntradaAnterior != $produto['RESERVA_ENTRADA'])) {
-                if ($codProdutoAnderior != null) {
+
+            if ($volumeAnterior != $produto['VOLUME']
+               || $codigoAnterior != $produto['COD_PRODUTO']
+               || $gradeAnterior != $produto['DSC_GRADE']) {
+
+                if ($produto != $estoqueReport[0]) {
+                    //TOTALIZADOR
                     $this->SetFont('Arial','' , 8);
                     $this->Cell(93, 5, "Total", 1, 0);
                     $this->Cell(20, 5, $qtdReservaEntrada, 1, 0,'C');
                     $this->Cell(20, 5, $qtdReservaSaida, 1, 0,'C');
                     $this->Cell(20, 5, $qtdEstoque, 1, 0,'C');
                     $this->Cell(40, 5,"", 1, 1,'R');
-
                     $this->Ln();
                 }
+
                 $qtdEstoque = 0;
-                $qtdReservado = 0;
+                $qtdReservaEntrada = 0;
+                $qtdReservaSaida   = 0;
+
+                //CABEÇALHO
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(12, 5, $produto['COD_PRODUTO'], 1, 0);
                 $this->Cell(21, 5, utf8_decode($produto['DSC_GRADE']), 1, 0);
-                $this->Cell(100, 5, substr(utf8_decode($produto['DSC_PRODUTO']),0,50), 1, 0);
-                $this->Cell(60, 5, substr(utf8_decode($volumeAnterior),0,70), 1, 1);
-
+                $this->Cell(160, 5, substr(utf8_decode($produto['DSC_PRODUTO']),0,80), 1, 1);
+                $this->Cell(193, 5, 'VOL.: ' . substr(utf8_decode($produto['VOLUME'])     ,0,94), 1, 1);
                 $this->Cell(33, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(60, 5, utf8_decode("Tipo"), 1, 0);
                 $this->Cell(20, 5, utf8_decode("Reserv.Ent."), 1, 0,'C');
                 $this->Cell(20, 5, utf8_decode("Reserv.Sai."), 1, 0,'C');
                 $this->Cell(20, 5, utf8_decode("Qtd. Estoque"), 1, 0,'C');
                 $this->Cell(40, 5, utf8_decode("Data da Entrada"), 1, 1,'R');
-
-                $this->SetFont('Arial','' , 8);
-                $this->Cell(33, 5, $produto['ENDERECO'], 1, 0);
-                $this->Cell(60, 5, utf8_decode($produto['TIPO']), 1, 0);
-                $this->Cell(20, 5, $produto['RESERVA_ENTRADA'], 1, 0,'C');
-                $this->Cell(20, 5, $produto['RESERVA_SAIDA'], 1, 0,'C');
-                $this->Cell(20, 5, $produto['QTD'], 1, 0,'C');
-                $this->Cell(40, 5, $produto['DTH_PRIMEIRA_MOVIMENTACAO'], 1, 1,'R');
-                $qtdEstoque = $qtdEstoque + $produto['QTD'];
-                $qtdReservaEntrada = $qtdReservaEntrada + $produto['RESERVA_ENTRADA'];
-                $qtdReservaSaida   = $qtdReservaSaida   + $produto['RESERVA_SAIDA'];
-                $codProdutoAnderior = $produto['COD_PRODUTO'];
-                $qtdAnterior = $produto['QTD']; //
-                $reservaSaidaAnterior = $produto['RESERVA_SAIDA'];
-                $reservaEntradaAnterior = $produto['RESERVA_ENTRADA'];
-
-                if ($produto == $estoqueReport[count($estoqueReport)-1]) {
-                    $this->SetFont('Arial','' , 8);
-                    $this->Cell(93, 5, "Total", 1, 0);
-                    $this->Cell(20, 5, $qtdReservaEntrada, 1, 0,'C');
-                    $this->Cell(20, 5, $qtdReservaSaida, 1, 0,'C');
-                    $this->Cell(20, 5, $qtdEstoque, 1, 0,'C');
-                    $this->Cell(40, 5,"", 1, 1,'R');
-                }
             }
+
+            //CORPO DO RELATÓRIO
+            $this->SetFont('Arial','' , 8);
+            $this->Cell(33, 5, $produto['ENDERECO'], 1, 0);
+            $this->Cell(60, 5, utf8_decode($produto['TIPO']), 1, 0);
+            $this->Cell(20, 5, $produto['RESERVA_ENTRADA'], 1, 0,'C');
+            $this->Cell(20, 5, $produto['RESERVA_SAIDA'], 1, 0,'C');
+            $this->Cell(20, 5, $produto['QTD'], 1, 0,'C');
+            $this->Cell(40, 5, $produto['DTH_PRIMEIRA_MOVIMENTACAO'], 1, 1,'R');
+
+            $qtdEstoque = $qtdEstoque + $produto['QTD'];
+            $qtdReservaEntrada = $qtdReservaEntrada + $produto['RESERVA_ENTRADA'];
+            $qtdReservaSaida   = $qtdReservaSaida   + $produto['RESERVA_SAIDA'];
+
+            if ($produto == $estoqueReport[count($estoqueReport)-1]) {
+                $this->SetFont('Arial','' , 8);
+                $this->Cell(93, 5, "Total", 1, 0);
+                $this->Cell(20, 5, $qtdReservaEntrada, 1, 0,'C');
+                $this->Cell(20, 5, $qtdReservaSaida, 1, 0,'C');
+                $this->Cell(20, 5, $qtdEstoque, 1, 0,'C');
+                $this->Cell(40, 5,"", 1, 1,'R');
+
+                $this->Ln();
+            }
+
+            $volumeAnterior = $produto['VOLUME'];
+            $codigoAnterior = $produto['COD_PRODUTO'];
+            $gradeAnterior = $produto['DSC_GRADE'];
         }
 
         $this->Output('EstoqueReport.pdf','D');
