@@ -282,7 +282,7 @@ class Mobile_EnderecamentoController extends Action
         $unitizadorEn = $paleteEn->getUnitizador();
         if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
-                throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
+                $this->createXml('error',"Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
             if ($enderecoAntigo != NULL) {
                 $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");
