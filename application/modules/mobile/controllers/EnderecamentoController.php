@@ -249,7 +249,7 @@ class Mobile_EnderecamentoController extends Action
             $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             $endPicking = $ProdutoRepository->getEnderecoPicking($ProdutoEntity);
             if ($endPicking) {
-                $endPicking = (int) str_replace('.','',$endPicking);
+                $endPicking = (int) str_replace('.','',$endPicking[0]);
                 $endereco = (int) $endereco;
                 if ($endPicking != $endereco) {
                     $this->createXml('error','Endereço de picking não correspondente informado:' . $endereco . ", cadastro " . $endPicking);
