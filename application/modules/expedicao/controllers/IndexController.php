@@ -21,6 +21,8 @@ class Expedicao_IndexController  extends Action
         $s->setExpirationSeconds(900, 'url');
         $s->url=$params;
 
+        ini_set('max_execution_time', 3000);
+
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
@@ -72,6 +74,8 @@ class Expedicao_IndexController  extends Action
             ->render();
 
         $this->view->refresh = true;
+        ini_set('max_execution_time', 30);
+
     }
 
     public function agruparcargasAction()
