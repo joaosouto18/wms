@@ -250,6 +250,7 @@ class Mobile_EnderecamentoController extends Action
             $endPicking = $ProdutoRepository->getEnderecoPicking($ProdutoEntity);
             if ($endPicking) {
                 $endPicking = (int) str_replace('.','',$endPicking);
+                $endereco = (int) $endereco;
                 if ($endPicking != $endereco) {
                     $this->createXml('error','Endereço de picking não correspondente');
                 }
