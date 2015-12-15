@@ -252,7 +252,7 @@ class Mobile_EnderecamentoController extends Action
                 $endPicking = (int) str_replace('.','',$endPicking);
                 $endereco = (int) $endereco;
                 if ($endPicking != $endereco) {
-                    $this->createXml('error','Endereço de picking não correspondente');
+                    $this->createXml('error','Endereço de picking não correspondente informado:' . $endereco . ", cadastro " . $endPicking);
                 }
             } else {
                 $this->createXml('error','O produto não possui endereço de picking');
