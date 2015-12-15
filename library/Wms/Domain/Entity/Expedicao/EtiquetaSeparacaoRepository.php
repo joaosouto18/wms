@@ -150,14 +150,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('count(distinct es.id) as qtdEtiqueta,
-                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia')
+                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia,
+                      sum(pv.cubagem) as cubagem,
+                      sum(pv.peso) as peso,
+                      count(distinct nfs.id) as qtdNotas,
+                      count(distinct ree.id) as qtdEntregas')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin('es.pedido', 'ped')
             ->innerJoin('ped.carga', 'c')
             ->innerJoin('c.expedicao', 'exp')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'pp.codPedido = ped.id')
+            ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = pp.codProduto AND pv.grade = pp.grade')
+            ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.pedido = ped.id')
+            ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
+            ->leftJoin('wms:Expedicao\Reentrega', 'ree', 'WITH', 'ree.notaFiscalSaida = nfs.id')
             ->where('exp.id = :idExpedicao')
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE)
-            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
+//            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
             ->groupBy('c.placaCarga, c.codCargaExterno, c.sequencia')
             ->addGroupBy('ped.pontoTransbordo')
             ->setParameter('idExpedicao', $idExpedicao)
