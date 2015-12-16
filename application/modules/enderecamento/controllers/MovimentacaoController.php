@@ -22,6 +22,7 @@ class Enderecamento_MovimentacaoController extends Action
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             try {
+                $this->getEntityManager()->beginTransaction();
                 $grade = trim($data['grade']);
                 if ($data['grade'] == '')
                     $data['grade'] = "UNICA";
@@ -43,6 +44,13 @@ class Enderecamento_MovimentacaoController extends Action
                 }
 
                 if (isset($data['embalagem']) && !empty($data['embalagem'])) {
+                    $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+                    $validade = $estoqueEn->getValidade();
+                    if (isset($validade) && !is_null($validade)) {
+                        $data['validade'] = $validade->format('d/m/Y');
+                    } else {
+                        $data['validade'] = null;
+                    }
                     $data['endereco'] = $enderecoEn;
                     $data['qtd'] = $data['quantidade'] * -1;
                     $estoqueRepo->movimentaEstoque($data);
@@ -55,6 +63,15 @@ class Enderecamento_MovimentacaoController extends Action
                         throw new \Exception("Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
                     }
                     foreach ($volumes as $volume) {
+
+                        $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volume));
+                        $validade = $estoqueEn->getValidade();
+                        if (isset($validade) && !is_null($validade)) {
+                            $data['validade'] = $validade->format('d/m/Y');
+                        } else {
+                            $data['validade'] = null;
+                        }
+
                         $data['endereco'] = $enderecoEn;
                         $data['qtd'] = $data['quantidade'] * -1;
                         $data['volume'] = $volume;
@@ -64,13 +81,12 @@ class Enderecamento_MovimentacaoController extends Action
                         $estoqueRepo->movimentaEstoque($data);
                     }
                 }
-
-
-
+                $this->getEntityManager()->commit();
                 $this->addFlashMessage('success','Endereço alterado com sucesso!');
                 $this->_redirect('/enderecamento/movimentacao');
 
             } catch(Exception $e) {
+                $this->getEntityManager()->rollback();
                 $this->addFlashMessage('error', $e->getMessage());
             }
 

@@ -122,7 +122,6 @@ class EstoqueRepository extends EntityRepository
         }
 
         $validade = null;
-        $params['validade'] = '09/12/2015';
         if (isset($estoqueEn) && is_object($estoqueEn)) {
             $validade = $estoqueEn->getValidade();
         }
