@@ -116,8 +116,13 @@ class Enderecamento_MovimentacaoController extends Action
 
                     //é uma entrada de estoque? Saída não precisa informar o unitizador
                     $entradaEstoque = ($data['quantidade'] > 0);
+
                     $unitizadorEn = null;
-                    if ($data['idNormaPaletizacao'] == NULL && $estoqueEn->getUnitizador() == NULL && $entradaEstoque) {
+                    $unitizadorEstoque = null;
+                    if ($estoqueEn != null) {
+                        $unitizadorEstoque = $estoqueEn->getUnitizador();
+                    }
+                    if ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque) {
                         throw new Exception("É necessário informar o Unitizador");
                     } else if ($data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
                         $idUnitizador = $data['idNormaPaletizacao'];
