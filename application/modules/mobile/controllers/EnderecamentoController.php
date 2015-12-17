@@ -249,9 +249,10 @@ class Mobile_EnderecamentoController extends Action
             $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             $endPicking = $ProdutoRepository->getEnderecoPicking($ProdutoEntity);
             if ($endPicking) {
-                $endPicking = (int) str_replace('.','',$endPicking);
+                $endPicking = (int) str_replace('.','',$endPicking[0]);
+                $endereco = (int) $endereco;
                 if ($endPicking != $endereco) {
-                    $this->createXml('error','Endereço de picking não correspondente');
+                    $this->createXml('error','Endereço de picking não correspondente informado:' . $endereco . ", cadastro " . $endPicking);
                 }
             } else {
                 $this->createXml('error','O produto não possui endereço de picking');
@@ -281,7 +282,7 @@ class Mobile_EnderecamentoController extends Action
         $unitizadorEn = $paleteEn->getUnitizador();
         if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
-                throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
+                $this->createXml('error',"Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
             if ($enderecoAntigo != NULL) {
                 $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");

@@ -1482,6 +1482,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function buscarEtiqueta($parametros)
     {
+        ini_set('memory_limit', '-1');
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao,
              c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
@@ -1494,7 +1495,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('es.status', 's')
             ->leftJoin('es.produtoEmbalagem', 'pe')
             ->leftJoin('p.pessoa', 'cli')
-            ->setMaxResults(5000)
             ->orderBy("es.id" , "DESC")
             ->distinct(true);
 

@@ -261,7 +261,30 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
-    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true, $orderBy = null){
+
+    public function getEstoqueGroupByVolumns($params) {
+        $subQuery  = $this->getEstoqueAndVolumeByParams($params,null,true,null,true);
+        $SQL = "
+            SELECT ESTQ.ENDERECO,
+                   ESTQ.TIPO,
+                   ESTQ.COD_PRODUTO,
+                   ESTQ.DSC_GRADE,
+                   ESTQ.RESERVA_SAIDA,
+                   ESTQ.RESERVA_ENTRADA,
+                   LISTAGG(ESTQ.VOLUME,',') WITHIN GROUP (ORDER BY ESTQ.ENDERECO, ESTQ.TIPO, ESTQ. COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.RESERVA_SAIDA, ESTQ.RESERVA_ENTRADA,ESTQ.QTD,ESTQ.DTH_PRIMEIRA_MOVIMENTACAO) VOLUME,
+                   ESTQ.QTD,
+                   ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
+                   ESTQ.DSC_PRODUTO
+              FROM ($subQuery) ESTQ
+             GROUP BY ESTQ.ENDERECO, ESTQ.TIPO, ESTQ. COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.RESERVA_SAIDA, ESTQ.RESERVA_ENTRADA,ESTQ.QTD,ESTQ.DTH_PRIMEIRA_MOVIMENTACAO, ESTQ.DSC_PRODUTO
+             ORDER BY COD_PRODUTO, DSC_GRADE, VOLUME, ENDERECO, DTH_PRIMEIRA_MOVIMENTACAO
+        ";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true, $orderBy = null, $returnQuery = false){
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
@@ -361,6 +384,10 @@ class EstoqueRepository extends EntityRepository
             $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE";
         }
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($returnQuery == true) {
+            return $SQL . $SQLWhere . $SQLOrderBy;
+        }
 
         if (isset($maxResult) && !empty($maxResult)) {
             if ($maxResult != false) {
