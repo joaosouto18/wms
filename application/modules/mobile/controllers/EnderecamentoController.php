@@ -784,6 +784,7 @@ class Mobile_EnderecamentoController extends Action
 
     public function confirmaEnderecamentoAction()
     {
+        ini_set('max_execution_time', 3000);
         $params = array();
         $qtd = $this->_getParam('qtd');
         $params['uma'] = $this->_getParam('uma');

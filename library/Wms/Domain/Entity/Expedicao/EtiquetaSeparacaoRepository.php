@@ -166,7 +166,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Reentrega', 'ree', 'WITH', 'ree.notaFiscalSaida = nfs.id')
             ->where('exp.id = :idExpedicao')
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE)
-//            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
+            ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
             ->groupBy('c.placaCarga, c.codCargaExterno, c.sequencia')
             ->addGroupBy('ped.pontoTransbordo')
             ->setParameter('idExpedicao', $idExpedicao)
