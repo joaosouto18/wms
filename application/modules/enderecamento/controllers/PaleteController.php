@@ -10,6 +10,7 @@ class Enderecamento_PaleteController extends Action
      */
     public function indexAction()
     {
+        ini_set('max_execution_time', 3000);
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
