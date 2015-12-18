@@ -837,21 +837,7 @@ class Mobile_EnderecamentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
 
                 }
-            }
-
-
-
-
-
-
-
-
-
-
-
-
-
-            else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
                 $LeituraColetor = new LeituraColetor();
                 $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
 
@@ -859,7 +845,7 @@ class Mobile_EnderecamentoController extends Action
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
-                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto()));
+                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
                     $estoqueRepo->movimentaEstoque($params);
@@ -879,9 +865,8 @@ class Mobile_EnderecamentoController extends Action
                         $params['qtd'] = $qtd;
                         $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
                         $params['volume'] = $volume;
-                        $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto()));
+                        $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
                         $estoqueRepo->movimentaEstoque($params);
-
 
                         //RETIRA ESTOQUE
                         $params['endereco'] = $enderecoAntigo;
