@@ -814,29 +814,30 @@ class Mobile_EnderecamentoController extends Action
             if ($enderecoAntigo) {
                 $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo, $nivelAntigo);
             }
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
             if (isset($params['uma']) && !empty($params['uma'])) {
                 $params['uma'] = $LeituraColetor->retiraDigitoIdentificador($params['uma']);
 
-                /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-                $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
                 $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo->getId()));
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
                     $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
-
                     $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
-
                     $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
-
+                    $validade = $estoque->getValidade();
+                    $params['validade'] = null;
+                    if (isset($validade) && !is_null($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    }
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
                     $params['qtd'] = $qtd * -1;
                     $estoqueRepo->movimentaEstoque($params);
-
                 }
             } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
                 $LeituraColetor = new LeituraColetor();
@@ -846,11 +847,16 @@ class Mobile_EnderecamentoController extends Action
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
+                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoEmbalagem' => $params['embalagem']));
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $validade = $estoqueEn->getValidade();
+                    $params['validade'] = null;
+                    if (isset($validade) && !is_null($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    }
                     $estoqueRepo->movimentaEstoque($params);
-
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
                     $params['qtd'] = $qtd * -1;
@@ -863,10 +869,18 @@ class Mobile_EnderecamentoController extends Action
                     $grade = $volumeEn->getGrade();
                     $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
                     foreach ($volumes as $volume) {
+                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoVolume' => $volume));
                         $params['qtd'] = $qtd;
                         $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
+
+                        $validade = $estoqueEn->getValidade();
+                        $params['validade'] = null;
+                        if (isset($validade) && !is_null($validade)) {
+                            $params['validade'] = $validade->format('d/m/Y');
+                        }
+
                         $estoqueRepo->movimentaEstoque($params);
 
                         //RETIRA ESTOQUE
