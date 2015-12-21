@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+    Wms\Domain\Entity\NotaFiscal\Item as ItemNF,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Core\Util\Produto as ProdutoUtil;
 
@@ -77,7 +78,7 @@ class NotaFiscalRepository extends EntityRepository
     public function getItemConferencia($idRecebimento)
     {
         $sql = "
-            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade 
+            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util
             FROM nota_fiscal nf
             INNER JOIN nota_fiscal_item nfi ON (nf.cod_nota_fiscal = nfi.cod_nota_fiscal)
             INNER JOIN produto p ON (p.cod_produto = nfi.cod_produto AND p.dsc_grade = nfi.dsc_grade)
@@ -92,7 +93,7 @@ class NotaFiscalRepository extends EntityRepository
                     AND rc.dsc_grade = nfi.dsc_grade
                     AND rc.qtd_divergencia = 0
                 )
-           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto
+           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util
            ORDER BY nfi.cod_produto, nfi.dsc_grade";
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -568,7 +569,7 @@ class NotaFiscalRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao, 
                         tc.id idTipoComercializacao, tc.descricao tipoComercializacao,
-                        pe.id idEmbalagem, pv.id idVolume,
+                        pe.id idEmbalagem, pv.id idVolume, p.validade,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(unitizador_embalagem.id, unitizador_volume.id) idUnitizador,
                         NVL(np_embalagem.numLastro, np_volume.numLastro) numLastro,
@@ -610,6 +611,27 @@ class NotaFiscalRepository extends EntityRepository
         );
 
         return $dql->getQuery()->setMaxResults(1)->getOneOrNullResult();
+    }
+
+    public function buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('NVL(rv.dataValidade,re.dataValidade) dataValidade, NVL(rv.id, re.id) id')
+            ->from('wms:Recebimento', 'r')
+            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
+            ->leftJoin('rv.volume', 'pv')
+            ->leftJoin('re.embalagem', 'pe')
+            ->where("(pv.codProduto = '$idProduto' and pv.grade = '$grade') or (pe.codProduto = '$idProduto' and pe.grade = '$grade')")
+            ->orderBy('id', 'DESC');
+        if (isset($idRecebimento) && !empty($idRecebimento)) {
+            $sql->andWhere("r.id = $idRecebimento");
+        }
+        if (isset($codigoBarras) && !empty($codigoBarras)) {
+            $sql->orWhere(" pe.codigoBarras = '$codigoBarras'");
+        }
+
+        return $sql->getQuery()->setMaxResults(1)->getOneOrNullResult();
     }
 
     /**
@@ -771,6 +793,123 @@ class NotaFiscalRepository extends EntityRepository
         $this->em->flush();
 
         return $entity;
+    }
+    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null) {
+
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+
+            // VALIDO SE OS PRODUTOS EXISTEM NO SISTEMA
+            if (count($itens) > 0) {
+                foreach ($itens as $item) {
+
+                    $idProduto = trim($item['idProduto']);
+                    $idProduto = ProdutoUtil::formatar($idProduto);
+
+                    $grade = trim($item['grade']);
+                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                    if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
+                }
+            }
+
+            if ($fornecedorEntity == null)
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+
+            $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
+                ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
+
+            if ($notaFiscalEntity != null)
+                throw new \Exception("Nota fiscal $numero / $serie já se encontra cadastrada");
+
+            // caso haja um veiculo vinculado a placa
+            if (empty($placa) || (strlen($placa) != 7))
+                $placa = $em->getRepository('wms:Sistema\Parametro')->getValor(5, 'PLACA_PADRAO_NOTAFISCAL');
+
+            if (!in_array($bonificacao, array('S', 'N')))
+                throw new \Exception('Indicação de bonificação inválida. Deve ser N para não ou S para sim.');
+
+            $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
+
+            //inserção de nova NF
+            $notaFiscalEntity = new NotaFiscalEntity;
+            $notaFiscalEntity->setNumero($numero);
+            $notaFiscalEntity->setSerie($serie);
+            $notaFiscalEntity->setDataEntrada(new \DateTime);
+            $notaFiscalEntity->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao));
+            $notaFiscalEntity->setFornecedor($fornecedorEntity);
+            $notaFiscalEntity->setBonificacao($bonificacao);
+            $notaFiscalEntity->setStatus($statusEntity);
+            $notaFiscalEntity->setObservacao($observacao);
+            $notaFiscalEntity->setPlaca($placa);
+
+            if (count($itens) > 0) {                //itera nos itens das notas
+                foreach ($itens as $item) {
+                    $idProduto = trim($item['idProduto']);
+                    $idProduto = ProdutoUtil::formatar($idProduto);
+
+                    $grade = trim($item['grade']);
+                    $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                    if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
+
+                    $itemEntity = new ItemNF;
+                    $itemEntity->setNotaFiscal($notaFiscalEntity);
+                    $itemEntity->setProduto($produtoEntity);
+                    $itemEntity->setGrade(trim($item['grade']));
+                    $itemEntity->setQuantidade($item['quantidade']);
+
+                    $notaFiscalEntity->getItens()->add($itemEntity);
+                }
+            } else {
+                throw new \Exception("Nenhum item informado na nota");
+            }
+            $em->persist($notaFiscalEntity);
+            $em->flush();
+
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    public function getObservacoesNotasByProduto ($codRecebimento, $codProduto, $grade) {
+        $SQL = "SELECT DISTINCT DSC_OBSERVACAO
+                  FROM NOTA_FISCAL_ITEM NFI
+                  LEFT JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                 WHERE NF.COD_RECEBIMENTO = $codRecebimento
+                   AND NFI.COD_PRODUTO = '$codProduto'
+                   AND NFI.DSC_GRADE = '$grade'
+                   AND LENGTH(DSC_OBSERVACAO) > 0 ";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $array = array();
+        foreach($result as $nota) {
+            $array[] = TRIM($nota['DSC_OBSERVACAO']);
+        };
+
+        if (count($result) == 0) {
+            return "";
+        } else {
+            return " - " . implode(', ',$array);
+        }
+
+    }
+
+    public function getNotaFiscalByProduto($codRecebimento, $codProduto, $grade) {
+        $SQL = "SELECT NF.NUM_NOTA_FISCAL as NF, NF.COD_SERIE_NOTA_FISCAL as SERIE
+                  FROM NOTA_FISCAL_ITEM NFI
+                  LEFT JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                 WHERE NF.COD_RECEBIMENTO = $codRecebimento
+                   AND NFI.COD_PRODUTO = '$codProduto'
+                   AND NFI.DSC_GRADE = '$grade'";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $array = array();
+        foreach($result as $nota) {
+            $array[] = TRIM($nota['NF']) . '/' . TRIM($nota['SERIE']);
+        };
+        return implode(', ',$array);
     }
 
 }

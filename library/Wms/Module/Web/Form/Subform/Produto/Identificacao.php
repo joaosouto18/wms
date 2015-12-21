@@ -97,7 +97,24 @@ class Identificacao extends SubForm
                 ))                             
                 ->addDisplayGroup(
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
-        );
+                );
+
+                $this
+                    ->addElement('select', 'validade', array(
+                        'label' => 'Possui validade (S/N)',
+                        'multiOptions' => array(
+                            'S' => 'S',
+                            'N' => 'N'
+                        )))
+                    ->addElement('text', 'diasVidaUtil', array(
+                        'label' => 'Dias para Vencimento',
+                        'size' => 10,
+                        'maxlength' => 4
+                    ))
+                    ->addDisplayGroup(
+                        array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
+                    );
+
     }
 
     public function setDefaultsFromEntity(ProdutoEntity $produto)
@@ -115,6 +132,8 @@ class Identificacao extends SubForm
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
+            'validade' => $produto->getValidade(),
+            'diasVidaUtil' => $produto->getDiasVidaUtil(),
         );
 
         $this->setDefaults($values);

@@ -160,7 +160,7 @@ class UsuarioRepository extends AtorRepository {
     }
 
 
-    public function getUsuarioByPerfil($perfil)
+    public function getUsuarioByPerfil($perfil, $idPerfil = 0)
     {
         $source = $this->_em->createQueryBuilder()
             ->select('distinct pf.id, u.login, u.isAtivo, pf.nome, u.isSenhaProvisoria')
@@ -169,9 +169,21 @@ class UsuarioRepository extends AtorRepository {
             ->innerJoin('u.depositos', 'd')
             ->innerJoin('u.perfis', 'p')
             ->orderBy('pf.nome')
-            ->andWhere("p.nome = '$perfil'");
+            ->andWhere("p.nome = '$perfil' OR p.id = '$idPerfil'");
 
         return $source->getQuery()->getResult();
+    }
+
+    public function selectUsuario($perfil)
+    {
+        $result = $this->getUsuarioByPerfil($perfil);
+
+        $usuarios = array();
+        foreach ($result as $usuario) {
+            $usuarios[$usuario['id']] = $usuario['nome'];
+        }
+
+        return $usuarios;
     }
 
     public function getIdPerfil($perfil)

@@ -44,7 +44,7 @@ class PedidoProduto
     /**
      * @Column(name="COD_PRODUTO",type="integer", nullable=false)
      */
-    protected $codProduto;        
+    protected $codProduto;
     
     /**
      * @Column(name="DSC_GRADE", type="string", nullable=false)
@@ -55,6 +55,21 @@ class PedidoProduto
      * @Column(name="QUANTIDADE", type="integer", nullable=false)
      */
     protected $quantidade;
+
+    /**
+     * @Column(name="QTD_ATENDIDA", type="integer", nullable=false)
+     */
+    protected $qtdAtendida;
+
+    /**
+     * @Column(name="QTD_CORTADA", type="integer", nullable=false)
+     */
+    protected $qtdCortada;
+
+    /**
+     * @Column(name="VALOR_VENDA", type="decimal", nullable=false)
+     */
+    protected $valorVenda;
 
     public function setProdutos($produtos)
     {
@@ -135,5 +150,54 @@ class PedidoProduto
     {
         return $this->id;
     }
+
+    /**
+     * @param mixed $qtdAtendida
+     */
+    public function setQtdAtendida($qtdAtendida)
+    {
+        $this->qtdAtendida = $qtdAtendida;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdAtendida()
+    {
+        return $this->qtdAtendida;
+    }
+
+    /**
+     * @param mixed $qtdCortada
+     */
+    public function setQtdCortada($qtdCortada)
+    {
+        $this->qtdCortada = $qtdCortada;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdCortada()
+    {
+        return $this->qtdCortada;
+    }
+
+    /**
+     * @param mixed $valorVenda
+     */
+    public function setValorVenda($valorVenda)
+    {
+        $this->valorVenda = $valorVenda;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getValorVenda()
+    {
+        return $this->valorVenda;
+    }
+
 
 }

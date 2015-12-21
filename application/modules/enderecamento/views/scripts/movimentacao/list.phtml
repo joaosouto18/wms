@@ -40,7 +40,7 @@
 
             if ($codProdutoAnterior != NULL) {
                 ?><tr >
-                <td colspan="3"><b>Total</b></td>
+                <td colspan="5"><b>Total</b></td>
                 <td><b><?php echo $qtdReservaEntrada?></b></td>
                 <td><b><?php echo $qtdReservaSaida?></b></td>
                 <td><b><?php echo $qtdEstoque?></b></td>
@@ -59,9 +59,11 @@
             <td><b><?php echo "GRADE: ". $endereco['DSC_GRADE']?></b></td>
             <td colspan="3"><b><?php echo "PRODUTO: ".$endereco['DSC_PRODUTO']?></b></td>
             <td colspan="2"><b><?php echo "VOLUME: ". $endereco['VOLUME']?></b></td>
-           <?php if (isset($this->endPicking[$count])) : ?>
-                <td colspan="2"><b><?php echo "PICKING: ". $this->endPicking[$count]; ?></b></td>
-           <?php endif; ?>
+            <td colspan="2">
+                <?php if (isset($this->endPicking[$count])) : ?>
+                     <b><?php echo "PICKING: ". $this->endPicking[$count]; ?></b>
+                <?php endif; ?>
+            </td>
             </tr>
 
             <tr>
@@ -73,6 +75,7 @@
                 <td><b>Reserva Entrada</b></td>
                 <td><b>Reserva Saida</b></td>
                 <td><b>Qtd.Estoque</b></td>
+                <td><b>Validade</b></td>
             </tr>
         <?php
            $count++;
@@ -86,6 +89,13 @@
         <td><?php echo $endereco['RESERVA_ENTRADA']?></td>
         <td><?php echo $endereco['RESERVA_SAIDA']?></td>
         <td><?php echo $endereco['QTD']?></td>
+        <td><?php
+            if (isset($endereco['DTH_VALIDADE']) && !empty($endereco['DTH_VALIDADE'])) {
+                $dataValidade = new DateTime($endereco['DTH_VALIDADE']);
+                $dataValidade = $dataValidade->format('d/m/Y');
+                echo $dataValidade;
+            }
+             ?></td>
         <td><?php if (($endereco['RESERVA_SAIDA'] != 0) || ($endereco['RESERVA_ENTRADA'] != 0)) {?>
                 <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/'.$endereco['COD_VOLUME'].'/idProduto/'.$endereco['COD_PRODUTO'].'/grade/'. urlencode ($endereco['DSC_GRADE']). '/idEndereco/'.$endereco['COD_ENDERECO'].'"';?> >Mais</a>
             <?php }?></td>

@@ -52,6 +52,52 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       return $produtosSemPicking;
   }
 
+  private function setParamEndAutomatico( $produtoEn, $values, $tipo) {
+      if ($tipo == 'AreaArmazenagem') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoAreaArmazenagem');
+      }
+      if ($tipo == 'TipoEndereco') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEndereco');
+      }
+      if ($tipo == 'TipoEstrutura') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEstrutura');
+      }
+      if ($tipo == 'CaracteristicaEndereco') {
+          $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoCaracteristicaEndereco');
+      }
+
+      $registros = $repo->findBy(array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
+      foreach ($registros as $registro) {
+          $this->getEntityManager()->remove($registro);
+      }
+
+      foreach ($values as $key=> $value) {
+          if (($value != "") && (is_numeric($value))) {
+              if ($tipo == 'AreaArmazenagem') {
+                  $sequencia = new ProdutoEntity\EnderecamentoAreaArmazenagem();
+                  $sequencia->setCodAreaArmazenagem($key);
+              }
+              if ($tipo == 'TipoEndereco') {
+                  $sequencia = new ProdutoEntity\EnderecamentoTipoEndereco();
+                  $sequencia->setCodTipoEndereco($key);
+              }
+              if ($tipo == 'TipoEstrutura') {
+                  $sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
+                  $sequencia->setCodTipoEstrutura($key);
+
+              }
+              if ($tipo == 'CaracteristicaEndereco') {
+                  $sequencia = new ProdutoEntity\EnderecamentoCaracteristicaEndereco();
+                  $sequencia->setCodCaracteristica($key);
+              }
+              $sequencia->setCodProduto($produtoEn->getId());
+              $sequencia->setGrade($produtoEn->getGrade());
+              $sequencia->setPrioridade($value);
+              $this->getEntityManager()->persist($sequencia);
+          }
+      }
+  }
+
   public function save(ProdutoEntity $produtoEntity, array $values) {
 
 	extract($values['produto']);
@@ -60,7 +106,25 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	$em->beginTransaction();
 
 	try {
-	  $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
+
+      $dscEndereco = $values['enderecamento']['enderecoReferencia'];
+      if ($dscEndereco != "") {
+          $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
+          if ($enderecoEn == null) {
+              throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+          } else {
+              $produtoEntity->setEnderecoReferencia($enderecoEn);
+          }
+      } else {
+          $produtoEntity->setEnderecoReferencia(null);
+      }
+
+      $this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
+      $this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
+      $this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
+      $this->setParamEndAutomatico($produtoEntity,$values['caracteristicaEndereco'],'CaracteristicaEndereco');
+
+        $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
 	  $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
 
       $produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
@@ -1048,6 +1112,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getEmbalagensByCodBarras($codBarras){
+        $sql = "SELECT NVL(PE.COD_PRODUTO_EMBALAGEM,0) as EMBALAGEM,
+                       NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
+                  FROM PRODUTO P
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE)
+                  LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE)
+                 WHERE PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras'";
+        $result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $embalagenEn = null;
+        $volumeEn = null;
+        if (count($result) >0){
+            $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->find($result[0]['EMBALAGEM']);
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->find($result[0]['VOLUME']);
+        }
+        return array('embalagem'=>$embalagenEn,
+                     'volume'=>$volumeEn);
+    }
+
     public function getProdutoByCodBarras($codigoBarras)
     {
         // busco produto
@@ -1123,5 +1205,124 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         return $dql->getQuery()->getResult();
     }
+
+    public function getProdutoEmbalagem()
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.grade, pe.id')
+            ->from('wms:Produto\Embalagem', 'pe')
+            ->orderBy('pe.isPadrao', 'desc');
+
+        return $dql->getQuery()->getResult();
+
+    }
+
+    public function getSequenciaEndAutomaticoCaracEndereco($codProduto,$grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+
+        $SQL = "  SELECT TP.COD_CARACTERISTICA_ENDERECO as ID, TP.DSC_CARACTERISTICA_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM CARACTERISTICA_ENDERECO TP
+                    $join JOIN PRODUTO_END_CARACT_END P
+                      ON P.COD_CARACTERISTICA_ENDERECO = TP.COD_CARACTERISTICA_ENDERECO
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_CARACTERISTICA_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+		return $result;
+    }
+
+    public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+
+        $SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM TIPO_ENDERECO TP
+                    $join JOIN PRODUTO_END_TIPO_ENDERECO P
+                      ON P.COD_TIPO_ENDERECO = TP.COD_TIPO_ENDERECO
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_TIPO_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+
+        $SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM AREA_ARMAZENAGEM TP
+                   $join JOIN PRODUTO_END_AREA_ARMAZENAGEM P
+                      ON P.COD_AREA_ARMAZENAGEM = TP.COD_AREA_ARMAZENAGEM
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_AREA_ARMAZENAGEM";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade, $inner = false) {
+
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+        $SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+                    FROM TIPO_EST_ARMAZ TP
+                   $join JOIN PRODUTO_END_TIPO_EST_ARMAZ P
+                      ON P.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
+                     AND P.COD_PRODUTO = '$codProduto'
+                     AND P.DSC_GRADE = '$grade'
+                   ORDER BY TP.DSC_TIPO_EST_ARMAZ";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
+        $enderecoReferencia = null;
+
+        //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
+        $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+
+        //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
+        if ($enderecoReferencia == null) {
+            $embalagens = $produtoEn->getEmbalagens();
+            foreach ($embalagens as $embalagem) {
+                if ($embalagem->getEndereco() != null) {
+                    $enderecoReferencia = $embalagem->getEndereco();
+                    break;
+                }
+            }
+        }
+        if ($enderecoReferencia == null) {
+            $volumes = $produtoEn->getVolumes();
+            foreach ($volumes as $volume) {
+                if ($volume->getEndereco() != null) {
+                    $enderecoReferencia = $volume->getEndereco();
+                    break;
+                }
+            }
+        }
+
+        //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
+        if ($enderecoReferencia == null) {
+            $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
+        }
+
+        return $enderecoReferencia;
+    }
+
 
 }

@@ -36,6 +36,7 @@ class EnderecoRepository extends EntityRepository
 
             $em->persist($enInvEndereco);
             $em->commit();
+//            $em->flush();
 
         } catch(\Exception $e) {
             $em->rollback();
@@ -85,7 +86,7 @@ class EnderecoRepository extends EntityRepository
         $sql = "$campos
           FROM INVENTARIO_ENDERECO IE
           LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
-          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, NVL(PV.DSC_VOLUME,PE.DSC_EMBALAGEM) COMERCIALIZACAO
+          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, NVL(PV.DSC_VOLUME,'EMBALAGEM') COMERCIALIZACAO
                         FROM INVENTARIO_CONTAGEM_ENDERECO ICE
                         LEFT JOIN PRODUTO P ON ICE.COD_PRODUTO = P.COD_PRODUTO AND ICE.DSC_GRADE = P.DSC_GRADE
                         LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE

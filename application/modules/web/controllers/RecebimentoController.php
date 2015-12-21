@@ -17,6 +17,9 @@ use Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Module\Web\Form\Subform\FiltroNotaFiscal as FiltroNotaFiscalForm,
     Wms\Module\Web\Grid\Recebimento as RecebimentoGrid,
     Wms\Module\Web\Grid\Recebimento\Andamento as AndamentoGrid,
+    Wms\Module\Web\Grid\Recebimento\ModeloRecebimento as ModeloRecebimentoGrid,
+    Wms\Module\Web\Form\Recebimento\ModeloRecebimento as ModeloRecebimentoForm,
+    Wms\Domain\Entity\Recebimento\ModeloRecebimento as ModeloRecebimentoEn,
     Wms\Module\Web\Grid\Recebimento\Conferencia as ConferenciaGrid;
 
 /**
@@ -40,7 +43,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje
         if (!$values) {
 
-            $dataI1 = new \DateTime();
+            $dataI1 = new \DateTime;
+            $dataI1->modify('-1 day');
             $dataI2 = new \DateTime();
 
             $values = array(
@@ -294,7 +298,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     /**
      * Conferencia (salva o produto e a quantidade conferida do recebimento)
      */
-    public function conferenciaAction() {
+    public function conferenciaAction()
+    {
         //adding default buttons to the page
         Page::configure(array(
             'buttons' => array(
@@ -352,6 +357,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             //produtos
             $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
+            //unidade Medida
+            $produtoRepo = $this->em->getRepository('wms:Produto');
+            $this->view->unMedida = $produtoRepo->getProdutoEmbalagem();
+
             //salvar produto e quantidade Conferencia
             if ($this->getRequest()->isPost()) {
                 // checando quantidades
@@ -359,9 +368,32 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdNFs = $this->getRequest()->getParam('qtdNF');
                 $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
+                $unMedida = $this->getRequest()->getParam('unMedida');
+                $dataValidade = $this->getRequest()->getParam('dataValidade');
 
+                $hoje = new Zend_Date;
+                foreach ($dataValidade as $idProduto => $grades) {
+                    foreach ($grades as $grade => $validade) {
+                        $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                        $shelfLife = $produtoEn->getDiasVidaUtil();
+
+                        if (!is_null($shelfLife)) {
+                            $PeriodoUtil = $hoje->addDay($produtoEn->getDiasVidaUtil());
+                            $validade = new Zend_Date($validade);
+                            if ($validade <= $PeriodoUtil) {
+                                //Autoriza Recebimento?
+                                $this->redirect('autoriza-recebimento', 'recebimento', 'mobile', array(
+                                    'idOrdemServico' => serialize($idOrdemServico), 'qtdNFs' => serialize($qtdNFs),
+                                    'qtdAvarias' => serialize($qtdAvarias), 'qtdConferidas' => serialize($qtdConferidas),
+                                    'idConferente' => serialize($idConferente), 'gravaRecebimentoVolumeEmbalagem' => true,
+                                    'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade), 'conferenciaCega' => true));
+                            }
+                        }
+
+                    }
+                }
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];
@@ -1134,4 +1166,178 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         }
 
     }
+
+    public function modeloRecebimentoAction()
+    {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Adicionar novo',
+                    'cssClass' => 'btnAdd',
+                    'urlParams' => array(
+                        'action' => 'add'
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
+
+        /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+        $modeloRecebimentoRepo = $this->em->getRepository('wms:Recebimento\ModeloRecebimento');
+
+        $modelos = $modeloRecebimentoRepo->getModelosRecebimento();
+
+        $grid = new ModeloRecebimentoGrid();
+        $this->view->grid = $grid->init($modelos)->render();
+    }
+
+    public function addAction()
+    {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'modelo-recebimento',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+                array(
+                    'label' => 'Salvar',
+                    'cssClass' => 'btnSave'
+                ),
+            )
+        ));
+
+        $form = new ModeloRecebimentoForm();
+
+        try {
+            $params = $this->getRequest()->getParams();
+
+            /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+            $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+                $modeloRecebimentoEn = new ModeloRecebimentoEn();
+                $modeloRecebimentoRepo->save($modeloRecebimentoEn, $params['cadastro']);
+
+                $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
+                $this->_redirect('/recebimento/modelo-recebimento');
+
+            }
+            //$form->setDefaultsFromEntity($entity); // pass values to form
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+        $this->view->form = $form;
+    }
+
+    public function deleteModeloAction()
+    {
+        try {
+            $params = $this->getRequest()->getParams();
+
+            /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+            $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+            $modeloRecebimentoEn = $modeloRecebimentoRepo->findOneBy(array('id' => $params['id']));
+
+            $this->_em->remove($modeloRecebimentoEn);
+            $this->_em->flush();
+
+            $this->addFlashMessage('success', 'Modelo de Recebimento excluido com sucesso.');
+            $this->_redirect('/recebimento/modelo-recebimento');
+
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+    }
+
+    public function editAction()
+    {
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar',
+                    'cssClass' => 'btnBack',
+                    'urlParams' => array(
+                        'action' => 'modelo-recebimento',
+                        'id' => null
+                    ),
+                    'tag' => 'a'
+                ),
+                array(
+                    'label' => 'Salvar',
+                    'cssClass' => 'btnSave'
+                ),
+            )
+        ));
+
+        $form = new ModeloRecebimentoForm();
+
+        try {
+            $params = $this->getRequest()->getParams();
+
+            /** @var \Wms\Domain\Entity\Recebimento\ModeloRecebimentoRepository $modeloRecebimentoRepo */
+            $modeloRecebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento\ModeloRecebimento');
+            $modeloRecebimentoEn = $modeloRecebimentoRepo->findOneBy(array('id' => $params['id']));
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+                $modeloRecebimentoRepo->save($modeloRecebimentoEn, $params['cadastro']);
+
+                $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
+                $this->_redirect('/recebimento/modelo-recebimento');
+
+            }
+            $form->setDefaultsFromEntity($modeloRecebimentoEn);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+        $this->view->form = $form;
+    }
+
+    public function parametrosAjaxAction()
+    {
+        $form = new RecebimentoForm\ParametrosRecebimento();
+        $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
+        $idRecebimento = $this->_getParam('id');
+        $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$idRecebimento));
+        $form->setDefaultsFromEntity($recebimentoEn);
+        $this->view->form = $form;
+    }
+
+    public function salvaParametrosAjaxAction()
+    {
+        $params = $this->_getAllParams();
+        $form = new RecebimentoForm\ParametrosRecebimento();
+
+        $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
+        try {
+            $idRecebimento = $this->_getParam('id');
+            $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$idRecebimento));
+
+            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+
+                $idModelo = $params['recebimento']['modelo'];
+                $modeloEn = null;
+                if ($idModelo != "") {
+                    $modeloEn = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo')->findOneBy(array('id'=>$idModelo));
+                }
+                $recebimentoEn->setModeloEnderecamento($modeloEn);
+                $this->getEntityManager()->persist($recebimentoEn);
+                $this->getEntityManager()->flush();
+
+                $this->addFlashMessage('success', 'Modelo de Endereçamento alterado com sucesso.');
+                $this->_redirect('/recebimento');
+            }
+        $this->view->form = $form;
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+
+    }
+
 }

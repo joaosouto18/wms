@@ -17,7 +17,7 @@ class DadosLogisticosProduto extends Report
         $em = $this->getEm();
 
         $produtos = $em->getRepository('wms:NotaFiscal')->relatorioProdutoDadosLogisticos($params);
-        
+
         switch ($params['indDadosLogisticos']) {
             case 'S':
                 $tituloRelatorio = 'Relatório de Produtos Com Dados Logísticos';
@@ -39,10 +39,10 @@ class DadosLogisticosProduto extends Report
 
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
 
-       $pdf->setTitle(utf8_decode($tituloRelatorio))
-               ->setLabelHeight(6)
-               ->setColHeight(5)
-               ->setNumRows(count($produtos));
+        $pdf->setTitle(utf8_decode($tituloRelatorio))
+            ->setLabelHeight(6)
+            ->setColHeight(5)
+            ->setNumRows(count($produtos));
 
         if (empty($produtos)) {
             $dscVazio = utf8_decode('Não existe produto.');
@@ -83,8 +83,8 @@ class DadosLogisticosProduto extends Report
 
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output('', 'I');
+            ->render()
+            ->Output('', 'I');
     }
 
 }

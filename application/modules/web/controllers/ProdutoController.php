@@ -168,9 +168,20 @@ class Web_ProdutoController extends Crud {
                     }
                 }
 
+                $validade = strtoupper($params['produto']['validade']);
+                if ($validade != 'S') {
+                    $validade = 'N';
+                }
+
+                $entity->setValidade($validade);
+                if ($validade == 'N' || $params['produto']['diasVidaUtil'] == null || empty($params['produto']['diasVidaUtil'])) {
+                    $entity->setDiasVidaUtil(0);
+                } else {
+                    $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
+                }
+
                 $this->repository->save($entity, $this->getRequest()->getParams());
                 $this->em->flush();
-                //$this->_helper->messenger('success', 'Produto alterado com sucesso.');
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');
@@ -344,7 +355,5 @@ class Web_ProdutoController extends Crud {
             'grade'      => $grade),
             $modelo);
     }
-
-
 
 }

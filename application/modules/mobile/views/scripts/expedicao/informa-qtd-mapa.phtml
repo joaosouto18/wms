@@ -1,0 +1,40 @@
+
+<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/informa-qtd-mapa" method="post">
+    <dt id="identification-label">&nbsp;</dt>
+    <dd id="identification-element">
+
+        <table>
+            <tr>
+                <td colspan="3">
+                    <b><?php echo $this->descricao?></b>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <?php echo $this->codProduto?>
+                </td>
+                <td colspan="1">
+                    <?php echo $this->grade?>
+                </td>
+                <td colspan="1">
+                    <?php echo $this->embalagem?>
+                </td>
+            </tr>
+        </table>
+
+        <fieldset id="fieldset-identification">
+            <legend>Informe a Quantidade</legend>
+            <dl>
+                <div class="field">
+                    <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="codBarras" id="codBarras" value="<?php echo $this->codBarras?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="fator" id="fator" value="<?php echo $this->fator?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao?>" size="40" maxlength="100" style="width: 99%">
+                <input type="text" name="qtd" id="qtd" value="" class=" required focus" size="40" maxlength="100" style="width: 99%"></div>
+                <input type="submit" name="submit" id="submit" value="Conferir" class="btn">
+            </dl>
+        </fieldset>
+    </dd>
+</form>
+

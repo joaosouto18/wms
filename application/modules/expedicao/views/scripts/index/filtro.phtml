@@ -1,7 +1,7 @@
-<form id="filtro-expedicao-mercadoria-form" method="get" class="filtro" action="<?php if (!empty($this->element->control))echo $this->element->control->getLabel(); ?>">
+<form id="filtro-expedicao-mercadoria-form" method="get" class="filtro" action="">
     <div>
         <fieldset id="fieldset-busca">
-            <legend>Buscar Expedição</legend>
+            <legend>Filtros</legend>
             <table style="width:100%">
                 <tr>
                     <td>Número da Expedição:</td>
@@ -17,21 +17,14 @@
                     <td><?php echo $this->element->status; ?></td>
                 </tr>
                 <tr>
-                    <td>
-                        Carga:
-                    </td>
-                    <td>
-                        Placa:
-                    </td>
+                    <td>Carga:</td>
+                    <td>Placa:</td>
+                    <td>Pedido:</td>
                 </tr>
                 <tr>
-                    <td>
-                        <?php echo $this->element->codCargaExterno ; ?>
-                    </td>
-                    <td>
-                        <?php echo $this->element->placa ; ?>
-                        <?php echo $this->element->control ; ?>
-                    </td>
+                    <td><?php echo $this->element->codCargaExterno ; ?></td>
+                    <td><?php echo $this->element->placa ; ?></td>
+                    <td><?php echo $this->element->pedido ; ?><?php echo $this->element->control ; ?></td>
                 </tr>
             </table>
         </fieldset>

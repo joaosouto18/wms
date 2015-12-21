@@ -16,16 +16,18 @@ class Mobile_OrdemServicoController extends Action
 
     public function centraisEntregaAction()
     {
+        $carregamento = $this->_getParam('carregamento', null);
         $transbordo = $this->_getParam('transbordo', null);
-        $this->view->transbordo = $transbordo;
+
+        $action = 'conferencia-expedicao';
+        if ($transbordo) {$action = 'conferencia-transbordo';}
+        if ($carregamento) {$action = 'equipe-carregamento';}
+
+        $this->view->action = $action;
         $sessao = new \Zend_Session_Namespace('deposito');
 
         if (count($sessao->centraisPermitidas) == 1) {
-            if ($transbordo) {
-                $this->redirect('conferencia-transbordo', 'ordem-servico');
-            } else {
-                $this->redirect('conferencia-expedicao', 'ordem-servico');
-            }
+            $this->redirect($action, 'ordem-servico');
         }
         $this->view->centraisPermitidas = $sessao->centraisPermitidas;
     }
@@ -38,10 +40,24 @@ class Mobile_OrdemServicoController extends Action
         $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $this->view->iniciadas  = $expedicaoRepo->getOSByUser();
 
-        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_PARCIALMENTE_FINALIZADO);
-
+        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_PARCIALMENTE_FINALIZADO, Expedicao::STATUS_PRIMEIRA_CONFERENCIA, Expedicao::STATUS_SEGUNDA_CONFERENCIA);
+        $this->view->reconfere = $this->getSystemParameterValue("RECONFERENCIA_EXPEDICAO");
         $this->view->expedicoes = $expedicaoRepo->getByStatusAndCentral($status, $idCentral);
     }
+
+    public function equipeCarregamentoAction()
+    {
+        $idCentral = $this->getIdCentral();
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
+        $this->view->iniciadas  = $expedicaoRepo->getOSByUser();
+
+        $status = array(Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_PARCIALMENTE_FINALIZADO, Expedicao::STATUS_PRIMEIRA_CONFERENCIA, Expedicao::STATUS_SEGUNDA_CONFERENCIA);
+        $this->view->reconfere = $this->getSystemParameterValue("RECONFERENCIA_EXPEDICAO");
+        $this->view->expedicoes = $expedicaoRepo->getByStatusAndCentral($status, $idCentral);
+    }
+
 
     public function conferenciaTransbordoAction()
     {
@@ -89,6 +105,14 @@ class Mobile_OrdemServicoController extends Action
             return $idCentral;
         }
         return $idCentral;
+    }
+
+    public function selecionaFilialAction()
+    {
+        $sessao = new \Zend_Session_Namespace('deposito');
+        if (count($sessao->centraisPermitidas) == 1) {
+            $this->redirect('index', 'expedicao','mobile',array('idCentral'=>$sessao->centraisPermitidas[0]));
+        }
     }
 
     public function conferenciaInventarioAction()

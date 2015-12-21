@@ -29,6 +29,7 @@ class OndaRessuprimento extends Grid
         $result = $this->formatItinerarios($result, $expedicaoRepo);
         $result = $this->formataCargas($result, $expedicaoRepo);
 
+        $this->setAttrib('title','Onda de Ressuprimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-index-grid')
                 ->setAttrib('class', 'grid-expedicao')

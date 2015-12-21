@@ -89,9 +89,9 @@ class OcupacaoCDPeriodo extends Pdf
                 $totalVazios = 0;
 
                 $dataAnterior = $ocupacao['DTH_ESTOQUE'];
-                    $this->Ln();
-                    $this->Line(10,$this->GetY(), 200,$this->GetY());
-                    $this->Ln();
+                $this->Ln();
+                $this->Line(10,$this->GetY(), 200,$this->GetY());
+                $this->Ln();
             }
 
             $this->Cell(25, 5, $ocupacao['DTH_ESTOQUE'] ,0, 0, "C");
@@ -99,7 +99,7 @@ class OcupacaoCDPeriodo extends Pdf
             $this->Cell(40, 5, $ocupacao['QTD_EXISTENTES'] ,0, 0, "C");
             $this->Cell(40, 5, $ocupacao['QTD_OCUPADOS'] ,0, 0, "C");
             $this->Cell(40, 5, $ocupacao['QTD_VAZIOS'] ,0, 0, "C");
-            $this->Cell(25, 5, $ocupacao['OCUPACAO'] . " %" ,0, 1, "C");
+            $this->Cell(25, 5, number_format($ocupacao['OCUPACAO'], 2, '.', ',') . " %" ,0, 1, "C");
 
             $totalEnderecos = $totalEnderecos + $ocupacao['QTD_EXISTENTES'];
             $totalOcupados = $totalOcupados + $ocupacao['QTD_OCUPADOS'];
@@ -119,3 +119,4 @@ class OcupacaoCDPeriodo extends Pdf
         $this->Output('OcupacaoCDPeriodo.pdf','D');
     }
 }
+	

@@ -69,6 +69,12 @@ class PaleteProduto
     protected $produto;
 
     /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $validade;
+
+    /**
      * @param mixed $codNormaPaletizacao
      */
     public function setCodNormaPaletizacao($codNormaPaletizacao)
@@ -228,6 +234,21 @@ class PaleteProduto
         return $this->produto;
     }
 
+    /**
+     * @return date
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param date $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
+    }
 
     public function getEmbalagemEn(){
         /** @var \Doctrine\ORM\EntityManager $em */

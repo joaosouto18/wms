@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
+    Core\Util\Produto as ProdutoUtil,
     Core\Util\Produto;
 
 class EstoqueRepository extends EntityRepository
@@ -23,7 +24,7 @@ class EstoqueRepository extends EntityRepository
      $params['usuario'];      - entidade de usuario - wms:Usuario
      $params['estoqueRepo'];  - Estoque Repository - wms:Deposito\EnderecoRepository
      */
-    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false)
+    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
     {
         $em = $this->getEntityManager();
 
@@ -38,23 +39,33 @@ class EstoqueRepository extends EntityRepository
         $produtoEn = $params['produto'];
         $qtd = $params['qtd'];
 
+        if (isset($params['volume']) && !empty($params['volume']) ) {
+            $volumeEn = $params['volume'];
+        }
+
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
 
+
+        $qtdReserva = 0;
+
         if ($saidaProduto == true) {
-            $dql = "SELECT sum(ES.QTD), sum(REP.QTD_RESERVADA), sum(ES.QTD) + sum(REP.QTD_RESERVADA) as soma
-                    FROM RESERVA_ESTOQUE RE
-                    INNER JOIN DEPOSITO_ENDERECO DE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                    INNER JOIN ESTOQUE ES ON ES.COD_PRODUTO = REP.COD_PRODUTO
-                    WHERE REP.COD_PRODUTO = '$codProduto' AND ES.COD_DEPOSITO_ENDERECO = '$endereco'
-                    ORDER BY RE.COD_RESERVA_ESTOQUE DESC";
+            $dql = "SELECT SUM(REP.QTD_RESERVADA) QTD_RESERVADA
+                        FROM RESERVA_ESTOQUE RE
+                        INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                        WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'S'
+                        AND REP.COD_PRODUTO = '$codProduto' AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
+                        if (isset($volumeEn) && !empty($volumeEn)) {
+                            $idVolume = $volumeEn->getId();
+                            $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
+            $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
             $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
 
-            if ($params['qtd'] > $resultado[0]['SOMA']) {
-                throw new \Exception("A movimentação não pode ser maior que a quantidade em estoque");
+            if (count($resultado) > 0) {
+                $qtdReserva = $resultado[0]['QTD_RESERVADA'];
             }
         }
 
@@ -75,13 +86,13 @@ class EstoqueRepository extends EntityRepository
         }
 
         $volumeEn = null;
-        if (isset($params['volume']) and !is_null($params['volume'])){
+        if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
             $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume'=>$volumeEn));
         }
 
         $embalagemEn = null;
-        if (isset($params['embalagem']) and !is_null($params['embalagem'])) {
+        if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
             $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
         }
@@ -110,6 +121,20 @@ class EstoqueRepository extends EntityRepository
             $idUma = $params['uma'];
         }
 
+        $validade = null;
+        if (isset($estoqueEn) && is_object($estoqueEn)) {
+            $validade = $estoqueEn->getValidade();
+        }
+        if ($qtd > 0 ) {
+            if (isset($params['validade']) and !is_null($params['validade'])) {
+                $validade = new \Zend_Date($params['validade']);
+                $validade = $validade->toString('Y-MM-dd');
+                $validade = new \DateTime($validade);
+            } elseif (isset($dataValidade) and !is_null($dataValidade)) {
+                $validade = new \DateTime($dataValidade['dataValidade']);
+            }
+        }
+
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
         if ($estoqueEn == NULL) {
             $novaQtd = $qtd;
@@ -122,6 +147,8 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setUnitizador($unitizadorEn);
             $estoqueEn->setProdutoEmbalagem($embalagemEn);
             $estoqueEn->setProdutoVolume($volumeEn);
+            $estoqueEn->setValidade($validade);
+
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto  = $produtoEn->getDescricao();
         } else {
@@ -130,12 +157,16 @@ class EstoqueRepository extends EntityRepository
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto  = $estoqueEn->getProduto()->getDescricao();
             $estoqueEn->setQtd($novaQtd);
+            $estoqueEn->setValidade($validade);
+            if (isset($unitizadorEn)) {
+                $estoqueEn->setUnitizador($unitizadorEn);
+            }
         }
 
-        if ($novaQtd < 0) {
-            throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
-        } else if ($novaQtd > 0) {
+        if ($novaQtd > 0) {
             $em->persist($estoqueEn);
+        } else if ($novaQtd + $qtdReserva < 0) {
+            throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
         } else {
             $em->remove($estoqueEn);
         }
@@ -190,7 +221,7 @@ class EstoqueRepository extends EntityRepository
         $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
 
         $Sql = " SELECT ESTQ.COD_DEPOSITO_ENDERECO, DE.DSC_DEPOSITO_ENDERECO, ESTQ.QTD, NVL(RS.QTD_RESERVA,0) as QTD_RESERVA, ESTQ.QTD + NVL(RS.QTD_RESERVA,0) as SALDO, ESTQ.COD_PRODUTO_VOLUME, ESTQ.COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
-                        TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI') as DT_MOVIMENTACAO
+                        NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                 FROM RESERVA_ESTOQUE RE
@@ -230,7 +261,30 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
-    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true){
+
+    public function getEstoqueGroupByVolumns($params) {
+        $subQuery  = $this->getEstoqueAndVolumeByParams($params,null,true,null,true);
+        $SQL = "
+            SELECT ESTQ.ENDERECO,
+                   ESTQ.TIPO,
+                   ESTQ.COD_PRODUTO,
+                   ESTQ.DSC_GRADE,
+                   ESTQ.RESERVA_SAIDA,
+                   ESTQ.RESERVA_ENTRADA,
+                   LISTAGG(ESTQ.VOLUME,',') WITHIN GROUP (ORDER BY ESTQ.ENDERECO, ESTQ.TIPO, ESTQ. COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.RESERVA_SAIDA, ESTQ.RESERVA_ENTRADA,ESTQ.QTD,ESTQ.DTH_PRIMEIRA_MOVIMENTACAO) VOLUME,
+                   ESTQ.QTD,
+                   ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
+                   ESTQ.DSC_PRODUTO
+              FROM ($subQuery) ESTQ
+             GROUP BY ESTQ.ENDERECO, ESTQ.TIPO, ESTQ. COD_PRODUTO, ESTQ.DSC_GRADE, ESTQ.RESERVA_SAIDA, ESTQ.RESERVA_ENTRADA,ESTQ.QTD,ESTQ.DTH_PRIMEIRA_MOVIMENTACAO, ESTQ.DSC_PRODUTO
+             ORDER BY COD_PRODUTO, DSC_GRADE, VOLUME, ENDERECO, DTH_PRIMEIRA_MOVIMENTACAO
+        ";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null,$showPicking = true, $orderBy = null, $returnQuery = false){
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
@@ -245,7 +299,8 @@ class EstoqueRepository extends EntityRepository
                        TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
                        P.DSC_PRODUTO,
                        E.UMA,
-                       E.UNITIZADOR
+                       E.UNITIZADOR,
+                       E.DTH_VALIDADE
                   FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                                NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),E.COD_PRODUTO) as COD_PRODUTO,
                                NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),E.DSC_GRADE) as DSC_GRADE,
@@ -259,8 +314,9 @@ class EstoqueRepository extends EntityRepository
                                NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
                                E.DTH_PRIMEIRA_MOVIMENTACAO,
                                E.UMA,
-                               UN.DSC_UNITIZADOR AS UNITIZADOR
-                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR,
+                               UN.DSC_UNITIZADOR AS UNITIZADOR,
+                               E.DTH_VALIDADE
+                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR, DTH_VALIDADE,
                                        E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE E) E
                           LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = E.COD_UNITIZADOR
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
@@ -292,7 +348,8 @@ class EstoqueRepository extends EntityRepository
 
         $SQLWhere = " WHERE 1 = 1 ";
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
-            $SQLWhere .= " AND E.COD_PRODUTO = ".$parametros['idProduto'];
+            $parametros['idProduto'] = ProdutoUtil::formatar($parametros['idProduto']);
+            $SQLWhere .= " AND E.COD_PRODUTO = '".$parametros['idProduto'] . "' ";
             if (isset($parametros['grade']) && !empty($parametros['grade'])) {
                 $SQLWhere .= " AND E.DSC_GRADE = '".$parametros['grade']."'";
             } else {
@@ -320,8 +377,17 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND E.COD_VOLUME = " . $parametros['volume'];
         }
 
-        $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO";
+        $SQLOrderBy = "";
+        if ($orderBy != null) {
+            $SQLOrderBy = $orderBy;
+        } else {
+            $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE";
+        }
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($returnQuery == true) {
+            return $SQL . $SQLWhere . $SQLOrderBy;
+        }
 
         if (isset($maxResult) && !empty($maxResult)) {
             if ($maxResult != false) {
@@ -598,24 +664,46 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueConsolidado($params)
     {
-        $query = $this->getEntityManager()->createQueryBuilder()
-            ->select('estq.codProduto, estq.grade,  ls.descricao, sum(estq.qtd) qtdestoque, p.descricao nomeProduto, NVL(pv.id,pe.id) as idVolume')
-            ->from("wms:Enderecamento\Estoque",'estq')
-            ->innerJoin("estq.produto", "p")
-            ->innerJoin("p.linhaSeparacao", "ls")
-            ->innerJoin("estq.depositoEndereco", "e")
-            ->leftJoin("estq.produtoVolume",'pv')
-            ->leftJoin("estq.produtoEmbalagem",'pe')
-            ->groupBy('estq.codProduto, estq.grade, ls.descricao, p.descricao, pv.id, pe.id')
-            ->orderBy('ls.descricao,estq.codProduto,estq.grade');
+        $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha Separacao",
+                       E.COD_PRODUTO as "Codigo",
+                       E.DSC_GRADE as "Grade",
+                       SubSTR(P.DSC_PRODUTO,0,60) as "Descricao",
+                       MIN(E.QTD) as "Qtd"
+                  FROM (SELECT PROD.COD_PRODUTO,
+                               PROD.DSC_GRADE,
+                               NVL(QTD.QTD,0) as QTD
+                          FROM (SELECT DISTINCT E.COD_PRODUTO, E.DSC_GRADE, NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
+                                  FROM ESTOQUE E
+                                  LEFT JOIN PRODUTO_VOLUME PV ON E.COD_PRODUTO = PV.COD_PRODUTO AND E.DSC_GRADE = PV.DSC_GRADE) PROD
+                          LEFT JOIN (SELECT SUM(E.QTD) as QTD, E.COD_PRODUTO, E.DSC_GRADE,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as VOLUME
+                                       FROM ESTOQUE E
+                                      GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) QTD
+                            ON QTD.COD_PRODUTO = PROD.COD_PRODUTO
+                           AND QTD.DSC_GRADE = PROD.DSC_GRADE
+                           AND QTD.VOLUME = PROD.VOLUME) E
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE
+                  LEFT JOIN LINHA_SEPARACAO LS ON LS.COD_LINHA_SEPARACAO = P.COD_LINHA_SEPARACAO
+        ';
+        $SQLGroup = " GROUP BY E.COD_PRODUTO,
+                            E.DSC_GRADE,
+                            P.DSC_PRODUTO,
+                            LS.DSC_LINHA_SEPARACAO";
 
-        $grandeza = $params['grandeza'];
-        if (!empty($grandeza)) {
-            $grandeza = implode(',',$grandeza);
-            $query->andWhere("p.linhaSeparacao in ($grandeza)");
+        $SQLOrder = " ORDER BY LS.DSC_LINHA_SEPARACAO, P.DSC_PRODUTO";
+
+        $SQLWhere = "";
+        if (isset($params['grandeza'])) {
+            $grandeza = $params['grandeza'];
+            if (!empty($grandeza)) {
+                $grandeza = implode(',',$grandeza);
+                $SQLWhere = " WHERE P.COD_LINHA_SEPARACAO IN ($grandeza) ";
+            }
         }
 
-        return $query->getQuery()->getResult();
+        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLGroup . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
     }
 
 

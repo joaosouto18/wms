@@ -48,7 +48,7 @@ class PosicaoEstoqueResumidoRepository extends EntityRepository
         return true;
     }
 
-    public function gravarResumoEstoque(){
+    public function     gravarResumoEstoque(){
         $em = $this->getEntityManager();
         $dtEstoque = new \DateTime();
 
@@ -60,28 +60,21 @@ class PosicaoEstoqueResumidoRepository extends EntityRepository
         $EnderecoRepo = $em->getRepository('wms:Deposito\Endereco');
         $estoqueAtualResumido = $EnderecoRepo->getOcupacaoRuaReport($params);
 
-        $totalOcupados = 0;
-        $totalVazios = 0;
-        $totalExistentes = 0;
-
         foreach ($estoqueAtualResumido as $rua) {
-            $percentual = $rua['PERCENTUAL_OCUPADOS'];
-            $numRua = $rua['RUA'];
-            $qtdExistentes = $rua['PALETES_EXISTENTES'];
-            $qtdOcupados = $rua['PALETES_OCUPADOS'];
-            $qtdVazios = $qtdExistentes - $qtdOcupados;
 
-            $totalOcupados = $totalOcupados + $qtdOcupados;
-            $totalVazios = $totalVazios + $qtdVazios;
-            $totalExistentes = $totalExistentes + $qtdExistentes;
+            $numRua = $rua['NUM_RUA'];
+            $posExistentes = $rua['POS_EXISTENTES'];
+            $posOcupadas = ($rua['POS_EXISTENTES'] - $rua['POS_DISPONIVEIS']);
+            $posDisponives = $rua['POS_DISPONIVEIS'];
+            $percentualOcupacao = ($posOcupadas/$posExistentes) * 100;
 
             $posicao_estoque = new PosicaoEstoqueResumido();
-            $posicao_estoque->setPercentualOcupacao($percentual);
-            $posicao_estoque->setQtdExistentes($qtdExistentes);
-            $posicao_estoque->setQtdVazios($qtdVazios);
-            $posicao_estoque->setQtdOcupados($qtdOcupados);
-            $posicao_estoque->setRua($numRua);
-            $posicao_estoque->setDtEstoque($dtEstoque);
+                $posicao_estoque->setPercentualOcupacao($percentualOcupacao);
+                $posicao_estoque->setQtdExistentes($posExistentes);
+                $posicao_estoque->setQtdVazios($posDisponives);
+                $posicao_estoque->setQtdOcupados($posOcupadas);
+                $posicao_estoque->setRua($numRua);
+                $posicao_estoque->setDtEstoque($dtEstoque);
             $this->getEntityManager()->persist($posicao_estoque);
         }
 

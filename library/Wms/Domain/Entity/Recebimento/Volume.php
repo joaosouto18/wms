@@ -6,7 +6,7 @@ namespace Wms\Domain\Entity\Recebimento;
  * Recebimento Embalagem
  *
  * @Table(name="RECEBIMENTO_VOLUME")
- * @Entity(repositoryClass="Wms\Domain\Entity\Recebimento\EmbalagemRepository")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Recebimento\VolumeRepository")
  */
 class Volume
 {
@@ -65,6 +65,12 @@ class Volume
      * @var Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      */
     protected $normaPaletizacao;
+
+    /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $dataValidade;
 
     public function getId()
     {
@@ -140,6 +146,22 @@ class Volume
     public function getNormaPaletizacao()
     {
         return $this->normaPaletizacao;
+    }
+
+    /**
+     * @return date
+     */
+    public function getDataValidade()
+    {
+        return $this->dataValidade;
+    }
+
+    /**
+     * @param date $dataValidade
+     */
+    public function setDataValidade($dataValidade)
+    {
+        $this->dataValidade = $dataValidade;
     }
 
 }

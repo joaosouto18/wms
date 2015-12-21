@@ -133,6 +133,13 @@ class OrdemServico
      * @var string
      */
     protected $bloqueio;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\RecebimentoReentrega")
+     * @JoinColumn(name="COD_RECEBIMENTO_REENTREGA", referencedColumnName="COD_RECEBIMENTO_REENTREGA")
+     */
+    protected $recebimentoReentrega;
+
     
     public function __construct()
     {
@@ -304,6 +311,22 @@ class OrdemServico
     public function getIdEnderecamento()
     {
         return $this->idEnderecamento;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRecebimentoReentrega()
+    {
+        return $this->recebimentoReentrega;
+    }
+
+    /**
+     * @param mixed $recebimentoReentrega
+     */
+    public function setRecebimentoReentrega($recebimentoReentrega)
+    {
+        $this->recebimentoReentrega = $recebimentoReentrega;
     }
 
 }

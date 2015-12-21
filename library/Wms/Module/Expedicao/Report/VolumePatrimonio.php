@@ -29,14 +29,13 @@ class VolumePatrimonio extends Pdf
         $this->SetFont('Arial','B',11);
         $this->Cell(18,5,utf8_decode('Volume'),0,0);
         $this->Cell(30,5,utf8_decode('Descrição'),0,0);
-        $this->Cell(60,5,utf8_decode('Itinerário'),0,0);
+        $this->Cell(62,5,utf8_decode('Itinerário'),0,0);
         $this->Cell(80,5,utf8_decode('Cliente'),0,1);
-
         $this->SetFont('Arial',null,11);
         foreach ($volums as $volume) {
             $this->Cell(18,5,utf8_decode($volume['VOLUME']),0,0);
             $this->Cell(30,5,utf8_decode($volume['DESCRICAO']),0,0);
-            $this->Cell(60,5,utf8_decode($volume['ITINERARIO']),0,0);
+            $this->Cell(62,5,substr( utf8_decode($volume['ITINERARIO']),0,26),0,0);
             $this->Cell(80,5,utf8_decode($volume['CLIENTE']),0,1);
 
         }

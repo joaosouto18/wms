@@ -1,0 +1,19 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
+   <object objectType="TSpace" objectID="5BF59FEF-D366-6267-F25B-6B95D7381FA3" name="TS_WSM_ADM_D" seqName="seg_0"/>
+   <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
+   <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
+   <object objectType="User" objectID="60E1D35D-5D44-8F4F-B289-CEF44307056B" name="WMS_ADM" seqName="seg_0"/>
+   <object objectType="SType" objectID="47E390DE-0671-C4B1-8428-0F45CBEE18F8" name="SDO_GEOMETRY" seqName="seg_0"/>
+   <object objectType="SType" objectID="F72C39E0-D1CA-8821-2AD7-A1E95A37D3D1" name="XMLTYPE" seqName="seg_0"/>
+   <object objectType="Table" objectID="10272AEB-1A0F-C7C8-9A07-2E540CDDE12D" name="UNITIZADOR" seqName="seg_0"/>
+   <object objectType="Table" objectID="594033C6-56D3-4444-9C0C-9597C8DE732E" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="666833CC-8E0A-99BB-78AB-B25C71B57DDE" name="HISTORICO_ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="AF6D7769-755C-730E-0A21-A6509017779A" name="ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="D614EAF3-3F7A-1828-D9F5-1D5FE7B8FF58" name="PALETE" seqName="seg_0"/>
+   <object objectType="Table" objectID="DD1C158B-71D3-D451-EE73-27AE4718EDF7" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Segment" objectID="3374B01E-72FC-037B-1A29-C861A3A38F66" name="Storage14" seqName="seg_0"/>
+   <object objectType="Segment" objectID="69A79494-CBA8-04E2-A050-21C29C2E1BAA" name="Storage16" seqName="seg_0"/>
+   <object objectType="Segment" objectID="B5B43EB8-9183-40DE-2E91-09EF87EF6622" name="Storage2" seqName="seg_0"/>
+   <object objectType="Segment" objectID="0459BAD8-F353-5538-3BB2-0F0AC7B82005" name="Storage4" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>

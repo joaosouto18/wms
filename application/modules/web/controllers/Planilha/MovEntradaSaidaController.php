@@ -13,7 +13,7 @@ class Web_Planilha_MovEntradaSaidaController extends Action
 {
 
     /**
-     * 
+     *
      */
     public function indexAction()
     {
@@ -26,8 +26,8 @@ class Web_Planilha_MovEntradaSaidaController extends Action
 
         // header
         $pdf->setTitle(utf8_decode('Controle de Movimentação de Entrada e Saída'))
-                ->setLabelHeight(5)
-                ->setColHeight(9);
+            ->setLabelHeight(5)
+            ->setColHeight(9);
 
 
         $pdf->addLabel(1, 35, 'Codigo', 'B', 0, 'C');
@@ -55,8 +55,8 @@ class Web_Planilha_MovEntradaSaidaController extends Action
 
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output();
+            ->render()
+            ->Output();
     }
 
 }

@@ -21,6 +21,8 @@ class Expedicao_IndexController  extends Action
         $s->setExpirationSeconds(900, 'url');
         $s->url=$params;
 
+        ini_set('max_execution_time', 3000);
+
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
@@ -72,6 +74,8 @@ class Expedicao_IndexController  extends Action
             ->render();
 
         $this->view->refresh = true;
+        ini_set('max_execution_time', 30);
+
     }
 
     public function agruparcargasAction()
@@ -89,6 +93,11 @@ class Expedicao_IndexController  extends Action
                 if ($this->getRequest()->isPost() ) {
 
                     $idAntiga = $this->getRequest()->getParam('idExpedicao');
+
+                    $reservaEstoqueExpedicao = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao")->findBy(array('expedicao'=>$idAntiga));
+                    if (count($reservaEstoqueExpedicao) >0) {
+                        throw new \Exception('Não é possivel agrupar essa expedição pois ela já possui reservas de Estoque');
+                    }
 
                     /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
                     $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
@@ -138,7 +147,6 @@ class Expedicao_IndexController  extends Action
 
     public function desagruparcargaAction ()
     {
-        //var_dump($this->_getAllParams()); exit;
         $params = $this->_getAllParams();
 
         if (isset($params['placa']) && !empty($params['placa'])) {
@@ -158,11 +166,27 @@ class Expedicao_IndexController  extends Action
                 /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
                 $cargaEn = $CargaRepo->findOneBy(array('id'=>$idCarga));
 
+                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+                $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+                $pedidos = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaPedidoRepo */
+                $ondaPedidoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
+                foreach ($pedidos as $pedidoEn) {
+                    $ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
+
+                    if ($pedidoEn->getIndEtiquetaMapaGerado() == 'S') {
+                        throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados!');
+                    } else if (count($ondaPedidoEn) > 0) {
+                        throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
+                    }
+                }
+
                 $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao() ,null,null,$idCarga);
                 $countTotal = $EtiquetaRepo->countByStatus(null, $cargaEn->getExpedicao(),null,null,$idCarga);
 
                 if ($countTotal != $countCortadas) {
-                   throw new \Exception('A Carga '. $cargaEn->getCodCargaExterno(). ' possui etiquetas que não foram cortadas e não pode ser removida da expedição');
+                    throw new \Exception('A Carga '. $cargaEn->getCodCargaExterno(). ' possui etiquetas que não foram cortadas e não pode ser removida da expedição');
                 }
 
                 $cargas=$ExpedicaoRepo->getCargas($cargaEn->getCodExpedicao());
@@ -171,11 +195,15 @@ class Expedicao_IndexController  extends Action
                 }
                 $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
                 $expedicaoAntiga = $cargaEn->getCodExpedicao();
-                $expedicaoEn = $ExpedicaoRepo->save($cargaEn->getCodCargaExterno());
+                $expedicaoEn = $ExpedicaoRepo->save($placa);
                 $cargaEn->setExpedicao($expedicaoEn);
                 $cargaEn->setSequencia(1);
                 $cargaEn->setPlacaCarga($placa);
                 $this->_em->persist($cargaEn);
+
+                foreach ($pedidos as $pedido) {
+                    $pedidoRepo->removeReservaEstoque($pedido->getId());
+                }
 
                 if ($countCortadas > 0) {
                     $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
@@ -189,9 +217,10 @@ class Expedicao_IndexController  extends Action
                 $this->_helper->messenger('error', $e->getMessage());
             }
             $this->redirect("index",'index','expedicao');
+        } elseif (isset($params['salvar']) && empty($params['placa'])) {
+            $this->_helper->messenger('error', 'É necessário digitar uma placa');
+            $this->redirect("index",'index','expedicao');
         }
-
-
     }
 
     public function semEstoqueReportAction(){
@@ -208,7 +237,19 @@ class Expedicao_IndexController  extends Action
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
         $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
-        $this->exportPDF($result,'volume-patrimonio.pdf','Relatório de Volumes Patrimônio da Expedição','L');
+
+        foreach ($result as $key => $resultado) {
+            if ($key + 1 == count($result)) {
+                $result[$key + 1]['VOLUME'] = null;
+                $result[$key + 1]['DESCRIÇÃO'] = null;
+                $result[$key + 1]['ITINERÁRIO'] = null;
+                $result[$key + 1]['CLIENTE'] = 'TOTAL DE CAIXAS FECHADAS';
+                $result[$key + 1]['QTD_CAIXA'] = $result[$key]['QTD_CAIXA'];
+            }
+            $result[$key]['QTD_CAIXA'] = null;
+        }
+
+        $this->exportPDF($result,'volume-patrimonio','Relatório de Volumes Patrimônio da Expedição '.$idExpedicao,'L');
     }
 
     public function declaracaoAjaxAction(){
@@ -220,6 +261,51 @@ class Expedicao_IndexController  extends Action
 
         $declaracaoReport = new \Wms\Module\Expedicao\Report\VolumePatrimonio();
         $declaracaoReport->imprimir($result);
+    }
+
+    public function equipeCarregamentoAction()
+    {
+        $form = new \Wms\Module\Expedicao\Form\EquipeCarregamento();
+        $this->view->form = $form;
+
+        $params = $this->_getAllParams();
+        $grid = new \Wms\Module\Expedicao\Grid\EquipeCarregamento();
+        $this->view->grid = $grid->init($params)
+            ->render();
+    }
+
+    public function acertarReservaEstoqueAjaxAction()
+    {
+        set_time_limit(0);
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+        $reservaEstoqueExpedicaoRepo = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao');
+        $reservaEstoqueExpedicao = $reservaEstoqueExpedicaoRepo->findBy(array('pedido' => null));
+
+        foreach ($reservaEstoqueExpedicao as $reservaEstoqueExpedicaoEn) {
+            $idExpedicao = $reservaEstoqueExpedicaoEn->getExpedicao()->getId();
+            $idReservaEstoque = $reservaEstoqueExpedicaoEn->getReservaEstoque()->getId();
+            $sql = "SELECT P.COD_PEDIDO FROM PEDIDO P
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    INNER JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
+                    INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE AND REP.COD_PRODUTO = PP.COD_PRODUTO AND REP.DSC_GRADE = PP.DSC_GRADE
+                    WHERE E.COD_EXPEDICAO = $idExpedicao
+                    AND RE.COD_RESERVA_ESTOQUE = $idReservaEstoque";
+
+            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            $codPedido = $result[0]['COD_PEDIDO'];
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
+
+            $reservaEstoqueExpedicaoEn->setPedido($pedidoEn);
+            $this->_em->persist($reservaEstoqueExpedicaoEn);
+            $this->_em->flush();
+        }
+        var_dump('sucesso!');exit;
     }
 
 

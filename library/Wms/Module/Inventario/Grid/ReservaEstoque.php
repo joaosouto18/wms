@@ -9,6 +9,7 @@ class ReservaEstoque extends Grid
 
     public function init($reservas)
     {
+        $this->setAttrib('title','Reserva de Estoque');
         $this->setSource(new \Core\Grid\Source\ArraySource($reservas));
         $this->setShowExport(false);
         $this
@@ -17,8 +18,24 @@ class ReservaEstoque extends Grid
                 'index' => 'id',
             ))
             ->addColumn(array(
-                'label' => 'Endereço com reserva de estoque',
+                'label' => 'Produto',
+                'index' => 'produto',
+            ))
+            ->addColumn(array(
+                'label' => 'Grade',
+                'index' => 'grade',
+            ))
+            ->addColumn(array(
+                'label' => 'Endereço',
                 'index' => 'descricao',
+            ))
+            ->addColumn(array(
+                'label' => 'Operação',
+                'index' => 'origemReserva',
+            ))
+            ->addColumn(array(
+                'label' => 'Pedido',
+                'index' => 'pedido',
             ))
             ->addColumn(array(
                 'label' => 'Tipo reserva',

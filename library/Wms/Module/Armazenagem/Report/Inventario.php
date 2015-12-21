@@ -71,7 +71,7 @@ class Inventario extends Pdf
             }
 
         }
-        
+
         foreach ($saldo as $estoque) {
             $endereco = $estoque['dscEndereco'];
             $codProduto = $estoque['codProduto'];

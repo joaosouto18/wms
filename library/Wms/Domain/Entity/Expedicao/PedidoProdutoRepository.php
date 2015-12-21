@@ -11,19 +11,17 @@ class PedidoProdutoRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $em->beginTransaction();
+        //$em->beginTransaction();
         try {
             $enPedidoProduto = new PedidoProduto;
-
             \Zend\Stdlib\Configurator::configure($enPedidoProduto, $pedido);
-
             $em->persist($enPedidoProduto);
-            $em->flush();
-            $em->commit();
+            //$em->flush();
+            //$em->commit();
 
         } catch(\Exception $e) {
-            $em->rollback();
-            throw new \Exception($e->getMessage());
+            //$em->rollback();
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 
         return $enPedidoProduto;

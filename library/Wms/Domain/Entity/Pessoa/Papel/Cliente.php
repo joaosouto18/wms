@@ -31,6 +31,12 @@ class Cliente implements Ator {
      */
     protected $codClienteExterno;
 
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\MapaSeparacao\Praca")
+     * @JoinColumn(name="COD_PRACA", referencedColumnName="COD_PRACA")
+     */
+    protected $praca;
+
     public function setCodClienteExterno($codClienteExterno)
     {
         $this->codClienteExterno = $codClienteExterno;
@@ -67,5 +73,14 @@ class Cliente implements Ator {
         return $this->pessoa;
     }
 
+    public function getPraca()
+    {
+        return $this->praca;
+    }
+
+    public function setPraca($praca)
+    {
+        $this->praca = $praca;
+    }
 
 }

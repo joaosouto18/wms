@@ -23,8 +23,8 @@ class ProdutoRecebido extends Report
 
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
         $pdf->setTitle(utf8_decode('Relatório de Produtos Recebidos'))
-                ->setLabelHeight(6)
-                ->setColHeight(7);
+            ->setLabelHeight(6)
+            ->setColHeight(7);
 
         // header
         $pdf->addLabel(0, 25, 'Cod. Receb.', 0, 0, 'L');
@@ -43,14 +43,14 @@ class ProdutoRecebido extends Report
         foreach ($produtos as $produto) {
 
             $dataRecebimento = \DateTime::createFromFormat('Y-m-d H:i:s', $produto['DTH_FINAL_RECEB']);
-            
+
             $pdf->addCol(0, 25, $produto['COD_RECEBIMENTO'], 0, 0, 'L');
             $pdf->addCol(0, 30, $dataRecebimento->format('d/m/Y'), 0, 0, 'L');
             $pdf->addCol(0, 25, $produto['NUM_NOTA_FISCAL'], 0, 0, 'L');
             $pdf->addCol(0, 15, $produto['COD_SERIE_NOTA_FISCAL'], 0, 0, 'L');
             $pdf->addCol(0, 30, $produto['COD_PRODUTO'], 0, 0, 'L');
             $pdf->addCol(0, 20, $produto['DSC_GRADE'], 0, 0, 'L');
-            $pdf->addCol(0, 70, substr($produto['DSC_PRODUTO'],0,40), 0, 0, 'L');
+            $pdf->addCol(0, 70, substr($produto['DSC_PRODUTO'],0,37), 0, 0, 'L');
             $pdf->addCol(0, 10, '', 0, 0, 'L');
             $pdf->addCol(0, 12, $produto['QTD_ITEM'], 0, 0, 'C');
             $pdf->addCol(0, 22, $produto['QTD_CONFERIDA'], 0, 0, 'C');
@@ -59,8 +59,8 @@ class ProdutoRecebido extends Report
 
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output('relatorio.pdf', 'D');
+            ->render()
+            ->Output('relatorio.pdf', 'D');
     }
 
 }

@@ -16,11 +16,19 @@ class EtiquetaSeparacao
     const STATUS_CONFERIDO = 526;
     const STATUS_RECEBIDO_TRANSBORDO = 532;
     const STATUS_EXPEDIDO_TRANSBORDO = 531;
+    const STATUS_PRIMEIRA_CONFERENCIA = 551;
+    const STATUS_SEGUNDA_CONFERENCIA = 552;
+    const STATUS_PENDENTE_REENTREGA = 558;
+
+    const PREFIXO_ETIQUETA_SEPARACAO = 10;
+    const PREFIXO_ETIQUETA_MAE = 11;
+    const PREFIXO_MAPA_SEPARACAO = 12;
+    const PREFIXO_ETIQUETA_VOLUME = 13;
 
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @Column(name="COD_ETIQUETA_SEPARACAO", type="integer", nullable=false)
+     * @Column(name="COD_ETIQUETA_SEPARACAO", type="bigint", nullable=false)
      * @SequenceGenerator(sequenceName="SQ_ETQ_SEPARACAO_01", initialValue=1, allocationSize=1)
      */
     protected $id;
@@ -59,7 +67,7 @@ class EtiquetaSeparacao
     protected $codStatus;
 
     /**
-     * @Column(name="COD_REFERENCIA", type="integer", nullable=false)
+     * @Column(name="COD_REFERENCIA", type="bigint", nullable=false)
      */
     protected $codReferencia;
 
@@ -114,6 +122,49 @@ class EtiquetaSeparacao
      * @JoinColumn(name="COD_VOLUME_PATRIMONIO", referencedColumnName="COD_VOLUME_PATRIMONIO")
      */
     protected $volumePatrimonio;
+
+    /**
+     * @Column(name="QTD_PRODUTO", type="integer", nullable=true)
+     */
+    protected $qtdProduto;
+
+    /**
+     * @Column(name="COD_ETIQUETA_MAE", type="integer", nullable=true)
+     */
+    protected $codEtiquetaMae;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\EtiquetaMae")
+     * @JoinColumn(name="COD_ETIQUETA_MAE", referencedColumnName="COD_ETIQUETA_MAE")
+     */
+    protected $etiquetaMae;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
+     * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
+     */
+    protected $codDepositoEndereco;
+
+    /**
+     * @Column(name="COD_DEPOSITO_ENDERECO", type="integer", nullable=false)
+     */
+    protected $depositoEndereco;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Reentrega")
+     * @JoinColumn(name="COD_REENTREGA", referencedColumnName="COD_REENTREGA")
+     */
+    protected $reentrega;
+
+    /**
+     * @Column(name="COD_REENTREGA", type="integer", nullable=false)
+     */
+    protected $codReentrega;
+
+    /**
+     * @Column(name="DTH_GERACAO", type="date", nullable=true)
+     */
+    protected $dataGeracao;
 
     public function setDataConferencia($dataConferencia)
     {
@@ -278,6 +329,134 @@ class EtiquetaSeparacao
     public function getDataConferenciaTransbordo()
     {
         return $this->dataConferenciaTransbordo;
+    }
+
+    /**
+ * @param mixed $qtdProduto
+ */
+    public function setQtdProduto($qtdProduto)
+    {
+        $this->qtdProduto = $qtdProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdProduto()
+    {
+        return $this->qtdProduto;
+    }
+
+    /**
+     * @param mixed $codEtiquetaMae
+     */
+    public function setCodEtiquetaMae($codEtiquetaMae)
+    {
+        $this->codEtiquetaMae = $codEtiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodEtiquetaMae()
+    {
+        return $this->codEtiquetaMae;
+    }
+
+    /**
+     * @param mixed $etiquetaMae
+     */
+    public function setEtiquetaMae($etiquetaMae)
+    {
+        $this->etiquetaMae = $etiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEtiquetaMae()
+    {
+        return $this->etiquetaMae;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodDepositoEndereco()
+    {
+        return $this->codDepositoEndereco;
+    }
+
+    /**
+     * @param mixed $codDepositoEndereco
+     */
+    public function setCodDepositoEndereco($codDepositoEndereco)
+    {
+        $this->codDepositoEndereco = $codDepositoEndereco;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDepositoEndereco()
+    {
+        return $this->depositoEndereco;
+    }
+
+    /**
+     * @param mixed $depositoEndereco
+     */
+    public function setDepositoEndereco($depositoEndereco)
+    {
+        $this->depositoEndereco = $depositoEndereco;
+    }
+
+    /**
+     * @param mixed $codReentrega
+     */
+    public function setCodReentrega($codReentrega)
+    {
+        $this->codReentrega = $codReentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodReentrega()
+    {
+        return $this->codReentrega;
+    }
+
+    /**
+     * @param mixed $reentrega
+     */
+    public function setReentrega($reentrega)
+    {
+        $this->reentrega = $reentrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReentrega()
+    {
+        return $this->reentrega;
+    }
+
+    /**
+     * @return date
+     */
+    public function getDataGeracao()
+    {
+        return $this->dataGeracao;
+    }
+
+    /**
+     * @param date $dataGeracao
+     */
+    public function setDataGeracao($dataGeracao)
+    {
+        $this->dataGeracao = $dataGeracao;
     }
 
 }

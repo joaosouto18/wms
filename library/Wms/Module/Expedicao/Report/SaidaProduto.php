@@ -11,7 +11,7 @@ class SaidaProduto extends Report
             return false;
         }
         $em = $this->getEm();
-        $produtos = $em->getRepository('wms:Expedicao')->getRelatorioSaidaProdutos($params['idProduto'], $params['grade']);
+        $produtos = $em->getRepository('wms:Expedicao')->getRelatorioSaidaProdutos($params['idProduto'], $params['grade'],$params['dataInicial'],$params['dataFinal']);
         if ($produtos == null) {
             return false;
         }
@@ -55,7 +55,7 @@ class SaidaProduto extends Report
             }
 
             $pdf->addCol(0, 35, $dataBipe, 0, 0, 'L');
-            $pdf->addCol(0, 90, $produto['itinerario'].'('.$produto['idItinerario'].')', 0, 0, 'L');
+            $pdf->addCol(0, 90, utf8_decode($produto['itinerario'].'('.$produto['idItinerario'].')'), 0, 0, 'L');
             $pdf->addCol(0, 20, $produto['codCargaExterno'], 0, 0, 'L');
             $pdf->addCol(0, 10, $produto['idExpedicao'], 0, 0, 'L');
             $pdf->addCol(0, 57, $dataInicio.'-'.$dataFim, 0, 0, 'C');

@@ -11,7 +11,7 @@ class Mobile_IndexController  extends Action
                 'label' => 'CONF. RECEBIMENTO',
             ),
             2 => array(
-                'url' => '/mobile/expedicao',
+                'url' => '/mobile/ordem-servico/seleciona-filial',
                 'label' => 'EXPEDIÇÃO',
             ),
             3 => array(
@@ -25,6 +25,14 @@ class Mobile_IndexController  extends Action
             5 => array(
                 'url' => '/mobile/consulta-produto',
                 'label' => 'CONSULTA PRODUTO',
+            ),
+            6 => array(
+                'url' => '/mobile/reentrega/recebimento',
+                'label' => 'REENTREGA',
+            ),
+            7 => array(
+                'url' => '/mobile/recebimento-transbordo/produtividade',
+                'label' => 'PRODUTIVIDADE',
             )
 
         );

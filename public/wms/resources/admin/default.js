@@ -250,6 +250,31 @@ $(document).ready(function(){
         location.href='/enderecamento/relatorio_estoque/consultar-produto';
     });
 
+    //auto completar a grade da tela de inventario no papel
+    $('.grade-inventario').autocomplete({
+        source: "/enderecamento/movimentacao/filtrar/idproduto/",
+        minLength: 0
+    });
+
+    $('.grade-inventario').keyup(function (e) {
+        console.log($(this).parent().parent().children().find('input.idProduto-inventario').val());
+        var produtoVal  = $(this).parent().parent().children().find('input.idProduto-inventario').val();
+        if (produtoVal == '') {
+            return false;
+        }
+
+        if (typeof  produtoVal == 'undefined') {
+            var produtoVal  = $("   #id").val();
+        }
+        $('.grade-inventario').autocomplete({
+            source:"/enderecamento/movimentacao/filtrar/idproduto/"+produtoVal
+        });
+    });
+
+
+
+
+
     grade.autocomplete({
         source: "/enderecamento/movimentacao/filtrar/idproduto/",
         minLength: 0
@@ -273,6 +298,11 @@ $(document).ready(function(){
     });
 
     function getVolumes(idProduto,grade){
+        $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
+            if (data == 'S') {
+                $('#validade').parent().show();
+            }
+        });
         $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
             if (dataReturn.length > 0) {
                 var options = '<option selected value="">Selecione um agrupador de volumes...</option>';

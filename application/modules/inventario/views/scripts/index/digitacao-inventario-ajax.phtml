@@ -1,0 +1,38 @@
+<?php echo $this->form; ?>
+<form id="digitacao-inventario-form" method="post" class="saveForm">
+    <div id="digitacao-inventario-grid" class="grid">
+        <table class="gTable grid-digitacao-inventario">
+            <tbody>
+            <tr class="gTTitle">
+                <td><span><?php echo utf8_encode('Endereço'); ?></span></td>
+                <td><span>Produto</span></td>
+                <?php if ($this->utilizaGrade == 'S') : ?>
+                    <td><span>Grade</span></td>
+                <?php endif; ?>
+                <td><span>Quantidade</span></td>
+            </tr>
+            <?php foreach ($this->enderecosInventario as $key => $endereco) : ?>
+                <input type="hidden" name="endereco[]" value="<?php echo $endereco['ENDERECO'] ?>">
+                <?php if (($key % 2) == 1) : ?>
+                    <tr class="gTResultSet gRowColor">
+                <?php else : ?>
+                    <tr class="gTResultSet">
+                <?php endif; ?>
+                    <td style="text-align: left"><?php echo $endereco['ENDERECO']; ?></td>
+                    <td style="text-align: left"><input type="text" name="idProduto[]" value="<?php echo $endereco['PRODUTO'] ?>" class="idProduto-inventario" size="10" class="focus"></td>
+                <?php if ($this->utilizaGrade == 'S') : ?>
+                    <td style="text-align: left"><input type="text" name="grades[]" value="<?php echo $endereco['GRADE'] ?>" size="12" class="grade-inventario"></td>
+                <?php else : ?>
+                    <input type="hidden" name="grades[]" value="UNICA" size="12" class="grade">
+                <?php endif; ?>
+
+                    <td style="text-align: left"><input type="text" name="quantidade[]" value="<?php echo $endereco['QUANTIDADE'] ?>" size="12"></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+
+        </table>
+    </div>
+
+    <input type="submit" value="Salvar" name="submit" id="submit" class="btn finalizar">
+</form>

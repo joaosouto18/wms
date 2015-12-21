@@ -41,7 +41,6 @@ class ContagemEnderecoRepository extends EntityRepository
 
             $contagemEndEn->setCodProdutoEmbalagem($params['codProdutoEmbalagem']);
 
-            $contagemEndEn->setQtdContada($params['qtd']);
             $contagemEndEn->setNumContagem($params['numContagem']);
             $contagemEndEn->setQtdContada($params['qtd']);
             $contagemEndEn->setQtdAvaria($params['qtdAvaria']);
@@ -64,6 +63,26 @@ class ContagemEnderecoRepository extends EntityRepository
         }
 
         return $contagemEndEn;
+    }
+
+    public function edit($params)
+    {
+        $em = $this->getEntityManager();
+        $inventarioContagemEnderecoEn = $em->getReference('wms:Inventario\ContagemEndereco', $params['contagemEnderecoId']);
+        $inventarioContagemEnderecoEn->setQtdContada($params['qtd']);
+        $inventarioContagemEnderecoEn->setNumContagem($inventarioContagemEnderecoEn->getNumContagem() + 1);
+        $inventarioContagemEnderecoEn->setCodProduto($params['codProduto']);
+        $inventarioContagemEnderecoEn->setCodProdutoEmbalagem();
+        $inventarioContagemEnderecoEn->setCodProdutoVolume();
+        $inventarioContagemEnderecoEn->setGrade($params['grade']);
+
+        $em->persist($inventarioContagemEnderecoEn);
+        $em->flush();
+
+
+
+
+
     }
 
     public function getContagens($params)
@@ -99,6 +118,21 @@ class ContagemEnderecoRepository extends EntityRepository
             ->orderBy('p.id, p.grade, ice.numContagem');
 
         return $query->getQuery()->getResult();
+    }
+
+    public function getEnderecosInventariados($idInventario)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('de.id AS endereco, ice.id AS contagemEndereco, de.descricao, ice.qtdContada, ice.codProduto, ice.grade')
+            ->from('wms:Inventario', 'i')
+            ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.inventario = i.id')
+            ->innerJoin('wms:Inventario\ContagemEndereco', 'ice', 'WITH', 'ice.inventarioEndereco = ie.id')
+            ->innerJoin('ie.depositoEndereco', 'de')
+            ->where("i.id = $idInventario")
+            ->orderBy('de.descricao', 'ASC');
+
+        return $sql->getQuery()->getResult();
+
     }
 
 }

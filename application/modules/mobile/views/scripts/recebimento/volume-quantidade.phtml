@@ -23,9 +23,10 @@
 
         <tr class="title">
             <td><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
-            <td>
-                <label class="field required" for="qtdConferida">Quantidade</label>
-            </td>
+            <td><label class="field required" for="qtdConferida">Quantidade</label></td>
+            <?php if ($this->itemNF['validade'] == 'S') : ?>
+                <td><label class="field required" for="dataValidade">Data Validade</label></td>
+            <?php endif; ?>
         </tr>
         <tr>
             <td>
@@ -35,9 +36,10 @@
                     <?php endforeach; ?>
                 </select>
             </td>
-            <td>
-                <input type="text" maxlength="15" size="10" class=" required focus" id="qtdConferida" name="qtdConferida" value="" />
-            </td>
+            <td><input type="text" maxlength="15" size="10" class="required focus" id="qtdConferida" name="qtdConferida" value="" /></td>
+            <?php if ($this->itemNF['validade'] == 'S') : ?>
+                <td><input type="text" maxlength="10" size="10" class="required focus date" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>" /></td>
+            <?php endif; ?>
         </tr>
 
     </table>

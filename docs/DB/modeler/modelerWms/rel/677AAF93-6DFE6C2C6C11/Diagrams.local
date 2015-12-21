@@ -1,0 +1,4 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="main_view" objectID="69F1913B-C964-C2F5-FA4E-B907B19652F5" name="Enderecamento_Automatico" visible="true"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

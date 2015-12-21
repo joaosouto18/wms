@@ -180,14 +180,25 @@ abstract class Crud extends \Wms\Module\Web\Controller\Action {
         if (!isset($params['mass-id']) || count($params['mass-id']) == 0) {
             throw new \Exception('Pelo menos um Id tem que ser enviado para a remocao');
         }
-        
-        foreach($params['mass-id'] as $id) {
-            $this->repository->remove($id);
+
+        try {
+            $inventarioRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+
+            foreach($params['mass-id'] as $id) {
+                $invetarioEn = $inventarioRepo->findOneBy(array('depositoEndereco' => $id));
+                if ($invetarioEn) {
+                    throw new \Exception("O endereco " . $invetarioEn->getDepositoEndereco()->getDescricao() . utf8_encode(" está ocupado"));
+                } else {
+                    $this->repository->remove($id);
+                }
+            }
+            $this->em->flush();
+            $this->_helper->messenger('success', 'Registros removidos com sucesso');
+            $this->redirect('index');
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+            return $this->redirect('index');
         }
-        
-        $this->em->flush();
-        $this->_helper->messenger('success', 'Registros removidos com sucesso');
-        
-        $this->redirect('index');
+
     }
 }

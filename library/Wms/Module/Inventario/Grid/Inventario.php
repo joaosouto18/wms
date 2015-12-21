@@ -9,6 +9,7 @@ class Inventario extends Grid
 
     public function init()
     {
+        $this->setAttrib('title','Inventario');
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select("i, s.sigla as status, count(ie.id) as qtdEndereco")
             ->addSelect("
@@ -87,7 +88,7 @@ class Inventario extends Grid
                 'cssClass' => '',
                 'pkIndex' => 'id',
                 'condition' => function ($row) {
-                    return $row['qtdInvetariado'] == 0 && $row['status'] != "CANCELADO";
+                    return $row['status'] != "FINALIZADO" && $row['status'] != "CANCELADO";
                 },
             ))
             ->addAction(array(
@@ -140,6 +141,26 @@ class Inventario extends Grid
                 'actionName' => 'view-andamento-ajax',
                 'cssClass' => 'view-andamento dialogAjax',
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Imprimir Endereços',
+                'modelName' => 'inventario',
+                'controllerName' => 'index',
+                'actionName' => 'imprimir-enderecos-ajax',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "LIBERADO";
+                },
+            ))
+            ->addAction(array(
+                'label' => 'Digitação Inventário Manual',
+                'modelName' => 'inventario',
+                'controllerName' => 'index',
+                'actionName' => 'digitacao-inventario-ajax',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "LIBERADO";
+                },
             ));
 
         return $this;

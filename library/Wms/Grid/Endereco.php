@@ -12,7 +12,7 @@ class Endereco extends Grid
         extract($params['identificacao']);
 
         $qb = $this->getEntityManager()->createQueryBuilder();
-
+        $this->setAttrib('title','Endereços');
         $source = $qb
             ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco")
             ->from('wms:Deposito\Endereco', 'e')

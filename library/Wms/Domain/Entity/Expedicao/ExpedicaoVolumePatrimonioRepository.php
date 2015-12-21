@@ -38,12 +38,20 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $entityVolPatrimonio    = $volumePatrimonioRepo->findOneBy(array('id' => $volume));
             $expedicaoRepo          = $em->getRepository('wms:Expedicao');
             $entityExpedicao        = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+            $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
 
-            $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
-            $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
-            $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
-            $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
-            $em->persist($enExpVolumePatrimonio);
+            $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
+
+            if (count($arrayExpVolPatrimonioEn) ==0){
+                $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
+                $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
+                $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
+                $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
+                $enExpVolumePatrimonio->setUsuario($usuario);
+                $em->persist($enExpVolumePatrimonio);
+            }
+
             $em->flush();
             $em->commit();
 
@@ -77,17 +85,51 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
                 return $retorno;
             }
 
+            $expedicaoRepo = $this->_em->getRepository('wms:Expedicao');
+            $expedicao = $expedicaoRepo->find($idExpedicao);
+            $sessao = new \Zend_Session_Namespace('coletor');
+
             foreach ($volumesPatrimonio as $volumeCarga) {
-                if ($volumeCarga->getDataFechamento() == NULL) {
-                    throw new \Exception("O Volume $volume ainda está em conferencia na carga " . $volumeCarga->getTipoVolume());
+                $validaEtiqueta = false;
+                $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+                if ($verificaReconferencia=='S'){
+
+                    $idStatus=$expedicao->getStatus()->getId();
+                    /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
+                    $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+                    if ($idStatus==Expedicao::STATUS_SEGUNDA_CONFERENCIA){
+                        $etiquetas = $EtiquetaConfRepo->findBy(array('status'=>Expedicao::STATUS_PRIMEIRA_CONFERENCIA,
+                                                                     'codExpedicao'=>$idExpedicao,
+                                                                     'volumePatrimonio'=>$volume));
+                        $statusEntity = $this->_em->getReference('wms:Util\Sigla', EXPEDICAO::STATUS_SEGUNDA_CONFERENCIA);
+
+                        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferencia $etiqueta */
+                        foreach ($etiquetas as $etiqueta) {
+                            $etiqueta->setStatus($statusEntity);
+                            $etiqueta->setCodOsSegundaConferencia($sessao->osID);
+                            $etiqueta->setDataReconferencia(new \DateTime());
+                            $this->getEntityManager()->persist($etiqueta);
+                        }
+                        $validaEtiqueta = false;
+                    } else {
+                        $validaEtiqueta = true;
+                    }
+                } else {
+                    $validaEtiqueta = true;
                 }
 
-                if ($volumeCarga->getDataConferencia() != NULL) {
-                    throw new \Exception("O Volume $volume já esta conferido");
-                }
+                if ($validaEtiqueta == true) {
+                    if ($volumeCarga->getDataFechamento() == NULL) {
+                        throw new \Exception("O Volume $volume ainda está em conferencia na carga " . $volumeCarga->getTipoVolume());
+                    }
 
-                $volumeCarga->setDataConferencia(new \DateTime());
-                $em->persist($volumeCarga);
+                    if ($volumeCarga->getDataConferencia() != NULL) {
+                        throw new \Exception("O Volume $volume já esta conferido");
+                    }
+
+                    $volumeCarga->setDataConferencia(new \DateTime());
+                    $em->persist($volumeCarga);
+                }
             }
             $em->flush();
             $em->commit();
@@ -159,7 +201,12 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
             $etiquetaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao");
             $etiquetasEn = $etiquetaRepo->getEtiquetasByExpedicaoAndVolumePatrimonio($idExpedicao,$volume);
-            if (count($etiquetasEn) == 0) {
+
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+            $qtdMapa = $mapaSeparacaoRepo->getQtdConferidaByVolumePatrimonio($idExpedicao,$volume);
+
+            if ((count($etiquetasEn) == 0) && ($qtdMapa == 0)) {
                 $this->desocuparVolume($volume,$idExpedicao);
             } else {
                 foreach ($volumesPatrimonio as $carga) {
@@ -168,6 +215,7 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
                 }
             }
             $em->flush();
+
         } catch (Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -199,6 +247,20 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
         }
 
         $this->_em->flush();
+    }
+
+    public function getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('msc.codProduto, msc.dscGrade, SUM(msc.qtdConferida) quantidade, p.descricao')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoConferencia', 'msc', 'WITH', 'msc.mapaSeparacao = ms.id')
+            ->innerJoin("wms:Produto", 'p', 'WITH', 'p.id = msc.codProduto AND p.grade = msc.dscGrade')
+            ->where("ms.expedicao = $idExpedicao")
+            ->andWhere("msc.volumePatrimonio = $volumePatrimonio")
+            ->groupBy("msc.codProduto, msc.dscGrade, p.descricao");
+
+        return $dql->getQuery()->getResult();
     }
 
 }

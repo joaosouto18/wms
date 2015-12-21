@@ -123,7 +123,6 @@
 
 </script>
 
-<?php echo $this->bloqueiaOS; ?>
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
 
 <div id='retorno'></div>
@@ -133,7 +132,10 @@
 
 <?php if (isset($this->idExpedicao))  : ?>
 
-    <p>Expedição:<?php echo $this->idExpedicao ?>
+    <p><?php echo $this->acao . " " .$this->idExpedicao ?>
+        <?php if ($this->acao == "Expedição de Transbordo:") :?>
+            <br>Placa: <?php echo $this->placa ?><br>
+        <?php endif; ?>
         <?php if (isset($this->volume))  : ?>
             Volume: <?php echo $this->volume ?>
         <?php endif; ?>
@@ -158,9 +160,12 @@
     <?php if ((isset($this->placa)) && ($this->placa != ""))  : ?>
         <input name="placa" type="hidden" value="<?php echo $this->placa?>" />
         <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
-        <?php else : ?>
-            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+    <?php else : ?>
+        <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+        <?php if ($this->segundaConferencia != "S") { ?>
             <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+        <?php } ?>
+
     <?php endif; ?>
 
     <input type="submit" name="submit" id="submit" value="Conferir" />
@@ -169,7 +174,7 @@
     <?php if (isset($this->placa) && !is_null($this->placa) && ($this->placa != ""))  : ?>
 
         <div id="footer">
-            <a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a>
+            <!--<a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a> |-->
             <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
 
@@ -186,6 +191,7 @@
                 <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
             </div>
     <?php endif; ?>
+    <a class="finalizarAmarelo" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'carregamento', 'idExpedicao' => $this->idExpedicao)) ?>" >Equipe</a>
 
 <?php } else { ?>
     <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras')); ?>">Confirmar</a>

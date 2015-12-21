@@ -40,7 +40,7 @@ class Enderecamento_Relatorio_OcupacaocdPeriodoController extends \Wms\Controlle
 
     public function gravarAction() {
 
-       /** @var \Wms\Domain\Entity\Enderecamento\PosicaoEstoqueResumidoRepository $posicaoRepo */
+        /** @var \Wms\Domain\Entity\Enderecamento\PosicaoEstoqueResumidoRepository $posicaoRepo */
         $posicaoRepo = $this->em->getRepository("wms:Enderecamento\PosicaoEstoqueResumido");
         $pos_estoque = $posicaoRepo->verificarResumoEstoque();
 

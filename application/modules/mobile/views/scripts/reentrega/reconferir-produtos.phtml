@@ -1,0 +1,47 @@
+<script>
+
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codBarras').value != "") {
+                etiquetaProduto   = document.getElementById('qtd');
+                if (etiquetaProduto) {
+                    etiquetaProduto.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+</script>
+
+<form id="conferir-produtos-form" enctype="application/x-www-form-urlencoded" class="saveForm" action="/mobile/reentrega/reconferir-produtos/id/<?php echo $this->id;?>" method="post">
+    <input type="hidden" name="numeroNota" value="" id="numeroNota">
+    <fieldset id="fieldset-reconferir">
+        <legend>Recebimento nº <?php echo $this->id; ?></legend>
+        <table style="width: 100%">
+        <tr>
+            <td style="padding-bottom: 2pt; padding-top: 3pt">*Código de Barras</td>
+            <td style="padding-bottom: 2pt; padding-top: 3pt">*Qtde.</td>
+        </tr>
+        <tr style="padding-bottom: 5pt">
+            <td style="width: 70%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
+            <td style="width: 20%; padding-bottom: 5pt; "><input type="text" style="width: 100%" name="qtd" id="qtd" value="" class=" required qtd"></td>
+        </tr>
+        </table>
+        <input type="submit" name="submit" id="submit" value="Reconferir" class="btn">
+    </fieldset>
+</form>
+
+<div id="footer">
+    <a href="<?php echo "/mobile/reentrega/finalizar-conferencia/id/" . $this->id ?>" class="finalizar">
+        Finalizar
+    </a>
+    <a href="<?php echo "/mobile/reentrega/cancelar-conferencia/id/" . $this->id ?>" class="finalizar">
+        Cancelar
+    </a>
+</div>

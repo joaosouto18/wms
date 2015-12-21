@@ -111,6 +111,25 @@ class Produto
      */
     protected $linhaSeparacao;
 
+
+    /**
+     * @Column(name="DIAS_VIDA_UTIL", type="integer")
+     * @var int
+     */
+    protected $diasVidaUtil;
+
+    /**
+     * @Column(name="POSSUI_VALIDADE", type="string")
+     * @var string
+     */
+    protected $validade;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco", cascade={"persist"})
+     * @JoinColumn(name="COD_ENDERECO_REF_END_AUTO", referencedColumnName="COD_DEPOSITO_ENDERECO")
+     */
+    protected $enderecoReferencia;
+
     public function __construct()
     {
         $this->volumes = new ArrayCollection;
@@ -319,6 +338,54 @@ class Produto
     {
         $this->numVolumes = $numVolumes;
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDiasVidaUtil()
+    {
+        return $this->diasVidaUtil;
+    }
+
+    /**
+     * @param int $diasVidaUtil
+     */
+    public function setDiasVidaUtil($diasVidaUtil)
+    {
+        $this->diasVidaUtil = $diasVidaUtil;
+    }
+
+    /**
+     * @return string
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param string $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
+    }
+
+    /**
+     * @param mixed $enderecoReferencia
+     */
+    public function setEnderecoReferencia($enderecoReferencia)
+    {
+        $this->enderecoReferencia = $enderecoReferencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEnderecoReferencia()
+    {
+        return $this->enderecoReferencia;
     }
 
 }

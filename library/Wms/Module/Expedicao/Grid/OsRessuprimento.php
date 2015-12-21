@@ -19,6 +19,7 @@ class OsRessuprimento extends Grid
      */
     public function init(array $gridValues = array(), array $formParamas = array())
     {
+        $this->setAttrib('title','OS de Ressuprimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($gridValues))
             ->setId('expedicao-os-grid')
             ->setAttrib('class', 'grid-expedicao')

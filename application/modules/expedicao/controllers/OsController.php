@@ -14,9 +14,12 @@ class Expedicao_OsController extends Action
     {
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('id');
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
         $EtiquetaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
+        $MapaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
@@ -25,8 +28,10 @@ class Expedicao_OsController extends Action
         $buttons = array();
 
         if (($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA)
-           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO)
-           || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ){
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO)
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA)
+            || ($resumoConferencia['codSigla'] == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ){
             $buttons[] = array(
                 'label' => 'Finalizar Conferência',
                 'cssClass' => 'dialogAjax',
@@ -51,6 +56,18 @@ class Expedicao_OsController extends Action
                 ),
                 'tag' => 'a'
             );
+            $buttons[] = array(
+                'label' => 'Reentrega Pend.',
+                'cssClass' => 'dialogAjax',
+                'urlParams' => array(
+                    'module' => 'expedicao',
+                    'controller' => 'pendencia',
+                    'action' => 'pendencia-reentrega-ajax',
+                    'id' => $idExpedicao
+                ),
+                'tag' => 'a'
+            );
+
             if ($ExpedicaoRepo->getProdutosEmbalado($idExpedicao)> 0) {
                 $buttons[] = array(
                     'label' => 'Embalados Pend. Conf.',
@@ -94,11 +111,12 @@ class Expedicao_OsController extends Action
         $s = new Zend_Session_Namespace('sessionUrl');
 
         $buttons[] =  array(
-                        'label' => 'Voltar para Busca de Expedições',
-                        'cssClass' => 'btnBack',
-                        'urlParams'=>array_merge($s->url,array('control'=>'roll')),
-                        'tag' => 'a'
-                    );
+            'label' => 'Voltar para Busca de Expedições',
+            'cssClass' => 'btnBack',
+            'urlParams'=> array(
+                'module' => 'expedicao'
+            )
+        );
 
         Page::configure(array('buttons' => $buttons));
 
@@ -110,6 +128,8 @@ class Expedicao_OsController extends Action
 
         if ($resumoConferencia['qtdConferidas'] == NULL) {
             $qtdConferidas = 0;
+        } else if ($resumoConferencia['qtdConferidas'] > $qtdEtiqueta) {
+            $qtdConferidas = $qtdEtiqueta;
         } else {
             $qtdConferidas = $resumoConferencia['qtdConferidas'];
         }
@@ -135,6 +155,30 @@ class Expedicao_OsController extends Action
         $this->view->qtdTotalVolumePatrimonio = $qtdTotalVolumePatrimonio[0]['qtdTotal'];
         $this->view->qtdConferidaVolumePatrimonio = $qtdConferidaVolumePatrimonio[0]['qtdConferida'];
 
+        $qtdReentrega = 0;
+        $percentualReentrega = 0;
+        $qtdPendenteReentrega = 0;
+        $qtdConferidasReentrega = 0;
+
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S'){
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+            $qtdReentrega         = count($pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, null));
+            $qtdPendenteReentrega = count($pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA));
+            $qtdConferidasReentrega = count($pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO));
+
+            if ($qtdReentrega > 0) {
+                $percentualReentrega = ($qtdConferidasReentrega / $qtdReentrega) * 100;
+            }
+        }
+        $percentualReentrega = number_format($percentualReentrega,2) . '%';
+
+        $this->view->qtdReentrega = $qtdReentrega;
+        $this->view->percentualReentrega = $percentualReentrega;
+        $this->view->qtdConferidoReentrega = $qtdConferidasReentrega;
+        $this->view->qtdPendenteReentrega = $qtdPendenteReentrega;
+
         $resumoByPlacaCarga = $EtiquetaSeparacaoRepo->getCountGroupByCentralPlaca($idExpedicao);
         foreach ($resumoByPlacaCarga as $key => $resumo) {
             $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']);
@@ -149,18 +193,33 @@ class Expedicao_OsController extends Action
             $this->view->dataFim = $resumoConferencia['dataFinalizacao']->format('d/m/Y H:i:s');
         }
 
+        $mapas = $MapaSeparacaoRepo->getResumoConferenciaMapaByExpedicao($idExpedicao);
+        if (count($mapas) >0){
+            $gridMapas = new \Wms\Module\Web\Grid\Expedicao\Mapas();
+            $this->view->gridMapas = $gridMapas->init($mapas)->render();
+        }
+
         $GridOs = new OsGrid();
-        $this->view->gridOS = $GridOs->init($idExpedicao)
+        $this->view->gridOS = $GridOs->init($idExpedicao, $verificaReconferencia)
             ->render();
 
         $GridAndamento = new AndamentoGrid();
         $this->view->gridAndamento = $GridAndamento->init($idExpedicao)
             ->render();
 
-        $GridPendencias = new CortesPendentesGrid();
-        $this->view->gridPendencias = $GridPendencias->init($idExpedicao)
-            ->render();
+        $pendencias = $EtiquetaSeparacaoRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_CORTE, "Array");
 
+        if (count($pendencias) > 0) {
+            $GridPendencias = new CortesPendentesGrid();
+            $this->view->gridPendencias = $GridPendencias->init($idExpedicao)
+                ->render();
+        }
+
+        $this->view->verificaReconferencia = $verificaReconferencia;
+
+        /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonioRepository $expVolPatrimonioRepo */
+        $expVolPatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+        $this->view->conferenciaVolumePatrimonio = $expVolPatrimonioRepo->findBy(array('expedicao' => $idExpedicao));
     }
 
     public function relatorioAction()
@@ -186,7 +245,12 @@ class Expedicao_OsController extends Action
     public function conferenciaAction()
     {
         $request = $this->getRequest();
-        $idOS = $request->getParam('id');
+        $idOS = $request->getParam('OS');
+        $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
+        if ($idOS == null) {
+            $idOS = $request->getParam('id');
+        }
 
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $OsRepo */
         $OsRepo   = $this->_em->getRepository('wms:OrdemServico');
@@ -204,9 +268,17 @@ class Expedicao_OsController extends Action
             $this->view->fimOS = $resumoOS['dataFinal']->format('d/m/Y H:i:s');
         }
 
-        $Grid = new ConferenciaGrid();
-        $this->view->grid = $Grid->init($idOS)
-            ->render();
+        if ($verificaReconferencia == 'S') {
+            $GridConferencia = new ConferenciaGrid();
+            $this->view->gridConferencia = $GridConferencia->init($idOS, false, 'Conferencia')->render();
+
+            $GridReconferencia = new ConferenciaGrid();
+            $this->view->gridReconferencia = $GridReconferencia->init($idOS, false, 'Reconferencia')->render();
+        } else {
+            $Grid = new ConferenciaGrid();
+            $this->view->grid = $Grid->init($idOS, false, null)->render();
+        }
+
 
     }
 
@@ -232,7 +304,7 @@ class Expedicao_OsController extends Action
         }
 
         $Grid = new ConferenciaGrid();
-        $this->view->grid = $Grid->init($idOS,true)
+        $this->view->grid = $Grid->init($idOS, true, null)
             ->render();
     }
 
@@ -286,12 +358,12 @@ class Expedicao_OsController extends Action
                 $idVolume = $values['volumes'];
             }
             $result = $expedicaoRepo->getEtiquetasConferidasByVolume($idExpedicao,$idVolume);
-                if (isset($values['exportarpdf'])) {
-                    unset($values);
-                    $form->getElement('exportarpdf')->setValue(null);
-                    $RelProdutosConferidos = new \Wms\Module\Expedicao\Report\ProdutosConferidos("L");
-                    $RelProdutosConferidos->init($result);
-                }
+            if (isset($values['exportarpdf'])) {
+                unset($values);
+                $form->getElement('exportarpdf')->setValue(null);
+                $RelProdutosConferidos = new \Wms\Module\Expedicao\Report\ProdutosConferidos("L");
+                $RelProdutosConferidos->init($result);
+            }
             $Grid = new \Wms\Module\Web\Grid\Expedicao\OsProdutosConferidos();
             $this->view->grid = $Grid->init($result,true)->render();
         }

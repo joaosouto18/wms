@@ -1,4 +1,33 @@
-<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' )); ?>">
+<script type="text/javascript">
+    $('#finaliza-pelo-coletor').click(function () {
+
+        $.ajax({
+            url: URL_MODULO + '/conferencia/finalizar',
+            type: 'POST',
+            data: {
+                codCargaExterno: $('.codCargaExternoo').val(),
+                centrais: $('input[type="radio"]:checked').val(),
+                id: $('.idExpedicao').val()
+            },
+            success: function(data){
+                if (data.result) {
+                    if (data.result != true) {
+                        alert(data.result);
+                    }
+                    if (data.redirect) {
+                        location.href = '/produtividade/carregamento/index/id/'.concat(data.idExpedicao);
+                    } else {
+                        location.href = window.location.href;
+                    }
+                }
+            }
+        });
+
+    });
+</script>
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' ))?>">
+    <input type="hidden" id="idExpedicao" name="idExpedicao" class="idExpedicao" value="<?php echo $this->idExpedicao; ?>">
+
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <tbody>
@@ -9,13 +38,14 @@
                         <?php foreach($this->cargas as $carga) : ?>
                             <?php echo $carga->getCodCargaExterno(); ?>
                         <?php endforeach; ?>
+                        <input type="hidden" id="codCargaExterno" name="codCargaExterno" class="codCargaExternoo" value="<?php echo $carga->getCodCargaExterno(); ?>">
                     </div>
                 </td>
             </tr>
             <tr style="line-height: 20px;">
                 <td><div>
                         <p><b>Selecione a Central de Entrega</b></p>
-                        <ul id="centrais">
+                        <ul id="central">
                             <?php foreach($this->centraisEntrega as $central) : ?>
                                 <li>
                                     <input
@@ -43,7 +73,7 @@
             </tr>
             <tr>
                 <td colspan="3">
-                    <button name="btnFinalizar" id="finaliza-pelo-coletor" type="submit" value="comConferencia">Finalizar Pelo Coletor</button>
+                    <button name="btnFinalizar" class="finaliza-pelo-coletor" id="finaliza-pelo-coletor" type="button" value="comConferencia">Finalizar Pelo Coletor</button>
                 </td>
             </tr>
             </tbody>

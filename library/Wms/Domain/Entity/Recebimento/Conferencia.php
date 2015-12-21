@@ -104,6 +104,12 @@ class Conferencia
      */
     protected $recebimento;
 
+    /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $dataValidade;
+
     public function getId()
     {
         return $this->id;
@@ -218,5 +224,21 @@ class Conferencia
         $this->recebimento = $recebimento;
         return $this;
     }
-    
+
+    /**
+     * @return date
+     */
+    public function getDataValidade()
+    {
+        return $this->dataValidade;
+    }
+
+    /**
+     * @param date $dataValidade
+     */
+    public function setDataValidade($dataValidade)
+    {
+        $this->dataValidade = $dataValidade;
+    }
+
 }

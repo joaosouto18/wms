@@ -81,7 +81,7 @@ class Produtos extends Pdf
 
         switch($modelo){
             case 2:
-                $this->Cell(15, 5, "Produto", 1);
+                $this->Cell(20, 5, "Produto", 1);
                 $this->Cell(87, 5, utf8_decode("Descrição"), 1);
                 $this->Cell(30, 5, "Mapa", 1);
                 $this->Cell(5, 5, "X", 1);
@@ -93,7 +93,7 @@ class Produtos extends Pdf
                 $this->Ln();
                 break;
             default:
-                $this->Cell(15, 5, "Produto", 1);
+                $this->Cell(20, 5, "Produto", 1);
                 $this->Cell(75, 5, utf8_decode("Descrição"), 1);
                 $this->Cell(22, 5, "Mapa", 1);
                 $this->Cell(20, 5, "Grade", 1);

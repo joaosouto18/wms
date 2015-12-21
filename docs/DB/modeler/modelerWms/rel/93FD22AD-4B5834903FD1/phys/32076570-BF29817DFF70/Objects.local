@@ -1,0 +1,22 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>
+   <object objectType="TSpace" objectID="15EED60F-64B1-7333-5AF7-9AF74E41124F" name="SYSTEM" seqName="seg_0"/>
+   <object objectType="User" objectID="MDSYS" name="MDSYS" seqName="seg_0"/>
+   <object objectType="User" objectID="PUBLIC" name="PUBLIC" seqName="seg_0"/>
+   <object objectType="User" objectID="AFEF3974-17E1-42AB-9D38-D6F2C3DC783C" name="WMS_LOCAL" seqName="seg_0"/>
+   <object objectType="SType" objectID="47E390DE-0671-C4B1-8428-0F45CBEE18F8" name="SDO_GEOMETRY" seqName="seg_0"/>
+   <object objectType="SType" objectID="F72C39E0-D1CA-8821-2AD7-A1E95A37D3D1" name="XMLTYPE" seqName="seg_0"/>
+   <object objectType="Table" objectID="113CA6F2-EE7A-00C6-847B-9C5C5FF6992E" name="DEPOSITO_ENDERECO" seqName="seg_0"/>
+   <object objectType="Table" objectID="1A73832D-8DFF-C881-161D-6648746626F5" name="RESERVA_ESTOQUE_ONDA_RESSUP" seqName="seg_0"/>
+   <object objectType="Table" objectID="25A044A4-7199-8970-B8A1-7CEDF04F9D45" name="EXPEDICAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="2B192898-CF31-3330-5294-CC71740EEA27" name="RESERVA_ESTOQUE_ENDERECAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="37EC34AD-4408-5C96-9D59-B529E6C4AAF9" name="ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="5F09D4BA-5DAE-E437-53B9-3EBAAE650AA3" name="ONDA_RESSUPRIMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="5FADD783-C1D7-19D9-34C5-DAA6B376CA1C" name="ONDA_RESSUPRIMENTO_OS" seqName="seg_0"/>
+   <object objectType="Table" objectID="8234113F-89A0-3A68-33E4-32466E35075B" name="RESERVA_ESTOQUE_EXPEDICAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="D2F5DB25-BD15-5833-C8AB-FDEA9C84E9EB" name="RESERVA_ESTOQUE" seqName="seg_0"/>
+   <object objectType="Table" objectID="D77D166B-F290-A323-D848-605F45E86B14" name="ONDA_RESSUPRIMENTO_PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="E3597E68-97BC-AEB1-03AA-2C98CB13F76B" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="Segment" objectID="C6661857-9A37-1A78-2337-F127D1000E3F" name="Storage2" seqName="seg_0"/>
+   <object objectType="Segment" objectID="EEEEE92C-ACF2-CB8D-4788-FCFAD1C6B821" name="Storage4" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.storage.oracle.v11g.StorageDesignOraclev11g>

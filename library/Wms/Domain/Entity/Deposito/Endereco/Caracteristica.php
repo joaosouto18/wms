@@ -9,6 +9,8 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Caracteristica
 {
+    const PICKING = 37;
+    const PULMAO = 38;
 
     /**
      * @Column(name="COD_CARACTERISTICA_ENDERECO", type="integer", nullable=false)

@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Deposito;
 
+use Bisna\Base\Service\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
     Wms\Util\Endereco as EnderecoUtil,
@@ -136,18 +137,18 @@ class EnderecoRepository extends EntityRepository
                             $dscEndereco = EnderecoUtil::formatar($dscEndereco);
 
                             $enderecoEntity->setRua($auxRua)
-                            ->setPredio($auxPredio)
-                            ->setNivel($auxNivel)
-                            ->setApartamento($auxApto)
-                            ->setSituacao($situacao)
-                            ->setDeposito($deposito)
-                            ->setCaracteristica($caracteristica)
-                            ->setEstruturaArmazenagem($estruturaArmazenagem)
-                            ->setTipoEndereco($tipoEndereco)
-                            ->setStatus($status)
-                            ->setAreaArmazenagem($areaArmazenagem)
-                            ->setDescricao($dscEndereco)
-                            ->setAtivo($ativo);
+                                ->setPredio($auxPredio)
+                                ->setNivel($auxNivel)
+                                ->setApartamento($auxApto)
+                                ->setSituacao($situacao)
+                                ->setDeposito($deposito)
+                                ->setCaracteristica($caracteristica)
+                                ->setEstruturaArmazenagem($estruturaArmazenagem)
+                                ->setTipoEndereco($tipoEndereco)
+                                ->setStatus($status)
+                                ->setAreaArmazenagem($areaArmazenagem)
+                                ->setDescricao($dscEndereco)
+                                ->setAtivo($ativo);
 
 
                             $em->persist($enderecoEntity);
@@ -415,7 +416,7 @@ class EnderecoRepository extends EntityRepository
           INNER JOIN AREA_ARMAZENAGEM AA        ON DE.COD_AREA_ARMAZENAGEM = AA.COD_AREA_ARMAZENAGEM
           INNER JOIN TIPO_EST_ARMAZ TP          ON DE.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
           INNER JOIN TIPO_ENDERECO TE           ON DE.COD_TIPO_ENDERECO = TE.COD_TIPO_ENDERECO
-          INNER JOIN V_OCUPACAO_LONGARINA LONGARINA
+          INNER JOIN V_OCUP_RESERVA_LONGARINA LONGARINA
 		          ON LONGARINA.NUM_PREDIO = DE.NUM_PREDIO
                  AND LONGARINA.NUM_NIVEL  = DE.NUM_NIVEL
                  AND LONGARINA.NUM_RUA    = DE.NUM_RUA
@@ -427,14 +428,14 @@ class EnderecoRepository extends EntityRepository
             $unitizadorEn = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador")->find($unitizador);
             $larguraUnitizador = $unitizadorEn->getLargura(false) * 100;
             $query = $query . " AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $larguraUnitizador)";
-		}
+        }
 
-		if ($ocupado == 'D') {
+        if ($ocupado == 'D') {
             $query = $query . " AND DE.IND_DISPONIVEL = 'S'";
-		}
-		if ($ocupado == 'O') {
+        }
+        if ($ocupado == 'O') {
             $query = $query . " AND DE.IND_DISPONIVEL = 'N'";
-		}
+        }
 
         if (!empty ($inicialRua)) {
             $query = $query . " AND DE.NUM_RUA >= $inicialRua";
@@ -484,7 +485,7 @@ class EnderecoRepository extends EntityRepository
         $query = $query . "  ORDER BY (LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO), DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL";
 
         $array = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
-       return $array;
+        return $array;
 
     }
 
@@ -570,6 +571,9 @@ class EnderecoRepository extends EntityRepository
 
     public function getEndereco($rua, $predio, $nivel, $apto)
     {
+        if (empty($rua) || empty($predio) || empty($nivel) || empty($apto)) {
+            throw new Exception("É necessário informar todo o endereço");
+        }
         $source = $this->_em->createQueryBuilder()
             ->select("e.id, e.descricao")
             ->from('wms:Deposito\Endereco', 'e')
@@ -578,8 +582,11 @@ class EnderecoRepository extends EntityRepository
             ->andWhere("e.nivel = $nivel")
             ->andWhere("e.apartamento = $apto");
 
-        return $source->getQuery()->getResult();
-
+        $result =  $source->getQuery()->getSingleResult();
+        if ($result == null) {
+            throw new Exception("Endereço não encontrado.");
+        }
+        return $result;
     }
 
     public function getOcupacaoRuaReport($params)
@@ -589,47 +596,49 @@ class EnderecoRepository extends EntityRepository
 
         $sqlWhere = "";
         if ($ruaFinal != "") {
-            if ($sqlWhere != "") {$sqlWhere = $sqlWhere . " AND ";}
-            $sqlWhere = $sqlWhere . " DE.NUM_RUA <= " . $ruaFinal;
+            $sqlWhere = $sqlWhere . " AND DE.NUM_RUA <= " . $ruaFinal;
         }
         if ($ruaInicial != "") {
-            if ($sqlWhere != "") {$sqlWhere = $sqlWhere . " AND ";}
-            $sqlWhere = $sqlWhere . " DE.NUM_RUA >= " . $ruaInicial;
-        }
-        if ($sqlWhere != "") {
-            $sqlWhere = " WHERE " . $sqlWhere . " and DE.IND_ATIVO='S' ";
-        } else {
-            $sqlWhere = " WHERE DE.IND_ATIVO='S' ";
+            $sqlWhere = $sqlWhere . " AND DE.NUM_RUA >= " . $ruaInicial;
         }
 
-        $sql= "SELECT OC.NUM_RUA as RUA,
-                      DE.QTD_POSICOES as PALETES_EXISTENTES,
-                      OC.QTD_OCUPADO as PALETES_OCUPADOS,
-                      ROUND(((OC.QTD_OCUPADO * 100) / DE.QTD_POSICOES), 2) PERCENTUAL_OCUPADOS
-                 FROM (SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_POSICOES, NUM_RUA, DE.IND_ATIVO
-                         FROM V_SALDO_ESTOQUE_COMPLETO P LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = P.COD_DEPOSITO_ENDERECO
-                          LEFT JOIN UNITIZADOR u ON u.COD_UNITIZADOR=P.COD_UNITIZADOR
-                          WHERE DE.COD_CARACTERISTICA_ENDERECO <>37
-                          AND ( ( u.COD_UNITIZADOR=23 and DE.NUM_APARTAMENTO=3 and DE.IND_DISPONIVEL = 'N' )  or DE.NUM_APARTAMENTO<>3 or ( DE.NUM_APARTAMENTO=3 and u.COD_UNITIZADOR<>23 ) )
-                        GROUP BY DE.NUM_RUA,DE.IND_ATIVO) DE
-                LEFT JOIN (SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_OCUPADO,
-                                                  DE.NUM_RUA
-                                             FROM V_SALDO_ESTOQUE_COMPLETO P
-                                             LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = P.COD_DEPOSITO_ENDERECO
-                                             LEFT JOIN UNITIZADOR u ON u.COD_UNITIZADOR=P.COD_UNITIZADOR
-                                            WHERE P.COD_DEPOSITO_ENDERECO IS NOT NULL AND P.QTDE>0 AND DE.COD_CARACTERISTICA_ENDERECO <>37
-                                             AND ( ( u.COD_UNITIZADOR=23 and DE.NUM_APARTAMENTO=3 and DE.IND_DISPONIVEL = 'N' )  or DE.NUM_APARTAMENTO<>3 or ( DE.NUM_APARTAMENTO=3 and u.COD_UNITIZADOR<>23 ) )
-                                            GROUP BY DE.NUM_RUA) OC
-                   ON OC.NUM_RUA = DE.NUM_RUA
-              ".$sqlWhere."
-               GROUP BY
-                OC.NUM_RUA,
-                      DE.QTD_POSICOES ,
-                      OC.QTD_OCUPADO
-               ORDER BY OC.NUM_RUA";
+        $SQL = "SELECT NUM_RUA,
+                       SUM(POS_EXISTENTES) as POS_EXISTENTES,
+                       SUM(CASE WHEN (POS_EXISTENTES - QTD_OCUPADOS) > POS_DISPONIVEIS THEN POS_DISPONIVEIS ELSE (POS_EXISTENTES - QTD_OCUPADOS) END) AS POS_DISPONIVEIS
+                  FROM (SELECT DE.NUM_RUA,
+                               DE.NUM_PREDIO,
+                               DE.NUM_NIVEL,
+                               SUM(DE.QTD_ENDERECO) as POS_EXISTENTES,
+                               SUM(CASE WHEN DISP.QTD_DISPONIVEL > DE.QTD_ENDERECO THEN DE.QTD_ENDERECO ELSE DISP.QTD_DISPONIVEL END) AS POS_DISPONIVEIS,
+                               SUM(NVL(OCUP.QTD_OCUPADOS,0)) as QTD_OCUPADOS
+                          FROM (SELECT COUNT(DE.COD_DEPOSITO_ENDERECO) as QTD_ENDERECO,
+                                       DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA
+                                  FROM DEPOSITO_ENDERECO DE
+                                 WHERE DE.IND_ATIVO = 'S'
+                                 GROUP BY DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_RUA) DE
+                     LEFT JOIN (SELECT TRUNC((O.TAMANHO_LONGARINA - O.OCUPADO) /UN.LARGURA) as QTD_DISPONIVEL,
+                                       O.TAMANHO_LONGARINA - O.OCUPADO as LARGURA_DISPONIVEL,
+                                       O.NUM_PREDIO, O.NUM_NIVEL, O.NUM_RUA
+                                  FROM V_OCUPACAO_LONGARINA O,
+                                       (SELECT MIN(NUM_LARGURA_UNITIZADOR * 100) LARGURA FROM UNITIZADOR) UN) DISP
+                            ON DISP.NUM_PREDIO = DE.NUM_PREDIO
+                           AND DISP.NUM_NIVEL = DE.NUM_NIVEL
+                           AND DISP.NUM_RUA = DE.NUM_RUA
+                     LEFT JOIN (SELECT COUNT(DISTINCT (DE.COD_DEPOSITO_ENDERECO)) as QTD_OCUPADOS,
+                                       DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL
+                                  FROM ESTOQUE E LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                                 GROUP BY DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL) OCUP
+                            ON OCUP.NUM_PREDIO = DE.NUM_PREDIO
+                           AND OCUP.NUM_NIVEL = DE.NUM_NIVEL
+                           AND OCUP.NUM_RUA = DE.NUM_RUA
+                     WHERE 1 = 1
+                      AND DE.NUM_NIVEL > 0
+                      $sqlWhere
+                     GROUP BY DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL) OCUP
+                 GROUP BY NUM_RUA
+                 ORDER BY NUM_RUA";
 
-        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-
+        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
@@ -661,6 +670,7 @@ class EnderecoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
         $enderecoEn = $this->findOneBy(array('id'=>$idEndereco));
+
         $rua = $enderecoEn->getRua();
         $predio = $enderecoEn->getPredio();
         $nivel = $enderecoEn->getNivel();
@@ -722,32 +732,64 @@ class EnderecoRepository extends EntityRepository
         $tipoPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
 
         $sqlWhere = "";
-        if ($ruaFinal != "") {
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
             $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA <= " . $ruaFinal." ";
         }
-        if ($ruaInicial != "") {
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
             $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA >= " . $ruaInicial." ";
         }
+        $sqlWhereDepEnd = "";
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
+            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA <= " . $ruaFinal." ";
+        }
+        if (isset($ruaInicial) && !empty($ruaFinal)) {
+            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA >= " . $ruaInicial." ";
+        }
 
-        $sql= " SELECT TO_CHAR(HIST.DTH_ESTOQUE,'DD/MM/YYYY') as DATA_ESTOQUE,
-                       DE.NUM_RUA as RUA,
-                       HIST.OCUPADO as PALETES_OCUPADOS,
-                       DE.QTD_EXISTENTES as PALETES_EXISTENTES,
-                       ROUND((( HIST.OCUPADO/ DE.QTD_EXISTENTES) * 100),2) AS PERCENTUAL_OCUPADOS
-                  FROM (
-                     SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_EXISTENTES, DE.NUM_RUA
-                       FROM DEPOSITO_ENDERECO DE WHERE DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
-                      GROUP BY DE.NUM_RUA) DE
-                RIGHT JOIN (
-                     SELECT COUNT(DISTINCT PE.COD_DEPOSITO_ENDERECO) as OCUPADO, PE.DTH_ESTOQUE, DE.NUM_RUA
-                       FROM POSICAO_ESTOQUE PE
-                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
-                      WHERE PE.COD_DEPOSITO_ENDERECO IS NOT NULL AND DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
-                       AND (PE.DTH_ESTOQUE BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
-                   GROUP BY DE.NUM_RUA, PE.DTH_ESTOQUE) HIST
-                   ON HIST.NUM_RUA = DE.NUM_RUA
-                   $sqlWhere
-                   ORDER BY HIST.DTH_ESTOQUE, DE.NUM_RUA";
+//        $sql= " SELECT TO_CHAR(HIST.DTH_ESTOQUE,'DD/MM/YYYY') as DATA_ESTOQUE,
+//                       DE.NUM_RUA as RUA,
+//                       HIST.OCUPADO as PALETES_OCUPADOS,
+//                       DE.QTD_EXISTENTES as PALETES_EXISTENTES,
+//                       ROUND((( HIST.OCUPADO/ DE.QTD_EXISTENTES) * 100),2) AS PERCENTUAL_OCUPADOS
+//                  FROM (
+//                     SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_EXISTENTES, DE.NUM_RUA
+//                       FROM DEPOSITO_ENDERECO DE WHERE DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
+//                      GROUP BY DE.NUM_RUA) DE
+//                RIGHT JOIN (
+//                     SELECT COUNT(DISTINCT PE.COD_DEPOSITO_ENDERECO) as OCUPADO, PE.DTH_ESTOQUE, DE.NUM_RUA
+//                       FROM POSICAO_ESTOQUE PE
+//                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+//                      WHERE PE.COD_DEPOSITO_ENDERECO IS NOT NULL AND DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
+//                       AND (PE.DTH_ESTOQUE BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
+//                   GROUP BY DE.NUM_RUA, PE.DTH_ESTOQUE) HIST
+//                   ON HIST.NUM_RUA = DE.NUM_RUA
+//                   $sqlWhere
+//                   ORDER BY HIST.DTH_ESTOQUE, DE.NUM_RUA";
+
+        $sql = "SELECT  HIST.DATA_ESTOQUE,
+                        DE.NUM_RUA as RUA,
+                        HIST.OCUPADO as PALETES_OCUPADOS,
+                        DE.QTD_EXISTENTES as PALETES_EXISTENTES,
+                        ROUND((( HIST.OCUPADO/ DE.QTD_EXISTENTES) * 100),2) AS PERCENTUAL_OCUPADOS
+                    FROM (
+                       SELECT COUNT(DISTINCT DE.COD_DEPOSITO_ENDERECO) as QTD_EXISTENTES, DE.NUM_RUA
+                         FROM DEPOSITO_ENDERECO DE WHERE DE.COD_CARACTERISTICA_ENDERECO <> $tipoPicking
+                        GROUP BY DE.NUM_RUA) DE
+                  RIGHT JOIN (
+
+                      SELECT COUNT(DISTINCT E.COD_DEPOSITO_ENDERECO) as OCUPADO, TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY') AS DATA_ESTOQUE, DE.NUM_RUA
+                        FROM ESTOQUE E
+                        LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = E.COD_UNITIZADOR
+                        LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE
+                        LEFT JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                           WHERE E.COD_DEPOSITO_ENDERECO IS NOT NULL AND DE.COD_CARACTERISTICA_ENDERECO <> 37
+                            AND (E.DTH_PRIMEIRA_MOVIMENTACAO BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
+                            $sqlWhereDepEnd
+                        GROUP BY DE.NUM_RUA, TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY')) HIST
+
+                        ON HIST.NUM_RUA = DE.NUM_RUA
+                        $sqlWhere
+                        ORDER BY DATA_ESTOQUE, DE.NUM_RUA";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -874,7 +916,7 @@ class EnderecoRepository extends EntityRepository
 
     public function getImprimirEndereco($enderecos)
     {
-       $query = "
+        $query = "
            SELECT DISTINCT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
            FROM DEPOSITO_ENDERECO DEP
            LEFT JOIN PRODUTO_EMBALAGEM PE ON DEP.COD_DEPOSITO_ENDERECO =  PE.COD_DEPOSITO_ENDERECO

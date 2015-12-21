@@ -1,0 +1,60 @@
+<script>
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetaSeparacao').value != "") {
+                etiquetaProduto   = document.getElementById('etiquetaProduto');
+                if (etiquetaProduto) {
+                    etiquetaProduto.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+
+
+<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" method="post">
+    <input type="hidden" name="uma" value="" id="uma">
+    <dt id="identification-label">&nbsp;</dt>
+    <dd id="identification-element">
+        <fieldset id="fieldset-identification">
+            <legend>Ler Código de Barras</legend>
+            <dl>
+                <div class="field">
+                    <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao?>" size="40" maxlength="100" style="width: 99%">
+
+                    <table>
+                        <tr>
+                            <?php if ($this->exibeQtd == true) : ?>
+                                <td><label for="qtd" class="field required">*Qtd</label></td>
+                            <?php endif; ?>
+                            <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
+                        </tr>
+                        <tr>
+                            <?php if ($this->exibeQtd == true) : ?>
+                                <td>
+                                    <input type="text" name="qtd" id="qtd" value="1" size="7" maxlength="100" style="width: 80%"></div>
+                                </td>
+                            <?php endif; ?>
+                            <td>
+                                <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%"></div>
+                            </td>
+                        </tr>
+                    </table>
+                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
+            </dl>
+            <?php if ($this->idVolume != "") :?>
+                <legend>Volume: <?php echo $this->dscVolume ?></legend>
+                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
+            <?php endif; ?>
+
+        </fieldset>
+    </dd>
+</form>

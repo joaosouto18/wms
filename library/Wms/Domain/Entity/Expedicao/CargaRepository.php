@@ -7,7 +7,7 @@ use Wms\Domain\Entity\Util\Sigla;
 class CargaRepository extends EntityRepository
 {
 
-    public function save($carga)
+    public function save($carga, $runFlush = true)
     {
 
         $em = $this->getEntityManager();
@@ -15,26 +15,30 @@ class CargaRepository extends EntityRepository
         $entityCarga = $this->findBy(array('expedicao' => $carga['idExpedicao']));
         $numeroDeCargas = count($entityCarga)+1;
 
-        $em->beginTransaction();
         try {
             $tipoCarga = $em->getRepository('wms:Util\Sigla')->findOneBy(array('tipo' => 69,'referencia'=> $carga['codTipoCarga']));
 
             $enCarga = new Carga;
             $enCarga->setPlacaExpedicao($carga['placaExpedicao']);
             $enCarga->setCentralEntrega($carga['centralEntrega']);
-            $enCarga->setCodCargaExterno($carga['codCargaExterno']);
+            $enCarga->setCodCargaExterno(trim($carga['codCargaExterno']));
             $enCarga->setExpedicao($carga['idExpedicao']);
             $enCarga->setPlacaCarga($carga['placaCarga']);
             $enCarga->setTipoCarga($tipoCarga);
             $enCarga->setSequencia($numeroDeCargas);
 
+            if ($this->getSystemParameterValue('VALIDA_FECHAMENTO_CARGA') == 'N') {
+                $enCarga->setDataFechamento(new \DateTime());
+            }
+
             $em->persist($enCarga);
-            $em->flush();
-            $em->commit();
+
+            if ($runFlush == true) {
+                $em->flush();
+            }
 
         } catch(\Exception $e) {
-            $em->rollback();
-            throw new \Exception();
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 
         return $enCarga;

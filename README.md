@@ -26,8 +26,8 @@ https://www.virtualbox.org/wiki/Downloads
 
 8) Acesse http://localhost:8080/
 
-=========================
 Configuração banco local
+===========================
 
 ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;
 
@@ -49,3 +49,8 @@ GRANT ALL PRIVILEGES TO wms_develop;
 ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED
 PASSWORD_LIFE_TIME UNLIMITED;
+
+Documentação
+===========================
+
+library\bin\phpdoc.bat -d library\Wms\WebService -t docs\phpDoc

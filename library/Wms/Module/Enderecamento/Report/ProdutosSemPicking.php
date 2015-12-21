@@ -70,7 +70,7 @@ class ProdutosSemPicking extends Pdf
             $this->SetFont('Arial', 'B', 8);
             $this->Cell(30, 5, $estoque['COD_PRODUTO'], 1, 0);
             $this->Cell(30, 5, utf8_decode($estoque['DSC_GRADE']), 1, 0);
-            $this->Cell(100, 5, utf8_decode(substr($estoque['DSC_PRODUTO'],0,40)), 1, 0);
+            $this->Cell(100, 5, utf8_decode(substr($estoque['DSC_PRODUTO'],0,45)), 1, 0);
             $this->Cell(30, 5,$estoque['QTD'], 1, 1);
         }
 

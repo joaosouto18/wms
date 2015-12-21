@@ -1,0 +1,91 @@
+<?php
+echo $this->headLink()->appendStylesheet('/css/admin/form/dadoLogisticoForm.css');
+
+$areaArmazenagem = $this->element->area->getValue();
+$tipoEstrutura = $this->element->estrutura->getValue();
+$tipoEndereco = $this->element->tpEndereco->getValue();
+$caracteristicaEndereco = $this->element->caracEndereco->getValue();
+?>
+<div id="produto-enderecamento-automatico">
+    <dd id="identification-element">
+        <fieldset id="fieldset-enderecamento-automatico">
+            <legend>Endereçamento Automático</legend>
+            <table style="width: 100%">
+                <tr>
+                   <td colspan="4">
+                       <div class="field">
+                            <?php echo $this->element->enderecoReferencia;?>
+                       </div>
+                   </td>
+                </tr>
+                <tr>
+                    <td>
+                        <fieldset id="enderecamento">
+                        <legend>Sequencia de Endereçamento</legend>
+                        <table style="width: 100%">
+                        <tr>
+                            <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                <fieldset id="fieldset-areaArmazenagem">
+                                    <legend>Area de Armazenagem</legend>
+                                    <table class="gTable">
+                                        <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
+                                        <?php foreach ($areaArmazenagem as $area):?>
+                                            <tr class="gTResultSet">
+                                                <td><?php echo $area['DESCRICAO'] ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="areaArmazenagem[' . $area['ID'] . ']" value="' . $area['VALUE'].'">' ?></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </table>
+                                </fieldset>
+                            </td>
+                            <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                <fieldset id="fieldset-estruturaArmazenagem">
+                                    <legend>Estrutura de Armazenagem</legend>
+                                    <table class="gTable">
+                                        <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
+                                        <?php foreach ($tipoEstrutura as $estrutura):?>
+                                            <tr class="gTResultSet">
+                                                <td><?php echo $estrutura['DESCRICAO'] ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="estruturaArmazenagem[' . $estrutura['ID'] . ']" value="' . $estrutura['VALUE'].'">' ?></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </table>
+                                </fieldset>
+                            </td>
+                            <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                <fieldset id="fieldset-tipoEndereco">
+                                    <legend>Tipo de Endereço</legend>
+                                    <table class="gTable">
+                                        <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
+                                        <?php foreach ($tipoEndereco as $tipo):?>
+                                            <tr class="gTResultSet">
+                                                <td><?php echo $tipo['DESCRICAO'] ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="tipoEndereco[' . $tipo['ID'] . ']" value="' . $tipo['VALUE'].'">' ?></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </table>
+                                </fieldset>
+                            </td>
+                            <td style="vertical-align: top; width: 30%">
+                                <fieldset id="fieldset-tipoEndereco">
+                                    <legend>Caracteristica</legend>
+                                    <table class="gTable">
+                                        <tr class="gTTitle"><td>Descrição</td><td>Sequencia</td></tr>
+                                        <?php foreach ($caracteristicaEndereco as $caracteristica):?>
+                                            <tr class="gTResultSet">
+                                                <td><?php echo $caracteristica['DESCRICAO'] ?></td>
+                                                <td><?php echo '<input style="width:40px;" type="text" name="caracteristicaEndereco[' . $caracteristica['ID'] . ']" value="' . $caracteristica['VALUE'].'">' ?></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </table>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        </table>
+                    </fieldset>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </dd>
+</div>

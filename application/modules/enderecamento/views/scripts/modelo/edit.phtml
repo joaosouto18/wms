@@ -1,0 +1,128 @@
+<form id="modelo-separacao-form" class="saveForm" method="post" action="" novalidate="novalidate">
+    <fieldset id="fieldset-modelo">
+        <legend>Endereçamento Automático</legend>
+        <div>
+            <label for="descricao">Descricao</label>
+            <input type="text" id="descricao" name="descricao" value="<?php echo $this->modelo->getDescricao(); ?>">
+            <label for="endereco">Endereço de Referência</label>
+            <?php if ($this->modelo->getCodReferencia() != null) : ?>
+                <input type="text" id="endereco" name="endereco" alt="endereco" placeholder="00.000.00.00" value="<?php echo $this->modelo->getCodReferencia()->getDescricao(); ?>">
+            <?php else : ?>
+                <input type="text" id="endereco" name="endereco" alt="endereco" placeholder="00.000.00.00">
+            <?php endif; ?>
+        </div>
+
+        <table>
+            <tr>
+                <td>
+                    <fieldset id="enderecamento">
+                        <legend>Sequencia de Endereçamento</legend>
+                        <table style="width: 100%">
+                            <tr>
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                    <fieldset id="fieldset-areaArmazenagem">
+                                        <legend>Area de Armazenagem</legend>
+                                        <table class="gTable">
+                                            <tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->areaArmazenagens as $key => $areaArmazenagem) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $areaArmazenagem->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaAreaArmazenagens as $populaAraArmazenagem) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaAraArmazenagem->getAreaArmazenagem()->getId() == $areaArmazenagem->getId()) : ?>
+                                                            <td><input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" value="<?php echo $populaAraArmazenagem->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]" name="areaArmazenagem[<?php echo $areaArmazenagem->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                    <fieldset id="fieldset-tipoEndereco">
+                                        <legend>Estrutura de Armazenagem</legend>
+                                        <table class="gTable">
+                                            <tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->estruturaArmazenagens as $key => $estruturaArmazenagem) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $estruturaArmazenagem->getDescricao(); ?></td>
+                                                    <?php foreach($this->populaEstruturaArmazenagens as $populaEstruturaArmazenagem) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaEstruturaArmazenagem->getTipoEstruturaArmazenagem()->getId() == $estruturaArmazenagem->getId()) : ?>
+                                                            <td><input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" value="<?php echo $populaEstruturaArmazenagem->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]" name="estruturaArmazenagem[<?php echo $estruturaArmazenagem->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+                                <td style="vertical-align: top; width: 30%; padding-right: 7pt">
+                                    <fieldset id="fieldset-tipoEndereco">
+                                        <legend>Tipos de Enderecos</legend>
+                                        <table class="gTable">
+                                            <tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->tiposEndereco as $key => $tipoEndereco) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $tipoEndereco->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaTipoEndereco as $populaTipoEnd) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaTipoEnd->getTipoEndereco()->getId() == $tipoEndereco->getId()) : ?>
+                                                            <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" value="<?php echo $populaTipoEnd->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]" name="tipoEndereco[<?php echo $tipoEndereco->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+
+                                <td style="vertical-align: top; width: 30%">
+                                    <fieldset id="fieldset-caracteristicaEndereco">
+                                        <legend>Caracteristica</legend>
+                                        <table class="gTable">
+                                            <tr class="gTTitle"><td>Descrição</td><td>Sequência</td></tr>
+                                            <?php $i = 0; ?>
+                                            <?php foreach ($this->caracteristicaEndereco as $key => $caracteristicaEndereco) : ?>
+                                                <tr class="gTResultSet">
+                                                    <td><?php echo $caracteristicaEndereco->getDescricao(); ?></td>
+                                                    <?php foreach ($this->populaCaracteristicaEndereco as $populaCaracteristicaEnd) : ?>
+                                                        <?php $i = 0; ?>
+                                                        <?php if ($populaCaracteristicaEnd->getCaracteristicaEndereco()->getId() == $caracteristicaEndereco->getId()) : ?>
+                                                            <td><input type="text" id="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" name="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" value="<?php echo $populaCaracteristicaEnd->getPrioridade(); ?>"></td>
+                                                            <?php $i = 1; break; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    <?php if ($i == 0) : ?>
+                                                        <td><input type="text" id="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]" name="caracteristicaEndereco[<?php echo $caracteristicaEndereco->getId() ?>]"></td>
+                                                    <?php endif; ?>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </fieldset>
+                                </td>
+
+                            </tr>
+                        </table>
+                    </fieldset>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+</form>

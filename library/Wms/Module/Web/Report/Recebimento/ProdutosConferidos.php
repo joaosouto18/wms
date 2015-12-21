@@ -18,13 +18,13 @@ class ProdutosConferidos extends Report
         $em = $this->getEm();
 
         $recebimentoEntity = $em->getRepository('wms:Recebimento')->find($idRecebimento);
-        
+
         //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
         $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
         $placaVeiculo = '';
-            if ($notaFiscalEntity)
-                $placaVeiculo = $notaFiscalEntity->getPlaca();
+        if ($notaFiscalEntity)
+            $placaVeiculo = $notaFiscalEntity->getPlaca();
 
         //geracao de relatorio
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -35,8 +35,8 @@ class ProdutosConferidos extends Report
 
         // header
         $pdf->setTitle(utf8_decode('Relatório de Produtos Conferidos'))
-                ->setLabelHeight(6)
-                ->setColHeight(7);
+            ->setLabelHeight(6)
+            ->setColHeight(7);
 
         // header
         $pdf->addLabel(0, 30, 'Recebimento', 0, 0, 'L');
@@ -58,7 +58,7 @@ class ProdutosConferidos extends Report
 
         $pdf->addLabel(1, 15, 'Codigo', 'B', 0, 'L');
         $pdf->addLabel(1, 2, '', '', 0, 'L');
-        $pdf->addLabel(2, 70, 'Produto', 'B', 0, 'L');
+        $pdf->addLabel(2, 83, 'Produto', 'B', 0, 'L');
         $pdf->addLabel(2, 2, '', '', 0, 'L');
         $pdf->addLabel(3, 20, 'Grade', 'B', 0, 'L');
         $pdf->addLabel(3, 2, '', '', 0, 'L');
@@ -72,12 +72,12 @@ class ProdutosConferidos extends Report
         $pdf->addLabel(7, 2, '', '', 0, 'L');
         $pdf->addLabel(8, 60, utf8_decode('Observação'), 'B', 1, 'L');
 
-        
+
 
         $codigoGradeTmp = '';
         $notaFiscalTmp = '';
         $linhaNF = '';
-        
+
         $itemsRecebimento = $em->getRepository('wms:NotaFiscal')->getConferenciaPorRecebimento($idRecebimento);
 
         foreach ($itemsRecebimento as $item) {
@@ -111,7 +111,7 @@ class ProdutosConferidos extends Report
 
             //$pdf->addCol(1, 279, $notaFiscal, $borderNF, 1, 'L');
             $pdf->addCol(3, 17, $item['COD_PRODUTO'], $border, 0, 'L');
-            $pdf->addCol(4, 72, utf8_decode(substr($item['DSC_PRODUTO'], 0, 30)), $border, 0, 'L');
+            $pdf->addCol(4, 85, utf8_decode(substr($item['DSC_PRODUTO'], 0, 40)), $border, 0, 'L');
             $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
             $pdf->addCol(6, 27, $dataConf->format('d/m/y H:i'), $border, 0, 'L');
             $pdf->addCol(7, 28, $item['QTD_CONFERIDA'], $border, 0, 'C');
@@ -123,8 +123,8 @@ class ProdutosConferidos extends Report
 
         // page
         $pdf->AddPage()
-                ->render()
-                ->Output();
+            ->render()
+            ->Output();
     }
 
 }

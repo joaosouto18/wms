@@ -83,10 +83,11 @@ class Inventario_ParcialController extends Action
         $values = $form->getParams();
 
         if ($values) {
+            /** @var \Wms\Domain\Entity\InventarioRepository $InventarioRepo */
+            $InventarioRepo = $this->_em->getRepository('wms:Inventario');
 
             if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
-                /** @var \Wms\Domain\Entity\InventarioRepository $InventarioRepo */
-                $InventarioRepo = $this->_em->getRepository('wms:Inventario');
+
                 if (empty($idInventario)) {
                     $enInventario   = $InventarioRepo->save();
                     $idInventario   = $enInventario->getId();

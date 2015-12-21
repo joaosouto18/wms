@@ -1,47 +1,166 @@
 <form id="header-expedicao-os-form" class="header" action="">
-    <div>
-        <fieldset id="fieldset-expedicao">
-            <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
-            <table class="gTable">
-                <tbody>
-                <tr class = "">
-                    <td width=""><span><b>Expedicao</b></span></td>
-                    <td width=""><span><b>Status</b></span></td>
-                    <td width=""><span><b>Qtd. Etiquetas</b></span></td>
-                    <td width=""><span><b>Etq. Conferidas</b></span></td>
-                    <td width=""><span><b>Etq. Pendentes</b></span></td>
-                    <td width=""><span><b>Volumes</b></span></td>
+        <div>
+            <fieldset id="fieldset-expedicao">
+                <legend> Expediçao - placa: <?php echo $this->expedicao->getplacaExpedicao() ?></legend>
+                <table style="width: 100%;">
+                    <tbody>
+                    <tr>
+                        <td style="font-size: 16px; font-weight: bold">Expedicao</td>
+                        <td style="font-size: 16px; font-weight: bold">Status</td>
+                        <td style="font-size: 16px; font-weight: bold">Inicio</td>
+                        <td style="font-size: 16px; font-weight: bold">Fim</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 14px;"><?php echo $this->idExpedicao; ?></td>
+                        <td style="font-size: 14px;"><?php echo $this->status; ?></td>
+                        <td style="font-size: 14px;"><?php echo $this->dataInicio;?></td>
+                        <td style="font-size: 14px;"><?php echo $this->dataFim;?></td>
+                    </tr>
+                    <?php if ($this->expedicao->getStatus()->getId() != \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) : ?>
+                        <?php if ($this->qtdEtiquetas>0) {?>
+                            <tr>
+                                <td colspan="4">
+                                    <table style="margin-top: 10px" class="gTable grid-expedicao-etiquetas">
+                                        <caption>Etiquetas</caption>
+                                        <tbody>
+                                            <tr class="gTTitle">
+                                                <td colspan="1"></td>
+                                                <td width=""><span><b>Qtd. Etiquetas</b></span></td>
+                                                <td width=""><span><b>Etq. Conferidas</b></span></td>
+                                                <td width=""><span><b>Etq. Pendentes</b></span></td>
+                                                <td width=""><span><b>% Conferencia</b></span></td>
+                                            </tr>
+                                            <tr class="gTResultSet">
+                                                <td class="gTdOpcRow">
+                                                    <div class="gOpcRow">
+                                                        <ul>
+                                                            <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                                                <ul>
+                                                                    <li><a href="<?php echo "/expedicao/pendencia/index/id/" . $this->idExpedicao . "/status/522,523,524,525,526,531,532"; ?>" class="dialogAjax" title="" target="_self">Visualizar Etiquetas</a></li>
+                                                                </ul>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                                <td width = ""><span><?php echo $this->qtdEtiquetas;?></span></td>
+                                                <td width = ""><span><?php echo $this->qtdConferidas;?></span></td>
+                                                <td width = ""><span><?php echo $this->qtdPendentes;?></span></td>
+                                                <td width = ""><span><?php echo $this->percentualConclusao;?></span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        <?php }?>
 
-                    <td width=""><span><b>% Conferencia</b></span></td>
-                    <td width=""><span><b>Inicio</b></span></td>
-                    <td width=""><span><b>Fim</b></span></td>
-                </tr>
-                <tr>
-                    <td width = ""><span><?php echo $this->idExpedicao; ?></span></td>
-                    <td width = ""><span><?php echo $this->status; ?></span></td>
-                    <td width = ""><span><?php echo $this->qtdEtiquetas;?></span></td>
-                    <td width = ""><span><?php echo $this->qtdConferidas;?></span></td>
-                    <td width = ""><span><?php echo $this->qtdPendentes;?></span></td>
-                    <td width = ""><span><?php echo $this->qtdConferidaVolumePatrimonio.'/'.$this->qtdTotalVolumePatrimonio;?></span></td>
+                        <?php if ($this->qtdReentrega>0) {?>
+                            <tr>
+                                <td colspan="4">
+                                    <table style="margin-top: 10px" class="gTable grid-expedicao-etiquetas">
+                                        <caption>Etiquetas de Reentrega</caption>
+                                        <tbody>
+                                        <tr class="gTTitle">
+                                            <td colspan="1"></td>
+                                            <td width=""><span><b>Qtd. Etiquetas</b></span></td>
+                                            <td width=""><span><b>Etq. Conferidas</b></span></td>
+                                            <td width=""><span><b>Etq. Pendentes</b></span></td>
+                                            <td width=""><span><b>% Conferencia</b></span></td>
+                                        </tr>
+                                        <tr class="gTResultSet">
+                                            <td class="gTdOpcRow">
+                                                <div class="gOpcRow">
+                                                    <ul>
+                                                        <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                                            <ul>
+                                                                <li><a href="<?php echo "/expedicao/pendencia/pendencia-reentrega-ajax/todas/s/id/" . $this->idExpedicao; ?>" class="dialogAjax" title="" target="_self">Visualizar Etiquetas</a></li>
+                                                                <li><a href="<?php echo "/expedicao/pendencia/pendencia-reentrega-ajax/id/" . $this->idExpedicao; ?>" class="dialogAjax" title="" target="_self">Visualizar Pendencias</a></li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                            <td width = ""><span><?php echo $this->qtdReentrega;?></span></td>
+                                            <td width = ""><span><?php echo $this->qtdConferidoReentrega;?></span></td>
+                                            <td width = ""><span><?php echo $this->qtdPendenteReentrega;?></span></td>
+                                            <td width = ""><span><?php echo $this->percentualReentrega;?></span></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        <?php }?>
 
-                    <td width = ""><span><?php echo $this->percentualConclusao;?></span></td>
-                    <td width = ""><span><?php echo $this->dataInicio;?></span></td>
-                    <td width = ""><span><?php echo $this->dataFim;?></span></td>
-                </tr>
-                </tbody>
-            </table>
-        </fieldset>
-    </div>
 
-    <?php if (count($this->resumoPlacaCarga) > 0) : ?>
+                        <?php if (isset($this->gridMapas)) {?>
+                            <tr>
+                                <td colspan="4">
+                                    <?php echo $this->gridMapas?>
+                                </td>
+                            </tr>
+                        <?php }?>
+
+                        <?php if (count($this->conferenciaVolumePatrimonio) > 0) : ?>
+                            <tr>
+                                <td colspan="4">
+                                    <table style="margin-top: 10px" class="gTable grid-expedicao-etiquetas">
+                                        <caption>Volume Patrimonio</caption>
+                                        <tbody>
+                                        <tr class="gTTitle">
+                                            <td width=""><span><b>Vol. Patrimônio</b></span></td>
+                                            <td width=""><span><b>Data Fechamento</b></span></td>
+                                            <td width=""><span><b>Data Conferência</b></span></td>
+                                            <td width=""><span><b>Conferente</b></span></td>
+                                        </tr>
+                                        <?php foreach ($this->conferenciaVolumePatrimonio as $value) : ?>
+                                            <?php
+                                            $dataFechamento = $value->getDataFechamento();
+                                            if (isset($dataFechamento) && !empty($dataFechamento)) {
+                                                $dataFechamento = $dataFechamento->format('d/m/Y');
+                                            }
+                                            $dataConferencia = $value->getDataConferencia();
+                                            if (isset($dataConferencia) && !empty($dataConferencia)) {
+                                                $dataConferencia = $dataConferencia->format('d/m/Y H:i:s');
+                                            }
+                                            $pessoa = $value->getUsuario();
+
+                                            if (!isset($pessoa) || empty($pessoa)) {
+                                                $pessoa = null;
+                                            } else {
+                                                $pessoa = $value->getUsuario()->getPessoa()->getNome();
+                                            }
+                                            ?>
+                                            <tr class="gTResultSet">
+                                                <td width = ""><span><?php echo $value->getVolumePatrimonio()->getId(); ?></span></td>
+                                                <td width = ""><span><?php echo $dataFechamento; ?></span></td>
+                                                <td width = ""><span><?php echo $dataConferencia; ?></span></td>
+                                                <td width = ""><span><?php echo $pessoa; ?></span></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+
+    <?php if ($this->expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) : ?>
         <div>
             <fieldset id="fieldset-resumo-cargas">
                 <legend> Resumo por Placa da Carga</legend>
                 <table class="gTable">
                     <tbody>
                        <tr calss = "">
+                           <td colspan="1"></td>
                            <td width=""><span><b>Placa</b></span></td>
                            <td width=""><span><b>Carga</b></span></td>
+                           <td width=""><span><b>Peso</b></span></td>
+                           <td width=""><span><b>Cubagem</b></span></td>
+                           <td width=""><span><b>Qtd. Entregas</b></span></td>
+                           <td width=""><span><b>Qtd. NF</b></span></td>
                            <td width=""><span><b>Ponto de Transbordo</b></span></td>
                            <td width=""><span><b>Qtd. Etiquetas</b></span></td>
                            <td width=""><span><b>Qtd. Conferidas</b></span></td>
@@ -51,11 +170,26 @@
                        </tr>
                        <?php foreach($this->resumoPlacaCarga as $resumo) : ?>
                            <tr calss = "">
-                               <td width=""><span><?php echo $resumo['placaCarga'];            ?></span></td>
-                               <td width="" title="Sequencia da carga representada pelo número dentro do ()"><span><?php echo $resumo['codCargaExterno'];            ?>(<?php echo $resumo['sequencia'];            ?>)</span></td>
-                               <td width=""><span><?php echo $resumo['pontoTransbordo'];            ?></span></td>
-                               <td width=""><span><?php echo $resumo['qtdEtiqueta'];           ?></span></td>
-                               <td width=""><span><?php echo $resumo['qtdConferidas'];         ?></span></td>
+                               <td class="gTdOpcRow">
+                                   <div class="gOpcRow">
+                                       <ul>
+                                           <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                               <ul>
+                                                   <li><a href="<?php echo "/expedicao/etiqueta/etiqueta-carga-ajax/id/" . $this->idExpedicao . "/carga/" . $resumo['codCargaExterno'] ; ?>" class="pdf" title="" target="_self">Imprimir Identificação</a></li>
+                                               </ul>
+                                           </li>
+                                       </ul>
+                                   </div>
+                               </td>
+                               <td width=""><span><?php echo $resumo['placaCarga']; ?></span></td>
+                               <td width="" title="Sequencia da carga representada pelo número dentro do ()"><span><?php echo $resumo['codCargaExterno']; ?>(<?php echo $resumo['sequencia']; ?>)</span></td>
+                               <td width=""><span><?php echo $resumo['peso']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['cubagem']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdEntregas']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdNotas']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['pontoTransbordo']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdEtiqueta']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdConferidas']; ?></span></td>
                                <td width=""><span><?php echo $resumo['qtdRecebidoTransbordo']; ?></span></td>
                                <td width=""><span><?php echo $resumo['qtdExpedidoTransbordo']; ?></span></td>
                                <td width=""><span>

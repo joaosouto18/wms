@@ -10,6 +10,71 @@ use
 class UMA extends Pdf
 {
 
+    public function imprimirPaletes($paletes, $modelo) {
+        ini_set('max_execution_time', 3000);
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        $paleteRepository = $em->getRepository('wms:Enderecamento\Palete');
+        $embalagemRepo    = $em->getRepository("wms:Produto\Embalagem");
+        $volumeRepo       = $em->getRepository("wms:Produto\Volume");
+
+        $this->SetMargins(7, 7, 0);
+
+        $palete = '';
+        foreach ($paletes as $value) {
+            if ($value != end($paletes)) {
+                $palete .= $value.',';
+            } else {
+                $palete .= $value;
+            }
+        }
+
+        $paletes = explode(',',$palete);
+        foreach ($paletes as $codPalete){
+            $paleteEn = $paleteRepository->findOneBy(array('id'=>$codPalete));
+
+            $idRecebimento  = $paleteEn->getRecebimento()->getId();
+            $produtos = $paleteEn->getProdutos();
+            $produtoEn = $produtos[0]->getProduto();
+
+            $dscEndereco = "";
+            if ($paleteEn->getDepositoEndereco() != null) {
+                $dscEndereco =  $paleteEn->getDepositoEndereco()->getDescricao();
+            }
+            ;
+
+            $dadosPalete = array();
+            $dadosPalete['endereco'] = $dscEndereco;
+            $dadosPalete['idUma']    = $paleteEn->getId();
+            $dadosPalete['qtd']      = $produtos[0]->getQtd();
+
+            if (($produtos[0]->getCodProdutoEmbalagem() == NULL)) {
+                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $produtos[0]->getCodProdutoVolume()));
+            } else {
+                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $produtos[0]->getCodProdutoEmbalagem()));
+            }
+            if ($embalagemEn->getEndereco() != null) {
+                $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
+            }
+
+            $paletesArray = array(0=>$dadosPalete);
+
+            $param = array();
+            $param['idRecebimento'] = $idRecebimento;
+            $param['codProduto']    = $produtoEn->getId();
+            $param['grade']         = $produtoEn->getGrade();
+            $param['paletes']       = $paletesArray;
+            $param['dataValidade']  = null;
+
+            $this->layout($param['paletes'], $produtoEn,$modelo,$param);
+        }
+        $this->Output('UMA-'.$idRecebimento.'.pdf','D');
+
+    }
+
     public function imprimir(array $params = array(),$modelo)
     {
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -31,11 +96,11 @@ class UMA extends Pdf
             $produtoEn  = $ProdutoRepository->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
         }
 
-        $this->layout($params['paletes'], $produtoEn,$modelo);
+        $this->layout($params['paletes'], $produtoEn,$modelo,$params);
         $this->Output('UMA-'.$idRecebimento.'-'.$codProduto.'.pdf','D');
     }
 
-    protected function layout($paletes,$produtoEn,$modelo)
+    protected function layout($paletes,$produtoEn,$modelo,$params = null)
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -53,9 +118,9 @@ class UMA extends Pdf
             }
 
             if ($modelo == 1) {
-                $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking);
+                $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             }else{
-                $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking);
+                $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
@@ -81,17 +146,18 @@ class UMA extends Pdf
         $this->Cell(-30,0,utf8_decode(date('d/m/Y')." às ".date('H:i')),0,0,'C');
     }
 
-    public function layout02($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
+    public function layout02($palete, $produtoEn, $font_size, $line_width, $enderecoPicking,$params=null){
         $this->AddPage();
 
         $codigoProduto = $produtoEn->getId();
         $descricaoProduto = $produtoEn->getDescricao();
 
-        //$descricaoProduto = "PANELA ELETRICA DE ARROZ 5X BR EPV892 PROMOCI 220V";
-
-        if (strlen($descricaoProduto) >= 20) {
-            $font_size = 48;
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
         }
+
         $this->SetFont('Arial', 'B', $font_size);
 
         $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
@@ -100,7 +166,13 @@ class UMA extends Pdf
         $this->Cell(35,40,"",0,0);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(165,20,utf8_decode("Picking $enderecoPicking"),0,0);
+        if (isset($params['dataValidade'])) {
+            $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
+        } else {
+            $this->Cell(75,20,utf8_decode("Picking $enderecoPicking"),0,1);
+        }
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(25,20,"Qtd",0,0);
@@ -122,16 +194,18 @@ class UMA extends Pdf
 
     }
 
-    public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
+    public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking,$params=null){
         $this->AddPage();
 
         $descricaoProduto = $produtoEn->getId().'-'.$produtoEn->getDescricao();
 
 
         if (strlen($descricaoProduto) >= 42) {
-            $font_size = 38;
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
         }
-        
+
         $this->SetFont('Arial', 'B', $font_size);
 
         $this->MultiCell($line_width, 20, $descricaoProduto, 0, 'C');
@@ -139,17 +213,24 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
 
-        $this->SetFont('Arial', 'B', 72);
+        $this->SetFont('Arial', 'B', 60);
         $this->Cell(165,40,$produtoEn->getGrade(),0,0);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(25,40,"Qtd",0,0);
 
-        $this->SetFont('Arial', 'B', 72);
+        $this->SetFont('Arial', 'B', 60);
         $this->Cell(75,40,$palete['qtd'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(75,20,utf8_decode("Picking $enderecoPicking"),0,1);
+
+        if (isset($params['dataValidade'])) {
+            $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
+        } else {
+            $this->Cell(75,20,utf8_decode("Picking $enderecoPicking"),0,1);
+        }
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55,40,utf8_decode("Endereço"),0,0);

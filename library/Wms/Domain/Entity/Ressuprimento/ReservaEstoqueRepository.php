@@ -18,7 +18,7 @@ class ReservaEstoqueRepository extends EntityRepository
      * produtos[0]['grade'] = 'Grade do Produto'
      * produtos[0]['qtd'] = '10' ou '-10'
     */
-    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "" )
+    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "", $idPedido = null)
     {
         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
@@ -44,7 +44,7 @@ class ReservaEstoqueRepository extends EntityRepository
         } else if ($origemReserva == "U") {
             return $this->addReservaEstoqueUma($enderecoEn,$produtos,$tipoReserva,$idOrigem,$usuarioEn,$observacao);
         } else if ($origemReserva == "E") {
-            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao);
+            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao,$idPedido);
         }
     }
 
@@ -100,8 +100,8 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-    public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null){
-
+    public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null, $dataValidade=null)
+    {
         if ($usuarioEn == NULL)  {
             $auth = \Zend_Auth::getInstance();
             $usuarioSessao = $auth->getIdentity();
@@ -138,7 +138,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
             $params['estoqueRepo'] = $estoqueRepo;
-            $estoqueRepo->movimentaEstoque($params, false);
+            $estoqueRepo->movimentaEstoque($params, false, null, $dataValidade);
         }
 
         if ($reservaEstoqueEn != NULL) {
@@ -150,7 +150,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return true;
     }
 
-    public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false)
+    public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false,$dataValidade = null)
     {
         $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem, $idOs);
         if ($reservaEstoqueEn == NULL)  {
@@ -177,12 +177,13 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        return $this->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn ,$osEn,$unitizadorEn);
+        return $this->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn ,$osEn,$unitizadorEn,$dataValidade);
     }
 
     public function reabrirReservaEstoque($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $throwException = false )
     {
         $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem);
+
         if ($reservaEstoqueEn == NULL) {
             if ($throwException == true) {
                 throw new \Exception("Reserva de estoque não encontrada");
@@ -198,7 +199,7 @@ class ReservaEstoqueRepository extends EntityRepository
 
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
 
-        if (($reservaEstoqueEn == NULL) || ($reservaEstoqueEn->getDataAtendimento() != NULL)) {
+        if (($reservaEstoqueEn != NULL) && ($reservaEstoqueEn->getDataAtendimento() != NULL)) {
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
@@ -221,7 +222,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         if ($reservaEstoqueEn != NULL) {
-            $reservaEstoqueEn->setAtendida("N");
+            $reservaEstoqueEn->setAtendida("C");
             $reservaEstoqueEn->setDataAtendimento(null);
             $reservaEstoqueEn->setDscObservacao("RESERVA DE ESTOQUE REABERTA POR ". $idUsuario);
             $reservaEstoqueEn->setUsuarioAtendimento(null);
@@ -314,7 +315,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return $reservaEstoqueEn;
     }
 
-    private function addReservaEstoqueExpedicao ($enderecoEn, $produtos, $idExpedicao, $usuarioReserva, $observacoes){
+    private function addReservaEstoqueExpedicao ($enderecoEn, $produtos, $idExpedicao, $usuarioReserva, $observacoes, $idPedido = null){
 
         $reservaEstoqueEn = $this->findReservaEstoque($enderecoEn->getId(),$produtos,"S","E",$idExpedicao);
 
@@ -333,11 +334,14 @@ class ReservaEstoqueRepository extends EntityRepository
         } else {
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
             $expedicaoEn = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
+            $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $idPedido));
 
             $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,"S",$usuarioReserva,$observacoes);
             $reservaEstoqueExpedicao = new \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao();
             $reservaEstoqueExpedicao->setExpedicao($expedicaoEn);
             $reservaEstoqueExpedicao->setReservaEstoque($reservaEstoqueEn);
+            $reservaEstoqueExpedicao->setPedido($pedidoEn);
             $this->getEntityManager()->persist($reservaEstoqueExpedicao);
         }
         return $reservaEstoqueEn;
@@ -375,7 +379,7 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     public function getResumoReservasNaoAtendidasByParams($params) {
-        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO
+        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO || ' Pedido: ' || REEXP.COD_PEDIDO
                             WHEN REOND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Ressuprimento: '  || OOS.COD_ONDA_RESSUPRIMENTO
                             WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA || ' Recebimento: ' || P.COD_RECEBIMENTO
                        END AS ORIGEM,
@@ -383,9 +387,10 @@ class ReservaEstoqueRepository extends EntityRepository
                        CASE WHEN REP.QTD_RESERVADA >= 0 THEN 'ENTRADA'
                             ELSE 'SAÍDA'
                        END AS TIPO,
-                       REP.QTD_RESERVADA
+                       REP.QTD_RESERVADA,
+                       REEXP.COD_PEDIDO
                   FROM RESERVA_ESTOQUE RE
-                 INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN RESERVA_ESTOQUE_ENDERECAMENTO REEND ON REEND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN PALETE P ON REEND.UMA = P.UMA
                   LEFT JOIN RESERVA_ESTOQUE_ONDA_RESSUP REOND ON REOND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE

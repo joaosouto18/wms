@@ -45,8 +45,8 @@ class Mobile_EnderecamentoController extends Action
 
             if (count($result) == 0)
             {
-               $this->addFlashMessage('error', 'Nenhum produto encontrado para este picking');
-               $this->_redirect('/mobile/enderecamento/leitura-picking');
+                $this->addFlashMessage('error', 'Nenhum produto encontrado para este picking');
+                $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
             $existeEstoque = false;
@@ -72,21 +72,21 @@ class Mobile_EnderecamentoController extends Action
                 $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
-              $contagem = $this->em->getRepository("wms:Enderecamento\RelatorioPicking")->findBy(array('depositoEndereco'=>$enderecoEn));
+            $contagem = $this->em->getRepository("wms:Enderecamento\RelatorioPicking")->findBy(array('depositoEndereco'=>$enderecoEn));
 
-              if ($contagem != NULL)
-              {
-                     $this->addFlashMessage('error', 'O endereço informado já foi bipado');
-                     $this->_redirect('/mobile/enderecamento/leitura-picking');
-              }
+            if ($contagem != NULL)
+            {
+                $this->addFlashMessage('error', 'O endereço informado já foi bipado');
+                $this->_redirect('/mobile/enderecamento/leitura-picking');
+            }
 
-              else
-              {
-                 $contagem = new \Wms\Domain\Entity\Enderecamento\RelatorioPicking();
-                 $contagem->setDepositoEndereco($enderecoEn);
-                 $this->em->persist($contagem);
-                 $this->em->flush();
-              }
+            else
+            {
+                $contagem = new \Wms\Domain\Entity\Enderecamento\RelatorioPicking();
+                $contagem->setDepositoEndereco($enderecoEn);
+                $this->em->persist($contagem);
+                $this->em->flush();
+            }
 
         }
     }
@@ -216,7 +216,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->validaEnderecoPicking($codBarras, $paleteEn, $nivel);
+        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica());
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
 
@@ -233,11 +233,11 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn, $nivel)
+    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd)
     {
 
         //Se for picking do produto entao o nivel poderá ser escolhido
-        if ($nivel == '00') {
+        if ($caracteristicaEnd == '37') {
 
             $produtosEn = $paleteEn->getProdutos();
             $produto = $produtosEn[0];
@@ -249,9 +249,10 @@ class Mobile_EnderecamentoController extends Action
             $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             $endPicking = $ProdutoRepository->getEnderecoPicking($ProdutoEntity);
             if ($endPicking) {
-                $endPicking = (int) str_replace('.','',$endPicking);
+                $endPicking = (int) str_replace('.','',$endPicking[0]);
+                $endereco = (int) $endereco;
                 if ($endPicking != $endereco) {
-                    $this->createXml('error','Endereço de picking não correspondente');
+                    $this->createXml('error','Endereço de picking não correspondente informado:' . $endereco . ", cadastro " . $endPicking);
                 }
             } else {
                 $this->createXml('error','O produto não possui endereço de picking');
@@ -273,18 +274,15 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('error','Endereço bloqueado por inventário');
         }
 
-        if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
-            $this->createXml('error','Endereço já ocupado');
-        }
         $idPalete = $paleteEn->getId();
 
         //Se for endereco de picking nao existe regra de espaco nem o endereco fica indisponivel
         $enderecoAntigo = $paleteEn->getDepositoEndereco();
         $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
         $unitizadorEn = $paleteEn->getUnitizador();
-        if ($enderecoEn->getNivel() == '0') {
+        if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
-                throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
+                $this->createXml('error',"Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
             if ($enderecoAntigo != NULL) {
                 $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");
@@ -292,6 +290,9 @@ class Mobile_EnderecamentoController extends Action
             }
             $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
         } else {
+            if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
+                $this->createXml('error','Endereço já ocupado');
+            }
             if ($enderecoRepo->getValidaTamanhoEndereco($enderecoEn->getId(),$unitizadorEn->getLargura(false) * 100) == false) {
                 $this->createXml('error','Espaço insuficiente no endereço');
             }
@@ -394,5 +395,535 @@ class Mobile_EnderecamentoController extends Action
         $this->addFlashMessage('success','Palete Endereçado com sucesso');
         $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
     }
+
+    public function listarPaletesAction()
+    {
+        ini_set('max_execution_time', 3000);
+        $idRecebimento = $this->_getParam("id");
+
+        try {
+            $this->getEntityManager()->beginTransaction();
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
+
+            $paletesSelecionados = $this->_getParam('palete');
+
+            $repositorios = array(
+                'enderecoRepo'            => $this->getEntityManager()->getRepository("wms:Deposito\Endereco"),
+                'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+                'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+                'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+                'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+                'recebimentoRepo'         => $recebimentoRepo,
+                'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'),
+            );
+
+            //METODO PARA IMPRIMIR OS PALETES
+            if ($this->_getParam('imprimir') != null) {
+                if (count($paletesSelecionados) > 0) {
+                    $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
+                    $Uma->imprimirPaletes ($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            //METODO PARA ALTERAR A NORMA DE PALETIZAÇÂO CASO CONFERIDO ERRADO
+            if ($this->_getParam('trocarNorma') != null) {
+                if (count($paletesSelecionados) >0) {
+                    foreach ($paletesSelecionados as $paletes) {
+                        $idPaletes = explode(',',$paletes);
+                        foreach ($idPaletes as $idPalete) {
+                            $paleteEn = $paleteRepo->findOneBy(array('id'=>$idPalete));
+                            if ($paleteEn != null) {
+                                $produto = $paleteEn->getProdutos();
+                                $codProduto     = $produto[0]->getProduto()->getId();
+                                $grade          = $produto[0]->getProduto()->getGrade();
+                                $codRecebimento = $paleteEn->getRecebimento()->getId();
+                                if ($paleteEn->getImpresso() == 'N') {
+                                    $paleteRepo->desfazerPalete($idPalete);
+                                    $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO);
+                                    $this->getEntityManager()->persist($paleteEn);
+                                    $this->getEntityManager()->flush();
+                                }
+                                $paleteRepo->alterarNorma($codProduto,$grade,$codRecebimento,$idPalete);
+                            }
+                        }
+                    }
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            //IDENTIFICO OS PRODUTOS DO RECEBIMENTO
+            $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+
+            //GERAR OS PALETES PARA CADA PRODUTO DO RECEBIMENTO INDIVIDUALMENTE
+            foreach ($produtos as $produto) {
+                $codProduto = $produto['codigo'];
+                $grade      = $produto['grade'];
+
+                //PEGANDO OS PALETES GERADOS DO PRODUTO E ALOCANDO UM ENDEREÇO
+                $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,false,$tipoEnderecamento = 'A');
+                $paleteRepo->alocaEnderecoAutomaticoPaletes($paletes,$repositorios);
+            }
+
+            $paletesResumo = $this->getPaletesExibirResumo($idRecebimento);
+            if (count($paletesResumo) == 0) {
+                $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
+            }
+
+            $this->view->paletes = $paletesResumo;
+            $this->getEntityManager()->commit();
+        } catch(Exception $e) {
+            $this->getEntityManager()->rollback();
+            $this->addFlashMessage('error',$e->getMessage());
+        }
+    }
+
+    public function getPaletesExibirResumo($codRecebimento){
+        $statusEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
+        $SQL = "SELECT LISTAGG(UMA, ', ') WITHIN GROUP (ORDER BY UMA) ALL_UMA,
+                       COUNT(DISTINCT UMA) as QTD_UMA,
+                       COD_PRODUTO,
+                       DSC_GRADE,
+                       DSC_PRODUTO,
+                       DSC_UNITIZADOR,
+                       SUM(QTD) as QTD
+                  FROM (
+                SELECT DISTINCT PROD.COD_PRODUTO,
+                                PROD.DSC_GRADE,
+                                PROD.DSC_PRODUTO,
+                                PP.UMA,
+                                PP.QTD,
+                                UN.DSC_UNITIZADOR
+                  FROM PALETE_PRODUTO PP
+                  LEFT JOIN PALETE P ON P.UMA = PP.UMA
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = P.COD_UNITIZADOR
+                 WHERE P.COD_RECEBIMENTO = $codRecebimento
+                   AND P.COD_STATUS = $statusEnderecamento
+                   AND P.IND_IMPRESSO = 'N'
+                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL)
+                GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
+
+        $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+
+    }
+
+    public function detalheEnderecoAction()
+    {
+        ini_set('max_execution_time', 3000);
+        $idRecebimento = $this->_getParam("id");
+
+        try {
+            $this->getEntityManager()->beginTransaction();
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
+
+            $paletesSelecionados = $this->_getParam('palete');
+
+            if ($this->_getParam('imprimir') != null) {
+                if (count($paletesSelecionados) >0) {
+                    $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
+                    $Uma->imprimirPaletes ($paletesSelecionados, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            if ($this->_getParam('trocarNorma') != null) {
+                if (count($paletesSelecionados) >0) {
+                    foreach ($paletesSelecionados as $idPalete) {
+                        $paleteEn = $paleteRepo->findOneBy(array('id'=>$idPalete));
+                        if ($paleteEn != null) {
+                            $produto = $paleteEn->getProdutos();
+                            $codProduto     = $produto[0]->getProduto()->getId();
+                            $grade          = $produto[0]->getProduto()->getGrade();
+                            $codRecebimento = $paleteEn->getRecebimento()->getId();
+                            if ($paleteEn->getImpresso() == 'N') {
+                                $paleteRepo->desfazerPalete($idPalete);
+                                $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO);
+                                $this->getEntityManager()->persist($paleteEn);
+                                $this->getEntityManager()->flush();
+                            }
+                            $paleteRepo->alterarNorma($codProduto,$grade,$codRecebimento,$idPalete);
+                        }
+                    }
+                } else {
+                    $this->addFlashMessage('error','Selecione ao menos uma U.M.A');
+                }
+            }
+
+            $codProduto = $this->_getParam('produto');
+            $grade = $this->_getParam('grade');
+
+            $paletes = array();
+
+            $tmpPaletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade, false, true, true);
+            foreach ($tmpPaletes as $tmpPalete) {
+                if (($tmpPalete['IND_IMPRESSO'] != 'S') &&
+                    ($tmpPalete['COD_SIGLA'] != Palete::STATUS_ENDERECADO) &&
+                    ($tmpPalete['COD_SIGLA'] != Palete::STATUS_CANCELADO)) {
+                    $tmp = array();
+                    $tmp['uma'] = $tmpPalete['UMA'];
+                    $tmp['unitizador'] = $tmpPalete['UNITIZADOR'];
+                    $tmp['qtd'] = $tmpPalete['QTD'];
+                    $tmp['produto'] = $tmpPalete['COD_PRODUTO'] . ' / ' . $tmpPalete['DSC_GRADE'] . ' - ' . $tmpPalete['DSC_PRODUTO'];
+                    $tmp['codProduto'] = $tmpPalete['COD_PRODUTO'];
+                    $tmp['dscGrade'] = $tmpPalete['DSC_GRADE'];
+                    $tmp['dscProduto'] = $tmpPalete['DSC_PRODUTO'];
+                    $tmp['idEndereco'] = 0;
+                    $tmp['endereco'] = '';
+                    $tmp['motivoNaoLiberar'] = '';
+
+                    if ($tmpPalete['QTD_VOL_TOTAL'] > $tmpPalete['QTD_VOL_CONFERIDO']) {
+                        $tmp['motivoNaoLiberar'] = 'Aguardando conf. todos volumes';
+                    }
+
+                    $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
+                    if ($paleteEn->getDepositoEndereco() == null) {
+
+                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
+
+                        if ($sugestaoEndereco != null) {
+                            foreach($sugestaoEndereco as $sugestao) {
+
+                                $tmp['idEndereco'] = $sugestao['COD_DEPOSITO_ENDERECO'];
+                                $tmp['endereco'] = $sugestao['DSC_DEPOSITO_ENDERECO'];
+
+                                $permiteEnderecar = $enderecoRepo->getValidaTamanhoEndereco($tmp['idEndereco'],$paleteEn->getUnitizador()->getLargura(false) * 100);
+                                if ($permiteEnderecar == true) {
+                                    $paleteRepo->alocaEnderecoPalete($tmp['uma'],$tmp['idEndereco']);
+                                    $this->getEntityManager()->flush();
+                                    break;
+                                }
+                            }
+
+
+
+
+
+//                            if ($permiteEnderecar == true) {
+//                                $paleteRepo->alocaEnderecoPalete($tmp['uma'],$sugestaoEndereco['COD_DEPOSITO_ENDERECO']);
+//                                $this->getEntityManager()->flush();
+//                            } else {
+//                                $tmp['motivoNaoLiberar'] = "Palete " . $tmp['uma'] . " não cabe no endereço " . $tmp['endereco'];
+//                            }
+                        }
+                    } else {
+                        $tmp['idEndereco'] = $paleteEn->getDepositoEndereco()->getId();
+                        $tmp['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
+                    }
+
+                    if (($tmp['motivoNaoLiberar'] == '') && ($tmp['idEndereco'] == 0)) {
+                        $tmp['motivoNaoLiberar'] = 'Sem Sugestão de Endereço';
+                    }
+                    $paletes[] = $tmp;
+
+                }
+            }
+
+            if (count($paletes) == 0) {
+                $this->addFlashMessage('error','Nenhum Palete para imprimir no momento');
+            }
+
+            $this->view->paletes = $paletes;
+            $this->getEntityManager()->commit();
+        } catch(Exception $e) {
+            $this->getEntityManager()->rollback();
+            $this->addFlashMessage('error',$e->getMessage());
+        }
+
+    }
+
+    public function imprimirUmaAction()
+    {
+        $idRecebimento = $this->_getParam("id");
+        $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
+
+        $dadosPalete = array();
+        $dadosPalete['endereco'] = '01.00.000.01';
+        $dadosPalete['idUma']    = '1231';
+        $dadosPalete['picking']  = '01.00.000.00';
+        $dadosPalete['qtd']      = 123;
+        $paletesArray = array(0=>$dadosPalete);
+
+        $param = array();
+        $param['idRecebimento'] = $idRecebimento;
+        $param['codProduto']    = '3908040';
+        $param['grade']         = 'PRETO...';
+
+        $param['codProduto']    = '688037';
+        $param['grade']         = 'IMB/PRET';
+
+        $param['paletes']       = $paletesArray;
+        $param['dataValidade']  = null;
+
+        $Uma->imprimir($param, $this->getSystemParameterValue("MODELO_RELATORIOS"));
+
+        //$this->redirect('ler-codigo-barras','recebimento','mobile',array('idRecebimento'=>$idRecebimento));
+    }
+
+    public function movimentacaoAction()
+    {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $nivel = $this->_getParam('nivel');
+
+        $this->view->codigoBarras = $codigoBarras;
+        $this->view->nivel = $nivel;
+    }
+
+    public function umaByEnderecoAction()
+    {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $nivel = $this->_getParam('nivel');
+        $this->view->codigoBarras = $codigoBarras;
+
+        try {
+            if ($codigoBarras) {
+                $LeituraColetor = new LeituraColetor();
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            }
+
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+            $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
+
+            if ($result == NULL) {
+                throw new \Exception ("Endereço selecionado está vazio");
+            } else {
+                $idEstoque = $result[0]['id'];
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+                $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
+                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $result[0]['idEndereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
+
+                if (count($verificaReservaSaida) > 0) {
+                    throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
+                }
+
+                if ($result[0]['uma']) {
+                    $this->_redirect('/mobile/enderecamento/endereco-uma/cb/' . $idEstoque . '/end/' . $codigoBarras . '/nivelAntigo/' . $nivel);
+                } else {
+                    $this->_redirect('/mobile/enderecamento/endereco-produto/cb/' . $idEstoque . '/end/' . $codigoBarras . '/nivelAntigo/' . $nivel);
+                }
+            }
+        }  catch (\Exception $e) {
+            throw new \Exception ($e->getMessage());
+        }
+
+    }
+
+    public function enderecoProdutoAction()
+    {
+        $idEstoque = $this->_getParam('cb');
+        $this->view->cb = $idEstoque;
+        $this->view->end = $this->_getParam('end');
+        $this->view->nivel = $this->_getParam('nivel');
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque")->findOneBy(array('id'=>$idEstoque));
+
+        $rua         = $estoqueEn->getDepositoEndereco()->getRua();
+        $predio      = $estoqueEn->getDepositoEndereco()->getPredio();
+        $nivel       = $estoqueEn->getDepositoEndereco()->getNivel();
+        $apartamento = $estoqueEn->getDepositoEndereco()->getApartamento();
+        $idEstoque   = $estoqueEn->getDepositoEndereco()->getId();
+
+        $this->view->rua = $rua;
+        $this->view->predio = $predio;
+        $this->view->nivel = $nivel;
+        $this->view->apartamento = $apartamento;
+
+    }
+
+    public function enderecoUmaAction()
+    {
+        $idEstoque = $this->_getParam('cb');
+        $this->view->cb = $idEstoque;
+        $this->view->end = $this->_getParam('end');
+        $this->view->nivel = $this->_getParam('nivel');
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque")->findOneBy(array('id'=>$idEstoque));
+
+        $rua         = $estoqueEn->getDepositoEndereco()->getRua();
+        $predio      = $estoqueEn->getDepositoEndereco()->getPredio();
+        $nivel       = $estoqueEn->getDepositoEndereco()->getNivel();
+        $apartamento = $estoqueEn->getDepositoEndereco()->getApartamento();
+        $idEstoque   = $estoqueEn->getDepositoEndereco()->getId();
+
+        $this->view->rua = $rua;
+        $this->view->predio = $predio;
+        $this->view->nivel = $nivel;
+        $this->view->apartamento = $apartamento;
+    }
+
+    public function enderecoDestinoAction()
+    {
+        $this->view->codigoBarrasUMA = $this->_getParam('codigoBarrasUMA');
+        $this->view->etiquetaProduto = $this->_getParam('etiquetaProduto');
+        $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
+
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
+        $this->view->qtd = $qtd = $estoqueEn->getQtd();
+    }
+
+    public function confirmaEnderecamentoAction()
+    {
+        ini_set('max_execution_time', 3000);
+        $params = array();
+        $qtd = $this->_getParam('qtd');
+        $params['uma'] = $this->_getParam('uma');
+        $params['etiquetaProduto'] = $this->_getParam('etiquetaProduto');
+        $params['idEstoque'] = $this->_getParam('cb');
+        $enderecoNovo = $this->_getParam('novoEndereco');
+        $nivelNovo = $this->_getParam('nivel');
+        $enderecoAntigo = $this->_getParam('end');
+        $nivelAntigo = $this->_getParam('nivelAntigo');
+
+        /** @var \Wms\Domain\Entity\Produto $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+        $volumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+
+        try {
+
+            if ($enderecoNovo) {
+                $LeituraColetor = new LeituraColetor();
+                $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
+            }
+
+            if ($enderecoAntigo) {
+                $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo, $nivelAntigo);
+            }
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+
+            if (isset($params['uma']) && !empty($params['uma'])) {
+                $params['uma'] = $LeituraColetor->retiraDigitoIdentificador($params['uma']);
+
+                $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo->getId()));
+                foreach ($estoqueEn as $estoque) {
+                    //INSERE NOVO ESTOQUE
+                    $params['qtd'] = $qtd;
+                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
+                    $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
+                    $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
+                    $validade = $estoque->getValidade();
+                    $params['validade'] = null;
+                    if (isset($validade) && !is_null($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    }
+                    $estoqueRepo->movimentaEstoque($params);
+                    //RETIRA ESTOQUE
+                    $params['endereco'] = $enderecoAntigo;
+                    $params['qtd'] = $qtd * -1;
+                    $estoqueRepo->movimentaEstoque($params);
+                }
+            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+                $LeituraColetor = new LeituraColetor();
+                $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
+
+                $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+                $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+
+                if (isset($params['embalagem']) && !empty($params['embalagem'])) {
+                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoEmbalagem' => $params['embalagem']));
+                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                    $params['qtd'] = $qtd;
+                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $validade = $estoqueEn->getValidade();
+                    $params['validade'] = null;
+                    if (isset($validade) && !is_null($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    }
+                    $estoqueRepo->movimentaEstoque($params);
+                    //RETIRA ESTOQUE
+                    $params['endereco'] = $enderecoAntigo;
+                    $params['qtd'] = $qtd * -1;
+                    $estoqueRepo->movimentaEstoque($params);
+                }
+
+                if (isset($volumeEn) && !empty($volumeEn)) {
+                    $norma = $volumeEn->getNormaPaletizacao()->getId();
+                    $codProduto = $volumeEn->getCodProduto();
+                    $grade = $volumeEn->getGrade();
+                    $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
+                    foreach ($volumes as $volume) {
+                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoVolume' => $volume));
+                        $params['qtd'] = $qtd;
+                        $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                        $params['volume'] = $volume;
+                        $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
+
+                        $validade = $estoqueEn->getValidade();
+                        $params['validade'] = null;
+                        if (isset($validade) && !is_null($validade)) {
+                            $params['validade'] = $validade->format('d/m/Y');
+                        }
+
+                        $estoqueRepo->movimentaEstoque($params);
+
+                        //RETIRA ESTOQUE
+                        $params['endereco'] = $enderecoAntigo;
+                        $params['qtd'] = $qtd * -1;
+                        $estoqueRepo->movimentaEstoque($params);
+
+                    }
+                }
+            }
+
+            $this->addFlashMessage('success', 'Endereço alterado com sucesso!');
+            $this->_redirect('/mobile/enderecamento/movimentacao');
+
+        }  catch (\Exception $e) {
+            throw new \Exception ($e->getMessage());
+        }
+    }
+
+    private function getEnderecoNivel($dscEndereco, $nivel)
+    {
+        if (strlen($dscEndereco) < 8) {
+            $rua = 0;
+            $predio = 0;
+            $nivel = 0;
+            $apartamento = 0;
+        } else {
+            $dscEndereco = str_replace('.','',$dscEndereco);
+            if (strlen($dscEndereco) == 8){
+                $tempEndereco = "0" . $dscEndereco;
+            } else {
+                $tempEndereco = $dscEndereco;
+            }
+            $rua = intval( substr($tempEndereco,0,2));
+            $predio = intval(substr($tempEndereco,2,3));
+            $apartamento = intval(substr($tempEndereco,7,2));
+        }
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        return $enderecoRepo->findOneBy(array('rua' => $rua, 'predio' => $predio, 'apartamento' => $apartamento, 'nivel' => $nivel));
+    }
+
+
 }
 

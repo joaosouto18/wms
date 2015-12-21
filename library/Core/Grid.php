@@ -1274,15 +1274,19 @@ class Grid
         // remover filtros
         if (isset($params['grid']['export']) && !empty($params['grid']['export'])) {
 
+            $title = $this->getAttrib('title');
+            if (isset($title) || (!is_null($title)) | (!empty($title))) {
+                $title = 'Grid';
+            }
             switch ($params['grid']['export']) {
                 case 'pdf':
-                    Export\Pdf::render($this, 'Relatório ' . $view->title);
+                    Export\Pdf::render($this, $title);
                     break;
                 case 'csv':
-                    Export\Csv::render($this, $view->title);
+                    Export\Csv::render($this, $title);
                     break;
                 case 'xml':
-                    Export\Xml::render($this, $view->title);
+                    Export\Xml::render($this, $title);
                     break;
                 default:
                     throw new \Exception('The option to export is not a valid one.');

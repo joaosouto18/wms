@@ -1,0 +1,54 @@
+<?php if ($this->dadosCliente[0]) : ?>
+    <div id="quantidade-grid">
+        <fieldset>
+            <legend>Dados do Cliente</legend>
+            <table class="gTable">
+                <tr>
+                    <td>Cód. Cliente</td>
+                    <td>Nome</td>
+                    <td>CPF/CNPJ</td>
+                </tr>
+                <tr>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['id']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['nome']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo (!empty($this->dadosCliente[0]['cpf']) ? $this->dadosCliente[0]['cpf'] : $this->dadosCliente[0]['cnpj']); ?>" disabled/></td>
+                </tr>
+            </table>
+        </fieldset>
+        <fieldset>
+            <legend>Endereço de Cliente</legend>
+            <table class="gTable">
+                <tr>
+                    <td>CEP</td>
+                    <td>Cidade</td>
+                    <td>Bairro</td>
+                    <td>UF</td>
+                </tr>
+                <tr>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['cep']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['cidade']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['bairro']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['estado']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Endereço</td>
+                    <td>Número</td>
+                    <td>Complemento</td>
+                </tr>
+                <tr>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['descricao']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['numero']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['complemento']; ?>" disabled/></td>
+                </tr>
+                <tr>
+                    <td>Ponto Referência</td>
+                    <td>Praça</td>
+                </tr>
+                <tr>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['pontoReferencia']; ?>" disabled/></td>
+                    <td><input style="width: 100%" type="text" value="<?php echo $this->dadosCliente[0]['nomePraca']; ?>" disabled/></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+<?php endif; ?>

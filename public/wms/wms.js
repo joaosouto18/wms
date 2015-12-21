@@ -62,6 +62,8 @@ steal.plugins(
     'calculo_medida',
     'box',
     'ajuda',
+    'praca',
+    'rota',
     'produto_embalagem',
     'produto_volume',
     'produto_dado_logistico',
@@ -74,7 +76,6 @@ steal.plugins(
     'filtro_nota_fiscal',
     'expedicao',
     'relatorios_simples',
-    'agruparcargas',
     'relatorio_pedidos_expedicao',
     'enderecamento'
     )

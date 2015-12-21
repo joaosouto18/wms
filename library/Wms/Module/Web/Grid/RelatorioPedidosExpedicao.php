@@ -25,7 +25,7 @@ class RelatorioPedidosExpedicao extends Grid
 
 
         $result = $relatorioSimplesRepo->getConsultaRelatorioPedidosExpedicao($params);
-
+        $this->setAttrib('title','Pedidos Expedicao');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('expedicao-index-grid')
                 ->setAttrib('class', 'grid-expedicao')

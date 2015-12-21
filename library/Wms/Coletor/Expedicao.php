@@ -258,7 +258,11 @@ class Expedicao
         $this->_expedicaoEntity = $this->getExpedicaoRepo()->find($this->getIdExpedicao());
 
         if ($this->_expedicaoEntity->getStatus()->getId() == ExpedicaoEntity::STATUS_EM_SEPARACAO) {
-            $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
+            $verificaReconferencia = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+            if ($verificaReconferencia=='S')
+                $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_PRIMEIRA_CONFERENCIA);
+            else
+                $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
         }
 
     }

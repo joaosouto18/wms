@@ -1,6 +1,5 @@
 <?php
-use Wms\Module\Web\Controller\Action,
-    Wms\Module\Enderecamento\Report\EstoqueConsolidado;
+use Wms\Module\Web\Controller\Action;
 
 class Enderecamento_Relatorio_EstoqueConsolidadoController extends Action
 {
@@ -12,9 +11,13 @@ class Enderecamento_Relatorio_EstoqueConsolidadoController extends Action
 
         if ($values)
         {
-            $relatorio = new \Wms\Module\Enderecamento\Report\EstoqueConsolidado();
-            $relatorio->init($values);
-
+            $EstoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $estoqueDados = $EstoqueRepo->getEstoqueConsolidado($values);
+            if (isset($values['submit'])) {
+                $this->exportCSV($estoqueDados, 'Estoque_Consolidado', true);
+            } else if (isset($values['exportPdf'])) {
+                $this->exportPDF($estoqueDados,'estoqueConsolidado','RELATORIO DE ESTOQUE POR PRODUTO CONSOLIDADO',"P");
+            }
         }
 
         $this->view->form = $form;

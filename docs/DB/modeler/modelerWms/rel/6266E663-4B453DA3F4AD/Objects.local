@@ -1,0 +1,30 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="0E5044AB-AABB-52DF-D121-3430D62218AB" name="WMS_DEVELOP" seqName="seg_0"/>
+   <object objectType="Table" objectID="0E54A90F-8D3B-0843-2848-0C7EB8A0D7FF" name="NOTA_FISCAL" seqName="seg_0"/>
+   <object objectType="Table" objectID="1AFDF068-5E7E-7634-0DE3-451BF8BD4E12" name="ETIQUETA_SEPARACAO_ANDAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="4D05CD13-F97C-70EB-03A8-2BE3D42075C6" name="NOTA_FISCAL_SAIDA_PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="51CB9681-DDD7-EAD0-CDA8-091E59499BCD" name="NOTA_FISCAL_SAIDA_ANDAMENTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="6F8BAEFA-558E-6E57-F658-EFED8715FD70" name="USUARIO" seqName="seg_0"/>
+   <object objectType="Table" objectID="9B87AD5C-EF9A-3585-407E-CB1A9595A9A3" name="RECEBIMENTO_REENTREGA_NF" seqName="seg_0"/>
+   <object objectType="Table" objectID="AF16A5E9-9EE1-55F2-8971-02E5797AB9B9" name="CONF_RECEB_REENTREGA" seqName="seg_0"/>
+   <object objectType="Table" objectID="B30E7D4C-5D55-93B2-EF16-853231641DDD" name="PRODUTO" seqName="seg_0"/>
+   <object objectType="Table" objectID="BD080373-A6D4-8F77-E585-8FC1C9FB720F" name="NOTA_FISCAL_SAIDA" seqName="seg_0"/>
+   <object objectType="Table" objectID="C27C8AC5-A6E5-105A-AD57-CE1D6C3A0309" name="PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="C517C179-BE1C-6121-57B1-A8F91294CF22" name="NOTA_FISCAL_SAIDA_PEDIDO" seqName="seg_0"/>
+   <object objectType="Table" objectID="CC0F7FEA-8C63-49D8-01D9-21C9B386B791" name="RECEBIMENTO_REENTREGA" seqName="seg_0"/>
+   <object objectType="Table" objectID="DC8B7879-7E12-F053-FEF5-7A6B8E330E2D" name="ETIQUETA_SEPARACAO" seqName="seg_0"/>
+   <object objectType="Table" objectID="E50EE04A-0BD7-0288-3317-E83805DDBC2B" name="ORDEM_SERVICO" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="245F5FD7-497B-EB4D-5CAA-1EB46A51CC52" name="ETQ_SE_AND_ORD_SER_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="27DDBEE3-AAED-7EFC-053F-7C150E0E1B23" name="CONF_RECEB_REENTREGA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="63004815-F05A-5319-A331-528C3F4F51B8" name="ETQ_AND_ETIQ_SEP_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="6D4E3901-88B8-2CD5-5241-79B83E6D5F85" name="NF_SAIDA_PROD_NF_SAIDA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="7B99B186-8A01-8497-343D-B11DC3279397" name="NF_SAIDA_PROD_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="80580734-4E32-3EA9-EE1E-2959C9238B82" name="NF_SAIDA_PED_NF_SAIDA_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="89EAD2D0-8C64-47CA-20FE-3F5899898BE4" name="RECEB_REENTREGA_NF_FKv2" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="ADBB9217-79CD-804E-D886-D38FB3435506" name="NFISCAL_SAIDA_ANDAMENTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="AE4F1AB9-F21D-913C-DFFA-B3547FF78F72" name="RECEBIMENTO_REENTREGA_USUARIO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="C8381274-49B5-4E91-5644-213E50EAD299" name="NFL_SAIDA_PEDIDO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="CFB07734-0496-3881-F642-D82CAE51999D" name="CONF_RECEB_REENTREGA_PRODUTO_FK" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="EE02C53A-BB2F-3BB6-B5D5-2D70013EFAB4" name="RECEB_REENTREGA_NF_FK" seqName="seg_0"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>

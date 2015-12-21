@@ -332,13 +332,35 @@ class InventarioRepository extends EntityRepository
     public function verificaReservas($idInventario)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select('d.id, re.tipoReserva, re.dataReserva, d.descricao')
+            ->select("d.id, prod.id as produto, prod.grade as grade, re.dataReserva, d.descricao,
+            CONCAT(
+                CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:'
+                     WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:'
+                     WHEN palete.id IS NOT NULL THEN 'Palete :'
+                     ELSE 'Não foi possível identificar a operação'
+                END
+            ,
+                NVL(exp.id,NVL(ressup.id,NVL(palete.id,'')))
+            ) as origemReserva,
+            CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva,
+            NVL(ped.id,'') as pedido
+            ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
             ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
+            ->leftJoin('wms:Ressuprimento\ReservaEstoqueExpedicao','reexp','WITH','reexp.reservaEstoque = re.id')
+            ->leftJoin('wms:Ressuprimento\ReservaEstoqueEnderecamento','reend','WITH','reend.reservaEstoque = re.id')
+            ->leftJoin('wms:Ressuprimento\ReservaEstoqueOnda','reond','WITH','reond.reservaEstoque = re.id')
+            ->leftJoin('reexp.pedido','ped')
+            ->leftJoin('reexp.expedicao', 'exp')
+            ->leftJoin('reond.ondaRessuprimentoOs','ressup')
+            ->leftJoin('reend.palete','palete')
+            ->leftJoin('re.produtos','rep')
+            ->leftJoin('rep.produto','prod')
             ->andWhere("re.atendida = 'N'")
             ->andWhere("ie.inventario = $idInventario")
-            ->groupBy('d.id, re.tipoReserva, re.dataReserva, d.descricao');
+            ->distinct(true);
+
         return $source->getQuery()->getResult();
     }
 
@@ -346,13 +368,19 @@ class InventarioRepository extends EntityRepository
     {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+        /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $inventarioContagemEnderecoRepo */
+        $inventarioContagemEnderecoRepo = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
         foreach($enderecos as $endereco) {
             $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
             if ($inventarioEndEn) {
+                $inventarioContagemEnderecoEn = $inventarioContagemEnderecoRepo->findBy(array('inventarioEndereco' => $inventarioEndEn));
+                foreach ($inventarioContagemEnderecoEn as $inventarioContEnd) {
+                    $this->_em->remove($inventarioContEnd);
+                }
                 $this->_em->remove($inventarioEndEn);
-                $this->_em->flush();
             }
         }
+        $this->_em->flush();
     }
 
     public function bloqueiaEnderecos($id)
@@ -381,6 +409,55 @@ class InventarioRepository extends EntityRepository
             $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'N');
         }
         $this->_em->flush();
+    }
+
+    public function impressaoInventarioByEndereco($params, $idInventario)
+    {
+        $sql = "SELECT DSC_DEPOSITO_ENDERECO AS ENDERECO, NVL(ICE.COD_PRODUTO,'') AS PRODUTO, NVL(ICE.DSC_GRADE,'') AS GRADE, NVL(ICE.QTD_CONTADA,'') AS QUANTIDADE
+                FROM INVENTARIO I
+                INNER JOIN INVENTARIO_ENDERECO IE ON IE.COD_INVENTARIO = I.COD_INVENTARIO
+                INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                WHERE I.COD_INVENTARIO = $idInventario";
+
+        if (!empty($params['inicialRua'])) {
+            $sql .= " AND DE.NUM_RUA >= $params[inicialRua]";
+        }
+        if (!empty($params['finalRua'])) {
+            $sql .= " AND DE.NUM_RUA <= $params[finalRua]";
+        }
+        if (!empty($params['inicialPredio'])) {
+            $sql .= " AND DE.NUM_PREDIO >= $params[inicialPredio]";
+        }
+        if (!empty($params['finalPredio'])) {
+            $sql .= " AND DE.NUM_PREDIO <= $params[finalPredio]";
+        }
+        if (!empty($params['inicialNivel'])) {
+            $sql .= " AND DE.NUM_NIVEL <= $params[inicialNivel]";
+        }
+        if (!empty($params['finalNivel'])) {
+            $sql .= " AND DE.NUM_NIVEL >= $params[finalNivel]";
+        }
+        if (!empty($params['inicialApartamento'])) {
+            $sql .= " AND DE.NUM_APARTAMENTO >= $params[inicialApartamento]";
+        }
+        if (!empty($params['finalApartamento'])) {
+            $sql .= " AND DE.NUM_APARTAMENTO <= $params[finalApartamento]";
+        }
+        if (!empty($params['lado'])) {
+            if ($params['lado'] == "P")
+                $sql .= " AND MOD(DE.NUM_PREDIO,2) = 0";
+            if ($params['lado'] == "I")
+                $sql .= " AND MOD(DE.NUM_PREDIO,2) = 1";
+        }
+        if ($params['status'] == 2) {
+            $sql .= " AND ICE.COD_INV_CONT_END IS NOT NULL";
+        } else {
+            $sql .= " AND ICE.COD_INV_CONT_END IS NULL";
+        }
+        $sql .= " ORDER BY DSC_DEPOSITO_ENDERECO ASC";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

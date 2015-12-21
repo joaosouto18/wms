@@ -14,9 +14,7 @@ class VSaldoRepository extends EntityRepository
         ->from("wms:Enderecamento\VSaldo","s")
         ->leftJoin("s.produto","p")
         ->leftJoin("s.depositoEndereco", "e")
-        ->orderBy("e.rua,lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
-
-        $query->andWhere('e.ativo <> \'N\' and e.situacao= \'D\' ');
+        ->orderBy("e.rua, lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
 
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];

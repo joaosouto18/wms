@@ -80,6 +80,11 @@ class Pedido
     protected $dataCancelamento;
 
     /**
+     * @Column(name="IND_ETIQUETA_MAPA_GERADO", type="string", nullable=true)
+     */
+    protected $indEtiquetaMapaGerado;
+
+    /**
      * @param mixed $sequencia
      */
     public function setSequencia($sequencia)
@@ -218,6 +223,22 @@ class Pedido
     public function getPontoTransbordo()
     {
         return $this->pontoTransbordo;
+    }
+
+    /**
+     * @param mixed $indEtiquetaMapaGerado
+     */
+    public function setIndEtiquetaMapaGerado($indEtiquetaMapaGerado)
+    {
+        $this->indEtiquetaMapaGerado = $indEtiquetaMapaGerado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndEtiquetaMapaGerado()
+    {
+        return $this->indEtiquetaMapaGerado;
     }
 
 }

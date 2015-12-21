@@ -1,0 +1,29 @@
+<form id="formGrid" method="post" action="">
+
+    <table>
+        <tbody>
+        <tr>
+            <td colspan="1"></td>
+            <td bgcolor="aqua" width=""><span><?php echo strtoupper($this->operacao); ?></span></td>
+        </tr>
+        <tr>
+            <td colspan="1"></td>
+            <td width=""><span>Nome Usuario</span></td>
+        </tr>
+        <?php foreach($this->operadores as $operador) : ?>
+            <tr>
+                <?php $operadorChecked = $this->equipe->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao)); ?>
+                <?php if (count($operadorChecked) > 0) : ?>
+                    <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked></td>
+                <?php else : ?>
+                    <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                <?php endif; ?>
+                <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <button type="submit"><span>Vincular</span></button>
+    <input type="hidden" value="<?php echo $this->idExpedicao ?>" name="idExpedicao"/>
+</form>

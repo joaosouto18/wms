@@ -17,13 +17,53 @@ class ProdutosParaConferencia extends Grid
      *
      * @param array $params 
      */
-    public function init($idOS,$transbordo = false)
+    public function init($idOS,$transbordo = false, $tipoConferencia)
     {
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
         $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
-        $result = $osRepo->getConferenciaByOs($idOS,$transbordo);
+        $this->setAttrib('title','Produtos Conferencia');
+        if ($tipoConferencia != null) {
+            $result = $osRepo->getConferenciaByOs($idOS, $transbordo, $tipoConferencia);
 
-        $this->setSource(new \Core\Grid\Source\Doctrine($result))
+            $this->setSource(new \Core\Grid\Source\Doctrine($result))
+                ->setId('expedicao-' . $tipoConferencia . '-grid')
+                ->setAttrib('caption', 'Produtos conferidos - ' . $tipoConferencia)
+                ->addColumn(array(
+                    'label' => 'Cod. Barras',
+                    'index' => 'id'
+                ))
+                ->addColumn(array(
+                    'label' => 'Produto',
+                    'index' => 'codProduto',
+                ))
+                ->addColumn(array(
+                    'label' => 'Descrição',
+                    'index' => 'produto',
+                ))
+                ->addColumn(array(
+                    'label' => 'Grade',
+                    'index' => 'grade',
+                ))
+                ->addColumn(array(
+                    'label' => 'Volume',
+                    'index' => 'embalagem',
+                ))
+                ->addColumn(array (
+                    'label' => 'Data ' . $tipoConferencia,
+                    'index' =>  'dataConferencia',
+                    'render' => 'DataTime'
+                ))
+                ->addColumn(array (
+                    'label' => 'Data Conferencia Transbordo',
+                    'index' =>  'dataConferenciaTransbordo',
+                    'render' => 'DataTime'
+                ))
+                ->setShowExport(true);
+            ;
+        } else {
+            $result = $osRepo->getConferenciaByOs($idOS, $transbordo, $tipoConferencia);
+
+            $this->setSource(new \Core\Grid\Source\Doctrine($result))
                 ->setId('expedicao-conferencia-grid')
                 ->setAttrib('caption', 'Produtos conferidos')
                 ->addColumn(array(
@@ -56,8 +96,9 @@ class ProdutosParaConferencia extends Grid
                     'index' =>  'dataConferenciaTransbordo',
                     'render' => 'DataTime'
                 ))
-                ->setShowExport(false);
-                ;
+                ->setShowExport(true);
+            ;
+        }
 
         return $this;
     }

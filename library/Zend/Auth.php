@@ -114,7 +114,6 @@ class Zend_Auth
      */
     public function authenticate(Zend_Auth_Adapter_Interface $adapter)
     {
-        Zend_Session::rememberMe(60 * 60 * 24 * 7 * 4);
         $result = $adapter->authenticate();
 
         /**

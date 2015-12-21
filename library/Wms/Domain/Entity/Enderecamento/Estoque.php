@@ -79,6 +79,12 @@ class Estoque
     protected $produtoVolume;
 
     /**
+     * @Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $validade;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -252,6 +258,22 @@ class Estoque
     public function getProdutoVolume()
     {
         return $this->produtoVolume;
+    }
+
+    /**
+     * @return date
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param date $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
     }
 
 }

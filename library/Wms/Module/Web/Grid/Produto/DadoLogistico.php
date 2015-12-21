@@ -20,7 +20,7 @@ class DadoLogistico extends Grid
     public function init(array $params = array())
     {
         extract($params);
-
+        $this->setAttrib('title','Dados Logisticos');
         $source = $this->getEntityManager()->createQueryBuilder()
                 ->select('p, c.nome classe, f.nome fabricante, tc.id as idTipoComercializacao, tc.descricao tipoComercializacao')
                 ->addSelect("
@@ -55,15 +55,15 @@ class DadoLogistico extends Grid
         }
         if (!empty($fabricante)) {
             $fabricante = mb_strtoupper($fabricante, 'UTF-8');
-            $source->andWhere("f.nome LIKE '{$fabricante}%'");
+            $source->andWhere("f.nome LIKE '%{$fabricante}%'");
         }
         if (!empty($descricao)) {
             $descricao = mb_strtoupper($descricao, 'UTF-8');
-            $source->andWhere("p.descricao LIKE '{$descricao}%'");
+            $source->andWhere("p.descricao LIKE '%{$descricao}%'");
         }
         if (!empty($grade)) {
             $grade = mb_strtoupper($grade, 'UTF-8');
-            $source->andWhere("p.grade LIKE '{$grade}%'");
+            $source->andWhere("p.grade LIKE '%{$grade}%'");
         }
         if (!empty($id))
             $source->andWhere ("p.id = '" . $id . "'");

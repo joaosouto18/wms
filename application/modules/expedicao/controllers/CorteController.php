@@ -45,9 +45,16 @@ class Expedicao_CorteController  extends Action
                     $this->_redirect('/expedicao');
                 }
                 $EtiquetaRepo->cortar($etiquetaEntity);
+
+                if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
+                } else {
+                    $codBarrasProdutos = $etiquetaEntity->getProdutoVolume()->getCodigoBarras();
+                }
+
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao);
+                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                 $this->addFlashMessage('success', 'Etiqueta cortada com sucesso');
 
             }else {
@@ -60,5 +67,15 @@ class Expedicao_CorteController  extends Action
 
     }
 
+    public function corteAntecipadoAjaxAction(){
+        $id = $this->_getParam('id');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($id);
+
+        $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
+        $this->view->grid = $grid->init($produtos, $id);
+    }
 
 }

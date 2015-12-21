@@ -17,6 +17,8 @@ class Expedicao
     const STATUS_FINALIZADO = 465;
     const STATUS_CANCELADO = 466;
     const STATUS_PARCIALMENTE_FINALIZADO = 530;
+    const STATUS_PRIMEIRA_CONFERENCIA = 551;
+    const STATUS_SEGUNDA_CONFERENCIA = 552;
 
     /**
      * @Column(name="COD_EXPEDICAO", type="integer", nullable=false)
@@ -76,7 +78,23 @@ class Expedicao
      * @column(name="TIPO_FECHAMENTO", type="string", length=1, nullable=false)
      */
     protected $tipoFechamento;
+	
+	/**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\Carga", mappedBy="expedicao")
+     */
+    protected $carga;
 
+	
+	public function setCarga($carga)
+    {
+        $this->carga = $carga;
+    }
+
+    public function getCarga()
+    {
+        return $this->carga;
+    }
+	
     public function setStatus($status)
     {
         $this->status = $status;

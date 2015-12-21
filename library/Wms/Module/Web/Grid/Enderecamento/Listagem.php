@@ -24,7 +24,7 @@ class Listagem extends Grid
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo    = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
         $result = $paleteRepo->getQtdProdutosByRecebimento($params);
-
+        $this->setAttrib('title','Listagem Enderecamento');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->setId('enderecamento-index-grid')
                 ->setAttrib('class', 'grid-enderecamento-listagem')

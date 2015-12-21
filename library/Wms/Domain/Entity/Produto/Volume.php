@@ -122,13 +122,6 @@ class Volume
      */
     protected $endereco;
 
-
-    /**
-     * @Column(type="integer", name="COD_DEPOSITO_ENDERECO")
-     * @var integer código do endereco
-     */
-    protected $codEndereco;
-
     /**
      * @OneToMany(targetEntity="Wms\Domain\Entity\Recebimento\Volume", mappedBy="volume")
      * @var ArrayCollection lista de recebimentos desta embalagem
@@ -428,6 +421,20 @@ class Volume
         return $this->pontoReposicao;
     }
 
+    /**
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
 
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
 
 }

@@ -1,0 +1,46 @@
+<fieldset id="fieldset-endereco">
+    <table>
+	<tr height="25">
+	    <td></td>
+	    <td>Inicial</td>
+	    <td>Final</td>
+	    <td></td>
+	    <td>Inicial</td>
+	    <td>Final</td>
+	    <td></td>
+	    <td>Inicial</td>
+	    <td>Final</td>
+	    <td></td>
+	    <td>Inicial</td>
+	    <td>Final</td>
+	</tr>
+	<tr height="25">
+	    <td width="35">Rua:</td>
+	    <td width="60"><?php echo "{$this->element->inicialRua}"; ?></td>
+	    <td width="80"><?php echo "{$this->element->finalRua}"; ?></td>
+
+	    <td width="50">Prédio:</td>
+	    <td width="60"><?php echo "{$this->element->inicialPredio}"; ?></td>
+	    <td width="80"><?php echo "{$this->element->finalPredio}"; ?></td>
+
+	    <td width="40">Nível:</td>
+	    <td width="60"><?php echo "{$this->element->inicialNivel}"; ?></td>
+	    <td width="80"><?php echo "{$this->element->finalNivel}"; ?></td>
+
+	    <td width="80">Apartamento:</td>
+	    <td width="60"><?php echo "{$this->element->inicialApartamento}"; ?></td>
+	    <td width="100"><?php echo "{$this->element->finalApartamento}"; ?></td>
+	    
+	    <td width="40">Lado:</td>
+	    <td width="200"><?php echo $this->element->lado;?></td>
+
+		<td width="40">Status:</td>
+		<td width="200"><?php echo $this->element->status; ?></td>
+	</tr>
+    </table>
+    <table>
+	<tr>
+	    <td><input type="submit" class="btn" id="submit" value="Buscar" name="busca" style="margin-top: 30px"/></td>
+	</tr>
+    </table>
+</fieldset>

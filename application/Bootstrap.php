@@ -27,7 +27,8 @@ class Bootstrap extends \Zend_Application_Bootstrap_Bootstrap //BaseBootstrap
             'Symfony' => null,
             'Wms' => null,
             'Adl' => null,
-            'ZFDebug' => null
+            'ZFDebug' => null,
+            'Mobile' => APPLICATION_PATH . '/modules/mobile/src/'
         );
 
         $autoloader = \Zend_Loader_Autoloader::getInstance();
@@ -181,42 +182,9 @@ class Bootstrap extends \Zend_Application_Bootstrap_Bootstrap //BaseBootstrap
             ->registerPlugin(new \Wms\Plugin\Deposito);
     }
 
-    protected function _initConfig() {
+    protected function _initConfig()
+    {
         Zend_Registry::set('config', new Zend_Config($this->getOptions()));
     }
 
-    protected function _initZFDebug(){
-        if(APPLICATION_ENV == 'development')
-        {
-            $ZFDebug = $this->getOption('ZFDebug');
-            if($ZFDebug['enabled'] == '1')
-            {                
-                $autoloader = Zend_Loader_Autoloader::getInstance();
-                $autoloader->registerNamespace('ZFDebug');
-
-                $em = $this->bootstrap('doctrine')->getResource('doctrine')->getEntityManager();
-
-                $options = array(
-                    'plugins' => array(
-                        'Variables',
-                        'ZFDebug_Controller_Plugin_Debug_Plugin_Doctrine2'  => array(
-                        'entityManagers' => array($em),
-                        ),
-                    'File'          => array('basePath' => APPLICATION_PATH . '/application'),
-                    'Exception',
-                    'Html',
-                    'Memory',
-                    'Time',
-                    )
-                );
-
-                $debug = new ZFDebug_Controller_Plugin_Debug($options);
-
-                $this->bootstrap('frontController');
-
-                $frontController = $this->getResource('frontController');
-                $frontController->registerPlugin($debug);
-            }
-        }
-    }
 }

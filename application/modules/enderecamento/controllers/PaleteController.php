@@ -10,6 +10,7 @@ class Enderecamento_PaleteController extends Action
      */
     public function indexAction()
     {
+        ini_set('max_execution_time', 3000);
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
@@ -19,10 +20,12 @@ class Enderecamento_PaleteController extends Action
         $produtoEn = $this->em->getRepository("wms:Produto")->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository   = $this->em->getRepository('wms:Produto');
-        $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+        $this->view->endPicking = $picking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+
+        $this->view->qtdTotal = $xxx = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
         try {
-            $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade);
+            $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,true,$tipoEnderecamento = 'M');
         } catch(Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
             $this->_redirect('/enderecamento/produto/index/id/'.$idRecebimento);
@@ -82,6 +85,9 @@ class Enderecamento_PaleteController extends Action
         $param['grade']         = $params['grade'];
         $param['paletes']        = $paletesArray;
 
+        $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+        $param['dataValidade'] = $notaFiscalRepo->buscaRecebimentoProduto($param['idRecebimento'], null, $param['codProduto'], $param['grade']);
+
         $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
         $Uma->imprimir($param, $this->getSystemParameterValue("MODELO_RELATORIOS"));
     }
@@ -115,7 +121,11 @@ class Enderecamento_PaleteController extends Action
         if ($paletes != null) {
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
-            if ($paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'))) {
+
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($id, null, $codigo, $grade);
+
+            if ($paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'), null, $dataValidade)) {
                 $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
             } else {
                 $this->addFlashMessage('info', 'Não foram feitos endereçamentos');
@@ -302,13 +312,22 @@ class Enderecamento_PaleteController extends Action
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
         $existeRecebimento = $recebimentoRepo->find($novoRecebimento);
 
+        $idRecebimentoAntigo = $params['id'];
+        $codProduto          = $params['codigo'];
+        $grade               = $params['grade'];
+
         if ($existeRecebimento == null) {
             return 'Recebimento inexistente!';
         }
 
-        if ($paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'])) {
-            $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
-            $this->addFlashMessage('success', 'Troca realizada com sucesso');
+        if ($paleteRepo->validaTroca($novoRecebimento,$codProduto,$grade) == true) {
+            $result = $paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'], $idRecebimentoAntigo, $codProduto,$grade);
+            if ($result['result'] == true) {
+                $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
+                $this->addFlashMessage('success', 'Troca realizada com sucesso');
+            } else {
+                $this->addFlashMessage('error', $result['msg']);
+            }
         }
 
         $url = '/enderecamento/produto/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']);

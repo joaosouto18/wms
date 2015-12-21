@@ -2,7 +2,7 @@
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Grid\Expedicao as ExpedicaoGrid,
     Wms\Domain\Entity\Expedicao,
-    Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoriaRelatorio,
+    Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Expedicao\Report\Produtos;
 
 class Expedicao_Relatorio_ProdutosController extends \Wms\Controller\Action
@@ -12,7 +12,7 @@ class Expedicao_Relatorio_ProdutosController extends \Wms\Controller\Action
         $linhaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Armazenagem\LinhaSeparacao');
         $filialRepo = $this->getEntityManager()->getRepository('wms:Filial');
 
-        $form = new FiltroExpedicaoMercadoriaRelatorio;
+        $form = new FiltroExpedicaoMercadoria;
         $this->view->form = $form;
         $this->view->filiais = $filialRepo->getIdExternoValue();
         $this->view->linhaSeparacao = $linhaSeparacaoRepo->getIdValue();
@@ -32,8 +32,6 @@ class Expedicao_Relatorio_ProdutosController extends \Wms\Controller\Action
 
         $expedicoes = $expedicaoRepo->buscar($params);
         $this->view->expedicoes = $expedicoes;
-        if ( !empty($params['control']) )
-            $this->view->control = $params['control'];
     }
 
     public function imprimirAction()

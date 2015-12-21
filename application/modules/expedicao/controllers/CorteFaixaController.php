@@ -4,7 +4,9 @@ use Wms\Module\Web\Controller\Action,
 
 class Expedicao_CorteFaixaController  extends Action
 {
-    public function indexAction() {
+    public function indexAction()
+    {
+        ini_set('max_execution_time', 3000);
         $LeituraColetor = new LeituraColetor();
 
         $codBarrasInicial = $this->getRequest()->getParam('codBarrasInicial');
@@ -30,11 +32,18 @@ class Expedicao_CorteFaixaController  extends Action
                     /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
                     try {
                         foreach ($etiquetas as $etiquetaEn) {
-                            $EtiquetaRepo->cortar($etiquetaEn);
+                            $EtiquetaRepo->cortar($etiquetaEn, true);
+
+                            if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
+                                $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
+                            } else {
+                                $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
+                            }
+
                             if ($etiquetaInicial == "") $etiquetaInicial = $etiquetaEn->getId();
                             $etiquetaFinal = $etiquetaEn->getId();
                             $expedicaoId = $etiquetaEn->getPedido()->getCarga()->getExpedicao()->getId();
-                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId);
+                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId, false, true, $etiquetaEn->getId(),$codBarrasProdutos);
                         }
                         $this->addFlashMessage('success',"Etiquetas cortadas com sucesso");
                         $this->redirect('index','corte-faixa','expedicao');

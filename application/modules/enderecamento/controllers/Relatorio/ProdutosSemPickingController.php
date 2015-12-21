@@ -1,6 +1,5 @@
 <?php
-use Wms\Module\Web\Controller\Action,
-    Wms\Module\Enderecamento\Report\EstoqueConsolidado;
+use Wms\Module\Web\Controller\Action;
 
 class Enderecamento_Relatorio_ProdutosSemPickingController extends Action
 {

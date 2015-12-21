@@ -67,6 +67,18 @@ class Palete
     protected $produtos;
 
     /**
+     *@Column(name="DTH_VALIDADE", type="date")
+     * @var date
+     */
+    protected $validade;
+
+    /**
+     * @Column(name="TIPO_ENDERECAMENTO", type="string")
+     * @var string
+     */
+    protected $tipoEnderecamento;
+
+    /**
      * @param mixed $codStatus
      */
     public function setCodStatus($codStatus)
@@ -207,6 +219,38 @@ class Palete
             $arrayProdutos[] = $arrayProduto;
         }
         return $arrayProdutos;
+    }
+
+    /**
+     * @return date
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param date $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTipoEnderecamento()
+    {
+        return $this->tipoEnderecamento;
+    }
+
+    /**
+     * @param string $tipoEnderecamento
+     */
+    public function setTipoEnderecamento($tipoEnderecamento)
+    {
+        $this->tipoEnderecamento = $tipoEnderecamento;
     }
 
 }

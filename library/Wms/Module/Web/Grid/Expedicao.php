@@ -28,6 +28,7 @@ class Expedicao extends Grid
 
         $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
+        $this->setAttrib('title','Expedição');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->setId('expedicao-index-grid')
             ->setAttrib('class', 'grid-expedicao')
@@ -66,11 +67,11 @@ class Expedicao extends Grid
                 'index' => 'dataFinalizacao',
             ))
             ->addColumn(array(
-                'label' => 'Produtos Sem Etiquetas',
-                'index' => 'prodSemEtiqueta',
+                'label' => 'Imprimir',
+                'index' => 'imprimir',
             ))
             ->addColumn(array(
-                'label' => 'Percentual Conferencia',
+                'label' => '% Conferência',
                 'index' => 'PercConferencia',
             ))
             ->addColumn(array(
@@ -86,6 +87,16 @@ class Expedicao extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "INTEGRADO";
                 }
+            ))
+            ->addAction(array(
+                'label' => 'Equipe de Carregamento',
+                'moduleName' => 'produtividade',
+                'controllerName' => 'carregamento',
+                'actionName' => 'index',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                        return $row['status'] != "INTEGRADO";
+                    }
             ))
             ->addAction(array(
                 'label' => 'Finalizar Conferência Expedição',
@@ -116,7 +127,7 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
-                'label' => 'Gerar Cortes',
+                'label' => 'Cortar Etiqueta',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
                 'actionName' => 'index',
@@ -127,15 +138,26 @@ class Expedicao extends Grid
                 }
             ))
             ->addAction(array(
-                'label' => 'Imprimir Etiquetas',
+                'label' => 'Cortar Pedido',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'corte-antecipado-ajax',
+                'pkIndex' => 'id',
+                'cssClass' => 'dialogAjax',
+                'condition' => function ($row) {
+                        return $row['status'] != "FINALIZADO";
+                    }
+            ))
+            ->addAction(array(
+                'label' => 'Imprimir',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
                 'actionName' => 'index',
                 'params' => array('urlAction' => 'imprimir', 'urlController' => 'etiqueta', 'sc' => true),
                 'cssClass' => 'dialogAjax pdf',
                 'condition' => function ($row) {
-                    return $row['status'] != "FINALIZADO";
-                },
+                        return $row['imprimir'] == "SIM";
+                    },
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
@@ -147,6 +169,24 @@ class Expedicao extends Grid
                     return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
                 },
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Reimprimir Mapa de Separação',
+                'modelName' => 'expedicao',
+                'controllerName' => 'etiqueta',
+                'actionName' => 'reimprimir-mapa',
+                'condition' => function($row) {
+                    return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                },
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Imprimir Volume Patrimonio',
+                'modelName' => 'expedicao',
+                'controllerName' => 'volume-patrimonio',
+                'actionName' => 'imprimir-volume-patrimonio',
+                'pkIndex' => 'id',
+                'cssClass' => 'dialogAjax'
             ))
             ->addAction(array(
                 'label' => 'Relatório de Produtos',
@@ -166,18 +206,6 @@ class Expedicao extends Grid
                 'actionName' => 'sem-estoque-report',
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
-            ))
-            ->addAction(array(
-                'label' => 'Relatório de Produtos sem Etiquetas',
-                'modelName' => 'expedicao',
-                'controllerName' => 'etiqueta',
-                'actionName' => 'index',
-                'params' => array('urlAction' => 'sem-dados', 'urlController' => 'etiqueta'),
-                'cssClass' => 'dialogAjax pdf',
-                'pkIndex' => 'id',
-                'condition' => function ($row) {
-                    return $row['prodSemEtiqueta'] > 0;
-                }
             ))
             ->addAction(array(
                 'label' => 'Relatório de Carregamento',

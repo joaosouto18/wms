@@ -22,7 +22,7 @@ class Recebimento extends Grid
     {
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
         $resultSet = $recebimentoRepo->buscar($params);
-
+        $this->setAttrib('title','Recebimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($resultSet))
                 ->setId('recebimento-index-grid')
                 ->setAttrib('class', 'grid-recebimento')
@@ -96,7 +96,13 @@ class Recebimento extends Grid
                     'condition' => function ($row) {
                         return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR) && $row['idOrdemServicoColetor']);
                     }
+                ))->addAction(array(
+                    'label' => 'Parametros do Recebimento',
+                    'actionName' => 'parametros-ajax',
+                    'pkIndex' => 'id',
+                    'cssClass' => 'dialogAjax'
                 ))
+
                 ->addAction(array(
                     'label' => 'Visualizar Ordem de Serviço',
                     'title' => 'Ordens de Serviço do Recebimento',

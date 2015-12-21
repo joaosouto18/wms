@@ -1,0 +1,39 @@
+﻿<form id="enderecamento-form" method="post" class="saveForm">
+    <div style="font-size: 14pt; font-weight: bolder">
+        Paletes
+        <input type="submit" name="imprimir" class="finalizar" style="margin-top: 0pt; margin-bottom: 4pt" value="Imprimir">
+        <input type="submit" name="trocarNorma" class="finalizarAmarelo" style="margin-top: 0pt; margin-bottom: 4pt" value="Recalcular">
+
+    </div>
+
+    <div id="quantidade-grid" class="grid">
+        <table style="width: 100%">
+            <tbody>
+            <?php
+            foreach ($this->paletes as $palete):
+                $fontColor = "black";
+                $liberado = true;
+                $this->color = !($this->color);?>
+                <tr <?php if ($this->color) {echo 'style="background-color: #EDEDED"';}?>>
+                    <td> <input name="palete[]" value="<?php echo $palete['ALL_UMA'] ?>" type="checkbox" checked="<?php echo $liberado?>"/></td>
+                    <td style="padding-bottom: 3pt;padding-top: 3pt">
+                        <table style="width: 100%">
+                            <tr>
+                                <td colspan="3">
+                                    <b><?php echo $palete['DSC_PRODUTO'] ?></b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><?php echo $palete['QTD_UMA'] . " x " . $palete['DSC_UNITIZADOR'] ?></td>
+                                <td><?php echo "<b>Qtd:<b> " . $palete['QTD']  ?></td>
+                                <td><a href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'enderecamento', 'action' => 'detalhe-endereco', 'produto' => $palete['COD_PRODUTO'], 'grade' => $palete['DSC_GRADE'])) ?>"> <input class="btn" type="button" value="Mais"></a></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+</form>

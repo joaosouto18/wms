@@ -12,7 +12,7 @@ class Ressuprimento extends Grid
         $expRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
 
         $result = $expRepo->getOn($params['codExpedicao']);
-
+        $this->setAttrib('title','Ressuprimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
                     'label' => 'Seq.',
