@@ -53,6 +53,24 @@ class ExpedicaoVolumePatrimonio
     protected $usuario;
 
     /**
+     * @var Wms\Domain\Entity\Usuario $usuario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
+     * @JoinColumn(name="COD_USUARIO_LACRE", referencedColumnName="COD_USUARIO")
+     */
+    protected $usuarioLacre;
+
+    /**
+     * @Column(name="NUM_LACRE", type="string")
+     * @var string
+     */
+    protected $lacre;
+
+    /**
+     * @Column(name="DTH_VINCULO_LACRE", type="datetime")
+     */
+    protected $dataVinculoLacre;
+
+    /**
      * @param mixed $tipoVolume
      */
     public function setTipoVolume($tipoVolume)
@@ -132,6 +150,54 @@ class ExpedicaoVolumePatrimonio
     public function setUsuario($usuario)
     {
         $this->usuario = $usuario;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLacre()
+    {
+        return $this->lacre;
+    }
+
+    /**
+     * @param string $lacre
+     */
+    public function setLacre($lacre)
+    {
+        $this->lacre = $lacre;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataVinculoLacre()
+    {
+        return $this->dataVinculoLacre;
+    }
+
+    /**
+     * @param mixed $dataVinculoLacre
+     */
+    public function setDataVinculoLacre($dataVinculoLacre)
+    {
+        $this->dataVinculoLacre = $dataVinculoLacre;
+    }
+
+    /**
+     * @return Wms\Domain\Entity\Usuario
+     */
+    public function getUsuarioLacre()
+    {
+        return $this->usuarioLacre;
+    }
+
+    /**
+     * @param Wms\Domain\Entity\Usuario $usuarioLacre
+     */
+    public function setUsuarioLacre($usuarioLacre)
+    {
+        $this->usuarioLacre = $usuarioLacre;
     }
 
 }

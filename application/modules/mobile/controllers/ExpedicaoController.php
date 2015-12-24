@@ -1114,5 +1114,31 @@ class Mobile_ExpedicaoController extends Action
 
     }
 
+    public function vincularLacreAction()
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonioRepository $expedicaoVolumePatrimonioRepo */
+        $expedicaoVolumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+        $volumePatrimonioId = $this->_getParam('id');
+        $params = $this->_getAllParams();
+
+        if ($this->_getParam('submit')) {
+            $result = $expedicaoVolumePatrimonioRepo->vinculaLacre($params);
+            if ($result) {
+                $this->_helper->messenger('success', 'Etiqueta Salva com sucesso!');
+                $this->redirect('vincular-lacre', 'expedicao', 'mobile');
+            }
+        }
+
+        if ($volumePatrimonioId) {
+            $expedicaoVolumePatrimonioEn = $expedicaoVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volumePatrimonioId), array('id' => 'DESC'),1);
+            $expedicao = $expedicaoVolumePatrimonioEn[0]->getExpedicao()->getId();
+            $dataFechamento = $expedicaoVolumePatrimonioEn[0]->getDataFechamento()->format('d/m/Y');
+            $id = $expedicaoVolumePatrimonioEn[0]->getId();
+
+            echo $this->_helper->json(array('id' => $id, 'expedicao' => $expedicao, 'data' => $dataFechamento));
+        }
+
+    }
+
 }
 

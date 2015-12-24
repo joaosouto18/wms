@@ -263,4 +263,30 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
+    public function vinculaLacre($params)
+    {
+        $expedicaoVolumePatrimonioEn = $this->getEntityManager()->getReference('wms:Expedicao\ExpedicaoVolumePatrimonio', $params['id']);
+
+        $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+        if ($expedicaoVolumePatrimonioEn) {
+            $observacao = 'Lacre '. $expedicaoVolumePatrimonioEn->getLacre() . ' alterado para lacre '. $params['numeroLacre'];
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+            $andamentoRepo->save($observacao, $params['expedicao'], false, true);
+
+            $expedicaoVolumePatrimonioEn->setDataVinculoLacre(new \DateTime());
+            $expedicaoVolumePatrimonioEn->setLacre($params['numeroLacre']);
+            $expedicaoVolumePatrimonioEn->setUsuarioLacre($usuario);
+
+            $this->getEntityManager()->persist($expedicaoVolumePatrimonioEn);
+            $this->getEntityManager()->flush();
+
+            return true;
+        }
+
+        return false;
+
+    }
+
 }
