@@ -821,8 +821,8 @@ class NotaFiscalRepository extends EntityRepository
             $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
                 ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
 
-            if ($notaFiscalEntity != null)
-                throw new \Exception("Nota fiscal $numero / $serie já se encontra cadastrada");
+//            if ($notaFiscalEntity != null)
+//                throw new \Exception("Nota fiscal $numero / $serie já se encontra cadastrada");
 
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))
@@ -910,6 +910,37 @@ class NotaFiscalRepository extends EntityRepository
             $array[] = TRIM($nota['NF']) . '/' . TRIM($nota['SERIE']);
         };
         return implode(', ',$array);
+    }
+
+    public function salvarItens($itens, $notaFiscalEntity)
+    {
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            foreach ($itens as $item) {
+                $idProduto = trim($item['idProduto']);
+                $idProduto = ProdutoUtil::formatar($idProduto);
+
+                $grade = trim($item['grade']);
+                $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
+
+                $itemEntity = new ItemNF;
+                $itemEntity->setNotaFiscal($notaFiscalEntity);
+                $itemEntity->setProduto($produtoEntity);
+                $itemEntity->setGrade(trim($item['grade']));
+                $itemEntity->setQuantidade($item['quantidade']);
+
+                $notaFiscalEntity->getItens()->add($itemEntity);
+            }
+            $em->flush();
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw new \Exception($e->getMessage());
+        }
+
     }
 
 }

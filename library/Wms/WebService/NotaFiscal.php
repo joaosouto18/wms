@@ -219,28 +219,45 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
 
-
-            //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
-            if (gettype($itens) != "array") {
-
-                $itensNf = array();
-                foreach ($itens->itens as $itemNf){
-                    $itemWs['idProduto'] = trim($itemNf->idProduto);
-                    $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = trim($itemNf->quantidade);
-                    $itensNf[] = $itemWs;
-                }
-                $itens = $itensNf;
-            }
-
+            $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
+            $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
+            $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $idFornecedor, 'placa' => $placa));
+
+            if ($notaFiscalEn) {
+                $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
+                if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
+                    throw new \Exception ("Não é Possível alterar, NF cancelada ou já recebida");
+                }
+            } else {
+                //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+                if (gettype($itens) != "array") {
+                    $itensNf = array();
+                    foreach ($itens->itens as $itemNf) {
+                        $itemWs['idProduto'] = trim($itemNf->idProduto);
+                        $itemWs['grade'] = trim($itemNf->grade);
+                        $itemWs['quantidade'] = trim($itemNf->quantidade);
+                        $itensNf[] = $itemWs;
+                    }
+                    $itens = $itensNf;
+                }
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
                 return true;
+            }
+
+            $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
+
+            //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
+            $this->compareItensBancoComArray($itens, $notaItensBDEn, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
+
+            //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
+            $this->compareItensWsComBanco($itens, $notaItensBDEn, $notaFiscalRepo, $notaFiscalEn);
+
+            return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
-
     }
 
     /**
@@ -382,6 +399,105 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $em->getRepository('wms:NotaFiscal')->desfazer($notaFiscalEntity->getId(), $observacao);
 
         return true;
+    }
+
+    /**
+     * @param $itens
+     * @param $notaItensBDEn
+     * @param $recebimentoConferenciaRepo
+     * @param $notaFiscalEn
+     * @param $em
+     * @return array
+     * @throws Exception
+     */
+    private function compareItensBancoComArray($itens, $notaItensBDEn, $recebimentoConferenciaRepo, $notaFiscalEn, $em)
+    {
+        if (count($itens) <= 0) {
+            throw new \Exception("Nenhum item informado na nota");
+        }
+
+        if ($notaItensBDEn <= 0) {
+            return false;
+        }
+
+        try {
+            foreach ($notaItensBDEn as $itemBD) {
+                $continueBD = false;
+                //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
+                $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'notaFiscal' => $notaFiscalEn));
+                //VERIFICA TODOS OS ITENS DA NF
+                foreach ($itens as $itemNf) {
+                    //VERIFICA SE PRODUTO DO BANCO AINDA EXISTE NA NF
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
+                        //VERIFICA SE A QUANTIDADE É A MESMA
+                        if ($itemBD->getQuantidade() == trim($itemNf['quantidade'])) {
+                            //SE A QUANTIDADE DA NF FOR IGUAL A QUANTIDADE DO BD NÃO FAZ NADA
+                            $continueBD = true;
+                            break;
+                        }
+                    }
+                }
+                if ($continueBD == false) {
+                    //SE EXISTIR CONFERENCIA FINALIZA O PROCESSO
+                    if ($recebimentoConferenciaEn) {
+                        throw new \Exception ("Não é possível sobrescrever a NF com itens já conferidos");
+                    } else {
+                        //SE NAO EXISTIR CONFERENCIA, REMOVE O PRODUTO DO BD
+                        $em->remove($itemBD);
+                    }
+                }
+            }
+            $em->flush();
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+    }
+
+    /**
+     * @param $idFornecedor
+     * @param $numero
+     * @param $serie
+     * @param $dataEmissao
+     * @param $placa
+     * @param $itens
+     * @param $bonificacao
+     * @param $observacao
+     * @param $notaItensBDEn
+     * @param $itemWs
+     * @param $notaFiscalRepo
+     */
+    private function compareItensWsComBanco($itens, $notaItensBDEn, $notaFiscalRepo, $notaFiscalEn)
+    {
+        if ($itens <= 0) {
+            throw new \Exception("Nenhum item informado na nota");
+        }
+
+        try {
+            $itensNf = array();
+            foreach ($itens as $itemNf) {
+                $continueNF = false;
+                foreach ($notaItensBDEn as $itemBD) {
+                    //VERIFICA SE PRODUTO DA NF JÁ EXISTE NO BD
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
+                        $continueNF = true;
+                        break;
+                    }
+                }
+                //INSERE SE O PRODUTO NÃO EXISTIR NO BD
+                if ($continueNF == false) {
+                    $itemWs['idProduto'] = trim($itemNf['idProduto']);
+                    $itemWs['grade'] = trim($itemNf['grade']);
+                    $itemWs['quantidade'] = trim($itemNf['quantidade']);
+                    $itensNf[] = $itemWs;
+                }
+            }
+            $notaFiscalRepo->salvarItens($itensNf, $notaFiscalEn);
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
 }
