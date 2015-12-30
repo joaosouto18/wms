@@ -1,15 +1,22 @@
 <script type="application/javascript">
     $('#volumePatrimonio').live('blur', function() {
         var dados = '';
-        $.getJSON('/mobile/expedicao/vincular-lacre/id/' +$('#volumePatrimonio').val(), function(data) {
-            dados = '<div class="control-group">' +
-                        '<label class="control-label" for="expedicao"> Expedição: '+ data['expedicao'] + '</label>' +
-                        '<input type="hidden" name="expedicao" value="' + data['expedicao'] + '">' +
-                        '<label class="control-label" for="data"> Data: '+ data['data'] +'</label>' +
-                        '<input type="hidden" name="data" value="' + data['data'] + '" >' +
-                        '<input type="hidden" name="id" value=" ' + data['id'] + '" >' +
+        $.ajax({
+            url:'/mobile/expedicao/vincular-lacre/id/' +$('#volumePatrimonio').val(),
+            success: function(data) {
+                dados = '<div class="control-group">' +
+                    '<label class="control-label" for="expedicao"> Expedição: '+ data['expedicao'] + '</label>' +
+                    '<input type="hidden" name="expedicao" value="' + data['expedicao'] + '">' +
+                    '<label class="control-label" for="data"> Data: '+ data['data'] +'</label>' +
+                    '<input type="hidden" name="data" value="' + data['data'] + '" >' +
+                    '<input type="hidden" name="id" value=" ' + data['id'] + '" >' +
                     '</div>';
-            $('#dadosExpedicao').html(dados);
+                $('#dadosExpedicao').html(dados);
+            },
+            error: function() {
+                alert('Volume Patrimônio nao encontrado!');
+                $('#dadosExpedicao').html(dados);
+            }
         });
     });
 </script>

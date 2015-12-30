@@ -1124,18 +1124,27 @@ class Mobile_ExpedicaoController extends Action
         if ($this->_getParam('submit')) {
             $result = $expedicaoVolumePatrimonioRepo->vinculaLacre($params);
             if ($result) {
-                $this->_helper->messenger('success', 'Etiqueta Salva com sucesso!');
+                $this->_helper->messenger('success', 'Lacre Salvo com sucesso!');
                 $this->redirect('vincular-lacre', 'expedicao', 'mobile');
             }
         }
 
         if ($volumePatrimonioId) {
-            $expedicaoVolumePatrimonioEn = $expedicaoVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volumePatrimonioId), array('id' => 'DESC'),1);
-            $expedicao = $expedicaoVolumePatrimonioEn[0]->getExpedicao()->getId();
-            $dataFechamento = $expedicaoVolumePatrimonioEn[0]->getDataFechamento()->format('d/m/Y');
-            $id = $expedicaoVolumePatrimonioEn[0]->getId();
+            try {
+                $expedicaoVolumePatrimonioEn = $expedicaoVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volumePatrimonioId), array('id' => 'DESC'),1);
 
-            echo $this->_helper->json(array('id' => $id, 'expedicao' => $expedicao, 'data' => $dataFechamento));
+                if (!isset($expedicaoVolumePatrimonioEn) || empty($expedicaoVolumePatrimonioEn))
+                    throw new \Exception('Volume Patrimônio nao encontrado!');
+
+                $expedicao = $expedicaoVolumePatrimonioEn[0]->getExpedicao()->getId();
+                $dataFechamento = $expedicaoVolumePatrimonioEn[0]->getDataFechamento()->format('d/m/Y');
+                $id = $expedicaoVolumePatrimonioEn[0]->getId();
+
+                echo $this->_helper->json(array('id' => $id, 'expedicao' => $expedicao, 'data' => $dataFechamento));
+            } catch (\Exception $e) {
+                throw new \Exception($e->getMessage());
+            }
+
         }
 
     }
