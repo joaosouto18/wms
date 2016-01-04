@@ -424,7 +424,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             foreach ($notaItensBDEn as $itemBD) {
                 $continueBD = false;
                 //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
-                $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'notaFiscal' => $notaFiscalEn));
+                $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
                 //VERIFICA TODOS OS ITENS DA NF
                 foreach ($itens as $itemNf) {
                     //VERIFICA SE PRODUTO DO BANCO AINDA EXISTE NA NF
