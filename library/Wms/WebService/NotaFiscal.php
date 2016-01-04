@@ -246,13 +246,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 return true;
             }
 
-            $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
-
             //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
-            $this->compareItensBancoComArray($itens, $notaItensBDEn, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
+            $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
 
             //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
-            $this->compareItensWsComBanco($itens, $notaItensBDEn, $notaFiscalRepo, $notaFiscalEn);
+            $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
 
             return true;
         } catch (\Exception $e) {
@@ -410,8 +408,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return array
      * @throws Exception
      */
-    private function compareItensBancoComArray($itens, $notaItensBDEn, $recebimentoConferenciaRepo, $notaFiscalEn, $em)
+    private function compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em)
     {
+        //VERIFICA TODOS OS ITENS DO BD
+        $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
+
         if (count($itens) <= 0) {
             throw new \Exception("Nenhum item informado na nota");
         }
@@ -423,8 +424,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             foreach ($notaItensBDEn as $itemBD) {
                 $continueBD = false;
-                //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
-                $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
                 //VERIFICA TODOS OS ITENS DA NF
                 foreach ($itens as $itemNf) {
                     //VERIFICA SE PRODUTO DO BANCO AINDA EXISTE NA NF
@@ -434,17 +433,18 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                             //SE A QUANTIDADE DA NF FOR IGUAL A QUANTIDADE DO BD NÃO FAZ NADA
                             $continueBD = true;
                             break;
+                        } else {
+                            //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
+                            $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
+                            //SE EXISTIR CONFERENCIA E A QUANTIDADE FOR DIFERENTE FINALIZA O PROCESSO
+                            if ($recebimentoConferenciaEn)
+                                throw new \Exception ("Não é possível sobrescrever a NF com itens já conferidos!");
                         }
                     }
                 }
                 if ($continueBD == false) {
-                    //SE EXISTIR CONFERENCIA FINALIZA O PROCESSO
-                    if ($recebimentoConferenciaEn) {
-                        throw new \Exception ("Não é possível sobrescrever a NF com itens já conferidos");
-                    } else {
-                        //SE NAO EXISTIR CONFERENCIA, REMOVE O PRODUTO DO BD
-                        $em->remove($itemBD);
-                    }
+                    // SE PRODUTO EXISTIR NO BD, NAO EXISTIR NO WS E NAO TIVER CONFERENCIA REMOVE O PRODUTO
+                    $em->remove($itemBD);
                 }
             }
             $em->flush();
@@ -468,12 +468,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param $itemWs
      * @param $notaFiscalRepo
      */
-    private function compareItensWsComBanco($itens, $notaItensBDEn, $notaFiscalRepo, $notaFiscalEn)
+    private function compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn)
     {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         if ($itens <= 0) {
             throw new \Exception("Nenhum item informado na nota");
         }
+
+        //VERIFICA TODOS OS ITENS DO BD
+        $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
+
 
         try {
             $itensNf = array();
