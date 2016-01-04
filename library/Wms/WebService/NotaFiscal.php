@@ -221,11 +221,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
+
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+            if ($fornecedorEntity == null)
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-            $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $idFornecedor, 'placa' => $placa));
+            $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $fornecedorEntity->getId()));
 
-            if ($notaFiscalEn) {
+            if ($notaFiscalEn != null) {
                 $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
                 if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
                     throw new \Exception ("Não é Possível alterar, NF cancelada ou já recebida");
