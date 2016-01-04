@@ -470,6 +470,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     private function compareItensWsComBanco($itens, $notaItensBDEn, $notaFiscalRepo, $notaFiscalEn)
     {
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         if ($itens <= 0) {
             throw new \Exception("Nenhum item informado na nota");
         }
