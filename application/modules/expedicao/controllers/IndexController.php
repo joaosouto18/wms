@@ -7,8 +7,77 @@ use Wms\Module\Web\Controller\Action,
 
 class Expedicao_IndexController  extends Action
 {
+    public function impAjaxAction() {
+        $exemploTxt = array(
+            0 => 'Senha;Cód. Material;Descrição;Qt. Item;Qt. Peso Bruto (kg);Cód. Cliente;Empresa Destinatária/Remetente;Endereço Coleta/Entrega;Cidade;UF',
+            1 => '867776;210124;FARINHA C/FERMENTO VILMA PLAST. 10X1_DOC;2;20,3;134412;ALVARO TRAJANO PEREIRA ALVES COM ME;RUA NOSSA SENHORA APARECIDA 231;BOTUMIRIM ;MG',
+            2 => '867776;210124;FARINHA C/FERMENTO VILMA PLAST. 10X1_DOC;1;10,15;143487;LEONARDO PEREIRA RODRIGUES ME;RUA JOAQUINA RODRIGUES FERREIRA SN;GRAO MOGOL ;MG',
+            3 => '867776;210124;FARINHA C/FERMENTO VILMA PLAST. 10X1_DOC;1;10,15;144715;SERGIO ROCHA BALDAIA ME;RUA BOM JARDIM 379;CRISTALIA ;MG'
+        );
+
+        $arquivo = array(
+            'descricaoLeitura' => 'CLINETE',
+            'nomeArquivo' => "MOC - 002.txt",
+            'cabecalho' => true,
+            'caracterQuebra' => ";"
+        );
+
+        
+        $camposArquivo = array(
+            0 => array('nomeCampo' => 'codCliente',
+                'posicaoTxt' => 5,
+                'pk' => true,
+                'nomeBanco' => 'COD_CLIENTE_EXTERNO',
+                'parametros' => '',
+                'tamanhoInicio' => '',
+                'tamanhoFim' => ''),
+            1 => array('nomeCampo' => 'nomeCliente',
+                'posicaoTxt' => 6,
+                'pk' => false,
+                'nomeBanco' => 'COD_CLIENTE_EXTERNO',
+                'parametros' => "",
+                'tamanhoInicio' => '',
+                'tamanhoFim' => ''),
+            2 => array('nomeCampo' => 'cnpjCliente',
+                'posicaoTxt' => 5,
+                'pk' => false,
+                'parametros' => "",
+                'tamanhoInicio' => '',
+                'tamanhoFim' => '')
+        );
+
+
+        foreach ($exemploTxt as $key => $linha) {
+            if ($arquivo['cabecalho'] == true) {
+                if ($key == 0) {
+                    continue;
+                }
+            }
+
+            if ($arquivo['caracterQuebra'] == "") {
+                $conteudoArquivo = array(0=>$linha);
+            }   else {
+                $conteudoArquivo = explode($arquivo['caracterQuebra'],$linha);
+            }
+            foreach ($camposArquivo as $campo) {
+                $valorCampo = $conteudoArquivo[$campo['posicaoTxt']];
+                if ($campo['tamanhoInicio'] != "") {
+                    $valorCampo = substr($valorCampo,$campo['tamanhoInicio'],$campo['tamanhoFim']);
+                }
+                if ($campo['parametros'] != '') {
+                    $valorCampo = str_replace('VALUE',$valorCampo,$campo['parametros']);
+                }
+                echo $campo['nomeCampo'] . ' - ' . $valorCampo . " ";
+            }
+            echo "<br>";
+        }
+        exit;
+    }
+
     public function indexAction()
     {
+        $this->importaTxt();
+
         $form = new FiltroExpedicaoMercadoria();
         $this->view->form = $form;
         $params = $this->_getAllParams();
