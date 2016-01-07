@@ -12,7 +12,7 @@ class Expedicao_IndexController  extends Action
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
-        $result = $importacao->importarCliente($em);
+        $result = $importacao->importarProdutos($em);
         var_dump($result);
         exit;
     }
