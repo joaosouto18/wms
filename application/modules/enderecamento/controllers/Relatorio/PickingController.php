@@ -63,7 +63,9 @@ class Enderecamento_Relatorio_PickingController extends Action
 		Page::configure(array('buttons' => $buttons));
     }
 
-    public function imprimirAction() {
+    public function imprimirAction()
+    {
+        ini_set('max_execution_time', 3000);
         /** @var \Wms\Domain\Entity\Enderecamento\RelatorioPickingRepository $relatorioRepo */
         $relatorioRepo = $this->em->getRepository("wms:Enderecamento\RelatorioPicking");
         $result = $relatorioRepo->getDescricaoSelecionadosOrdenado();

@@ -22,34 +22,71 @@ class Enderecamento_MovimentacaoController extends Action
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             try {
-                $data['idEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+                $this->getEntityManager()->beginTransaction();
+                $grade = trim($data['grade']);
+                if ($data['grade'] == '')
+                    $data['grade'] = "UNICA";
 
-                if (!isset($data['idEndereco']) || empty($data['idEndereco'])) {
-                    throw new \Exception("Endereço não encontrado");
-                }
+                $idProduto = trim($data['idProduto']);
+                $data['produto'] = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                $data['embalagem'] = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+                $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
 
-                $estoqueRepo = $idEmbalagemOrVolume = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-                $data['idEstoque'] = $estoqueRepo->findOneBy(array('depositoEndereco' => $data['idEndereco']))->getId();
+                /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+                $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $data['idEndereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
+                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $enderecoEn, 'tipoReserva' => 'S', 'atendida' => 'N'));
 
                 if (count($verificaReservaSaida) > 0) {
                     throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
                 }
 
-                $data['novoEndereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
-                $data['qtd'] = $data['quantidade'];
+                if (isset($data['embalagem']) && !empty($data['embalagem'])) {
+                    $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+                    $validade = $estoqueEn->getValidade();
+                    if (isset($validade) && !is_null($validade)) {
+                        $data['validade'] = $validade->format('d/m/Y');
+                    } else {
+                        $data['validade'] = null;
+                    }
+                    $data['endereco'] = $enderecoEn;
+                    $data['qtd'] = $data['quantidade'] * -1;
+                    $estoqueRepo->movimentaEstoque($data);
+                    $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+                    $data['qtd'] = $data['quantidade'];
+                    $estoqueRepo->movimentaEstoque($data);
+                } else if (isset($data['volumes']) && ($data['volumes'] != "")) {
+                    $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
+                    if (count($volumes) <= 0) {
+                        throw new \Exception("Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
+                    }
+                    foreach ($volumes as $volume) {
 
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-                $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
-                $paleteRepo->updateUmaByEndereco($data);
+                        $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volume));
+                        $validade = $estoqueEn->getValidade();
+                        if (isset($validade) && !is_null($validade)) {
+                            $data['validade'] = $validade->format('d/m/Y');
+                        } else {
+                            $data['validade'] = null;
+                        }
 
+                        $data['endereco'] = $enderecoEn;
+                        $data['qtd'] = $data['quantidade'] * -1;
+                        $data['volume'] = $volume;
+                        $estoqueRepo->movimentaEstoque($data);
+                        $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+                        $data['qtd'] = $data['quantidade'];
+                        $estoqueRepo->movimentaEstoque($data);
+                    }
+                }
+                $this->getEntityManager()->commit();
                 $this->addFlashMessage('success','Endereço alterado com sucesso!');
                 $this->_redirect('/enderecamento/movimentacao');
 
             } catch(Exception $e) {
+                $this->getEntityManager()->rollback();
                 $this->addFlashMessage('error', $e->getMessage());
             }
 
@@ -68,28 +105,37 @@ class Enderecamento_MovimentacaoController extends Action
             $data['apto'] = $enderecoEn->getApartamento();
             $form->populate($data);
         } else {
-            if ($request->isPost()) {
+            if ($request->isPost() && empty($transferir)) {
                 try {
                     $this->getEntityManager()->beginTransaction();
-                    $result = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
-                    if ($result == null) {
-                        throw new Exception("Endereço não encontrado.");
-                    }
-                    $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$result[0]['id']));
+                    $endereco = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
+                    $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$endereco['id']));
+
+                    $estoqueEn = $EstoqueRepository->findOneBy(array('depositoEndereco' => $endereco['id'],
+                        'codProduto' => $data['idProduto'], 'grade' => $data['grade']));
+
+                    //é uma entrada de estoque? Saída não precisa informar o unitizador
+                    $entradaEstoque = ($data['quantidade'] > 0);
 
                     $unitizadorEn = null;
-                    if ($data['idNormaPaletizacao'] == NULL) {
+                    $unitizadorEstoque = null;
+                    if ($estoqueEn != null) {
+                        $unitizadorEstoque = $estoqueEn->getUnitizador();
+                    }
+                    if ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque) {
                         throw new Exception("É necessário informar o Unitizador");
-                    } else if ($data['idNormaPaletizacao'] != NULL) {
+                    } else if ($data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
                         $idUnitizador = $data['idNormaPaletizacao'];
                         $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                         $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
                         $larguraUnitizador = $unitizadorEn->getLargura(false) * 100;
-                        $permiteArmazenar = $enderecoRepo->getValidaTamanhoEndereco($result[0]['id'],$larguraUnitizador);
+                        /*
+                        $permiteArmazenar = $enderecoRepo->getValidaTamanhoEndereco($endereco['id'],$larguraUnitizador);
                         if ($permiteArmazenar == false) {
                             throw new Exception("Este palete não cabe no endereço informado.");
-                        }
+                        }*/
                     }
+
 
                     $grade = trim($data['grade']);
                     if ($data['grade'] == '')
@@ -140,7 +186,7 @@ class Enderecamento_MovimentacaoController extends Action
 
                     $this->getEntityManager()->commit();
 
-                    $link = '/enderecamento/movimentacao/imprimir/endereco/'.$result[0]['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
+                    $link = '/enderecamento/movimentacao/imprimir/endereco/'.$endereco['descricao'] .'/qtd/'.$data['quantidade'].'/idProduto/'.$data['idProduto'].'/grade/'.urlencode($data['grade']);
                     if($request->isXmlHttpRequest()) {
                         if ($data['quantidade'] > 0) {
                             echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso', 'link' => $link));

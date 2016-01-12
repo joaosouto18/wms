@@ -1,0 +1,54 @@
+<form id="filtro-consulta-etiqueta" method="get" class="filtro">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Filtros</legend>
+            <table style="width:100%">
+                <tr>
+                    <td colspan="2">Cód. Expedição</td>
+                    <td colspan="2">Cód. Carga</td>
+                    <td colspan="2">Reimpresso</td>
+                    <td colspan="2">Situação</td>
+                    <td>Data Início da Expedição</td>
+                    <td>Data Final da Expedição</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><?php echo $this->element->codExpedicao; ?></td>
+                    <td colspan="2"><?php echo $this->element->codCarga; ?></td>
+                    <td colspan="2"><?php echo $this->element->reimpresso ; ?></td>
+                    <td colspan="2"><?php echo $this->element->situacao ; ?></td>
+                    <td><?php echo $this->element->dataInicial1; ?> a <?php echo $this->element->dataInicial2; ?></td>
+                    <td><?php echo $this->element->dataFinal1; ?> a <?php echo $this->element->dataFinal2; ?></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Cód. Produto</td>
+                    <td colspan="2">Grade</td>
+                    <td colspan="2">Cód. Pedido</td>
+                    <td colspan="2">Central Estoque</td>
+                    <td colspan="2">Central Transbordo</td>
+
+                </tr>
+                <tr>
+                    <td colspan="2"><?php echo $this->element->codProduto ; ?></td>
+                    <td colspan="2"><?php echo $this->element->grade ; ?></td>
+                    <td colspan="2"><?php echo $this->element->pedido; ?></td>
+                    <td colspan="2"><?php echo $this->element->centralEstoque ; ?></td>
+                    <td colspan="2"><?php echo $this->element->centralTransbordo ; ?></td>
+                </tr>
+
+
+                <tr>
+                    <td colspan="2">Etiqueta</td>
+                    <td colspan="2">Cód. Cliente</td>
+                    <td colspan="2">Itinerário</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><?php echo $this->element->etiqueta ; ?></td>
+                    <td colspan="2"><?php echo $this->element->codCliente ; ?></td>
+                    <td colspan="4"><?php echo $this->element->itinerario ; ?></td>
+                    <td rowspan="1"><?php echo $this->element->submit; ?></td>
+                </tr>
+
+            </table>
+        </fieldset>
+    </div>
+</form>

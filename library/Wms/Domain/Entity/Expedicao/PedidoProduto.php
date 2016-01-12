@@ -44,7 +44,7 @@ class PedidoProduto
     /**
      * @Column(name="COD_PRODUTO",type="integer", nullable=false)
      */
-    protected $codProduto;        
+    protected $codProduto;
     
     /**
      * @Column(name="DSC_GRADE", type="string", nullable=false)

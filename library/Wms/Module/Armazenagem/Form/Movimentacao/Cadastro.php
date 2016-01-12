@@ -79,14 +79,18 @@ class Cadastro extends Form
                 'mostrarSelecione' => true,
                 'multiOptions' => $normasPaletizacao,
             ))
-            ->addElement('text', 'uma', array(
-                'size' => 4,
-                'label' => 'UMA',
-            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Movimentar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
+            ))
+
+            ->addElement('text', 'endereco_origem', array(
+                'label' => 'Endereço Origem',
+                'alt' => 'endereco',
+                'size' => 20,
+                'disabled' => 'disabled',
+                'placeholder' => '00.000.00.00',
             ))
 
             ->addElement('text', 'ruaDestino', array(
@@ -119,8 +123,8 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'uma', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
-            ->addDisplayGroup(array('ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
+            ->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }
 

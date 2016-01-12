@@ -6,6 +6,7 @@ class Expedicao_CorteFaixaController  extends Action
 {
     public function indexAction()
     {
+        ini_set('max_execution_time', 3000);
         $LeituraColetor = new LeituraColetor();
 
         $codBarrasInicial = $this->getRequest()->getParam('codBarrasInicial');

@@ -150,11 +150,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('count(distinct es.id) as qtdEtiqueta,
-                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia')
+                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia,
+                      sum(pv.cubagem) as cubagem,
+                      sum(pv.peso) as peso,
+                      count(distinct nfs.id) as qtdNotas,
+                      count(distinct ree.id) as qtdEntregas')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin('es.pedido', 'ped')
             ->innerJoin('ped.carga', 'c')
             ->innerJoin('c.expedicao', 'exp')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'pp.codPedido = ped.id')
+            ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = pp.codProduto AND pv.grade = pp.grade')
+            ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.pedido = ped.id')
+            ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
+            ->leftJoin('wms:Expedicao\Reentrega', 'ree', 'WITH', 'ree.notaFiscalSaida = nfs.id')
             ->where('exp.id = :idExpedicao')
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE)
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
@@ -1473,6 +1482,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function buscarEtiqueta($parametros)
     {
+        ini_set('memory_limit', '-1');
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao,
              c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
@@ -1485,7 +1495,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('es.status', 's')
             ->leftJoin('es.produtoEmbalagem', 'pe')
             ->leftJoin('p.pessoa', 'cli')
-            ->setMaxResults(5000)
             ->orderBy("es.id" , "DESC")
             ->distinct(true);
 
@@ -1565,17 +1574,40 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->andWhere('i.id = :itinerario');
         }
 
-        if (!empty($parametros['dataInicio']) && !empty($parametros['dataFim'])) {
-            $dataInicial1 = str_replace("/", "-", $parametros['dataInicio']);
+        if (!empty($parametros['dataInicial1'])) {
+            $dataInicial1 = str_replace('/', '-', $parametros['dataInicial1']);
             $dataI1 = new \DateTime($dataInicial1);
-
-            $dataInicial2 = str_replace("/", "-", $parametros['dataFim']);
-            $dataI2 = new \DateTime($dataInicial2);
-
+            $dataI1->setTime(0,0);
             $source
-                ->setParameter('dataInicio', $dataI1->format('Y-m-d'))
-                ->setParameter('dataFim', $dataI2->format('Y-m-d'))
-                ->andWhere('e.dataInicio BETWEEN :dataInicio AND :dataFim');
+                ->setParameter('dataInicial1', $dataI1->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataInicio >= :dataInicial1');
+        }
+
+        if (!empty($parametros['dataInicial2'])) {
+            $dataInicial2 = str_replace('/', '-', $parametros['dataInicial2']);
+            $dataI2 = new \DateTime($dataInicial2);
+            $dataI2->setTime(23,59);
+            $source
+                ->setParameter('dataInicial2', $dataI2->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataInicio <= :dataInicial2');
+        }
+
+        if (!empty($parametros['dataFinal1'])) {
+            $dataFinal1 = str_replace("/", "-", $parametros['dataFinal1']);
+            $dataF1 = new \DateTime($dataFinal1);
+            $dataF1->setTime(0,0);
+            $source
+                ->setParameter('dataFinal1', $dataF1->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataFinalizacao >= :dataFinal1');
+        }
+
+        if (!empty($parametros['dataFinal2'])) {
+            $dataFinal2 = str_replace("/", "-", $parametros['dataFinal2']);
+            $dataF2 = new \DateTime($dataFinal2);
+            $dataF2->setTime(23,59);
+            $source
+                ->setParameter('dataFinal2', $dataF2->format('Y-m-d H:i:s'))
+                ->andWhere('e.dataFinalizacao <= :dataFinal2');
         }
 
         return $source->getQuery()->getResult();

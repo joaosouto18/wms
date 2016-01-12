@@ -157,6 +157,10 @@
                            <td colspan="1"></td>
                            <td width=""><span><b>Placa</b></span></td>
                            <td width=""><span><b>Carga</b></span></td>
+                           <td width=""><span><b>Peso</b></span></td>
+                           <td width=""><span><b>Cubagem</b></span></td>
+                           <td width=""><span><b>Qtd. Entregas</b></span></td>
+                           <td width=""><span><b>Qtd. NF</b></span></td>
                            <td width=""><span><b>Ponto de Transbordo</b></span></td>
                            <td width=""><span><b>Qtd. Etiquetas</b></span></td>
                            <td width=""><span><b>Qtd. Conferidas</b></span></td>
@@ -177,11 +181,15 @@
                                        </ul>
                                    </div>
                                </td>
-                               <td width=""><span><?php echo $resumo['placaCarga'];            ?></span></td>
-                               <td width="" title="Sequencia da carga representada pelo número dentro do ()"><span><?php echo $resumo['codCargaExterno'];            ?>(<?php echo $resumo['sequencia'];            ?>)</span></td>
-                               <td width=""><span><?php echo $resumo['pontoTransbordo'];            ?></span></td>
-                               <td width=""><span><?php echo $resumo['qtdEtiqueta'];           ?></span></td>
-                               <td width=""><span><?php echo $resumo['qtdConferidas'];         ?></span></td>
+                               <td width=""><span><?php echo $resumo['placaCarga']; ?></span></td>
+                               <td width="" title="Sequencia da carga representada pelo número dentro do ()"><span><?php echo $resumo['codCargaExterno']; ?>(<?php echo $resumo['sequencia']; ?>)</span></td>
+                               <td width=""><span><?php echo $resumo['peso']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['cubagem']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdEntregas']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdNotas']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['pontoTransbordo']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdEtiqueta']; ?></span></td>
+                               <td width=""><span><?php echo $resumo['qtdConferidas']; ?></span></td>
                                <td width=""><span><?php echo $resumo['qtdRecebidoTransbordo']; ?></span></td>
                                <td width=""><span><?php echo $resumo['qtdExpedidoTransbordo']; ?></span></td>
                                <td width=""><span>
