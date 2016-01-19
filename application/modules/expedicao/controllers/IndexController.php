@@ -115,10 +115,9 @@ class Expedicao_IndexController  extends Action
         }
     }
 
-    public function importFornecedorAction()
+    public function importFornecedorAjaxAction()
     {
         $em = $this->getEntityManager();
-        $importacao = new \Wms\Service\Importacao();
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
         $ClienteRepo    = $em->getRepository('wms:Pessoa\Papel\Cliente');
         if (isset($_POST['submit'])) {
@@ -127,6 +126,7 @@ class Expedicao_IndexController  extends Action
             $caracterQuebra = ';';
 
             try {
+                $em->beginTransaction();
                 $array = array();
                 while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
                     if ($data[0] == 'COD FORNECEDOR')
@@ -148,9 +148,7 @@ class Expedicao_IndexController  extends Action
                     $array['observacao'] = $data[13];
 
                     $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $array['codFornecedor']));
-
                     if ($entityFornecedor == null) {
-
                         switch ($array['tipoPessoa']) {
                             case 'PJ':
                                 $cliente['pessoa']['tipo'] = 'J';
@@ -206,38 +204,95 @@ class Expedicao_IndexController  extends Action
                             $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
 
                         $fornecedor = new \Wms\Domain\Entity\Pessoa\Papel\Fornecedor();
-
                         if ($entityPessoa == null) {
                             $entityPessoa = $ClienteRepo->persistirAtor($fornecedor, $cliente, false);
                         } else {
                             $fornecedor->setPessoa($entityPessoa);
                         }
-
                         $fornecedor->setId($entityPessoa->getId());
                         $fornecedor->setIdExterno($array['codFornecedor']);
 
                         $em->persist($fornecedor);
-                        $em->flush();
                     }
-
                 }
 
+                $em->flush();
+                $em->commit();
                 fclose($handle);
             } catch (\Exception $e) {
+                $em->rollback();
                 $this->_helper->messenger('error', $e->getMessage());
             }
         }
     }
 
-    public function importAjaxAction()
+    public function importAjaxAction() //importProdutoAjaxAction
     {
-        
+        $em = $this->getEntityManager();
+        if (isset($_POST['submit'])) {
+
+            $importacao = new \Wms\Service\Importacao();
+            $handle = fopen($_FILES['filename']['tmp_name'], "r");
+            $caracterQuebra = ';';
+
+            try {
+                $em->beginTransaction();
+                $produtos = array();
+                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
+                    if ($data[0] == 'COD PRODUTO')
+                        continue;
+
+                    $produtos['codProduto'] = $data[0];
+                    $produtos['descricao'] = $data[1];
+                    $produtos['grade'] = $data[2];
+                    $produtos['referencia'] = $data[3];
+                    $produtos['tipoComercializacao'] = $data[4];
+                    $produtos['classe'] = $data[5];
+                    $produtos['fabricante'] = $data[6];
+                    $produtos['linhaSeparacao'] = $data[7];
+                    $produtos['codBarras'] = $data[8];
+                    $produtos['numVolumes'] = $data[9];
+                    $produtos['diasVidaUtil'] = $data[10];
+                    $produtos['validade'] = $data[11];
+                    $produtos['enderecoReferencia'] = $data[12];
+                    $produtos['embalagens'][0]['descricaoEmbalagem'] = $data[13];
+                    $produtos['embalagens'][0]['qtdEmbalagem'] = $data[14];
+                    $produtos['embalagens'][0]['indPadrao'] = $data[15];
+                    $produtos['embalagens'][0]['codigoBarras'] = $data[16];
+                    $produtos['embalagens'][0]['cbInterno'] = $data[17];
+                    $produtos['embalagens'][0]['imprimirCb'] = $data[18];
+                    $produtos['embalagens'][0]['embalado'] = $data[19];
+                    $produtos['embalagens'][0]['capacidadePicking'] = $data[20];
+                    $produtos['embalagens'][0]['pontoReposicao'] = 0;
+                    $produtos['embalagens'][0]['acao'] = 'incluir';
+
+                    $produtos['volumes'][0]['descricaoVolume'] = $data[21];
+                    $produtos['volumes'][0]['codigoBarras'] = $data[22];
+                    $produtos['volumes'][0]['sequenciaVolume'] = $data[23];
+                    $produtos['volumes'][0]['peso'] = $data[24];
+                    $produtos['volumes'][0]['normaPaletizacao'] = $data[25];
+                    $produtos['volumes'][0]['cbInterno'] = $data[26];
+                    $produtos['volumes'][0]['imprimirCb'] = $data[27];
+                    $produtos['volumes'][0]['altura'] = $data[28];
+                    $produtos['volumes'][0]['largura'] = $data[29];
+                    $produtos['volumes'][0]['profundidade'] = $data[30];
+                    $produtos['volumes'][0]['cubagem'] = $data[31];
+                    $produtos['volumes'][0]['capacidadePicking'] = $data[32];
+
+                    $importacao->saveProduto($em, $produtos);
+                }
+                $em->flush();
+                $em->commit();
+                fclose($handle);
+            } catch (\Exception $e) {
+                $em->rollback();
+                $this->_helper->messenger('error', $e->getMessage());
+            }
+        }
     }
 
     public function indexAction()
     {
-        $this->importaTxt();
-
         $form = new FiltroExpedicaoMercadoria();
         $this->view->form = $form;
         $params = $this->_getAllParams();

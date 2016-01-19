@@ -630,17 +630,6 @@ class Importacao
         return $entityCliente;
     }
 
-
-
-    private function saveProduto($em, $produtos)
-    {
-        $produtoEn = new Produto();
-        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $produtoRepo = $em->getRepository('wms:Produto');
-        $entityProduto = $produtoRepo->save($produtoEn, $produtos);
-        return $entityProduto;
-    }
-
     private function saveEndereco($em, $dscEndereco)
     {
         $dscEndereco = str_replace('.','',$dscEndereco);
@@ -757,6 +746,172 @@ class Importacao
         $entityFabricante = $fabricanteRepo->save($idFabricante, $nome);
         return $entityFabricante;
 
+    }
+
+    public function saveProduto($em, $produto)
+    {
+        $produtoRepo = $em->getRepository('wms:Produto');
+        $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['codProduto'], 'grade' => $produto['grade']));
+
+        if ($produtoEntity == null)
+            $produtoEntity = new Produto();
+
+        $em->beginTransaction();
+
+        try {
+
+            $dscEndereco = $produto['enderecoReferencia'];
+            if ($dscEndereco != "") {
+                $enderecoEn = $em->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
+                if ($enderecoEn == null) {
+                    throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+                } else {
+                    $produtoEntity->setEnderecoReferencia($enderecoEn);
+                }
+            } else {
+                $produtoEntity->setEnderecoReferencia(null);
+            }
+
+            $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
+            $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+            $classeEntity = $em->getReference('wms:Produto\Classe', $produto['classe']);
+            $fabricanteEntity = $em->getRepository('wms:Fabricante')->findOneBy(array('nome' => $produto['fabricante']));
+
+            $produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
+            $produtoEntity->setTipoComercializacao($tipoComercializacaoEntity);
+            $produtoEntity->setNumVolumes($produto['numVolumes']);
+            $produtoEntity->setReferencia($produto['referencia']);
+            $produtoEntity->setCodigoBarrasBase($produto['codBarras']);
+            $produtoEntity->setId($produto['codProduto']);
+            $produtoEntity->setGrade($produto['grade']);
+            $produtoEntity->setDescricao($produto['descricao']);
+            $produtoEntity->setClasse($classeEntity);
+            $produtoEntity->setFabricante($fabricanteEntity);
+            $produtoEntity->setValidade($produto['validade']);
+            $produtoEntity->setDiasVidaUtil($produto['diasVidaUtil']);
+
+            $em->persist($produtoEntity);
+
+            switch ($produto['tipoComercializacao']) {
+                case Produto::TIPO_UNITARIO:
+                    // gravo embalagens
+                    $this->persistirEmbalagens($em, $produtoEntity, $produto);
+                    // gravo dados logisticos
+//                    $this->persistirDadosLogisticos($values);
+
+                    // limpo os volumes se houver
+                    $volumeRepo = $em->getRepository('wms:Produto\Volume');
+                    $volumes = $volumeRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
+
+                    foreach ($volumes as $volumeEntity)
+                        $em->remove($volumeEntity);
+
+                    break;
+                case Produto::TIPO_COMPOSTO:
+                    // gravo volumes
+                    $this->persistirVolumes($em, $produtoEntity, $produto['volumes'][0]);
+
+                    // limpo os embalagens se houver
+                    $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                    $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
+
+                    foreach ($embalagens as $embalagemEntity)
+                        $em->remove($embalagemEntity);
+                    break;
+            }
+
+            $em->flush();
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    private function persistirEmbalagens($em, $produtoEntity, $values)
+    {
+
+        //embalagens do produto
+        if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
+            return false;
+
+        foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+
+            if (!isset($itemEmbalagem['acao']))
+                continue;
+
+            switch ($itemEmbalagem['acao']) {
+                case 'incluir':
+
+                    $embalagemEntity = new Produto\Embalagem();
+
+                    $embalagemEntity->setProduto($produtoEntity);
+                    $embalagemEntity->setGrade($produtoEntity->getGrade());
+                    $embalagemEntity->setDescricao($itemEmbalagem['descricaoEmbalagem']);
+                    $embalagemEntity->setQuantidade($itemEmbalagem['qtdEmbalagem']);
+                    $embalagemEntity->setIsPadrao($itemEmbalagem['indPadrao']);
+                    $embalagemEntity->setCBInterno($itemEmbalagem['cbInterno']);
+                    $embalagemEntity->setImprimirCB($itemEmbalagem['imprimirCb']);
+                    $embalagemEntity->setCodigoBarras($itemEmbalagem['codigoBarras']);
+                    $embalagemEntity->setEmbalado($itemEmbalagem['embalado']);
+                    $embalagemEntity->setCapacidadePicking($itemEmbalagem['capacidadePicking']);
+                    $embalagemEntity->setPontoReposicao($itemEmbalagem['pontoReposicao']);
+                    $embalagemEntity->setEndereco(null);
+
+                    $em->persist($embalagemEntity);
+                    $em->flush();
+
+                    $produtoEntity->addEmbalagem($embalagemEntity);
+
+                    $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
+
+                    if ($itemEmbalagem['cbInterno'] == 'S') {
+                        $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                        $embalagemEntity->setCodigoBarras($codigoBarras);
+                    }
+
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    private function persistirVolumes($em, $produtoEntity, $volume) {
+
+        $volumeEntity = new Produto\Volume();
+
+        $volumeEntity->setProduto($produtoEntity);
+        $volumeEntity->setGrade($produtoEntity->getGrade());
+        $volumeEntity->setLargura($volume['largura']);
+        $volumeEntity->setProfundidade($volume['profundidade']);
+        $volumeEntity->setCubagem($volume['cubagem']);
+        $volumeEntity->setPeso($volume['peso']);
+        $volumeEntity->setAltura($volume['altura']);
+        $volumeEntity->setCodigoSequencial($volume['sequenciaVolume']);
+        $volumeEntity->setDescricao($volume['descricaoVolume']);
+        $volumeEntity->setCBInterno($volume['cbInterno']);
+        $volumeEntity->setImprimirCB($volume['imprimirCb']);
+        $volumeEntity->setCodigoBarras($volume['codigoBarras']);
+        $volumeEntity->setCapacidadePicking($volume['capacidadePicking']);
+        $volumeEntity->setPontoReposicao(0);
+        $volumeEntity->setEndereco(null);
+
+        if (!empty($volume['normaPaletizacao'])) {
+            $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $volume['normaPaletizacao']);
+            $volumeEntity->setNormaPaletizacao($normaPaletizacaoEntity);
+        }
+
+        $em->persist($volumeEntity);
+
+        // gera o codigo de barras com base no id do volume. Ex: 12340102 / 12340202
+        if ($volume['cbInterno'] == 'S') {
+            $codigoBarras = $volumeEntity->getId();
+            $codigoBarras .= Produto::preencheZerosEsquerda($volume['sequenciaVolume'], 2);
+            $codigoBarras .= Produto::preencheZerosEsquerda($produtoEntity->getNumVolumes(), 2);
+            $codigoBarras = CodigoBarras::formatarCodigoEAN128Volume($codigoBarras);
+            $volumeEntity->setCodigoBarras($codigoBarras);
+        }
     }
 
 }
