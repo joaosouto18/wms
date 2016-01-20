@@ -226,7 +226,7 @@ class Expedicao_IndexController  extends Action
         }
     }
 
-    public function importAjaxAction() //importProdutoAjaxAction
+    public function importProdutoAjaxAction()
     {
         $em = $this->getEntityManager();
         if (isset($_POST['submit'])) {
@@ -289,6 +289,45 @@ class Expedicao_IndexController  extends Action
                 $this->_helper->messenger('error', $e->getMessage());
             }
         }
+    }
+
+    public function importAjaxAction() //importFilialAjaxAction
+    {
+        $em = $this->getEntityManager();
+        $dir = 'C:\desenvolvimento\wms\docs\importcsv';
+        $files = scandir($dir);
+
+//        if (isset($_POST['submit'])) {
+
+            $importacao = new \Wms\Service\Importacao();
+            $handle = fopen($dir.'/\/'.$files[2], "r");
+            $caracterQuebra = ';';
+
+            try {
+                $em->beginTransaction();
+                $filial = array();
+                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                    if ($data[0] == 'NOME FILIAL')
+                        continue;
+
+                    $filial['nome'] = $data[0];
+                    $filial['ativo'] = $data[1];
+                    $filial['codExterno'] = $data[2];
+                    $filial['recebimentoTransbordo'] = $data[3];
+                    $filial['leituraEtiqueta'] = $data[4];
+                    $filial['utilizaRessuprimento'] = $data[5];
+
+                    var_dump($filial); exit;
+                    $importacao->saveFilial($em, $filial);
+                }
+                $em->flush();
+                $em->commit();
+                fclose($handle);
+            } catch (\Exception $e) {
+                $em->rollback();
+                $this->_helper->messenger('error', $e->getMessage());
+            }
+//        }
     }
 
     public function indexAction()
