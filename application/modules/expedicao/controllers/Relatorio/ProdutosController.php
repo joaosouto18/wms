@@ -9,6 +9,7 @@ class Expedicao_Relatorio_ProdutosController extends \Wms\Controller\Action
 {
     public function indexAction() 
     {
+        ini_set('max_execution_time', 3000);
         $linhaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Armazenagem\LinhaSeparacao');
         $filialRepo = $this->getEntityManager()->getRepository('wms:Filial');
 
