@@ -28,7 +28,7 @@ class Expedicao_IndexController  extends Action
                     $this->importFabricante($handle);
                     break;
                 case 'filial.csv':
-                    $this->importFilial($handle);
+//                    $this->importFilial($handle);
                     break;
                 case 'fornecedor.csv':
                     $this->importFornecedor($handle);
@@ -54,18 +54,17 @@ class Expedicao_IndexController  extends Action
         try {
             $array = array();
             $count = 0;
+            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                if ($data[0] == 'NUMERO NOTA')
-                    continue;
-
-                $array['numeroNota'] = $data[0];
-                $array['serie'] = $data[1];
-                $array['dataEmissao'] = $data[2];
-                $array['placa'] = $data[3];
-                $array['codFornecedorExterno'] = $data[4];
-                $array['itens'][$count]['idProduto'] = $data[5];
-                $array['itens'][$count]['grade'] = $data[6];
-                $array['itens'][$count]['quantidade'] = $data[7];
+                $registro = array_combine($cabecalho, $data);
+                $array['numeroNota'] = $registro['NUMERO_NOTA'];
+                $array['serie'] = $registro['SERIE'];
+                $array['dataEmissao'] = $registro['DATA_EMISSAO'];
+                $array['placa'] = $registro['PLACA_VEICULO'];
+                $array['codFornecedorExterno'] = $registro['COD_FORNECEDOR'];
+                $array['itens'][$count]['idProduto'] = $registro['COD_PRODUTO'];
+                $array['itens'][$count]['grade'] = $registro['GRADE'];
+                $array['itens'][$count]['quantidade'] = $registro['QUANTIDADE'];
                 $count++;
             }
             $importacao->saveNotaFiscal($em, $array['codFornecedorExterno'], $array['numeroNota'], $array['serie'], $array['dataEmissao'], $array['placa'], $array['itens'], 'N', null);
@@ -86,25 +85,25 @@ class Expedicao_IndexController  extends Action
         try {
             $array = array();
             $count = 0;
+            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                if ($data[0] == 'DATA')
-                    continue;
 
-                $array['data'] = $data[0];
-                $array['codCliente'] = $data[1];
-                $array['nomeCliente'] = $data[2];
-                $array['placaExpedicao'] = $data[3];
-                $array['placaCarga'] = $data[3];
-                $array['codCargaExterno'] = $data[4];
-                $array['codTipoCarga'] = $data[5];
-                $array['centralEntrega'] = $data[6];
-                $array['codPedido'] = $data[7];
-                $array['tipoPedido'] = $data[8];
-                $array['linhaEntrega'] = $data[9];
-                $array['itinerario'] = $data[10];
-                $array['itens'][$count]['codProduto'] = $data[11];
-                $array['itens'][$count]['grade'] = $data[12];
-                $array['itens'][$count]['quantidade'] = $data[14];
+                $registro = array_combine($cabecalho, $data);
+                $array['data'] = $registro['DATA'];
+                $array['codCliente'] = $registro['COD_CLIENTE'];
+                $array['nomeCliente'] = $registro['NOME_CLIENTE'];
+                $array['placaExpedicao'] = $registro['PLACA_VEICULO'];
+                $array['placaCarga'] = $registro['PLACA_VEICULO'];
+                $array['codCargaExterno'] = $registro['COD_CARGA'];
+                $array['codTipoCarga'] = $registro['TIPO_CARGA'];
+                $array['centralEntrega'] = $registro['CENTRAL_ENTREGA'];
+                $array['codPedido'] = $registro['COD_PEDIDO'];
+                $array['tipoPedido'] = $registro['TIPO_PEDIDO'];
+                $array['linhaEntrega'] = $registro['LINHA_ENTREGA'];
+                $array['itinerario'] = $registro['ITINERARIO'];
+                $array['itens'][$count]['codProduto'] = $registro['COD_PRODUTO'];
+                $array['itens'][$count]['grade'] = $registro['GRADE'];
+                $array['itens'][$count]['quantidade'] = $registro['QUANTIDADE'];
                 $count++;
             }
             $array['idExpedicao'] = $importacao->saveExpedicao($em, $array['placaExpedicao']);
@@ -130,12 +129,12 @@ class Expedicao_IndexController  extends Action
         $caracterQuebra = ';';
 
         try {
+            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                if ($data[0] == 'FABRICANTE')
-                    continue;
+                $registro = array_combine($cabecalho, $data);
 
-                $idFabricante = $data[0];
-                $nome = $data[1];
+                $idFabricante = $registro['COD_FABRICANTE'];
+                $nome = $registro['FABRICANTE'];
                 $importacao->saveFabricante($em, $idFabricante, $nome);
             }
             fclose($handle);
@@ -156,24 +155,24 @@ class Expedicao_IndexController  extends Action
         try {
             $em->beginTransaction();
             $array = array();
+            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                if ($data[0] == 'COD FORNECEDOR')
-                    continue;
+                $registro = array_combine($cabecalho, $data);
 
-                $array['codFornecedor'] = $data[0];
-                $array['nome'] = $data[1];
-                $array['tipoPessoa'] = $data[2];
-                $array['cpf_cnpj'] = $data[3];
-                $array['logradouro'] = $data[4];
-                $array['numero'] = $data[5];
-                $array['complemento'] = $data[6];
-                $array['bairro'] = $data[7];
-                $array['cidade'] = $data[8];
-                $array['uf'] = $data[9];
-                $array['referencia'] = $data[10];
-                $array['email'] = $data[11];
-                $array['telefone'] = $data[12];
-                $array['observacao'] = $data[13];
+                $array['codFornecedor'] = $registro['COD_FORNECEDOR'];
+                $array['nome'] = $registro['NOME_FORNECEDOR'];
+                $array['tipoPessoa'] = $registro['TIPO_PESSOA'];
+                $array['cpf_cnpj'] = $registro['CPF_CNPJ'];
+                $array['logradouro'] = $registro['RUA'];
+                $array['numero'] = $registro['NUMERO'];
+                $array['complemento'] = $registro['COMPLEMENTO'];
+                $array['bairro'] = $registro['BAIRRO'];
+                $array['cidade'] = $registro['CIDADE'];
+                $array['uf'] = $registro['ESTADO'];
+                $array['referencia'] = $registro['REFERENCIA'];
+                $array['email'] = $registro['EMAIL'];
+                $array['telefone'] = $registro['TELEFONE'];
+                $array['observacao'] = $registro['OBSERVACAO'];
 
                 $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $array['codFornecedor']));
                 if ($entityFornecedor == null) {
@@ -262,48 +261,48 @@ class Expedicao_IndexController  extends Action
         $caracterQuebra = ';';
 
         try {
+            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             $em->beginTransaction();
             $produtos = array();
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                if ($data[0] == 'COD PRODUTO')
-                    continue;
+                $registro = array_combine($cabecalho, $data);
 
-                $produtos['codProduto'] = $data[0];
-                $produtos['descricao'] = $data[1];
-                $produtos['grade'] = $data[2];
-                $produtos['referencia'] = $data[3];
-                $produtos['tipoComercializacao'] = $data[4];
-                $produtos['classe'] = $data[5];
-                $produtos['fabricante'] = $data[6];
-                $produtos['linhaSeparacao'] = $data[7];
-                $produtos['codBarras'] = $data[8];
-                $produtos['numVolumes'] = $data[9];
-                $produtos['diasVidaUtil'] = $data[10];
-                $produtos['validade'] = $data[11];
-                $produtos['enderecoReferencia'] = $data[12];
-                $produtos['embalagens'][0]['descricaoEmbalagem'] = $data[13];
-                $produtos['embalagens'][0]['qtdEmbalagem'] = $data[14];
-                $produtos['embalagens'][0]['indPadrao'] = $data[15];
-                $produtos['embalagens'][0]['codigoBarras'] = $data[16];
-                $produtos['embalagens'][0]['cbInterno'] = $data[17];
-                $produtos['embalagens'][0]['imprimirCb'] = $data[18];
-                $produtos['embalagens'][0]['embalado'] = $data[19];
-                $produtos['embalagens'][0]['capacidadePicking'] = $data[20];
+                $produtos['codProduto'] = $registro['COD_PRODUTO'];
+                $produtos['descricao'] = $registro['DESCRICAO'];
+                $produtos['grade'] = $registro['GRADE'];
+                $produtos['referencia'] = $registro['REFERENCIA'];
+                $produtos['tipoComercializacao'] = $registro['COD_TIPO_COMERCIALIZACAO'];
+                $produtos['classe'] = $registro['COD_CLASSE'];
+                $produtos['fabricante'] = $registro['NOME_FABRICANTE'];
+                $produtos['linhaSeparacao'] = $registro['COD_LINHA_SEPARACAO'];
+                $produtos['codBarras'] = $registro['COD_BARRAS'];
+                $produtos['numVolumes'] = $registro['NUM_VOLUMES'];
+                $produtos['diasVidaUtil'] = $registro['DIAS_VIDA_UTIL'];
+                $produtos['validade'] = $registro['POSSUI_VALIDADE'];
+                $produtos['enderecoReferencia'] = $registro['COD_ENDERECO_REF_END_AUTO'];
+                $produtos['embalagens'][0]['descricaoEmbalagem'] = $registro['DESCRICAO_EMBALAGEM'];
+                $produtos['embalagens'][0]['qtdEmbalagem'] = $registro['QTD_EMBALAGEM'];
+                $produtos['embalagens'][0]['indPadrao'] = $registro['IND_PADRAO'];
+                $produtos['embalagens'][0]['codigoBarras'] = $registro['CODIGO_BARRAS'];
+                $produtos['embalagens'][0]['cbInterno'] = $registro['CB_INTERNO'];
+                $produtos['embalagens'][0]['imprimirCb'] = $registro['IMPRIMIR_CB'];
+                $produtos['embalagens'][0]['embalado'] = $registro['EMBALADO'];
+                $produtos['embalagens'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING'];
                 $produtos['embalagens'][0]['pontoReposicao'] = 0;
                 $produtos['embalagens'][0]['acao'] = 'incluir';
 
-                $produtos['volumes'][0]['descricaoVolume'] = $data[21];
-                $produtos['volumes'][0]['codigoBarras'] = $data[22];
-                $produtos['volumes'][0]['sequenciaVolume'] = $data[23];
-                $produtos['volumes'][0]['peso'] = $data[24];
-                $produtos['volumes'][0]['normaPaletizacao'] = $data[25];
-                $produtos['volumes'][0]['cbInterno'] = $data[26];
-                $produtos['volumes'][0]['imprimirCb'] = $data[27];
-                $produtos['volumes'][0]['altura'] = $data[28];
-                $produtos['volumes'][0]['largura'] = $data[29];
-                $produtos['volumes'][0]['profundidade'] = $data[30];
-                $produtos['volumes'][0]['cubagem'] = $data[31];
-                $produtos['volumes'][0]['capacidadePicking'] = $data[32];
+                $produtos['volumes'][0]['descricaoVolume'] = $registro['DESCRICAO_VOLUME'];
+                $produtos['volumes'][0]['codigoBarras'] = $registro['CODIGO_BARRAS'];
+                $produtos['volumes'][0]['sequenciaVolume'] = $registro['CODIGO_SEQUENCIAL_VOLUME'];
+                $produtos['volumes'][0]['peso'] = $registro['PESO'];
+                $produtos['volumes'][0]['normaPaletizacao'] = $registro['NORMA_PALETIZACAO'];
+                $produtos['volumes'][0]['cbInterno'] = $registro['CB_INTERNO'];
+                $produtos['volumes'][0]['imprimirCb'] = $registro['IMPRIMIR_CB'];
+                $produtos['volumes'][0]['altura'] = $registro['ALTURA'];
+                $produtos['volumes'][0]['largura'] = $registro['LARGURA'];
+                $produtos['volumes'][0]['profundidade'] = $registro['PROFUNDIDADE'];
+                $produtos['volumes'][0]['cubagem'] = $registro['CUBAGEM'];
+                $produtos['volumes'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING'];
 
                 $importacao->saveProduto($em, $produtos);
             }
