@@ -8,326 +8,345 @@ use Wms\Module\Web\Controller\Action,
 class Expedicao_IndexController  extends Action
 {
 
-    public function importRecebimentoAjaxAction()
+    public function importAjaxAction()
     {
-        $em = $this->getEntityManager();
-        $importacao = new \Wms\Service\Importacao();
-        if (isset($_POST['submit'])) {
+        //DIRETORIO DOS ARQUIVOS
+        $dir = 'C:\desenvolvimento\wms\docs\importcsv';
+        //LEITURA DE ARQUIVOS COMO ARRAY
+        $files = scandir($dir);
 
-            $handle = fopen($_FILES['filename']['tmp_name'], "r");
-            $caracterQuebra = ';';
+        //LEITURA DE ARQUIVOS
+        foreach ($files as $file) {
+            $handle = $dir.'/\/'.$file;
 
-            try {
-                $array = array();
-                $count = 0;
-                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
-                    if ($data[0] == 'NUMERO NOTA')
-                        continue;
-
-                    $array['numeroNota'] = $data[0];
-                    $array['serie'] = $data[1];
-                    $array['dataEmissao'] = $data[2];
-                    $array['placa'] = $data[3];
-                    $array['codFornecedorExterno'] = $data[4];
-                    $array['itens'][$count]['idProduto'] = $data[5];
-                    $array['itens'][$count]['grade'] = $data[6];
-                    $array['itens'][$count]['quantidade'] = $data[7];
-                    $count++;
-                }
-                $importacao->saveNotaFiscal($em, $array['codFornecedorExterno'], $array['numeroNota'], $array['serie'], $array['dataEmissao'], $array['placa'], $array['itens'], 'N', null);
-                fclose($handle);
-            } catch (\Exception $e) {
-                $this->_helper->messenger('error', $e->getMessage());
+            //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+            switch ($file) {
+                case 'expedicao.csv':
+                    $this->importExpedicao($handle);
+                    break;
+                case 'fabricante.csv':
+                    $this->importFabricante($handle);
+                    break;
+                case 'filial.csv':
+                    $this->importFilial($handle);
+                    break;
+                case 'fornecedor.csv':
+                    $this->importFornecedor($handle);
+                    break;
+                case 'notaFiscal.csv':
+                    $this->importNotaFiscal($handle);
+                    break;
+                case 'produto.csv':
+                    $this->importProduto($handle);
+                    break;
             }
         }
     }
 
-    public function importExpedicaoAjaxAction()
+    private function importNotaFiscal($handle)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
-        if (isset($_POST['submit'])) {
 
-            $handle = fopen($_FILES['filename']['tmp_name'], "r");
-            $caracterQuebra = ';';
+        $handle = fopen($handle, "r");
+        $caracterQuebra = ';';
 
-            try {
-                $array = array();
-                $count = 0;
-                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
-                    if ($data[0] == 'DATA')
-                        continue;
+        try {
+            $array = array();
+            $count = 0;
+            while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                if ($data[0] == 'NUMERO NOTA')
+                    continue;
 
-                    $array['data'] = $data[0];
-                    $array['codCliente'] = $data[1];
-                    $array['nomeCliente'] = $data[2];
-                    $array['placaExpedicao'] = $data[3];
-                    $array['placaCarga'] = $data[3];
-                    $array['codCargaExterno'] = $data[4];
-                    $array['codTipoCarga'] = $data[5];
-                    $array['centralEntrega'] = $data[6];
-                    $array['codPedido'] = $data[7];
-                    $array['tipoPedido'] = $data[8];
-                    $array['linhaEntrega'] = $data[9];
-                    $array['itinerario'] = $data[10];
-                    $array['itens'][$count]['codProduto'] = $data[11];
-                    $array['itens'][$count]['grade'] = $data[12];
-                    $array['itens'][$count]['quantidade'] = $data[14];
-                    $count++;
-                }
-                $array['idExpedicao'] = $importacao->saveExpedicao($em, $array['placaExpedicao']);
-                $array['carga'] = $importacao->saveCarga($em, $array);
-                $array['pedido'] = $importacao->savePedido($em, $array);
-                foreach ($array['itens'] as $item) {
-                    $item['pedido'] = $array['pedido'];
-                    $importacao->savePedidoProduto($em, $item);
-                }
-
-                fclose($handle);
-            } catch (\Exception $e) {
-                $this->_helper->messenger('error', $e->getMessage());
+                $array['numeroNota'] = $data[0];
+                $array['serie'] = $data[1];
+                $array['dataEmissao'] = $data[2];
+                $array['placa'] = $data[3];
+                $array['codFornecedorExterno'] = $data[4];
+                $array['itens'][$count]['idProduto'] = $data[5];
+                $array['itens'][$count]['grade'] = $data[6];
+                $array['itens'][$count]['quantidade'] = $data[7];
+                $count++;
             }
+            $importacao->saveNotaFiscal($em, $array['codFornecedorExterno'], $array['numeroNota'], $array['serie'], $array['dataEmissao'], $array['placa'], $array['itens'], 'N', null);
+            fclose($handle);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
         }
     }
 
-    public function importFabricanteAjaxAction()
+    private function importExpedicao($handle)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
-        if (isset($_POST['submit'])) {
 
-            $handle = fopen($_FILES['filename']['tmp_name'], "r");
-            $caracterQuebra = ';';
+        $handle = fopen($handle, "r");
+        $caracterQuebra = ';';
 
-            try {
-                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
-                    if ($data[0] == 'FABRICANTE')
-                        continue;
+        try {
+            $array = array();
+            $count = 0;
+            while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                if ($data[0] == 'DATA')
+                    continue;
 
-                    $idFabricante = $data[0];
-                    $nome = $data[1];
-                    $importacao->saveFabricante($em, $idFabricante, $nome);
-                }
-                fclose($handle);
-            } catch (\Exception $e) {
-                $this->_helper->messenger('error', $e->getMessage());
+                $array['data'] = $data[0];
+                $array['codCliente'] = $data[1];
+                $array['nomeCliente'] = $data[2];
+                $array['placaExpedicao'] = $data[3];
+                $array['placaCarga'] = $data[3];
+                $array['codCargaExterno'] = $data[4];
+                $array['codTipoCarga'] = $data[5];
+                $array['centralEntrega'] = $data[6];
+                $array['codPedido'] = $data[7];
+                $array['tipoPedido'] = $data[8];
+                $array['linhaEntrega'] = $data[9];
+                $array['itinerario'] = $data[10];
+                $array['itens'][$count]['codProduto'] = $data[11];
+                $array['itens'][$count]['grade'] = $data[12];
+                $array['itens'][$count]['quantidade'] = $data[14];
+                $count++;
             }
+            $array['idExpedicao'] = $importacao->saveExpedicao($em, $array['placaExpedicao']);
+            $array['carga'] = $importacao->saveCarga($em, $array);
+            $array['pedido'] = $importacao->savePedido($em, $array);
+            foreach ($array['itens'] as $item) {
+                $item['pedido'] = $array['pedido'];
+                $importacao->savePedidoProduto($em, $item);
+            }
+
+            fclose($handle);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
         }
     }
 
-    public function importFornecedorAjaxAction()
+    private function importFabricante($handle)
+    {
+        $em = $this->getEntityManager();
+        $importacao = new \Wms\Service\Importacao();
+
+        $handle = fopen($handle, "r");
+        $caracterQuebra = ';';
+
+        try {
+            while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                if ($data[0] == 'FABRICANTE')
+                    continue;
+
+                $idFabricante = $data[0];
+                $nome = $data[1];
+                $importacao->saveFabricante($em, $idFabricante, $nome);
+            }
+            fclose($handle);
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
+        }
+    }
+
+    private function importFornecedor($handle)
     {
         $em = $this->getEntityManager();
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
         $ClienteRepo    = $em->getRepository('wms:Pessoa\Papel\Cliente');
-        if (isset($_POST['submit'])) {
 
-            $handle = fopen($_FILES['filename']['tmp_name'], "r");
-            $caracterQuebra = ';';
+        $handle = fopen($handle, "r");
+        $caracterQuebra = ';';
 
-            try {
-                $em->beginTransaction();
-                $array = array();
-                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
-                    if ($data[0] == 'COD FORNECEDOR')
-                        continue;
+        try {
+            $em->beginTransaction();
+            $array = array();
+            while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                if ($data[0] == 'COD FORNECEDOR')
+                    continue;
 
-                    $array['codFornecedor'] = $data[0];
-                    $array['nome'] = $data[1];
-                    $array['tipoPessoa'] = $data[2];
-                    $array['cpf_cnpj'] = $data[3];
-                    $array['logradouro'] = $data[4];
-                    $array['numero'] = $data[5];
-                    $array['complemento'] = $data[6];
-                    $array['bairro'] = $data[7];
-                    $array['cidade'] = $data[8];
-                    $array['uf'] = $data[9];
-                    $array['referencia'] = $data[10];
-                    $array['email'] = $data[11];
-                    $array['telefone'] = $data[12];
-                    $array['observacao'] = $data[13];
+                $array['codFornecedor'] = $data[0];
+                $array['nome'] = $data[1];
+                $array['tipoPessoa'] = $data[2];
+                $array['cpf_cnpj'] = $data[3];
+                $array['logradouro'] = $data[4];
+                $array['numero'] = $data[5];
+                $array['complemento'] = $data[6];
+                $array['bairro'] = $data[7];
+                $array['cidade'] = $data[8];
+                $array['uf'] = $data[9];
+                $array['referencia'] = $data[10];
+                $array['email'] = $data[11];
+                $array['telefone'] = $data[12];
+                $array['observacao'] = $data[13];
 
-                    $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $array['codFornecedor']));
-                    if ($entityFornecedor == null) {
-                        switch ($array['tipoPessoa']) {
-                            case 'PJ':
-                                $cliente['pessoa']['tipo'] = 'J';
+                $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $array['codFornecedor']));
+                if ($entityFornecedor == null) {
+                    switch ($array['tipoPessoa']) {
+                        case 'PJ':
+                            $cliente['pessoa']['tipo'] = 'J';
 
-                                $PessoaJuridicaRepo    = $em->getRepository('wms:Pessoa\Juridica');
-                                $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$array['cpf_cnpj'])));
-                                if ($entityPessoa) {
-                                    break;
-                                }
-
-                                $cliente['pessoa']['juridica']['dataAbertura'] = null;
-                                $cliente['pessoa']['juridica']['cnpj'] = $array['cpf_cnpj'];
-                                $cliente['pessoa']['juridica']['idTipoOrganizacao'] = null;
-                                $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
-                                $cliente['pessoa']['juridica']['nome'] = $array['nome'];
+                            $PessoaJuridicaRepo    = $em->getRepository('wms:Pessoa\Juridica');
+                            $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$array['cpf_cnpj'])));
+                            if ($entityPessoa) {
                                 break;
-                            case 'F':
+                            }
 
-                                $PessoaFisicaRepo    = $em->getRepository('wms:Pessoa\Fisica');
-                                $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$array['cpf_cnpj'])));
-                                if ($entityPessoa) {
-                                    break;
-                                }
+                            $cliente['pessoa']['juridica']['dataAbertura'] = null;
+                            $cliente['pessoa']['juridica']['cnpj'] = $array['cpf_cnpj'];
+                            $cliente['pessoa']['juridica']['idTipoOrganizacao'] = null;
+                            $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
+                            $cliente['pessoa']['juridica']['nome'] = $array['nome'];
+                            break;
+                        case 'F':
 
-                                $cliente['pessoa']['tipo']              = 'F';
-                                $cliente['pessoa']['fisica']['cpf']     = $array['cpf_cnpj'];
-                                $cliente['pessoa']['fisica']['nome']    = $array['nome'];
+                            $PessoaFisicaRepo    = $em->getRepository('wms:Pessoa\Fisica');
+                            $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$array['cpf_cnpj'])));
+                            if ($entityPessoa) {
                                 break;
-                        }
+                            }
 
-                        $SiglaRepo      = $em->getRepository('wms:Util\Sigla');
-                        $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $array['uf']));
-
-                        $array['cep'] = (isset($array['cep']) && !empty($array['cep']) ? $array['cep'] : '');
-                        $cliente['enderecos'][0]['acao'] = 'incluir';
-                        $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
-
-                        if (isset($array['complemento']))
-                            $cliente['enderecos'][0]['complemento'] = $array['complemento'];
-                        if (isset($array['logradouro']))
-                            $cliente['enderecos'][0]['descricao'] = $array['logradouro'];
-                        if (isset($array['referencia']))
-                            $cliente['enderecos'][0]['pontoReferencia'] = $array['referencia'];
-                        if (isset($array['bairro']))
-                            $cliente['enderecos'][0]['bairro'] = $array['bairro'];
-                        if (isset($array['cidade']))
-                            $cliente['enderecos'][0]['localidade'] = $array['cidade'];
-                        if (isset($array['numero']))
-                            $cliente['enderecos'][0]['numero'] = $array['numero'];
-                        if (isset($array['cep']))
-                            $cliente['enderecos'][0]['cep'] = $array['cep'];
-                        if (isset($entitySigla))
-                            $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
-
-                        $fornecedor = new \Wms\Domain\Entity\Pessoa\Papel\Fornecedor();
-                        if ($entityPessoa == null) {
-                            $entityPessoa = $ClienteRepo->persistirAtor($fornecedor, $cliente, false);
-                        } else {
-                            $fornecedor->setPessoa($entityPessoa);
-                        }
-                        $fornecedor->setId($entityPessoa->getId());
-                        $fornecedor->setIdExterno($array['codFornecedor']);
-
-                        $em->persist($fornecedor);
+                            $cliente['pessoa']['tipo']              = 'F';
+                            $cliente['pessoa']['fisica']['cpf']     = $array['cpf_cnpj'];
+                            $cliente['pessoa']['fisica']['nome']    = $array['nome'];
+                            break;
                     }
-                }
 
-                $em->flush();
-                $em->commit();
-                fclose($handle);
-            } catch (\Exception $e) {
-                $em->rollback();
-                $this->_helper->messenger('error', $e->getMessage());
+                    $SiglaRepo      = $em->getRepository('wms:Util\Sigla');
+                    $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $array['uf']));
+
+                    $array['cep'] = (isset($array['cep']) && !empty($array['cep']) ? $array['cep'] : '');
+                    $cliente['enderecos'][0]['acao'] = 'incluir';
+                    $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
+
+                    if (isset($array['complemento']))
+                        $cliente['enderecos'][0]['complemento'] = $array['complemento'];
+                    if (isset($array['logradouro']))
+                        $cliente['enderecos'][0]['descricao'] = $array['logradouro'];
+                    if (isset($array['referencia']))
+                        $cliente['enderecos'][0]['pontoReferencia'] = $array['referencia'];
+                    if (isset($array['bairro']))
+                        $cliente['enderecos'][0]['bairro'] = $array['bairro'];
+                    if (isset($array['cidade']))
+                        $cliente['enderecos'][0]['localidade'] = $array['cidade'];
+                    if (isset($array['numero']))
+                        $cliente['enderecos'][0]['numero'] = $array['numero'];
+                    if (isset($array['cep']))
+                        $cliente['enderecos'][0]['cep'] = $array['cep'];
+                    if (isset($entitySigla))
+                        $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
+
+                    $fornecedor = new \Wms\Domain\Entity\Pessoa\Papel\Fornecedor();
+                    if ($entityPessoa == null) {
+                        $entityPessoa = $ClienteRepo->persistirAtor($fornecedor, $cliente, false);
+                    } else {
+                        $fornecedor->setPessoa($entityPessoa);
+                    }
+                    $fornecedor->setId($entityPessoa->getId());
+                    $fornecedor->setIdExterno($array['codFornecedor']);
+
+                    $em->persist($fornecedor);
+                }
             }
+
+            $em->flush();
+            $em->commit();
+            fclose($handle);
+        } catch (\Exception $e) {
+            $em->rollback();
+            $this->_helper->messenger('error', $e->getMessage());
         }
     }
 
-    public function importProdutoAjaxAction()
+    private function importProduto($handle)
     {
         $em = $this->getEntityManager();
-        if (isset($_POST['submit'])) {
 
-            $importacao = new \Wms\Service\Importacao();
-            $handle = fopen($_FILES['filename']['tmp_name'], "r");
-            $caracterQuebra = ';';
+        $importacao = new \Wms\Service\Importacao();
+        $handle = fopen($handle, "r");
+        $caracterQuebra = ';';
 
-            try {
-                $em->beginTransaction();
-                $produtos = array();
-                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE) {
-                    if ($data[0] == 'COD PRODUTO')
-                        continue;
+        try {
+            $em->beginTransaction();
+            $produtos = array();
+            while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                if ($data[0] == 'COD PRODUTO')
+                    continue;
 
-                    $produtos['codProduto'] = $data[0];
-                    $produtos['descricao'] = $data[1];
-                    $produtos['grade'] = $data[2];
-                    $produtos['referencia'] = $data[3];
-                    $produtos['tipoComercializacao'] = $data[4];
-                    $produtos['classe'] = $data[5];
-                    $produtos['fabricante'] = $data[6];
-                    $produtos['linhaSeparacao'] = $data[7];
-                    $produtos['codBarras'] = $data[8];
-                    $produtos['numVolumes'] = $data[9];
-                    $produtos['diasVidaUtil'] = $data[10];
-                    $produtos['validade'] = $data[11];
-                    $produtos['enderecoReferencia'] = $data[12];
-                    $produtos['embalagens'][0]['descricaoEmbalagem'] = $data[13];
-                    $produtos['embalagens'][0]['qtdEmbalagem'] = $data[14];
-                    $produtos['embalagens'][0]['indPadrao'] = $data[15];
-                    $produtos['embalagens'][0]['codigoBarras'] = $data[16];
-                    $produtos['embalagens'][0]['cbInterno'] = $data[17];
-                    $produtos['embalagens'][0]['imprimirCb'] = $data[18];
-                    $produtos['embalagens'][0]['embalado'] = $data[19];
-                    $produtos['embalagens'][0]['capacidadePicking'] = $data[20];
-                    $produtos['embalagens'][0]['pontoReposicao'] = 0;
-                    $produtos['embalagens'][0]['acao'] = 'incluir';
+                $produtos['codProduto'] = $data[0];
+                $produtos['descricao'] = $data[1];
+                $produtos['grade'] = $data[2];
+                $produtos['referencia'] = $data[3];
+                $produtos['tipoComercializacao'] = $data[4];
+                $produtos['classe'] = $data[5];
+                $produtos['fabricante'] = $data[6];
+                $produtos['linhaSeparacao'] = $data[7];
+                $produtos['codBarras'] = $data[8];
+                $produtos['numVolumes'] = $data[9];
+                $produtos['diasVidaUtil'] = $data[10];
+                $produtos['validade'] = $data[11];
+                $produtos['enderecoReferencia'] = $data[12];
+                $produtos['embalagens'][0]['descricaoEmbalagem'] = $data[13];
+                $produtos['embalagens'][0]['qtdEmbalagem'] = $data[14];
+                $produtos['embalagens'][0]['indPadrao'] = $data[15];
+                $produtos['embalagens'][0]['codigoBarras'] = $data[16];
+                $produtos['embalagens'][0]['cbInterno'] = $data[17];
+                $produtos['embalagens'][0]['imprimirCb'] = $data[18];
+                $produtos['embalagens'][0]['embalado'] = $data[19];
+                $produtos['embalagens'][0]['capacidadePicking'] = $data[20];
+                $produtos['embalagens'][0]['pontoReposicao'] = 0;
+                $produtos['embalagens'][0]['acao'] = 'incluir';
 
-                    $produtos['volumes'][0]['descricaoVolume'] = $data[21];
-                    $produtos['volumes'][0]['codigoBarras'] = $data[22];
-                    $produtos['volumes'][0]['sequenciaVolume'] = $data[23];
-                    $produtos['volumes'][0]['peso'] = $data[24];
-                    $produtos['volumes'][0]['normaPaletizacao'] = $data[25];
-                    $produtos['volumes'][0]['cbInterno'] = $data[26];
-                    $produtos['volumes'][0]['imprimirCb'] = $data[27];
-                    $produtos['volumes'][0]['altura'] = $data[28];
-                    $produtos['volumes'][0]['largura'] = $data[29];
-                    $produtos['volumes'][0]['profundidade'] = $data[30];
-                    $produtos['volumes'][0]['cubagem'] = $data[31];
-                    $produtos['volumes'][0]['capacidadePicking'] = $data[32];
+                $produtos['volumes'][0]['descricaoVolume'] = $data[21];
+                $produtos['volumes'][0]['codigoBarras'] = $data[22];
+                $produtos['volumes'][0]['sequenciaVolume'] = $data[23];
+                $produtos['volumes'][0]['peso'] = $data[24];
+                $produtos['volumes'][0]['normaPaletizacao'] = $data[25];
+                $produtos['volumes'][0]['cbInterno'] = $data[26];
+                $produtos['volumes'][0]['imprimirCb'] = $data[27];
+                $produtos['volumes'][0]['altura'] = $data[28];
+                $produtos['volumes'][0]['largura'] = $data[29];
+                $produtos['volumes'][0]['profundidade'] = $data[30];
+                $produtos['volumes'][0]['cubagem'] = $data[31];
+                $produtos['volumes'][0]['capacidadePicking'] = $data[32];
 
-                    $importacao->saveProduto($em, $produtos);
-                }
-                $em->flush();
-                $em->commit();
-                fclose($handle);
-            } catch (\Exception $e) {
-                $em->rollback();
-                $this->_helper->messenger('error', $e->getMessage());
+                $importacao->saveProduto($em, $produtos);
             }
+            $em->flush();
+            $em->commit();
+            fclose($handle);
+        } catch (\Exception $e) {
+            $em->rollback();
+            $this->_helper->messenger('error', $e->getMessage());
         }
     }
 
-    public function importAjaxAction() //importFilialAjaxAction
+    private function importFilial($handle)
     {
         $em = $this->getEntityManager();
-        $dir = 'C:\desenvolvimento\wms\docs\importcsv';
-        $files = scandir($dir);
 
-//        if (isset($_POST['submit'])) {
+        $importacao = new \Wms\Service\Importacao();
+        $handle = fopen($handle, "r");
+        $caracterQuebra = ';';
 
-            $importacao = new \Wms\Service\Importacao();
-            $handle = fopen($dir.'/\/'.$files[2], "r");
-            $caracterQuebra = ';';
+        try {
+            $em->beginTransaction();
+            $filial = array();
+            while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                if ($data[0] == 'NOME FILIAL')
+                    continue;
 
-            try {
-                $em->beginTransaction();
-                $filial = array();
-                while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                    if ($data[0] == 'NOME FILIAL')
-                        continue;
+                $filial['nome'] = $data[0];
+                $filial['ativo'] = $data[1];
+                $filial['codExterno'] = $data[2];
+                $filial['recebimentoTransbordo'] = $data[3];
+                $filial['leituraEtiqueta'] = $data[4];
+                $filial['utilizaRessuprimento'] = $data[5];
 
-                    $filial['nome'] = $data[0];
-                    $filial['ativo'] = $data[1];
-                    $filial['codExterno'] = $data[2];
-                    $filial['recebimentoTransbordo'] = $data[3];
-                    $filial['leituraEtiqueta'] = $data[4];
-                    $filial['utilizaRessuprimento'] = $data[5];
-
-                    var_dump($filial); exit;
-                    $importacao->saveFilial($em, $filial);
-                }
-                $em->flush();
-                $em->commit();
-                fclose($handle);
-            } catch (\Exception $e) {
-                $em->rollback();
-                $this->_helper->messenger('error', $e->getMessage());
+                $importacao->saveFilial($em, $filial);
             }
-//        }
+            $em->flush();
+            $em->commit();
+            fclose($handle);
+        } catch (\Exception $e) {
+            $em->rollback();
+            $this->_helper->messenger('error', $e->getMessage());
+        }
     }
 
     public function indexAction()
