@@ -84,9 +84,6 @@ class Recebimento extends Grid
                             'moduleName' => 'produtividade',
                             'controllerName' => 'descarga',
                             'pkIndex' => 'id',
-                            'condition' => function ($row) {
-                                return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA) && $row['idOrdemServicoManual']);
-                            }
                  ))->addAction(array(
                     'label' => 'Finalizar Conferência Coletor',
                     'actionName' => 'conferencia-coletor-ajax',
