@@ -192,7 +192,7 @@ class Expedicao_IndexController  extends Action
                             $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
                             $cliente['pessoa']['juridica']['nome'] = $array['nome'];
                             break;
-                        case 'F':
+                        case 'PF':
 
                             $PessoaFisicaRepo    = $em->getRepository('wms:Pessoa\Fisica');
                             $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$array['cpf_cnpj'])));

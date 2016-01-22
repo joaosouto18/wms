@@ -191,7 +191,7 @@ class EstoqueRepository extends EntityRepository
         $em->persist($historico);
 
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO
-        if ($novaQtd >0) {
+        if ($novaQtd > 0) {
             if ($enderecoEn->getDisponivel() == "S") {
                 $enderecoEn->setDisponivel("N");
                 $em->persist($enderecoEn);
