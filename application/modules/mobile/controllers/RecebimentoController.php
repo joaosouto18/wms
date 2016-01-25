@@ -206,12 +206,13 @@ class Mobile_RecebimentoController extends Action
             $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
 
             if ($produtoEn->getValidade() == "S") {
+
                 if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
                     $this->_helper->messenger('error', 'Informe uma data de validade correta');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 }
 
-                $shelfLife = $notaFiscalItemEntity->getProduto()->getDiasVidaUtil();
+                $shelfLife = $produtoEn->getDiasVidaUtil();
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
 
