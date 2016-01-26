@@ -1,3 +1,23 @@
+<script type="text/javascript">
+    var datefield=document.createElement("input")
+    datefield.setAttribute("type", "date")
+    if (datefield.type!="date"){ //if browser doesn't support input type="date", load files for jQuery UI Date Picker
+        document.write('<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />\n')
+        document.write('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"><\/script>\n')
+        document.write('<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"><\/script>\n')
+    }
+</script>
+
+<script>
+    if (datefield.type!="date"){ //if browser doesn't support input type="date", initialize date picker widget:
+        jQuery(function($){ //on document.ready
+            $('#dataValidade').datepicker({
+                dateFormat: 'dd/mm/yy'
+            });
+        })
+    }
+</script>
+
 <?php echo $this->render('recebimento/produto-detalhes.phtml'); ?>
 
 <form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
@@ -45,7 +65,7 @@
             <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
             <td><input type="text" maxlength="15" size="10" class=" required focus" id="qtdConferida" name="qtdConferida" value="" /></td>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <td><input type="date" maxlength="10" size="10" class=" required focus" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>" /></td>
+                <td><input type="date" maxlength="10" size="10" class="required" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>" /></td>
             <?php endif; ?>
             <td><span id="totalQuantidade">0</span></td>
         </tr>
