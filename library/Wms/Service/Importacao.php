@@ -4,6 +4,7 @@ namespace Wms\Service;
 
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Fabricante;
+use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
@@ -828,8 +829,16 @@ class Importacao
         }
     }
 
-    public function saveFilial($em, $filial) {
+    public function saveFilial($em, $values)
+    {
+        /** @var \Wms\Domain\Entity\FilialRepository $filialRepo */
+        $filialRepo = $em->getRepository('wms:Filial');
+        $filianEn = $filialRepo->findOneBy(array('codExterno' => $values['pessoa']['juridica']['codExterno']));
 
+        if (!$filianEn)
+            $filianEn = new Filial();
+
+        return $filialRepo->save($filianEn, $values);
     }
 
     private function persistirEmbalagens($em, $produtoEntity, $values)

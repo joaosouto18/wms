@@ -328,18 +328,25 @@ class Importacao_IndexController extends Action
         $caracterQuebra = ';';
 
         try {
+            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             $em->beginTransaction();
             $filial = array();
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-                if ($data[0] == 'NOME FILIAL')
-                    continue;
+                $registro = array_combine($cabecalho, $data);
 
-                $filial['nome'] = $data[0];
-                $filial['ativo'] = $data[1];
-                $filial['codExterno'] = $data[2];
-                $filial['recebimentoTransbordo'] = $data[3];
-                $filial['leituraEtiqueta'] = $data[4];
-                $filial['utilizaRessuprimento'] = $data[5];
+                $filial['pessoa']['juridica']['idExterno'] = $registro['COD_FILIAL_INTEGRACAO'];
+                $filial['pessoa']['juridica']['codExterno'] = $registro['COD_EXTERNO'];
+                $filial['pessoa']['juridica']['indLeitEtqProdTransbObg'] = $registro['LEITURA_ETIQUETA'];
+                $filial['pessoa']['juridica']['indRessuprimento'] = $registro['UTILIZA_RESSUPRIMENTO'];
+                $filial['pessoa']['juridica']['indRecTransbObg'] = $registro['RECEBIMENTO_TRANSBORDO'];
+                $filial['pessoa']['juridica']['isAtivo'] = $registro['IND_ATIVO'];
+
+                $filial['pessoa']['tipo'] = 'J';
+                $filial['pessoa']['juridica']['dataAbertura'] = $registro['DATA_ABERTURA'];
+                $filial['pessoa']['juridica']['cnpj'] = $registro['CNPJ'];
+                $filial['pessoa']['juridica']['nome'] = $registro['NOME_EMPRESA'];
+
+                $filial['acao'] = 'incluir';
 
                 $importacao->saveFilial($em, $filial);
             }
