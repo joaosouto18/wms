@@ -76,9 +76,20 @@
                                 echo $this->formHidden("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
                                     'class' => "qtdNF",
                                 ));
+                                /*
                                 echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
                                     'class' => "dataValidade",
                                 ));
+                                */
+                                $inputName = "dataValidade[{$produto['codigo']}][{$produto['grade']}]";
+                                $id = "dataValidade-{$produto['codigo']}-{$produto['grade']}";
+                                $date = new DateTime('now');
+
+                                //$inputName='teste';
+                                $id='dataValidade';
+
+                                echo '<input type="text" name="'.$inputName.'" id="'. $id .'" value="' . $date->format('d/m/Y') . '" size="11" maxLength="10" alt="date" class="date " />'
+
                                 ?>
                             <?php endif; ?>
                         </td>
