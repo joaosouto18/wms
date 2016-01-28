@@ -835,10 +835,11 @@ class Importacao
         $filialRepo = $em->getRepository('wms:Filial');
         $filianEn = $filialRepo->findOneBy(array('codExterno' => $values['pessoa']['juridica']['codExterno']));
 
-        if (!$filianEn)
+        if (!$filianEn) {
             $filianEn = new Filial();
+        }
 
-        return $filialRepo->save($filianEn, $values);
+        $filialRepo->save($filianEn, $values);
     }
 
     private function persistirEmbalagens($em, $produtoEntity, $values)

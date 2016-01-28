@@ -11,38 +11,39 @@ use Wms\Module\Web\Controller\Action;
 
 class Importacao_IndexController extends Action
 {
-
     public function importAjaxAction()
     {
-        //DIRETORIO DOS ARQUIVOS
-        $dir = 'C:\desenvolvimento\wms\docs\importcsv';
-        //LEITURA DE ARQUIVOS COMO ARRAY
-        $files = scandir($dir);
+        if (1==2) {
+            //DIRETORIO DOS ARQUIVOS
+            $dir = 'C:\desenvolvimento\wms\docs\importcsv';
+            //LEITURA DE ARQUIVOS COMO ARRAY
+            $files = scandir($dir);
 
-        //LEITURA DE ARQUIVOS
-        foreach ($files as $file) {
-            $handle = $dir.'/\/'.$file;
+            //LEITURA DE ARQUIVOS
+            foreach ($files as $file) {
+                $handle = $dir.'/\/'.$file;
 
-            //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
-            switch ($file) {
-                case 'expedicao.csv':
-                    $this->importExpedicao($handle);
-                    break;
-                case 'fabricante.csv':
-                    $this->importFabricante($handle);
-                    break;
-                case 'filial.csv':
-//                    $this->importFilial($handle);
-                    break;
-                case 'fornecedor.csv':
-                    $this->importFornecedor($handle);
-                    break;
-                case 'notaFiscal.csv':
-                    $this->importNotaFiscal($handle);
-                    break;
-                case 'produto.csv':
-                    $this->importProduto($handle);
-                    break;
+                //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                switch ($file) {
+                    case 'expedicao.csv':
+                        $this->importExpedicao($handle);
+                        break;
+                    case 'fabricante.csv':
+                        $this->importFabricante($handle);
+                        break;
+                    case 'filial.csv':
+                        $this->importFilial($handle);
+                        break;
+                    case 'fornecedor.csv':
+                        $this->importFornecedor($handle);
+                        break;
+                    case 'notaFiscal.csv':
+                        $this->importNotaFiscal($handle);
+                        break;
+                    case 'produto.csv':
+                        $this->importProduto($handle);
+                        break;
+                }
             }
         }
     }
@@ -345,6 +346,8 @@ class Importacao_IndexController extends Action
                 $filial['pessoa']['juridica']['dataAbertura'] = $registro['DATA_ABERTURA'];
                 $filial['pessoa']['juridica']['cnpj'] = $registro['CNPJ'];
                 $filial['pessoa']['juridica']['nome'] = $registro['NOME_EMPRESA'];
+                $filial['pessoa']['juridica']['idTipoOrganizacao'] = null;
+                $filial['pessoa']['juridica']['idRamoAtividade'] = null;
 
                 $filial['acao'] = 'incluir';
 
