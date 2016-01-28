@@ -8,12 +8,20 @@
  */
 
 use Wms\Module\Web\Controller\Action;
+use Wms\Module\Importacao\Form\Index as IndexForm;
 
 class Importacao_IndexController extends Action
 {
-    public function importAjaxAction()
+
+    public function indexAction()
     {
-        if (1==2) {
+        $form = new IndexForm();
+        $this->view->form = $form;
+        $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        if (isset($params) && !empty($params)) {
             //DIRETORIO DOS ARQUIVOS
             $dir = 'C:\desenvolvimento\wms\docs\importcsv';
             //LEITURA DE ARQUIVOS COMO ARRAY
@@ -26,35 +34,35 @@ class Importacao_IndexController extends Action
                 //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                 switch ($file) {
                     case 'expedicao.csv':
-                        $this->importExpedicao($handle);
+                        $this->importExpedicao($handle, $params);
                         break;
                     case 'fabricante.csv':
-                        $this->importFabricante($handle);
+                        $this->importFabricante($handle, $params);
                         break;
                     case 'filial.csv':
-                        $this->importFilial($handle);
+                        $this->importFilial($handle, $params);
                         break;
                     case 'fornecedor.csv':
-                        $this->importFornecedor($handle);
+                        $this->importFornecedor($handle, $params);
                         break;
                     case 'notaFiscal.csv':
-                        $this->importNotaFiscal($handle);
+                        $this->importNotaFiscal($handle, $params);
                         break;
                     case 'produto.csv':
-                        $this->importProduto($handle);
+                        $this->importProduto($handle, $params);
                         break;
                 }
             }
         }
     }
 
-    private function importNotaFiscal($handle)
+    private function importNotaFiscal($handle, $params)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
         $handle = fopen($handle, "r");
-        $caracterQuebra = ';';
+        $caracterQuebra = $params['caracterQuebra'];
 
         try {
             $array = array();
@@ -79,13 +87,13 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importExpedicao($handle)
+    private function importExpedicao($handle, $params)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
         $handle = fopen($handle, "r");
-        $caracterQuebra = ';';
+        $caracterQuebra = $params['caracterQuebra'];
 
         try {
             $array = array();
@@ -125,13 +133,13 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importFabricante($handle)
+    private function importFabricante($handle, $params)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
         $handle = fopen($handle, "r");
-        $caracterQuebra = ';';
+        $caracterQuebra = $params['caracterQuebra'];
 
         try {
             $cabecalho = fgetcsv($handle,0,$caracterQuebra);
@@ -148,14 +156,14 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importFornecedor($handle)
+    private function importFornecedor($handle, $params)
     {
         $em = $this->getEntityManager();
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
         $ClienteRepo    = $em->getRepository('wms:Pessoa\Papel\Cliente');
 
         $handle = fopen($handle, "r");
-        $caracterQuebra = ';';
+        $caracterQuebra = $params['caracterQuebra'];
 
         try {
             $em->beginTransaction();
@@ -257,13 +265,13 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importProduto($handle)
+    private function importProduto($handle, $params)
     {
         $em = $this->getEntityManager();
 
         $importacao = new \Wms\Service\Importacao();
         $handle = fopen($handle, "r");
-        $caracterQuebra = ';';
+        $caracterQuebra = $params['caracterQuebra'];
 
         try {
             $cabecalho = fgetcsv($handle,0,$caracterQuebra);
@@ -320,13 +328,13 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importFilial($handle)
+    private function importFilial($handle, $params)
     {
         $em = $this->getEntityManager();
 
         $importacao = new \Wms\Service\Importacao();
         $handle = fopen($handle, "r");
-        $caracterQuebra = ';';
+        $caracterQuebra = $params['caracterQuebra'];
 
         try {
             $cabecalho = fgetcsv($handle,0,$caracterQuebra);
