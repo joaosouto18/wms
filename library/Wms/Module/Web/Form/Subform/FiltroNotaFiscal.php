@@ -21,7 +21,7 @@ class FiltroNotaFiscal extends Form
         $fornecedores = array();
 
         foreach ($repoFornecedor->findAll() as $fornecedor) {
-            $fornecedores[$fornecedor->getId()] = $fornecedor->getPessoa()->getNome();
+            //$fornecedores[$fornecedor->getId()] = $fornecedor->getPessoa()->getNome();
         }
 
         //form's attr
