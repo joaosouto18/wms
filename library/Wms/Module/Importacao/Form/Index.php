@@ -20,9 +20,9 @@ class Index extends Form
                 'label' => 'Caracter Quebra',
                 'size' => 10,
             ))
-            ->addElement('text', 'descricaoLeitura', array(
-                'label' => 'Descrição de Leitura',
-                'size' => 40,
+            ->addElement('text', 'parametro', array(
+                'label' => 'Parametro',
+                'size' => 10,
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
@@ -31,7 +31,7 @@ class Index extends Form
             ))
             ->addDisplayGroup(array(
                 'caracterQuebra',
-                'descricaoLeitura',
+                'parametro',
                 'submit'),
                 'formulario');
     }

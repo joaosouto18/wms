@@ -14,189 +14,6 @@ use Wms\Module\Web\Controller\Action;
 class Importacao
 {
 
-    public function importarRecebimento($em)
-    {
-        $exemploTxt = array(
-            //      0           1       2               3               4               5                   6               7                                       8       9           10              11                  12          13                                      14
-            0 => 'NUMERO NOTA;	SERIE;	DATA EMISSAO;	PLACA VEICULO;	COD FORNECEDOR;	NOME FORNECEDOR;	COD PRODUTO;	DSC PRODUTO;	                        GRADE;	QUANTIDADE;	ID FABRICANTE;	NOME FABRICANTE;	ID CLASSE;	NOME CLASSE;	                        ID CLASSE PAI;',
-            1 => '123545;   	3;  	10/01/2016; 	HGH-2501;   	669;	        XXXXXXXXXXXX;   	350125;	        AR SPLIT 12000 BTUAQ12UWBVNXAZ QF INT;	UNICA;	4;	        578;        	FABRICA DE QQ COISA;20102;	    AR CONDICIONADO DE 10001 AT 15000 B;	25000;',
-            2 => '123545;   	3;  	10/01/2016; 	HGH-2501;   	669;        	XXXXXXXXXXXX;	    101069;     	COLCHAO ORTHOCL OURO AZ 88X188;      	UNICA;	6;	        101;        	ORTOCRIN;       	40002;  	COLCHO DE SOLTEIRO;                 	40000;',
-            3 => '123545;   	3;  	10/01/2016; 	HGH-2501;   	669;        	XXXXXXXXXXXX;   	577062;     	DVD GAME C/KARAOKE VC-931 PC;       	UNICA;	10;     	577;        	VICINI;         	120300; 	DVD PLAYER;                             null;',
-        );
-
-        $arquivo = array(
-            'descricaoLeitura' => 'CLIENTE',
-            'nomeArquivo' => "MOC - 002.txt",
-            'cabecalho' => true,
-            'caracterQuebra' => ";"
-        );
-
-        $cabecalhoArquivo = array(
-            0 => array(
-                'nomeCampo' => 'numeroNota',
-                'posicaoTxt' => 0,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            1 => array(
-                'nomeCampo' => 'serie',
-                'posicaoTxt' => 1,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            2 => array(
-                'nomeCampo' => 'dataEmissao',
-                'posicaoTxt' => 2,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            3 => array(
-                'nomeCampo' => 'placa',
-                'posicaoTxt' => 3,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            4 => array(
-                'nomeCampo' => 'codFornecedor',
-                'posicaoTxt' => 4,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            5 => array(
-                'nomeCampo' => 'nomeFornecedor',
-                'posicaoTxt' => 5,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            6 => array(
-                'nomeCampo' => 'codProduto',
-                'posicaoTxt' => 6,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            7 => array(
-                'nomeCampo' => 'dscProduto',
-                'posicaoTxt' => 7,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            8 => array(
-                'nomeCampo' => 'grade',
-                'posicaoTxt' => 8,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            9 => array(
-                'nomeCampo' => 'quantidade',
-                'posicaoTxt' => 9,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            10 => array(
-                'nomeCampo' => 'codFabricante',
-                'posicaoTxt' => 10,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            11 => array(
-                'nomeCampo' => 'nomeFabricante',
-                'posicaoTxt' => 11,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            12 => array(
-                'nomeCampo' => 'codClasse',
-                'posicaoTxt' => 12,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            13 => array(
-                'nomeCampo' => 'nomeClasse',
-                'posicaoTxt' => 13,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            ),
-            14 => array(
-                'nomeCampo' => 'codClassePai',
-                'posicaoTxt' => 14,
-                'pk' => false,
-                'parametros' => '',
-                'tamanhoInicio' => '',
-                'tamanhoFim' => ''
-            )
-        );
-
-        foreach ($exemploTxt as $i => $linha) {
-            if ($arquivo['cabecalho'] == true) {
-                if ($i == 0) {
-                    continue;
-                }
-            }
-
-            if ($arquivo['caracterQuebra'] == "") {
-                $conteudoArquivo = array(0=>$linha);
-            }   else {
-                $conteudoArquivo = explode($arquivo['caracterQuebra'],$linha);
-            }
-            $array = array();
-            foreach ($cabecalhoArquivo as $j => $campo) {
-                $valorCampo = $conteudoArquivo[$campo['posicaoTxt']];
-                if ($campo['tamanhoInicio'] != "") {
-                    $valorCampo = substr($valorCampo,$campo['tamanhoInicio'],$campo['tamanhoFim']);
-                }
-                if ($campo['parametros'] != '') {
-                    $valorCampo = str_replace('VALUE',$valorCampo,$campo['parametros']);
-                }
-
-                $array[$campo['nomeCampo']] = trim($valorCampo);
-            }
-            $array['item'][0]['idProduto'] = $array['codProduto'];
-            $array['item'][0]['grade'] = $array['grade'];
-            $array['item'][0]['quantidade'] = $array['quantidade'];
-
-            if (isset($array['codFabricante']) && !empty($array['codFabricante'])) {
-                $this->saveFabricante($em, $array['codFabricante'], $array['nomeFabricante']);
-            }
-
-            if (isset($array['codFornecedor']) && !empty($array['codFornecedor'])) {
-                $idFornecedor = $this->saveFornecedor($em, $array['codFornecedor']);
-            }
-
-            if (isset($array['numeroNota']) && !empty($array['numeroNota'])) {
-                $this->saveNotaFiscal($em, $idFornecedor->getId(), $array['numeroNota'], $array['serie'], $array['dataEmissao'], $array['placa'], $array['item'], 'N', null);
-            }
-        }
-
-    }
-
     private function saveClasse($em, $idClasse, $nome, $idClassePai = null)
     {
         /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
@@ -291,29 +108,6 @@ class Importacao
         return $entityCliente;
     }
 
-    private function saveEndereco($em, $dscEndereco)
-    {
-        $dscEndereco = str_replace('.','',$dscEndereco);
-        if (strlen($dscEndereco) == 8){
-            $tempEndereco = "0" . $dscEndereco;
-        } else {
-            $tempEndereco = $dscEndereco;
-        }
-        $rua = intval(substr($tempEndereco,0,2));
-        $predio = intval(substr($tempEndereco,2,3));
-        $nivel =  intval(substr($tempEndereco,5,2));
-        $apto = intval(substr($tempEndereco,7,2));
-
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-        $entityEndereco = $enderecoRepo->getEndereco($rua, $predio, $nivel, $apto);
-
-        if (!$entityEndereco)
-            $entityEndereco = $enderecoRepo->save(null, $values); //verificar funcionamento do metodo save
-
-        return $entityEndereco;
-    }
-
     public function saveFornecedor($em, $codFornecedorExterno)
     {
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
@@ -328,13 +122,6 @@ class Importacao
         return $entityFornecedor;
 
     }
-
-
-
-
-
-
-
 
     public function saveNotaFiscal($em, $idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null)
     {
@@ -457,8 +244,6 @@ class Importacao
                 case Produto::TIPO_UNITARIO:
                     // gravo embalagens
                     $this->persistirEmbalagens($em, $produtoEntity, $produto);
-                    // gravo dados logisticos
-//                    $this->persistirDadosLogisticos($values);
 
                     // limpo os volumes se houver
                     $volumeRepo = $em->getRepository('wms:Produto\Volume');
