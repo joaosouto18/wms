@@ -212,11 +212,6 @@ class Pedido
 
     public function setPontoTransbordo($pontoTransbordo)
     {
-        /*if ($pontoTransbordo == 1) {
-            //COMENTAR ESTA LINHA SE FOR IMPLANTAR EM OUTRO CLIENTE
-            //VALIDO APENAS PARA SIMONETTI
-            $pontoTransbordo = 104;
-        }*/
         $this->pontoTransbordo = $pontoTransbordo;
     }
 

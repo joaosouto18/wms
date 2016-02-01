@@ -300,7 +300,7 @@ class Mobile_OndaRessuprimentoController extends Action
                 }
 
                 if ($result == null) {
-                    throw new \Exception("error","Ocorreu um erro tentando finalizar a OS");
+                    throw new \Exception("Ocorreu um erro tentando finalizar a OS");
                 }
 
                 $codProduto = $result[0]['id'];
@@ -308,7 +308,7 @@ class Mobile_OndaRessuprimentoController extends Action
                 $ondaOsEn = $ondaOsEn->getProdutos();
 
                 if (($codProduto != $ondaOsEn[0]->getProduto()->getId()) || ($grade != $ondaOsEn[0]->getProduto()->getGrade())){
-                    throw new \Exception("error","Produto diferente do indicado na onda");
+                    throw new \Exception("Produto diferente do indicado na onda");
                 }
 
                 $ondaRepo->finalizaOnda($ondaOsEn2);
