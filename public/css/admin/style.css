@@ -80,6 +80,12 @@ body {
     text-indent:-9999px;
     margin:5px 0 0 5px;
 }
+
+.development, .development #userInfo {
+    color:red !important;
+}
+
+
 ul.flashMessenger {
     display: block;
     width: 100%;
