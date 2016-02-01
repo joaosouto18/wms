@@ -308,7 +308,7 @@ class Mobile_OndaRessuprimentoController extends Action
                 $ondaOsEn = $ondaOsEn->getProdutos();
 
                 if (($codProduto != $ondaOsEn[0]->getProduto()->getId()) || ($grade != $ondaOsEn[0]->getProduto()->getGrade())){
-                    throw new \Exception("error","Produto diferente do indicado na onda");
+                    throw new \Exception("Produto diferente do indicado na onda");
                 }
 
                 $ondaRepo->finalizaOnda($ondaOsEn2);
