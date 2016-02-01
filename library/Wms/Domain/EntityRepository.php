@@ -43,6 +43,7 @@ class EntityRepository extends EntityRepositoryDoctrine
 		$conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
 			$config->resources->doctrine->dbal->connections->default->parameters->password,
 			$config->resources->doctrine->dbal->connections->default->parameters->dbname);
+        $arrayResult = array();
 
 		if (!$conexao) {
 			$erro = oci_error();
@@ -52,18 +53,19 @@ class EntityRepository extends EntityRepositoryDoctrine
 
 		$res = oci_parse($conexao, $query) or die ("erro");
 		oci_execute($res);
-		if ($fetch == 'all') {
-			oci_fetch_all($res, $result);
-		}
 
-		$arrayResult = array();
-		foreach ($result[key($result)] as $rowId => $row) {
-			$newLine = array();
-			foreach ($result as $columnId => $column) {
-				$newLine[$columnId] = $result[$columnId][$rowId];
-			}
-			$arrayResult[] = $newLine;
-		}
+        if ($fetch == 'all') {
+            oci_fetch_all($res, $result);
+        }
+
+        $arrayResult = array();
+        foreach ($result[key($result)] as $rowId => $row) {
+            $newLine = array();
+            foreach ($result as $columnId => $column) {
+                $newLine[$columnId] = $result[$columnId][$rowId];
+            }
+            $arrayResult[] = $newLine;
+        }
 
 		//fecha a conexão atual
 		oci_free_statement($res);

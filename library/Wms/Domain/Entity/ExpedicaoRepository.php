@@ -1294,9 +1294,9 @@ class ExpedicaoRepository extends EntityRepository
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
                                LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                                 '.$FullWhere.'
+                               WHERE 1 = 1  '.$FullWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 WHERE '. $FullWhere . '
+                 WHERE 1 = 1'. $FullWhere . '
                   GROUP BY E.COD_EXPEDICAO,
                           E.DSC_PLACA_EXPEDICAO,
                           E.DTH_INICIO,
@@ -1316,7 +1316,7 @@ class ExpedicaoRepository extends EntityRepository
     ';
 
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
-        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        //return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 
