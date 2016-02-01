@@ -1168,7 +1168,7 @@ class ExpedicaoRepository extends EntityRepository
         if (isset($parametros['status']) && (!empty($parametros['status']))) {
             $where.=$and."S.COD_SIGLA = ".$parametros['status']."";
             $and=" and ";
-            $whereSigla .= "AND (S.COD_SIGLA = ".$parametros['status'].")";
+            $WhereSigla .= "AND (S.COD_SIGLA = ".$parametros['status'].")";
         }
 
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
@@ -1296,7 +1296,7 @@ class ExpedicaoRepository extends EntityRepository
                                LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                                  '.$FullWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 WHERE '.$where. $FullWhere . '
+                 WHERE '. $FullWhere . '
                   GROUP BY E.COD_EXPEDICAO,
                           E.DSC_PLACA_EXPEDICAO,
                           E.DTH_INICIO,
