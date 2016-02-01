@@ -182,9 +182,7 @@ class Pedido
 
     public function setCentralEntrega($centralEntrega)
     {
-        //@ToDo MOVEIS LINHARES - TIRAR URGENTE
-        $this->centralEntrega = 1;
-        //$this->centralEntrega = $centralEntrega;
+        $this->centralEntrega = $centralEntrega;
     }
 
     public function getCentralEntrega()
@@ -214,9 +212,7 @@ class Pedido
 
     public function setPontoTransbordo($pontoTransbordo)
     {
-        //@ToDo MOVEIS LINHARES - TIRAR URGENTE
-        $this->pontoTransbordo = 1;
-        //$this->pontoTransbordo = $pontoTransbordo;
+        $this->pontoTransbordo = $pontoTransbordo;
     }
 
     public function getPontoTransbordo()

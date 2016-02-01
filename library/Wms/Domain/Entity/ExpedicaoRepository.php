@@ -1106,11 +1106,16 @@ class ExpedicaoRepository extends EntityRepository
      */
     public function buscar($parametros, $idDepositoLogado = null)
     {
+
         $where="";
         $whereSubQuery="";
         $and="";
         $andSub="";
         $cond="";
+
+        $WherePedido = "";
+        $WhereCarga = "";
+        $WhereExpedicao = "";
 
         if (isset($idDepositoLogado)) {
             $andWhere = 'WHERE P.CENTRAL_ENTREGA = ' . $idDepositoLogado;
@@ -1122,17 +1127,22 @@ class ExpedicaoRepository extends EntityRepository
             $central = implode(',',$parametros['centrais']);
             $where.=$and."( PED.CENTRAL_ENTREGA in(".$central.")";
             $where.=" OR PED.PONTO_TRANSBORDO in(".$central.") )";
+
+            $WherePedido .= " AND ( PED.CENTRAL_ENTREGA in(".$central.") OR PED.PONTO_TRANSBORDO in(".$central."))";
             $and=" AND ";
+
         }
 
         if (isset($parametros['placa']) && !empty($parametros['placa'])) {
             $where.=$and." E.DSC_PLACA_EXPEDICAO = '".$parametros['placa']."'";
             $and=" AND ";
+            $WhereExpedicao .= " AND (E.DSC_PLACA_EXPEDICAO = '".$parametros['placa']."')";
         }
 
         if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1']))){
             $where.=$and." E.DTH_INICIO >= TO_DATE('".$parametros['dataInicial1']." 00:00', 'DD-MM-YYYY HH24:MI')";
             $and=" AND ";
+            $WhereExpedicao .= " AND (E.DTH_INICIO >= TO_DATE('".$parametros['dataInicial1']." 00:00', 'DD-MM-YYYY HH24:MI'))";
         }
         if (isset($parametros['dataInicial2']) && (!empty($parametros['dataInicial2']))){
             $where.=$and." E.DTH_INICIO <= TO_DATE('".$parametros['dataInicial2']." 23:59', 'DD-MM-YYYY HH24:MI')";
@@ -1169,7 +1179,6 @@ class ExpedicaoRepository extends EntityRepository
 
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
-
 
         $sql='  SELECT E.COD_EXPEDICAO AS "id",
                        E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
@@ -1292,15 +1301,10 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
                      ';
+        //$result = $this->executaBancoNativo($sql);
 
         $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
         return $result;
-    }
-
-
-    public function getExpedicaoIntegradas(){
-
     }
 
     /**
