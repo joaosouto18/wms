@@ -300,7 +300,7 @@ class Mobile_OndaRessuprimentoController extends Action
                 }
 
                 if ($result == null) {
-                    throw new \Exception("error","Ocorreu um erro tentando finalizar a OS");
+                    throw new \Exception("Ocorreu um erro tentando finalizar a OS");
                 }
 
                 $codProduto = $result[0]['id'];
