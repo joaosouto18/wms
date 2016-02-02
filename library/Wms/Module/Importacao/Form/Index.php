@@ -25,7 +25,7 @@ class Index extends Form
                 'size' => 10,
             ))
             ->addElement('submit', 'submit', array(
-                'label' => 'Buscar',
+                'label' => 'Importar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
