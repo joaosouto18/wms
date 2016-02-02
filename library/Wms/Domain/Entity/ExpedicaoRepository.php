@@ -1195,6 +1195,7 @@ class ExpedicaoRepository extends EntityRepository
         }
         if ($WhereSigla != "") {
             $JoinSigla = " LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS ";
+            $JoinExpedicao = " LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO ";
         }
         if ($WhereCarga != "") {
             $JoinCarga = " LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA ";
@@ -1314,7 +1315,7 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-
+        echo $sql;exit;
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
         //return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
