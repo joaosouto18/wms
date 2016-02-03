@@ -27,7 +27,7 @@ class Pedido
 
     /**
      * Central de Entrega equivale ao código do CD
-     * @Column(name="CENTRAL_ENTREGA", type="integer", nullable=false)
+     * @Column(name="CENTRAL_ENTREGA", type="string", nullable=false)
      */
     protected $centralEntrega;
 
@@ -43,7 +43,7 @@ class Pedido
     protected $codCarga;
 
     /**
-     * @Column(name="PONTO_TRANSBORDO", type="integer", nullable=false)
+     * @Column(name="PONTO_TRANSBORDO", type="string", nullable=false)
      */
     protected $pontoTransbordo;
 
@@ -212,11 +212,6 @@ class Pedido
 
     public function setPontoTransbordo($pontoTransbordo)
     {
-        /*if ($pontoTransbordo == 1) {
-            //COMENTAR ESTA LINHA SE FOR IMPLANTAR EM OUTRO CLIENTE
-            //VALIDO APENAS PARA SIMONETTI
-            $pontoTransbordo = 104;
-        }*/
         $this->pontoTransbordo = $pontoTransbordo;
     }
 

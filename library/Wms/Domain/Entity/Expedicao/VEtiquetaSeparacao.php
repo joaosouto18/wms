@@ -115,12 +115,12 @@ class VEtiquetaSeparacao
     protected $linhaSeparacao;
 
     /**
-     * @Column(name="ESTOQUE", type="integer", nullable=false)
+     * @Column(name="ESTOQUE", type="string", nullable=false)
      */
     protected $codEstoque;
 
     /**
-     * @Column(name="PONTOTRANSBORDO", type="integer", nullable=false)
+     * @Column(name="PONTOTRANSBORDO", type="string", nullable=false)
      */
     protected $pontoTransbordo;
 

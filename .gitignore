@@ -1,7 +1,6 @@
 ﻿﻿*.svn
 *~
 nbproject/
-cache/
 library/Wms/Domain/Proxy/
 library/Core/Pdf/font/unifont/*.mtx.php
 library/Core/Pdf/font/unifont/*.cw.dat
