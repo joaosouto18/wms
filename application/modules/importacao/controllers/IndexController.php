@@ -383,7 +383,6 @@ class Importacao_IndexController extends Action
                 $produtos['diasVidaUtil'] = $registro['DIAS_VIDA_UTIL'];
                 $produtos['validade'] = $registro['POSSUI_VALIDADE'];
                 $produtos['enderecoReferencia'] = $registro['COD_ENDERECO_REF_END_AUTO'];
-
                 $produtos['embalagens'][0]['descricaoEmbalagem'] = $registro['DESCRICAO_EMBALAGEM'];
                 $produtos['embalagens'][0]['qtdEmbalagem'] = $registro['QTD_EMBALAGEM'];
                 $produtos['embalagens'][0]['indPadrao'] = $registro['IND_PADRAO'];
