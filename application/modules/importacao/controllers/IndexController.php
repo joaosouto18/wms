@@ -27,34 +27,55 @@ class Importacao_IndexController extends Action
             //LEITURA DE ARQUIVOS COMO ARRAY
             $files = scandir($dir);
 
-            //LEITURA DE ARQUIVOS
-            foreach ($files as $file) {
-                $handle = $dir.'/\/'.$file;
+            try {
+                //LEITURA DE ARQUIVOS
+                foreach ($files as $file) {
+                    $handle = $dir.'/\/'.$file;
 
-                //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
-                switch ($file) {
-                    case 'expedicao.csv':
-                        $this->importExpedicao($handle, $params, 'csv');
-                        break;
-                    case 'fabricante.csv':
-                        $this->importFabricante($handle, $params, 'csv');
-                        break;
-                    case 'filial.csv':
-                        $this->importFilial($handle, $params, 'csv');
-                        break;
-                    case 'fornecedor.csv':
-                        $this->importFornecedor($handle, $params, 'csv');
-                        break;
-                    case 'notaFiscal.csv':
-                        $this->importNotaFiscal($handle, $params, 'csv');
-                        break;
-                    case 'produto.csv':
-                        $this->importProduto($handle, $params, 'csv');
-                        break;
-                    case 'produto.txt':
-                        $this->importProduto($handle, $params, 'txt');
-                        break;
+                    //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                    switch ($file) {
+                        case 'expedicao.csv':
+                            $this->importExpedicao($handle, $params, 'csv');
+                            break;
+                        case 'expedicao.txt':
+                            $this->importExpedicao($handle, $params, 'txt');
+                            break;
+                        case 'fabricante.csv':
+                            $this->importFabricante($handle, $params, 'csv');
+                            break;
+                        case 'fabricante.txt':
+                            $this->importFabricante($handle, $params, 'txt');
+                            break;
+                        case 'filial.csv':
+                            $this->importFilial($handle, $params, 'csv');
+                            break;
+                        case 'filial.txt':
+                            $this->importFilial($handle, $params, 'txt');
+                            break;
+                        case 'fornecedor.csv':
+                            $this->importFornecedor($handle, $params, 'csv');
+                            break;
+                        case 'fornecedor.txt':
+                            $this->importFornecedor($handle, $params, 'txt');
+                            break;
+                        case 'notaFiscal.csv':
+                            $this->importNotaFiscal($handle, $params, 'csv');
+                            break;
+                        case 'notaFiscal.txt':
+                            $this->importNotaFiscal($handle, $params, 'txt');
+                            break;
+                        case 'produto.csv':
+                            $this->importProduto($handle, $params, 'csv');
+                            break;
+                        case 'produto.txt':
+                            $this->importProduto($handle, $params, 'txt');
+                            break;
+                    }
                 }
+                $this->_helper->messenger('success', 'Todos arquivos importados com sucesso.');
+                return $this->redirect('index');
+            } catch (\Exception $e) {
+                $this->_helper->messenger('error', $e->getMessage());
             }
         }
     }
@@ -74,10 +95,17 @@ class Importacao_IndexController extends Action
                 $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             } elseif ($tipoArquivo == 'txt') {
                 $cabecalho = fgets($handle, 1000);
+                $cabecalho = explode($caracterQuebra, $cabecalho);
             } else {
                 throw new \Exception("Formato de arquivo nao suportado.");
             }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                foreach ($cabecalho as $key => $titulo) {
+                    $cabecalho[$key] = trim($titulo);
+                }
+                foreach ($data as $key => $dados) {
+                    $data[$key] = trim($dados);
+                }
                 $registro = array_combine($cabecalho, $data);
                 $array['numeroNota'] = $registro['NUMERO_NOTA'];
                 $array['serie'] = $registro['SERIE'];
@@ -111,12 +139,19 @@ class Importacao_IndexController extends Action
                 $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             } elseif ($tipoArquivo == 'txt') {
                 $cabecalho = fgets($handle, 1000);
+                $cabecalho = explode($caracterQuebra, $cabecalho);
             } else {
                 throw new \Exception("Formato de arquivo nao suportado.");
             }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
-
+                foreach ($cabecalho as $key => $titulo) {
+                    $cabecalho[$key] = trim($titulo);
+                }
+                foreach ($data as $key => $dados) {
+                    $data[$key] = trim($dados);
+                }
                 $registro = array_combine($cabecalho, $data);
+
                 $array['data'] = $registro['DATA'];
                 $array['codCliente'] = $registro['COD_CLIENTE'];
                 $array['nomeCliente'] = $registro['NOME_CLIENTE'];
@@ -161,10 +196,17 @@ class Importacao_IndexController extends Action
                 $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             } elseif ($tipoArquivo == 'txt') {
                 $cabecalho = fgets($handle, 1000);
+                $cabecalho = explode($caracterQuebra, $cabecalho);
             } else {
                 throw new \Exception("Formato de arquivo nao suportado.");
             }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                foreach ($cabecalho as $key => $titulo) {
+                    $cabecalho[$key] = trim($titulo);
+                }
+                foreach ($data as $key => $dados) {
+                    $data[$key] = trim($dados);
+                }
                 $registro = array_combine($cabecalho, $data);
 
                 $idFabricante = $registro['COD_FABRICANTE'];
@@ -193,10 +235,17 @@ class Importacao_IndexController extends Action
                 $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             } elseif ($tipoArquivo == 'txt') {
                 $cabecalho = fgets($handle, 1000);
+                $cabecalho = explode($caracterQuebra, $cabecalho);
             } else {
                 throw new \Exception("Formato de arquivo nao suportado.");
             }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                foreach ($cabecalho as $key => $titulo) {
+                    $cabecalho[$key] = trim($titulo);
+                }
+                foreach ($data as $key => $dados) {
+                    $data[$key] = trim($dados);
+                }
                 $registro = array_combine($cabecalho, $data);
 
                 $array['codFornecedor'] = $registro['COD_FORNECEDOR'];
@@ -305,12 +354,20 @@ class Importacao_IndexController extends Action
                 $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             } elseif ($tipoArquivo == 'txt') {
                 $cabecalho = fgets($handle, 1000);
+                $cabecalho = explode($caracterQuebra, $cabecalho);
             } else {
                 throw new \Exception("Formato de arquivo nao suportado.");
             }
+
             $em->beginTransaction();
             $produtos = array();
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                foreach ($cabecalho as $key => $titulo) {
+                    $cabecalho[$key] = trim($titulo);
+                }
+                foreach ($data as $key => $dados) {
+                    $data[$key] = trim($dados);
+                }
                 $registro = array_combine($cabecalho, $data);
 
                 $produtos['codProduto'] = $registro['COD_PRODUTO'];
@@ -326,24 +383,25 @@ class Importacao_IndexController extends Action
                 $produtos['diasVidaUtil'] = $registro['DIAS_VIDA_UTIL'];
                 $produtos['validade'] = $registro['POSSUI_VALIDADE'];
                 $produtos['enderecoReferencia'] = $registro['COD_ENDERECO_REF_END_AUTO'];
+                
                 $produtos['embalagens'][0]['descricaoEmbalagem'] = $registro['DESCRICAO_EMBALAGEM'];
                 $produtos['embalagens'][0]['qtdEmbalagem'] = $registro['QTD_EMBALAGEM'];
                 $produtos['embalagens'][0]['indPadrao'] = $registro['IND_PADRAO'];
-                $produtos['embalagens'][0]['codigoBarras'] = $registro['CODIGO_BARRAS'];
-                $produtos['embalagens'][0]['cbInterno'] = $registro['CB_INTERNO'];
-                $produtos['embalagens'][0]['imprimirCb'] = $registro['IMPRIMIR_CB'];
+                $produtos['embalagens'][0]['codigoBarras'] = $registro['CODIGO_BARRAS_EMBALAGEM'];
+                $produtos['embalagens'][0]['cbInterno'] = $registro['CB_INTERNO_EMBALAGEM'];
+                $produtos['embalagens'][0]['imprimirCb'] = $registro['IMPRIMIR_CB_EMBALAGEM'];
                 $produtos['embalagens'][0]['embalado'] = $registro['EMBALADO'];
                 $produtos['embalagens'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING'];
                 $produtos['embalagens'][0]['pontoReposicao'] = 0;
                 $produtos['embalagens'][0]['acao'] = 'incluir';
 
                 $produtos['volumes'][0]['descricaoVolume'] = $registro['DESCRICAO_VOLUME'];
-                $produtos['volumes'][0]['codigoBarras'] = $registro['CODIGO_BARRAS'];
+                $produtos['volumes'][0]['codigoBarras'] = $registro['CODIGO_BARRAS_VOLUME'];
                 $produtos['volumes'][0]['sequenciaVolume'] = $registro['CODIGO_SEQUENCIAL_VOLUME'];
                 $produtos['volumes'][0]['peso'] = $registro['PESO'];
                 $produtos['volumes'][0]['normaPaletizacao'] = $registro['NORMA_PALETIZACAO'];
-                $produtos['volumes'][0]['cbInterno'] = $registro['CB_INTERNO'];
-                $produtos['volumes'][0]['imprimirCb'] = $registro['IMPRIMIR_CB'];
+                $produtos['volumes'][0]['cbInterno'] = $registro['CB_INTERNO_VOLUME'];
+                $produtos['volumes'][0]['imprimirCb'] = $registro['IMPRIMIR_CB_VOLUME'];
                 $produtos['volumes'][0]['altura'] = $registro['ALTURA'];
                 $produtos['volumes'][0]['largura'] = $registro['LARGURA'];
                 $produtos['volumes'][0]['profundidade'] = $registro['PROFUNDIDADE'];
@@ -374,12 +432,19 @@ class Importacao_IndexController extends Action
                 $cabecalho = fgetcsv($handle,0,$caracterQuebra);
             } elseif ($tipoArquivo == 'txt') {
                 $cabecalho = fgets($handle, 1000);
+                $cabecalho = explode($caracterQuebra, $cabecalho);
             } else {
                 throw new \Exception("Formato de arquivo nao suportado.");
             }
             $em->beginTransaction();
             $filial = array();
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+                foreach ($cabecalho as $key => $titulo) {
+                    $cabecalho[$key] = trim($titulo);
+                }
+                foreach ($data as $key => $dados) {
+                    $data[$key] = trim($dados);
+                }
                 $registro = array_combine($cabecalho, $data);
 
                 $filial['pessoa']['juridica']['idExterno'] = $registro['COD_FILIAL_INTEGRACAO'];
