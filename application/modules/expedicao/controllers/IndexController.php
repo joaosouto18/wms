@@ -5,7 +5,7 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\PesoCargas as PesoCargasGrid;
 
-class Expedicao_IndexConthroller  extends Action
+class Expedicao_IndexController  extends Action
 {
 
     public function indexAction()
