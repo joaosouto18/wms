@@ -188,7 +188,8 @@ class PedidoProduto
      */
     public function setValorVenda($valorVenda)
     {
-        $this->valorVenda = $valorVenda;
+        $this->valorVenda = 0;
+        //$this->valorVenda = $valorVenda;
     }
 
     /**

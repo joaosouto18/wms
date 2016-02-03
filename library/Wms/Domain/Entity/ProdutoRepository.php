@@ -140,7 +140,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  // gravo embalagens
 		  $this->persistirEmbalagens($produtoEntity, $values);
 		  // gravo dados logisticos
-		  $this->persistirDadosLogisticos($values);
+		  $this->persistirDadosLogisticos($values, $produtoEntity);
 
 		  //aguardando teste por parte da simonetti
 		   //WebService da Simonetti para persistir os dados logisticos
@@ -332,21 +332,31 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	// normas de paletizacao
 	if (isset($normasPaletizacao)) {
 
+        $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
+        $idProduto   = $produtoEntity->getID();
+        $grade       = $produtoEntity->getGrade();
+
 	  foreach ($normasPaletizacao as $key => $normaPaletizacao) {
 		extract($normaPaletizacao);
 
 		if (!isset($acao))
 		  continue;
 
-		switch ($acao) {
+          switch ($acao) {
 		  case 'incluir':
-			$normaPaletizacaoEntity = new NormaPaletizacaoEntity;
-			$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+              $normaPaletizacaoEntity = new NormaPaletizacaoEntity;
+              $normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+			  $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:
+			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
 			break;
 		  case 'alterar':
-			$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-			$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-			break;
+
+              $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
+              $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:
+			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+
+              $normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+              break;
 		}
 	  }
 	}
@@ -389,6 +399,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 		switch ($acao) {
 		  case 'excluir':
+            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização excluida. Unitizador:
+			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().'Norma:'.$normaPaletizacaoEntity->getNumNorma());
 			$normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
 			break;
 		}
@@ -403,7 +415,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
    * @param ProdutoEntity $produtoEntity
    * @param array $values 
    */
-  public function persistirDadosLogisticos(array &$values) {
+  public function persistirDadosLogisticos(array &$values, $produtoEntity) {
 	$em = $this->getEntityManager();
 	extract($values);
 
@@ -416,20 +428,32 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	// normas de paletizacao
 	if (isset($normasPaletizacao)) {
 
+
+        $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
+        $idProduto   = $produtoEntity->getID();
+        $grade       = $produtoEntity->getGrade();
+
 	  foreach ($normasPaletizacao as $key => $normaPaletizacao) {
 		extract($normaPaletizacao);
 
 		if (!isset($acao))
 		  continue;
 
+
 		switch ($acao) {
 		  case 'incluir':
-			$normaPaletizacaoEntity = new NormaPaletizacaoEntity;
-			$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+              $normaPaletizacaoEntity = new NormaPaletizacaoEntity;
+              $normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+
+              $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:
+			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
 			break;
 		  case 'alterar':
-			$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-			$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+              $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
+              $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:
+			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+
+			  $normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
 			break;
 		}
 	  }
@@ -484,21 +508,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		}
 	  }
 	}
-
-
-//        foreach ($values['embalagens'] as $id => $itemEmbalagem) {
-//            extract($itemEmbalagem);
-//
-//            if (!isset($itemEmbalagem['acao']))
-//                continue;
-//
-//            if ($itemEmbalagem['acao'] == 'excluir') {
-//                $embalagemEntity = $em->getRepository('wms:Produto\Embalagem')->find($id);
-//                //$embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
-//                $em->remove($embalagemEntity);
-//                $em->flush($embalagemEntity);
-//            }
-//        }
 
 	return true;
   }
@@ -1061,7 +1070,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       ELSE 'CADASTRO CORRETO'
                  END AS \"PROBLEMA CADASTRAL\"
                  FROM PRODUTO P
-           INNER JOIN LINHA_SEPARACAO L ON P.COD_LINHA_SEPARACAO = L.COD_LINHA_SEPARACAO
+           LEFT JOIN LINHA_SEPARACAO L ON P.COD_LINHA_SEPARACAO = L.COD_LINHA_SEPARACAO
            INNER JOIN FABRICANTE F ON P.COD_FABRICANTE = F.COD_FABRICANTE
            INNER JOIN PRODUTO_CLASSE PC ON P.COD_PRODUTO_CLASSE = PC.COD_PRODUTO_CLASSE
             LEFT JOIN SIGLA S ON (P.COD_TIPO_COMERCIALIZACAO = S.COD_REFERENCIA_SIGLA AND S.COD_TIPO_SIGLA = 52)

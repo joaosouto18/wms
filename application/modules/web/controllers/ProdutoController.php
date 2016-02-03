@@ -183,6 +183,9 @@ class Web_ProdutoController extends Crud {
                 $this->repository->save($entity, $this->getRequest()->getParams());
                 $this->em->flush();
 
+                $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
+                $andamentoRepo->save($params['id'], $params['grade'], false, 'Produto alterado com sucesso.');
+
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');
 				

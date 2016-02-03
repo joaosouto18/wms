@@ -50,6 +50,11 @@ ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED
 PASSWORD_LIFE_TIME UNLIMITED;
 
+Exemplo exportação/importação banco
+===========================
+exp wms_develop_linhares/wms_adm@xe file=develop_linhares.dmp owner=wms_develop_linhares compress=Y grants=Y indexes=Y triggers=Y constraints=Y
+imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=Y constraints=Y
+
 Documentação
 ===========================
 
