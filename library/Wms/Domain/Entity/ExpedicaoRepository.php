@@ -1315,8 +1315,8 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-        return \Wms\Domain\EntityRepository::nativeQuery($sql);
-        //return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+//        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 
@@ -1513,9 +1513,9 @@ class ExpedicaoRepository extends EntityRepository
                  ORDER BY E.COD_EXPEDICAO DESC
                      ';
 
-        return \Wms\Domain\EntityRepository::nativeQuery($sql);
-        //$result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        //return $result;
+//        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     /**
