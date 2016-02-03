@@ -47,12 +47,23 @@ class EntityRepository extends EntityRepositoryDoctrine
 
 		if (!$conexao) {
 			$erro = oci_error();
-			echo "ERRO - ". $erro['message'];
-			exit;
+            throw new \Exception($erro['message']);
 		}
 
 		$res = oci_parse($conexao, $query) or die ("erro");
-		oci_execute($res);
+        if (!$res) {
+            $erro = oci_error($conexao);
+            oci_close($conexao);
+            throw new \Exception($erro['message'] . " - consulta: " . $query);
+        }
+
+		$e = oci_execute($res);
+        if (!$e) {
+            $erro = oci_error($res);
+            oci_free_statement($res);
+            oci_close($conexao);
+            throw new \Exception($erro['message'] . " - consulta: " . $query);
+        }
 
         if ($fetch == 'all') {
             oci_fetch_all($res, $result);
