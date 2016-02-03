@@ -23,7 +23,7 @@ class Importacao_IndexController extends Action
         unset($params['action']);
         if (isset($params) && !empty($params)) {
             //DIRETORIO DOS ARQUIVOS
-            $dir = 'C:\desenvolvimento\wms\docs\importcsv';
+            $dir = $params['localArmazenamento']; // 'C:\desenvolvimento\wms\docs\importcsv';
             //LEITURA DE ARQUIVOS COMO ARRAY
             $files = scandir($dir);
 
@@ -34,29 +34,32 @@ class Importacao_IndexController extends Action
                 //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                 switch ($file) {
                     case 'expedicao.csv':
-                        $this->importExpedicao($handle, $params);
+                        $this->importExpedicao($handle, $params, 'csv');
                         break;
                     case 'fabricante.csv':
-                        $this->importFabricante($handle, $params);
+                        $this->importFabricante($handle, $params, 'csv');
                         break;
                     case 'filial.csv':
-                        $this->importFilial($handle, $params);
+                        $this->importFilial($handle, $params, 'csv');
                         break;
                     case 'fornecedor.csv':
-                        $this->importFornecedor($handle, $params);
+                        $this->importFornecedor($handle, $params, 'csv');
                         break;
                     case 'notaFiscal.csv':
-                        $this->importNotaFiscal($handle, $params);
+                        $this->importNotaFiscal($handle, $params, 'csv');
                         break;
                     case 'produto.csv':
-                        $this->importProduto($handle, $params);
+                        $this->importProduto($handle, $params, 'csv');
+                        break;
+                    case 'produto.txt':
+                        $this->importProduto($handle, $params, 'txt');
                         break;
                 }
             }
         }
     }
 
-    private function importNotaFiscal($handle, $params)
+    private function importNotaFiscal($handle, $params, $tipoArquivo)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
@@ -67,7 +70,13 @@ class Importacao_IndexController extends Action
         try {
             $array = array();
             $count = 0;
-            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            if ($tipoArquivo == 'csv') {
+                $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            } elseif ($tipoArquivo == 'txt') {
+                $cabecalho = fgets($handle, 1000);
+            } else {
+                throw new \Exception("Formato de arquivo nao suportado.");
+            }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
                 $registro = array_combine($cabecalho, $data);
                 $array['numeroNota'] = $registro['NUMERO_NOTA'];
@@ -87,7 +96,7 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importExpedicao($handle, $params)
+    private function importExpedicao($handle, $params, $tipoArquivo)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
@@ -98,7 +107,13 @@ class Importacao_IndexController extends Action
         try {
             $array = array();
             $count = 0;
-            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            if ($tipoArquivo == 'csv') {
+                $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            } elseif ($tipoArquivo == 'txt') {
+                $cabecalho = fgets($handle, 1000);
+            } else {
+                throw new \Exception("Formato de arquivo nao suportado.");
+            }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
 
                 $registro = array_combine($cabecalho, $data);
@@ -133,7 +148,7 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importFabricante($handle, $params)
+    private function importFabricante($handle, $params, $tipoArquivo)
     {
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
@@ -142,7 +157,13 @@ class Importacao_IndexController extends Action
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
-            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            if ($tipoArquivo == 'csv') {
+                $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            } elseif ($tipoArquivo == 'txt') {
+                $cabecalho = fgets($handle, 1000);
+            } else {
+                throw new \Exception("Formato de arquivo nao suportado.");
+            }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
                 $registro = array_combine($cabecalho, $data);
 
@@ -156,7 +177,7 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importFornecedor($handle, $params)
+    private function importFornecedor($handle, $params, $tipoArquivo)
     {
         $em = $this->getEntityManager();
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
@@ -168,7 +189,13 @@ class Importacao_IndexController extends Action
         try {
             $em->beginTransaction();
             $array = array();
-            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            if ($tipoArquivo == 'csv') {
+                $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            } elseif ($tipoArquivo == 'txt') {
+                $cabecalho = fgets($handle, 1000);
+            } else {
+                throw new \Exception("Formato de arquivo nao suportado.");
+            }
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
                 $registro = array_combine($cabecalho, $data);
 
@@ -265,7 +292,7 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importProduto($handle, $params)
+    private function importProduto($handle, $params, $tipoArquivo)
     {
         $em = $this->getEntityManager();
 
@@ -274,7 +301,13 @@ class Importacao_IndexController extends Action
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
-            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            if ($tipoArquivo == 'csv') {
+                $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            } elseif ($tipoArquivo == 'txt') {
+                $cabecalho = fgets($handle, 1000);
+            } else {
+                throw new \Exception("Formato de arquivo nao suportado.");
+            }
             $em->beginTransaction();
             $produtos = array();
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
@@ -328,7 +361,7 @@ class Importacao_IndexController extends Action
         }
     }
 
-    private function importFilial($handle, $params)
+    private function importFilial($handle, $params, $tipoArquivo)
     {
         $em = $this->getEntityManager();
 
@@ -337,7 +370,13 @@ class Importacao_IndexController extends Action
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
-            $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            if ($tipoArquivo == 'csv') {
+                $cabecalho = fgetcsv($handle,0,$caracterQuebra);
+            } elseif ($tipoArquivo == 'txt') {
+                $cabecalho = fgets($handle, 1000);
+            } else {
+                throw new \Exception("Formato de arquivo nao suportado.");
+            }
             $em->beginTransaction();
             $filial = array();
             while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {

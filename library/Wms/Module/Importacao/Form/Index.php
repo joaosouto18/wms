@@ -20,9 +20,9 @@ class Index extends Form
                 'label' => 'Caracter Quebra',
                 'size' => 10,
             ))
-            ->addElement('text', 'parametro', array(
-                'label' => 'Parametro',
-                'size' => 10,
+            ->addElement('text', 'localArmazenamento', array(
+                'label' => 'Pasta de Armazenamento',
+                'size' => 50,
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Importar',
@@ -31,7 +31,7 @@ class Index extends Form
             ))
             ->addDisplayGroup(array(
                 'caracterQuebra',
-                'parametro',
+                'localArmazenamento',
                 'submit'),
                 'formulario');
     }
