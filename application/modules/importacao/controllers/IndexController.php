@@ -390,7 +390,7 @@ class Importacao_IndexController extends Action
                 $produtos['embalagens'][0]['cbInterno'] = $registro['CB_INTERNO_EMBALAGEM'];
                 $produtos['embalagens'][0]['imprimirCb'] = $registro['IMPRIMIR_CB_EMBALAGEM'];
                 $produtos['embalagens'][0]['embalado'] = $registro['EMBALADO'];
-                $produtos['embalagens'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING'];
+                $produtos['embalagens'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING_EMBALAGEM'];
                 $produtos['embalagens'][0]['pontoReposicao'] = 0;
                 $produtos['embalagens'][0]['acao'] = 'incluir';
 
@@ -405,7 +405,7 @@ class Importacao_IndexController extends Action
                 $produtos['volumes'][0]['largura'] = $registro['LARGURA'];
                 $produtos['volumes'][0]['profundidade'] = $registro['PROFUNDIDADE'];
                 $produtos['volumes'][0]['cubagem'] = $registro['CUBAGEM'];
-                $produtos['volumes'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING'];
+                $produtos['volumes'][0]['capacidadePicking'] = $registro['CAPACIDADE_PICKING_VOLUME'];
 
                 $importacao->saveProduto($em, $produtos);
             }
