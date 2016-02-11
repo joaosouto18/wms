@@ -45,7 +45,8 @@ class Enderecamento_MovimentacaoController extends Action
 
                 if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
-                    $validade = $estoqueEn->getValidade();
+                    if (isset($estoqueEn) && !empty($estoqueEn))
+                        $validade = $estoqueEn->getValidade();
                     if (isset($validade) && !is_null($validade)) {
                         $data['validade'] = $validade->format('d/m/Y');
                     } else {
