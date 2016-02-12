@@ -1120,7 +1120,7 @@ class ExpedicaoRepository extends EntityRepository
         $WhereExpedicao = "";
 
         if (isset($idDepositoLogado)) {
-            $andWhere = "WHERE P.CENTRAL_ENTREGA = '$idDepositoLogado'";
+            $andWhere = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
         } else {
             $andWhere = '';
         }
@@ -1295,7 +1295,7 @@ class ExpedicaoRepository extends EntityRepository
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
                                LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                               WHERE 1 = 1  '.$FullWhere.'
+                               WHERE 1 = 1  '.$FullWhere.$andWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
                  WHERE 1 = 1'. $FullWhere . '
                   GROUP BY E.COD_EXPEDICAO,
