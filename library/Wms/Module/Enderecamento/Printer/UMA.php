@@ -126,7 +126,12 @@ class UMA extends Pdf
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
-                $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
+                if ($modelo == 3) {
+                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
+                } else {
+                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
+                }
+
                 if ($paleteEn->getDepositoEndereco() != null && $paleteEn->getCodStatus() == Palete::STATUS_RECEBIDO) {
                     $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
                 }
@@ -168,36 +173,33 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
 
-        $this->SetFont('Arial', 'B', 60);
         if (isset($params['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
-            $this->Cell(75,20,utf8_decode("Validade $dataValidade"),0,1);
+            $this->SetFont('Arial', 'B', 40);
+            $this->Cell(75,40,utf8_decode("Validade "),0,1);
+            $this->SetFont('Arial', 'B', 70);
+            $this->Cell(75,-40,utf8_decode("               $dataValidade"),0,1);
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(25,20,"Qtd",0,0);
+        $this->Cell(25,95,"Qtd",0,0);
 
-        $this->SetFont('Arial', 'B', 72);
-        $this->Cell(75,20,$palete['qtd'],0,1);
-
-        $this->SetFont('Arial', 'B', 32);
-        $this->Cell(55,20,utf8_decode("Endereço "),0,0);
-
-        $this->SetFont('Arial', 'B', 72);
-        $this->Cell(95,25,$palete['endereco'],0,1);
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(75,95,$palete['qtd'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(55,45,utf8_decode("Ref. "),0,0);
+        $this->Cell(55,-35,utf8_decode("Endereço "),0,0);
 
-        $this->SetFont('Arial', 'B', 70);
-        $this->Cell(95,45,$referencia,0,1);
+        $palete['endereco']=  '01.005.02.01';
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(105,-35,$palete['endereco'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(55,45,utf8_decode("Prod. "),0,0);
+        $this->Cell(55,90,utf8_decode("Prod/Ref.:"),0,0);
 
-        $this->SetFont('Arial', 'B', 75);
-        $this->Cell(95,45,$codigoProduto,0,1);
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(105,90,$codigoProduto . " / " .  $referencia,0,1);
 
     }
 
