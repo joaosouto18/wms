@@ -825,10 +825,10 @@ class EnderecoRepository extends EntityRepository
     public function getPickingMultiplosProdutos($params){
 
         $SQLWhere = "";
-        if ($params['ruaInicial'] != "") {
+        if (isset($params['ruaInicial']) && !empty($params['ruaInicial'])) {
             $SQLWhere = $SQLWhere . " AND DE.NUM_RUA >= ". $params['ruaInicial'];
         }
-        if ($params['ruaFinal'] != "") {
+        if (isset($params['ruaFinal']) && !empty($params['ruaFinal'])) {
             $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= ". $params['ruaFinal'];
         }
         $SQL = "

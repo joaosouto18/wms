@@ -110,7 +110,11 @@ use Core\Util\Converter;
             <p><?php echo $this->textoAjuda; ?></p>
         </div>
         <div id="body">
-            <div id="top">
+            <?php if (APPLICATION_ENV == 'development') : ?>
+            <div id="top" class="development">
+                <?php else : ?>
+                    <div id="top">
+            <?php endif; ?>
                 <div id="userInfo">
                     <img src="<?php echo $this->baseUrl('img/icons/user.png'); ?>" alt="#" /> Logado como <?php echo $this->nomeUsuario; ?>
                     <span>|</span> Depósito: <?php echo $this->formSelect('depositoLogado', $this->idDepositoLogado, array('id' => 'idDepositoLogado'), $this->depositosPermitidos); ?>
@@ -162,9 +166,15 @@ use Core\Util\Converter;
                 </div>
             </div>
             <div id="footer">
-                <p>Wms Quebec Consulting 2015</p>
+                <p>Wms Quebec Consulting <?php $abc = new Zend_Date(); echo $abc->toString('Y') ?></p>
                 <p>&copy; Todos os Direitos Reservados.</p>
-                <p><?php echo $this->totalTimePage ?></p>
+                <?php if (APPLICATION_ENV == 'development') : ?>
+                    <p class="development">
+                    <?php else: ?>
+                    <p>
+                <?php endif;?>
+                    <?php echo APPLICATION_ENV ?> | <?php echo $this->totalTimePage ?>
+                </p>
             </div>
         </div>
         <?php

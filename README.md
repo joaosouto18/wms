@@ -33,7 +33,7 @@ ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;
 
 CREATE TABLESPACE wms_develop
 LOGGING DATAFILE 'E:\tablespace\wms_develop.dbf' SIZE 10M
-AUTOEXTEND ON NEXT 512k MAXSIZE 2000M
+AUTOEXTEND ON NEXT 512k MAXSIZE UNLIMITED
 BLOCKSIZE 16k
 EXTENT MANAGEMENT LOCAL UNIFORM SIZE 512K
 SEGMENT SPACE MANAGEMENT AUTO
@@ -49,6 +49,11 @@ GRANT ALL PRIVILEGES TO wms_develop;
 ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED
 PASSWORD_LIFE_TIME UNLIMITED;
+
+Exemplo exportação/importação banco
+===========================
+exp wms_develop_linhares/wms_adm@xe file=develop_linhares.dmp owner=wms_develop_linhares compress=Y grants=Y indexes=Y triggers=Y constraints=Y
+imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=Y constraints=Y
 
 Documentação
 ===========================
