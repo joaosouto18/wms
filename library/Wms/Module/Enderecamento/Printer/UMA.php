@@ -119,8 +119,10 @@ class UMA extends Pdf
 
             if ($modelo == 1) {
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
-            }else{
+            } else if ($modelo == 2) {
                 $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking,$params);
+            } else {
+                $this->layout03($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
@@ -144,6 +146,59 @@ class UMA extends Pdf
         // Print centered page number
         $this->Cell(0,10,utf8_decode('Página ').$this->PageNo(),0,0,'C');
         $this->Cell(-30,0,utf8_decode(date('d/m/Y')." às ".date('H:i')),0,0,'C');
+    }
+
+    public function layout03($palete, $produtoEn, $font_size, $line_width, $enderecoPicking,$params=null){
+        $this->AddPage();
+
+        $codigoProduto = $produtoEn->getId();
+        $descricaoProduto = $produtoEn->getDescricao();
+        $referencia = $produtoEn->getReferencia();
+
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
+        }
+
+        $this->SetFont('Arial', 'B', $font_size);
+
+        $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(35,40,"",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        if (isset($params['dataValidade'])) {
+            $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(75,20,utf8_decode("Validade $dataValidade"),0,1);
+        }
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(25,20,"Qtd",0,0);
+
+        $this->SetFont('Arial', 'B', 72);
+        $this->Cell(75,20,$palete['qtd'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(55,20,utf8_decode("Endereço "),0,0);
+
+        $this->SetFont('Arial', 'B', 72);
+        $this->Cell(95,25,$palete['endereco'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(55,45,utf8_decode("Ref. "),0,0);
+
+        $this->SetFont('Arial', 'B', 70);
+        $this->Cell(95,45,$referencia,0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(55,45,utf8_decode("Prod. "),0,0);
+
+        $this->SetFont('Arial', 'B', 75);
+        $this->Cell(95,45,$codigoProduto,0,1);
+
     }
 
     public function layout02($palete, $produtoEn, $font_size, $line_width, $enderecoPicking,$params=null){
