@@ -3,6 +3,16 @@
 use Wms\Domain\Entity\Produto as ProdutoEntity,
     Core\Util\Produto as ProdutoUtil;
 
+class embalagem {
+    /** @var string */
+    public $codBarras;
+    /** @var int */
+    public $qtdEmbalagem;
+    /** @var string */
+    public $descricao;
+}
+
+
 class produto {
     /** @var string */
     public $idProduto;
@@ -108,10 +118,11 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param string $idFabricante ID do fabricante
      * @param string $tipo 1 => Unitário, 2 => Composto, 3 => Kit | Hoje não está sendo utilizado
      * @param string $idClasse ID da classe do produto
+     * @param embalagem[] $embalagens Embalagens
      * @throws Exception
      * @return boolean Se o produto foi inserido com sucesso ou não
      */
-    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse) {
+    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens) {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);

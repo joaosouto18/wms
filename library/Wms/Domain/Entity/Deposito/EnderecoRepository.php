@@ -210,9 +210,18 @@ class EnderecoRepository extends EntityRepository
     }
 
     public function getEnderecoIdByDescricao ($descricao){
+        $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+        $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+        $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+
         $sql = " SELECT COD_DEPOSITO_ENDERECO, NUM_NIVEL
                  FROM DEPOSITO_ENDERECO
-                 WHERE CAST(REPLACE(DSC_DEPOSITO_ENDERECO, '.', '') as INT) = ". $descricao;
+                 WHERE
+                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
+                    || SUBSTR('00' || NUM_PREDIO, -$tamanhoPredio,$tamanhoPredio)
+                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
+                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento, $tamanhoApartamento) as INT)) = " . $descricao;
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
