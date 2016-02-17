@@ -197,7 +197,6 @@ class Mobile_EnderecamentoController extends Action
         $nivel       = substr($this->_getParam("nivel"), -$tamanhoNivel, $tamanhoNivel);
         $apartamento = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
         $codBarras   = $rua . $predio . $nivel . $apartamento;
-        var_dump($codBarras); exit;
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
