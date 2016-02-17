@@ -211,9 +211,9 @@ class Mobile_EnderecamentoController extends Action
 
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
-        $paleteEn = $paleteRepo->find($idPalete);
+        $paleteEn = $paleteRepo->findOneBy(array('id' => $idPalete));
 
-        $this->createXml('error',$idPalete);
+        $this->createXml('error',$paleteEn);
         $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica());
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
