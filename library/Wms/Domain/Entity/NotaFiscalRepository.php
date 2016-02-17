@@ -548,7 +548,12 @@ class NotaFiscalRepository extends EntityRepository
             } else {
                 //produtos sem dados logisticos - embalagem e volumes
                 $sql .= " AND ((PDL.NUM_CUBAGEM = 0 OR PDL.NUM_PESO = 0) OR (PDL.NUM_CUBAGEM IS NULL OR PDL.NUM_PESO IS NULL))
-                          AND ((PV.NUM_CUBAGEM = 0 OR PV.NUM_PESO = 0) OR (PV.NUM_CUBAGEM IS NULL OR PV.NUM_PESO IS NULL))";
+                          AND ((PV.NUM_CUBAGEM = 0 OR PV.NUM_PESO = 0) OR (PV.NUM_CUBAGEM IS NULL OR PV.NUM_PESO IS NULL))
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO,
+                              NVL(PV.COD_BARRAS, PE.COD_BARRAS), NVL(PV.NUM_ALTURA, PDL.NUM_ALTURA),
+                              NVL(PV.NUM_LARGURA, PDL.NUM_LARGURA), NVL(PV.NUM_PESO, PDL.NUM_PESO), NVL(PV.NUM_PROFUNDIDADE, PDL.NUM_PROFUNDIDADE),
+                              NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO), NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR),
+                              NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS), NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO)";
             }
         }
 
