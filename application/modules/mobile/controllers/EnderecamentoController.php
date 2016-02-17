@@ -198,7 +198,6 @@ class Mobile_EnderecamentoController extends Action
         $apartamento = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
         $codBarras   = $rua . $predio . $nivel . $apartamento;
 
-        $this->createXml('error',$codBarras);
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
         $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codBarras);
@@ -214,6 +213,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
+        $this->createXml('error',$paleteEn);
         $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica());
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
