@@ -186,20 +186,17 @@ class Mobile_EnderecamentoController extends Action
 
     public function validaNivelAction()
     {
-        $idPalete   = $this->_getParam("uma");
-        $rua         = $this->_getParam("rua");
-        $predio      = $this->_getParam("predio");
-        $nivel       = $this->_getParam("nivel");
-        $apartamento = $this->_getParam("apartamento");
+        $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+        $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+        $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-        if (isset($rua)) {
-            $nivel = "00" . $nivel;
-            $nivel = substr($nivel,strlen($nivel)-2);
-            $codBarras = $rua . $predio . $nivel . $apartamento . "1";
-        }
-
-        $LeituraColetor = new LeituraColetor();
-        $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+        $idPalete    = $this->_getParam("uma");
+        $rua         = substr($this->_getParam("rua"), -$tamanhoRua, $tamanhoRua);
+        $predio      = substr($this->_getParam("predio"), -$tamanhoPredio, $tamanhoPredio);
+        $nivel       = substr($this->_getParam("nivel"), -$tamanhoNivel, $tamanhoNivel);
+        $apartamento = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
+        $codBarras = $rua . $predio . $nivel . $apartamento;
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");

@@ -122,6 +122,7 @@ class Web_ProdutoVolumeController extends Crud
                 'peso' => $volume->getPeso(),
                 'descricao' => $volume->getDescricao(),
                 'normaPaletizacao' => $volume->getNormaPaletizacao()->getId(),
+                'DataInativacao' => $volume->getDataInativacao(),
             );
         }
 

@@ -24,6 +24,8 @@ class Web_ProdutoEmbalagemController extends Crud
         $repoEmbalagem = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagens = $repoEmbalagem->findBy(array('codProduto' => $params['idProduto'], 'grade' => $params['grade']), array('isPadrao' => 'DESC', 'descricao' => 'ASC'));
         $arrayEmbalagens = array();
+        $dataInativacao = new Zend_Date();
+        $dataInativacao = $dataInativacao->toString('dd/mm/Y');
 
         foreach ($embalagens as $embalagem) {
             $arrayEmbalagens[] = array(
@@ -42,6 +44,8 @@ class Web_ProdutoEmbalagemController extends Crud
                 'capacidadePicking' => $embalagem->getCapacidadePicking(),
                 'pontoReposicao' => $embalagem->getPontoReposicao(),
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
+                'ativarDesativar' => '<input type="checkbox" id="ativarDesativar" >',
+                'dataInativacao' => $dataInativacao, //'<input type="text" id="dataInativacao" value="'. new Zend_Date() .'" >',
             );
         }
 
