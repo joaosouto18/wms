@@ -213,7 +213,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->createXml('error',$paleteEn);
+        $this->createXml('error',$idPalete);
         $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica());
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
