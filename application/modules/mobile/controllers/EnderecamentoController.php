@@ -301,7 +301,6 @@ class Mobile_EnderecamentoController extends Action
             $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
         }
 
-        $this->createXml('success','abcdef');
         $paleteEn->setDepositoEndereco($enderecoEn);
         $this->em->persist($paleteEn);
         $this->em->flush();
