@@ -625,7 +625,6 @@ class Mobile_ExpedicaoController extends Action
 
     protected function bloqueioOs($idExpedicao, $motivo, $render = true)
     {
-        $this->bloquearOs();
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo  = $this->em->getRepository('wms:Expedicao');
         $osEntity = $expedicaoRepo->verificaOSUsuario($idExpedicao);
@@ -697,44 +696,30 @@ class Mobile_ExpedicaoController extends Action
 
     }
 
-    public function confirmaConferenciaAction()
-    {
-        $idExpedicao    = $this->getRequest()->getParam('idExpedicao');
-        $idEtiqueta     = $this->getRequest()->getParam('idEtiqueta');
-        $produto        = $this->getRequest()->getParam('produto');
-        $placa = $this->getRequest()->getParam('placa',null);
-
-        $this->confereEtiqueta($idEtiqueta);
-
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        $andamentoRepo->save('Botão confirmar conferência '.$produto, $idExpedicao);
-
-        $this->addFlashMessage('success', 'Produto conferido com sucesso');
-        $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-    }
-
     /**
      * @param $idEtiqueta
      */
-    protected function confereEtiqueta($idEtiqueta, $volume = null,$idExpedicao=null)
+    protected function confereEtiqueta($idEtiqueta, $codStatus , $volume = null,$idExpedicao=null)
     {
         $sessao = new \Zend_Session_Namespace('coletor');
 
         $date = new \DateTime();
         $date = $date->format('Y-m-d H:i:s');
 
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-        $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $etiquetaRepo->incrementaQtdAtentidaOuCortada($idEtiqueta, 'atendida');
+        if ($codStatus == EtiquetaSeparacao::STATUS_ETIQUETA_GERADA) {
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $etiquetaRepo->incrementaQtdAtentidaOuCortada($idEtiqueta, 'atendida');
+        }
 
         if (isset($sessao->parcialmenteFinalizado) && $sessao->parcialmenteFinalizado == true) {
             $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOSTransbordo = :osID , es.dataConferenciaTransbordo = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
             $q1->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
             $q1->setParameter('dataConferencia', $date);
         } else {
-            $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+            $q1->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
 
+            $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
             if ($verificaReconferencia == 'S') {
                 $expedEntity = $this->_em->getReference('wms:Expedicao',$idExpedicao);
                 $statusExped = $expedEntity->getStatus()->getId();
@@ -763,8 +748,6 @@ class Mobile_ExpedicaoController extends Action
                 $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
                 $q1->setParameter('dataConferencia', $date);
             }
-
-            $q1->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
         }
 
         $q1->setParameter('osID', $sessao->osID);
@@ -822,12 +805,22 @@ class Mobile_ExpedicaoController extends Action
         }
 
         if ($return == false) {
-            if ($etiqueta[0]['status'] == 'EXPEDIDO TRANSBORDO') {
-                $this->_helper->messenger('info', 'Etiqueta de transbordo já conferida');
-                $mensagem = 'Etiqueta de transbordo já conferida';
-            } else {
-                $this->_helper->messenger('info', 'Etiqueta  com status '. $etiqueta[0]['status']);
-                $mensagem = 'Etiqueta:'. $etiquetaSeparacao .' - com status '. $etiqueta[0]['status'];
+            switch ($etiqueta[0]['codStatus']) {
+                case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
+                    $this->_helper->messenger('info', 'Etiqueta pendente de impressão');
+                    $mensagem = 'Etiqueta pendente de impressão';
+                case EtiquetaSeparacao::STATUS_PENDENTE_CORTE:
+                    $this->_helper->messenger('info', 'Etiqueta pendente de corte');
+                    $mensagem = 'Etiqueta pendente de corte';
+                case EtiquetaSeparacao::STATUS_CORTADO:
+                    $this->_helper->messenger('info', 'Etiqueta cortada');
+                    $mensagem = 'Etiqueta cortada';
+                case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
+                    $this->_helper->messenger('info', 'Etiqueta de transbordo já conferida');
+                    $mensagem = 'Etiqueta de transbordo já conferida';
+                case EtiquetaSeparacao::STATUS_CONFERIDO:
+                    $this->_helper->messenger('info', 'Etiqueta já conferida');
+                    $mensagem = 'Etiqueta já conferida';
             }
 
             $msg=$mensagem;
@@ -844,7 +837,7 @@ class Mobile_ExpedicaoController extends Action
         if ($sessaoColetor->parcialmenteFinalizado == true) {
             $obrigaBiparEtiqueta = $sessaoColetor->RecebimentoTransbordoObrigatorio;
             if ($obrigaBiparEtiqueta == 'N') {
-                $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
+                $this->confereEtiqueta($etiquetaSeparacao,$etiqueta[0]['codStatus'], $volume, $idExpedicao);
                 $this->addFlashMessage('success', 'Produto conferido com sucesso');
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('success', 'Produto conferido com sucesso');
@@ -886,7 +879,7 @@ class Mobile_ExpedicaoController extends Action
             $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
         }
 
-        $this->confereEtiqueta($etiquetaSeparacao, $volume, $idExpedicao);
+        $this->confereEtiqueta($etiquetaSeparacao,$etiqueta[0]['codStatus'], $volume, $idExpedicao);
 
         if ($this->_request->isXmlHttpRequest()) {
             $this->createXml('success', 'Etiqueta conferida com sucesso');
@@ -910,12 +903,16 @@ class Mobile_ExpedicaoController extends Action
             $this->view->placa = $Expedicao->getPlaca();
             $this->view->idExpedicao = $Expedicao->getIdExpedicao();
 
+            //VERIFICA E DEFINE SE VAI SER FEITA A PRIMEIRA OU SEGUNDA CONFERENCIA
             $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->find($Expedicao->getIdExpedicao());
             if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
                 $this->view->segundaConferencia = "S";
             }else {
                 $this->view->segundaConferencia = "N";
             }
+
+            //SETA O PARAMETRO PARA VER SE VAI BLOQUEAR A OS OU NÃO
+            $this->bloquearOs = $this->getSystemParameterValue('BLOQUEIO_OS');
 
             $url="/volume".$this->_getParam('volume', null)."/volume".$this->_getParam('volume', null)."/placa".$this->_getParam('placa', null)."/bloqueiaOS".$this->_getParam('bloqueiaOS', null);
 
@@ -1016,8 +1013,6 @@ class Mobile_ExpedicaoController extends Action
 
     public function bloquearOs()
     {
-        $this->bloquearOs = $this->getSystemParameterValue('BLOQUEIO_OS');
-
         return $this->bloquearOs;
     }
 

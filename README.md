@@ -48,10 +48,12 @@ GRANT ALL PRIVILEGES TO wms_develop;
 -- Desabilita expiração de senha no Oracle --
 ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED
-PASSWORD_LIFE_TIME UNLIMITED;
+PASSWORD_LIFE_TIME UNLcIMITED;
 
 Exemplo exportação/importação banco
 ===========================
+exp wms_adm/wms_adm@orams-cluster.simonet.com.br/Pwms file=wms_simonetti.dmp owner=wms_adm compress=Y grants=Y indexes=Y triggers=Y constraints=Y
+
 exp wms_develop_linhares/wms_adm@xe file=develop_linhares.dmp owner=wms_develop_linhares compress=Y grants=Y indexes=Y triggers=Y constraints=Y
 imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=Y constraints=Y
 
