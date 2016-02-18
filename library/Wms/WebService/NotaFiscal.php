@@ -175,6 +175,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsNf->itens[] = $clsItensNf;
         }
 
+        if (gettype($clsNf->itens) == "array") {
+            foreach ($clsNf->itens as $key => $item) {
+                $clsNf->itens->$key = $item;
+            }
+        }
+
         //verifica se existe recebimento, senao seta 0 no codigo do recebimento
         $idRecebimento = ($notaFiscalEntity->getRecebimento()) ? $notaFiscalEntity->getRecebimento()->getId() : 0;
 
