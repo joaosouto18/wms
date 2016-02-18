@@ -45,7 +45,7 @@ class Web_ProdutoEmbalagemController extends Crud
                 'pontoReposicao' => $embalagem->getPontoReposicao(),
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
                 'ativarDesativar' => '<input type="checkbox" id="ativarDesativar" >',
-                'dataInativacao' => $dataInativacao, //'<input type="text" id="dataInativacao" value="'. new Zend_Date() .'" >',
+                'dataInativacao' => $dataInativacao,
             );
         }
 

@@ -35,7 +35,7 @@ $.Controller.extend('Wms.Controllers.Produto',
             
             $('.saveForm').submit();
         });
-        
+
     },
     /**
      * Valida os formularios de cadastro das Embalagens e Volumes
@@ -274,6 +274,12 @@ $.Controller.extend('Wms.Controllers.Produto',
         } else if ($('#produto-validade').val() == 'N') {
             $('#produto-diasVidaUtil').parent().hide();
             $('#produto-diasVidaUtil').hide();
+        }
+    },
+
+    '#ativarDesativar click' : function() {
+        if (document.getElementsByName('ativarDesativar').checked == true) {
+            alert('abc');
         }
     },
 
