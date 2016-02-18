@@ -211,7 +211,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
-            $em->beginTransaction();
+            //$em->beginTransaction();
 
             $idFornecedor = trim($idFornecedor);
             $numero = (int) trim($numero);
@@ -258,10 +258,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
             $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
 
-            $em->commit();
+            //$em->commit();
             return true;
         } catch (\Exception $e) {
-            $em->rollback();
+            //$em->rollback();
             throw new \Exception($e->getMessage());
         }
     }
