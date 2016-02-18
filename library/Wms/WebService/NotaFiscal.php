@@ -211,6 +211,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
+            throw new \Exception ($itens[0]['codItem']);
             $em->beginTransaction();
 
             $idFornecedor = trim($idFornecedor);
