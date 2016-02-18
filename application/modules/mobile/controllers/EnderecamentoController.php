@@ -290,7 +290,6 @@ class Mobile_EnderecamentoController extends Action
             if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
                 $this->createXml('error','Endereço já ocupado');
             }
-            $this->createXml('error','abcdef');
             if ($enderecoRepo->getValidaTamanhoEndereco($enderecoEn->getId(),$unitizadorEn->getLargura(false) * 100) == false) {
                 $this->createXml('error','Espaço insuficiente no endereço');
             }
