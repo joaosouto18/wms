@@ -242,7 +242,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $itens = $itensNf;
             }
             //END
-            
+
+            if (count($itens) ==0) {
+                throw new \Exception('A Nota fiscal deve ter ao menos um item');
+            }
+
             //VERIFICO SE É UMA NOTA NOVA OU SE É ALTERAÇÃO DE ALGUMA NOTA JA EXISTENTE
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
