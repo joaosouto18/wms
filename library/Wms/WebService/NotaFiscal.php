@@ -211,8 +211,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
-//            $em->beginTransaction();
+            $em->beginTransaction();
 
+
+            //PREPARANDO AS INFORMAÇÔES PRA FORMATAR CORRETAMENTE
+            //BEGIN
             $idFornecedor = trim($idFornecedor);
             $numero = (int) trim($numero);
             $serie = trim($serie);
@@ -227,6 +230,20 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
+            //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+            if (gettype($itens) != "array") {
+                $itensNf = array();
+                foreach ($itens->itens as $itemNf) {
+                    $itemWs['idProduto'] = trim($itemNf->idProduto);
+                    $itemWs['grade'] = trim($itemNf->grade);
+                    $itemWs['quantidade'] = trim($itemNf->quantidade);
+                    $itensNf[] = $itemWs;
+                }
+                $itens = $itensNf;
+            }
+            //END
+            
+            //VERIFICO SE É UMA NOTA NOVA OU SE É ALTERAÇÃO DE ALGUMA NOTA JA EXISTENTE
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
             $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $fornecedorEntity->getId()));
@@ -236,32 +253,21 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
                     throw new \Exception ("Não é Possível alterar, NF cancelada ou já recebida");
                 }
+
+                //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
+                $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
+
+                //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
+                $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
+
             } else {
-                //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
-                if (gettype($itens) != "array") {
-                    $itensNf = array();
-                    foreach ($itens->itens as $itemNf) {
-                        $itemWs['idProduto'] = trim($itemNf->idProduto);
-                        $itemWs['grade'] = trim($itemNf->grade);
-                        $itemWs['quantidade'] = trim($itemNf->quantidade);
-                        $itensNf[] = $itemWs;
-                    }
-                    $itens = $itensNf;
-                }
                 $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
-                return true;
             }
 
-            //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
-            $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
-
-            //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
-            $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
-
-            //$em->commit();
+            $em->commit();
             return true;
         } catch (\Exception $e) {
-            //$em->rollback();
+            $em->rollback();
             throw new \Exception($e->getMessage());
         }
     }
