@@ -208,6 +208,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
    */
   public function persistirEmbalagens(ProdutoEntity $produtoEntity, array &$values) {
 	$em = $this->getEntityManager();
+    $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
 	//embalagens do produto
 	if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
@@ -216,6 +217,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	foreach ($values['embalagens'] as $id => $itemEmbalagem) {
 	  extract($itemEmbalagem);
 
+		var_dump($values); exit;
 	  if (!isset($itemEmbalagem['acao']))
 		continue;
 
@@ -292,6 +294,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
           $embalagemEntity->setEmbalado($embalado);
           $embalagemEntity->setCapacidadePicking($capacidadePicking);
           $embalagemEntity->setPontoReposicao($pontoReposicao);
+		  $embalagemEntity->setDataInativacao(new \DateTime());
+		  $embalagemEntity->setUsuarioInativacao($idUsuario);
 
 		  $em->persist($embalagemEntity);
 		  break;

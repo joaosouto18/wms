@@ -44,15 +44,15 @@
         </tr>
         <tr style="font-weight: bold">
             <td>Ativar/Desativar</td>
-            <td>Data Inativação</td>
+            <td id="textoDataInativacao">Data Inativação</td>
         </tr>
         <tr>
             <td><span class="endereco"><%=this.ativarDesativar%><span></td>
-            <td><span class="endereco"><%=this.dataInativacao%><span></td>
+            <td><span class="dataInativacao" id="dataInativacao"><%=this.dataInativacao%><span></td>
         </tr>
 
     </table>
-    
+
     <input type="hidden" name="embalagens[<%=this.id%>][acao]" class="acao" value="<%=this.acao%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][id]" class="embalagem-id" value="<%=this.id%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][descricao]" class="embalagem-descricao" value="<%=this.descricao%>"/>
@@ -65,4 +65,6 @@
     <input type="hidden" name="embalagens[<%=this.id%>][embalado]" class="embalado" value="<%=this.embalado%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][capacidadePicking]" class="capacidadePicking" value="<%=this.capacidadePicking%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][pontoReposicao]" class="pontoReposicao" value="<%=this.pontoReposicao%>"/>
+    <input type="hidden" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" value="<%=this.ativarDesativar%>"/>
+
 </div>
