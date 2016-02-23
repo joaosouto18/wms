@@ -49,7 +49,7 @@ class Web_ProdutoEmbalagemController extends Crud
                 'capacidadePicking' => $embalagem->getCapacidadePicking(),
                 'pontoReposicao' => $embalagem->getPontoReposicao(),
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
-                'ativarDesativar' => '<input type="checkbox" id="ativarDesativar"' . $checked . ' >',
+                'ativarDesativar' => $checked,
                 'dataInativacao' => $dataInativacao,
             );
         }
