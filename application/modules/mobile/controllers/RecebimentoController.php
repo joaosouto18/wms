@@ -76,8 +76,10 @@ class Mobile_RecebimentoController extends Action
             
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
 
-            if ($notaFiscalEntity)
-                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+            if ($notaFiscalEntity) {
+                $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
+                $this->view->fornecedor     = $notaFiscalEntity->getFornecedor()->getPessoa()->getNome();
+            }
 
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
