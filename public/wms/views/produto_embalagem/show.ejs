@@ -44,11 +44,11 @@
         </tr>
         <tr style="font-weight: bold">
             <td>Ativar/Desativar</td>
-            <td id="textoDataInativacao">Data Inativação</td>
+            <td colspan="2" id="textoDataInativacao">Data Inativação</td>
         </tr>
         <tr>
-            <td><span class="endereco"><input id="ativarDesativar" type="checkbox" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> /><span></td>
-            <td><span class="dataInativacao" id="dataInativacao"><%=this.dataInativacao%><span></td>
+            <td><span class="endereco"><input id="ativarDesativar" value="<%=this.id%>" type="checkbox" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> /><span></td>
+            <td colspan="2"><span class="dataInativacao" id="dataInativacao"><%=this.dataInativacao%><span></td>
         </tr>
 
     </table>

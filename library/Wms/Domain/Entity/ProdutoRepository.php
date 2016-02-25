@@ -210,16 +210,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	$em = $this->getEntityManager();
     $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
+	/** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
+	$andamentoRepo = $em->getRepository('wms:Produto\Andamento');
+
 	//embalagens do produto
 	if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
 	  return false;
 
 	foreach ($values['embalagens'] as $id => $itemEmbalagem) {
 	  extract($itemEmbalagem);
-
-		var_dump($values); exit;
-	  if (!isset($itemEmbalagem['acao']))
-		continue;
 
 	  switch ($itemEmbalagem['acao']) {
 		case 'incluir':
@@ -294,8 +293,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
           $embalagemEntity->setEmbalado($embalado);
           $embalagemEntity->setCapacidadePicking($capacidadePicking);
           $embalagemEntity->setPontoReposicao($pontoReposicao);
-		  $embalagemEntity->setDataInativacao(new \DateTime());
-		  $embalagemEntity->setUsuarioInativacao($idUsuario);
+
+			if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
+				if (empty($embalagemEntity->getDataInativacao())) {
+					$embalagemEntity->setDataInativacao(new \DateTime());
+					$embalagemEntity->setUsuarioInativacao($idUsuario);
+					$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
+				}
+			} else {
+				if (!is_null($embalagemEntity->getDataInativacao())) {
+					$embalagemEntity->setDataInativacao(null);
+					$embalagemEntity->setUsuarioInativacao(null);
+					$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
+				}
+			}
 
 		  $em->persist($embalagemEntity);
 		  break;
@@ -310,6 +321,26 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  $em->remove($embalagemEntity);
 		  $em->flush();
 		  break;
+
+	    default:
+			$embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
+
+			if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
+				if (empty($embalagemEntity->getDataInativacao())) {
+					$embalagemEntity->setDataInativacao(new \DateTime());
+					$embalagemEntity->setUsuarioInativacao($idUsuario);
+					$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
+				}
+			} else {
+				if (!is_null($embalagemEntity->getDataInativacao())) {
+					$embalagemEntity->setDataInativacao(null);
+					$embalagemEntity->setUsuarioInativacao(null);
+					$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
+				}
+			}
+
+			$em->persist($embalagemEntity);
+			break;
 	  }
 	}
 

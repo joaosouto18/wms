@@ -25,6 +25,24 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     }, this.callback('list'));
                 }
             }
+
+            //if (document.getElementById('ativarDesativar').checked == true) {
+            //document.getElementById("dataInativacao").style.display = 'none';
+                $('#dataInativacao').hide();
+                $('#textoDataInativacao').hide();
+                //alert('abcd');
+            //}
+        },
+
+        '#ativarDesativar click' : function() {
+            //console.log(this.value);
+            if (document.getElementById('ativarDesativar').checked == true) {
+                $('#dataInativacao').show();
+                $('#textoDataInativacao').show();
+            } else {
+                $('#dataInativacao').hide();
+                $('#textoDataInativacao').hide();
+            }
         },
 
         /**

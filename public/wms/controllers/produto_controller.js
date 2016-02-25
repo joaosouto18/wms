@@ -277,16 +277,6 @@ $.Controller.extend('Wms.Controllers.Produto',
         }
     },
 
-    '#ativarDesativar click' : function() {
-        if (document.getElementById('ativarDesativar').checked == true) {
-            $('#dataInativacao').show();
-            $('#textoDataInativacao').show();
-        } else {
-            $('#dataInativacao').hide();
-            $('#textoDataInativacao').hide();
-        }
-    },
-
     /**
      * Calcula o peso de todos os volumes e altera na aba produto
      */
