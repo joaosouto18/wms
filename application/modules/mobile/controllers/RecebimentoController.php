@@ -137,6 +137,9 @@ class Mobile_RecebimentoController extends Action
             
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
+            if (!is_null($itemNF['dataInativacao']))
+                throw new \Exception('O produto ' . $itemNF['idProduto'] . ' grade ' . $itemNF['grade'] . ' está inativo!');
+
             if ($itemNF == null)
                 throw new \Exception('Nenhum produto encontrado no Recebimento com este Código de Barras. - ' . $codigoBarras);
 

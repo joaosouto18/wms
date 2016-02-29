@@ -580,7 +580,8 @@ class NotaFiscalRepository extends EntityRepository
                         NVL(pe.descricao, \'\') descricaoEmbalagem,
                         NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
                         NVL(pv.descricao, \'\') descricaoVolume,
-                        NVL(pv.codigoSequencial, \'\') sequenciaVolume')
+                        NVL(pv.codigoSequencial, \'\') sequenciaVolume,
+                        NVL(pe.dataInativacao, pv.dataInativacao) dataInativacao')
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
