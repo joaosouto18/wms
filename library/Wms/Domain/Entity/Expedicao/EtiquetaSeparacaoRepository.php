@@ -1022,10 +1022,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $codStatus = $siglaEntity->getId();
 
         foreach ($quebras as $quebra) {
-            var_dump($quebras);
-            var_dump($quebra);
-            exit;
-
             $quebra = $quebra['tipoQuebra'];
 
             //MAPA DE REENTREGA
