@@ -511,6 +511,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     public function geraMapaReentrega($produtoEntity, $quantidade, $expedicaoEntity){
+
+        if ($quantidade <= 0) return;
+
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $quebras = array(0=>array('tipoQuebra'=>'RE'));
@@ -519,7 +522,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $grade = $produtoEntity->getGrade();
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
 
-        var_dump($quantidade);exit;
 
         if ($produtoEntity->getVolumes()->count() > 0) {
             $arrayVolumes = $produtoEntity->getVolumes()->toArray();
