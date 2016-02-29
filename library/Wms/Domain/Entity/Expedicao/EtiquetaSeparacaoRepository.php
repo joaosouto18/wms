@@ -513,7 +513,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function geraMapaReentrega($produtoEntity, $quantidade, $expedicaoEntity){
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $quebras = array(0=>'RE');
+        $quebras = array(0=>array('tipoQuebra'=>'RE'));
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
         $codProduto = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
