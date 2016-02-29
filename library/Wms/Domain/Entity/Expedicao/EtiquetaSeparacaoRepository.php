@@ -519,6 +519,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $grade = $produtoEntity->getGrade();
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
 
+        var_dump($quantidade);exit;
+
         if ($produtoEntity->getVolumes()->count() > 0) {
             $arrayVolumes = $produtoEntity->getVolumes()->toArray();
 
