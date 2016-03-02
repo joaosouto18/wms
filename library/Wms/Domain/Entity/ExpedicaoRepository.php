@@ -453,7 +453,27 @@ class ExpedicaoRepository extends EntityRepository
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
-        return $source->getQuery()->getArrayResult();
+        $result = $source->getQuery()->getArrayResult();
+
+        if (count($result) == 0) {
+            $source = $this->getEntityManager()->createQueryBuilder()
+                ->select('r.codCarga')
+                ->from('wms:Expedicao', 'e')
+                ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
+                ->innerJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'c.id = r.carga')
+                ->where('e.id = :idExpedicao')
+                ->distinct(true)
+                ->setParameter('idExpedicao', $idExpedicao);
+            if (count($source->getQuery()->getArrayResult()) >0) {
+                $sessao = new \Zend_Session_Namespace('deposito');
+                $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+                $central = $deposito->getFilial()->getCodExterno();
+
+                $result =array(0=>array('centralEntrega'=>$central));
+            }
+        }
+
+        return $result;
     }
 
     /**
