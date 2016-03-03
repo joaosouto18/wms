@@ -118,7 +118,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '.btn-editar-embalagem click': function( el, ev ){
 
-            var abc = new Wms.Models.ProdutoEmbalagem.verificarAlteracaoCodigoBarras({});
+            var abc = new Wms.Models.ProdutoEmbalagem.verificarParametroCodigoBarras({});
             console.info(abc[0]);
             if (abc[0] == "N"){
 
