@@ -53,6 +53,17 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '#btn-salvar-embalagem click': function(el, ev) {
 
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data === 'N') {
+                        alert("Não é possível adicionar nova embalagem com parametro de código de barras desativado");
+                    }
+                }
+            });
+
             var inputAcao = $('#embalagem-acao').val();
             var valores = $('#fieldset-embalagem').formParams(false).embalagem;
             var id = $("#fieldset-embalagem #embalagem-id").val();
@@ -117,12 +128,16 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          * @param {jQuery} el The produto_embalagem's edit link element.
          */
         '.btn-editar-embalagem click': function( el, ev ){
-
-            var abc = new Wms.Models.ProdutoEmbalagem.verificarParametroCodigoBarras({});
-            console.info(abc[0]);
-            if (abc[0] == "N"){
-
-            }
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data === 'N') {
+                        $('#fieldset-embalagem #embalagem-codigoBarras').attr("disabled", true);
+                    }
+                }
+            });
 
             ev.stopPropagation();
             var produto_embalagem = el.closest('.produto_embalagem').model();

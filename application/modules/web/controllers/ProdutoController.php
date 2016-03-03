@@ -362,7 +362,7 @@ class Web_ProdutoController extends Crud {
     public function verificarParametroCodigoBarrasAjaxAction()
     {
         $parametro = $this->getSystemParameterValue("ALTERAR_CODIGO_BARRAS");
-        $this->_helper->json($parametro,  true);
+        $this->_helper->json($parametro, true);
     }
 
 }

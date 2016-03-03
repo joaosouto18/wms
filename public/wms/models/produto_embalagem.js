@@ -110,17 +110,6 @@ $.Model.extend('Wms.Models.ProdutoEmbalagem',
                 success: success,
                 error: error
             });
-        },
-
-        verificarParametroCodigoBarras: function (params, success, error) {
-            $.ajax({
-                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
-                type: 'post',
-                dataType: 'json',
-                data: params,
-                success: success,
-                error: error
-            });
         }
     },
     /* @Prototype */

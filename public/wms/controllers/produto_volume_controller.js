@@ -300,6 +300,17 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
      * @param {jQuery} el The produto_volume's edit link element.
      */
     '.btn-editar-volume click': function( el , ev ){
+
+        $.ajax({
+            url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                if (data === 'N') {
+                    $('#volume-codigoBarras').attr("disabled", true);
+                }
+            }
+        });
         
         ev.stopPropagation();
         var produto_volume = el.closest('.produto_volume').model();
