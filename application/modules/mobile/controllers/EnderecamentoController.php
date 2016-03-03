@@ -693,11 +693,27 @@ class Mobile_EnderecamentoController extends Action
             if ($codigoBarras) {
                 $LeituraColetor = new LeituraColetor();
                 $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+
+                $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+                $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+                $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+                $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+
+                $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL
+                 FROM DEPOSITO_ENDERECO
+                 WHERE
+                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
+                    || SUBSTR('00' || NUM_PREDIO, -$tamanhoPredio,$tamanhoPredio)
+                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
+                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento, $tamanhoApartamento) as INT)) = " . $codigoBarras;
+
+                $endereco = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
+            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $endereco[0]['NUM_NIVEL'], false);
 
             if ($result == NULL) {
                 throw new \Exception ("Endereço selecionado está vazio");

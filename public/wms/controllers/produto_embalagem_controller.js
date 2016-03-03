@@ -118,6 +118,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '.btn-editar-embalagem click': function( el, ev ){
 
+            var abc = new Wms.Models.ProdutoEmbalagem.verificarAlteracaoCodigoBarras({});
+            console.info(abc[0]);
+            if (abc[0] == "N"){
+
+            }
+
             ev.stopPropagation();
             var produto_embalagem = el.closest('.produto_embalagem').model();
 
