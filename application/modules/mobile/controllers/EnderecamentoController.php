@@ -824,8 +824,8 @@ class Mobile_EnderecamentoController extends Action
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
-                    $enderecoNovo = $this->getEnderecoByParametro($enderecoNovo);
-                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
@@ -854,8 +854,8 @@ class Mobile_EnderecamentoController extends Action
 
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
-                    $enderecoNovo = $this->getEnderecoByParametro($enderecoNovo);
-                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
+                    $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $validade = $estoqueEn->getValidade();
                     $params['validade'] = null;
                     if (isset($validade) && !is_null($validade)) {
@@ -879,8 +879,8 @@ class Mobile_EnderecamentoController extends Action
                             throw new \Exception("Estoque não Encontrado!");
 
                         $params['qtd'] = $qtd;
-                        $enderecoNovo = $this->getEnderecoByParametro($enderecoNovo);
-                        $params['endereco'] = $this->getEnderecoNivel($enderecoNovo[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
+                        $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                        $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
 
