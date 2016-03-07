@@ -1471,9 +1471,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
 
         if ($pedidosNaoCancelados == 0) {
+
             $qtdCorte     = $this->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
             $qtdEtiquetas = $this->getEtiquetasByStatus(null,$idExpedicao);
-            if ($qtdCorte == $qtdEtiquetas) {
+
+            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO;
+            $reentregasCortadas = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+            $reentregasTotal = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, null);
+
+
+            if (($qtdCorte == $qtdEtiquetas) AND (count($reentregasCortadas) == count($reentregasTotal))) {
                 $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
                 $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
                 $this->_em->flush();
