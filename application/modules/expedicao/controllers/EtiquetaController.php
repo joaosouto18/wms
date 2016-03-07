@@ -82,7 +82,7 @@ class Expedicao_EtiquetaController  extends Action
         if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') =='S') {
             $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao);
             if (count($qtdReentrega) >0){
-                $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
+                $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'todas'=>'N', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
             }
         }
 
@@ -149,9 +149,11 @@ class Expedicao_EtiquetaController  extends Action
             }
         }
         if ($tipo == "reentrega") {
+            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
+                if ($this->getRequest()->getParam('todas') == 'S') $status = null;
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
             $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-            $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
             $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','P');
         }
     }
