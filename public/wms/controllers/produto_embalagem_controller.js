@@ -53,20 +53,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '#btn-salvar-embalagem click': function(el, ev) {
 
-            $.ajax({
-                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
-                type: 'post',
-                dataType: 'json',
-                success: function (data) {
-                    if (data === 'N') {
-                        alert("Não é possível adicionar nova embalagem com parametro de código de barras desativado");
-                    }
-                }
-            });
-
             var inputAcao = $('#embalagem-acao').val();
             var valores = $('#fieldset-embalagem').formParams(false).embalagem;
             var id = $("#fieldset-embalagem #embalagem-id").val();
+            var este = this;
 
             if($('#embalagem-descricao').val() == "") {
                 alert('Preencha a Descrição.');
@@ -94,9 +84,22 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 return false;
             }
 
-            this.verificarCodigoBarras();
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data == 'N') {
+                        alert("Não é possível adicionar nova embalagem com parametro de código de barras desativado");
+                        return false;
+                    } else {
+                        este.verificarCodigoBarras();
+                    }
+                }
+            });
 
             ev.preventDefault();
+
         },
 
         salvarDadosEmbalagem:function() {
@@ -270,12 +273,24 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             alert(data.msg);
                             return false;
                         } else if (data.status == 'success') {
-                            //remove a div do endereco
-                            model.elements().remove();
-                            //reseta o form
-                            este.resetarForm();
-                            // carregar embalagens nos dados logisticos
-                            este.carregarSelectEmbalagens();
+                            $.ajax({
+                                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                                type: 'post',
+                                dataType: 'json',
+                                success: function (data) {
+                                    if (data == 'N') {
+                                        alert("Não é possível excluir embalagem com parametro de código de barras desativado");
+                                        return false;
+                                    } else {
+                                        //remove a div do endereco
+                                        model.elements().remove();
+                                        //reseta o form
+                                        este.resetarForm();
+                                        // carregar embalagens nos dados logisticos
+                                        este.carregarSelectEmbalagens();
+                                    }
+                                }
+                            });
                         }
                     }
                 });

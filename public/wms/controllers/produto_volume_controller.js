@@ -61,6 +61,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         // variaveis
         var idTipoComercializacao = parseInt($('#produto-idTipoComercializacao').val());
         var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
+        var este = this;
         
         //fieldset validation
         if($('#volume-codigoSequencial').val() == "") {
@@ -111,9 +112,21 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             alert('Crie ao menos uma norma de paletização para cadastrar o dado logistico');
             return false;
         }
-        
-        //verifica se ja existe o codigo de barras informado
-        this.verificarCodigoBarras();
+
+        $.ajax({
+            url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                if (data == 'N') {
+                    alert("Não é possível adicionar novo volume com parametro de código de barras desativado");
+                    return false;
+                } else {
+                    //verifica se ja existe o codigo de barras informado
+                    este.verificarCodigoBarras();
+                }
+            }
+        });
         //cancela evento
         ev.preventDefault();
     },
@@ -353,9 +366,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         //evita a propagação do click para a div
         ev.stopPropagation();
         
-        if(confirm("Tem certeza que deseja excluir esta volume?")){
+        if(confirm("Tem certeza que deseja excluir este volume?")){
             var model = el.closest('.produto_volume').model();
             var id = model.id.toString();
+            var este = this;
             
             //se é um endereço existente (não haja a palavra '-new' no id)
             if (id.indexOf('-new') == -1) {
@@ -368,16 +382,29 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                     type: 'hidden'
                 }).appendTo('.grupoDadosLogisticos'); 
             }
-            
-            //remove a div do endereco
-            model.elements().remove();
-            //limpo form
-            this.resetarForm();
-            //Calcula Peso e Cubagem Total para aba produto
-            Wms.Controllers.Produto.prototype.pesoTotal();
-            Wms.Controllers.Produto.prototype.cubagemTotal();
-            //Calcula o peso para norma de paletizacao
-            this.calcularPesoNormaPaletizacao();
+
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data == 'N') {
+                        alert("Não é possível excluir volume com parametro de código de barras desativado");
+                        return false;
+                    } else {
+                        //remove a div do endereco
+                        model.elements().remove();
+                        //limpo form
+                        este.resetarForm();
+                        //Calcula Peso e Cubagem Total para aba produto
+                        Wms.Controllers.Produto.prototype.pesoTotal();
+                        Wms.Controllers.Produto.prototype.cubagemTotal();
+                        //Calcula o peso para norma de paletizacao
+                        este.calcularPesoNormaPaletizacao();
+
+                    }
+                }
+            });
         }
     },
     /**
