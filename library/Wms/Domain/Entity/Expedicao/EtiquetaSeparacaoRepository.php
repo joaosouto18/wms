@@ -1324,11 +1324,59 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $senhaDigitada == $senhaAutorizacao;
     }
 
+    private function cortaEtiquetaReentrega($etiquetaEntity){
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaRepo */
+        $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
+
+        $etiquetaReentregaEn = $EtiquetaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiquetaEntity->getId()));
+        if ($etiquetaReentregaEn == null) return false;
+
+        $statusCortadoEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_CORTADO);
+            $etiquetaReentregaEn->setCodStatus(EtiquetaSeparacao::STATUS_CORTADO);
+            $etiquetaReentregaEn->setStatus($statusCortadoEntity);
+        $this->getEntityManager()->persist($etiquetaReentregaEn);
+
+        if ($etiquetaEntity->getCodReferencia() != null) {
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
+            $etiquetasRelacionadasEn = $EtiquetaRepo->findBy(array('codReferencia'=>$etiquetaEntity->getCodReferencia()));
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
+            $etiquetaPrincipal = $EtiquetaRepo->findBy(array('id'=>$etiquetaEntity->getCodReferencia()));
+            $etiquetasRelacionadasEn = array_merge($etiquetasRelacionadasEn, $etiquetaPrincipal);
+        } else {
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
+            $etiquetasRelacionadasEn = $EtiquetaRepo->findBy(array('codReferencia'=>$etiquetaEntity->getId()));
+        }
+
+        if ($etiquetasRelacionadasEn != null) {
+            $statusPendenteCorteEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
+            foreach ($etiquetasRelacionadasEn as $etiqueta) {
+                $etiquetaReentregaRelacionadaEn = $EtiquetaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta->getId()));
+                if ($etiquetaReentregaRelacionadaEn != null) {
+                    if ($etiquetaReentregaRelacionadaEn->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
+                            $etiquetaReentregaRelacionadaEn->setCodStatus(EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                            $etiquetaReentregaRelacionadaEn->setStatus($statusPendenteCorteEntity);
+                        $this->getEntityManager()->persist($etiquetaReentregaRelacionadaEn);
+                    }
+                }
+            }
+        }
+
+        return true;
+
+    }
+
     /**
      * @param $etiquetaEntity
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false)
     {
+
+        if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
+            return true;
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
