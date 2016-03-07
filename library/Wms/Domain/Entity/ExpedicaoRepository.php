@@ -497,7 +497,11 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $qtdEtiquetasPendenteCorte = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, $expedicaoEn, $centralEstoque);
-        if ($qtdEtiquetasPendenteCorte > 0) {
+
+        $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE;
+        $pendenciasReentrega = $etiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), $status);
+
+        if (($qtdEtiquetasPendenteCorte > 0) OR (count($pendenciasReentrega) > 0)) {
             return true;
         } else {
             return false;
