@@ -1734,10 +1734,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $SQL = "
         SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
                PROD.COD_PRODUTO,
-               PROD.DSC_GRADE,
                PROD.DSC_PRODUTO PRODUTO,
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
-               PES.NOM_PESSOA as CLIENTE
+               PES.NOM_PESSOA as CLIENTE,
+               P.COD_PEDIDO as PEDIDO,
+               C.COD_CARGA_EXTERNO AS CARGA
          FROM REENTREGA R
          LEFT JOIN CARGA C ON C.COD_CARGA = R.COD_CARGA
         INNER JOIN ETIQUETA_SEPARACAO ES ON ES.COD_REENTREGA = R.COD_REENTREGA

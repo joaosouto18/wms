@@ -154,7 +154,19 @@ class Expedicao_EtiquetaController  extends Action
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
             $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
             $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
-            $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','P');
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+            $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+            /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+            $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
+            if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
+                $statusEntity = $em->getReference('wms:Util\Sigla',\Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO );
+                $ExpedicaoEntity->setStatus($statusEntity);
+                $this->getEntityManager()->persist($ExpedicaoEntity);
+                $this->getEntityManager()->flush();
+            }
+
+            $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','L');
         }
     }
 
