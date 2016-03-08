@@ -67,13 +67,13 @@ class VolumeRepository extends EntityRepository
             if (empty($volumeEntity->getDataInativacao())) {
                 $volumeEntity->setDataInativacao(new \DateTime());
                 $volumeEntity->setUsuarioInativacao($idUsuario);
-                $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
+                $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
             }
         } else {
             if (!is_null($volumeEntity->getDataInativacao())) {
                 $volumeEntity->setDataInativacao(null);
                 $volumeEntity->setUsuarioInativacao(null);
-                $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
+                $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
             }
         }
 
