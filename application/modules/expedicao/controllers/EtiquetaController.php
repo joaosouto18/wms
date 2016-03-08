@@ -160,7 +160,7 @@ class Expedicao_EtiquetaController  extends Action
             /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
             $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
             if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
-                $statusEntity = $em->getReference('wms:Util\Sigla',\Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO );
+                $statusEntity = $this->getEntityManager()->getReference('wms:Util\Sigla',\Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO );
                 $ExpedicaoEntity->setStatus($statusEntity);
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
