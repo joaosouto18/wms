@@ -99,6 +99,10 @@ class Mobile_ReentregaController extends Action
                 $this->_helper->messenger('error', 'Preencha todos os campos corretamente');
             }
         }
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+        $notaFiscalSaidaRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+        $getQtdProdutosDivergentes   = $notaFiscalSaidaRepo->getQtdProdutoDivergentesByNota(array('id' => $params['id']));
+        $this->view->listaProdutos = $getQtdProdutosDivergentes;
     }
 
     public function finalizarConferenciaAction()
@@ -117,6 +121,11 @@ class Mobile_ReentregaController extends Action
             $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
         }
+
+    }
+
+    public function visualizarDivergenciaAction()
+    {
 
     }
 
