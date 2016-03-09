@@ -90,7 +90,7 @@ class Mobile_ReentregaController extends Action
                     /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
                     $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
                     $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
-                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
+                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " conferido com sucesso");
 
                 } catch (\Exception $e) {
                     $this->_helper->messenger('error', utf8_decode($e->getMessage()));
