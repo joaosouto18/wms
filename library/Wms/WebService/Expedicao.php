@@ -1011,6 +1011,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 throw new \Exception(strtolower($tipoCarga->getSigla()) . " " . $numeroCarga . " não encontrada");
             }
 
+
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+            $parametro = $parametroRepo->findOneBy(array('constante' => 'CONFERE_RECEBIMENTO_REENTREGA'));
+
+            if ($parametro->getValor() == 'S') {
+                if ($notaFiscalEn->getStatus()->getId() != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
+                    throw new \Exception('Nota Fiscal de reentrega ' . $numeroNf . " / " . $serieNF . " ainda não foi recebida");
+                }
+            }
+
             $reentregaEn = $reentregaRepository->findOneBy(array('codNotaFiscalSaida' => $notaFiscalEn->getId(),
                                                                  'codCarga' => $cargaEn->getId()));
 

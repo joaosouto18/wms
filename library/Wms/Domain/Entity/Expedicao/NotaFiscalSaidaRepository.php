@@ -43,7 +43,9 @@ class NotaFiscalSaidaRepository extends EntityRepository
             SELECT DISTINCT
                    NFPROD.COD_PRODUTO,
                    NFPROD.DSC_GRADE,
-                   P.DSC_PRODUTO
+                   P.DSC_PRODUTO,
+                   NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
+                   NVL(NFPROD.QTD_NOTA,0)  as QTD_NF
               FROM (SELECT COD_PRODUTO, DSC_GRADE, SUM(QUANTIDADE) as QTD_NOTA, COD_RECEBIMENTO_REENTREGA
                       FROM RECEBIMENTO_REENTREGA_NF R
                       LEFT JOIN NOTA_FISCAL_SAIDA_PRODUTO NFSP ON NFSP.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL
