@@ -139,7 +139,8 @@ class RecebimentoReentregaRepository extends EntityRepository
             ->innerJoin('rr.status', 's')
             ->leftJoin('wms:Expedicao\NotaFiscalSaidaAndamento', 'nfsa', 'WITH', 'nfsa.recebimentoReentrega = rr.id')
             ->leftJoin('wms:Expedicao\NotaFiscalSaida', 'nfs', 'WITH', 'nfs.id = nfsa.NotaFiscalSaida')
-            ->groupBy('rr.id, rr.dataCriacao, s.sigla, s.id');
+            ->groupBy('rr.id, rr.dataCriacao, s.sigla, s.id')
+            ->orderBy('rr.id');
 
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
