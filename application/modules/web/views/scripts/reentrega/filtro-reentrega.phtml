@@ -1,0 +1,18 @@
+<form id="filtro-recebimento-mercadoria-form" method="get" class="filtro" action="">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Buscar Reentrega</legend>
+            <table style="width:100%">
+                <tr>
+                    <td>Nota Fiscal:</td>
+                    <td>Data Inicio do Recebimento:</td>
+                    <td rowspan="2"><?php echo $this->element->submit; ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->element->notaFiscal; ?></td>
+                    <td><?php echo $this->element->dataInicial1; ?> a <?php echo $this->element->dataInicial2; ?></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</form>
