@@ -7,6 +7,7 @@ use Wms\Module\Web\Controller\Action,
 
 class Expedicao_IndexController  extends Action
 {
+
     public function indexAction()
     {
         $form = new FiltroExpedicaoMercadoria();

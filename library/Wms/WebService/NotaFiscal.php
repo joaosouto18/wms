@@ -496,7 +496,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         //VERIFICA TODOS OS ITENS DO BD
         $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
 
-
         try {
             $itensNf = array();
             foreach ($itens as $itemNf) {

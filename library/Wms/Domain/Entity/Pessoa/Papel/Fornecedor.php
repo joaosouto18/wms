@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Domain\Entity\Pessoa\Papel;
 
+use Wms\Domain\Entity\Ator;
 use Wms\Domain\Entity\Pessoa;
 
 /**
@@ -9,7 +10,7 @@ use Wms\Domain\Entity\Pessoa;
  * @Table(name="FORNECEDOR")
  * @Entity(repositoryClass="Bisna\Base\Domain\Entity\Repository")
  */
-class Fornecedor
+class Fornecedor implements Ator
 {
 
     /**
@@ -34,6 +35,14 @@ class Fornecedor
     public function getId()
     {
 	return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     public function getPessoa()

@@ -77,6 +77,7 @@ class AtorRepository extends EntityRepository {
             }
 
             $pessoa->setNome($values['pessoa']['juridica']['nome']);
+            $pessoa->setNomeFantasia($values['pessoa']['juridica']['nome']);
 
             //configura através de um array de opções
             \Zend\Stdlib\Configurator::configure($pessoa, $values['pessoa']['juridica']);
