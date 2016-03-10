@@ -25,6 +25,9 @@ class Expedicao_CorteController  extends Action
         $idExpedicao = $this->getRequest()->getParam('id');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaReentregaRepo */
+        $EtiquetaReentregaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
+
         if ($request->isPost()) {
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
 
@@ -40,10 +43,25 @@ class Expedicao_CorteController  extends Action
                     $this->addFlashMessage('error', 'Etiqueta não encontrada');
                     $this->_redirect('/expedicao');
                 }
+
+                $encontrouEtiqueta = true;
                 if ($etiquetaEntity->getPedido()->getCarga()->getExpedicao()->getId() != $idExpedicao) {
+                    $encontrouEtiqueta = false;
+                    $etiquetasReentrega = $EtiquetaReentregaRepo->findBy(array('codEtiquetaSeparacao'=>$etiquetaEntity->getId()));
+                    foreach ($etiquetasReentrega as $etiquetaReentregaEn) {
+                        $idExpedicaoEtqReentrega = $etiquetaReentregaEn->getReentrega()->getCarga()->getExpedicao()->getId();
+                        if ($idExpedicao == $idExpedicaoEtqReentrega) {
+                            $encontrouEtiqueta = true;
+                            continue;
+                        }
+                    }
+                }
+
+                if ($encontrouEtiqueta == true) {
                     $this->addFlashMessage('error', 'A Etiqueta código ' . $LeituraColetor->retiraDigitoIdentificador($codBarra) . ' não pertence a expedição ' . $idExpedicao);
                     $this->_redirect('/expedicao');
                 }
+
                 $EtiquetaRepo->cortar($etiquetaEntity);
 
                 if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
