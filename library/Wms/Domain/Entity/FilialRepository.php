@@ -19,15 +19,15 @@ class FilialRepository extends AtorRepository
      */
     public function save(FilialEntity $filial, array $values)
     {
-	$em = $this->getEntityManager();
-	$filial->setIdExterno($values['pessoa']['juridica']['idExterno']);
-    $filial->setCodExterno($values['pessoa']['juridica']['codExterno']);
-    $filial->setIndLeitEtqProdTransbObg($values['pessoa']['juridica']['indLeitEtqProdTransbObg']);
-    $filial->setIndUtilizaRessuprimento($values['pessoa']['juridica']['indRessuprimento']);
-    $filial->setIndRecTransbObg($values['pessoa']['juridica']['indRecTransbObg']);
-    $filial->setIsAtivo($values['pessoa']['juridica']['isAtivo']);
-	$this->persistirAtor($filial, $values);
-	$em->persist($filial);
+        $em = $this->getEntityManager();
+        $filial->setIdExterno($values['pessoa']['juridica']['idExterno']);
+        $filial->setCodExterno($values['pessoa']['juridica']['codExterno']);
+        $filial->setIndLeitEtqProdTransbObg($values['pessoa']['juridica']['indLeitEtqProdTransbObg']);
+        $filial->setIndUtilizaRessuprimento($values['pessoa']['juridica']['indRessuprimento']);
+        $filial->setIndRecTransbObg($values['pessoa']['juridica']['indRecTransbObg']);
+        $filial->setIsAtivo($values['pessoa']['juridica']['isAtivo']);
+        $em->persist($filial);
+        $this->persistirAtor($filial, $values);
     }
 
      /**

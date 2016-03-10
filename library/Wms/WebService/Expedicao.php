@@ -718,7 +718,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     }
 
-    protected function findClienteByCodigoExterno ($repositorios, $cliente) {
+    public function findClienteByCodigoExterno ($repositorios, $cliente) {
         $ClienteRepo    = $repositorios['clienteRepo'];
         $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
 
@@ -758,19 +758,25 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
 
             $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
+            $cliente['enderecos'][0]['acao'] = 'incluir';
+            $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
 
-            $cliente['enderecos'][0] = array (
-                'acao' => 'incluir',
-                'idTipo' => \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA,
-                'idUf' => $entitySigla->getId(),
-                'complemento' => $cliente['complemento'],
-                'descricao' => $cliente['logradouro'],
-                'pontoReferencia' => $cliente['referencia'],
-                'bairro' => $cliente['bairro'],
-                'localidade' => $cliente['cidade'],
-                'numero' => $cliente['numero'],
-                'cep' => $cliente['cep'],
-            );
+            if (isset($cliente['complemento']))
+                $cliente['enderecos'][0]['complemento'] = $cliente['complemento'];
+            if (isset($cliente['logradouro']))
+                $cliente['enderecos'][0]['descricao'] = $cliente['logradouro'];
+            if (isset($cliente['referencia']))
+                $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
+            if (isset($cliente['bairro']))
+                $cliente['enderecos'][0]['bairro'];
+            if (isset($cliente['cidade']))
+                $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
+            if (isset($cliente['numero']))
+                $cliente['enderecos'][0]['numero'];
+            if (isset($cliente['cep']))
+                $cliente['enderecos'][0]['cep'] = $cliente['cep'];
+            if (isset($entitySigla))
+                $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
 
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 

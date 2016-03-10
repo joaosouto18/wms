@@ -9,6 +9,36 @@ use Doctrine\ORM\EntityRepository,
 
 class ClasseRepository extends EntityRepository
 {
+
+    public function save($idClasse, $nome, $idClassePai = null)
+    {
+        $idClasse = trim($idClasse);
+        $nome = trim($nome);
+
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            $classeEn = $em->getRepository('wms:Produto\Classe')->findOneBy(array('id' => $idClasse));
+            if (!$classeEn) {
+                $classeEn = new Classe();
+                $classeEn->setNome($nome);
+                $classeEn->setId($idClasse);
+                $classeEn->setIdPai($idClassePai);
+            } else {
+                $classeEn->setNome($nome);
+            }
+
+            $em->persist($classeEn);
+            $em->flush();
+            $em->commit();
+
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw $e;
+        }
+    }
+
      /**
      * Retorna um array id => valor do
      * @return array

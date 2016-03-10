@@ -9,6 +9,32 @@ use Doctrine\ORM\EntityRepository,
 
 class FabricanteRepository extends EntityRepository implements ObjectRepository
 {
+
+    public function save($idFabricante, $nome)
+    {
+        $idFabricante = trim($idFabricante);
+        $nome = trim($nome);
+
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
+        try {
+            $fabricanteEn = $em->getRepository('wms:Fabricante')->findOneBy(array('id' => $idFabricante));
+
+            if (!$fabricanteEn)
+                $fabricanteEn = new FabricanteEntity();
+
+            $fabricanteEn->setId($idFabricante);
+            $fabricanteEn->setNome($nome);
+
+            $em->persist($fabricanteEn);
+            $em->flush();
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw $e;
+        }
+    }
     
     public function remove($id)
     {
