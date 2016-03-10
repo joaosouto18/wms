@@ -90,7 +90,7 @@ class Mobile_ReentregaController extends Action
                     /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
                     $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
                     $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
-                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
+                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " conferido com sucesso");
 
                 } catch (\Exception $e) {
                     $this->_helper->messenger('error', utf8_decode($e->getMessage()));
@@ -99,6 +99,10 @@ class Mobile_ReentregaController extends Action
                 $this->_helper->messenger('error', 'Preencha todos os campos corretamente');
             }
         }
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+        $notaFiscalSaidaRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+        $getQtdProdutosDivergentes   = $notaFiscalSaidaRepo->getQtdProdutoDivergentesByNota(array('id' => $params['id']));
+        $this->view->listaProdutos = $getQtdProdutosDivergentes;
     }
 
     public function finalizarConferenciaAction()
@@ -110,13 +114,18 @@ class Mobile_ReentregaController extends Action
             $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
             $result = $recebimentoReentregaRepo->finalizarConferencia($params);
 
-            $this->addFlashMessage('error', "Notas Fiscais Recebidas com sucesso");
+            $this->addFlashMessage('success', "Notas Fiscais Recebidas com sucesso");
             $this->_redirect('/mobile/reentrega/recebimento');
 
         } catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
         }
+
+    }
+
+    public function visualizarDivergenciaAction()
+    {
 
     }
 

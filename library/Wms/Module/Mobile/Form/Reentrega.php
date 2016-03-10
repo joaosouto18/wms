@@ -15,12 +15,7 @@ class Reentrega extends Form
         $this->setAction($this->getView()->url(array('controller' => 'reentrega', 'action' => 'buscar')));
 
         $em = $this->getEm();
-        $this->addElement('text', 'carga', array(
-                    'label' => 'Código carga',
-                    'class' => 'carga',
-                    'id' => 'carga'
-                ))
-                ->addElement('text', 'notaFiscal', array(
+                $this->addElement('text', 'notaFiscal', array(
                     'label' => 'Número Nota Fiscal',
                     'class' => 'notaFiscal',
                     'id' => 'notaFiscal'
