@@ -211,7 +211,9 @@ class PedidoRepository extends EntityRepository
             $this->_em->remove($etiqueta);
 
             $etiquetaReentregaEntity = $EtiquetaSeparacaoReentregaRepo->findBy(array('etiquetaSeparacao' => $etiqueta->getId()));
-            $this->_em->remove($etiquetaReentregaEntity);
+            if ($etiquetaReentregaEntity) {
+                $this->_em->remove($etiquetaReentregaEntity);
+            }
 
             if ($runFlush == true) {
                 $this->_em->flush();
