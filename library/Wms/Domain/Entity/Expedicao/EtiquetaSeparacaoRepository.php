@@ -1370,10 +1370,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false)
     {
-        /*
+
         if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
             return true;
-        }/*
+        }
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
