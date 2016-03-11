@@ -1325,34 +1325,31 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     private function cortaEtiquetaReentrega($etiquetaEntity){
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaRepo */
-        $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaReentregaRepo */
+        $EtiquetaReentregaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
 
-        $etiquetaReentregaEn = $EtiquetaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiquetaEntity->getId()));
+        $etiquetaReentregaEn = $EtiquetaReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiquetaEntity->getId()));
         if ($etiquetaReentregaEn == null) return false;
 
-        $statusCortadoEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_CORTADO);
+        $statusCortadoEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_CORTADO);
             $etiquetaReentregaEn->setCodStatus(EtiquetaSeparacao::STATUS_CORTADO);
             $etiquetaReentregaEn->setStatus($statusCortadoEntity);
         $this->getEntityManager()->persist($etiquetaReentregaEn);
 
         if ($etiquetaEntity->getCodReferencia() != null) {
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
-            $etiquetasRelacionadasEn = $EtiquetaRepo->findBy(array('codReferencia'=>$etiquetaEntity->getCodReferencia()));
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
-            $etiquetaPrincipal = $EtiquetaRepo->findBy(array('id'=>$etiquetaEntity->getCodReferencia()));
+            $etiquetasRelacionadasEn = $this->findBy(array('codReferencia'=>$etiquetaEntity->getCodReferencia()));
+            $etiquetaPrincipal = $this->findBy(array('id'=>$etiquetaEntity->getCodReferencia()));
             $etiquetasRelacionadasEn = array_merge($etiquetasRelacionadasEn, $etiquetaPrincipal);
         } else {
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetasRelacionadasEn */
-            $etiquetasRelacionadasEn = $EtiquetaRepo->findBy(array('codReferencia'=>$etiquetaEntity->getId()));
+            $etiquetasRelacionadasEn = $this->findBy(array('codReferencia'=>$etiquetaEntity->getId()));
         }
 
         if ($etiquetasRelacionadasEn != null) {
-            $statusPendenteCorteEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+            $statusPendenteCorteEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
 
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
             foreach ($etiquetasRelacionadasEn as $etiqueta) {
-                $etiquetaReentregaRelacionadaEn = $EtiquetaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta->getId()));
+                $etiquetaReentregaRelacionadaEn = $EtiquetaReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta->getId()));
                 if ($etiquetaReentregaRelacionadaEn != null) {
                     if ($etiquetaReentregaRelacionadaEn->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
                             $etiquetaReentregaRelacionadaEn->setCodStatus(EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
@@ -1363,6 +1360,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
+        $this->getEntityManager()->flush();
         return true;
 
     }

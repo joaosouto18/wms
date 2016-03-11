@@ -114,7 +114,7 @@ class Mobile_ReentregaController extends Action
             $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
             $result = $recebimentoReentregaRepo->finalizarConferencia($params);
 
-            $this->addFlashMessage('error', "Notas Fiscais Recebidas com sucesso");
+            $this->addFlashMessage('success', "Notas Fiscais Recebidas com sucesso");
             $this->_redirect('/mobile/reentrega/recebimento');
 
         } catch (\Exception $e) {
