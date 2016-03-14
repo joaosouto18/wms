@@ -177,6 +177,12 @@ class Wms_WebService_Produto extends Wms_WebService {
                     ->setNumVolumes($numVolumes);
             }
 
+            if ($this->getSystemParameterValue("ALTERAR_CODIGO_BARRAS") == 'S') {
+                /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+                $produtoRepo = $em->getRepository('wms:Produto');
+                $produtoRepo->persistirEmbalagens($produto, $embalagens);
+            }
+
             $em->persist($produto);
             $em->flush();
 
