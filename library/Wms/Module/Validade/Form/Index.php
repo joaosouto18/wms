@@ -38,12 +38,18 @@ class Index extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
+            ->addElement('submit', 'gerarPdf', array(
+                'label' => 'Exportar para PDF',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper')
+            ))
             ->addDisplayGroup(array(
                 'codProduto',
                 'descricao',
                 'fornecedor',
                 'dataReferencia',
-                'submit'),
+                'submit',
+                'gerarPdf'),
                 'formulario', array('legend' => utf8_encode('Formulário')));
     }
 
