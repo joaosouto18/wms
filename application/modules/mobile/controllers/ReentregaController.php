@@ -2,6 +2,7 @@
 use Wms\Controller\Action;
 use Wms\Module\Mobile\Form\Reentrega as FormReentrega;
 use Wms\Module\Mobile\Form\ConferirProdutosReentrega as FormConferirProdutosReentrega;
+use Wms\Service\Coletor as LeituraColetor;
 
 class Mobile_ReentregaController extends Action
 {
@@ -167,10 +168,29 @@ class Mobile_ReentregaController extends Action
             $this->redirect('recebimento', 'reentrega', 'mobile');
 
         }
-
-
-
     }
 
+    public function getNotaOrCodBarrasByCampoBipadoAction()
+    {
+        $params = $this->_getAllParams();
+        $LeituraColetor = new LeituraColetor();
+        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($params['etiqueta']);
+
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('nfs.numeroNf, es.id')
+            ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
+            ->innerJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+            ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsped', 'WITH', 'nfsped.notaFiscalSaida = nfs.id')
+            ->innerJoin('nfsped.pedido', 'ped')
+            ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'nfsp.codProduto = es.codProduto AND nfsp.grade = es.dscGrade AND ped.id = es.pedido');
+
+        if (isset($params['etiqueta']) && !empty($params['etiqueta'])) {
+            $sql->orWhere("es.id = $etiquetaSeparacao");
+        }
+
+        $resultado = $sql->getQuery()->getResult();
+
+        $this->_helper->json($resultado, true);
+    }
 }
 
