@@ -44,11 +44,17 @@
         <legend>Recebimento nº <?php echo $this->id; ?></legend>
         <table style="width: 100%">
         <tr>
-            <td style="padding-bottom: 2pt; padding-top: 3pt">*Código de Barras</td>
+            <?php if ($this->modeloSeparacao == 'E') : ?>
+                <td style="padding-bottom: 2pt; padding-top: 3pt">*Código de Barras Etiqueta</td>
+            <?php endif; ?>
+            <td style="padding-bottom: 2pt; padding-top: 3pt">*Código de Barras Produtos</td>
             <td style="padding-bottom: 2pt; padding-top: 3pt">*Qtde.</td>
         </tr>
         <tr style="padding-bottom: 5pt">
-            <td style="width: 70%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
+            <?php if ($this->modeloSeparacao == 'E') : ?>
+                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="etiqueta" id="etiqueta" value="" class=" required etiqueta focus" onkeydown="nextInput(event)"></td>
+            <?php endif;?>
+            <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
             <td style="width: 20%; padding-bottom: 5pt; "><input type="text" style="width: 100%" name="qtd" id="qtd" value="" class=" required qtd"></td>
         </tr>
         </table>

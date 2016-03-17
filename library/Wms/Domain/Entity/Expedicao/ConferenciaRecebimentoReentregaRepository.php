@@ -24,10 +24,28 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
 
         $this->getEntityManager()->beginTransaction();
         try {
+            if (isset($data['etiqueta'])) {
+                $etiquetaSeparacao = $serviceColetor->retiraDigitoIdentificador($data['etiqueta']);
+                /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+                $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+                $etiquetaEn = $etiquetaRepo->findOneBy(array('id' => $etiquetaSeparacao));
+
+                if (is_null($etiquetaEn))
+                    throw new \Exception(utf8_encode('Etiqueta de separação não encontrada!'));
+            }
+
             if (isset($produtoVolumeEn)) {
+                if (isset($etiquetaEn)) {
+                    if ($etiquetaEn->getProdutoVolume()->getId() != $produtoVolumeEn->getId())
+                        throw new \Exception(utf8_encode("Etiqueta de Separação não pertence ao produto"));
+                }
                 $produtoId = $produtoVolumeEn->getProduto();
                 $grade = $produtoVolumeEn->getGrade();
             } else if (isset($produtoEmbalagemEn)) {
+                if (isset($etiquetaEn)) {
+                    if ($etiquetaEn->getProdutoEmbalagem()->getId() != $produtoEmbalagemEn->getId())
+                        throw new \Exception(utf8_encode("Etiqueta de Separação não pertence ao produto"));
+                }
                 $produtoId = $produtoEmbalagemEn->getProduto();
                 $grade = $produtoEmbalagemEn->getGrade();
             } else {
