@@ -596,12 +596,15 @@ class CodigoBarras
             $bars.=$Rencode[$code[$x]];
         }
         $bars.=$ends;
-        var_dump($bars); exit;
         /* Generate the Barcode Image */
         $img = ImageCreate($lw*95+30,$hi+30);
+        var_dump($bars);
         $fg = ImageColorAllocate($img, 0, 0, 0);
+        var_dump($bars);
         $bg = ImageColorAllocate($img, 255, 255, 255);
+        var_dump($bars);
         ImageFilledRectangle($img, 0, 0, $lw*95+30, $hi+30, $bg);
+        var_dump($bars);
         $shift=10;
         for ($x=0;$x<strlen($bars);$x++) {
             if (($x<10) || ($x>=45 && $x<50) || ($x >=85)) { $sh=10; } else { $sh=0; }
