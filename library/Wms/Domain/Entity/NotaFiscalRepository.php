@@ -636,6 +636,9 @@ class NotaFiscalRepository extends EntityRepository
             $sql->orWhere(" pe.codigoBarras = '$codigoBarras'");
         }
 
+        echo $sql->getQuery()->getSQL();
+        var_dump($sql->getQuery()->getResult());
+        exit;
         return $sql->getQuery()->setMaxResults(1)->getOneOrNullResult();
     }
 

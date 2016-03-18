@@ -69,7 +69,7 @@ class Enderecamento_PaleteController extends Action
                     $paleteEn = $paleteEn->getProdutos();
                 }
 
-                $dadosPalete['qtd'] = 3;
+                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
                 if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
                     $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
                 } else {
