@@ -110,8 +110,6 @@ class UMA extends Pdf
         $font_size = 55;
         $line_width = 300;
 
-        var_dump($modelo);
-        var_dump($paletes);
         foreach($paletes as $palete) {
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
@@ -183,6 +181,7 @@ class UMA extends Pdf
             $this->SetFont('Arial', 'B', 70);
             $this->Cell(75,-40,utf8_decode("               $dataValidade"),0,1);
         }
+        var_dump($params); exit;
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(25,95,"Qtd",0,0);
