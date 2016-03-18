@@ -126,7 +126,7 @@ class UMA extends Pdf
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
-                var_dump($modelo);
+                var_dump($paleteEn->getId());
                 if ($modelo == 3) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
                 } else {
