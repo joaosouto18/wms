@@ -59,12 +59,13 @@ class Enderecamento_PaleteController extends Action
 
             $dadosPalete = array();
             $dadosPalete['idUma'] = $paleteId;
-            if ($paleteEn->getDepositoEndereco() != null) {
-                $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
-            } else {
-                $dadosPalete['endereco'] = "";
+            if (isset($paleteEn) && !empty($paleteEn)) {
+                if (null != $paleteEn->getDepositoEndereco()) {
+                    $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
+                } else {
+                    $dadosPalete['endereco'] = "";
+                }
             }
-
             $paleteEn = $paleteEn->getProdutos();
 
             $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
