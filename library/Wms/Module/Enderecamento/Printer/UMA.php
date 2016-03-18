@@ -126,11 +126,11 @@ class UMA extends Pdf
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
-//                if ($modelo == 3) {
-//                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
-//                } else {
-//                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
-//                }
+                if ($modelo == 3) {
+                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
+                } else {
+                    $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
+                }
 
                 if ($paleteEn->getDepositoEndereco() != null && $paleteEn->getCodStatus() == Palete::STATUS_RECEBIDO) {
                     $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
