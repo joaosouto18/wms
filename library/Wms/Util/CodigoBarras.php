@@ -597,8 +597,7 @@ class CodigoBarras
         }
         $bars.=$ends;
         /* Generate the Barcode Image */
-        $img = ImageCreate(1*95+30,1+30);
-        var_dump('ok');exit;
+        $img = ImageCreate($lw*95+30,$hi+30);
         $fg = ImageColorAllocate($img, 0, 0, 0);
         $bg = ImageColorAllocate($img, 255, 255, 255);
         ImageFilledRectangle($img, 0, 0, $lw*95+30, $hi+30, $bg);
