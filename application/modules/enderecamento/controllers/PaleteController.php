@@ -51,7 +51,6 @@ class Enderecamento_PaleteController extends Action
         $paletes = $params['palete'];
 
         $PaleteRepository = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-        $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
 
         $param = array();
         $paletesArray = array();
@@ -70,8 +69,7 @@ class Enderecamento_PaleteController extends Action
                     $paleteEn = $paleteEn->getProdutos();
                 }
 
-                $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $paleteId, 'codProduto' => $params['codigo'], 'grade' => $params['grade']));
-                $dadosPalete['qtd'] = $paleteProdutoEn->getQtd();
+                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
                 if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
                     $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
                 } else {
@@ -81,7 +79,6 @@ class Enderecamento_PaleteController extends Action
                     $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
                 }
             }
-            var_dump($paleteProdutoEn); exit;
 
         $paletesArray[] = $dadosPalete;
         }
