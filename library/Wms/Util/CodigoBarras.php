@@ -617,7 +617,7 @@ class CodigoBarras
 
         self::verificarDiretorioExistente(APPLICATION_PATH . '/../data/CodigoBarras/');
 
-        var_dump(APPLICATION_PATH);
+        var_dump(APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo);
         ImagePNG($img, APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo);
         exit;
 
