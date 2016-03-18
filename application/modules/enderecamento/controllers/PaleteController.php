@@ -54,11 +54,9 @@ class Enderecamento_PaleteController extends Action
 
         $param = array();
         $paletesArray = array();
+        var_dump($paletes); exit;
         foreach ($paletes as $paleteId) {
             $paleteEn = $PaleteRepository->find($paleteId);
-            var_dump($paletes);
-            var_dump($paleteId);
-            var_dump($paleteEn); exit;
 
             $dadosPalete = array();
             $dadosPalete['idUma'] = $paleteId;
