@@ -569,6 +569,7 @@ class CodigoBarras
 
         // Nome arquivo
         $nomeArquivo = $code . ".png";
+        var_dump($nomeArquivo); exit;
         $code = self::preencheZerosEsquerda($code, 11);
         $lw = 3; $hi = 40;
         $Lencode = array('0001101','0011001','0010011','0111101','0100011',
@@ -617,7 +618,6 @@ class CodigoBarras
 
         self::verificarDiretorioExistente(APPLICATION_PATH . '/../data/CodigoBarras/');
 
-        var_dump('abc'); exit;
         ImagePNG($img, APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo);
 
         return APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo;
