@@ -44,7 +44,6 @@ class Enderecamento_PaleteController extends Action
      */
     public function imprimirAction()
     {
-        phpinfo();
         $embalagemRepo = $this->_em->getRepository("wms:Produto\Embalagem");
         $volumeRepo = $this->_em->getRepository("wms:Produto\Volume");
 
