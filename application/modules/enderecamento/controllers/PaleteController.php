@@ -68,19 +68,19 @@ class Enderecamento_PaleteController extends Action
                 if (null != $paleteEn->getProdutos()) {
                     $paleteEn = $paleteEn->getProdutos();
                 }
-            }
 
-            $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
-            if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
-                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
-            } else {
-                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
-            }
-            if ($embalagemEn->getEndereco() != null) {
-                $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
-            }
+                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+                if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
+                    $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
+                } else {
+                    $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
+                }
+                if ($embalagemEn->getEndereco() != null) {
+                    $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
+                }
+            }            
 
-            $paletesArray[] = $dadosPalete;
+        $paletesArray[] = $dadosPalete;
         }
 
         $param['idRecebimento'] = $params['id'];
