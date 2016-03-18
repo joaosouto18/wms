@@ -65,8 +65,10 @@ class Enderecamento_PaleteController extends Action
                 } else {
                     $dadosPalete['endereco'] = "";
                 }
+                if (null != $paleteEn->getProdutos()) {
+                    $paleteEn = $paleteEn->getProdutos();
+                }
             }
-            $paleteEn = $paleteEn->getProdutos();
 
             $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
             if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
