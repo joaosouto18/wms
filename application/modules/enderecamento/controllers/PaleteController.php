@@ -89,6 +89,7 @@ class Enderecamento_PaleteController extends Action
         $param['grade']         = $params['grade'];
         $param['paletes']        = $paletesArray;
 
+        var_dump($param); exit;
         $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
         $param['dataValidade'] = $notaFiscalRepo->buscaRecebimentoProduto($param['idRecebimento'], null, $param['codProduto'], $param['grade']);
 
