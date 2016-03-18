@@ -54,6 +54,7 @@ class Enderecamento_PaleteController extends Action
 
         $param = array();
         $paletesArray = array();
+        var_dump($paletes); exit;
         foreach ($paletes as $paleteId) {
             $paleteEn = $PaleteRepository->find($paleteId);
 
@@ -78,7 +79,7 @@ class Enderecamento_PaleteController extends Action
                 if ($embalagemEn->getEndereco() != null) {
                     $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
                 }
-            }            
+            }
 
         $paletesArray[] = $dadosPalete;
         }
