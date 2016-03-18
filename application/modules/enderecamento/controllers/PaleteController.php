@@ -81,6 +81,7 @@ class Enderecamento_PaleteController extends Action
                     $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
                 }
             }
+            var_dump($dadosPalete); exit;
 
         $paletesArray[] = $dadosPalete;
         }
@@ -89,7 +90,6 @@ class Enderecamento_PaleteController extends Action
         $param['codProduto']    = $params['codigo'];
         $param['grade']         = $params['grade'];
         $param['paletes']        = $paletesArray;
-        var_dump($param); exit;
 
         $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
         $param['dataValidade'] = $notaFiscalRepo->buscaRecebimentoProduto($param['idRecebimento'], null, $param['codProduto'], $param['grade']);
