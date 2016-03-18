@@ -58,6 +58,7 @@ class Enderecamento_PaleteController extends Action
         foreach ($paletes as $paleteId) {
             $paleteEn = $PaleteRepository->find($paleteId);
 
+            var_dump($paleteEn); exit;
             $dadosPalete = array();
             $dadosPalete['idUma'] = $paleteId;
             if (isset($paleteEn) && !empty($paleteEn)) {
@@ -71,7 +72,6 @@ class Enderecamento_PaleteController extends Action
                 }
 
                 $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
-                var_dump($dadosPalete); exit;
                 if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
                     $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
                 } else {
