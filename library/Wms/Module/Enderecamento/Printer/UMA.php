@@ -126,11 +126,14 @@ class UMA extends Pdf
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
+                var_dump($modelo);
                 if ($modelo == 3) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
                 } else {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
                 }
+                var_dump('abc');
+                exit;
 
                 if ($paleteEn->getDepositoEndereco() != null && $paleteEn->getCodStatus() == Palete::STATUS_RECEBIDO) {
                     $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
@@ -181,7 +184,6 @@ class UMA extends Pdf
             $this->SetFont('Arial', 'B', 70);
             $this->Cell(75,-40,utf8_decode("               $dataValidade"),0,1);
         }
-        var_dump($params); exit;
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(25,95,"Qtd",0,0);
