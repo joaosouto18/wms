@@ -51,6 +51,7 @@ class Enderecamento_PaleteController extends Action
         $paletes = $params['palete'];
 
         $PaleteRepository = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
+        $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
 
         $param = array();
         $paletesArray = array();
@@ -69,7 +70,8 @@ class Enderecamento_PaleteController extends Action
                     $paleteEn = $paleteEn->getProdutos();
                 }
 
-                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+                $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $paleteId, 'codProduto' => $params['codigo'], 'grade' => $params['grade']));
+                $dadosPalete['qtd'] = $paleteProdutoEn->getQtd();
                 if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
                     $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
                 } else {
