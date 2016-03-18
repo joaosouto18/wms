@@ -70,11 +70,12 @@ class Enderecamento_PaleteController extends Action
                     $paleteEn = $paleteEn->getProdutos();
                 }
 
-                $dadosPalete['qtd'] = $paleteEn->getQtd();
+                var_dump($paleteEn); exit;
+                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
                 if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
-                    $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn->getCodProdutoVolume()));
+                    $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
                 } else {
-                    $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn->getCodProdutoEmbalagem()));
+                    $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
                 }
                 if ($embalagemEn->getEndereco() != null) {
                     $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
