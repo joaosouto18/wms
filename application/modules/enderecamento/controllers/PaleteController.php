@@ -81,7 +81,7 @@ class Enderecamento_PaleteController extends Action
                     $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
                 }
             }
-            var_dump($dadosPalete); exit;
+            var_dump($paleteProdutoEn); exit;
 
         $paletesArray[] = $dadosPalete;
         }
