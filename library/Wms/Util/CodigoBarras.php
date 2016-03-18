@@ -604,7 +604,7 @@ class CodigoBarras
         $bg = ImageColorAllocate($img, 255, 255, 255);
         var_dump($bars);
         ImageFilledRectangle($img, 0, 0, $lw*95+30, $hi+30, $bg);
-        var_dump($bars);
+        var_dump($bars); exit;
         $shift=10;
         for ($x=0;$x<strlen($bars);$x++) {
             if (($x<10) || ($x>=45 && $x<50) || ($x >=85)) { $sh=10; } else { $sh=0; }
