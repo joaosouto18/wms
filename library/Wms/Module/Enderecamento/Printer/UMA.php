@@ -110,6 +110,8 @@ class UMA extends Pdf
         $font_size = 55;
         $line_width = 300;
 
+        var_dump($modelo);
+        var_dump($paletes);
         foreach($paletes as $palete) {
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
