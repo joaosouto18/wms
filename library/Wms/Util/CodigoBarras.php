@@ -614,11 +614,12 @@ class CodigoBarras
             ImageString($img,5,$lw*(53+$x*6)+15,$hi+5,$code[$x+6],$fg);
         }
         ImageString($img,4,$lw*95+17,$hi-5,$code[11],$fg);
+        var_dump('ok'); exit;
 
-        self::verificarDiretorioExistente( 'http://avaes.ttdns.com.br:8150/data/CodigoBarras/');
+        self::verificarDiretorioExistente(APPLICATION_PATH . '/../data/CodigoBarras/');
 
-        ImagePNG($img,  'http://avaes.ttdns.com.br:8150/data/CodigoBarras/' . $nomeArquivo);
+        ImagePNG($img, APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo);
 
-        return  'http://avaes.ttdns.com.br:8150/data/CodigoBarras/' . $nomeArquivo;
+        return APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo;
     }
 }
