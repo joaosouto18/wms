@@ -619,7 +619,6 @@ class CodigoBarras
 
         ImagePNG($img, APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo);
 
-        var_dump('ok'); exit;
         return APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo;
     }
 }
