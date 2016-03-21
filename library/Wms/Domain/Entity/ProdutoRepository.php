@@ -211,12 +211,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       try{
 
             $em = $this->getEntityManager();
-            if ($webservice = true) {
+            if ($webservice == true) {
                 $idUsuario = null;
             }else {
                 $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
             }
-
 
             /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
             $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
@@ -305,15 +304,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if (empty($embalagemEntity->getDataInativacao())) {
                             $embalagemEntity->setDataInativacao(new \DateTime());
                             $embalagemEntity->setUsuarioInativacao($idUsuario);
-                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
                         }
                     } else {
                         if (!is_null($embalagemEntity->getDataInativacao())) {
                             $embalagemEntity->setDataInativacao(null);
                             $embalagemEntity->setUsuarioInativacao(null);
-                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
                         }
                     }
+
+                  if (isset($descricao) && ($descricao != null)) {
+                      $embalagemEntity->setDescricao($descricao);
+                  }
 
                   $em->persist($embalagemEntity);
                   break;

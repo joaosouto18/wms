@@ -182,6 +182,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
             $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS'));
 
+            //VERIFICA SE VAI RECEBER AS EMBALAGENS OU NÃO
             if ($parametro->getValor() == 'S') {
 
                 $embalagensArray = array();
@@ -189,29 +190,46 @@ class Wms_WebService_Produto extends Wms_WebService {
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
 
+                    $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
                     foreach ($embalagens as $embalagemWs) {
                         if ($embalagemWs->codBarras == $embalagemCadastrada->getCodigoBarras()) {
                             $encontrouEmbalagem = true;
+                            $descricaoEmbalagem =  $embalagemWs->descricao;
+
+                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
+                            }
+
                             continue;
                         }
                     }
 
+                    $ativarInativar = null;
                     if ($encontrouEmbalagem == false) {
                         if ($embalagemCadastrada->getDataInativacao() == null){
-                            $embalagemArray = array(
-                                'acao'=> 'alterar',
-                                'id' =>$embalagemCadastrada->getId(),
-                                'endereco' => $embalagemCadastrada->getEndereco()->getDescricao(),
-                                'CBInterno' => $embalagemCadastrada->getCBInterno(),
-                                'embalado' => $embalagemCadastrada->getEmbalado(),
-                                'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
-                                'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                                'ativarDesativar' => true
-                            );
-                            $embalagensArray[] = $embalagemArray;
+                            $ativarInativar = true;
                         }
                     }
+
+                    $endPicking = null;
+                    if ($embalagemCadastrada->getEndereco() != null ) {
+                        $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
+                    }
+
+                    $embalagemArray = array(
+                        'acao'=> 'alterar',
+                        'id' =>$embalagemCadastrada->getId(),
+                        'endereco' => $endPicking,
+                        'CBInterno' => $embalagemCadastrada->getCBInterno(),
+                        'embalado' => $embalagemCadastrada->getEmbalado(),
+                        'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
+                        'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
+                        'ativarDesativar' => $ativarInativar,
+                        'descricao' => $descricaoEmbalagem
+                    );
+                    $embalagensArray[] = $embalagemArray;
+
                 }
 
                 //DEPOIS INCLUO AS NOVAS EMBALAGENS
