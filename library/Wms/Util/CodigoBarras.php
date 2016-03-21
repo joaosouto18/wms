@@ -614,12 +614,12 @@ class CodigoBarras
             ImageString($img,5,$lw*(53+$x*6)+15,$hi+5,$code[$x+6],$fg);
         }
         ImageString($img,4,$lw*95+17,$hi-5,$code[11],$fg);
-        var_dump('ok'); exit;
 
         self::verificarDiretorioExistente(APPLICATION_PATH . '/../data/CodigoBarras/');
 
         ImagePNG($img, APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo);
 
+        var_dump('ok'); exit;
         return APPLICATION_PATH . '/../data/CodigoBarras/' . $nomeArquivo;
     }
 }
