@@ -19,7 +19,7 @@ class VolumeRepository extends EntityRepository
      *
      * @param array $values 
      */
-    public function save(ProdutoEntity $produtoEntity, array $values)
+    public function save(ProdutoEntity $produtoEntity, array $values, $webservice = false)
     {
         $em = $this->getEntityManager();
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();

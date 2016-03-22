@@ -72,13 +72,13 @@ class Web_ProdutoVolumeController extends Crud
 
             foreach ($volumes as $volume) {
 
-                $dataInativacao = new DateTime();
+                $dataInativacao = "VOL. ATIVO";
                 $checked = '';
                 if (!is_null($volume->getDataInativacao())) {
                     $dataInativacao = $volume->getDataInativacao();
                     $checked = 'checked ';
+                    $dataInativacao = $dataInativacao->format('d/m/Y');
                 }
-                $dataInativacao = $dataInativacao->format('d/m/Y');
 
                 $idNormaPaletizacao = ($volume->getNormaPaletizacao()) ? $volume->getNormaPaletizacao()->getId() : 0;
 
@@ -145,7 +145,6 @@ class Web_ProdutoVolumeController extends Crud
                 'dataInativacao' => $dataInativacao,
             );
         }
-
         $this->_helper->json($arrayVolumes, true);
     }
 
