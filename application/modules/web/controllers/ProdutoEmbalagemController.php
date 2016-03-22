@@ -26,6 +26,15 @@ class Web_ProdutoEmbalagemController extends Crud
         $arrayEmbalagens = array();
 
         foreach ($embalagens as $embalagem) {
+
+            $dataInativacao = "EMB. ATIVA";
+            $checked = '';
+            if (!is_null($embalagem->getDataInativacao())) {
+                $dataInativacao = $embalagem->getDataInativacao();
+                $checked = 'checked ';
+                $dataInativacao = $dataInativacao->format('d/m/Y');
+            }
+
             $arrayEmbalagens[] = array(
                 'id' => $embalagem->getId(),
                 'descricao' => $embalagem->getDescricao(),
@@ -42,6 +51,8 @@ class Web_ProdutoEmbalagemController extends Crud
                 'capacidadePicking' => $embalagem->getCapacidadePicking(),
                 'pontoReposicao' => $embalagem->getPontoReposicao(),
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
+                'ativarDesativar' => $checked,
+                'dataInativacao' => $dataInativacao,
             );
         }
 

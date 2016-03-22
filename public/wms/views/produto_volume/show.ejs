@@ -2,6 +2,17 @@
     
     <table>
         <tr class="actions">
+
+            <td colspan="1" style="float:left; font-weight: bold">
+                <div style="float:right">
+                    Data de Inativação:
+                </div>
+                <div>
+                    <input id="ativarDesativar" value="<%=this.id%>" type="checkbox" name="volumes[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> />
+                    <span style{float:left} id="dataInativacao" class="dataInativacao"><%=this.dataInativacao%></span>
+                </div>
+            </td>
+
             <td colspan="2" class="codSequencia">Sequência do Volume: <%=this.codigoSequencial%></td>
             <td colspan="3">
                 <a href="javascript://" class="btnAction btn-editar-volume" title="Clique para Editar">
@@ -51,6 +62,7 @@
             <td colspan="1" class="pontoReposicao"><%=this.pontoReposicao%></td>
             <td colspan="1"><span class="capacidadePicking"><%=this.capacidadePicking%><span></td>
         </tr>
+
 
     </table>
     

@@ -500,10 +500,14 @@ class Mobile_EnderecamentoController extends Action
                   LEFT JOIN PALETE P ON P.UMA = PP.UMA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                   LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = P.COD_UNITIZADOR
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PROD.COD_PRODUTO = PE.COD_PRODUTO AND PROD.DSC_GRADE = PE.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PE.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
                  WHERE P.COD_RECEBIMENTO = $codRecebimento
                    AND P.COD_STATUS = $statusEnderecamento
                    AND P.IND_IMPRESSO = 'N'
-                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL)
+                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL
+                   AND PE.DTH_INATIVACAO IS NULL
+                   AND PV.DTH_INATIVACAO IS NULL)
                 GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -689,11 +693,27 @@ class Mobile_EnderecamentoController extends Action
             if ($codigoBarras) {
                 $LeituraColetor = new LeituraColetor();
                 $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+
+                $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+                $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+                $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+                $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+
+                $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL
+                 FROM DEPOSITO_ENDERECO
+                 WHERE
+                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
+                    || SUBSTR('00' || NUM_PREDIO, -$tamanhoPredio,$tamanhoPredio)
+                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
+                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento, $tamanhoApartamento) as INT)) = " . $codigoBarras;
+
+                $endereco = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
+            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $endereco[0]['NUM_NIVEL'], false);
 
             if ($result == NULL) {
                 throw new \Exception ("Endereço selecionado está vazio");

@@ -664,6 +664,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         for($i=0;$i<$quantidade;$i++) {
                             $codReferencia = null;
                             foreach ($arrayVolumes as $volumeEntity) {
+
+                                if (!is_null($volumeEntity->getDataInativacao()))
+                                    continue;
+
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasNaoFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
 
@@ -695,6 +699,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     } else {
                         foreach ($arrayVolumes as $volumeEntity) {
+
+                            if (!is_null($volumeEntity->getDataInativacao()))
+                                continue;
+
                             $endereco = $volumeEntity->getEndereco();
                             if (isset($endereco) && !empty($endereco)) {
                                 $depositoEnderecoEn = $volumeEntity->getEndereco();
@@ -783,6 +791,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
                             $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
                         }
+
+                        if (!is_null($embalagemAtual->getDataInativacao()))
+                            continue;
+
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
