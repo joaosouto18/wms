@@ -36,8 +36,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
      * @param {Event} ev A jQuery event whose default action is prevented.
      */
     '#ativarDesativar click' : function(el,ev) {
+
         var check = $(el).parent('div').find('.ativarDesativar');
         var date = $(el).parent('div').find('.dataInativacao');
+        var div = $(el).parent('div').parent('td');
 
         if (check.is(":checked") == true) {
             if (date.text() == "VOL. ATIVO") {
@@ -56,10 +58,11 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
                 date.text(today);
             }
+            div.css("color","red");
         } else {
             date.text("VOL. ATIVO");
+            div.css("color","green");
         }
-
     },
     
     /**

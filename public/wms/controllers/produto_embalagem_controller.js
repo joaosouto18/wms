@@ -35,6 +35,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         "#ativarDesativar click" : function(el,ev) {
             var check = $(el).parent('div').find('.ativarDesativar');
             var date = $(el).parent('div').find('.dataInativacao');
+            var div = $(el).parent('div').parent('td');
 
             if (check.is(":checked") == true) {
                 if (date.text() == "EMB. ATIVA") {
@@ -53,8 +54,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                     date.text(today);
                 }
+                div.css("color","red");
             } else {
                 date.text("EMB. ATIVA");
+                div.css("color","green");
+
             }
         },
 

@@ -350,7 +350,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
 
                     if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-                        if (isnull($embalagemEntity->getDataInativacao())) {
+                        if (is_null($embalagemEntity->getDataInativacao())) {
                             $embalagemEntity->setDataInativacao(new \DateTime());
                             $embalagemEntity->setUsuarioInativacao($idUsuario);
                             $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');

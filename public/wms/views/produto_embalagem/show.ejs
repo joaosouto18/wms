@@ -3,7 +3,11 @@
     <table>
         <tr class="actions">
 
-            <td colspan="3" style="float:left; font-weight: bold">
+            <td colspan="3" <%if(this.dataInativacao=='EMB. ATIVA'){%>
+                <%='style="float:left; font-weight: bold;color:darkgreen"'%>
+            <%} else {%>
+                <%='style="float:left; font-weight: bold;color:red"'%>
+            <%}%>
                 <div style="float:right">
                     Data de Inativação:
                 </div>
