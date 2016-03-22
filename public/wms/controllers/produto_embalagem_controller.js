@@ -25,23 +25,36 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     }, this.callback('list'));
                 }
             }
-
-            //if (document.getElementById('ativarDesativar').checked == true) {
-            //document.getElementById("dataInativacao").style.display = 'none';
-                $('#dataInativacao').hide();
-                $('#textoDataInativacao').hide();
-                //alert('abcd');
-            //}
         },
 
-        '#ativarDesativar click' : function() {
-            //console.log(this.value);
-            if (document.getElementById('ativarDesativar').checked == true) {
-                $('#dataInativacao').show();
-                $('#textoDataInativacao').show();
+        /**
+         *
+         * @param {jQuery} el A jQuery wrapped element.
+         * @param {Event} ev A jQuery event whose default action is prevented.
+         */
+        "#ativarDesativar click" : function(el,ev) {
+            var check = $(el).parent('div').find('.ativarDesativar');
+            var date = $(el).parent('div').find('.dataInativacao');
+
+            if (check.is(":checked") == true) {
+                if (date.text() == "EMB. ATIVA") {
+                    var today = new Date();
+                    var dd = today.getDate();
+                    var mm = today.getMonth()+1;
+                    var yyyy = today.getFullYear();
+
+                    if(dd<10){
+                        dd='0'+dd
+                    }
+                    if(mm<10){
+                        mm='0'+mm
+                    }
+                    var today = dd+'/'+mm+'/'+yyyy;
+
+                    date.text(today);
+                }
             } else {
-                $('#dataInativacao').hide();
-                $('#textoDataInativacao').hide();
+                date.text("EMB. ATIVA");
             }
         },
 
@@ -109,9 +122,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             valores.lblCBInterno = $('#fieldset-embalagem #embalagem-CBInterno option:selected').text();
             valores.lblImprimirCB = $('#fieldset-embalagem #embalagem-imprimirCB option:selected').text();
             valores.lblEmbalado = $('#fieldset-embalagem #embalagem-embalado option:selected').text();
+            valores.dataInativacao = 'EMB. ATIVA';
 
             if (id != '') {
                 valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
+
                 this.show(new Wms.Models.ProdutoEmbalagem(valores));
             } else {
                 var d = new Date();

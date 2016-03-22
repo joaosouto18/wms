@@ -27,24 +27,39 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 }, this.callback('listNorma'));
             }
         }
-
-        //if (document.getElementById('ativarDesativar').checked == true) {
-        //document.getElementById("dataInativacao").style.display = 'none';
-        $('#dataInativacao').hide();
-        $('#textoDataInativacao').hide();
-        //alert('abcd');
-        //}
     },
 
-    '#ativarDesativar click' : function() {
-        //console.log(this.value);
-        if (document.getElementById('ativarDesativar').checked == true) {
-            $('#dataInativacao').show();
-            $('#textoDataInativacao').show();
+
+    /**
+     *
+     * @param {jQuery} el A jQuery wrapped element.
+     * @param {Event} ev A jQuery event whose default action is prevented.
+     */
+    '#ativarDesativar click' : function(el,ev) {
+        var check = $(el).parent('div').find('.ativarDesativar');
+        var date = $(el).parent('div').find('.dataInativacao');
+
+        if (check.is(":checked") == true) {
+            if (date.text() == "VOL. ATIVO") {
+                var today = new Date();
+                var dd = today.getDate();
+                var mm = today.getMonth()+1;
+                var yyyy = today.getFullYear();
+
+                if(dd<10){
+                    dd='0'+dd
+                }
+                if(mm<10){
+                    mm='0'+mm
+                }
+                var today = dd+'/'+mm+'/'+yyyy;
+
+                date.text(today);
+            }
         } else {
-            $('#dataInativacao').hide();
-            $('#textoDataInativacao').hide();
+            date.text("VOL. ATIVO");
         }
+
     },
     
     /**
@@ -138,7 +153,8 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         valores.lblIsPadrao = $('#fieldset-volume #volume-isPadrao option:selected').text();
         valores.lblCBInterno = $('#fieldset-volume #volume-CBInterno option:selected').text();
         valores.lblImprimirCB = $('#fieldset-volume #volume-imprimirCB option:selected').text();
-           
+        valores.dataInativacao = 'VOL. ATIVO';
+
         if (id != '') {
             valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
             produto_volume = new Wms.Models.ProdutoVolume(valores);

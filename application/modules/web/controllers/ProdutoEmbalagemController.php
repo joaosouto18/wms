@@ -26,13 +26,15 @@ class Web_ProdutoEmbalagemController extends Crud
         $arrayEmbalagens = array();
 
         foreach ($embalagens as $embalagem) {
-            $dataInativacao = new DateTime();
+
+            $dataInativacao = "EMB. ATIVA";
             $checked = '';
             if (!is_null($embalagem->getDataInativacao())) {
                 $dataInativacao = $embalagem->getDataInativacao();
                 $checked = 'checked ';
+                $dataInativacao = $dataInativacao->format('d/m/Y');
             }
-            $dataInativacao = $dataInativacao->format('d/m/Y');
+
             $arrayEmbalagens[] = array(
                 'id' => $embalagem->getId(),
                 'descricao' => $embalagem->getDescricao(),

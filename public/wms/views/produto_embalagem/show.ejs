@@ -2,7 +2,18 @@
 
     <table>
         <tr class="actions">
-            <td colspan="6">
+
+            <td colspan="3" style="float:left; font-weight: bold">
+                <div style="float:right">
+                    Data de Inativação:
+                </div>
+                <div>
+                    <input id="ativarDesativar" value="<%=this.id%>" type="checkbox" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> />
+                    <span style{float:left} id="dataInativacao" class="dataInativacao"><%=this.dataInativacao%></span>
+                </div>
+            </td>
+
+            <td colspan="4">
                 <a href="javascript://" class="btnAction btn-editar-embalagem" title="Clique para Editar">
                     <img src="<%=URL_SISTEMA%>/img/icons/application_edit.png"" /> Editar
                 </a>
@@ -42,15 +53,6 @@
             <td><span class="endereco"><%=this.pontoReposicao%><span></td>
             <td><span class="endereco"><%=this.capacidadePicking%><span></td>
         </tr>
-        <tr style="font-weight: bold">
-            <td>Ativar/Desativar</td>
-            <td colspan="2" id="textoDataInativacao">Data Inativação</td>
-        </tr>
-        <tr>
-            <td><span class="endereco"><input id="ativarDesativar" value="<%=this.id%>" type="checkbox" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> /><span></td>
-            <td colspan="2"><span class="dataInativacao" id="dataInativacao"><%=this.dataInativacao%><span></td>
-        </tr>
-
     </table>
 
     <input type="hidden" name="embalagens[<%=this.id%>][acao]" class="acao" value="<%=this.acao%>"/>

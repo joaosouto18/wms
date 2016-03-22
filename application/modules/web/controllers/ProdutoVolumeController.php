@@ -122,6 +122,15 @@ class Web_ProdutoVolumeController extends Crud
         $arrayVolumes = array();
 
         foreach ($volumes as $volume) {
+
+            $dataInativacao = "VOL. ATIVO";
+            $checked = '';
+            if (!is_null($volume->getDataInativacao())) {
+                $dataInativacao = $volume->getDataInativacao();
+                $checked = 'checked ';
+                $dataInativacao = $dataInativacao->format('d/m/Y');
+            }
+
             $arrayVolumes[] = array(
                 'id' => $volume->getId(),
                 'codigoSequencial' => $volume->getCodigoSequencial(),
@@ -132,6 +141,8 @@ class Web_ProdutoVolumeController extends Crud
                 'peso' => $volume->getPeso(),
                 'descricao' => $volume->getDescricao(),
                 'normaPaletizacao' => $volume->getNormaPaletizacao()->getId(),
+                'ativarDesativar' => $checked,
+                'dataInativacao' => $dataInativacao,
             );
         }
 
