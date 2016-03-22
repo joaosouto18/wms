@@ -525,10 +525,16 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
-            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
+
+            $repositorios = array(
+                'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+                'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+                'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+                'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+                'recebimentoRepo'         => $this->getEntityManager()->getRepository('wms:Recebimento'),
+                'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'));
 
             $paletesSelecionados = $this->_getParam('palete');
 
@@ -593,7 +599,7 @@ class Mobile_EnderecamentoController extends Action
                     $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
                     if ($paleteEn->getDepositoEndereco() == null) {
 
-                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
+                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
 
                         if ($sugestaoEndereco != null) {
                             foreach($sugestaoEndereco as $sugestao) {
