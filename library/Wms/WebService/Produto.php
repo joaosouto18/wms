@@ -119,10 +119,11 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param string $tipo 1 => Unitário, 2 => Composto, 3 => Kit | Hoje não está sendo utilizado
      * @param string $idClasse ID da classe do produto
      * @param embalagem[] $embalagens Embalagens
+     * @param string $referencia Código de Referencia do produto no fornecedor
      * @throws Exception
      * @return boolean Se o produto foi inserido com sucesso ou não
      */
-    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens) {
+    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia) {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
@@ -169,7 +170,8 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setDescricao($descricao)
                 ->setGrade($grade)
                 ->setFabricante($fabricante)
-                ->setClasse($classe);
+                ->setClasse($classe)
+                ->setReferencia($referencia);
 
             if ($produtoNovo == true) {
                 $produto
