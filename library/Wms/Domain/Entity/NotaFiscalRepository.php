@@ -828,12 +828,6 @@ class NotaFiscalRepository extends EntityRepository
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
-            $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
-                ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
-
-//            if ($notaFiscalEntity != null)
-//                throw new \Exception("Nota fiscal $numero / $serie já se encontra cadastrada");
-
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))
                 $placa = $em->getRepository('wms:Sistema\Parametro')->getValor(5, 'PLACA_PADRAO_NOTAFISCAL');

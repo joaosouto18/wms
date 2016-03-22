@@ -694,21 +694,7 @@ class Mobile_EnderecamentoController extends Action
                 $LeituraColetor = new LeituraColetor();
                 $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
 
-                $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-                $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-                $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-                $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
-
-                $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL
-                 FROM DEPOSITO_ENDERECO
-                 WHERE
-                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
-                    || SUBSTR('00' || NUM_PREDIO, -$tamanhoPredio,$tamanhoPredio)
-                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
-                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento, $tamanhoApartamento) as INT)) = " . $codigoBarras;
-
-                $endereco = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
+                $endereco = $this->getEnderecoByParametro($codigoBarras);
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -828,8 +814,9 @@ class Mobile_EnderecamentoController extends Action
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
             }
 
+            $enderecoAntigo = $this->getEnderecoByParametro($enderecoAntigo);
             if ($enderecoAntigo) {
-                $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo, $nivelAntigo);
+                $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo[0]['DSC_DEPOSITO_ENDERECO'], $nivelAntigo);
             }
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
@@ -841,7 +828,8 @@ class Mobile_EnderecamentoController extends Action
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
-                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
@@ -865,9 +853,13 @@ class Mobile_EnderecamentoController extends Action
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoEmbalagem' => $params['embalagem']));
+                    if (!$estoqueEn)
+                        throw new \Exception("Estoque não Encontrado!");
+
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
-                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $validade = $estoqueEn->getValidade();
                     $params['validade'] = null;
                     if (isset($validade) && !is_null($validade)) {
@@ -887,8 +879,12 @@ class Mobile_EnderecamentoController extends Action
                     $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
                     foreach ($volumes as $volume) {
                         $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoVolume' => $volume));
+                        if (!$estoqueEn)
+                            throw new \Exception("Estoque não Encontrado!");
+
                         $params['qtd'] = $qtd;
-                        $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                        $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                        $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
 
@@ -939,6 +935,25 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         return $enderecoRepo->findOneBy(array('rua' => $rua, 'predio' => $predio, 'apartamento' => $apartamento, 'nivel' => $nivel));
+    }
+
+    public function getEnderecoByParametro($dscEndereco)
+    {
+        $tamanhoRua         = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+        $tamanhoPredio      = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+        $tamanhoNivel       = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+
+        $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL, COD_DEPOSITO_ENDERECO
+                 FROM DEPOSITO_ENDERECO
+                 WHERE
+                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
+                    || SUBSTR('00' || NUM_PREDIO,-$tamanhoPredio,$tamanhoPredio)
+                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
+                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento,$tamanhoApartamento) as INT)) = " . $dscEndereco;
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
     }
 
 

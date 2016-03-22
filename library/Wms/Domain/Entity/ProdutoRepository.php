@@ -1395,5 +1395,39 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $enderecoReferencia;
     }
 
+	public function getProdutoByParametroVencimento($params)
+	{
+		$sql = $this->getEntityManager()->createQueryBuilder()
+			->select('prod.id codProduto, prod.grade, prod.descricao AS produto, pes.nome AS fornecedor, de.descricao AS endereco, e.validade, SUM(e.qtd) AS qtd')
+			->from('wms:Recebimento', 'r')
+			->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
+			->innerJoin('wms:NotaFiscal\Item', 'nfi', 'WITH', 'nfi.notaFiscal = nf.id')
+			->innerJoin('wms:Produto', 'prod', 'WITH', 'prod.id = nfi.codProduto AND prod.grade = nfi.grade')
+			->innerJoin('wms:Pessoa\Papel\Fornecedor', 'f', 'WITH', 'f.id = nf.fornecedor')
+			->innerJoin('wms:Pessoa', 'pes', 'WITH', 'pes.id = f.pessoa')
+			->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'p.recebimento = r.id')
+			->innerJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'e.uma = p.id')
+			->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de.id = e.depositoEndereco')
+			->groupBy('prod.id, prod.grade, prod.descricao, pes.nome, de.descricao, e.validade')
+			;
+
+		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
+			$sql->andWhere("prod.id = $params[codProduto]");
+		}
+		if (isset($params['descricao']) && !empty($params['descricao'])) {
+			$sql->andWhere("prod.descricao like $params[descricao]");
+		}
+		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
+			$sql->andWhere("pes.nome like '$params[fornecedor]'");
+		}
+		if (isset($params['dataReferencia']) && !empty($params['dataReferencia'])) {
+			$data = new \Zend_Date($params['dataReferencia']);
+			$data = $data->toString('Y-MM-dd');
+			$sql->andWhere("e.validade <= '$data'");
+		}
+
+		return $sql->getQuery()->getResult();
+
+	}
 
 }

@@ -191,7 +191,6 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55,-35,utf8_decode("Endereço "),0,0);
 
-        $palete['endereco']=  '01.005.02.01';
         $this->SetFont('Arial', 'B', 60);
         $this->Cell(105,-35,$palete['endereco'],0,1);
 

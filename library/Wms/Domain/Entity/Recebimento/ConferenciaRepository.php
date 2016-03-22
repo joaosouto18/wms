@@ -158,7 +158,7 @@ class ConferenciaRepository extends EntityRepository
     public function getProdutoDivergencia($idOrdemServico)
     {
         $sql = $this->getEntityManager()->createQuery('
-                SELECT c.id, p.id idProduto, p.grade, p.descricao dscProduto, c.qtdConferida, c.qtdAvaria, c.qtdDivergencia 
+                SELECT c.id, p.id idProduto, p.grade, p.descricao dscProduto, c.qtdConferida, c.qtdAvaria, c.qtdDivergencia, p.referencia
                 FROM wms:Recebimento\Conferencia c
                 INNER JOIN c.produto p
                 WHERE c.ordemServico = ?1
