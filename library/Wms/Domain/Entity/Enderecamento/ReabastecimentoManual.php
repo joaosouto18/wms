@@ -2,21 +2,19 @@
 
 namespace Wms\Domain\Entity\Enderecamento;
 
-
 /**
  * Palete
  *
- * @Table(name="RELATORIO_PICKING")
- * @Entity(repositoryClass="Wms\Domain\Entity\Enderecamento\RelatorioPickingRepository")
+ * @Table(name="REABASTECIMENTO_MANUAL")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Enderecamento\ReabastecimentoManualRepository")
  */
-class RelatorioPicking
+class ReabastecimentoManual
 {
     /**
-     * U.M.A
-     * @Column(name="COD_RELATORIO_PICKING", type="integer", nullable=false)
+     * @Column(name="COD_REABASTECIMENTO_MANUAL", type="integer", nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_RELATORIO_PICKING_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_REABASTECIMENTO_MANUAL_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
@@ -32,6 +30,14 @@ class RelatorioPicking
     protected $codProduto;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
+     * @JoinColumns({
+     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
+     * })
+     */
+    protected $produto;
+
+    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
      */
@@ -41,6 +47,16 @@ class RelatorioPicking
      * @Column(name="DTH_COLETA", type="datetime", nullable=true)
      */
     protected $dataColeta;
+
+    /**
+     * @Column(name="QTD", type="integer", nullable=false)
+     */
+    protected $qtd;
+
+    public function __construct()
+    {
+        $this->setDataColeta(new \DateTime());
+    }
 
     /**
      * @param mixed $depositoEndereco
@@ -106,4 +122,51 @@ class RelatorioPicking
         $this->os = $os;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getQtd()
+    {
+        return $this->qtd;
+    }
+
+    /**
+     * @param mixed $qtd
+     */
+    public function setQtd($qtd)
+    {
+        $this->qtd = $qtd;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataColeta()
+    {
+        return $this->dataColeta;
+    }
+
+    /**
+     * @param mixed $dataColeta
+     */
+    public function setDataColeta($dataColeta)
+    {
+        $this->dataColeta = $dataColeta;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProduto()
+    {
+        return $this->produto;
+    }
+
+    /**
+     * @param mixed $produto
+     */
+    public function setProduto($produto)
+    {
+        $this->produto = $produto;
+    }
 }

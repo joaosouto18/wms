@@ -26,6 +26,10 @@ class Mobile_ArmazenagemController  extends Action
                 'url' => 'enderecamento/movimentacao',
                 'label' => 'TRANSFERÊNCIA DE ESTOQUE',
             ),
+            6 => array (
+                'url' => 'enderecamento_reabastecimento-manual',
+                'label' => 'REABASTECIMENTO MANUAL',
+            ),
 
         );
         $this->view->menu = $menu;
