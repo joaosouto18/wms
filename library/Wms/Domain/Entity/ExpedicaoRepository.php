@@ -990,6 +990,13 @@ class ExpedicaoRepository extends EntityRepository
             ->select('rp')
             ->from('wms:Expedicao\VRelProdutos', 'rp')
             ->leftJoin('wms:Produto','p','WITH','p.id = rp.codProduto AND p.grade = rp.grade')
+
+            ->leftJoin('wms:Expedicao\Carga', 'c', 'WITH', 'rp.codCarga = c.id')
+            ->leftJoin('wms:Expedicao\Pedido', 'ped', 'WITH', 'c.id = ped.carga')
+            ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'ped.id = nfsp.pedido')
+            ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
+            ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
+
             ->where('rp.codExpedicao in (' . $idExpedicao . ')')
             ->andWhere('rp.centralEntrega = :centralEntrega')
             ->setParameter('centralEntrega', $central);
