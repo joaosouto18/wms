@@ -28,6 +28,42 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             }
         }
     },
+
+
+    /**
+     *
+     * @param {jQuery} el A jQuery wrapped element.
+     * @param {Event} ev A jQuery event whose default action is prevented.
+     */
+    '#ativarDesativar click' : function(el,ev) {
+
+        var check = $(el).parent('div').find('.ativarDesativar');
+        var date = $(el).parent('div').find('.dataInativacao');
+        var div = $(el).parent('div').parent('td');
+
+        if (check.is(":checked") == true) {
+            if (date.text() == "VOL. ATIVO") {
+                var today = new Date();
+                var dd = today.getDate();
+                var mm = today.getMonth()+1;
+                var yyyy = today.getFullYear();
+
+                if(dd<10){
+                    dd='0'+dd
+                }
+                if(mm<10){
+                    mm='0'+mm
+                }
+                var today = dd+'/'+mm+'/'+yyyy;
+
+                date.text(today);
+            }
+            div.css("color","red");
+        } else {
+            date.text("VOL. ATIVO");
+            div.css("color","green");
+        }
+    },
     
     /**
      * Responds to the create form being submitted by creating a new Wms.Models.ProdutoVolume.
@@ -43,6 +79,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         // variaveis
         var idTipoComercializacao = parseInt($('#produto-idTipoComercializacao').val());
         var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
+        var este = this;
         
         //fieldset validation
         if($('#volume-codigoSequencial').val() == "") {
@@ -93,9 +130,21 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             alert('Crie ao menos uma norma de paletização para cadastrar o dado logistico');
             return false;
         }
-        
-        //verifica se ja existe o codigo de barras informado
-        this.verificarCodigoBarras();
+
+        $.ajax({
+            url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                if (data == 'N') {
+                    alert("Não é possível adicionar novo volume com parametro de código de barras desativado");
+                    return false;
+                } else {
+                    //verifica se ja existe o codigo de barras informado
+                    este.verificarCodigoBarras();
+                }
+            }
+        });
         //cancela evento
         ev.preventDefault();
     },
@@ -107,7 +156,8 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         valores.lblIsPadrao = $('#fieldset-volume #volume-isPadrao option:selected').text();
         valores.lblCBInterno = $('#fieldset-volume #volume-CBInterno option:selected').text();
         valores.lblImprimirCB = $('#fieldset-volume #volume-imprimirCB option:selected').text();
-           
+        valores.dataInativacao = 'VOL. ATIVO';
+
         if (id != '') {
             valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
             produto_volume = new Wms.Models.ProdutoVolume(valores);
@@ -282,6 +332,17 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
      * @param {jQuery} el The produto_volume's edit link element.
      */
     '.btn-editar-volume click': function( el , ev ){
+
+        $.ajax({
+            url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                if (data === 'N') {
+                    $('#volume-codigoBarras').attr("disabled", true);
+                }
+            }
+        });
         
         ev.stopPropagation();
         var produto_volume = el.closest('.produto_volume').model();
@@ -324,9 +385,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         //evita a propagação do click para a div
         ev.stopPropagation();
         
-        if(confirm("Tem certeza que deseja excluir esta volume?")){
+        if(confirm("Tem certeza que deseja excluir este volume?")){
             var model = el.closest('.produto_volume').model();
             var id = model.id.toString();
+            var este = this;
             
             //se é um endereço existente (não haja a palavra '-new' no id)
             if (id.indexOf('-new') == -1) {
@@ -339,16 +401,29 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                     type: 'hidden'
                 }).appendTo('.grupoDadosLogisticos'); 
             }
-            
-            //remove a div do endereco
-            model.elements().remove();
-            //limpo form
-            this.resetarForm();
-            //Calcula Peso e Cubagem Total para aba produto
-            Wms.Controllers.Produto.prototype.pesoTotal();
-            Wms.Controllers.Produto.prototype.cubagemTotal();
-            //Calcula o peso para norma de paletizacao
-            this.calcularPesoNormaPaletizacao();
+
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data == 'N') {
+                        alert("Não é possível excluir volume com parametro de código de barras desativado");
+                        return false;
+                    } else {
+                        //remove a div do endereco
+                        model.elements().remove();
+                        //limpo form
+                        este.resetarForm();
+                        //Calcula Peso e Cubagem Total para aba produto
+                        Wms.Controllers.Produto.prototype.pesoTotal();
+                        Wms.Controllers.Produto.prototype.cubagemTotal();
+                        //Calcula o peso para norma de paletizacao
+                        este.calcularPesoNormaPaletizacao();
+
+                    }
+                }
+            });
         }
     },
     /**

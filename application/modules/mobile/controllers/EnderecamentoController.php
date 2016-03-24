@@ -500,10 +500,14 @@ class Mobile_EnderecamentoController extends Action
                   LEFT JOIN PALETE P ON P.UMA = PP.UMA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                   LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = P.COD_UNITIZADOR
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PROD.COD_PRODUTO = PE.COD_PRODUTO AND PROD.DSC_GRADE = PE.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PE.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
                  WHERE P.COD_RECEBIMENTO = $codRecebimento
                    AND P.COD_STATUS = $statusEnderecamento
                    AND P.IND_IMPRESSO = 'N'
-                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL)
+                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL
+                   AND PE.DTH_INATIVACAO IS NULL
+                   AND PV.DTH_INATIVACAO IS NULL)
                 GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -521,10 +525,16 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
-            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
+
+            $repositorios = array(
+                'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+                'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+                'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+                'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+                'recebimentoRepo'         => $this->getEntityManager()->getRepository('wms:Recebimento'),
+                'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'));
 
             $paletesSelecionados = $this->_getParam('palete');
 
@@ -589,7 +599,7 @@ class Mobile_EnderecamentoController extends Action
                     $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
                     if ($paleteEn->getDepositoEndereco() == null) {
 
-                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
+                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
 
                         if ($sugestaoEndereco != null) {
                             foreach($sugestaoEndereco as $sugestao) {
@@ -695,7 +705,7 @@ class Mobile_EnderecamentoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $nivel);
+            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $endereco[0]['NUM_NIVEL'], false);
 
             if ($result == NULL) {
                 throw new \Exception ("Endereço selecionado está vazio");

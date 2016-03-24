@@ -22,8 +22,8 @@ class NotaFiscalSaidaRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
             ->innerJoin('nfsp.pedido', 'p')
             ->innerJoin('p.carga', 'c')
-            ->innerJoin('nfs.pessoa','pes')
-            ->innerJoin('wms:Pessoa\Juridica','pj', 'WITH','pj.id = pes.id');
+            ->leftJoin('nfs.pessoa','pes')
+            ->leftJoin('wms:Pessoa\Juridica','pj', 'WITH','pj.id = pes.id');
 
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
