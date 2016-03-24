@@ -20,7 +20,7 @@ class ReabastecimentoManualRepository extends EntityRepository
             ->from("wms:Enderecamento\ReabastecimentoManual", "rm")
             ->innerJoin('rm.os', 'o')
             ->innerJoin("rm.produto", "p")
-            ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id')
+            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id')
             ->leftJoin("pe.endereco", "e")
             ->where("o.id = $codOs");
 
