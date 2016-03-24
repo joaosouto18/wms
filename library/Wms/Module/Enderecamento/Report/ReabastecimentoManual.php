@@ -40,6 +40,8 @@ class ReabastecimentoManual extends Pdf
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
+        $this->_codOS = $codOs;
+
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
@@ -58,7 +60,10 @@ class ReabastecimentoManual extends Pdf
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
 
-        $dscPicking = $produtos[0]['endereco'];
+        $dscPicking = null;
+        if (isset($produtos[0]['endereco'])) {
+            $dscPicking = $produtos[0]['endereco'];
+        }
         $dscVolume = "";
 
         foreach ($produtos as $produto) {
@@ -135,8 +140,8 @@ class ReabastecimentoManual extends Pdf
                 $this->SetFont('Arial', '', 8);
                 //foreach
                 $this->Cell(10, 5, "" , 0);
-                $this->Cell(90, 5, '32423423' ,0,  0);
-                $this->Cell(90, 5, '32' ,0, 0);
+                $this->Cell(90, 5, $produto['dataColeta']->format('d/m/y h:m:s') ,0,  0);
+                $this->Cell(90, 5, $produto['qtd'] ,0, 0);
 
                 $codProdutoAnterior = $codProduto;
                 $gradeAnterior = $grade;
