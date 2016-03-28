@@ -16,8 +16,10 @@ class ReabastecimentoManual extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(15,  5, utf8_decode("Código")  ,1, 0);
         $this->Cell(20,  5, "Grade"   ,1, 0);
-        $this->Cell(130, 5, "Produto" ,1, 0);
-        $this->Cell(30,  5, "End.Picking" ,1, 1);
+        $this->Cell(85, 5, "Produto" ,1, 0);
+        $this->Cell(25, 5, "DTH Coleta" ,1, 0);
+        $this->Cell(25, 5, "Qtd Solicitada" ,1, 0);
+        $this->Cell(25,  5, "End.Picking" ,1, 1);
     }
 
     public function Footer()
@@ -95,8 +97,10 @@ class ReabastecimentoManual extends Pdf
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
                 $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
-                $this->Cell(130, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
-                $this->Cell(30, 5, utf8_decode($dscPicking) ,1, 1);
+                $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
+                $this->Cell(25, 5, $produto['dataColeta']->format('d/m/y h:m:s') ,1, 0);
+                $this->Cell(25, 5, $produto['qtd'] ,1, 0);
+                $this->Cell(25, 5, utf8_decode($dscPicking) ,1, 1);
 
                 $limite = $limite -1;
 
@@ -131,17 +135,6 @@ class ReabastecimentoManual extends Pdf
                         $limite = $limite - 1;
                     }
                 }
-
-                $this->SetFont('Arial', 'B', 8);
-                $this->Cell(10, 5, "" , 0);
-                $this->Cell(90, 5, "Dth Coleta" ,"TB");
-                $this->Cell(90, 5, "Qtd" ,"TB", 1);
-
-                $this->SetFont('Arial', '', 8);
-                //foreach
-                $this->Cell(10, 5, "" , 0);
-                $this->Cell(90, 5, $produto['dataColeta']->format('d/m/y h:m:s') ,0,  0);
-                $this->Cell(90, 5, $produto['qtd'] ,0, 0);
 
                 $codProdutoAnterior = $codProduto;
                 $gradeAnterior = $grade;
