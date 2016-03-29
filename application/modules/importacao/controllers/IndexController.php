@@ -13,8 +13,47 @@ use Wms\Module\Importacao\Form\Index as IndexForm;
 class Importacao_IndexController extends Action
 {
 
+    public function teste()
+    {
+        //@TODO parametro sistema
+        $dir = 'D:\\';
+        //@TODO consultar tabela IMPORTACAO_ARQUIVO pegar listas de arquivos e caracter
+        $file = 'produtos.csv';
+        $caracterQuebra = ';';
+        $handle = $dir . DIRECTORY_SEPARATOR . $file;
+        $handle = fopen($handle, "r");
+       //@TODO consultar tabela IMPORTACAO_CAMPOS
+         $em = $this->getEntityManager();
+        $camposRepo = $em->getRepository('wms:Importacao\Campos');
+        $camposArquivo = $camposRepo->findBy(array('arquivo' => 1));
+
+        while($linha = fgets($handle)) {
+            //@TODO se o cabecalho for S ignorar cabecalho
+
+            if ($caracterQuebra == "") {
+                $conteudoArquivo = array(0=>$linha);
+            }   else {
+                $conteudoArquivo = explode($caracterQuebra, $linha);
+            }
+            foreach ($camposArquivo as $campo) {
+                $valorCampo = $conteudoArquivo[$campo->getPosicaoTxt()];
+                if ($campo->getTamanhoInicio() != "") {
+                    $valorCampo = substr($valorCampo,$campo->getTamanhoInicio(),$campo->getTamanhoFim());
+                }
+                echo $campo->getNomeCampo() . ' - ' . $valorCampo . " ";
+            }
+
+        }
+        //while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
+
+    }
+
     public function indexAction()
     {
+
+        $this->teste();
+        exit;
+
         $form = new IndexForm();
         $this->view->form = $form;
         $params = $this->_getAllParams();
@@ -32,7 +71,7 @@ class Importacao_IndexController extends Action
                 foreach ($files as $file) {
                     $handle = $dir.'/\/'.$file;
 
-                    //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                    //DEFINIï¿½ï¿½O DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                     switch ($file) {
                         case 'expedicao.csv':
                             $this->importExpedicao($handle, $params, 'csv');
