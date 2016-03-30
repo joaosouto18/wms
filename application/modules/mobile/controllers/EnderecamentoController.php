@@ -144,6 +144,33 @@ class Mobile_EnderecamentoController extends Action
         $this->validarEndereco($paleteEn, $LeituraColetor, $paleteRepo);
     }
 
+
+    public function buscarManualAction()
+    {
+        $produto            = $this->_getParam("produto");
+        $qtd                = $this->_getParam("qtd");
+        $idRecebimento      = $this->_getParam("id");
+
+        if (!isset($qtd)) {
+            $this->createXml('error','Quantidade não informada');
+        }
+        if (!isset($produto)) {
+            $this->createXml('error','Nenhum Produto Informado');
+        }
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
+        $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
+        $paleteEn   = $this->createPalete($qtd, $produto,$idRecebimento);
+        $LeituraColetor = new \Wms\Service\Coletor();
+
+        $this->validarEndereco($paleteEn, $LeituraColetor, $paleteRepo);
+    }
+
+    private function createPalete($qtd, $produto, $idRecebimento)
+    {
+        //return $paleteEn;
+    }
+
     public function validarEndereco($paleteEn, $LeituraColetor, $paleteRepo)
     {
         $endereco   = $LeituraColetor->retiraDigitoIdentificador($this->_getParam("endereco"));
@@ -170,6 +197,8 @@ class Mobile_EnderecamentoController extends Action
             $elementos[] = array('name' => 'uma', 'value' => $paleteEn->getId());
             $this->createXml('info','Escolha um nível',null, $elementos);
         }
+
+        $this->validaEnderecoPicking($enderecoEn->getDescricao(), $paleteEn, $enderecoEn->getIdCaracteristica());
 
         if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
             $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $idEndereco);
@@ -234,7 +263,15 @@ class Mobile_EnderecamentoController extends Action
     {
 
         //Se for picking do produto entao o nivel poderá ser escolhido
-        if ($caracteristicaEnd == '37') {
+        if ($caracteristicaEnd == '37' || $caracteristicaEnd == '39') {
+
+            //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
+            //Se sim, o sistema deverá exibir o endereço e só permitir armazenar no endereço cadastrado e permitir alterar a capacidade do picking (apenas para picking Dinâmico);
+            //Se o produto não possuir endereço de Picking Dinâmico cadastrado, o sistema deverá solicitar a quantidade a ser endereçada e a capacidade do picking.
+
+            //EX: 3030 - Picking: 4342 - 39
+            //EX: 3031 - Picking: 4354 - 37
+            //
 
             $produtosEn = $paleteEn->getProdutos();
             $produto = $produtosEn[0];

@@ -13,11 +13,11 @@ class Recebimento
         $this->em = $em;
     }
 
-    public function listarRecebimentosNaoEnderecados($status = RecebimentoEntity::STATUS_FINALIZADO)
+    public function listarRecebimentosNaoEnderecados($status = RecebimentoEntity::STATUS_FINALIZADO, $limit = 10)
     {
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-        return $recebimentoRepo->naoEnderecadosByStatus($status);
+        return $recebimentoRepo->naoEnderecadosByStatus($status, $limit);
     }
 
 } 

@@ -23,10 +23,14 @@ class Mobile_ArmazenagemController  extends Action
                 'label' => 'ENDEREÇAMENTO AUTOMÁTICO',
             ),
             5 => array (
+                'url' => 'enderecamento_manual' ,
+                'label' => 'ENDEREÇAMENTO MANUAL',
+            ),
+            6 => array (
                 'url' => 'enderecamento/movimentacao',
                 'label' => 'TRANSFERÊNCIA DE ESTOQUE',
             ),
-             6 => array (
+             7 => array (
                 'url' => 'enderecamento/leitura-picking' ,
                 'label' => 'SELECIONAR PICKING',
             ),

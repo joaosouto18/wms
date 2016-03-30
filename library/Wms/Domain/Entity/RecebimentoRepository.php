@@ -1326,10 +1326,13 @@ class RecebimentoRepository extends EntityRepository
 
     public function naoEnderecadosByStatus($status = RecebimentoEntity::STATUS_FINALIZADO, $limit = 10)
     {
+        if ($status != false) {
+            $status = " WHERE r.status = $status ";
+        }
         $query = '
             SELECT r
             FROM wms:Recebimento r
-            WHERE r.status = ' . $status . '
+            '.$status.'
                 AND r.id IN (
                     SELECT r2.id
                     FROM wms:Enderecamento\Palete p
@@ -1348,5 +1351,6 @@ class RecebimentoRepository extends EntityRepository
         $query =  $this->getEntityManager()->createQuery($query)->setMaxResults($limit);
         return $query->getResult();
     }
+
 
 }
