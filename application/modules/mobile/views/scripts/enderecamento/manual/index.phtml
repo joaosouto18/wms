@@ -5,7 +5,7 @@
     <?php elseif(count($this->recebimentos) > 0): ?>
         <?php foreach($this->recebimentos as $recebimento): ?>
             <li>
-                <a href="<?php echo $this->url(array('controller' => 'enderecamento_manual', 'action' => 'ler-codigo-barras', 'id' => $recebimento->getId())); ?>"
+                <a href="<?php echo $this->url(array('controller' => 'enderecamento_manual', 'action' => 'ler-codigo-barras', 'id' => $recebimento->getId(), 'manual' => 1)); ?>"
                    title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?></a>
             </li>
         <?php endforeach; ?>

@@ -160,15 +160,62 @@ class Mobile_EnderecamentoController extends Action
 
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
-        $paleteEn   = $this->createPalete($qtd, $produto,$idRecebimento);
         $LeituraColetor = new \Wms\Service\Coletor();
+        $paleteEn   = $this->createPalete($qtd, $produto,$idRecebimento, $LeituraColetor);
 
         $this->validarEndereco($paleteEn, $LeituraColetor, $paleteRepo);
     }
 
-    private function createPalete($qtd, $produto, $idRecebimento)
+    private function createPalete($qtd, $produto, $idRecebimento, $LeituraColetor)
     {
-        //return $paleteEn;
+        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($produto);
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $info = $produtoRepo->getProdutoByCodBarras($codigoBarrasProduto);
+        $produtoEn      = null;
+        if ($info) {
+            $produtoEn  = $produtoRepo->findOneBy(array('id'=>$info[0]['idProduto'], 'grade' =>'UNICA'));
+        } else {
+            $produtoEn  = $produtoRepo->findOneBy(array('id'=>$produto, 'grade' =>'UNICA'));
+        }
+
+        if (!isset($produtoEn)) {
+            $this->createXml('error','Produto não encontrado');
+        }
+
+        $idProduto = $produtoEn->getId();
+        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, 'UNICA');
+        $idNorma = $result['idNorma'];
+
+        if ($idNorma == null) {
+            $this->createXml('error',"O Produto $produto não possui norma de paletização");
+        }
+        /** @var \Wms\Domain\Entity\Armazenagem\UnitizadorRepository $uniRepo */
+        $uniRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
+        $unitizadorEn  = $uniRepo->find($result['idUnitizador']);
+        $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(Palete::STATUS_RECEBIDO);
+
+        $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto);
+
+        if (count($volumes) == 0) {
+            $this->createXml('error','Produto não possui embalagens cadastradas');
+        }
+
+        $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento")->find($idRecebimento);
+
+        if (!isset($recebimentoEn)) {
+            $this->createXml('error','Recebimento não encontrado');
+        }
+
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+        $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
+
+        $paleteEn = $paleteRepo->salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes, $idNorma, $qtd,null,'M');
+
+        $this->_em->flush();
+        $this->_em->clear();
+
+        return $paleteEn;
     }
 
     public function validarEndereco($paleteEn, $LeituraColetor, $paleteRepo)
@@ -198,7 +245,7 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('info','Escolha um nível',null, $elementos);
         }
 
-        $this->validaEnderecoPicking($enderecoEn->getDescricao(), $paleteEn, $enderecoEn->getIdCaracteristica());
+        $this->validaEnderecoPicking($enderecoEn->getDescricao(), $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
 
         if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
             $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $idEndereco);
@@ -259,7 +306,7 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd)
+    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd, $enderecoEn = null)
     {
 
         //Se for picking do produto entao o nivel poderá ser escolhido
@@ -268,10 +315,6 @@ class Mobile_EnderecamentoController extends Action
             //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
             //Se sim, o sistema deverá exibir o endereço e só permitir armazenar no endereço cadastrado e permitir alterar a capacidade do picking (apenas para picking Dinâmico);
             //Se o produto não possuir endereço de Picking Dinâmico cadastrado, o sistema deverá solicitar a quantidade a ser endereçada e a capacidade do picking.
-
-            //EX: 3030 - Picking: 4342 - 39
-            //EX: 3031 - Picking: 4354 - 37
-            //
 
             $produtosEn = $paleteEn->getProdutos();
             $produto = $produtosEn[0];
@@ -291,6 +334,7 @@ class Mobile_EnderecamentoController extends Action
             } else {
                 $this->createXml('error','O produto não possui endereço de picking');
             }
+
             return true;
         }
         return false;

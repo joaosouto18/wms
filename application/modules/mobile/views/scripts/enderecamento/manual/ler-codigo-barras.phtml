@@ -32,9 +32,10 @@
     {
         produto = document.getElementById('produto');
         endereco   = document.getElementById('endereco');
+        qtd   = document.getElementById('qtd');
 
         if (produto.value !== "" && endereco.value !== "" && qtd.value !== "") {
-            loadResult(produto, endereco);
+            loadResult(produto, endereco, qtd);
         }
 
         if(event.preventDefault) {
@@ -90,6 +91,7 @@
     {
         uma.disabled = true;
         endereco.disabled = true;
+        qtd.disabled = true;
 
         document.getElementById('retorno').innerHTML = 'Pesquisando...';
         load(document.getElementById('formulario').action, 'formulario', function(xhr){
@@ -101,6 +103,8 @@
             uma.focus();
             endereco.disabled = false;
             endereco.value = "";
+            qtd.disabled = false;
+            qtd.value = "";
 
             xmlDoc=xhr.responseXML;
 
