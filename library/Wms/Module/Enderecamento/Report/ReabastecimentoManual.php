@@ -114,7 +114,7 @@ class ReabastecimentoManual extends Pdf
                 $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
                 $this->Cell(25, 5, $produto['qtd'] ,1, 0);
                 $this->Cell(25, 5, $qtdEstoque ,1, 0);
-                $this->Cell(25, 5, utf8_decode($dscPicking) ,1, 1);
+                $this->Cell(25, 5, utf8_decode($produto['endereco']) ,1, 1);
 
                 $limite = $limite -1;
 
