@@ -76,9 +76,6 @@ class ReabastecimentoManual extends Pdf
 
         $config = \Zend_Registry::get('config');
         $viewErp = $config->database->viewErp->habilitado;
-        if ($viewErp) {
-           $conexao = EntityRepository::conexaoViewERP();
-        }
 
         foreach ($produtos as $produto) {
             $codProduto = $produto['codProduto'];
@@ -103,6 +100,7 @@ class ReabastecimentoManual extends Pdf
 
                 $qtdEstoque = null;
                 if ($viewErp) {
+                    $conexao = EntityRepository::conexaoViewERP();
                     $query = "select QTEST from FN_GET_PROD_IMPERIUM where CODPROD = $codProduto";
                     $saldoProduto = EntityRepository::nativeQuery($query, 'all', $conexao);
                     if ($saldoProduto) {
