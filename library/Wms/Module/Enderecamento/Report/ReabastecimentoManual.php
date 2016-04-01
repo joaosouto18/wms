@@ -3,6 +3,7 @@
 namespace Wms\Module\Enderecamento\Report;
 
 use Core\Pdf;
+use Wms\Domain\EntityRepository;
 
 class ReabastecimentoManual extends Pdf
 {
@@ -17,8 +18,8 @@ class ReabastecimentoManual extends Pdf
         $this->Cell(15,  5, utf8_decode("Código")  ,1, 0);
         $this->Cell(20,  5, "Grade"   ,1, 0);
         $this->Cell(85, 5, "Produto" ,1, 0);
-        $this->Cell(25, 5, "DTH Coleta" ,1, 0);
         $this->Cell(25, 5, "Qtd Solicitada" ,1, 0);
+        $this->Cell(25, 5, "Qtd Estoque" ,1, 0);
         $this->Cell(25,  5, "End.Picking" ,1, 1);
     }
 
@@ -73,6 +74,12 @@ class ReabastecimentoManual extends Pdf
             $dscVolume .= $produto['descricao'];
         }
 
+        $config = \Zend_Registry::get('config');
+        $viewErp = $config->database->viewErp->habilitado;
+        if ($viewErp) {
+           $conexao = EntityRepository::conexaoViewERP();
+        }
+
         foreach ($produtos as $produto) {
             $codProduto = $produto['codProduto'];
             $grade = $produto['grade'];
@@ -94,12 +101,21 @@ class ReabastecimentoManual extends Pdf
                     $limite = 49;
                 }
 
+                $qtdEstoque = null;
+                if ($viewErp) {
+                    $query = "select QTEST from FN_GET_PROD_IMPERIUM where CODPROD = $codProduto";
+                    $saldoProduto = EntityRepository::nativeQuery($query, 'all', $conexao);
+                    if ($saldoProduto) {
+                        $qtdEstoque = $saldoProduto[0]['QTEST'];
+                    }
+                }
+
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
                 $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
                 $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
-                $this->Cell(25, 5, $produto['dataColeta']->format('d/m/y h:m:s') ,1, 0);
                 $this->Cell(25, 5, $produto['qtd'] ,1, 0);
+                $this->Cell(25, 5, $qtdEstoque ,1, 0);
                 $this->Cell(25, 5, utf8_decode($dscPicking) ,1, 1);
 
                 $limite = $limite -1;

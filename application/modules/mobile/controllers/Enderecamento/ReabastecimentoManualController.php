@@ -18,49 +18,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             return false;
         }
 
-        $LeituraColetor = new \Wms\Service\Coletor();
-        $codigoBarrasEndereco = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
-
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-        $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarrasEndereco);
+        $coletorService = new \Wms\Service\Coletor;
+        $codigoBarrasEndereco = $coletorService->retiraDigitoIdentificador($codigoBarras);
+        $codigoBarrasProduto = $coletorService->adequaCodigoBarras($codigoBarras);
 
         /** @var \Wms\Domain\Entity\ReabastecimentoManualRepository $reabasteceRepo */
         $reabasteceRepo = $this->em->getRepository("wms:Enderecamento\ReabastecimentoManual");
-
-        if ($idEndereco) {
-            $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $result = $enderecoRepo->getProdutoByEndereco($codigoBarras,false);
-
-            if (count($result) == 0)
-            {
-                $this->addFlashMessage('error', 'Nenhum produto encontrado para este picking');
-                $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
-            }
-
-            $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $idEndereco));
-            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS);
-
-            $codProduto = $result[0]['codProduto'];
-            $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
-
-            $enderecoEn = $enderecoRepo->find($idEndereco);
-            $os = $this->getOs($codOS);
-            $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
-            $contagem->setProduto($produtoEn);
-            $contagem->setCodProduto($codProduto);
-            $contagem->setOs($os['osEntity']);
-            $contagem->setDepositoEndereco($enderecoEn);
-            $contagem->setQtd($qtd);
-            $this->em->persist($contagem);
-            $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
-            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
-        }
-
-        $coletorService = new \Wms\Service\Coletor;
-        $codigoBarrasProduto = $coletorService->adequaCodigoBarras($codigoBarras);
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
@@ -85,6 +48,43 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setQtd($qtd);
             $os = $this->getOs($codOS);
             $contagem->setOs($os['osEntity']);
+            $this->em->persist($contagem);
+            $this->em->flush();
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
+            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
+        }
+
+        if (strlen($codigoBarras) > 5) {
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+            $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarrasEndereco);
+        }
+
+        if ($idEndereco) {
+            $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $result = $enderecoRepo->getProdutoByEndereco($codigoBarras,false);
+
+            if (count($result) == 0)
+            {
+                $this->addFlashMessage('error', 'Nenhum produto encontrado');
+                $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
+            }
+
+            $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $idEndereco));
+            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS);
+
+            $codProduto = $result[0]['codProduto'];
+            $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
+
+            $enderecoEn = $enderecoRepo->find($idEndereco);
+            $os = $this->getOs($codOS);
+            $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
+            $contagem->setProduto($produtoEn);
+            $contagem->setCodProduto($codProduto);
+            $contagem->setOs($os['osEntity']);
+            $contagem->setDepositoEndereco($enderecoEn);
+            $contagem->setQtd($qtd);
             $this->em->persist($contagem);
             $this->em->flush();
             $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
