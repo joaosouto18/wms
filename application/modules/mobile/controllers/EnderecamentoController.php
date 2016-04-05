@@ -150,20 +150,30 @@ class Mobile_EnderecamentoController extends Action
         $produto            = $this->_getParam("produto");
         $qtd                = $this->_getParam("qtd");
         $idRecebimento      = $this->_getParam("id");
+        try {
 
-        if (!isset($qtd)) {
-            $this->createXml('error','Quantidade não informada');
+            if (!isset($qtd)) {
+                throw  new \Exception("Quantidade não informada");
+            }
+            if (!isset($produto)) {
+                throw  new \Exception('Nenhum Produto Informado');
+            }
+
+            $this->_em->beginTransaction();
+
+            /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
+            $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
+            $LeituraColetor = new \Wms\Service\Coletor();
+            $paleteEn   = $this->createPalete($qtd, $produto,$idRecebimento, $LeituraColetor);
+            $this->validarEndereco($paleteEn, $LeituraColetor, $paleteRepo);
+
+            $this->_em->commit();
+        } catch(Exception $e) {
+            $this->_em->rollback();
+            $this->createXml('error',$e->getMessage());
+
         }
-        if (!isset($produto)) {
-            $this->createXml('error','Nenhum Produto Informado');
-        }
 
-        /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
-        $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
-        $LeituraColetor = new \Wms\Service\Coletor();
-        $paleteEn   = $this->createPalete($qtd, $produto,$idRecebimento, $LeituraColetor);
-
-        $this->validarEndereco($paleteEn, $LeituraColetor, $paleteRepo);
     }
 
     private function createPalete($qtd, $produto, $idRecebimento, $LeituraColetor)
@@ -180,7 +190,7 @@ class Mobile_EnderecamentoController extends Action
         }
 
         if (!isset($produtoEn)) {
-            $this->createXml('error','Produto não encontrado');
+            throw new \Exception('Produto não encontrado');
         }
 
         $idProduto = $produtoEn->getId();
@@ -188,7 +198,7 @@ class Mobile_EnderecamentoController extends Action
         $idNorma = $result['idNorma'];
 
         if ($idNorma == null) {
-            $this->createXml('error',"O Produto $produto não possui norma de paletização");
+            throw  new \Exception("O Produto $produto não possui norma de paletização");
         }
         /** @var \Wms\Domain\Entity\Armazenagem\UnitizadorRepository $uniRepo */
         $uniRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
@@ -198,13 +208,13 @@ class Mobile_EnderecamentoController extends Action
         $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto);
 
         if (count($volumes) == 0) {
-            $this->createXml('error','Produto não possui embalagens cadastradas');
+            throw new \Exception('Produto não possui embalagens cadastradas');
         }
 
         $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento")->find($idRecebimento);
 
         if (!isset($recebimentoEn)) {
-            $this->createXml('error','Recebimento não encontrado');
+            throw new \Exception('Recebimento não encontrado');
         }
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
@@ -212,8 +222,11 @@ class Mobile_EnderecamentoController extends Action
 
         $paleteEn = $paleteRepo->salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes, $idNorma, $qtd,null,'M');
 
+        $idPalete = $paleteEn->getId();
         $this->_em->flush();
         $this->_em->clear();
+
+        $paleteEn = $paleteRepo->find($idPalete);
 
         return $paleteEn;
     }
@@ -223,13 +236,13 @@ class Mobile_EnderecamentoController extends Action
         $endereco   = $LeituraColetor->retiraDigitoIdentificador($this->_getParam("endereco"));
 
         if (!isset($endereco)) {
-            $this->createXml('error','Nenhum Endereço Informado');
+            throw new \Exception('Nenhum Endereço Informado');
         }
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
         $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($endereco);
         if (empty($idEndereco)) {
-            $this->createXml('error','Endereço não encontrado');
+            throw new \Exception('Endereço não encontrado');
         }
         $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
         /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
