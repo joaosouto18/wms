@@ -195,7 +195,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
                     foreach ($embalagens as $embalagemWs) {
-                        if ($embalagemWs->codBarras == $embalagemCadastrada->getCodigoBarras()) {
+                        if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
 
@@ -207,12 +207,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                         }
                     }
 
-                    $ativarInativar = null;
-                    if ($encontrouEmbalagem == false) {
-                        if ($embalagemCadastrada->getDataInativacao() == null){
-                            $ativarInativar = true;
-                        }
-                    }
 
                     $endPicking = null;
                     if ($embalagemCadastrada->getEndereco() != null ) {
@@ -227,9 +221,15 @@ class Wms_WebService_Produto extends Wms_WebService {
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                        'ativarDesativar' => $ativarInativar,
                         'descricao' => $descricaoEmbalagem
                     );
+
+                    if ($encontrouEmbalagem == false) {
+                        if ($embalagemCadastrada->getDataInativacao() == null){
+                            $embalagemArray['ativarDesativar'] = true;
+                        }
+                    }
+
                     $embalagensArray[] = $embalagemArray;
 
                 }
@@ -239,7 +239,7 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                     $encontrouEmbalagem = false;
                     foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
-                        if ($embalagemWs->codBarras == $embalagemCadastrada->getCodigoBarras()) {
+                        if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
                             continue;
                         }
