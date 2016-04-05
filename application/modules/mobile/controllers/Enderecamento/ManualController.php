@@ -12,9 +12,18 @@ class Mobile_Enderecamento_ManualController extends Action
 
     public function lerCodigoBarrasAction()
     {
-        $layout = \Zend_Layout::getMvcInstance();
-        $layout->setLayout('leitura');
+        $params = $this->_getAllParams();
+
+        if (isset($params['produto']) && )
+
     }
 
+    public function validarEnderecoAction() {
+
+    }
+
+    public function confirmarOperacaoAction(){
+
+    }
 }
 

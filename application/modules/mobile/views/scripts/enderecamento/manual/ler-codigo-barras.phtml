@@ -27,145 +27,13 @@
         }
         return true;
     }
-
-    function formSubmit(event)
-    {
-        produto = document.getElementById('produto');
-        endereco   = document.getElementById('endereco');
-        qtd   = document.getElementById('qtd');
-
-        if (produto.value !== "" && endereco.value !== "" && qtd.value !== "") {
-            loadResult(produto, endereco, qtd);
-        }
-
-        if(event.preventDefault) {
-            event.preventDefault();
-        } else {
-            event.returnValue = false;
-        }
-
-    }
-
-    function formSubmitNivel(event)
-    {
-        nivel = document.getElementById('nivel');
-        if (nivel.value !== "") {
-            loadResultNivel(nivel);
-        }
-
-        if(event.preventDefault) {
-            event.preventDefault();
-        } else {
-            event.returnValue = false;
-        }
-    }
-
-    function loadResultNivel(nivel)
-    {
-        nivel.disabled = true;
-        document.getElementById('retorno').innerHTML = 'Pesquisando...';
-        load(document.getElementById('formulario-nivel').action, 'formulario-nivel', function(xhr){
-            document.getElementById('retorno').innerHTML = '';
-            nivel.disabled = false;
-            nivel.value = "";
-            nivel.focus();
-
-            xmlDoc=xhr.responseXML;
-
-            x=xmlDoc.getElementsByTagName("retorno");
-            i=0;
-
-            exibeMensagem(x,i);
-
-            if (x[i].getElementsByTagName("resposta").length > 0) {
-                status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
-                if (status == 'success' || status == 'error') {
-                    voltarUma();
-                }
-            }
-
-        });
-    }
-
-    function loadResult(uma, endereco)
-    {
-        uma.disabled = true;
-        endereco.disabled = true;
-        qtd.disabled = true;
-
-        document.getElementById('retorno').innerHTML = 'Pesquisando...';
-        load(document.getElementById('formulario').action, 'formulario', function(xhr){
-
-            document.getElementById('retorno').innerHTML = '';
-
-            uma.disabled = false;
-            uma.value = "";
-            uma.focus();
-            endereco.disabled = false;
-            endereco.value = "";
-            qtd.disabled = false;
-            qtd.value = "";
-
-            xmlDoc=xhr.responseXML;
-
-            x=xmlDoc.getElementsByTagName("retorno");
-            i=0;
-
-            exibeMensagem(x,i);
-
-            if (x[i].getElementsByTagName("nivelzero").length > 0) {
-                hiddenElement("formulario");
-                showElement("formulario-nivel");
-                document.getElementById('nivel').focus();
-                document.getElementById('uma-nivel').value = x[i].getElementsByTagName("uma")[0].childNodes[0].nodeValue;
-                document.getElementById('rua-nivel').value = x[i].getElementsByTagName("rua")[0].childNodes[0].nodeValue;
-                document.getElementById('predio-nivel').value = x[i].getElementsByTagName("predio")[0].childNodes[0].nodeValue;
-                document.getElementById('apartamento-nivel').value = x[i].getElementsByTagName("apartamento")[0].childNodes[0].nodeValue;
-            }
-
-        });
-    }
-
-    function exibeMensagem(x,i)
-    {
-        if (x[i].getElementsByTagName("message").length > 0) {
-            message=(x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
-            document.getElementById("retorno").innerHTML=message;
-        }
-
-        if (x[i].getElementsByTagName("resposta").length > 0) {
-            status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
-            if (status == 'error') {
-                playSound('/alarme.mp3');
-            }
-        }
-
-        if (x[i].getElementsByTagName("redirect").length > 0) {
-            uma.disabled = true;
-            redirect=(x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
-            setTimeout("location.href = redirect;",0);
-        }
-
-    }
-
-    function voltarUma()
-    {
-        hiddenElement("formulario-nivel");
-        showElement("formulario");
-        document.getElementById('uma').focus();
-    }
-
 </script>
-
-<?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
-
-<div id='retorno'></div>
-<span id="dummy"></span>
 
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'buscar-manual')) ?>" onSubmit="formSubmit(event)" method="post">
         <dt id="identification-label">&nbsp;</dt>
         <dd id="identification-element">
-            <fieldset id="fieldset-identification"><legend>Endereçamento Manual</legend>
+            <fieldset id="fieldset-identification">
+                <legend>Endereçamento Manual</legend>
                 <div class="field">
                     <label>Produto:</label>
                     <input style="width: 99%" maxlength="100" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(event)" />
@@ -182,19 +50,3 @@
             </fieldset>
         </dd>
 </form>
-
-<form id="formulario-nivel" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'valida-nivel')) ?>" onSubmit="formSubmitNivel(event)" method="post">
-
-    <div>
-        <label>NÍVEL:</label>
-        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel">
-        <input type="hidden" value="" id="uma-nivel" name="uma">
-        <input type="hidden" value="" id="rua-nivel" name="rua">
-        <input type="hidden" value="" id="predio-nivel" name="predio">
-        <input type="hidden" value="" id="apartamento-nivel" name="apartamento">
-    </div>
-
-    <input type="submit" name="submit" id="submit" value="Buscar" />
-    <input type="button" name="voltar" id="voltar" value="Voltar" onclick="voltarUma()" />
-</form>
-
