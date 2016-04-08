@@ -1,0 +1,52 @@
+﻿<script>
+
+    function nextInput(event, id) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('produto').value != "") {
+                endereco   = document.getElementById('endereco');
+                if (endereco) {
+                    endereco.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('endereco').value != "") {
+                qtd   = document.getElementById('qtd');
+                if (qtd) {
+                    qtd.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+
+<form id="formulario">
+        <dt id="identification-label">&nbsp;</dt>
+        <dd id="identification-element">
+            <fieldset id="fieldset-identification">
+                <legend>Endereçamento Manual</legend>
+                <div class="field">
+                    <label>Produto:</label>
+                    <input style="width: 99%" maxlength="100" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(event)" />
+                </div>
+                <div class="field">
+                    <label>Endereço:</label>
+                    <input style="width: 99%" maxlength="100" size="40" type="text" name="endereco" id="endereco" value="" onkeydown="nextInput(event)"/>
+                </div>
+                <div class="field">
+                    <label>Qtd:</label>
+                    <input style="width: 99%" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
+                </div>
+                <input class="btn" type="submit" name="submit" id="submit" value="Buscar" />
+            </fieldset>
+        </dd>
+</form>

@@ -1003,6 +1003,27 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $grades;
     }
 
+    public function getProdutoByCodBarrasOrCodProduto($codigo) {
+        $LeituraColetor = new \Wms\Service\Coletor();
+
+        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+
+        $info = $this->getProdutoByCodBarras($codigoBarrasProduto);
+        $produtoEn      = null;
+        if ($info) {
+            $produtoEn  = $this->findOneBy(array('id'=>$info[0]['idProduto'], 'grade' =>$info[0]['grade']));
+        } else {
+            $produtoEn  = $this->findOneBy(array('id'=>$codigo, 'grade' =>'UNICA'));
+        }
+
+        if (!isset($produtoEn)) {
+            throw new \Exception('Produto não encontrado');
+        }
+
+        return $produtoEn;
+
+    }
+
     public function getEnderecoPicking($produtoEntity,$tipoRetorno = "DSC")
     {
         $enderecoPicking = null;
@@ -1036,6 +1057,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $enderecoPicking;
     }
 
+    public function getEmbalagensOrVolumesByProduto($codProduto, $grade = "UNICA")
+    {
+        $sql = "SELECT PV.COD_PRODUTO_VOLUME,
+                   PE.COD_PRODUTO_EMBALAGEM
+              FROM PRODUTO P
+              LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+              LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE AND PE.IND_PADRAO = 'S'
+            WHERE P.COD_PRODUTO = '$codProduto'
+            AND P.DSC_GRADE = '$grade'
+            ";
+
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado;
+    }
+
     public function getNormaPaletizacaoPadrao($codProduto, $grade) {
 
         $produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
@@ -1067,6 +1103,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     $lastro = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumLastro();
                     $camadas = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumCamadas();
                     $unitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getDescricao();
+                    $IdUnitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getId();
                     break;
                 }
             }
@@ -1080,6 +1117,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $lastro = $volume->getNormaPaletizacao()->getNumLastro();
                 $camadas = $volume->getNormaPaletizacao()->getNumCamadas();
                 $unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
+                $IdUnitizador = $volume->getNormaPaletizacao()->getUnitizador()->getId();
                 $idNorma = $norma;
                 break;
             }
@@ -1087,6 +1125,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $result['idNorma'] = $idNorma;
         $result['unidade'] = $unidadePadrao;
+        $result['idUnitizador'] = $IdUnitizador;
         $result['unitizador'] = $unitizador;
         $result['qtdNorma'] = $qtdNorma;
         $result['lastro'] = $lastro;
