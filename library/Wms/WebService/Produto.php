@@ -225,9 +225,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                     );
 
                     if ($encontrouEmbalagem == false) {
-                        if ($embalagemCadastrada->getDataInativacao() == null){
-                            $embalagemArray['ativarDesativar'] = true;
-                        }
+                        $embalagemArray['ativarDesativar'] = true;
                     }
 
                     $embalagensArray[] = $embalagemArray;
