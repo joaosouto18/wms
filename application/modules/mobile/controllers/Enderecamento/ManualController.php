@@ -153,8 +153,61 @@ class Mobile_Enderecamento_ManualController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $ederecoRepo */
+            $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo    = $this->em->getRepository('wms:Produto');
 
-            $paleteEn = $this->createPalete($qtd,$produto,$idRecebimento);
+            /** @var \Wms\Domain\Entity\Produto $produtoEn */
+            $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($produto);
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+            $enderecoEn = $enderecoRepo->find($idEndereco);
+            
+            $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+            $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+            $novaCapacidadePicking = 0;
+
+            //VALIDA SE FOI BIPADO UM ENDEREÇO DE PICKING OU PICKING ROTATIVO
+            if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+                $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'id');
+                $idPicking = null;
+                //APENAS SE O PRODUTO NÃO TIVER PICKING DEFINIDO
+                if ($pickings == null) {
+                    switch ($enderecoEn->getIdCaracteristica()) {
+                        case $idCaracteristicaPicking:
+                                throw new \Exception("Foi selecionado um endereço de picking para um produto sem picking definido");
+                            break;
+                        case $idCaracteristicaPickingRotativo: //REGRA DO PICKING ROTATIVO
+                            $idPicking = $enderecoEn->getId();
+                            $embalagens = $produtoEn->getEmbalagens();
+                            $volumes = $produtoEn->getVolumes();
+
+                            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+                            foreach ($embalagens as $emblagemEn) {
+                                $embalagemEn->setCapacidadePicking($novaCapacidadePicking);
+                                $embalagemEn->setEndereco($enderecoEn);
+                                $this->getEntityManager()->persist($embalagemEn);
+                            }
+
+                            /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
+                            foreach ($volumes as $volumeEn) {
+                                $volumeEn->setCapacidadePicking($novaCapacidadePicking);
+                                $volumeEn->setEndereco($enderecoEn);
+                                $this->getEntityManager()->persist($volumeEn);
+                            }
+                            break;
+                    }
+                } else{
+                    $idPicking = $pickings[0];
+                }
+
+                if ($idPicking != $enderecoEn->getId()) {
+                    throw new \Exception("Foi selecionado um endereço de picking diferente do endereço de picking definido para o produto");
+                }
+
+            }
+            
+            $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa);
 
@@ -169,38 +222,25 @@ class Mobile_Enderecamento_ManualController extends Action
         }
     }
 
-    private function createPalete($qtd, $produto, $idRecebimento)
+    private function createPalete($qtd, $produtoEn, $idRecebimento)
     {
-        $LeituraColetor = new \Wms\Service\Coletor();
-
-        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($produto);
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-        $info = $produtoRepo->getProdutoByCodBarras($codigoBarrasProduto);
-        $produtoEn      = null;
-        if ($info) {
-            $produtoEn  = $produtoRepo->findOneBy(array('id'=>$info[0]['idProduto'], 'grade' =>'UNICA'));
-        } else {
-            $produtoEn  = $produtoRepo->findOneBy(array('id'=>$produto, 'grade' =>'UNICA'));
-        }
-
-        if (!isset($produtoEn)) {
-            throw new \Exception('Produto não encontrado');
-        }
+        $produtoRepo    = $this->em->getRepository('wms:Produto');
 
         $idProduto = $produtoEn->getId();
+        $grade = $produtoEn->getGrade();
         $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, 'UNICA');
         $idNorma = $result['idNorma'];
 
         if ($idNorma == null) {
-            throw  new \Exception("O Produto $produto não possui norma de paletização");
+            throw  new \Exception("O Produto ". $produtoEn->getDescricao() . " não possui norma de paletização");
         }
         /** @var \Wms\Domain\Entity\Armazenagem\UnitizadorRepository $uniRepo */
         $uniRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
         $unitizadorEn  = $uniRepo->find($result['idUnitizador']);
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO);
 
-        $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto);
+        $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
 
         if (count($volumes) == 0) {
             throw new \Exception('Produto não possui embalagens cadastradas');

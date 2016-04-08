@@ -1003,6 +1003,27 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $grades;
     }
 
+    public function getProdutoByCodBarrasOrCodProduto($codigo) {
+        $LeituraColetor = new \Wms\Service\Coletor();
+
+        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+
+        $info = $this->getProdutoByCodBarras($codigoBarrasProduto);
+        $produtoEn      = null;
+        if ($info) {
+            $produtoEn  = $this->findOneBy(array('id'=>$info[0]['idProduto'], 'grade' =>$info[0]['grade']));
+        } else {
+            $produtoEn  = $this->findOneBy(array('id'=>$codigo, 'grade' =>'UNICA'));
+        }
+
+        if (!isset($produtoEn)) {
+            throw new \Exception('Produto não encontrado');
+        }
+
+        return $produtoEn;
+
+    }
+
     public function getEnderecoPicking($produtoEntity,$tipoRetorno = "DSC")
     {
         $enderecoPicking = null;
