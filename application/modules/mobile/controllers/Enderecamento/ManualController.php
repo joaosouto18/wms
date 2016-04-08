@@ -183,7 +183,7 @@ class Mobile_Enderecamento_ManualController extends Action
                             $volumes = $produtoEn->getVolumes();
 
                             /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
-                            foreach ($embalagens as $emblagemEn) {
+                            foreach ($embalagens as $embalagemEn) {
                                 $embalagemEn->setCapacidadePicking($novaCapacidadePicking);
                                 $embalagemEn->setEndereco($enderecoEn);
                                 $this->getEntityManager()->persist($embalagemEn);
