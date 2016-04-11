@@ -1764,6 +1764,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($central != null) {
             $SQL = $SQL . " AND P.PONTO_TRANSBORDO = $central";
         }
+        $SQL .= " GROUP BY ES.COD_ETIQUETA_SEPARACAO,
+                   PROD.COD_PRODUTO,
+                   PROD.DSC_PRODUTO,
+                   PE.DSC_EMBALAGEM, PV.DSC_VOLUME,
+                   PES.NOM_PESSOA,
+                   P.COD_PEDIDO,
+                   C.COD_CARGA_EXTERNO,
+                   CA.COD_CARGA_EXTERNO";
 
         $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);

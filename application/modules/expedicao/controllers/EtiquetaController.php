@@ -87,7 +87,7 @@ class Expedicao_EtiquetaController  extends Action
         }
 
         if (($linkMapa != "") && ($linkEtiqueta != "")) {
-            $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta .$linkReentrega ;
+            $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta . $linkReentrega ;
         } else {
             $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
         }
@@ -107,7 +107,7 @@ class Expedicao_EtiquetaController  extends Action
     }
 
 
-        public function gerarPdfAjaxAction(){
+    public function gerarPdfAjaxAction(){
         $central        = $this->getRequest()->getParam('central');
         $idExpedicao    = $this->getRequest()->getParam('id');
         $tipo    = $this->getRequest()->getParam('tipo');
