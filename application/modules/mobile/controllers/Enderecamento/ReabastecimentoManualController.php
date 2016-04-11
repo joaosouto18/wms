@@ -55,7 +55,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setQtd($qtd);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:'.$os['codOs']);
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
         }
 
@@ -87,7 +87,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setOs($os['osEntity']);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:'.$os['codOs']);
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
         }
 
@@ -123,7 +123,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $reabastEnt->setQtd($qtd + $reabastEnt->getQtd());
             $this->em->persist($reabastEnt);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:'.$codOS);
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
     }

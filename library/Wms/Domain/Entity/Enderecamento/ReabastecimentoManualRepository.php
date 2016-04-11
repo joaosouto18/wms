@@ -15,13 +15,14 @@ class ReabastecimentoManualRepository extends EntityRepository
 
         $em = $this->getEntityManager();
         $dql = $em->createQueryBuilder()
-            ->select("p.id as codProduto, p.grade, p.descricao as produto, 0 as codVolume, 'PRODUTO UNITARIO' as descricao, e.descricao as endereco, rm.dataColeta, rm.qtd")
+            ->select("p.id as codProduto, p.grade, p.referencia, p.descricao as produto, 0 as codVolume, 'PRODUTO UNITARIO' as descricao, e.descricao as endereco, rm.dataColeta, rm.qtd")
             ->distinct(true)
             ->from("wms:Enderecamento\ReabastecimentoManual", "rm")
             ->innerJoin('rm.os', 'o')
             ->innerJoin("rm.produto", "p")
             ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id')
             ->leftJoin("pe.endereco", "e")
+            ->orderBy('e.descricao')
             ->where("o.id = $codOs");
 
         return  $dql->getQuery()->getArrayResult();

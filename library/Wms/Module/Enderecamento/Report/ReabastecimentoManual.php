@@ -8,15 +8,26 @@ use Wms\Domain\EntityRepository;
 class ReabastecimentoManual extends Pdf
 {
 
+    protected $usuario;
+    protected $codOs;
+
     public function Header()
     {
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
-        $this->Cell(20, 20, utf8_decode("RELATÓRIO DE REABASTECIMENTO" ), 0, 1);
+        $this->Cell(20, 20, utf8_decode("RELATÓRIO DE REABASTECIMENTO - ".$this->codOs ), 0, 1);
+
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $utilizaGrade = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
 
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(15,  5, utf8_decode("Código")  ,1, 0);
-        $this->Cell(20,  5, "Grade"   ,1, 0);
+        if ($utilizaGrade == 'S') {
+            $this->Cell(20,  5, "Grade"   ,1, 0);
+        } else {
+            $this->Cell(20,  5, "Ref"   ,1, 0);
+        }
         $this->Cell(85, 5, "Produto" ,1, 0);
         $this->Cell(25, 5, "Qtd Solicitada" ,1, 0);
         $this->Cell(25, 5, "Qtd Estoque" ,1, 0);
@@ -31,7 +42,7 @@ class ReabastecimentoManual extends Pdf
         //Go to 1.5 cm from bottom
         $this->SetY(-20);
 
-        $this->Cell(270, 10, utf8_decode("Relatório gerado em ".date('d/m/Y')." às ".date('H:i:s')), 0, 0, "L");
+        $this->Cell(270, 10, utf8_decode("Relatório gerado em ".date('d/m/Y')." às ".date('H:i:s'). ' - '.$this->usuario), 0, 0, "L");
         // font
         $this->SetFont('Arial','',8);
         $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
@@ -54,7 +65,14 @@ class ReabastecimentoManual extends Pdf
 
         /** @var \Wms\Domain\Entity\Enderecamento\ReabastecimentoManualRepository $reabasteRepo */
         $reabasteRepo = $em->getRepository("wms:Enderecamento\ReabastecimentoManual");
+        $reabasteEn  = $reabasteRepo->findOneBy(array('os' => $codOs));
+        $this->usuario = $reabasteEn->getOs()->getPessoa()->getNome();
+
         $produtos = $reabasteRepo->getProdutos($codOs);
+
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $utilizaGrade = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
 
         $limite = 49;
         $codProdutoAnterior = null;
@@ -78,8 +96,10 @@ class ReabastecimentoManual extends Pdf
         $viewErp = $config->database->viewErp->habilitado;
 
         foreach ($produtos as $produto) {
+            $this->codOs = $codOs;
             $codProduto = $produto['codProduto'];
             $grade = $produto['grade'];
+            $referencia = $produto['referencia'];
 
             if ($codProduto != $codProdutoAnterior || $grade != $gradeAnterior) {
                 $dscProduto = $produto['produto'];
@@ -110,8 +130,12 @@ class ReabastecimentoManual extends Pdf
 
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
-                $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
-                $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
+                if ($utilizaGrade == 'S') {
+                    $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
+                } else {
+                    $this->Cell(20, 5, utf8_decode($referencia)      ,1, 0);
+                }
+                $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,47)) ,1, 0);
                 $this->Cell(25, 5, $produto['qtd'] ,1, 0);
                 $this->Cell(25, 5, $qtdEstoque ,1, 0);
                 $this->Cell(25, 5, utf8_decode($produto['endereco']) ,1, 1);
@@ -152,7 +176,6 @@ class ReabastecimentoManual extends Pdf
 
                 $codProdutoAnterior = $codProduto;
                 $gradeAnterior = $grade;
-                $this->Ln();
                 $limite = $limite -1;
             } else {
                 $codProdutoAnterior = $codProduto;
@@ -160,9 +183,6 @@ class ReabastecimentoManual extends Pdf
             }
         }
 
-            $this->Ln();
-            $limite = $limite -1;
-
-        $this->Output('Reabastecimento.pdf','D');
+        $this->Output('Reabastecimento-'.$codOs.'.pdf','D');
     }
 }
