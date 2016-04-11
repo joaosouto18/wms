@@ -61,6 +61,7 @@ class ReabastecimentoManual extends Pdf
 
         $this->SetMargins(7, 0, 0);
         $this->SetFont('Arial', 'B', 8);
+        $this->codOs = $codOs;
         $this->AddPage();
 
         /** @var \Wms\Domain\Entity\Enderecamento\ReabastecimentoManualRepository $reabasteRepo */
@@ -96,7 +97,7 @@ class ReabastecimentoManual extends Pdf
         $viewErp = $config->database->viewErp->habilitado;
 
         foreach ($produtos as $produto) {
-            $this->codOs = $codOs;
+
             $codProduto = $produto['codProduto'];
             $grade = $produto['grade'];
             $referencia = $produto['referencia'];
