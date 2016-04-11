@@ -74,7 +74,7 @@ class ReabastecimentoManual extends Pdf
         $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
         $utilizaGrade = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
 
-        $limite = 49;
+        $limite = 73;
         $codProdutoAnterior = null;
         $gradeAnterior = null;
 
@@ -115,7 +115,7 @@ class ReabastecimentoManual extends Pdf
                 if ((($limite - $c) - 2 ) <= 0 )
                 {
                     $this->AddPage();
-                    $limite = 49;
+                    $limite = 73;
                 }
 
                 $qtdEstoque = null;
