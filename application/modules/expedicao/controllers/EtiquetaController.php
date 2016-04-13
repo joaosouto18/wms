@@ -113,6 +113,7 @@ class Expedicao_EtiquetaController  extends Action
         $tipo    = $this->getRequest()->getParam('tipo');
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
+        $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
@@ -128,7 +129,6 @@ class Expedicao_EtiquetaController  extends Action
 
         }
         if ($tipo == "etiqueta") {
-            $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
 
@@ -149,11 +149,12 @@ class Expedicao_EtiquetaController  extends Action
             }
         }
         if ($tipo == "reentrega") {
-            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
-                if ($this->getRequest()->getParam('todas') == 'S') $status = null;
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-            $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+            if ($modelo == '1') {
+                $Etiqueta = new Etiqueta();
+            } else {
+                $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+            }
+            $Etiqueta->imprimir(array('idExpedicao' =>$idExpedicao, 'central' => $central),$modelo);
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
@@ -165,8 +166,6 @@ class Expedicao_EtiquetaController  extends Action
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
             }
-
-            $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','L');
         }
     }
 
