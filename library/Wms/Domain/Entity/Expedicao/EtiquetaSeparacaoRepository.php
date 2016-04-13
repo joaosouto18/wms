@@ -281,8 +281,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         return $result;
     }
-
-    public function getEtiquetasByExpedicao($idExpedicao, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null)
+    
+    public function getEtiquetasByExpedicao($idExpedicao = null, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null, $idEtiquetas = null)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
@@ -295,16 +295,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->leftjoin('etq.codDepositoEndereco', 'de')
-            ->where('es.codExpedicao = :idExpedicao')
-            ->distinct(true)
-            ->setParameter('idExpedicao', $idExpedicao);
+            ->distinct(true);
 
-        if ($status) {
+        if ($idExpedicao != null) {
+            $dql->andWhere('es.codExpedicao = :idExpedicao')
+                ->setParameter('idExpedicao', $idExpedicao);
+        }
+        
+        if ($status != null) {
             $dql->andWhere('es.codStatus = :Status')
                 ->setParameter('Status', $status);
         }
+        
+        if ($idEtiquetas != null) {
+            $dql->andWhere('etq.id IN (' . $idEtiquetas .')');
+        }
 
-        if ($pontoTransbordo) {
+        if ($pontoTransbordo != null) {
             $expedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
             $expedicaoEntity = $expedicaoRepo->find($idExpedicao);
 
