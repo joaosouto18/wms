@@ -149,12 +149,15 @@ class Expedicao_EtiquetaController  extends Action
             }
         }
         if ($tipo == "reentrega") {
+            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
+                if ($this->getRequest()->getParam('todas') == 'S') $status = null;
+
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
-            $Etiqueta->imprimir(array('idExpedicao' =>$idExpedicao, 'central' => $central),$modelo);
+            $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
