@@ -126,7 +126,7 @@ class ConferenciaRepository extends EntityRepository
                  WHERE COD_OS = '$idOs'
                    AND PE.COD_PRODUTO = '$codProduto'
                    AND PE.DSC_GRADE = '$grade'
-                 GROUP BY RE.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR";
+                 GROUP BY RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) , NP.COD_UNITIZADOR";
         $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
