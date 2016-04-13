@@ -77,6 +77,10 @@ class EtiquetaSeparacao extends Pdf
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
         $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+
+        if (count($pendencias) <= 0) {
+            throw new \Exception('Não Existe Etiquetas de Reentrega!');
+        }
         $idEtiqueta = array();
         foreach ($pendencias as $pendencia) {
             $idEtiqueta[] = $pendencia['ETIQUETA'];
