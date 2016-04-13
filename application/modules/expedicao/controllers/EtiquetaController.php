@@ -157,7 +157,6 @@ class Expedicao_EtiquetaController  extends Action
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
-            $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
@@ -169,6 +168,9 @@ class Expedicao_EtiquetaController  extends Action
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
             }
+
+            $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
+
         }
     }
 
