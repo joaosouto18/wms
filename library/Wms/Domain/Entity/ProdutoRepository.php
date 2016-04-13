@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityRepository,
 	Wms\Util\CodigoBarras,
 	Wms\Util\Endereco as EnderecoUtil,
     Core\Util\Produto as ProdutoUtil;
+use DoctrineExtensions\Versionable\Exception;
 
 /**
  * 
@@ -206,108 +207,169 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
    * @param array $values
    * @return boolean 
    */
-  public function persistirEmbalagens(ProdutoEntity $produtoEntity, array &$values) {
-	$em = $this->getEntityManager();
+  public function persistirEmbalagens(ProdutoEntity $produtoEntity, array &$values, $webservice = false) {
+      try{
 
-	//embalagens do produto
-	if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
-	  return false;
+            $em = $this->getEntityManager();
+            if ($webservice == true) {
+                $idUsuario = null;
+            }else {
+                $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+            }
 
-	foreach ($values['embalagens'] as $id => $itemEmbalagem) {
-	  extract($itemEmbalagem);
+            /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
 
-	  if (!isset($itemEmbalagem['acao']))
-		continue;
+            //embalagens do produto
+            if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
+              return false;
+            foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+              extract($itemEmbalagem);
 
-	  switch ($itemEmbalagem['acao']) {
-		case 'incluir':
+              switch ($itemEmbalagem['acao']) {
+                case 'incluir':
 
-		  $embalagemEntity = new EmbalagemEntity;
+                  $embalagemEntity = new EmbalagemEntity;
 
-            $embalagemEntity->setProduto($produtoEntity);
-            $embalagemEntity->setGrade($produtoEntity->getGrade());
-            $embalagemEntity->setDescricao($descricao);
-            $embalagemEntity->setQuantidade($quantidade);
-            $embalagemEntity->setIsPadrao($isPadrao);
-            $embalagemEntity->setCBInterno($CBInterno);
-            $embalagemEntity->setImprimirCB($imprimirCB);
-            $embalagemEntity->setCodigoBarras($codigoBarras);
-            $embalagemEntity->setEmbalado($embalado);
-            $embalagemEntity->setCapacidadePicking($capacidadePicking);
-            $embalagemEntity->setPontoReposicao($pontoReposicao);
-            $embalagemEntity->setEndereco(null);
+                    $embalagemEntity->setProduto($produtoEntity);
+                    $embalagemEntity->setGrade($produtoEntity->getGrade());
+                    $embalagemEntity->setDescricao($descricao);
+                    $embalagemEntity->setQuantidade($quantidade);
+                    $embalagemEntity->setIsPadrao($isPadrao);
+                    $embalagemEntity->setCBInterno($CBInterno);
+                    $embalagemEntity->setImprimirCB($imprimirCB);
+                    $embalagemEntity->setCodigoBarras($codigoBarras);
+                    $embalagemEntity->setEmbalado($embalado);
+                    $embalagemEntity->setCapacidadePicking($capacidadePicking);
+                    $embalagemEntity->setPontoReposicao($pontoReposicao);
+                    $embalagemEntity->setEndereco(null);
 
-		  //valida o endereco informado
-		  if (!empty($endereco)) {
-			$endereco = EnderecoUtil::separar($endereco);
-			$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-			$enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
+                  //valida o endereco informado
+                  if (!empty($endereco)) {
+                    $endereco = EnderecoUtil::separar($endereco);
+                    $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+                    $enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
 
-			if (!$enderecoEntity) {
-			  throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
-			}
+                    if (!$enderecoEntity) {
+                      throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
+                    }
 
-			$embalagemEntity->setEndereco($enderecoEntity);
-		  }
+                    $embalagemEntity->setEndereco($enderecoEntity);
+                  }
 
-		  $em->persist($embalagemEntity);
-		  $em->flush();
+                    if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
+                        if (is_null($embalagemEntity->getDataInativacao())) {
+                            $embalagemEntity->setDataInativacao(new \DateTime());
+                            $embalagemEntity->setUsuarioInativacao($idUsuario);
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
+                        }
+                    } else {
+                        if (!is_null($embalagemEntity->getDataInativacao())) {
+                            $embalagemEntity->setDataInativacao(null);
+                            $embalagemEntity->setUsuarioInativacao(null);
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+                        }
+                    }
 
-		  $produtoEntity->addEmbalagem($embalagemEntity);
+                    $em->persist($embalagemEntity);
+                  $em->flush();
 
-		  $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
+                  $produtoEntity->addEmbalagem($embalagemEntity);
 
-		  if ($CBInterno == 'S') {
-			$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-			$embalagemEntity->setCodigoBarras($codigoBarras);
-		  }
+                  $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
 
-		  break;
-		case 'alterar':
+                  if ($CBInterno == 'S') {
+                    $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                    $embalagemEntity->setCodigoBarras($codigoBarras);
+                  }
 
-		  $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
+                  break;
+                case 'alterar':
 
-		  \Zend\Stdlib\Configurator::configure($embalagemEntity, $itemEmbalagem);
+                  $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
 
-		  $embalagemEntity->setEndereco(null);
+                  \Zend\Stdlib\Configurator::configure($embalagemEntity, $itemEmbalagem);
 
-		  //valida o endereco informado
-		  if (!empty($endereco)) {
-			$endereco = EnderecoUtil::separar($endereco);
-			$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-			$enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
+                  $embalagemEntity->setEndereco(null);
 
-			if (!$enderecoEntity) {
-			  throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
-			}
+                  //valida o endereco informado
+                  if (!empty($endereco)) {
+                    $endereco = EnderecoUtil::separar($endereco);
+                    $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+                    $enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
 
-			$embalagemEntity->setEndereco($enderecoEntity);
-		  }
+                    if (!$enderecoEntity) {
+                      throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
+                    }
 
-		  // verifica se o codigo de barras é automatico
-		  if ($CBInterno == 'S') {
-			$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($id);
-			$embalagemEntity->setCodigoBarras($codigoBarras);
-		  }
-          $embalagemEntity->setEmbalado($embalado);
-          $embalagemEntity->setCapacidadePicking($capacidadePicking);
-          $embalagemEntity->setPontoReposicao($pontoReposicao);
+                    $embalagemEntity->setEndereco($enderecoEntity);
+                  }
 
-		  $em->persist($embalagemEntity);
-		  break;
-		case 'excluir':
+                  // verifica se o codigo de barras é automatico
+                  if ($CBInterno == 'S') {
+                    $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($id);
+                    $embalagemEntity->setCodigoBarras($codigoBarras);
+                  }
+                  $embalagemEntity->setEmbalado($embalado);
+                  $embalagemEntity->setCapacidadePicking($capacidadePicking);
+                  $embalagemEntity->setPontoReposicao($pontoReposicao);
 
-		  $embalagemEntity = $em->getRepository('wms:Produto\Embalagem')->find($id);
+                    if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
+                        if (is_null($embalagemEntity->getDataInativacao())) {
+                            $embalagemEntity->setDataInativacao(new \DateTime());
+                            $embalagemEntity->setUsuarioInativacao($idUsuario);
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
+                        }
+                    } else {
+                        if (!is_null($embalagemEntity->getDataInativacao())) {
+                            $embalagemEntity->setDataInativacao(null);
+                            $embalagemEntity->setUsuarioInativacao(null);
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+                        }
+                    }
 
-		  if (!$embalagemEntity) {
-			throw new \Exception('Codigo da Embalagem inválido.');
-		  }
+                  if (isset($descricao) && ($descricao != null)) {
+                      $embalagemEntity->setDescricao($descricao);
+                  }
 
-		  $em->remove($embalagemEntity);
-		  $em->flush();
-		  break;
-	  }
-	}
+                  $em->persist($embalagemEntity);
+                  break;
+                case 'excluir':
+
+                  $embalagemEntity = $em->getRepository('wms:Produto\Embalagem')->find($id);
+
+                  if (!$embalagemEntity) {
+                    throw new \Exception('Codigo da Embalagem inválido.');
+                  }
+
+                  $em->remove($embalagemEntity);
+                  $em->flush();
+                  break;
+
+                default:
+                    $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
+
+                    if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
+                        if (is_null($embalagemEntity->getDataInativacao())) {
+                            $embalagemEntity->setDataInativacao(new \DateTime());
+                            $embalagemEntity->setUsuarioInativacao($idUsuario);
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
+                        }
+                    } else {
+                        if (!is_null($embalagemEntity->getDataInativacao())) {
+                            $embalagemEntity->setDataInativacao(null);
+                            $embalagemEntity->setUsuarioInativacao(null);
+                            $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
+                        }
+                    }
+
+                    $em->persist($embalagemEntity);
+                    break;
+              }
+            }
+      } catch (\Exception $e) {
+          throw new \Exception ($e->getMessage());
+      }
 
 	return true;
   }
@@ -319,7 +381,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
    * @param array $values
    * @return boolean 
    */
-  public function persistirVolumes(ProdutoEntity $produtoEntity, array &$values) {
+  public function persistirVolumes(ProdutoEntity $produtoEntity, array &$values, $webservice = false) {
 	$em = $this->getEntityManager();
 	extract($values);
 
@@ -377,10 +439,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	  switch ($acao) {
 		case 'incluir':
-		  $volumeRepo->save($produtoEntity, $itemVolume);
+		  $volumeRepo->save($produtoEntity, $itemVolume, $webservice);
 		  break;
 		case 'alterar':
-		  $volumeRepo->save($produtoEntity, $itemVolume);
+		  $volumeRepo->save($produtoEntity, $itemVolume, $webservice);
 		  break;
 		case 'excluir':
 		  $volumeRepo->remove($id);
@@ -941,6 +1003,27 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $grades;
     }
 
+    public function getProdutoByCodBarrasOrCodProduto($codigo) {
+        $LeituraColetor = new \Wms\Service\Coletor();
+
+        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+
+        $info = $this->getProdutoByCodBarras($codigoBarrasProduto);
+        $produtoEn      = null;
+        if ($info) {
+            $produtoEn  = $this->findOneBy(array('id'=>$info[0]['idProduto'], 'grade' =>$info[0]['grade']));
+        } else {
+            $produtoEn  = $this->findOneBy(array('id'=>$codigo, 'grade' =>'UNICA'));
+        }
+
+        if (!isset($produtoEn)) {
+            throw new \Exception('Produto não encontrado');
+        }
+
+        return $produtoEn;
+
+    }
+
     public function getEnderecoPicking($produtoEntity,$tipoRetorno = "DSC")
     {
         $enderecoPicking = null;
@@ -974,6 +1057,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $enderecoPicking;
     }
 
+    public function getEmbalagensOrVolumesByProduto($codProduto, $grade = "UNICA")
+    {
+        $sql = "SELECT PV.COD_PRODUTO_VOLUME,
+                   PE.COD_PRODUTO_EMBALAGEM
+              FROM PRODUTO P
+              LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+              LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE AND PE.IND_PADRAO = 'S'
+            WHERE P.COD_PRODUTO = '$codProduto'
+            AND P.DSC_GRADE = '$grade'
+            ";
+
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado;
+    }
+
     public function getNormaPaletizacaoPadrao($codProduto, $grade) {
 
         $produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
@@ -1005,6 +1103,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     $lastro = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumLastro();
                     $camadas = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumCamadas();
                     $unitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getDescricao();
+                    $IdUnitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getId();
                     break;
                 }
             }
@@ -1018,6 +1117,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $lastro = $volume->getNormaPaletizacao()->getNumLastro();
                 $camadas = $volume->getNormaPaletizacao()->getNumCamadas();
                 $unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
+                $IdUnitizador = $volume->getNormaPaletizacao()->getUnitizador()->getId();
                 $idNorma = $norma;
                 break;
             }
@@ -1025,6 +1125,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $result['idNorma'] = $idNorma;
         $result['unidade'] = $unidadePadrao;
+        $result['idUnitizador'] = $IdUnitizador;
         $result['unitizador'] = $unitizador;
         $result['qtdNorma'] = $qtdNorma;
         $result['lastro'] = $lastro;
@@ -1333,5 +1434,39 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $enderecoReferencia;
     }
 
+	public function getProdutoByParametroVencimento($params)
+	{
+		$sql = $this->getEntityManager()->createQueryBuilder()
+			->select('prod.id codProduto, prod.grade, prod.descricao AS produto, pes.nome AS fornecedor, de.descricao AS endereco, e.validade, SUM(e.qtd) AS qtd')
+			->from('wms:Recebimento', 'r')
+			->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
+			->innerJoin('wms:NotaFiscal\Item', 'nfi', 'WITH', 'nfi.notaFiscal = nf.id')
+			->innerJoin('wms:Produto', 'prod', 'WITH', 'prod.id = nfi.codProduto AND prod.grade = nfi.grade')
+			->innerJoin('wms:Pessoa\Papel\Fornecedor', 'f', 'WITH', 'f.id = nf.fornecedor')
+			->innerJoin('wms:Pessoa', 'pes', 'WITH', 'pes.id = f.pessoa')
+			->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'p.recebimento = r.id')
+			->innerJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'e.uma = p.id')
+			->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de.id = e.depositoEndereco')
+			->groupBy('prod.id, prod.grade, prod.descricao, pes.nome, de.descricao, e.validade')
+			;
+
+		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
+			$sql->andWhere("prod.id = $params[codProduto]");
+		}
+		if (isset($params['descricao']) && !empty($params['descricao'])) {
+			$sql->andWhere("prod.descricao like $params[descricao]");
+		}
+		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
+			$sql->andWhere("pes.nome like '$params[fornecedor]'");
+		}
+		if (isset($params['dataReferencia']) && !empty($params['dataReferencia'])) {
+			$data = new \Zend_Date($params['dataReferencia']);
+			$data = $data->toString('Y-MM-dd');
+			$sql->andWhere("e.validade <= '$data'");
+		}
+
+		return $sql->getQuery()->getResult();
+
+	}
 
 }

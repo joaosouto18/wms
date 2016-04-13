@@ -822,7 +822,9 @@ class RecebimentoRepository extends EntityRepository
                 ->from("wms:NotaFiscal", 'nf')
                 ->innerJoin("nf.itens", "nfi")
                 ->innerJoin("wms:Produto", 'p', 'WITH', 'p.grade = nfi.grade AND p.id = nfi.codProduto')
-                ->where("nf.recebimento = $idRecebimento");
+                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
+                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade')
+                ->where("nf.recebimento = $idRecebimento AND pe.dataInativacao is null AND pv.dataInativacao is null");
         }
 
         $result = $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
@@ -1322,29 +1324,38 @@ class RecebimentoRepository extends EntityRepository
     }
 
 
-    public function naoEnderecadosByStatus($status = RecebimentoEntity::STATUS_FINALIZADO, $limit = 10)
+    public function naoEnderecadosByStatus($status = null)
     {
-        $query = '
-            SELECT r
-            FROM wms:Recebimento r
-            WHERE r.status = ' . $status . '
-                AND r.id IN (
-                    SELECT r2.id
-                    FROM wms:Enderecamento\Palete p
-                    JOIN p.recebimento r2
-                    WHERE p.status in ( ' . PaleteEntity::STATUS_EM_RECEBIMENTO . ',' . PaleteEntity::STATUS_RECEBIDO . ',' . PaleteEntity::STATUS_EM_ENDERECAMENTO . ' )
-                    OR r.id NOT IN (
-                        SELECT r2.id
-                        FROM wms:Enderecamento\Palete p2
-                        JOIN p2.recebimento r3
-                        WHERE r.id = r3.id
-                    )
-                )
+        
+        $whereStatus = "";
+        if ($status != null) {
+            $whereStatus = " AND R.COD_STATUS = " . $status;
+        }
 
-                ORDER BY r.id DESC
-         ';
-        $query =  $this->getEntityManager()->createQuery($query)->setMaxResults($limit);
-        return $query->getResult();
+        $SQL = "SELECT DISTINCT R.COD_RECEBIMENTO,
+                                R.DTH_INICIO_RECEB,
+                                B.DSC_BOX AS BOX
+                  FROM (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO
+                          FROM V_QTD_RECEBIMENTO V
+                         GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) V
+                  LEFT JOIN (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO 
+                               FROM (SELECT DISTINCT P.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, P.COD_RECEBIMENTO
+                                       FROM PALETE P
+                                       LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA) P
+                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO) P
+                         ON P.COD_PRODUTO = V.COD_PRODUTO
+                        AND P.DSC_GRADE = V.DSC_GRADE
+                        AND P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
+                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
+                  LEFT JOIN BOX B ON B.COD_BOX = R.COD_BOX
+                 WHERE V.QTD - NVL(P.QTD,0) >0
+                 $whereStatus
+                 ORDER BY R.DTH_INICIO_RECEB DESC
+";
+
+        return $this->getEntityManager()->getConnection()->query($SQL)
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
+
 
 }

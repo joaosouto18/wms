@@ -3,6 +3,16 @@
 use Wms\Domain\Entity\Produto as ProdutoEntity,
     Core\Util\Produto as ProdutoUtil;
 
+class embalagem {
+    /** @var string */
+    public $codBarras;
+    /** @var int */
+    public $qtdEmbalagem;
+    /** @var string */
+    public $descricao;
+}
+
+
 class produto {
     /** @var string */
     public $idProduto;
@@ -108,10 +118,12 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param string $idFabricante ID do fabricante
      * @param string $tipo 1 => Unitário, 2 => Composto, 3 => Kit | Hoje não está sendo utilizado
      * @param string $idClasse ID da classe do produto
+     * @param embalagem[] $embalagens Embalagens
+     * @param string $referencia Código de Referencia do produto no fornecedor
      * @throws Exception
      * @return boolean Se o produto foi inserido com sucesso ou não
      */
-    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse) {
+    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia) {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
@@ -158,7 +170,8 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setDescricao($descricao)
                 ->setGrade($grade)
                 ->setFabricante($fabricante)
-                ->setClasse($classe);
+                ->setClasse($classe)
+                ->setReferencia($referencia);
 
             if ($produtoNovo == true) {
                 $produto
@@ -167,14 +180,101 @@ class Wms_WebService_Produto extends Wms_WebService {
             }
 
             $em->persist($produto);
+
+            $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+            $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS'));
+
+            //VERIFICA SE VAI RECEBER AS EMBALAGENS OU NÃO
+            if ($parametro->getValor() == 'S') {
+
+                $embalagensArray = array();
+
+                //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
+                foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
+
+                    $descricaoEmbalagem = null;
+                    $encontrouEmbalagem = false;
+                    foreach ($embalagens as $embalagemWs) {
+                        if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
+                            $encontrouEmbalagem = true;
+                            $descricaoEmbalagem =  $embalagemWs->descricao;
+
+                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
+                            }
+
+                            continue;
+                        }
+                    }
+
+
+                    $endPicking = null;
+                    if ($embalagemCadastrada->getEndereco() != null ) {
+                        $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
+                    }
+
+                    $embalagemArray = array(
+                        'acao'=> 'alterar',
+                        'id' =>$embalagemCadastrada->getId(),
+                        'endereco' => $endPicking,
+                        'CBInterno' => $embalagemCadastrada->getCBInterno(),
+                        'embalado' => $embalagemCadastrada->getEmbalado(),
+                        'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
+                        'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
+                        'descricao' => $descricaoEmbalagem
+                    );
+
+                    if ($encontrouEmbalagem == false) {
+                        $embalagemArray['ativarDesativar'] = true;
+                    }
+
+                    $embalagensArray[] = $embalagemArray;
+
+                }
+
+                //DEPOIS INCLUO AS NOVAS EMBALAGENS
+                foreach ($embalagens as $embalagemWs) {
+
+                    $encontrouEmbalagem = false;
+                    foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
+                        if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
+                            $encontrouEmbalagem = true;
+                            continue;
+                        }
+                    }
+
+                    if ($encontrouEmbalagem == false) {
+                        $embalagemArray = array (
+                            'acao' => 'incluir',
+                            'descricao' => $embalagemWs->descricao,
+                            'quantidade' => $embalagemWs->qtdEmbalagem,
+                            'isPadrao' => 'N',
+                            'CBInterno' => 'N',
+                            'imprimirCB' => 'N',
+                            'codigoBarras' => $embalagemWs->codBarras,
+                            'embalado' => 'N',
+                            'capacidadePicking' => 0,
+                            'pontoReposicao' => 0,
+                            'endereco' => null
+                        );
+                        $embalagensArray[] = $embalagemArray;
+                    }
+
+                }
+
+                $embalagensPersistir = array('embalagens'=>$embalagensArray);
+                /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+                $produtoRepo = $em->getRepository('wms:Produto');
+                $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true);
+            }
+
             $em->flush();
 
             $em->commit();
         } catch (\Exception $e) {
             $em->rollback();
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
-
         return true;
     }
 

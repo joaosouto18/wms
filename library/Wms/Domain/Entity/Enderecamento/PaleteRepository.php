@@ -667,7 +667,13 @@ class PaleteRepository extends EntityRepository
         }
     }
 
-    public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A'){
+    public function getVolumes()
+    {
+
+    }
+
+    public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A')
+    {
         $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
@@ -691,6 +697,7 @@ class PaleteRepository extends EntityRepository
             $paleteProduto->setValidade($dataValidade);
             $this->_em->persist($paleteProduto);
         }
+        return $paleteEn;
     }
 
 

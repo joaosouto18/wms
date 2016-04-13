@@ -11,8 +11,8 @@ class Mobile_ArmazenagemController  extends Action
                 'label' => 'ENDEREÇAMENTO',
             ),
             2 => array (
-                'url' => 'enderecamento/leitura-picking' ,
-                'label' => 'SELECIONAR PICKING',
+                'url' => 'enderecamento_reabastecimento-manual',
+                'label' => 'REABASTECIMENTO MANUAL',
             ),
             3 => array (
                 'url' => 'ressuprimento/listar-picking',
@@ -23,8 +23,16 @@ class Mobile_ArmazenagemController  extends Action
                 'label' => 'ENDEREÇAMENTO AUTOMÁTICO',
             ),
             5 => array (
+                'url' => 'enderecamento_manual' ,
+                'label' => 'ENDEREÇAMENTO MANUAL',
+            ),
+            6 => array (
                 'url' => 'enderecamento/movimentacao',
                 'label' => 'TRANSFERÊNCIA DE ESTOQUE',
+            ),
+             7 => array (
+                'url' => 'enderecamento/leitura-picking' ,
+                'label' => 'SELECIONAR PICKING',
             ),
 
         );

@@ -312,6 +312,8 @@ class Expedicao_EtiquetaController  extends Action
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
             $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
 
+            $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+
             if (count($pedidosProdutos) == 0) {
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
                      && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
@@ -319,7 +321,7 @@ class Expedicao_EtiquetaController  extends Action
                     $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
                 }
             } else {
-                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,1);
+                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao);
             }
 
             $this->getEntityManager()->commit();

@@ -365,6 +365,7 @@ class EtiquetaSeparacao extends Pdf
             $this->SetFont('Arial','B',30);
             $this->SetY(36);
         }
+        if (!isset($etiqueta['sequencia'])) $etiqueta['sequencia'] = "";
         $this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
 

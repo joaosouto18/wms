@@ -171,6 +171,8 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('info','Escolha um nível',null, $elementos);
         }
 
+        $this->validaEnderecoPicking($enderecoEn->getDescricao(), $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
+
         if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
             $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $idEndereco);
         } else {
@@ -186,20 +188,17 @@ class Mobile_EnderecamentoController extends Action
 
     public function validaNivelAction()
     {
-        $idPalete   = $this->_getParam("uma");
-        $rua         = $this->_getParam("rua");
-        $predio      = $this->_getParam("predio");
-        $nivel       = $this->_getParam("nivel");
-        $apartamento = $this->_getParam("apartamento");
+        $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+        $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+        $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-        if (isset($rua)) {
-            $nivel = "00" . $nivel;
-            $nivel = substr($nivel,strlen($nivel)-2);
-            $codBarras = $rua . $predio . $nivel . $apartamento . "1";
-        }
-
-        $LeituraColetor = new LeituraColetor();
-        $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+        $idPalete    = $this->_getParam("uma");
+        $rua         = substr($this->_getParam("rua"), -$tamanhoRua, $tamanhoRua);
+        $predio      = substr($this->_getParam("predio"), -$tamanhoPredio, $tamanhoPredio);
+        $nivel       = substr($this->_getParam("nivel"), -$tamanhoNivel, $tamanhoNivel);
+        $apartamento = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
+        $codBarras   = $rua . $predio . $nivel . $apartamento;
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -233,11 +232,15 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd)
+    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd, $enderecoEn = null)
     {
 
         //Se for picking do produto entao o nivel poderá ser escolhido
-        if ($caracteristicaEnd == '37') {
+        if ($caracteristicaEnd == '37' || $caracteristicaEnd == '39') {
+
+            //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
+            //Se sim, o sistema deverá exibir o endereço e só permitir armazenar no endereço cadastrado e permitir alterar a capacidade do picking (apenas para picking Dinâmico);
+            //Se o produto não possuir endereço de Picking Dinâmico cadastrado, o sistema deverá solicitar a quantidade a ser endereçada e a capacidade do picking.
 
             $produtosEn = $paleteEn->getProdutos();
             $produto = $produtosEn[0];
@@ -257,6 +260,7 @@ class Mobile_EnderecamentoController extends Action
             } else {
                 $this->createXml('error','O produto não possui endereço de picking');
             }
+
             return true;
         }
         return false;
@@ -503,10 +507,14 @@ class Mobile_EnderecamentoController extends Action
                   LEFT JOIN PALETE P ON P.UMA = PP.UMA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                   LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = P.COD_UNITIZADOR
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PROD.COD_PRODUTO = PE.COD_PRODUTO AND PROD.DSC_GRADE = PE.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PE.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
                  WHERE P.COD_RECEBIMENTO = $codRecebimento
                    AND P.COD_STATUS = $statusEnderecamento
                    AND P.IND_IMPRESSO = 'N'
-                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL)
+                   AND P.COD_DEPOSITO_ENDERECO IS NOT NULL
+                   AND PE.DTH_INATIVACAO IS NULL
+                   AND PV.DTH_INATIVACAO IS NULL)
                 GROUP BY COD_PRODUTO, DSC_GRADE, DSC_PRODUTO, DSC_UNITIZADOR";
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -524,10 +532,16 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
-            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
+
+            $repositorios = array(
+                'normaPaletizacaoRepo'    => $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao"),
+                'estoqueRepo'             => $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque"),
+                'reservaEstoqueRepo'      => $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque"),
+                'produtoRepo'             => $this->getEntityManager()->getRepository('wms:Produto'),
+                'recebimentoRepo'         => $this->getEntityManager()->getRepository('wms:Recebimento'),
+                'modeloEnderecamentoRepo' => $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo'));
 
             $paletesSelecionados = $this->_getParam('palete');
 
@@ -592,7 +606,7 @@ class Mobile_EnderecamentoController extends Action
                     $paleteEn = $paleteRepo->findOneBy(array('id'=>$tmp['uma']));
                     if ($paleteEn->getDepositoEndereco() == null) {
 
-                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn);
+                        $sugestaoEndereco = $paleteRepo->getSugestaoEnderecoPalete($paleteEn, $repositorios);
 
                         if ($sugestaoEndereco != null) {
                             foreach($sugestaoEndereco as $sugestao) {
@@ -692,11 +706,13 @@ class Mobile_EnderecamentoController extends Action
             if ($codigoBarras) {
                 $LeituraColetor = new LeituraColetor();
                 $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+
+                $endereco = $this->getEnderecoByParametro($codigoBarras);
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
+            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $endereco[0]['NUM_NIVEL'], false);
 
             if ($result == NULL) {
                 throw new \Exception ("Endereço selecionado está vazio");
@@ -811,8 +827,9 @@ class Mobile_EnderecamentoController extends Action
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
             }
 
+            $enderecoAntigo = $this->getEnderecoByParametro($enderecoAntigo);
             if ($enderecoAntigo) {
-                $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo, $nivelAntigo);
+                $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo[0]['DSC_DEPOSITO_ENDERECO'], $nivelAntigo);
             }
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
@@ -824,7 +841,8 @@ class Mobile_EnderecamentoController extends Action
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
-                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
@@ -848,9 +866,13 @@ class Mobile_EnderecamentoController extends Action
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoEmbalagem' => $params['embalagem']));
+                    if (!$estoqueEn)
+                        throw new \Exception("Estoque não Encontrado!");
+
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
-                    $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                    $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $validade = $estoqueEn->getValidade();
                     $params['validade'] = null;
                     if (isset($validade) && !is_null($validade)) {
@@ -870,8 +892,12 @@ class Mobile_EnderecamentoController extends Action
                     $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
                     foreach ($volumes as $volume) {
                         $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoVolume' => $volume));
+                        if (!$estoqueEn)
+                            throw new \Exception("Estoque não Encontrado!");
+
                         $params['qtd'] = $qtd;
-                        $params['endereco'] = $this->getEnderecoNivel($enderecoNovo, $nivelNovo);
+                        $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                        $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
 
@@ -922,6 +948,25 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         return $enderecoRepo->findOneBy(array('rua' => $rua, 'predio' => $predio, 'apartamento' => $apartamento, 'nivel' => $nivel));
+    }
+
+    public function getEnderecoByParametro($dscEndereco)
+    {
+        $tamanhoRua         = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+        $tamanhoPredio      = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+        $tamanhoNivel       = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+
+        $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL, COD_DEPOSITO_ENDERECO
+                 FROM DEPOSITO_ENDERECO
+                 WHERE
+                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
+                    || SUBSTR('00' || NUM_PREDIO,-$tamanhoPredio,$tamanhoPredio)
+                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
+                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento,$tamanhoApartamento) as INT)) = " . $dscEndereco;
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
     }
 
 

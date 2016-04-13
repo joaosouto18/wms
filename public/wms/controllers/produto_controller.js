@@ -13,6 +13,7 @@ $.Controller.extend('Wms.Controllers.Produto',
      * When the page loads, gets all produto_volumes to be displayed.
      */
     "{window} load": function() {
+
         //checo tipo comercializacao/embalagens
         this.validarEmbalagens();
         //checo tipo comercializacao/volumes
@@ -26,7 +27,6 @@ $.Controller.extend('Wms.Controllers.Produto',
             $('#produto-diasVidaUtil').parent().hide();
         }
 
-        
         //checa quantidade de volumes
         $(".btnSave").off('click').click(function(e) {
             ///checa embalagem e volume
@@ -35,7 +35,7 @@ $.Controller.extend('Wms.Controllers.Produto',
             
             $('.saveForm').submit();
         });
-        
+
     },
     /**
      * Valida os formularios de cadastro das Embalagens e Volumes
@@ -153,7 +153,7 @@ $.Controller.extend('Wms.Controllers.Produto',
         var UNITARIO = 1;
         var COMPOSTO = 2;
         var KIT = 3;
-        
+
         // variaveis
         var idTipoComercializacao = parseInt($('#produto-idTipoComercializacao').val());
         var tabEmbalagem = $('#fieldset-embalagem').parents('.ui-tabs-panel');
