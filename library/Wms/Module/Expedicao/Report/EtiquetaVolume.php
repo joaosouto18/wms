@@ -73,12 +73,12 @@ class EtiquetaVolume extends eFPDF
         $this->SetMargins(3, 1.5, 0);
         $this->SetAutoPageBreak(0,0);
         foreach ($volumePatrimonio as $volume) {
-            $this->SetFont('Arial', 'B', 20);
+//            $this->SetFont('Arial', 'B', 20);
             //coloca o cod barras
             $this->AddPage();
 
             //monta o restante dos dados da etiqueta
-            $this->SetFont('Arial', 'B', 12.5);
+            $this->SetFont('Arial', 'B', 16);
 //            $impressao = utf8_decode("EXP: $volume[expedicao] CLI: $volume[quebra]\n");
 //            $volume['quebra'] = "TOMAZ GOMIDE NUNES - PREÇO REVENDA";
             $impressao = utf8_decode(substr("CLI: $volume[quebra]\n",0,50));

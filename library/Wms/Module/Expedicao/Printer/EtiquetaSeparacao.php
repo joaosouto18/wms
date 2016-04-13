@@ -68,7 +68,34 @@ class EtiquetaSeparacao extends Pdf
         $this->chaveCargas = $chaveCarga;
     }
 
+    public function imprimirReentrega($idExpedicao, $status, $modelo){
 
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+        $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+
+        if (count($pendencias) <= 0) {
+            throw new \Exception('Não Existe Etiquetas de Reentrega!');
+        }
+        $idEtiqueta = array();
+        foreach ($pendencias as $pendencia) {
+            $idEtiqueta[] = $pendencia['ETIQUETA'];
+        }
+        $idEtiqueta = implode(",",$idEtiqueta);
+        $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao(null, null, null, $idEtiqueta);
+
+        foreach($etiquetas as $etiqueta) {
+            $this->etqMae = false;
+            $this->layoutEtiqueta($etiqueta['id'], count($etiquetas), false, $modelo, true);
+        }
+
+        $this->Output('Etiquetas-reentrega-'.$idExpedicao.'-'.'.pdf','D');
+
+    }
 
     public function imprimir(array $params = array(), $modelo)
     {
@@ -218,7 +245,7 @@ class EtiquetaSeparacao extends Pdf
         return false;
     }
 
-    protected function layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo)
+    protected function layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(7, 0, 0);
         $this->SetFont('Arial', 'B', 8);
@@ -242,7 +269,9 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr("$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - Fornecedor:$etiqueta[fornecedor]",0,50) . " \n";
                 $impressao .= utf8_decode("$etiqueta[tipoComercializacao] - $etiqueta[endereco]\n");
                 $this->MultiCell(100, 2.7, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, null, 50);
+                if ($reentrega == false) {
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, null, 50);
+                }
                 // font
                 $this->SetFont('Arial','B',17);
                 //Go to 1.5 cm from bottom
@@ -258,7 +287,9 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr("$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - Fornecedor:$etiqueta[fornecedor] ",0,50) . " \n";
                 $impressao .= utf8_decode("$etiqueta[tipoComercializacao] - $etiqueta[endereco]\n");
                 $this->MultiCell(100, 2.7, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, null, 50);
+                if($reentrega == false) {
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 55, null, 50);
+                }
                 // font
                 $this->SetFont('Arial','B',17);
                 //Go to 1.5 cm from bottom
@@ -268,7 +299,7 @@ class EtiquetaSeparacao extends Pdf
         }
     }
 
-    protected function layoutModelo2($etiqueta,$countEtiquetas,$reimpressao, $modelo)
+    protected function layoutModelo2($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 11);
@@ -294,7 +325,9 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
                 $impressao .= utf8_decode("$etiqueta[endereco]\n");
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                if ($reentrega == false) {
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                }
                 break;
 
             default:
@@ -307,12 +340,14 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
                 $impressao .= utf8_decode("$etiqueta[endereco]\n");
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                if ($reentrega == false) {
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                }
                 break;
         }
     }
 
-    protected function layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo)
+    protected function layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
@@ -357,7 +392,9 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 11);
         $impressao = utf8_decode("$etiqueta[endereco]\n");
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+        if ($reentrega == false) {
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+        }
         if ($reimpressao == true) {
             $this->SetFont('Arial','B',20);
             $this->SetY(34);
@@ -369,7 +406,7 @@ class EtiquetaSeparacao extends Pdf
         $this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
 
-    protected function layoutModelo4($etiqueta,$countEtiquetas,$reimpressao,$modelo)
+    protected function layoutModelo4($etiqueta,$countEtiquetas,$reimpressao,$modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
@@ -414,14 +451,16 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, $yImage, 68,17);
+        if ($reentrega == false) {
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, $yImage, 68,17);
+        }
         $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 90, 1.5, 20, 5);
         $this->SetFont('Arial', 'B', 13);
         $this->SetY(36);
         $this->Cell(20, 3,   utf8_decode($etiqueta['tipoComercializacao']). $qtdEmbalagem, 0, 1, "L");
     }
 
-    protected function layoutModelo5($etiqueta,$countEtiquetas,$reimpressao, $modelo)
+    protected function layoutModelo5($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
@@ -468,7 +507,9 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 10);
         $impressao = utf8_decode("$etiqueta[endereco]\n");
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+        if ($reentrega == false) {
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+        }
         if ($reimpressao == true) {
             $this->SetFont('Arial','B',20);
             $this->SetY(34);
@@ -479,26 +520,26 @@ class EtiquetaSeparacao extends Pdf
         //$this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
     
-    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo)
+    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false)
     {
         switch ($modelo) {
             case 6:
-                $this->layoutModelo6($etiqueta,$countEtiquetas,$reimpressao, $modelo);
+                $this->layoutModelo6($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
             case 5:
-                $this->layoutModelo5($etiqueta,$countEtiquetas,$reimpressao, $modelo);
+                $this->layoutModelo5($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
             case 4:
-                $this->layoutModelo4($etiqueta,$countEtiquetas,$reimpressao, $modelo);
+                $this->layoutModelo4($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
             case 3:
-                $this->layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo);
+                $this->layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
             case 2:
-                $this->layoutModelo2($etiqueta,$countEtiquetas,$reimpressao, $modelo);
+                $this->layoutModelo2($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
             default:
-                $this->layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo);
+                $this->layoutModelo1($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
         }
     }
 
@@ -525,7 +566,7 @@ class EtiquetaSeparacao extends Pdf
         $this->Image(@CodigoBarras::gerarNovo($codEtiquetaMae), 25, 30, 60);
     }
 
-    protected function layoutModelo6($etiqueta,$countEtiquetas,$reimpressao, $modelo)
+    protected function layoutModelo6($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
         $this->SetFont('Arial', 'B', 9);
@@ -551,7 +592,9 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
                 $impressao .= utf8_decode("$etiqueta[endereco]\n");
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                if ($reentrega == false) {
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                }
                 break;
 
             default:
@@ -573,7 +616,9 @@ class EtiquetaSeparacao extends Pdf
                 $this->SetFont('Arial', 'B', 11);
                 $impressao = utf8_decode("$etiqueta[endereco]\n");
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-                $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                if ($reentrega == false) {
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+                }
                 break;
         }
     }
