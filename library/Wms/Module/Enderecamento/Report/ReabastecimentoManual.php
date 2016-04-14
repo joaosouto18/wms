@@ -24,14 +24,14 @@ class ReabastecimentoManual extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(15,  5, utf8_decode("Código")  ,1, 0);
         if ($utilizaGrade == 'S') {
-            $this->Cell(20,  5, "Grade"   ,1, 0);
+            $this->Cell(39,  5, "Grade"   ,1, 0);
         } else {
-            $this->Cell(20,  5, "Ref"   ,1, 0);
+            $this->Cell(39,  5, "Ref"   ,1, 0);
         }
         $this->Cell(85, 5, "Produto" ,1, 0);
-        $this->Cell(25, 5, "Qtd Solicitada" ,1, 0);
-        $this->Cell(25, 5, "Qtd Estoque" ,1, 0);
-        $this->Cell(25,  5, "End.Picking" ,1, 1);
+        $this->Cell(18, 5, "Solicitado" ,1, 0);
+        $this->Cell(18, 5, "Estoque" ,1, 0);
+        $this->Cell(20,  5, "End.Picking" ,1, 1);
     }
 
     public function Footer()
@@ -132,14 +132,14 @@ class ReabastecimentoManual extends Pdf
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
                 if ($utilizaGrade == 'S') {
-                    $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
+                    $this->Cell(39, 5, utf8_decode($grade)      ,1, 0);
                 } else {
-                    $this->Cell(20, 5, utf8_decode($referencia)      ,1, 0);
+                    $this->Cell(39, 5, utf8_decode($referencia)      ,1, 0);
                 }
                 $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,47)) ,1, 0);
-                $this->Cell(25, 5, $produto['qtd'] ,1, 0);
-                $this->Cell(25, 5, $qtdEstoque ,1, 0);
-                $this->Cell(25, 5, utf8_decode($produto['endereco']) ,1, 1);
+                $this->Cell(18, 5, $produto['qtd'] ,1, 0);
+                $this->Cell(18, 5, $qtdEstoque ,1, 0);
+                $this->Cell(20, 5, utf8_decode($produto['endereco']) ,1, 1);
 
                 $limite = $limite -1;
 
