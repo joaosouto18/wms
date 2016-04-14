@@ -95,7 +95,7 @@ class EtiquetaSeparacao extends Pdf
 
         foreach($etiquetas as $etiqueta) {
             $this->etqMae = false;
-            $this->layoutEtiqueta($etiqueta['id'], count($etiquetas), false, $modelo, true);
+            $this->layoutEtiqueta($etiqueta, count($etiquetas), false, $modelo, true);
         }
 
         $this->Output('Etiquetas-reentrega-'.$idExpedicao.'-'.'.pdf','D');
