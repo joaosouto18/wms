@@ -39,6 +39,11 @@ class Campos
     protected $tamanhoInicio;
 
     /**
+     * @Column(name="VALOR_PADRAO", type="string", nullable=true)
+     */
+    protected $valorPadrao;
+
+    /**
      * @Column(name="TAMANHO_FIM", type="string", nullable=true)
      */
     protected $tamanhoFim;
@@ -139,16 +144,20 @@ class Campos
         $this->tamanhoFim = $tamanhoFim;
     }
 
-    public function toArray()
+    /**
+     * @param mixed $valorPadrao
+     */
+    public function setValorPadrao($valorPadrao)
     {
-        return array(
-            'id' => $this->getId(),
-            'tamanhoInicio' => $this->getTamanhoInicio(),
-            'tamanhoFim' => $this->getTamanhoFim(),
-            'posicaoTxt' => $this->posicaoTxt(),
-            'nomeCampo' => $this->getNomeCampo(),
-            'arquivo' => $this->getArquivo()
-        );
+        $this->valorPadrao = $valorPadrao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getValorPadrao()
+    {
+        return $this->valorPadrao;
     }
 
 }

@@ -11,7 +11,7 @@ class Arquivo
 {
     /**
      * @Id
-     * @Column(name="COD_IMPORTACAO_ARQUIVO)", type="integer", nullable=false)
+     * @Column(name="COD_IMPORTACAO_ARQUIVO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
      * @SequenceGenerator(sequenceName="SQ_IMPORTACAO_ARQUIVO_01", initialValue=1, allocationSize=100)
      */

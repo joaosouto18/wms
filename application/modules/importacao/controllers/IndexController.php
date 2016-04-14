@@ -15,36 +15,67 @@ class Importacao_IndexController extends Action
 
     public function teste()
     {
+        $em = $this->getEntityManager();
         //@TODO parametro sistema
         $dir = 'D:\\';
-        //@TODO consultar tabela IMPORTACAO_ARQUIVO pegar listas de arquivos e caracter
-        $file = 'produtos.csv';
-        $caracterQuebra = ';';
-        $handle = $dir . DIRECTORY_SEPARATOR . $file;
-        $handle = fopen($handle, "r");
-       //@TODO consultar tabela IMPORTACAO_CAMPOS
-         $em = $this->getEntityManager();
-        $camposRepo = $em->getRepository('wms:Importacao\Campos');
-        $camposArquivo = $camposRepo->findBy(array('arquivo' => 1));
+        $importacaoService = new \Wms\Service\Importacao();
 
-        while($linha = fgets($handle)) {
-            //@TODO se o cabecalho for S ignorar cabecalho
+        $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findAll();
+        foreach ($arquivos as $arquivo) {
+            $file = $arquivo->getNomeArquivo();
+            $caracterQuebra = $arquivo->getCaracterQuebra();
+            $cabecalho = $arquivo->getCabecalho();
+            $tabelaDestino = $arquivo->getTabelaDestino();
 
-            if ($caracterQuebra == "") {
-                $conteudoArquivo = array(0=>$linha);
-            }   else {
-                $conteudoArquivo = explode($caracterQuebra, $linha);
-            }
-            foreach ($camposArquivo as $campo) {
-                $valorCampo = $conteudoArquivo[$campo->getPosicaoTxt()];
-                if ($campo->getTamanhoInicio() != "") {
-                    $valorCampo = substr($valorCampo,$campo->getTamanhoInicio(),$campo->getTamanhoFim());
+            $handle = $dir . DIRECTORY_SEPARATOR . $file;
+            $handle = fopen($handle, "r");
+            $camposRepo = $em->getRepository('wms:Importacao\Campos');
+            $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
+
+            $i = 0;
+            while($linha = fgets($handle)) {
+                $i = $i+1;
+                if ($cabecalho == 'S') {
+                    if ($i == 1) {
+                        continue;
+                    }
                 }
-                echo $campo->getNomeCampo() . ' - ' . $valorCampo . " ";
-            }
 
+                if ($caracterQuebra == "") {
+                    $conteudoArquivo = array(0=>$linha);
+                }   else {
+                    $conteudoArquivo = explode($caracterQuebra, $linha);
+                }
+
+                $arrRegistro = array();
+                foreach ($camposArquivo as $campo) {
+                    if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo)-1 < $campo->getPosicaoTxt())) {
+                        $valorCampo =  trim($campo->getValorPadrao());
+                    } else {
+                        $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
+                        if ($valorCampo == "") {
+                            $valorCampo = trim($campo->getValorPadrao());
+                        }
+                    }
+
+                    if ($campo->getTamanhoInicio() != "") {
+                        $valorCampo = substr($valorCampo,$campo->getTamanhoInicio(),$campo->getTamanhoFim());
+                    }
+                    $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+                }
+
+                switch ($tabelaDestino) {
+                    case 'produto':
+                        $importacaoService->saveProduto($em,$arrRegistro);
+                        break;
+                    case 'cliente':
+                        break;
+                    default:
+                        break;
+
+                }
+            }
         }
-        //while (($data = fgetcsv($handle, 1000, $caracterQuebra)) !== FALSE or ($data = fgets($handle, 1000)) !== FALSE) {
 
     }
 
@@ -52,6 +83,7 @@ class Importacao_IndexController extends Action
     {
 
         $this->teste();
+        echo "TUDO CERTO";
         exit;
 
         $form = new IndexForm();

@@ -10,6 +10,7 @@ use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Classe;
 use Wms\Module\Web\Controller\Action;
+use Zend\Stdlib\Configurator;
 
 class Importacao
 {
@@ -199,47 +200,38 @@ class Importacao
     public function saveProduto($em, $produto)
     {
         $produtoRepo = $em->getRepository('wms:Produto');
-        $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['codProduto'], 'grade' => $produto['grade']));
+        $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
 
         if ($produtoEntity == null)
             $produtoEntity = new Produto();
 
         $em->beginTransaction();
 
-        try {
 
-            $dscEndereco = $produto['enderecoReferencia'];
+        try {
+            $dscEndereco = '';
+            if (isset($produto['enderecoReferencia'])) {
+                $dscEndereco = $produto['enderecoReferencia'];
+            }
             if ($dscEndereco != "") {
                 $enderecoEn = $em->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
                 if ($enderecoEn == null) {
-                    throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+                    throw new \Exception("EndereÃ§o de referencia para endereÃ§amento automÃ¡tico invÃ¡lido");
                 } else {
-                    $produtoEntity->setEnderecoReferencia($enderecoEn);
+                    $produto['enderecoReferencia'] = $enderecoEn;
                 }
-            } else {
-                $produtoEntity->setEnderecoReferencia(null);
             }
 
-            $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
-            $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
-            $classeEntity = $em->getReference('wms:Produto\Classe', $produto['classe']);
-            $fabricanteEntity = $em->getRepository('wms:Fabricante')->findOneBy(array('nome' => $produto['fabricante']));
+            $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
+            $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+            $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
+            $produto['fabricante'] = $em->getRepository('wms:Fabricante')->findOneBy(array('id' => $produto['fabricante']));
 
-            $produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
-            $produtoEntity->setTipoComercializacao($tipoComercializacaoEntity);
-            $produtoEntity->setNumVolumes($produto['numVolumes']);
-            $produtoEntity->setReferencia($produto['referencia']);
-            $produtoEntity->setCodigoBarrasBase($produto['codBarras']);
-            $produtoEntity->setId($produto['codProduto']);
-            $produtoEntity->setGrade($produto['grade']);
-            $produtoEntity->setDescricao($produto['descricao']);
-            $produtoEntity->setClasse($classeEntity);
-            $produtoEntity->setFabricante($fabricanteEntity);
-            $produtoEntity->setValidade($produto['validade']);
-            $produtoEntity->setDiasVidaUtil($produto['diasVidaUtil']);
+            Configurator::configure($produtoEntity, $produto);
 
             $em->persist($produtoEntity);
 
+            /*
             switch ($produto['tipoComercializacao']) {
                 case Produto::TIPO_UNITARIO:
                     // gravo embalagens
@@ -265,7 +257,7 @@ class Importacao
                         $em->remove($embalagemEntity);
                     break;
             }
-
+            */
             $em->flush();
             $em->commit();
         } catch (\Exception $e) {
