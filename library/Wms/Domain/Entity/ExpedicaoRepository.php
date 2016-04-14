@@ -467,7 +467,27 @@ class ExpedicaoRepository extends EntityRepository
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
-        return $source->getQuery()->getArrayResult();
+        $result = $source->getQuery()->getArrayResult();
+
+        if (count($result) == 0) {
+            $source = $this->getEntityManager()->createQueryBuilder()
+                ->select('r.codCarga')
+                ->from('wms:Expedicao', 'e')
+                ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
+                ->innerJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'c.id = r.carga')
+                ->where('e.id = :idExpedicao')
+                ->distinct(true)
+                ->setParameter('idExpedicao', $idExpedicao);
+            if (count($source->getQuery()->getArrayResult()) >0) {
+                $sessao = new \Zend_Session_Namespace('deposito');
+                $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+                $central = $deposito->getFilial()->getCodExterno();
+
+                $result =array(0=>array('centralEntrega'=>$central));
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -491,7 +511,11 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $qtdEtiquetasPendenteCorte = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, $expedicaoEn, $centralEstoque);
-        if ($qtdEtiquetasPendenteCorte > 0) {
+
+        $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE;
+        $pendenciasReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), $status);
+
+        if (($qtdEtiquetasPendenteCorte > 0) OR (count($pendenciasReentrega) > 0)) {
             return true;
         } else {
             return false;
@@ -980,6 +1004,13 @@ class ExpedicaoRepository extends EntityRepository
             ->select('rp')
             ->from('wms:Expedicao\VRelProdutos', 'rp')
             ->leftJoin('wms:Produto','p','WITH','p.id = rp.codProduto AND p.grade = rp.grade')
+
+            ->leftJoin('wms:Expedicao\Carga', 'c', 'WITH', 'rp.codCarga = c.id')
+            ->leftJoin('wms:Expedicao\Pedido', 'ped', 'WITH', 'c.id = ped.carga')
+            ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'ped.id = nfsp.pedido')
+            ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
+            ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
+
             ->where('rp.codExpedicao in (' . $idExpedicao . ')')
             ->andWhere('rp.centralEntrega = :centralEntrega')
             ->setParameter('centralEntrega', $central);
@@ -1229,6 +1260,7 @@ class ExpedicaoRepository extends EntityRepository
                        P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
+                       NVL(COUNT(REE.COD_REENTREGA),0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                           ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MSCONF.QTD_TOTAL_CONF_MANUAL,0) ) * 100) / (NVL(MSP.QTD_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2))
@@ -1301,6 +1333,7 @@ class ExpedicaoRepository extends EntityRepository
                                    WHERE 1 = 1 ' .  $FullWhere .'
                               GROUP BY C.COD_EXPEDICAO, MAP.QTD, PED.QTD) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
+                  LEFT JOIN REENTREGA REE ON REE.COD_CARGA = CA.COD_CARGA
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
