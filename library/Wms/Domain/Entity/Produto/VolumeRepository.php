@@ -64,7 +64,7 @@ class VolumeRepository extends EntityRepository
         }
 
         if (isset($values['ativarDesativar']) && !empty($values['ativarDesativar'])){
-            if (empty($volumeEntity->getDataInativacao())) {
+            if (isset($volumeEntity) && empty($volumeEntity->getDataInativacao())) {
                 $volumeEntity->setDataInativacao(new \DateTime());
                 $volumeEntity->setUsuarioInativacao($idUsuario);
                 $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
