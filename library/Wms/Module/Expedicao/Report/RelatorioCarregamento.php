@@ -239,12 +239,13 @@ class RelatorioCarregamento extends Pdf
 
             if (($produto == end($produtos)) ||
                 !(
-                    ($produtos[$key + 1]['bairro']     == $produto['bairro'])
-                && ($produtos[$key + 1]['cliente']    == $produto['cliente'])
-                && ($produtos[$key + 1]['codProduto'] == $produto['codProduto'])
-                && ($produtos[$key + 1]['produto']    == $produto['produto'])
-                && ($produtos[$key + 1]['grade']      == $produto['grade'])
-                && ($produtos[$key + 1]['fabricante'] == $produto['fabricante'])
+                    ($produtos[$key + 1]['bairro']      == $produto['bairro'])
+                && ($produtos[$key + 1]['cliente']      == $produto['cliente'])
+                && ($produtos[$key + 1]['codProduto']   == $produto['codProduto'])
+                && ($produtos[$key + 1]['produto']      == $produto['produto'])
+                && ($produtos[$key + 1]['grade']        == $produto['grade'])
+                && ($produtos[$key + 1]['fabricante']   == $produto['fabricante'])
+                && ($produtos[$key + 1]['codReentrega'] == $produto['codReentrega'])
                 )) {
 
                 $qtdProduto        = $qtdProduto - $qtdCorteEmbalagem - $qtdCorteVolume;
@@ -378,7 +379,11 @@ class RelatorioCarregamento extends Pdf
                 if ($volumeEn != NULL) $volume = $volumeEn->getId();
             }
 
-            $this->Cell(8,  5, $produto['sequencia'], 1);
+            if (!is_null($produto['codReentrega'])) {
+                $this->Cell(8,  5, $produto['sequencia'].' - (Reentrega)', 1);
+            } else {
+                $this->Cell(8,  5, $produto['sequencia'], 1);
+            }
             $this->Cell(102, 5, utf8_decode($produto['rua'].', '.$produto['bairro'].', '.$produto['cidade'])     ,1);
             $this->Cell(46, 5, substr(utf8_decode($produto['cliente']),0,40)    ,1);
             $this->Cell(12, 5, utf8_decode($volume)     ,1);
@@ -387,7 +392,11 @@ class RelatorioCarregamento extends Pdf
             $this->Cell(23, 5, substr(utf8_decode($produto['fabricante']),0,15) ,1);
             $this->Cell(10, 5, utf8_decode($qtdProduto) ,1,1);
         } else {
-            $this->Cell(8,  5, $produto['sequencia'], 1);
+            if (!is_null($produto['codReentrega'])) {
+                $this->Cell(8,  5, $produto['sequencia'].' - (Reentrega)', 1);
+            } else {
+                $this->Cell(8,  5, $produto['sequencia'], 1);
+            }
             $this->Cell(106, 5, utf8_decode($produto['rua'].', '.$produto['bairro'].', '.$produto['cidade'])     ,1);
             $this->Cell(54, 5, substr(utf8_decode($produto['cliente']),0,40)    ,1);
             $this->Cell(12, 5, utf8_decode($produto['codProduto']) ,1);
@@ -413,7 +422,11 @@ class RelatorioCarregamento extends Pdf
                 if ($volumeEn != NULL) $volume = $volumeEn->getId();
             }
 
-            $this->Cell(8,  5, $produto['sequencia'], 1);
+            if (!is_null($produto['codReentrega'])) {
+                $this->Cell(8,  5, $produto['sequencia']. ' - (Reentrega)', 1);
+            } else {
+                $this->Cell(8,  5, $produto['sequencia'], 1);
+            }
             $this->Cell(102, 5, utf8_decode($produto['rua'].', '.$produto['bairro'].', '.$produto['cidade'])     ,1);
             $this->Cell(46, 5, substr(utf8_decode($produto['cliente']),0,40)    ,1);
             $this->Cell(12, 5, utf8_decode($volume)     ,1);
@@ -423,7 +436,11 @@ class RelatorioCarregamento extends Pdf
             $this->Cell(23, 5, utf8_decode($produto['fabricante']) ,1);
             $this->Cell(10, 5, utf8_decode($qtdProduto) ,1,1);
         } else {
-            $this->Cell(8,  5, $produto['sequencia'], 1);
+            if (!is_null($produto['codReentrega'])) {
+                $this->Cell(8,  5, $produto['sequencia']. ' - (Reentrega)', 1);
+            } else {
+                $this->Cell(8,  5, $produto['sequencia'], 1);
+            }
             $this->Cell(106, 5, utf8_decode($produto['rua'].', '.$produto['bairro'].', '.$produto['cidade'])     ,1);
             $this->Cell(54, 5, substr(utf8_decode($produto['cliente']),0,40)    ,1);
             $this->Cell(12, 5, utf8_decode($produto['codProduto']) ,1);

@@ -60,13 +60,15 @@ class VRelProdutosRepository extends EntityRepository
                       linha.descricao      as linhaSeparacao,
                       ped.sequencia        as sequencia,
                       ped.id               as pedido,
-                      nvl(pe.embalado,'N') as embalado
+                      nvl(pe.embalado,'N') as embalado,
+                      etqsep.codReentrega
                       ")
             ->from("wms:Expedicao\PedidoProduto", "pp")
             ->leftJoin("pp.produto"         ,"prod")
             ->leftJoin("prod.embalagens"     ,"pe")
             ->leftJoin("prod.linhaSeparacao","linha")
             ->leftJoin("pp.pedido"          ,"ped")
+            ->leftJoin('wms:expedicao\EtiquetaSeparacao', 'etqsep', 'WITH', 'etqsep.pedido = ped.id')
             ->leftJoin("ped.carga"          ,"car")
             ->leftJoin("ped.itinerario"     ,"it")
             ->leftJoin("prod.fabricante"    ,"fab")
