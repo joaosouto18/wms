@@ -49,6 +49,11 @@ class Campos
     protected $tamanhoFim;
 
     /**
+     * @Column(name="PREENCH_OBRIGATORIO", type="string", nullable=false)
+     */
+    protected $preenchObrigatorio;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -158,6 +163,22 @@ class Campos
     public function getValorPadrao()
     {
         return $this->valorPadrao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPreenchObrigatorio()
+    {
+        return $this->preenchObrigatorio;
+    }
+
+    /**
+     * @param mixed $preenchObrigatorio
+     */
+    public function setPreenchObrigatorio($preenchObrigatorio)
+    {
+        $this->preenchObrigatorio = $preenchObrigatorio;
     }
 
 }

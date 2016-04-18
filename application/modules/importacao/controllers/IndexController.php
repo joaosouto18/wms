@@ -17,10 +17,11 @@ class Importacao_IndexController extends Action
     {
         $em = $this->getEntityManager();
         //@TODO parametro sistema
-        $dir = 'D:\\';
+        $dir = 'C:\wamp\www\CSV-wms';
         $importacaoService = new \Wms\Service\Importacao();
 
         $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findAll();
+        $arrErros = array();
         foreach ($arquivos as $arquivo) {
             $file = $arquivo->getNomeArquivo();
             $caracterQuebra = $arquivo->getCaracterQuebra();
@@ -33,6 +34,7 @@ class Importacao_IndexController extends Action
             $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
 
             $i = 0;
+            $arrErroRows = array();
             while($linha = fgets($handle)) {
                 $i = $i+1;
                 if ($cabecalho == 'S') {
@@ -47,34 +49,55 @@ class Importacao_IndexController extends Action
                     $conteudoArquivo = explode($caracterQuebra, $linha);
                 }
 
-                $arrRegistro = array();
-                foreach ($camposArquivo as $campo) {
-                    if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo)-1 < $campo->getPosicaoTxt())) {
-                        $valorCampo =  trim($campo->getValorPadrao());
-                    } else {
-                        $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
-                        if ($valorCampo == "") {
+                if (count(array_filter($conteudoArquivo)) > 1) {
+                    $arrRegistro = array();
+                    /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                    foreach ($camposArquivo as $campo) {
+                        if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo) - 1 < $campo->getPosicaoTxt())) {
                             $valorCampo = trim($campo->getValorPadrao());
+                        } else {
+                            $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
+
+                            if ($valorCampo == "") {
+                                if ($campo->getPreenchObrigatorio() === "n") {
+                                    $valorCampo = trim($campo->getValorPadrao());
+                                } else {
+                                    array_push($arrErroRows, $conteudoArquivo);
+                                    break;
+                                }
+                            }
                         }
+
+                        if ($campo->getTamanhoInicio() != "") {
+                            $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                        }
+                        $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
                     }
 
-                    if ($campo->getTamanhoInicio() != "") {
-                        $valorCampo = substr($valorCampo,$campo->getTamanhoInicio(),$campo->getTamanhoFim());
+                    switch ($tabelaDestino) {
+                        case 'produto':
+                            $importacaoService->saveProduto($em, $arrRegistro);
+                            break;
+                        case 'cliente':
+                            break;
+                        default:
+                            break;
+
                     }
-                    $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
-                }
-
-                switch ($tabelaDestino) {
-                    case 'produto':
-                        $importacaoService->saveProduto($em,$arrRegistro);
-                        break;
-                    case 'cliente':
-                        break;
-                    default:
-                        break;
-
+                } else {
+                    continue;
                 }
             }
+            if (count($arrErroRows) > 0) {
+                $arrErros[$file] = $arrErroRows;
+            }
+        }
+
+        if (count($arrErros) > 0){
+            var_dump($arrErros);
+            return $arrErros;
+        } else {
+            return true;
         }
 
     }
