@@ -88,7 +88,8 @@ class Mobile_ReentregaController extends Action
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $modeloSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->findOneBy(array('id' => $idModeloSeparacao));
         $this->view->modeloSeparacao = $modeloSeparacao->getTipoSeparacaoFracionado();
-
+        $this->view->modeloSeparacao = "M";
+        
         if (isset($params['submit'])) {
             if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
                 try {
