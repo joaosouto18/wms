@@ -147,7 +147,7 @@ class Produtos extends Pdf
 
         foreach ($produtos as $key => $produto) {
 
-            $carga = 'Carga: ' . $produto->getCodCargaExterno() . ' / ' . $produto->getDscLinhaEntrega() . ' - ' . $produto->getDscItinerario() . ' - ' . $produto->getCodItinerario();
+            $carga = 'Carga: ' . $produto['codCargaExterno'] . ' / ' . $produto['dscLinhaEntrega'] . ' - ' . $produto['dscItinerario'] . ' - ' . $produto['codItinerario'];
 
             if (($prodAnterior != $produto->getCodProduto()) OR ($gradeAnterior != $produto->getGrade())) {
                 $arrayCargas = array();

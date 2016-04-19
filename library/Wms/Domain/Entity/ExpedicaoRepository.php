@@ -987,7 +987,7 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutos($idExpedicao, $central, $cargas = null, $linhaSeparacao = null)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('rp') //es.codReentrega
+            ->select('rp, es.codReentrega')
             ->from('wms:Expedicao\VRelProdutos', 'rp')
             ->leftJoin('wms:Produto','p','WITH','p.id = rp.codProduto AND p.grade = rp.grade')
 
@@ -996,8 +996,8 @@ class ExpedicaoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'ped.id = nfsp.pedido')
             ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
             ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
-//            ->leftJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'r.codNotaFiscalSaida = nfs.id')
-//            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.codReentrega = r.id')
+            ->leftJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'r.codNotaFiscalSaida = nfs.id')
+            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.codReentrega = r.id')
 
             ->where('rp.codExpedicao in (' . $idExpedicao . ')')
             ->andWhere('rp.centralEntrega = :centralEntrega')
