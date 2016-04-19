@@ -986,7 +986,7 @@ class ExpedicaoRepository extends EntityRepository
                 ->from('wms:Expedicao', 'e')
                 ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
                 ->innerJoin('wms:Expedicao\Pedido', 'pedido', 'WITH', 'c.id = pedido.carga')
-                ->innerJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = pedido.itinerario')
+                ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = pedido.itinerario')
                 ->where('e.id = :idExpedicao')
                 ->distinct(true)
                 ->setParameter('idExpedicao', $idExpedicao);
