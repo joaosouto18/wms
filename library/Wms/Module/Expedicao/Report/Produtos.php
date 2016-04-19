@@ -208,7 +208,7 @@ class Produtos extends Pdf
                 $this->AddPage();
             }
 
-            if (($prodAnterior != $produto->getCodProduto()) OR ($gradeAnterior != $produto->getGrade())) {
+            if (($prodAnterior != $produto->getCodProduto()) OR ($gradeAnterior != $produto->getGrade()) || $reentregaAnterior != $produto['codReentrega']) {
                 $embalagemAnterior = null;
                 $arrayCargas = array();
                 $arrayQtd = array();
@@ -265,7 +265,7 @@ class Produtos extends Pdf
             };
 
             $prodAnterior = $produto->getCodProduto();
-//            $reentregaAnterior = $produto['codReentrega'];
+            $reentregaAnterior = $produto['codReentrega'];
             $gradeAnterior = $produto->getGrade();
             $seqQuebra = $produto->getSeqQuebra();
         }

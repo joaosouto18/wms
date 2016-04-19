@@ -987,18 +987,16 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutos($idExpedicao, $central, $cargas = null, $linhaSeparacao = null)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('rp') //es.codReentrega
+            ->select('rp, r.id codReentrega')
             ->from('wms:Expedicao\VRelProdutos', 'rp')
             ->leftJoin('wms:Produto','p','WITH','p.id = rp.codProduto AND p.grade = rp.grade')
-
             ->leftJoin('wms:Expedicao\Carga', 'c', 'WITH', 'rp.codCarga = c.id')
             ->leftJoin('wms:Expedicao\Pedido', 'ped', 'WITH', 'c.id = ped.carga')
             ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'ped.id = nfsp.pedido')
             ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
             ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
-//            ->leftJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'r.codNotaFiscalSaida = nfs.id')
+            ->leftJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'r.codNotaFiscalSaida = nfs.id')
 //            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.codReentrega = r.id')
-
             ->where('rp.codExpedicao in (' . $idExpedicao . ')')
             ->andWhere('rp.centralEntrega = :centralEntrega')
             ->setParameter('centralEntrega', $central);
@@ -1324,23 +1322,12 @@ class ExpedicaoRepository extends EntityRepository
                   LEFT JOIN REENTREGA REE ON REE.COD_CARGA = CA.COD_CARGA
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    SUM((PROD.NUM_PESO * PP.QUANTIDADE) + PESO_REENTREGA.PESO) as NUM_PESO,
-                                    SUM((PROD.NUM_CUBAGEM * PP.QUANTIDADE) + PESO_REENTREGA.CUBAGEM) as NUM_CUBAGEM
+                                    SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
+                                    SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
                                FROM CARGA C
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
                                LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                               LEFT JOIN (
-                                        SELECT P.COD_PEDIDO, SUM(SPP.NUM_PESO * PP.QUANTIDADE) AS PESO, SUM(SPP.NUM_CUBAGEM * PP.QUANTIDADE) AS CUBAGEM
-                                    FROM PEDIDO P
-                                    LEFT JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSP ON NFSP.COD_PEDIDO = P.COD_PEDIDO
-                                    LEFT JOIN NOTA_FISCAL_SAIDA NFS ON NFS.COD_NOTA_FISCAL_SAIDA = NFSP.COD_NOTA_FISCAL_SAIDA
-                                    LEFT JOIN PEDIDO_PRODUTO PP ON P.COD_PEDIDO = PP.COD_PEDIDO
-                                    LEFT JOIN REENTREGA R ON R.COD_NOTA_FISCAL_SAIDA = NFS.COD_NOTA_FISCAL_SAIDA
-                                    LEFT JOIN CARGA C ON C.COD_CARGA = R.COD_CARGA
-                                    LEFT JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PP.COD_PRODUTO AND SPP.DSC_GRADE = PP.DSC_GRADE
-                                    GROUP BY P.COD_PEDIDO
-                              ) PESO_REENTREGA ON PESO_REENTREGA.COD_PEDIDO = P.COD_PEDIDO
                                WHERE 1 = 1  '.$FullWhere.$andWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
                  WHERE 1 = 1'. $FullWhere . '
