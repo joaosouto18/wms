@@ -987,7 +987,7 @@ class ExpedicaoRepository extends EntityRepository
     public function getProdutos($idExpedicao, $central, $cargas = null, $linhaSeparacao = null)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('rp') //
+            ->select('rp') //es.codReentrega
             ->from('wms:Expedicao\VRelProdutos', 'rp')
             ->leftJoin('wms:Produto','p','WITH','p.id = rp.codProduto AND p.grade = rp.grade')
 
