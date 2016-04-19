@@ -15,7 +15,7 @@ use Zend\Stdlib\Configurator;
 class Importacao
 {
 
-    private function saveClasse($em, $idClasse, $nome, $idClassePai = null)
+    public function saveClasse($em, $idClasse, $nome, $idClassePai = null)
     {
         /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
         $classeRepo = $em->getRepository('wms:Produto\Classe');
@@ -223,16 +223,16 @@ class Importacao
             }
 
             $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
+            $varTpComercializacao = $produto['tipoComercializacao'];
             $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
-            $produto['fabricante'] = $em->getRepository('wms:Fabricante')->findOneBy(array('id' => $produto['fabricante']));
+            $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
             Configurator::configure($produtoEntity, $produto);
 
             $em->persist($produtoEntity);
 
-            /*
-            switch ($produto['tipoComercializacao']) {
+            /*switch ($varTpComercializacao) {
                 case Produto::TIPO_UNITARIO:
                     // gravo embalagens
                     $this->persistirEmbalagens($em, $produtoEntity, $produto);
@@ -256,8 +256,8 @@ class Importacao
                     foreach ($embalagens as $embalagemEntity)
                         $em->remove($embalagemEntity);
                     break;
-            }
-            */
+            }*/
+
             $em->flush();
             $em->commit();
         } catch (\Exception $e) {
@@ -279,11 +279,11 @@ class Importacao
         $filialRepo->save($filianEn, $values);
     }
 
-    private function persistirEmbalagens($em, $produtoEntity, $values)
+    public function saveEmbalagens($em, $produtoEntity, $values)
     {
 
         //embalagens do produto
-        if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
+        if (!(isset($values['embalagens']) || (count($values['embalagens']) > 0)))
             return false;
 
         foreach ($values['embalagens'] as $id => $itemEmbalagem) {

@@ -20,7 +20,7 @@ class Importacao_IndexController extends Action
         $dir = 'C:\wamp\www\CSV-wms';
         $importacaoService = new \Wms\Service\Importacao();
 
-        $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findAll();
+        $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array(),array('sequencia' => 'ASC'));
         $arrErros = array();
         foreach ($arquivos as $arquivo) {
             $file = $arquivo->getNomeArquivo();
@@ -78,7 +78,14 @@ class Importacao_IndexController extends Action
                         case 'produto':
                             $importacaoService->saveProduto($em, $arrRegistro);
                             break;
-                        case 'cliente':
+                        case 'fabricante':
+                            $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome']);
+                            break;
+                        case 'classe':
+                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])));
+                            break;
+                        case '':
+                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])));
                             break;
                         default:
                             break;

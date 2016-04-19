@@ -38,6 +38,11 @@ class Arquivo
     protected $cabecalho;
 
     /**
+     * @Column(name="SEQUENCIA", type="integer", nullable=true)
+     */
+    protected $sequencia;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -115,6 +120,22 @@ class Arquivo
     public function setCabecalho($cabecalho)
     {
         $this->cabecalho = $cabecalho;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSequencia()
+    {
+        return $this->sequencia;
+    }
+
+    /**
+     * @param mixed $sequencia
+     */
+    public function setSequencia($sequencia)
+    {
+        $this->sequencia = $sequencia;
     }
 
 }

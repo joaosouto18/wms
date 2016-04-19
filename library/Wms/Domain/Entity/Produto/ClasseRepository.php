@@ -32,6 +32,7 @@ class ClasseRepository extends EntityRepository
             $em->persist($classeEn);
             $em->flush();
             $em->commit();
+            return $classeEn;
 
         } catch (\Exception $e) {
             $em->rollback();
