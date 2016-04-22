@@ -703,16 +703,22 @@ class Mobile_EnderecamentoController extends Action
         $this->view->codigoBarras = $codigoBarras;
 
         try {
-            if ($codigoBarras) {
-                $LeituraColetor = new LeituraColetor();
-                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            if (empty($codigoBarras))
+                throw new \Exception ("Necessário informar o Endereço");
 
-                $endereco = $this->getEnderecoByParametro($codigoBarras);
-            }
+            if (empty($nivel))
+                throw new \Exception ("Necessário informar o Nivel");
+
+            $LeituraColetor = new LeituraColetor();
+            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            $endereco = $this->getEnderecoByParametro($codigoBarras);
+
+            if (empty($endereco))
+                throw new \Exception ("Endereço Inválido");
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $endereco[0]['NUM_NIVEL'], false);
+            $result = $estoqueRepo->getProdutoByNivel($endereco[0]['DSC_DEPOSITO_ENDERECO'], $endereco[0]['NUM_NIVEL']);
 
             if ($result == NULL) {
                 throw new \Exception ("Endereço selecionado está vazio");

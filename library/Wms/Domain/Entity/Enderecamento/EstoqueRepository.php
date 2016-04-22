@@ -808,7 +808,8 @@ class EstoqueRepository extends EntityRepository
             ->andWhere("dep.predio = $predio")
             ->andWhere("dep.nivel = $nivel")
             ->andWhere("dep.apartamento =  $apartamento");
-            $result = $dql->getQuery()->getArrayResult();
+
+        $result = $dql->getQuery()->getArrayResult();
         return $result;
     }
 
