@@ -827,7 +827,6 @@ class Mobile_EnderecamentoController extends Action
         $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
         try {
-
             if ($enderecoNovo) {
                 $LeituraColetor = new LeituraColetor();
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
@@ -850,13 +849,16 @@ class Mobile_EnderecamentoController extends Action
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                     $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
-                    $params['embalagem'] = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
-                    $params['volume'] = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
+                    $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
+                    $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
                     $validade = $estoque->getValidade();
                     $params['validade'] = null;
                     if (isset($validade) && !is_null($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
                     }
+                    if (($params['endereco'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) && ($volumeEn->getEndereco() != $params['endereco'] || $embalagemEn->getEndereco() != $params['endereco']))
+                        throw new \Exception("Esse Produto só pode ser alocado no picking cadastrado!");
+
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
@@ -884,6 +886,9 @@ class Mobile_EnderecamentoController extends Action
                     if (isset($validade) && !is_null($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
                     }
+                    if (($params['endereco'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) && ($volumeEn->getEndereco() != $params['endereco'] || $embalagemEn->getEndereco() != $params['endereco']))
+                        throw new \Exception("Esse Produto só pode ser alocado no picking cadastrado!");
+
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
@@ -912,6 +917,9 @@ class Mobile_EnderecamentoController extends Action
                         if (isset($validade) && !is_null($validade)) {
                             $params['validade'] = $validade->format('d/m/Y');
                         }
+
+                        if (($params['endereco'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) && ($volume->getEndereco() != $params['endereco']))
+                            throw new \Exception("Esse Produto só pode ser alocado no picking cadastrado!");
 
                         $estoqueRepo->movimentaEstoque($params);
 
