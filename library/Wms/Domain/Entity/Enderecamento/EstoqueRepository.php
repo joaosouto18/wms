@@ -775,7 +775,8 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
-    public function getProdutoByNivel($dscEndereco, $nivel) {
+    public function getProdutoByNivel($dscEndereco, $nivel)
+    {
 
         if (is_null($nivel)) {
             throw new Exception('Nivel esperado');
