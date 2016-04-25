@@ -218,7 +218,7 @@ class Mobile_Enderecamento_ManualController extends Action
         } catch (\Exception $ex) {
             $this->addFlashMessage('error',$ex->getMessage());
             $this->getEntityManager()->rollback();
-            $this->redairect('ler-codigo-barras','enderecamento_manual','mobile',array('id'=>$params['id']));
+            $this->redirect('ler-codigo-barras','enderecamento_manual','mobile',array('id'=>$params['id']));
         }
     }
 
