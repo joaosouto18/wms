@@ -801,7 +801,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
   private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
 	$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -817,7 +817,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	
 	if (empty($dadosLogisticosEmbalagens)) {
 	  $dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -847,6 +847,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  'peso' => $embalagem['peso'],
 		  'descricao' => $embalagem['descricao'],
           'quantidade' => $embalagem['quantidade'],
+		  'codigoBarras' =>$embalagem['codigoBarras']
 	  );
 
 	  $i++;
@@ -877,7 +878,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		  'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
 		  'peso' => \Core\Util\Converter::brToEn($peso, 3),
 		  'descricao' => $descricao,
-          'quantidade' => 1
+          'quantidade' => 1,
+		  'codigoBarras' => $codigoBarras
 	  );
 	  $i++;
 	}
