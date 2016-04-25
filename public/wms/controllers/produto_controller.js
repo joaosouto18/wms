@@ -18,6 +18,16 @@ $.Controller.extend('Wms.Controllers.Produto',
         this.validarEmbalagens();
         //checo tipo comercializacao/volumes
         this.validarVolumes();
+
+        $('#produto-diasVidaUtil').parent().hide();
+        $('#produto-diasVidaUtil').hide();
+
+        $('#produto-percTolerancia').parent().hide();
+        $('#produto-percTolerancia').hide();
+
+        $('#produto-toleranciaNominal').parent().hide();
+        $('#produto-toleranciaNominal').hide();
+
         //oculta campo de dias para vencimento
         if ($('#produto-validade').val() == 'S') {
             $('#produto-diasVidaUtil').show();
@@ -25,6 +35,18 @@ $.Controller.extend('Wms.Controllers.Produto',
         } else if ($('#produto-validade').val() == 'N') {
             $('#produto-diasVidaUtil').hide();
             $('#produto-diasVidaUtil').parent().hide();
+        }
+
+        if ($('#produto-pVariavel').val() == 'S') {
+            $('#produto-percTolerancia').parent().show();
+            $('#produto-percTolerancia').show();
+            $('#produto-toleranciaNominal').parent().show();
+            $('#produto-toleranciaNominal').show();
+        } else if ($('#produto-pVariavel').val() == 'N') {
+            $('#produto-percTolerancia').parent().hide();
+            $('#produto-percTolerancia').hide();
+            $('#produto-toleranciaNominal').parent().hide();
+            $('#produto-toleranciaNominal').hide();
         }
 
         //checa quantidade de volumes
@@ -37,6 +59,29 @@ $.Controller.extend('Wms.Controllers.Produto',
         });
 
     },
+    '#produto-pVariavel change' : function() {
+        if ($('#produto-pVariavel').val() == 'S') {
+            $('#produto-percTolerancia').parent().show();
+            $('#produto-percTolerancia').show();
+            $('#produto-toleranciaNominal').parent().show();
+            $('#produto-toleranciaNominal').show();
+        } else if ($('#produto-pVariavel').val() == 'N') {
+            $('#produto-percTolerancia').parent().hide();
+            $('#produto-percTolerancia').hide();
+            $('#produto-toleranciaNominal').parent().hide();
+            $('#produto-toleranciaNominal').hide();
+        }
+    },
+
+    '#produto-percTolerancia blur' : function() {
+        var pesoTotal = parseFloat($("#produto-peso").val());
+        var percTolerancia = parseFloat($("#produto-percTolerancia").val());
+        var pVariavel = pesoTotal*percTolerancia/100;
+
+        $("#produto-toleranciaNominal").val(pVariavel);
+    },
+
+
     /**
      * Valida os formularios de cadastro das Embalagens e Volumes
      */
