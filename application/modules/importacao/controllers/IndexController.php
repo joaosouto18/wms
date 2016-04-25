@@ -37,7 +37,7 @@ class Importacao_IndexController extends Action
             $arrErroRows = array();
             while($linha = fgets($handle)) {
                 $i = $i+1;
-                if ($cabecalho == 'S') {
+                if (ucfirst($cabecalho) == 'S') {
                     if ($i == 1) {
                         continue;
                     }
@@ -82,10 +82,11 @@ class Importacao_IndexController extends Action
                             $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome']);
                             break;
                         case 'classe':
-                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])));
+                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null);
                             break;
-                        case '':
-                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])));
+                        case 'embalagem':
+
+                            $importacaoService->saveEmbalagens($em, $arrRegistro);
                             break;
                         default:
                             break;

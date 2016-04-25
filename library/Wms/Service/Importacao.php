@@ -2,6 +2,7 @@
 
 namespace Wms\Service;
 
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
@@ -10,6 +11,7 @@ use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Classe;
 use Wms\Module\Web\Controller\Action;
+use Wms\Util\CodigoBarras;
 use Zend\Stdlib\Configurator;
 
 class Importacao
@@ -279,53 +281,58 @@ class Importacao
         $filialRepo->save($filianEn, $values);
     }
 
-    public function saveEmbalagens($em, $produtoEntity, $values)
+    public function saveEmbalagens($em, $registro)
     {
+        /** @var EntityManager $em */
 
-        //embalagens do produto
-        if (!(isset($values['embalagens']) || (count($values['embalagens']) > 0)))
-            return false;
+        $critProduto = array(
+            'id' => $registro['codProduto'],
+            'grade' => $registro['grade']
+        );
 
-        foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+        /** @var \Wms\Domain\Entity\Produto $produto */
+        $produto = $em->getRepository('wms:Produto')->findOneBy($critProduto);
 
-            if (!isset($itemEmbalagem['acao']))
-                continue;
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
+        $embalagemEntity = new Produto\Embalagem();
+        $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity,$registro);
+        $embalagemEntity->setProduto($produto);
+        $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
+        $embalagemEntity->setCodigoBarras($codigoBarras);
+        $em->persist($embalagemEntity);
+        $em->flush();
 
-            switch ($itemEmbalagem['acao']) {
-                case 'incluir':
+            /*foreach ($arrEmbalagens as $key => $embalagem) {
 
-                    $embalagemEntity = new Produto\Embalagem();
+                $embalagemEntity = new Produto\Embalagem();
 
-                    $embalagemEntity->setProduto($produtoEntity);
-                    $embalagemEntity->setGrade($produtoEntity->getGrade());
-                    $embalagemEntity->setDescricao($itemEmbalagem['descricaoEmbalagem']);
-                    $embalagemEntity->setQuantidade($itemEmbalagem['qtdEmbalagem']);
-                    $embalagemEntity->setIsPadrao($itemEmbalagem['indPadrao']);
-                    $embalagemEntity->setCBInterno($itemEmbalagem['cbInterno']);
-                    $embalagemEntity->setImprimirCB($itemEmbalagem['imprimirCb']);
-                    $embalagemEntity->setCodigoBarras($itemEmbalagem['codigoBarras']);
-                    $embalagemEntity->setEmbalado($itemEmbalagem['embalado']);
-                    $embalagemEntity->setCapacidadePicking($itemEmbalagem['capacidadePicking']);
-                    $embalagemEntity->setPontoReposicao($itemEmbalagem['pontoReposicao']);
-                    $embalagemEntity->setEndereco(null);
+                $embalagemEntity->setProduto($produtoEntity);
+                $embalagemEntity->setGrade($produtoEntity->getGrade());
+                $embalagemEntity->setDescricao($embalagem['descricaoEmbalagem']);
+                $embalagemEntity->setQuantidade($embalagem['qtdEmbalagem']);
+                $embalagemEntity->setIsPadrao($embalagem['indPadrao']);
+                $embalagemEntity->setCBInterno($embalagem['cbInterno']);
+                $embalagemEntity->setImprimirCB($embalagem['imprimirCb']);
+                $embalagemEntity->setCodigoBarras($embalagem['codigoBarras']);
+                $embalagemEntity->setEmbalado($embalagem['embalado']);
+                $embalagemEntity->setCapacidadePicking($embalagem['capacidadePicking']);
+                $embalagemEntity->setPontoReposicao($embalagem['pontoReposicao']);
+                $embalagemEntity->setEndereco(null);
 
-                    $em->persist($embalagemEntity);
-                    $em->flush();
 
-                    $produtoEntity->addEmbalagem($embalagemEntity);
 
-                    $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
 
-                    if ($itemEmbalagem['cbInterno'] == 'S') {
-                        $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-                        $embalagemEntity->setCodigoBarras($codigoBarras);
-                    }
 
-                    break;
+                //$produtoEntity->addEmbalagem($embalagemEntity);
+
+                if ($embalagem['cbInterno'] == 'S') {
+
+                }
+
+                break;
             }
-        }
 
-        return true;
+        return true;*/
     }
 
     private function persistirVolumes($em, $produtoEntity, $volume) {
