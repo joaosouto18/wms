@@ -1,8 +1,8 @@
 function focusInput() {
     hiddenElement("formulario-nivel");
+    document.getElementById('uma').focus();
     try {
         document.getElementById('produto').focus();
-        document.getElementById('uma').focus();
     } catch(err){}
 }
 
