@@ -1334,7 +1334,8 @@ class RecebimentoRepository extends EntityRepository
 
         $SQL = "SELECT DISTINCT R.COD_RECEBIMENTO,
                                 R.DTH_INICIO_RECEB,
-                                B.DSC_BOX AS BOX
+                                B.DSC_BOX AS BOX,
+                                PJ.NOM_FANTASIA
                   FROM (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO
                           FROM V_QTD_RECEBIMENTO V
                          GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) V
@@ -1348,6 +1349,10 @@ class RecebimentoRepository extends EntityRepository
                         AND P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                   LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                   LEFT JOIN BOX B ON B.COD_BOX = R.COD_BOX
+                  LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                  INNER JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
+                  INNER JOIN PESSOA ON PESSOA.COD_PESSOA = F.COD_FORNECEDOR
+                  LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = PESSOA.COD_PESSOA
                  WHERE V.QTD - NVL(P.QTD,0) >0
                  $whereStatus
                  ORDER BY R.DTH_INICIO_RECEB DESC
