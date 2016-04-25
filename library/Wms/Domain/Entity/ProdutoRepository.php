@@ -853,7 +853,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	  $i++;
 	}
 
-	return $client->salvar((string) $produtoEntity->getId(), $dadosLogisticos);
+	return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticos);
   }
 
   private function enviaDadosLogisticosVolumes($produtoEntity, array $values = array()) {
@@ -883,7 +883,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	  );
 	  $i++;
 	}
-	return $client->salvar((string) $produtoEntity->getId(), $dadosLogisticosVolume);
+	return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticosVolume);
   }
 
   private function getSoapClient() {
