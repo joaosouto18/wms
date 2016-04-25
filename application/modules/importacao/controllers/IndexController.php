@@ -13,8 +13,10 @@ use Wms\Module\Importacao\Form\Index as IndexForm;
 class Importacao_IndexController extends Action
 {
 
-    public function teste()
+    public function testeAjaxAction()
     {
+        Zend_Session::setOptions(array("STATUS_IMPORT", "0"));
+        exit;
         $em = $this->getEntityManager();
         //@TODO parametro sistema
         $dir = 'C:\wamp\www\CSV-wms';
@@ -113,11 +115,10 @@ class Importacao_IndexController extends Action
     public function indexAction()
     {
 
-        $this->teste();
-        echo "TUDO CERTO";
-        exit;
-
         $form = new IndexForm();
+        $this->view->form = $form;
+
+        /*$form = new IndexForm();
         $this->view->form = $form;
         $params = $this->_getAllParams();
         unset($params['module']);
@@ -179,7 +180,7 @@ class Importacao_IndexController extends Action
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
-        }
+        }*/
     }
 
     private function importNotaFiscal($handle, $params, $tipoArquivo)

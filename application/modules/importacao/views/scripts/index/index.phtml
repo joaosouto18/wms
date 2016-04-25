@@ -1,1 +1,19 @@
-<?php echo $this->form;
+<?php
+$this->headScript()->appendFile('/jquery-ui-1.11.4/jquery-ui.js');
+//echo $this->form;
+?>
+<div align="center">
+    <button type="button" id="startImport">Iniciar importação</button>
+</div>
+
+<script type="text/javascript">
+    $("#startImport").click(function () {
+        $.ajax({
+            url: URL_MODULO + '/teste-ajax',
+            type: 'post'
+        }).success(function (respo) {
+                console.log(respo);
+            }
+        );
+    });
+</script>
