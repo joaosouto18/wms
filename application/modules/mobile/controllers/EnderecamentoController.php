@@ -867,11 +867,11 @@ class Mobile_EnderecamentoController extends Action
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
                     if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
                         if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                            $embalagemEn->setEndereco($endereco->getId());
+                            $embalagemEn->setEndereco($endereco);
                             $this->getEntityManager()->persist($embalagemEn);
                             $this->getEntityManager()->flush();
                         } else if (isset($volumeEn) && is_null($volumeEn->getEndereco())) {
-                            $volumeEn->setEndereco($endereco->getId());
+                            $volumeEn->setEndereco($endereco);
                             $this->getEntityManager()->persist($volumeEn);
                             $this->getEntityManager()->flush();
                         }
@@ -919,7 +919,7 @@ class Mobile_EnderecamentoController extends Action
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
                     if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
                         if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                            $embalagemEn->setEndereco($endereco->getId());
+                            $embalagemEn->setEndereco($endereco);
                             $this->getEntityManager()->persist($embalagemEn);
                             $this->getEntityManager()->flush();
                         }
@@ -968,7 +968,7 @@ class Mobile_EnderecamentoController extends Action
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
                         if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
                             if (isset($volume) && is_null($volume->getEndereco())) {
-                                $volume->setEndereco($endereco->getId());
+                                $volume->setEndereco($endereco);
                                 $this->getEntityManager()->persist($volume);
                                 $this->getEntityManager()->flush();
                             }
