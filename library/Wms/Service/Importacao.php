@@ -269,13 +269,20 @@ class Importacao
         $codigoBarras = "";
         if ($registro['codigoBarras'] != "") {
             $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
+            $embalagemEntity = $embalagemRepo->findOneBy(array(
+                'codProduto' => $registro['codProduto'],
+                'grade' => $registro['grade'],
+                'codigoBarras' => $codigoBarras
+            ));
+        } else {
+            $registro['CBInterno'] = 'S';
+            $embalagemEntity = $embalagemRepo->findOneBy(array(
+                'codProduto' => $registro['codProduto'],
+                'grade' => $registro['grade'],
+                'quantidade' => $registro['quantidade']
+            ));
         }
 
-        $embalagemEntity = $embalagemRepo->findOneBy(array(
-            'codProduto' => $registro['codProduto'],
-            'grade' => $registro['grade'],
-            'codigoBarras' => $codigoBarras
-        ));
 
         if ($embalagemEntity == null) {
             /** @var \Wms\Domain\Entity\Produto $produto */
