@@ -265,8 +265,11 @@ class Importacao
 
         $produtoRepo = $repositorios['produtoRepo'];
         $embalagemRepo = $repositorios['embalagemRepo'];
-        $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
 
+        $codigoBarras = "";
+        if ($registro['codigoBarras'] != "") {
+            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
+        }
 
         $embalagemEntity = $embalagemRepo->findOneBy(array(
             'codProduto' => $registro['codProduto'],
@@ -287,6 +290,12 @@ class Importacao
             $embalagemEntity->setProduto($produto);
             $embalagemEntity->setCodigoBarras($codigoBarras);
             $em->persist($embalagemEntity);
+
+            if ($registro['codigoBarras'] == "") {
+                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                $embalagemEntity->setCodigoBarras($codigoBarras);
+                $em->persist($embalagemEntity);
+            }
         }
     }
 
