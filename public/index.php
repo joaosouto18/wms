@@ -1,4 +1,11 @@
 <?php
+
+$dir = "/";
+$file = "arquivos.csv";
+$handle = $dir . DIRECTORY_SEPARATOR . $file;
+$handle = fopen($handle, "r");
+exit;
+
 // Define path to application directory
 defined('APPLICATION_PATH')
     || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
