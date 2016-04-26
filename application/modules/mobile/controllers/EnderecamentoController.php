@@ -806,6 +806,7 @@ class Mobile_EnderecamentoController extends Action
 
     public function confirmaEnderecamentoAction()
     {
+        var_dump('abc'); exit;
         ini_set('max_execution_time', 3000);
         $params = array();
         $qtd = $this->_getParam('qtd');
