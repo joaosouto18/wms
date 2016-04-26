@@ -40,6 +40,17 @@ class Mobile_Enderecamento_ManualController extends Action
                 $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
                 $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $params['produto']);
 
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['produto']));
+
+                /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+                $volumeRepo = $em->getRepository('wms:Produto\Volume');
+                $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['produto']));
+
+                if (!$embalagemEn && !$volumeEn)
+                    throw new \Exception("O código de barras informado não existe!");
+
                 if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
 
@@ -215,7 +226,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 }
 
                 if ($idPicking != $enderecoEn->getId()) {
-                    throw new \Exception("O produto informado já está cadastrado no Picking " . $enderecoEn->getId());
+                    throw new \Exception("O produto informado já está cadastrado no Picking " . $enderecoEn->getDescricao());
                 }
 
             }
