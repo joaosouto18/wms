@@ -14,6 +14,7 @@ class Mobile_Enderecamento_ManualController extends Action
     public function lerCodigoBarrasAction()
     {
         $params = $this->_getAllParams();
+        $em = $this->getEntityManager();
         try{
             if (isset($params['submit'])&& $params['submit'] != null) {
                 if (isset($params['produto']) && trim($params['produto']) == "") {
@@ -31,7 +32,19 @@ class Mobile_Enderecamento_ManualController extends Action
                 unset($params['action']);
                 unset($params['submit']);
 
+                /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
+                $recebimentoEmbalagem = $embalagemRepo->getEmbalagemByRecebimento($params['id'], $params['produto']);
+
+                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $volumeRepo */
+                $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
+                $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $params['produto']);
+
+                if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
+                    throw new \Exception("O Produto Informado não pertence ao recebimento");
+
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
+
             } else {
                 $this->addFlashMessage('info', "Informe um produto, endereço e quantidade para endereçar");
             }
