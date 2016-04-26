@@ -1,19 +1,56 @@
 <?php
-$this->headScript()->appendFile('/jquery-ui-1.11.4/jquery-ui.js');
+    $this->headScript()->appendFile('/jquery-ui-1.11.4/jquery-ui.js');
+    $this->headLink()->appendStylesheet('/jquery-ui-1.11.4/jquery-ui.css');
+    $this->headLink()->appendStylesheet('/css/progress-bar/progress-bar-style.css');
+
 //echo $this->form;
 ?>
 <div align="center">
     <button type="button" id="startImport">Iniciar importação</button>
+    <div class="progress-bar-div">
+        <div id="pbArquivo"></div>
+        <div class="progress-bar-text">
+            <b id="pbTxtArquivo"></b>
+        </div>
+    </div>
+    <div class="progress-bar-div">
+        <div id="pbLinha"></div>
+        <div class="progress-bar-text">
+            <b id="pbTxtLinha"></b>
+        </div>
+    </div>
+    <div style="display: none" id="divResult">
+        <h2 align="center" id="result"></h2>
+    </div>
+
 </div>
 
 <script type="text/javascript">
+    $("#pbArquivo").progressbar();
+    $("#pbLinha").progressbar();
     $("#startImport").click(function () {
         $.ajax({
-            url: URL_MODULO + '/teste-ajax',
+            url: URL_MODULO + '/index/teste-ajax',
             type: 'post'
-        }).success(function (respo) {
-                console.log(respo);
-            }
-        );
+        })/*.success(function (data){
+            $("#divResult").show();
+            $("#result").innerText(data.status);
+        })*/;
+        pullStatus()
     });
+    function pullStatus(){
+        $.ajax({
+            url: URL_MODULO + '/index/push-status-import-ajax',
+            type: 'post'
+        }).success(function (resp) {
+            console.log(resp);
+            $("#pbArquivo").progressbar({value: resp.indexArquivo, max: resp.totalArquivos});
+            $("#pbTxtArquivo").text(resp.indexArquivo + " de " + resp.totalArquivos);
+            $("#pbLinha").progressbar({value: resp.indexLinha, max: resp.totalLinhas});
+            $("#pbTxtLinha").text(resp.indexLinha + " de " + resp.totalLinhas);
+            if (resp.indexArquivo < resp.totalArquivos && resp.indexLinha < resp.totalLinhas) {
+                pullStatus();
+            }
+        });
+    }
 </script>

@@ -15,8 +15,8 @@ class Importacao_IndexController extends Action
 
     public function testeAjaxAction()
     {
-        Zend_Session::setOptions(array("STATUS_IMPORT", "0"));
-        exit;
+        $statusSession = new Zend_Session_Namespace("statusImport");
+
         $em = $this->getEntityManager();
         //@TODO parametro sistema
         $dir = 'C:\wamp\www\CSV-wms';
@@ -24,19 +24,25 @@ class Importacao_IndexController extends Action
 
         $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array(),array('sequencia' => 'ASC'));
         $arrErros = array();
-        foreach ($arquivos as $arquivo) {
+
+        $statusSession->totalArquivos = count($arquivos);
+
+        foreach ($arquivos as $key => $arquivo) {
+            $statusSession->indexArquivo = $key + 1;
+
             $file = $arquivo->getNomeArquivo();
             $caracterQuebra = $arquivo->getCaracterQuebra();
             $cabecalho = $arquivo->getCabecalho();
             $tabelaDestino = $arquivo->getTabelaDestino();
 
-            $handle = $dir . DIRECTORY_SEPARATOR . $file;
-            $handle = fopen($handle, "r");
+            $archive = $dir . DIRECTORY_SEPARATOR . $file;
+            $handle = fopen($archive, "r");
             $camposRepo = $em->getRepository('wms:Importacao\Campos');
             $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
 
             $i = 0;
             $arrErroRows = array();
+            $statusSession->totalLinhas = count(file($archive));
             while($linha = fgets($handle)) {
                 $i = $i+1;
                 if (ucfirst($cabecalho) == 'S') {
@@ -44,7 +50,7 @@ class Importacao_IndexController extends Action
                         continue;
                     }
                 }
-
+                $statusSession->indexLinha = $i-1;
                 if ($caracterQuebra == "") {
                     $conteudoArquivo = array(0=>$linha);
                 }   else {
@@ -104,17 +110,33 @@ class Importacao_IndexController extends Action
         }
 
         if (count($arrErros) > 0){
-            var_dump($arrErros);
-            return $arrErros;
+            $this->_helper->json($arrErros, true);
         } else {
-            return true;
+            $this->_helper->json(array("status"=>"ok"), true);
         }
 
     }
 
+    public function pushStatusImportAjaxAction(){
+        $statusSession = new Zend_Session_Namespace("statusImport");
+        $response = array(
+            "totalArquivos" => $statusSession->totalArquivos,
+            "indexArquivo" => $statusSession->indexArquivo,
+            "totalLinhas" => $statusSession->totalLinhas,
+            "indexLinha" => $statusSession->indexLinha,
+        );
+        $this->_helper->json($response, true);
+    }
+
     public function indexAction()
     {
-
+        unset($_SESSION['statusImport']);
+        $statusSession = new Zend_Session_Namespace("statusImport");
+        $statusSession->setExpirationSeconds(360);
+        $statusSession->totalArquivos = 0;
+        $statusSession->indexArquivo = 0;
+        $statusSession->totalLinhas = 0;
+        $statusSession->indexLinha = 0;
         $form = new IndexForm();
         $this->view->form = $form;
 
