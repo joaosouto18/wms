@@ -847,7 +847,7 @@ class Mobile_EnderecamentoController extends Action
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
-                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
+                    $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
@@ -858,27 +858,27 @@ class Mobile_EnderecamentoController extends Action
                     }
 
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
-                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                    if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
                         if ((isset($embalagemEn) && is_null($embalagemEn->getEndereco())) || isset($volumeEn) && is_null($volumeEn->getEndereco())) {
                             throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
                         }
                     }
 
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
-                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
+                    if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
                         if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                            $embalagemEn->setEndereco($newEndereco[0]['COD_DEPOSITO_ENDERECO']);
+                            $embalagemEn->setEndereco($endereco->getId());
                             $this->getEntityManager()->persist($embalagemEn);
                             $this->getEntityManager()->flush();
                         } else if (isset($volumeEn) && is_null($volumeEn->getEndereco())) {
-                            $volumeEn->setEndereco($newEndereco[0]['COD_DEPOSITO_ENDERECO']);
+                            $volumeEn->setEndereco($endereco->getId());
                             $this->getEntityManager()->persist($volumeEn);
                             $this->getEntityManager()->flush();
                         }
                     }
 
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
-                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $embalagemEn->getEndereco() && $newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $volumeEn->getEndereco()))
+                    if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $embalagemEn->getEndereco() && $newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $volumeEn->getEndereco()))
                         throw new \Exception("Produto com Picking já cadastrado!");
 
                     $estoqueRepo->movimentaEstoque($params);
@@ -902,7 +902,7 @@ class Mobile_EnderecamentoController extends Action
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
-                    $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
+                    $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                     $validade = $estoqueEn->getValidade();
                     $params['validade'] = null;
                     if (isset($validade) && !is_null($validade)) {
@@ -910,23 +910,23 @@ class Mobile_EnderecamentoController extends Action
                     }
 
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
-                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                    if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
                         if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
                             throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
                         }
                     }
 
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
-                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
+                    if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
                         if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                            $embalagemEn->setEndereco($newEndereco[0]['COD_DEPOSITO_ENDERECO']);
+                            $embalagemEn->setEndereco($endereco->getId());
                             $this->getEntityManager()->persist($embalagemEn);
                             $this->getEntityManager()->flush();
                         }
                     }
 
                     //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
-                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $embalagemEn->getEndereco()))
+                    if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $embalagemEn->getEndereco()))
                         throw new \Exception("Produto com Picking já cadastrado!");
 
                     $estoqueRepo->movimentaEstoque($params);
@@ -947,7 +947,7 @@ class Mobile_EnderecamentoController extends Action
                             throw new \Exception("Estoque não Encontrado!");
 
                         $params['qtd'] = $qtd;
-                        $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                        $newEndereco = $endereco = $this->getEnderecoByParametro($enderecoNovo);
                         $params['endereco'] = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
@@ -959,23 +959,23 @@ class Mobile_EnderecamentoController extends Action
                         }
 
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
-                        if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                        if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
                             if (isset($volume) && is_null($volume->getEndereco())) {
                                 throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
                             }
                         }
 
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
-                        if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
+                        if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
                             if (isset($volume) && is_null($volume->getEndereco())) {
-                                $volume->setEndereco($newEndereco[0]['COD_DEPOSITO_ENDERECO']);
+                                $volume->setEndereco($endereco->getId());
                                 $this->getEntityManager()->persist($volume);
                                 $this->getEntityManager()->flush();
                             }
                         }
 
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
-                        if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $volume->getEndereco()))
+                        if ($endereco->getCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $volume->getEndereco()))
                             throw new \Exception("Produto com Picking já cadastrado!");
 
                         $estoqueRepo->movimentaEstoque($params);
