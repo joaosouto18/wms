@@ -53,7 +53,7 @@ class Importacao_IndexController extends Action
                 $tabelaDestino = $arquivo->getTabelaDestino();
 
                 $handle = $dir . DIRECTORY_SEPARATOR . $file;
-                $handle = fopen($handle, "r");
+                $handle = fopen($handle, "r") or die('Permission error');
                 $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
 
                 $i = 0;
@@ -224,7 +224,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -268,7 +268,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -327,7 +327,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -364,7 +364,7 @@ class Importacao_IndexController extends Action
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
         $ClienteRepo    = $em->getRepository('wms:Pessoa\Papel\Cliente');
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -485,7 +485,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
 
         $importacao = new \Wms\Service\Importacao();
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -562,7 +562,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
 
         $importacao = new \Wms\Service\Importacao();
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
