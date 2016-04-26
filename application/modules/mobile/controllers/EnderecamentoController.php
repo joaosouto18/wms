@@ -857,6 +857,28 @@ class Mobile_EnderecamentoController extends Action
                         $params['validade'] = $validade->format('d/m/Y');
                     }
 
+                    //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                        if ((isset($embalagemEn) && is_null($embalagemEn->getEndereco())) || isset($volumeEn) && is_null($volumeEn->getEndereco())) {
+                            throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                        }
+                    }
+
+                    //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
+                        if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
+                            $embalagemEn->setEndereco($newEndereco[0]['COD_CARACTERISTICA_ENDERECO']);
+                            $this->getEntityManager()->persist($embalagemEn);
+                        } else if (isset($volumeEn) && is_null($volumeEn->getEndereco())) {
+                            $volumeEn->setEndereco($newEndereco[0]['COD_CARACTERISTICA_ENDERECO']);
+                            $this->getEntityManager()->persist($volumeEn);
+                        }
+                    }
+
+                    //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $embalagemEn->getEndereco() && $newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $volumeEn->getEndereco()))
+                        throw new \Exception("Produto com Picking já cadastrado!");
+
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
@@ -884,6 +906,25 @@ class Mobile_EnderecamentoController extends Action
                     if (isset($validade) && !is_null($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
                     }
+
+                    //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                        if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
+                            throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                        }
+                    }
+
+                    //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
+                        if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
+                            $embalagemEn->setEndereco($newEndereco[0]['COD_CARACTERISTICA_ENDERECO']);
+                            $this->getEntityManager()->persist($embalagemEn);
+                        }
+                    }
+
+                    //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+                    if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $embalagemEn->getEndereco()))
+                        throw new \Exception("Produto com Picking já cadastrado!");
 
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
@@ -913,6 +954,25 @@ class Mobile_EnderecamentoController extends Action
                         if (isset($validade) && !is_null($validade)) {
                             $params['validade'] = $validade->format('d/m/Y');
                         }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+                        if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                            if (isset($volume) && is_null($volume->getEndereco())) {
+                                throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                            }
+                        }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+                        if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) {
+                            if (isset($volume) && is_null($volume->getEndereco())) {
+                                $volume->setEndereco($newEndereco[0]['COD_CARACTERISTICA_ENDERECO']);
+                                $this->getEntityManager()->persist($volume);
+                            }
+                        }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+                        if ($newEndereco[0]['COD_CARACTERISTICA_ENDERECO'] == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING && ($newEndereco[0]['COD_DEPOSITO_ENDERECO'] !== $volume->getEndereco()))
+                            throw new \Exception("Produto com Picking já cadastrado!");
 
                         $estoqueRepo->movimentaEstoque($params);
 
@@ -964,7 +1024,7 @@ class Mobile_EnderecamentoController extends Action
         $tamanhoNivel       = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
         $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-        $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL, COD_DEPOSITO_ENDERECO
+        $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL, COD_DEPOSITO_ENDERECO, COD_CARACTERISTICA_ENDERECO
                  FROM DEPOSITO_ENDERECO
                  WHERE
                  (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
