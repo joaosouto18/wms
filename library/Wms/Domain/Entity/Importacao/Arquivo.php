@@ -43,6 +43,27 @@ class Arquivo
     protected $sequencia;
 
     /**
+     * @Column(name="IND_ATIVO", type="string", nullable=true)
+     */
+    protected $ativo;
+
+    /**
+     * @return mixed
+     */
+    public function getAtivo()
+    {
+        return $this->ativo;
+    }
+
+    /**
+     * @param mixed $ativo
+     */
+    public function setAtivo($ativo)
+    {
+        $this->ativo = $ativo;
+    }
+
+    /**
      * @return mixed
      */
     public function getId()

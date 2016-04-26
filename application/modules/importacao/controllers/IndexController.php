@@ -13,102 +13,138 @@ use Wms\Module\Importacao\Form\Index as IndexForm;
 class Importacao_IndexController extends Action
 {
 
-    public function testeAjaxAction()
+    public function custom_warning_handler($errno, $errstr) {
+        $this->_helper->json(array('result' => $errstr));
+
+    }
+    public function iniciarAjaxAction()
     {
-        Zend_Session::setOptions(array("STATUS_IMPORT", "0"));
-        exit;
-        $em = $this->getEntityManager();
-        //@TODO parametro sistema
-        $dir = 'C:\wamp\www\CSV-wms';
-        $importacaoService = new \Wms\Service\Importacao();
 
-        $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array(),array('sequencia' => 'ASC'));
-        $arrErros = array();
-        foreach ($arquivos as $arquivo) {
-            $file = $arquivo->getNomeArquivo();
-            $caracterQuebra = $arquivo->getCaracterQuebra();
-            $cabecalho = $arquivo->getCabecalho();
-            $tabelaDestino = $arquivo->getTabelaDestino();
+        try{
+            set_error_handler(array($this,'custom_warning_handler'));
+            ini_set('memory_limit', '-1');
+            ini_set('max_execution_time', 3000);
+            $em = $this->getEntityManager();
 
-            $handle = $dir . DIRECTORY_SEPARATOR . $file;
-            $handle = fopen($handle, "r");
-            $camposRepo = $em->getRepository('wms:Importacao\Campos');
-            $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
+            $dir = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+            $importacaoService = new \Wms\Service\Importacao();
 
-            $i = 0;
-            $arrErroRows = array();
-            while($linha = fgets($handle)) {
-                $i = $i+1;
-                if (ucfirst($cabecalho) == 'S') {
-                    if ($i == 1) {
-                        continue;
+            $produtoRepo    = $em->getRepository('wms:Produto');
+            $enderecoRepo   = $em->getRepository("wms:Deposito\Endereco");
+            $fabricanteRepo = $em->getRepository('wms:Fabricante');
+            $classeRepo     = $em->getRepository('wms:Produto\Classe');
+            $embalagemRepo  = $em->getRepository('wms:Produto\Embalagem');
+            $camposRepo     = $em->getRepository('wms:Importacao\Campos');
+
+            $repositorios = array('produtoRepo'    => $produtoRepo,
+                                  'enderecoRepo'   => $enderecoRepo,
+                                  'fabricanteRepo' => $fabricanteRepo,
+                                  'classeRepo'     => $classeRepo,
+                                  'produtoRepo'    => $produtoRepo,
+                                  'embalagemRepo'  => $embalagemRepo,);
+
+            $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo'=>'S'),array('sequencia' => 'ASC'));
+            $arrErros = array();
+            $countFlush = 0;
+            foreach ($arquivos as $arquivo) {
+                $file = $arquivo->getNomeArquivo();
+                $caracterQuebra = $arquivo->getCaracterQuebra();
+                $cabecalho = $arquivo->getCabecalho();
+                $tabelaDestino = $arquivo->getTabelaDestino();
+
+                $handle = $dir . DIRECTORY_SEPARATOR . $file;
+                $handle = fopen($handle, "r");
+                $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
+
+                $i = 0;
+                $arrErroRows = array();
+                while($linha = fgets($handle)) {
+                    $i = $i+1;
+                    if (ucfirst($cabecalho) == 'S') {
+                        if ($i == 1) {
+                            continue;
+                        }
                     }
-                }
 
-                if ($caracterQuebra == "") {
-                    $conteudoArquivo = array(0=>$linha);
-                }   else {
-                    $conteudoArquivo = explode($caracterQuebra, $linha);
-                }
+                    if ($caracterQuebra == "") {
+                        $conteudoArquivo = array(0=>$linha);
+                    }   else {
+                        $conteudoArquivo = explode($caracterQuebra, $linha);
+                    }
 
-                if (count(array_filter($conteudoArquivo)) > 1) {
-                    $arrRegistro = array();
-                    /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
-                    foreach ($camposArquivo as $campo) {
-                        if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo) - 1 < $campo->getPosicaoTxt())) {
-                            $valorCampo = trim($campo->getValorPadrao());
-                        } else {
-                            $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
+                    if (count(array_filter($conteudoArquivo)) > 1) {
+                        $arrRegistro = array();
+                        /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                        foreach ($camposArquivo as $campo) {
+                            if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo) - 1 < $campo->getPosicaoTxt())) {
+                                $valorCampo = trim($campo->getValorPadrao());
+                            } else {
+                                $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
 
-                            if ($valorCampo == "") {
-                                if ($campo->getPreenchObrigatorio() === "n") {
-                                    $valorCampo = trim($campo->getValorPadrao());
-                                } else {
-                                    array_push($arrErroRows, $conteudoArquivo);
-                                    break;
+                                if ($valorCampo == "") {
+                                    if ($campo->getPreenchObrigatorio() === "n") {
+                                        $valorCampo = trim($campo->getValorPadrao());
+                                    } else {
+                                        array_push($arrErroRows, $conteudoArquivo);
+                                        break;
+                                    }
                                 }
                             }
+
+                            if ($campo->getTamanhoInicio() != "") {
+                                $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                            }
+                            $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
                         }
 
-                        if ($campo->getTamanhoInicio() != "") {
-                            $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                        switch ($tabelaDestino) {
+                            case 'produto':
+                                $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                                break;
+                            case 'fabricante':
+                                $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                                break;
+                            case 'classe':
+                                $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                                break;
+                            case 'embalagem':
+                                $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                                break;
+                            default:
+                                break;
                         }
-                        $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+                    } else {
+                        continue;
                     }
 
-                    switch ($tabelaDestino) {
-                        case 'produto':
-                            $importacaoService->saveProduto($em, $arrRegistro);
-                            break;
-                        case 'fabricante':
-                            $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome']);
-                            break;
-                        case 'classe':
-                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null);
-                            break;
-                        case 'embalagem':
-
-                            $importacaoService->saveEmbalagens($em, $arrRegistro);
-                            break;
-                        default:
-                            break;
-
+                    if ($countFlush >= 40){
+                        $countFlush = 0;
+                        $em->flush();
+                        $em->clear();
                     }
-                } else {
-                    continue;
+
+                }
+
+                $em->flush();
+
+                if (count($arrErroRows) > 0) {
+                    $arrErros[$file] = $arrErroRows;
                 }
             }
-            if (count($arrErroRows) > 0) {
-                $arrErros[$file] = $arrErroRows;
+
+            if (count($arrErros) > 0){
+                var_dump($arrErros);
+                $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
+                return;
             }
+
+            $this->_helper->json(array('result' => "Importação concluída com sucesso"));
+        } catch (\Exception $e) {
+            $this->_helper->json(array('result' => $e->getMessage()));
+        } catch (Exception $e2) {
+            $this->_helper->json(array('result' => $e2->getMessage()));
         }
 
-        if (count($arrErros) > 0){
-            var_dump($arrErros);
-            return $arrErros;
-        } else {
-            return true;
-        }
 
     }
 
