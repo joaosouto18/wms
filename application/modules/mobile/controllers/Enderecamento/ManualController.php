@@ -215,7 +215,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 }
 
                 if ($idPicking != $enderecoEn->getId()) {
-                    throw new \Exception("Foi selecionado um endereço de picking diferente do endereço de picking definido para o produto");
+                    throw new \Exception("O produto informado já está cadastrado no Picking " . $enderecoEn->getId());
                 }
 
             }
