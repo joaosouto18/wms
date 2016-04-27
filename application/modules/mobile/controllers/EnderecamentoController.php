@@ -990,21 +990,11 @@ class Mobile_EnderecamentoController extends Action
                     $grade = $volumeEn->getGrade();
                     $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
                     foreach ($volumes as $volume) {
-                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoVolume' => $volume));
-                        if (!$estoqueEn)
-                            throw new \Exception("Estoque não Encontrado!");
-
                         $params['qtd'] = $qtd;
                         $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                         $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
-
-                        $validade = $estoqueEn->getValidade();
-                        $params['validade'] = null;
-                        if (isset($validade) && !is_null($validade)) {
-                            $params['validade'] = $validade->format('d/m/Y');
-                        }
 
                         if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                             $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -1046,6 +1036,16 @@ class Mobile_EnderecamentoController extends Action
                                 }
                             }
                         }
+
+                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoVolume' => $volume));
+                        if (!$estoqueEn)
+                            throw new \Exception("Estoque não Encontrado!");
+                        $validade = $estoqueEn->getValidade();
+                        $params['validade'] = null;
+                        if (isset($validade) && !is_null($validade)) {
+                            $params['validade'] = $validade->format('d/m/Y');
+                        }
+
                         $estoqueRepo->movimentaEstoque($params);
 
                         //RETIRA ESTOQUE
