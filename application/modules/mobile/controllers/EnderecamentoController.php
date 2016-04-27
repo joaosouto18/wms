@@ -967,7 +967,7 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoEmbalagem' => $embalagemEn));
+                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
@@ -1037,7 +1037,7 @@ class Mobile_EnderecamentoController extends Action
                             }
                         }
 
-                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoVolume' => $volume));
+                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $volume->getProduto(), 'grade' => $volume->getGrade()));
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
                         $validade = $estoqueEn->getValidade();
