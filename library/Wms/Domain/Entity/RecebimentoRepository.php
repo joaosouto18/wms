@@ -1355,6 +1355,7 @@ class RecebimentoRepository extends EntityRepository
                   LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = PESSOA.COD_PESSOA
                  WHERE V.QTD - NVL(P.QTD,0) > 0
                   AND R.COD_STATUS <> 457
+                  AND R.DTH_INICIO_RECEB = SYSDATE
                  $whereStatus
                  ORDER BY R.DTH_INICIO_RECEB DESC
 ";
