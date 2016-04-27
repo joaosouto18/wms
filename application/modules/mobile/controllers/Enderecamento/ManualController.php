@@ -8,7 +8,7 @@ class Mobile_Enderecamento_ManualController extends Action
     public function indexAction()
     {
         $recebimentoService = new \Mobile\Service\Recebimento($this->em);
-        $this->view->recebimentos = $recebimentoService->listarRecebimentosNaoEnderecados(RecebimentoEntity::STATUS_FINALIZADO);
+        $this->view->recebimentos = $recebimentoService->listarRecebimentosNaoEnderecados(null);
     }
 
     public function lerCodigoBarrasAction()
