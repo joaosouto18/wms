@@ -946,19 +946,10 @@ class Mobile_EnderecamentoController extends Action
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoEmbalagem' => $embalagemEn));
-                    if (!$estoqueEn)
-                        throw new \Exception("Estoque não Encontrado!");
-
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
-                    $validade = $estoqueEn->getValidade();
-                    $params['validade'] = null;
-                    if (isset($validade) && !is_null($validade)) {
-                        $params['validade'] = $validade->format('d/m/Y');
-                    }
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -997,6 +988,16 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoEmbalagem' => $embalagemEn));
+                    if (!$estoqueEn)
+                        throw new \Exception("Estoque não Encontrado!");
+
+                    $validade = $estoqueEn->getValidade();
+                    $params['validade'] = null;
+                    if (isset($validade) && !is_null($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    }
+                    
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
