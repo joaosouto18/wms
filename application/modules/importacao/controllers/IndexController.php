@@ -13,9 +13,148 @@ use Wms\Module\Importacao\Form\Index as IndexForm;
 class Importacao_IndexController extends Action
 {
 
+    public function custom_warning_handler($errno, $errstr) {
+        $this->_helper->json(array('result' => $errstr));
+
+    }
+    public function iniciarAjaxAction()
+    {
+
+        try{
+            set_error_handler(array($this,'custom_warning_handler'));
+            ini_set('memory_limit', '-1');
+            ini_set('max_execution_time', 3000);
+            $em = $this->getEntityManager();
+
+            $dir = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+            $importacaoService = new \Wms\Service\Importacao();
+
+            $produtoRepo    = $em->getRepository('wms:Produto');
+            $enderecoRepo   = $em->getRepository("wms:Deposito\Endereco");
+            $fabricanteRepo = $em->getRepository('wms:Fabricante');
+            $classeRepo     = $em->getRepository('wms:Produto\Classe');
+            $embalagemRepo  = $em->getRepository('wms:Produto\Embalagem');
+            $camposRepo     = $em->getRepository('wms:Importacao\Campos');
+
+            $repositorios = array('produtoRepo'    => $produtoRepo,
+                                  'enderecoRepo'   => $enderecoRepo,
+                                  'fabricanteRepo' => $fabricanteRepo,
+                                  'classeRepo'     => $classeRepo,
+                                  'produtoRepo'    => $produtoRepo,
+                                  'embalagemRepo'  => $embalagemRepo,);
+
+            $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo'=>'S'),array('sequencia' => 'ASC'));
+            $arrErros = array();
+            $countFlush = 0;
+            foreach ($arquivos as $arquivo) {
+                $file = $arquivo->getNomeArquivo();
+                $caracterQuebra = $arquivo->getCaracterQuebra();
+                $cabecalho = $arquivo->getCabecalho();
+                $tabelaDestino = $arquivo->getTabelaDestino();
+
+                $handle = $dir . DIRECTORY_SEPARATOR . $file;
+                $handle = fopen($handle, "r") or die('Permission error');
+                $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
+
+                $i = 0;
+                $arrErroRows = array();
+                while($linha = fgets($handle)) {
+                    $i = $i+1;
+                    if (ucfirst($cabecalho) == 'S') {
+                        if ($i == 1) {
+                            continue;
+                        }
+                    }
+
+                    if ($caracterQuebra == "") {
+                        $conteudoArquivo = array(0=>$linha);
+                    }   else {
+                        $conteudoArquivo = explode($caracterQuebra, $linha);
+                    }
+
+                    if (count(array_filter($conteudoArquivo)) > 1) {
+                        $arrRegistro = array();
+                        /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                        foreach ($camposArquivo as $campo) {
+                            if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo) - 1 < $campo->getPosicaoTxt())) {
+                                $valorCampo = trim($campo->getValorPadrao());
+                            } else {
+                                $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
+
+                                if ($valorCampo == "") {
+                                    if ($campo->getPreenchObrigatorio() === "n") {
+                                        $valorCampo = trim($campo->getValorPadrao());
+                                    } else {
+                                        array_push($arrErroRows, $conteudoArquivo);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if ($campo->getTamanhoInicio() != "") {
+                                $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                            }
+                            $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+                        }
+
+                        switch ($tabelaDestino) {
+                            case 'produto':
+                                $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                                break;
+                            case 'fabricante':
+                                $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                                break;
+                            case 'classe':
+                                $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                                break;
+                            case 'embalagem':
+                                $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    if ($countFlush >= 40){
+                        $countFlush = 0;
+                        $em->flush();
+                        $em->clear();
+                    }
+
+                }
+
+                $em->flush();
+
+                if (count($arrErroRows) > 0) {
+                    $arrErros[$file] = $arrErroRows;
+                }
+            }
+
+            if (count($arrErros) > 0){
+                var_dump($arrErros);
+                $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
+                return;
+            }
+
+            $this->_helper->json(array('result' => "Importação concluída com sucesso"));
+        } catch (\Exception $e) {
+            $this->_helper->json(array('result' => $e->getMessage()));
+        } catch (Exception $e2) {
+            $this->_helper->json(array('result' => $e2->getMessage()));
+        }
+
+
+    }
+
     public function indexAction()
     {
+
         $form = new IndexForm();
+        $this->view->form = $form;
+
+        /*$form = new IndexForm();
         $this->view->form = $form;
         $params = $this->_getAllParams();
         unset($params['module']);
@@ -32,7 +171,7 @@ class Importacao_IndexController extends Action
                 foreach ($files as $file) {
                     $handle = $dir.'/\/'.$file;
 
-                    //DEFINI��O DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                    //DEFINI��O DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                     switch ($file) {
                         case 'expedicao.csv':
                             $this->importExpedicao($handle, $params, 'csv');
@@ -77,7 +216,7 @@ class Importacao_IndexController extends Action
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
-        }
+        }*/
     }
 
     private function importNotaFiscal($handle, $params, $tipoArquivo)
@@ -85,7 +224,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -129,7 +268,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -188,7 +327,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
         $importacao = new \Wms\Service\Importacao();
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -225,7 +364,7 @@ class Importacao_IndexController extends Action
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
         $ClienteRepo    = $em->getRepository('wms:Pessoa\Papel\Cliente');
 
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -346,7 +485,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
 
         $importacao = new \Wms\Service\Importacao();
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {
@@ -423,7 +562,7 @@ class Importacao_IndexController extends Action
         $em = $this->getEntityManager();
 
         $importacao = new \Wms\Service\Importacao();
-        $handle = fopen($handle, "r");
+        $handle = fopen($handle, "r") or die('Permission error');
         $caracterQuebra = $params['caracterQuebra'];
 
         try {

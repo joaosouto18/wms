@@ -10,17 +10,22 @@ use Doctrine\ORM\EntityRepository,
 class ClasseRepository extends EntityRepository
 {
 
-    public function save($idClasse, $nome, $idClassePai = null)
+    public function save($idClasse, $nome, $idClassePai = null, $flush = true)
     {
         $idClasse = trim($idClasse);
         $nome = trim($nome);
 
         $em = $this->getEntityManager();
-        $em->beginTransaction();
+
+        if ($flush == true) {
+            $em->beginTransaction();
+        }
 
         try {
             $classeEn = $em->getRepository('wms:Produto\Classe')->findOneBy(array('id' => $idClasse));
+            $novo = false;
             if (!$classeEn) {
+                $novo = true;
                 $classeEn = new Classe();
                 $classeEn->setNome($nome);
                 $classeEn->setId($idClasse);
@@ -30,11 +35,22 @@ class ClasseRepository extends EntityRepository
             }
 
             $em->persist($classeEn);
-            $em->flush();
-            $em->commit();
+
+            if ($flush == true) {
+                $em->flush();
+                $em->commit();
+            } else {
+                if ($novo == true) {
+                    $em->flush();
+                    $em->clear();
+                }
+            }
+            return $classeEn;
 
         } catch (\Exception $e) {
-            $em->rollback();
+            if ($flush == true) {
+                $em->rollback();
+            }
             throw $e;
         }
     }
