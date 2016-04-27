@@ -794,14 +794,35 @@ class Mobile_EnderecamentoController extends Action
     {
         $this->view->codigoBarrasUMA = $this->_getParam('codigoBarrasUMA');
         $this->view->etiquetaProduto = $this->_getParam('etiquetaProduto');
-        $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
+        $this->view->idEstoque       = $idEstoque = $this->_getParam('cb');
+        $codigoBarras = $this->_getParam('etiquetaProduto');
+
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+        $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
+        $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
 
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
 
-        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-        $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
-        $this->view->qtd = $qtd = $estoqueEn->getQtd();
+        $enderecoAntigo = $this->getEnderecoByParametro($this->_getParam('end'));
+        $dscEnderecoAntigo = $enderecoAntigo[0]['DSC_DEPOSITO_ENDERECO'];
+        $enderecoEn = $this->getEnderecoNivel($dscEnderecoAntigo, $this->_getParam('nivelAntigo'));
+
+        if (isset($embalagemEn)) {
+            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoEn, 'produtoEmbalagem' => $embalagemEn));
+            $this->view->qtd = $estoqueEn->getQtd();
+        } else if (isset($volumeEn)) {
+            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
+            $this->view->qtd = $estoqueEn->getQtd();
+        } else {
+            $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
+            $this->view->qtd = $qtd = $estoqueEn->getQtd();
+        }
+
+        $this->view->qtd = $estoqueEn->getQtd();
     }
 
     public function confirmaEnderecamentoAction()
