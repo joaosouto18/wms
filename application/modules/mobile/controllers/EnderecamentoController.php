@@ -845,7 +845,7 @@ class Mobile_EnderecamentoController extends Action
             if (isset($params['uma']) && !empty($params['uma'])) {
                 $params['uma'] = $LeituraColetor->retiraDigitoIdentificador($params['uma']);
 
-                $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo->getId()));
+                $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo));
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
@@ -905,7 +905,7 @@ class Mobile_EnderecamentoController extends Action
                                 }
                             } else if (isset($volumeEn)) {
                                 if ($endereco->getId() !== $volumeEn->getEndereco()) {
-                                    throw new \Exception("Produto com Picking já cadastrado!");
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                 }
                             }
                         }
@@ -925,7 +925,7 @@ class Mobile_EnderecamentoController extends Action
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoEmbalagem' => $params['embalagem']));
+                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoEmbalagem' => $embalagemEn));
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
@@ -970,7 +970,7 @@ class Mobile_EnderecamentoController extends Action
                         if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
                             if (isset($embalagemEn)) {
                                 if ($endereco->getId() !== $embalagemEn->getEndereco()->getId()) {
-                                    throw new \Exception("Produto com Picking já cadastrado!");
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                 }
                             }
                         }
@@ -989,7 +989,7 @@ class Mobile_EnderecamentoController extends Action
                     $grade = $volumeEn->getGrade();
                     $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
                     foreach ($volumes as $volume) {
-                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo->getId(), 'produtoVolume' => $volume));
+                        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'produtoVolume' => $volume));
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
 
@@ -1036,11 +1036,11 @@ class Mobile_EnderecamentoController extends Action
                             if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
                                 if (isset($embalagemEn)) {
                                     if ($endereco->getId() !== $embalagemEn->getEndereco()->getId()) {
-                                        throw new \Exception("Produto com Picking já cadastrado!");
+                                        throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                     }
                                 } else if (isset($volume)) {
                                     if ($endereco->getId() !== $volume->getEndereco()) {
-                                        throw new \Exception("Produto com Picking já cadastrado!");
+                                        throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                     }
                                 }
                             }
