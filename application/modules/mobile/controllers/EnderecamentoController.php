@@ -901,7 +901,7 @@ class Mobile_EnderecamentoController extends Action
                         if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
                             if (isset($embalagemEn)) {
                                 if ($endereco->getId() !== $embalagemEn->getEndereco()->getId()) {
-                                    throw new \Exception("Produto com Picking já cadastrado!");
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                 }
                             } else if (isset($volumeEn)) {
                                 if ($endereco->getId() !== $volumeEn->getEndereco()) {
@@ -1025,11 +1025,7 @@ class Mobile_EnderecamentoController extends Action
 
                             //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
                             if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
-                                if (isset($embalagemEn)) {
-                                    if ($endereco->getId() !== $embalagemEn->getEndereco()->getId()) {
-                                        throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
-                                    }
-                                } else if (isset($volume)) {
+                                if (isset($volume)) {
                                     if ($endereco->getId() !== $volume->getEndereco()) {
                                         throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                     }
