@@ -1136,6 +1136,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     }
 
+    public function getPesoProduto( $params )
+    {
+        $sql = "SELECT
+                 COD_PRODUTO,
+                 DSC_GRADE,
+                 NUM_PESO,
+                 NUM_CUBAGEM
+                FROM
+                 SUM_PESO_PRODUTO
+                WHERE
+                  COD_PRODUTO = ".$params['COD_PRODUTO']."
+           ";
+
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado;
+    }
+
     public function getDadosProdutos($params)
     {
         $sql = "SELECT
