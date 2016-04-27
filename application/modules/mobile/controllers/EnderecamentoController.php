@@ -811,16 +811,16 @@ class Mobile_EnderecamentoController extends Action
         $dscEnderecoAntigo = $enderecoAntigo[0]['DSC_DEPOSITO_ENDERECO'];
         $enderecoEn = $this->getEnderecoNivel($dscEnderecoAntigo, $this->_getParam('nivelAntigo'));
 
-        if (isset($embalagemEn)) {
-            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoEn, 'produtoEmbalagem' => $embalagemEn));
-            $this->view->qtd = $estoqueEn->getQtd();
-        } else if (isset($volumeEn)) {
-            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
-            $this->view->qtd = $estoqueEn->getQtd();
-        } else {
-            $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
-            $this->view->qtd = $qtd = $estoqueEn->getQtd();
-        }
+//        if (isset($embalagemEn)) {
+//            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoEn, 'produtoEmbalagem' => $embalagemEn));
+//            $this->view->qtd = $estoqueEn->getQtd();
+//        } else if (isset($volumeEn)) {
+//            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
+//            $this->view->qtd = $estoqueEn->getQtd();
+//        } else {
+//            $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
+//            $this->view->qtd = $qtd = $estoqueEn->getQtd();
+//        }
 
         $this->view->qtd = $estoqueEn->getQtd();
     }
@@ -997,7 +997,7 @@ class Mobile_EnderecamentoController extends Action
                     if (isset($validade) && !is_null($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
                     }
-                    
+
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
