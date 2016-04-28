@@ -48,11 +48,11 @@ class Mobile_Enderecamento_ManualController extends Action
                 $volumeRepo = $em->getRepository('wms:Produto\Volume');
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['produto']));
 
-//                if (!$embalagemEn && !$volumeEn)
-//                    throw new \Exception("O código de barras informado não existe!");
-//
-//                if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
-//                    throw new \Exception("O Produto Informado não pertence ao recebimento");
+                if (!$embalagemEn && !$volumeEn)
+                    throw new \Exception("O código de barras informado não existe!");
+
+                if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
+                    throw new \Exception("O Produto Informado não pertence ao recebimento");
 
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
 
