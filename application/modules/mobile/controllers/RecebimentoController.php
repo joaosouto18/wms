@@ -286,7 +286,13 @@ class Mobile_RecebimentoController extends Action
                     $tolerancia = (float) str_replace(",",".",$produtoEn->getToleranciaNominal());
 
                     $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto( $parametros );
-                    $peso = (float) $pesoProduto[0]['NUM_PESO'];
+                    $volumes = (int) $this->em->getRepository('wms:Recebimento\Volume')->getVolumeByRecebimentoProduto( $idRecebimento , $idProduto );
+
+                    if ( !empty($volumes) && count($volumes)!=0 ){
+                        $peso = (float) $pesoProduto[0]['NUM_PESO'] / count($volumes);
+                    } else {
+                        $peso = (float) $pesoProduto[0]['NUM_PESO'];
+                    }
                     $pesoUnitarioMargemS = (float)  ( $pesoDigitado/$quantidade ) + $tolerancia;
                     $pesoUnitarioMargemI = (float)  ( $pesoDigitado/$quantidade ) - $tolerancia;
 
@@ -294,7 +300,11 @@ class Mobile_RecebimentoController extends Action
                         $this->_helper->messenger('error', 'O peso informado não confere com a tolerância permitida');
                         $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                     } else {
-                        $params['numPeso'] = $params['numPeso'];
+                        if ( !empty($volumes) && count($volumes)!=0 ){
+                            $params['numPeso'] = (float)  $params['numPeso'] / count($volumes);
+                        } else {
+                            $params['numPeso'] = (float)  $params['numPeso'];
+                        }
                     }
                 }
             } else {
