@@ -75,7 +75,7 @@ class Deposito extends PluginAbstract
         foreach ($depositosPermitidos as $key => $deposito) {
             if ((!$deposito->getFilial()->getIsAtivo()) || (!$deposito->getIsAtivo()))
                 continue;
-
+				
             $arrayDepositos[$deposito->getId()] = $deposito->getDescricao();
             $centrais[] = $deposito->getFilial()->getCodExterno();
         };

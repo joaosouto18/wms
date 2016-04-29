@@ -2,6 +2,7 @@
 
 namespace Wms\Service;
 
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
@@ -10,15 +11,17 @@ use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Classe;
 use Wms\Module\Web\Controller\Action;
+use Wms\Util\CodigoBarras;
+use Zend\Stdlib\Configurator;
 
 class Importacao
 {
 
-    private function saveClasse($em, $idClasse, $nome, $idClassePai = null)
+    public function saveClasse($em, $idClasse, $nome, $idClassePai = null, $repositorios)
     {
         /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
-        $classeRepo = $em->getRepository('wms:Produto\Classe');
-        $entityClasse = $classeRepo->save($idClasse, $nome, $idClassePai);
+        $classeRepo = $repositorios['classeRepo'];
+        $entityClasse = $classeRepo->save($idClasse, $nome, $idClassePai, false);
         return $entityClasse;
 
     }
@@ -187,87 +190,56 @@ class Importacao
         return $entityPedidoProduto;
     }
 
-    public function saveFabricante($em, $idFabricante, $nome)
+    public function saveFabricante($em, $idFabricante, $nome, $repositorios)
     {
         /** @var \Wms\Domain\Entity\FabricanteRepository $fabricanteRepo */
-        $fabricanteRepo = $em->getRepository('wms:Fabricante');
-        $entityFabricante = $fabricanteRepo->save($idFabricante, $nome);
+        $fabricanteRepo = $repositorios['fabricanteRepo'];
+        $entityFabricante = $fabricanteRepo->save($idFabricante, $nome, false);
         return $entityFabricante;
 
     }
 
-    public function saveProduto($em, $produto)
+    public function saveProduto($em, $produto, $repositorios)
     {
-        $produtoRepo = $em->getRepository('wms:Produto');
-        $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['codProduto'], 'grade' => $produto['grade']));
+        $produtoRepo  = $repositorios['produtoRepo'];
+        $enderecoRepo = $repositorios['enderecoRepo'];
+        $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
 
-        if ($produtoEntity == null)
+        $novo = false;
+        if ($produtoEntity == null) {
             $produtoEntity = new Produto();
-
-        $em->beginTransaction();
+            $novo = true;
+        }
 
         try {
-
-            $dscEndereco = $produto['enderecoReferencia'];
+            $dscEndereco = '';
+            if (isset($produto['enderecoReferencia'])) {
+                $dscEndereco = $produto['enderecoReferencia'];
+            }
             if ($dscEndereco != "") {
-                $enderecoEn = $em->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
+                $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$dscEndereco));
                 if ($enderecoEn == null) {
-                    throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+                    throw new \Exception("EndereÃ§o de referencia para endereÃ§amento automÃ¡tico invÃ¡lido");
                 } else {
-                    $produtoEntity->setEnderecoReferencia($enderecoEn);
+                    $produto['enderecoReferencia'] = $enderecoEn;
                 }
-            } else {
-                $produtoEntity->setEnderecoReferencia(null);
             }
 
-            $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
-            $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
-            $classeEntity = $em->getReference('wms:Produto\Classe', $produto['classe']);
-            $fabricanteEntity = $em->getRepository('wms:Fabricante')->findOneBy(array('nome' => $produto['fabricante']));
+            $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
+            $varTpComercializacao = $produto['tipoComercializacao'];
+            $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+            $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
+            $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
-            $produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
-            $produtoEntity->setTipoComercializacao($tipoComercializacaoEntity);
-            $produtoEntity->setNumVolumes($produto['numVolumes']);
-            $produtoEntity->setReferencia($produto['referencia']);
-            $produtoEntity->setCodigoBarrasBase($produto['codBarras']);
-            $produtoEntity->setId($produto['codProduto']);
-            $produtoEntity->setGrade($produto['grade']);
-            $produtoEntity->setDescricao($produto['descricao']);
-            $produtoEntity->setClasse($classeEntity);
-            $produtoEntity->setFabricante($fabricanteEntity);
-            $produtoEntity->setValidade($produto['validade']);
-            $produtoEntity->setDiasVidaUtil($produto['diasVidaUtil']);
+            Configurator::configure($produtoEntity, $produto);
 
             $em->persist($produtoEntity);
 
-            switch ($produto['tipoComercializacao']) {
-                case Produto::TIPO_UNITARIO:
-                    // gravo embalagens
-                    $this->persistirEmbalagens($em, $produtoEntity, $produto);
-
-                    // limpo os volumes se houver
-                    $volumeRepo = $em->getRepository('wms:Produto\Volume');
-                    $volumes = $volumeRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
-
-                    foreach ($volumes as $volumeEntity)
-                        $em->remove($volumeEntity);
-
-                    break;
-                case Produto::TIPO_COMPOSTO:
-                    // gravo volumes
-                    $this->persistirVolumes($em, $produtoEntity, $produto['volumes'][0]);
-
-                    // limpo os embalagens se houver
-                    $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-                    $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
-
-                    foreach ($embalagens as $embalagemEntity)
-                        $em->remove($embalagemEntity);
-                    break;
+            if ($novo == true) {
+                $em->flush();
+                $em->clear();
             }
 
-            $em->flush();
-            $em->commit();
         } catch (\Exception $e) {
             $em->rollback();
             throw new \Exception($e->getMessage());
@@ -287,53 +259,51 @@ class Importacao
         $filialRepo->save($filianEn, $values);
     }
 
-    private function persistirEmbalagens($em, $produtoEntity, $values)
+    public function saveEmbalagens($em, $registro, $repositorios)
     {
+        /** @var EntityManager $em */
 
-        //embalagens do produto
-        if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
-            return false;
+        $produtoRepo = $repositorios['produtoRepo'];
+        $embalagemRepo = $repositorios['embalagemRepo'];
 
-        foreach ($values['embalagens'] as $id => $itemEmbalagem) {
-
-            if (!isset($itemEmbalagem['acao']))
-                continue;
-
-            switch ($itemEmbalagem['acao']) {
-                case 'incluir':
-
-                    $embalagemEntity = new Produto\Embalagem();
-
-                    $embalagemEntity->setProduto($produtoEntity);
-                    $embalagemEntity->setGrade($produtoEntity->getGrade());
-                    $embalagemEntity->setDescricao($itemEmbalagem['descricaoEmbalagem']);
-                    $embalagemEntity->setQuantidade($itemEmbalagem['qtdEmbalagem']);
-                    $embalagemEntity->setIsPadrao($itemEmbalagem['indPadrao']);
-                    $embalagemEntity->setCBInterno($itemEmbalagem['cbInterno']);
-                    $embalagemEntity->setImprimirCB($itemEmbalagem['imprimirCb']);
-                    $embalagemEntity->setCodigoBarras($itemEmbalagem['codigoBarras']);
-                    $embalagemEntity->setEmbalado($itemEmbalagem['embalado']);
-                    $embalagemEntity->setCapacidadePicking($itemEmbalagem['capacidadePicking']);
-                    $embalagemEntity->setPontoReposicao($itemEmbalagem['pontoReposicao']);
-                    $embalagemEntity->setEndereco(null);
-
-                    $em->persist($embalagemEntity);
-                    $em->flush();
-
-                    $produtoEntity->addEmbalagem($embalagemEntity);
-
-                    $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
-
-                    if ($itemEmbalagem['cbInterno'] == 'S') {
-                        $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-                        $embalagemEntity->setCodigoBarras($codigoBarras);
-                    }
-
-                    break;
-            }
+        $codigoBarras = "";
+        if ($registro['codigoBarras'] != "") {
+            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
+            $embalagemEntity = $embalagemRepo->findOneBy(array(
+                'codProduto' => $registro['codProduto'],
+                'grade' => $registro['grade'],
+                'codigoBarras' => $codigoBarras
+            ));
+        } else {
+            $registro['CBInterno'] = 'S';
+            $embalagemEntity = $embalagemRepo->findOneBy(array(
+                'codProduto' => $registro['codProduto'],
+                'grade' => $registro['grade'],
+                'quantidade' => $registro['quantidade']
+            ));
         }
 
-        return true;
+
+        if ($embalagemEntity == null) {
+            /** @var \Wms\Domain\Entity\Produto $produto */
+            $produto = $produtoRepo->findOneBy(array(
+                'id' => $registro['codProduto'],
+                'grade' => $registro['grade'],
+            ));
+
+            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
+            $embalagemEntity = new Produto\Embalagem();
+            $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity,$registro);
+            $embalagemEntity->setProduto($produto);
+            $embalagemEntity->setCodigoBarras($codigoBarras);
+            $em->persist($embalagemEntity);
+
+            if ($registro['codigoBarras'] == "") {
+                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                $embalagemEntity->setCodigoBarras($codigoBarras);
+                $em->persist($embalagemEntity);
+            }
+        }
     }
 
     private function persistirVolumes($em, $produtoEntity, $volume) {

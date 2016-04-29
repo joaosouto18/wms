@@ -72,6 +72,12 @@ class Volume
      */
     protected $dataValidade;
 
+    /**
+     * @Column(name="NUM_PESO", type="float")
+     * @var float
+     */
+    protected $numPeso;
+
     public function getId()
     {
         return $this->id;
@@ -162,6 +168,22 @@ class Volume
     public function setDataValidade($dataValidade)
     {
         $this->dataValidade = $dataValidade;
+    }
+
+    /**
+     * @param float $numPeso
+     */
+    public function setNumPeso($numPeso)
+    {
+        $this->numPeso = $numPeso;
+    }
+
+    /**
+     * @return float
+     */
+    public function getNumPeso()
+    {
+        return $this->numPeso;
     }
 
 }
