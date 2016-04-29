@@ -373,14 +373,18 @@ class NotaFiscalRepository extends EntityRepository
 
         $sql = "SELECT R.COD_RECEBIMENTO, R.DTH_FINAL_RECEB, NF.NUM_NOTA_FISCAL, NF.COD_SERIE_NOTA_FISCAL, 
                        NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, RC2.QTD_DIVERGENCIA,
-                       PROD.DSC_PRODUTO
+                       PROD.DSC_PRODUTO, P.NOM_PESSOA, PF.NOM_PESSOA AS FORNECEDOR, SPP.NUM_PESO
                   FROM NOTA_FISCAL NF
             INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
             INNER JOIN NOTA_FISCAL_ITEM NFI ON (NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL)
             INNER JOIN PRODUTO PROD on (PROD.COD_PRODUTO = NFI.COD_PRODUTO AND PROD.DSC_GRADE = NFI.DSC_GRADE)
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+            INNER JOIN PESSOA P ON P.COD_PESSOA = OS.COD_PESSOA
             INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS AND RC.COD_PRODUTO = NFI.COD_PRODUTO AND RC.DSC_GRADE = NFI.DSC_GRADE)
             LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS AND RC2.COD_PRODUTO = NFI.COD_PRODUTO AND RC2.DSC_GRADE = NFI.DSC_GRADE AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL)
+            INNER JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
+            INNER JOIN PESSOA PF ON PF.COD_PESSOA = F.COD_FORNECEDOR
+            LEFT JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PROD.COD_PRODUTO AND SPP.DSC_GRADE = PROD.DSC_GRADE
                 WHERE 1 = 1
                     AND NOT EXISTS (
                         SELECT 'X'
@@ -412,6 +416,10 @@ class NotaFiscalRepository extends EntityRepository
         if (isset($dataFinal2) && !empty($dataFinal2)) {
             $dataFinal2 = \DateTime::createFromFormat('d/m/Y', $dataFinal2);
             $sql .= ' AND TRUNC(r.dth_final_receb) <= \'' . $dataFinal2->format('Y-m-d') . '\'';
+        }
+
+        if (isset($idRecebimento) && !empty($idRecebimento)) {
+            $sql .= " AND R.COD_RECEBIMENTO = $idRecebimento ";
         }
 
         $sql .= ' AND r.cod_status = ' . RecebimentoEntity::STATUS_FINALIZADO;
