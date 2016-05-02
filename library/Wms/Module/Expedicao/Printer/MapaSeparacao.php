@@ -103,6 +103,7 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 1, "", 0, 1);
             }
 
+            //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
             $this->SetFont('Arial','B',9);
@@ -114,10 +115,6 @@ class MapaSeparacao extends Pdf
 
             //$this->SetY(-92);
             $this->Image(@CodigoBarras::gerarNovo($mapa->getId()), 150, 280, 50);
-
-
-
-
 
         }
 
