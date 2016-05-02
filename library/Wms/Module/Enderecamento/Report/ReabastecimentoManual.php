@@ -10,12 +10,18 @@ class ReabastecimentoManual extends Pdf
 
     protected $usuario;
     protected $codOs;
+    protected $ruptura;
 
     public function Header()
     {
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
-        $this->Cell(20, 20, utf8_decode("RELATÓRIO DE REABASTECIMENTO - ".$this->codOs ), 0, 1);
+        if($this->ruptura){
+            $tituloRelatorio = utf8_decode("RELATÓRIO DE RUPTURA - ".$this->codOs );
+        } else {
+            $tituloRelatorio = utf8_decode("RELATÓRIO DE REABASTECIMENTO - ".$this->codOs );
+        }
+        $this->Cell(20, 20, $tituloRelatorio, 0, 1);
 
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
@@ -31,7 +37,11 @@ class ReabastecimentoManual extends Pdf
         $this->Cell(85, 5, "Produto" ,1, 0);
         $this->Cell(18, 5, "Solicitado" ,1, 0);
         $this->Cell(18, 5, "Estoque" ,1, 0);
-        $this->Cell(20,  5, "End.Picking" ,1, 1);
+        if (!$this->ruptura) {
+            $this->Cell(20, 5, "End.Picking", 1, 1);
+        } else {
+            $this->Cell(20, 5, "Ruptura", 1, 1);
+        }
     }
 
     public function Footer()
@@ -48,13 +58,14 @@ class ReabastecimentoManual extends Pdf
         $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
     }
 
-    public function imprimir($codOs)
+    public function imprimir($codOs, $ruptura)
     {
         /** @var \Wms\Domain\Entity\Expedicao\VRelProdutosRepository $RelProdutos */
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->_codOS = $codOs;
+        $this->ruptura = $ruptura;
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -128,50 +139,52 @@ class ReabastecimentoManual extends Pdf
                         $qtdEstoque = $saldoProduto[0]['QTEST'];
                     }
                 }
+                
+                if ($produto['qtd'] > $qtdEstoque){
+                    $this->SetFont('Arial', 'B', 8);
+                    $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
+                    if ($utilizaGrade == 'S') {
+                        $this->Cell(39, 5, utf8_decode($grade), 1, 0);
+                    } else {
+                        $this->Cell(39, 5, utf8_decode($referencia), 1, 0);
+                    }
+                    $this->Cell(85, 5, utf8_decode(substr($dscProduto, 0, 47)) ,1, 0);
+                    $this->Cell(18, 5, $produto['qtd'] ,1, 0);
+                    $this->Cell(18, 5, $qtdEstoque ,1, 0);
+                    $this->Cell(20, 5, ($this->ruptura)?($produto['qtd'] - $qtdEstoque):utf8_decode($produto['endereco']) ,1, 1);
 
-                $this->SetFont('Arial', 'B', 8);
-                $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
-                if ($utilizaGrade == 'S') {
-                    $this->Cell(39, 5, utf8_decode($grade)      ,1, 0);
-                } else {
-                    $this->Cell(39, 5, utf8_decode($referencia)      ,1, 0);
-                }
-                $this->Cell(85, 5, utf8_decode(substr($dscProduto,0,47)) ,1, 0);
-                $this->Cell(18, 5, $produto['qtd'] ,1, 0);
-                $this->Cell(18, 5, $qtdEstoque ,1, 0);
-                $this->Cell(20, 5, utf8_decode($produto['endereco']) ,1, 1);
+                    $limite = $limite -1;
 
-                $limite = $limite -1;
+                    if ($enderecosPulmao) {
 
-                if ($enderecosPulmao) {
-
-                    $this->Cell(10, 5, "", 0);
-                    $this->Cell(30, 5, "Dth Armazenagem", "TB");
-                    $this->Cell(30, 5, utf8_decode("End.Pulmão"), "TB");
-                    $this->Cell(15, 5, "Res. Ent.", "TB");
-                    $this->Cell(15, 5, "Res. Sai.", "TB");
-                    $this->Cell(15, 5, "Qtd", "TB");
-                    $this->Cell(75, 5, utf8_decode("Volume"), "TB", 1);
-
-                    $limite = $limite - 1;
-
-                    foreach ($enderecosPulmao as $pulmao) {
-                        $this->SetFont('Arial', '', 8);
-                        $qtdReservaEntrada = $pulmao["RESERVA_ENTRADA"];
-                        $qtdReservaSaida = $pulmao["RESERVA_SAIDA"];
-                        $qtdEndereco = $pulmao["QTD"];
-                        $dscEndereco = $pulmao['ENDERECO'];
-                        $dthUltimaEntrada = $pulmao['DTH_PRIMEIRA_MOVIMENTACAO'];
-
-                        $this->Cell(10, 5, "", 0, 0);
-                        $this->Cell(30, 5, $dthUltimaEntrada, 0, 0);
-                        $this->Cell(30, 5, utf8_decode($dscEndereco), 0, 0);
-                        $this->Cell(15, 5, utf8_decode($qtdReservaEntrada), 0, 0);
-                        $this->Cell(15, 5, utf8_decode($qtdReservaSaida), 0, 0);
-                        $this->Cell(15, 5, utf8_decode($qtdEndereco), 0, 0);
-                        $this->Cell(75, 5, utf8_decode($dscVolume), 0, 1);
+                        $this->Cell(10, 5, "", 0);
+                        $this->Cell(30, 5, "Dth Armazenagem", "TB");
+                        $this->Cell(30, 5, utf8_decode("End.Pulmão"), "TB");
+                        $this->Cell(15, 5, "Res. Ent.", "TB");
+                        $this->Cell(15, 5, "Res. Sai.", "TB");
+                        $this->Cell(15, 5, "Qtd", "TB");
+                        $this->Cell(75, 5, utf8_decode("Volume"), "TB", 1);
 
                         $limite = $limite - 1;
+
+                        foreach ($enderecosPulmao as $pulmao) {
+                            $this->SetFont('Arial', '', 8);
+                            $qtdReservaEntrada = $pulmao["RESERVA_ENTRADA"];
+                            $qtdReservaSaida = $pulmao["RESERVA_SAIDA"];
+                            $qtdEndereco = $pulmao["QTD"];
+                            $dscEndereco = $pulmao['ENDERECO'];
+                            $dthUltimaEntrada = $pulmao['DTH_PRIMEIRA_MOVIMENTACAO'];
+
+                            $this->Cell(10, 5, "", 0, 0);
+                            $this->Cell(30, 5, $dthUltimaEntrada, 0, 0);
+                            $this->Cell(30, 5, utf8_decode($dscEndereco), 0, 0);
+                            $this->Cell(15, 5, utf8_decode($qtdReservaEntrada), 0, 0);
+                            $this->Cell(15, 5, utf8_decode($qtdReservaSaida), 0, 0);
+                            $this->Cell(15, 5, utf8_decode($qtdEndereco), 0, 0);
+                            $this->Cell(75, 5, utf8_decode($dscVolume), 0, 1);
+
+                            $limite = $limite - 1;
+                        }
                     }
                 }
 
