@@ -12,14 +12,24 @@ use Wms\Module\Importacao\Form\Index as IndexForm;
 
 class Importacao_IndexController extends Action
 {
+    private $progressBar = null;
+    private $statusProgress = array(
+        'tArquivo' => 0,
+        'iArquivo' => 0,
+        'tLinha' => 0,
+        'iLinha' => 0,
+        "error" => null,
+        "exception" => null
+    );
 
     public function custom_warning_handler($errno, $errstr) {
+        $this->statusProgress["exception"] = $errstr;
+        $this->progressBar->update(null, $this->statusProgress);
         $this->_helper->json(array('result' => $errstr));
 
     }
     public function iniciarAjaxAction()
     {
-
         try{
             set_error_handler(array($this,'custom_warning_handler'));
             ini_set('memory_limit', '-1');
@@ -40,24 +50,37 @@ class Importacao_IndexController extends Action
                                   'enderecoRepo'   => $enderecoRepo,
                                   'fabricanteRepo' => $fabricanteRepo,
                                   'classeRepo'     => $classeRepo,
-                                  'produtoRepo'    => $produtoRepo,
                                   'embalagemRepo'  => $embalagemRepo,);
 
             $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo'=>'S'),array('sequencia' => 'ASC'));
             $arrErros = array();
             $countFlush = 0;
-            foreach ($arquivos as $arquivo) {
+
+            $config = array('updateMethodName' => 'Zend_ProgressBar_Update');
+            $adapter = new Zend_ProgressBar_Adapter_JsPush($config);
+
+            $this->statusProgress["tArquivo"] = count($arquivos);
+            $this->progressBar = new Zend_ProgressBar($adapter, 0, $this->statusProgress["tArquivo"]);
+
+            foreach ($arquivos as $key => $arquivo) {
+                $this->statusProgress["iArquivo"] = $key + 1;
+
                 $file = $arquivo->getNomeArquivo();
                 $caracterQuebra = $arquivo->getCaracterQuebra();
                 $cabecalho = $arquivo->getCabecalho();
                 $tabelaDestino = $arquivo->getTabelaDestino();
 
-                $handle = $dir . DIRECTORY_SEPARATOR . $file;
-                $handle = fopen($handle, "r");
+                $archive = $dir . DIRECTORY_SEPARATOR . $file;
+                $handle = fopen($archive, "r");
                 $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
 
                 $i = 0;
                 $arrErroRows = array();
+                $this->statusProgress["tLinha"] = count(file($archive)) - 1;
+
+                // Variável apenas para comparação do número do pedido atual com o anterior na importação de pedidos
+                $numPedido = null;
+
                 while($linha = fgets($handle)) {
                     $i = $i+1;
                     if (ucfirst($cabecalho) == 'S') {
@@ -66,6 +89,7 @@ class Importacao_IndexController extends Action
                         }
                     }
 
+                    $this->statusProgress["iLinha"] = $i-1;
                     if ($caracterQuebra == "") {
                         $conteudoArquivo = array(0=>$linha);
                     }   else {
@@ -85,7 +109,7 @@ class Importacao_IndexController extends Action
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
                                     } else {
-                                        array_push($arrErroRows, $conteudoArquivo);
+                                        $arrErroRows[$i] = $conteudoArquivo;
                                         break;
                                     }
                                 }
@@ -100,15 +124,42 @@ class Importacao_IndexController extends Action
                         switch ($tabelaDestino) {
                             case 'produto':
                                 $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                                $countFlush++;
                                 break;
                             case 'fabricante':
                                 $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                                $countFlush++;
                                 break;
                             case 'classe':
                                 $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                                $countFlush++;
                                 break;
                             case 'embalagem':
                                 $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                                $countFlush++;
+                                break;
+                            case 'pessoa':
+                                $importacaoService->savePessoa($em, $arrRegistro);
+                                $countFlush++;
+                                break;
+                            case 'cliente':
+                                $importacaoService->saveCliente($em, $arrRegistro);
+                                $countFlush++;
+                                break;
+                            case 'pedido':
+                                if (is_null($numPedido)) {
+                                    $numPedido = $arrRegistro['codPedido'];
+                                    $importacaoService->savePedido($em, $arrRegistro);
+                                    $countFlush++;
+                                    break;
+                                } else {
+                                    $importacaoService->savePedidoProduto($em, $arrRegistro);
+                                    $countFlush++;
+                                    break;
+                                }
+                            case 'carga':
+                                $importacaoService->saveCarga($em, $arrRegistro);
+                                $countFlush++;
                                 break;
                             default:
                                 break;
@@ -117,12 +168,13 @@ class Importacao_IndexController extends Action
                         continue;
                     }
 
-                    if ($countFlush >= 40){
+                    if ($countFlush >= 1){
                         $countFlush = 0;
                         $em->flush();
                         $em->clear();
                     }
 
+                    $this->progressBar->update(null,$this->statusProgress);
                 }
 
                 $em->flush();
@@ -133,11 +185,12 @@ class Importacao_IndexController extends Action
             }
 
             if (count($arrErros) > 0){
-                var_dump($arrErros);
+                $this->statusProgress["error"] = $arrErros;
+                $this->progressBar->update(null, $this->statusProgress);
                 $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
-                return;
-            }
-
+            };
+            $this->progressBar->update(null,$this->statusProgress);
+            $this->progressBar->finish();
             $this->_helper->json(array('result' => "Importação concluída com sucesso"));
         } catch (\Exception $e) {
             $this->_helper->json(array('result' => $e->getMessage()));
@@ -150,7 +203,6 @@ class Importacao_IndexController extends Action
 
     public function indexAction()
     {
-
         $form = new IndexForm();
         $this->view->form = $form;
 

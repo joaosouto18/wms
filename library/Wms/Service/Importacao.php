@@ -2,10 +2,13 @@
 
 namespace Wms\Service;
 
+use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
+use Wms\Domain\Entity\Pessoa\Fisica;
+use Wms\Domain\Entity\Pessoa\Juridica;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
@@ -26,7 +29,81 @@ class Importacao
 
     }
 
-    private function saveCliente($em, $cliente)
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     * @throws \Exception
+     */
+    public function savePessoa($em, $arrDados)
+    {
+        //Configura a pessoa de acorodo  o seu tipo
+        if ($arrDados['tipo'] == 'J') { //pessoa jurídica
+            //retorna uma pessoa existente ou cria uma nova
+            if (isset($arrDados['id']) && (int) $arrDados['id'] > 0) {
+                $pessoa = $em->getRepository('wms:Pessoa\Juridica')->findOneBy(array("id"=>$arrDados["id"]));
+            } else {
+                $pessoa = new Juridica();
+            }
+            //transforma as datas de string ara DateTime
+            if ($arrDados['dataAbertura'] != null) {
+                $data = \DateTime::createFromFormat('d/m/Y', $arrDados['dataAbertura']);
+                $arrDados['dataAbertura'] = $data;
+            }
+
+            $arrDados['cnpj'] = String::retirarMaskCpfCnpj($arrDados['cnpj']);
+
+            if ($arrDados['idTipoOrganizacao'] != null) {
+                $tipoOrganizacao = $em->getReference('wms:Pessoa\Organizacao\Tipo', $arrDados['idTipoOrganizacao']);
+                $pessoa->setTipoOrganizacao($tipoOrganizacao);
+            }
+
+            if ($arrDados['idRamoAtividade'] != null) {
+                $tipoRamoAtividade = $em->getReference('wms:Pessoa\Atividade\Tipo', $arrDados['idRamoAtividade']);
+                $pessoa->setTipoRamoAtividade($tipoRamoAtividade);
+            }
+
+            $pessoa->setNome($arrDados['nome']);
+            $pessoa->setNomeFantasia($arrDados['nome']);
+
+            //configura através de um array de opções
+            Configurator::configure($pessoa, $arrDados);
+        } elseif ($arrDados['tipo'] == 'F') { //pessoa física
+
+            //verifica se ja foi cadastrado o cpf informado
+            $cpf = String::retirarMaskCpfCnpj($arrDados['cpf']);
+
+            $pessoaFisicaEntity = $em->getRepository('wms:Pessoa\Fisica')->findOneBy(array('cpf' => $cpf));
+
+            if ($pessoaFisicaEntity != null) {
+                throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
+            }
+
+            /** @var \Wms\Domain\Entity\Pessoa\Fisica $pessoa */
+            $pessoa = new Fisica();
+
+            //transforma as datas de string ara DateTime
+            if (isset($arrDados['dataAdmissaoEmprego'])) {
+                foreach (array('dataAdmissaoEmprego', 'dataExpedicaoRg', 'dataNascimento') as $item) {
+                    $data = \DateTime::createFromFormat('d/m/Y', $arrDados[$item]);
+                    if ($data) {
+                        $arrDados[$item] = $data;
+                    } else {
+                        unset($arrDados[$item]);
+                    }
+                }
+            }
+
+            //configura através de um array de opções
+            Configurator::configure($pessoa, $arrDados);
+        } else { //tipo inválido
+            throw new \Exception('Tipo de Pessoa inválido');
+        }
+
+        $em->persist($pessoa);
+
+    }
+
+    public function saveCliente($em, $cliente)
     {
         $repositorios = array(
             'clienteRepo' => $em->getRepository('wms:Pessoa\Papel\Cliente'),
@@ -35,8 +112,15 @@ class Importacao
             'siglaRepo' => $em->getRepository('wms:Util\Sigla'),
         );
 
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
         $ClienteRepo    = $repositorios['clienteRepo'];
-        $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
+        if (isset($cliente['codClienteExterno'])) {
+            $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
+            return;
+        } else {
+            $entityCliente = null;
+        }
+        $entityPessoa = null;
 
         if ($entityCliente == null) {
 
@@ -45,7 +129,7 @@ class Importacao
                     $cliente['pessoa']['tipo'] = 'J';
 
                     $PessoaJuridicaRepo    = $repositorios['pessoaJuridicaRepo'];
-                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
+                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($cliente['cpf_cnpj'])));
                     if ($entityPessoa) {
                         break;
                     }
@@ -59,7 +143,7 @@ class Importacao
                 case 'F':
 
                     $PessoaFisicaRepo    = $repositorios['pessoaFisicaRepo'];
-                    $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
+                    $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($cliente['cpf_cnpj'])));
                     if ($entityPessoa) {
                         break;
                     }
@@ -84,11 +168,11 @@ class Importacao
             if (isset($cliente['referencia']))
                 $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
             if (isset($cliente['bairro']))
-                $cliente['enderecos'][0]['bairro'];
+                $cliente['enderecos'][0]['bairro'] = $cliente['bairro'];
             if (isset($cliente['cidade']))
                 $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
             if (isset($cliente['numero']))
-                $cliente['enderecos'][0]['numero'];
+                $cliente['enderecos'][0]['numero'] =  $cliente['numeor'];
             if (isset($cliente['cep']))
                 $cliente['enderecos'][0]['cep'] = $cliente['cep'];
             if (isset($entitySigla))
@@ -103,12 +187,10 @@ class Importacao
             }
 
             $entityCliente->setId($entityPessoa->getId());
-            $entityCliente->setCodClienteExterno($cliente['codCliente']);
+            $entityCliente->setCodClienteExterno($cliente['codClienteExterno']);
 
             $em->persist($entityCliente);
         }
-
-        return $entityCliente;
     }
 
     public function saveFornecedor($em, $codFornecedorExterno)
@@ -166,15 +248,16 @@ class Importacao
         $pedido['envioParaLoja'] = null;
 
         $pedido['itinerario'] = $em->getReference('wms:expedicao\Itinerario', $pedido['itinerario']);
+        $pedido['carga'] = $em->getReference("wms:expedicao\Carga", $pedido['codCarga']);
         $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
         $entityPedido = $pedidoRepo->findOneBy(array('id' => $pedido['codPedido']));
-        if (!$entityPedido)
-            $entityPedido = $pedidoRepo->save($pedido); $em->flush();
-
-        return $entityPedido;
+        if (!$entityPedido) {
+            $entityPedido = $pedidoRepo->save($pedido);
+            $em->persist();
+        }
     }
 
     public function savePedidoProduto($em, $pedido)
