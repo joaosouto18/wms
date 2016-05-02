@@ -711,6 +711,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     } else {
                         foreach ($arrayVolumes as $volumeEntity) {
 
+                            $depositoEnderecoEn = null;
                             if (!is_null($volumeEntity->getDataInativacao()))
                                 continue;
 
