@@ -96,7 +96,7 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
                 $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,54) ,0, 0);
-                $this->Cell(20, 4, utf8_decode($produto->getReferencia()) ,0, 0);
+                $this->Cell(20, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
                 $this->Cell(35, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
