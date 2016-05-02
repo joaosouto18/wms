@@ -116,6 +116,6 @@ class MapaSeparacao extends Pdf
         $this->Output('Mapa Separação-'.$idExpedicao.'.pdf','D');
 
         $em->flush();
-        $em->clear();
+//        $em->clear();
     }
 }
