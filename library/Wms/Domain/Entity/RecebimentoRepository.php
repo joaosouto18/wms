@@ -598,13 +598,20 @@ class RecebimentoRepository extends EntityRepository
         } else {
             $validade = null;
         }
+        if ( !empty( $params['numPeso']) )
+            $peso = (float) $params['numPeso'];
+        else
+            $peso = null;
 
-        $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity)
+        $recebimentoEmbalagemEntity
+            ->setRecebimento($recebimentoEntity)
             ->setOrdemServico($ordemServicoEntity)
             ->setEmbalagem($produtoEmbalagemEntity)
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
+
+        $recebimentoEmbalagemEntity->setNumPeso( $params['numPeso'] );
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
@@ -645,6 +652,8 @@ class RecebimentoRepository extends EntityRepository
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
+
+        $recebimentoVolumeEntity->setNumPeso($params['numPeso']);
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
