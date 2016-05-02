@@ -740,6 +740,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
                 else if ($produtoEntity->getEmbalagens()->count() > 0) {
+                    $depositoEnderecoEn = null;
                     $codProduto = $pedidoProduto->getProduto()->getId();
                     $grade = $pedidoProduto->getProduto()->getGrade();
                     $embalagensEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'DESC'));
