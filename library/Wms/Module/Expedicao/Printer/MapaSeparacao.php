@@ -45,17 +45,17 @@ class MapaSeparacao extends Pdf
 
     public function Footer()
     {
-        $this->SetFont('Arial',null,10);
-        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-        $this->SetFont('Arial','B',9);
-
-        $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
-        $this->SetFont('Arial','B',7);
-        //Go to 1.5 cm from bottom
-        $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
-
-        //$this->SetY(-92);
-        $this->Image(@CodigoBarras::gerarNovo($this->idMapa), 150, 280, 50);
+//        $this->SetFont('Arial',null,10);
+//        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+//        $this->SetFont('Arial','B',9);
+//
+//        $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+//        $this->SetFont('Arial','B',7);
+//        //Go to 1.5 cm from bottom
+//        $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+//
+//        //$this->SetY(-92);
+//        $this->Image(@CodigoBarras::gerarNovo($this->idMapa), 150, 280, 50);
     }
 
 
@@ -103,6 +103,22 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 1, "", 0, 1);
             }
 
+            $this->SetFont('Arial',null,10);
+            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+            $this->SetFont('Arial','B',9);
+
+            $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $mapa->getId()), 0, 1);
+            $this->SetFont('Arial','B',7);
+            //Go to 1.5 cm from bottom
+            $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+
+            //$this->SetY(-92);
+            $this->Image(@CodigoBarras::gerarNovo($mapa->getId()), 150, 280, 50);
+
+
+
+
+
         }
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
@@ -116,6 +132,6 @@ class MapaSeparacao extends Pdf
         $this->Output('Mapa Separação-'.$idExpedicao.'.pdf','D');
 
         $em->flush();
-//        $em->clear();
+        $em->clear();
     }
 }
