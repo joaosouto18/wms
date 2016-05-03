@@ -139,8 +139,55 @@ class ReabastecimentoManual extends Pdf
                         $qtdEstoque = $saldoProduto[0]['QTEST'];
                     }
                 }
-                
-                if ($produto['qtd'] > $qtdEstoque){
+                if ($ruptura){
+                    if ($produto['qtd'] > $qtdEstoque){
+                        $this->SetFont('Arial', 'B', 8);
+                        $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
+                        if ($utilizaGrade == 'S') {
+                            $this->Cell(39, 5, utf8_decode($grade), 1, 0);
+                        } else {
+                            $this->Cell(39, 5, utf8_decode($referencia), 1, 0);
+                        }
+                        $this->Cell(85, 5, utf8_decode(substr($dscProduto, 0, 47)) ,1, 0);
+                        $this->Cell(18, 5, $produto['qtd'] ,1, 0);
+                        $this->Cell(18, 5, $qtdEstoque ,1, 0);
+                        $this->Cell(20, 5, ($produto['qtd'] - $qtdEstoque) ,1, 1);
+
+                        $limite = $limite -1;
+
+                        if ($enderecosPulmao) {
+
+                            $this->Cell(10, 5, "", 0);
+                            $this->Cell(30, 5, "Dth Armazenagem", "TB");
+                            $this->Cell(30, 5, utf8_decode("End.Pulmão"), "TB");
+                            $this->Cell(15, 5, "Res. Ent.", "TB");
+                            $this->Cell(15, 5, "Res. Sai.", "TB");
+                            $this->Cell(15, 5, "Qtd", "TB");
+                            $this->Cell(75, 5, utf8_decode("Volume"), "TB", 1);
+
+                            $limite = $limite - 1;
+
+                            foreach ($enderecosPulmao as $pulmao) {
+                                $this->SetFont('Arial', '', 8);
+                                $qtdReservaEntrada = $pulmao["RESERVA_ENTRADA"];
+                                $qtdReservaSaida = $pulmao["RESERVA_SAIDA"];
+                                $qtdEndereco = $pulmao["QTD"];
+                                $dscEndereco = $pulmao['ENDERECO'];
+                                $dthUltimaEntrada = $pulmao['DTH_PRIMEIRA_MOVIMENTACAO'];
+
+                                $this->Cell(10, 5, "", 0, 0);
+                                $this->Cell(30, 5, $dthUltimaEntrada, 0, 0);
+                                $this->Cell(30, 5, utf8_decode($dscEndereco), 0, 0);
+                                $this->Cell(15, 5, utf8_decode($qtdReservaEntrada), 0, 0);
+                                $this->Cell(15, 5, utf8_decode($qtdReservaSaida), 0, 0);
+                                $this->Cell(15, 5, utf8_decode($qtdEndereco), 0, 0);
+                                $this->Cell(75, 5, utf8_decode($dscVolume), 0, 1);
+
+                                $limite = $limite - 1;
+                            }
+                        }
+                    }
+                } else {
                     $this->SetFont('Arial', 'B', 8);
                     $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
                     if ($utilizaGrade == 'S') {
@@ -151,7 +198,7 @@ class ReabastecimentoManual extends Pdf
                     $this->Cell(85, 5, utf8_decode(substr($dscProduto, 0, 47)) ,1, 0);
                     $this->Cell(18, 5, $produto['qtd'] ,1, 0);
                     $this->Cell(18, 5, $qtdEstoque ,1, 0);
-                    $this->Cell(20, 5, ($this->ruptura)?($produto['qtd'] - $qtdEstoque):utf8_decode($produto['endereco']) ,1, 1);
+                    $this->Cell(20, 5, utf8_decode($produto['endereco']) ,1, 1);
 
                     $limite = $limite -1;
 
