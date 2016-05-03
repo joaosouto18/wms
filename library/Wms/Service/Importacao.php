@@ -309,7 +309,6 @@ class Importacao
             }
 
             $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
-            $varTpComercializacao = $produto['tipoComercializacao'];
             $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
