@@ -266,7 +266,7 @@ class Importacao
         $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
         $pedido['produto'] = $em->getRepository('wms:Produto')->findOneBy(array('id' => $pedido['codProduto'], 'grade' => $pedido['grade']));
 
-        $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['pedido']->getId(), 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
+        $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
         if (!$entityPedidoProduto)
             $entityPedidoProduto = $pedidoProdutoRepo->save($pedido); $em->flush();
 
