@@ -34,6 +34,11 @@ class Produto
     );
 
     /**
+     * @Column(name="ID_PRODUTO", type="integer", nullable=false)
+     */
+    protected $idProduto;
+    
+    /**
      * @Id
      * @Column(name="COD_PRODUTO", type="string", nullable=false)
      * @var string Código do produto
