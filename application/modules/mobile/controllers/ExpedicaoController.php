@@ -267,6 +267,7 @@ class Mobile_ExpedicaoController extends Action
                 foreach ($listaProdutosNãoConferidosMapa as $produtoNaoConferidoMapa) {
                     if ($produtoNaoConferidoMapa['QTD_PRODUTO_CONFERIR'] != 0) {
                         $todoMapaConferido = false;
+                        break;
                     }
                 }
 

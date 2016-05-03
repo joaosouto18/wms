@@ -332,6 +332,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
 
         " GROUP BY MSP.COD_PRODUTO_EMBALAGEM, MSP.COD_PRODUTO_VOLUME";
+        echo $sql; exit;
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
