@@ -38,6 +38,11 @@ class ProdutoRecebido extends Pdf
         foreach ($produtos as $key => $produto) {
             if ($codRecebimentoAnterior != $produto['COD_RECEBIMENTO'] || $notaFiscalAnterior != $produto['NUM_NOTA_FISCAL'] || $serieAnterior != $produto['COD_SERIE_NOTA_FISCAL']) {
                 $this->SetFont('Arial', 'B', 9);
+                if ($y1 >= floatval(255)) {
+                    $y1 = 15;
+                    $y2 = 25;
+                    $this->AddPage();
+                }
                 $this->Line(5,$y1, 200, $y1);
                 $this->Line(5,$y2, 200, $y2);
                 $this->Ln();
