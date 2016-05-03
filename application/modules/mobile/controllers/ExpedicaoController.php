@@ -274,7 +274,7 @@ class Mobile_ExpedicaoController extends Action
                 $this->addFlashMessage('info','Produto conferido com sucesso');
 
                 if ($todosProdutosConferidos == true)
-                    $this->addFlashMessage('info', 'Todos os Produto ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foi conferido com sucesso!');
+                    $this->addFlashMessage('info', 'Todos os Produtos ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foram conferidos com sucesso!');
 
                 if ($todoMapaConferido == true)
                     $this->addFlashMessage('info', 'Todo o Mapa foi conferido com sucesso!');
