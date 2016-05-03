@@ -1,0 +1,15 @@
+<div id="identificacao-form">
+    <fieldset id="identificacao">
+    <legend>Identificação</legend>
+        <?php
+            echo $this->element->cadastral;
+            echo $this->element->logistico;
+        ?>
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 60%; padding-right: 1%"> <?php echo $this->element->pesoVariavel; ?> </td>
+                <td> <?echo $this->element->validadeProdutos; ?> </td>
+            </tr>
+        </table>
+    </fieldset>
+</div>
