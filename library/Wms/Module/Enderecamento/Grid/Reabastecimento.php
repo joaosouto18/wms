@@ -45,6 +45,13 @@ class Reabastecimento extends Grid
                 'actionName' => 'imprimir-ajax',
                 'cssClass' => 'imprimir pdf',
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Imprimir relatório de ruptura',
+                'title' => 'Imprimir relatório de ruptura',
+                'actionName' => 'imprimir-ruptura-ajax',
+                'cssClass' => 'imprimir pdf',
+                'pkIndex' => 'id'
             ));
         return $this;
     }

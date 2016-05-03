@@ -86,7 +86,14 @@ class Enderecamento_Relatorio_PickingController extends Action
         $codOs = $this->_getParam('id');
         ini_set('max_execution_time', 3000);
         $relatorio = new \Wms\Module\Enderecamento\Report\ReabastecimentoManual();
-        $relatorio->imprimir($codOs);
+        $relatorio->imprimir($codOs,false);
+    }
+
+    public function imprimirRupturaAjaxAction(){
+        $codOs = $this->_getParam('id');
+        ini_set('max_execution_time', 3000);
+        $relatorio = new \Wms\Module\Enderecamento\Report\ReabastecimentoManual();
+        $relatorio->imprimir($codOs,true);
     }
 
     public function limparAction() {

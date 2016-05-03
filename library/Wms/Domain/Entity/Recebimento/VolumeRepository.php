@@ -18,4 +18,14 @@ class VolumeRepository extends EntityRepository
         return $source->getQuery()->getArrayResult();
     }
 
+    public function getVolumeByRecebimentoProduto($recebimento, $idProduto)
+    {
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('v')
+            ->from('wms:Produto\Volume', 'v')
+            ->where("v.codProduto = ".$idProduto."");
+
+        return $source->getQuery()->getArrayResult();
+    }
+
 }
