@@ -312,6 +312,45 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
+    public function verificaConferenciaProduto($idMapaSeparacao,$idEmbalagem,$idVolume)
+    {
+        $sql = "SELECT SUM(NVL(MSP.QTD_SEPARAR, 0)) - SUM(NVL(MSC.QTD_CONFERIDA, 0)) AS QTD_PRODUTO_CONFERIR
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO_EMBALAGEM, MSC.COD_PRODUTO_VOLUME
+                  FROM MAPA_SEPARACAO MS1
+                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
+                  GROUP BY MSC.COD_PRODUTO_EMBALAGEM, MSC.COD_PRODUTO_VOLUME, MS1.COD_MAPA_SEPARACAO
+                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM AND MSC.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
+
+        if (isset($idEmbalagem))
+            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = $idEmbalagem";
+
+        if (isset($idVolume))
+            $sql .= " AND MSP.COD_PRODUTO_VOLUME = $idVolume";
+
+        " GROUP BY MSP.COD_PRODUTO_EMBALAGEM, MSP.COD_PRODUTO_VOLUME";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function verificaConferenciaMapa($idMapaSeparacao)
+    {
+        $sql = "SELECT SUM(NVL(MSP.QTD_SEPARAR, 0)) - SUM(NVL(MSC.QTD_CONFERIDA, 0)) AS QTD_PRODUTO_CONFERIR
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO_EMBALAGEM, MSC.COD_PRODUTO_VOLUME
+                  FROM MAPA_SEPARACAO MS1
+                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
+                  GROUP BY MSC.COD_PRODUTO_EMBALAGEM, MSC.COD_PRODUTO_VOLUME, MS1.COD_MAPA_SEPARACAO
+                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM AND MSC.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                GROUP BY MSP.COD_PRODUTO_EMBALAGEM, MSP.COD_PRODUTO_VOLUME ";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function forcaConferencia($idExpedicao) {
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
         $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
