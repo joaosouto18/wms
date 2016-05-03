@@ -253,7 +253,7 @@ class Mobile_ExpedicaoController extends Action
                 $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
                 $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
-                $listaQtdProdutosConferidos = $mapaSeparacaoRepo->verificaConferenciaProduto($idMapa,$embalagemEn->getId(),$volumeEn->getId());
+                $listaQtdProdutosConferidos = $mapaSeparacaoRepo->verificaConferenciaProduto($idMapa,$embalagemEn,$volumeEn);
                 $listaProdutosNãoConferidosMapa = $mapaSeparacaoRepo->verificaConferenciaMapa($idMapa);
                 $todosProdutosConferidos = true;
                 $todoMapaConferido = true;
@@ -271,7 +271,7 @@ class Mobile_ExpedicaoController extends Action
                 }
 
                 $this->addFlashMessage('info','Produto conferido com sucesso');
-                
+
                 if ($todosProdutosConferidos == true)
                     $this->addFlashMessage('info', 'Todos os Produto ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foi conferido com sucesso!');
 

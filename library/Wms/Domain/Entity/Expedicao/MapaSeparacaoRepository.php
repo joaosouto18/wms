@@ -312,7 +312,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function verificaConferenciaProduto($idMapaSeparacao,$idEmbalagem,$idVolume)
+    public function verificaConferenciaProduto($idMapaSeparacao,$embalagem,$volume)
     {
         $sql = "SELECT SUM(NVL(MSP.QTD_SEPARAR, 0)) - SUM(NVL(MSC.QTD_CONFERIDA, 0)) AS QTD_PRODUTO_CONFERIR
                 FROM MAPA_SEPARACAO MS
@@ -325,11 +325,11 @@ class MapaSeparacaoRepository extends EntityRepository
                   ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM AND MSC.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
                 WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
 
-        if (isset($idEmbalagem))
-            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = $idEmbalagem";
+        if (isset($embalagem) && !is_null($embalagem))
+            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = " . $embalagem->getId();
 
-        if (isset($idVolume))
-            $sql .= " AND MSP.COD_PRODUTO_VOLUME = $idVolume";
+        if (isset($volume) && !is_null($volume))
+            $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
 
         " GROUP BY MSP.COD_PRODUTO_EMBALAGEM, MSP.COD_PRODUTO_VOLUME";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
