@@ -11,7 +11,7 @@
         <div class="progress-bar-div">
             <div id="pbArquivo"></div>
             <div align="center" class="progress-bar-text">
-                <b id="pbTxtArquivo">exemplo</b>
+                <b id="pbTxtArquivo">Arquivo 0 de 0</b>
             </div>
         </div>
     </div>
@@ -19,7 +19,7 @@
         <div class="progress-bar-div">
             <div id="pbLinha"></div>
             <div align="center" class="progress-bar-text">
-                <b id="pbTxtLinha">exemplo</b>
+                <b id="pbTxtLinha">Linha 0 de 0</b>
             </div>
         </div>
     </div>
@@ -55,9 +55,9 @@
         var status = data.text;
         if (status != null) {
             $("#pbArquivo").progressbar({value: status.iArquivo, max: status.tArquivo});
-            $("#pbTxtArquivo").text(status.iArquivo + " de " + status.tArquivo);
+            $("#pbTxtArquivo").text("Arquivo " + status.iArquivo + " de " + status.tArquivo);
             $("#pbLinha").progressbar({value: status.iLinha, max: status.tLinha});
-            $("#pbTxtLinha").text(status.iLinha + " de " + status.tLinha);
+            $("#pbTxtLinha").text("Linha " + status.iLinha + " de " + status.tLinha);
             if (status.error != null){
                 $.each( status.error, function( arquivo, arrLines ) {
                     $.each( arrLines, function( linha, conteudo ) {
