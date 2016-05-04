@@ -147,18 +147,27 @@ class Importacao_IndexController extends Action
                                 $countFlush++;
                                 break;
                             case 'pedido':
-                                if (is_null($numPedido)) {
+                                if ($arrRegistro['codPedido'] !== $numPedido) {
                                     $numPedido = $arrRegistro['codPedido'];
                                     $importacaoService->savePedido($em, $arrRegistro);
                                     $countFlush++;
                                     break;
-                                } else {
-                                    $importacaoService->savePedidoProduto($em, $arrRegistro);
-                                    $countFlush++;
-                                    break;
                                 }
+                                break;
+                            case 'pedidoProduto':
+                                $importacaoService->savePedidoProduto($em, $arrRegistro);
+                                $countFlush++;
+                                break;
                             case 'carga':
                                 $importacaoService->saveCarga($em, $arrRegistro);
+                                $countFlush++;
+                                break;
+                            case 'normaPaletizacao':
+                                $importacaoService->saveNormaPaletizacao($em, $arrRegistro);
+                                $countFlush++;
+                                break;
+                            case 'dadosLogisticos':
+                                $importacaoService->saveDadosLogisticos($em, $arrRegistro);
                                 $countFlush++;
                                 break;
                             default:

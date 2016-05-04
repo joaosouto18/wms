@@ -5,6 +5,7 @@ namespace Wms\Service;
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Entity;
+use Wms\Domain\Entity\Armazenagem\Unitizador;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -258,6 +259,8 @@ class Importacao
             $entityPedido = $pedidoRepo->save($pedido);
             $em->persist();
         }
+
+        return $entityPedido;
     }
 
     public function savePedidoProduto($em, $pedido)
@@ -386,6 +389,45 @@ class Importacao
                 $em->persist($embalagemEntity);
             }
         }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveNormaPaletizacao($em, $arrDados)
+    {
+        $entity = new Produto\NormaPaletizacao();
+
+        $arrDados["unitizador"] = $em->getRepository('wms:Produto\Unitizador')->findOneBy( array('id' => $arrDados['unitizador']) );
+
+        Configurator::configure($entity, $arrDados);
+        $em->persist($entity);
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveUnitizador($em, $arrDados)
+    {
+        $entity = new Unitizador();
+        Configurator::configure($entity, $arrDados);
+        $em->persist($entity);
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveDadosLogisticos($em, $arrDados)
+    {
+        $entity = new Produto\DadoLogistico();
+        $produto = $em->getRepository("wms:Produto")->findOneBy( array("codProduto" => $arrDados['codProduto'], "grade" => $arrDados['codGrade']) );
+        $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy( array("produto" => $produto, "grade" => $arrDados['codGrade']) );
+        $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy( array("id" => $arrDados['normaPaletizacao']));
+        Configurator::configure($entity, $arrDados);
+        $em->persist($entity);
     }
 
     private function persistirVolumes($em, $produtoEntity, $volume) {
