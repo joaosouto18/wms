@@ -3,6 +3,7 @@
 namespace Wms\Service;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
@@ -230,6 +231,9 @@ class Importacao
             $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
+
+            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
+            $produto['idProduto'] = $sqcGenerator->generate($em,$produtoEntity);
 
             Configurator::configure($produtoEntity, $produto);
 
