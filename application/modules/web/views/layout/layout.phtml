@@ -100,7 +100,11 @@ use Core\Util\Converter;
                 });
             });
         </script>
-
+        <link href=""
+        <?php
+            echo $this->headScript();
+            echo $this->headLink();
+        ?>
     </head>
     <body>
         <div id="dialog-delete-record" title="Deseja excluir este registro?" style="display:none;">
