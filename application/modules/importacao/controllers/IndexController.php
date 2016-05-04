@@ -138,7 +138,7 @@ class Importacao_IndexController extends Action
                                 $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
                                 $countFlush++;
                                 break;
-                            case 'pessoa':
+                            case 'pessoa';
                                 $importacaoService->savePessoa($em, $arrRegistro);
                                 $countFlush++;
                                 break;
@@ -177,7 +177,7 @@ class Importacao_IndexController extends Action
                         continue;
                     }
 
-                    if ($countFlush >= 1){
+                    if ($countFlush >= 40){
                         $countFlush = 0;
                         $em->flush();
                         $em->clear();

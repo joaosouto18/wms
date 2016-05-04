@@ -437,5 +437,21 @@ class Produto
         return $this->toleranciaNominal;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getIdProduto()
+    {
+        return $this->idProduto;
+    }
+
+    /**
+     * @param mixed $idProduto
+     */
+    public function setIdProduto($idProduto)
+    {
+        $this->idProduto = $idProduto;
+    }
+
 
 }

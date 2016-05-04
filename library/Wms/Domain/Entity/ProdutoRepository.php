@@ -19,12 +19,6 @@ use Doctrine\ORM\Query\ResultSetMapping;
  */
 class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
-	public function updateSequence() {
-		$em = $this->_em;
-		$em->getConnection()->exec( "UPDATE PRODUTO P SET P.ID_PRODUTO = SQ_PRODUTO_01.NEXTVAL WHERE ID_PRODUTO is null" );
-		$em->flush();
-	}
-
   /**
    * Persiste dados produto no sistema
    * 
@@ -140,9 +134,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
       $produtoEntity->setReferencia($referencia);
       $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
 
-		/*$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-      $newId = $sqcGenerator->generate($em,$produtoEntity);
-      $produtoEntity->setId($newId);*/
+      $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+      $produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
 
 	  $em->persist($produtoEntity);
 

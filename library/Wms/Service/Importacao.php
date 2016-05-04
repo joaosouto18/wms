@@ -317,8 +317,8 @@ class Importacao
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
-            /*$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-            $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);*/
+            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+            $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);
 
             Configurator::configure($produtoEntity, $produto);
 
@@ -326,7 +326,6 @@ class Importacao
 
             if ($novo == true) {
                 $em->flush();
-                $produtoRepo->updateSequence();
                 $em->clear();
             }
 
