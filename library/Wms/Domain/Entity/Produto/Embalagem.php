@@ -369,4 +369,20 @@ class Embalagem
         $this->usuarioInativacao = $usuarioInativacao;
     }
 
+    /**
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
 }
