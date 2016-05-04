@@ -1,5 +1,4 @@
 ﻿<script>
-
     function nextInput(event, id) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('produto').value != "") {
@@ -14,7 +13,7 @@
                 }
             }
             if (document.getElementById('endereco').value != "") {
-                qtd   = document.getElementById('qtd');
+                qtd        = document.getElementById('qtd');
                 if (qtd) {
                     qtd.focus();
                     if(event.preventDefault) {
@@ -28,6 +27,7 @@
         return true;
     }
 </script>
+<?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
 
 <form id="formulario">
         <dt id="identification-label">&nbsp;</dt>
@@ -46,6 +46,7 @@
                     <label>Qtd:</label>
                     <input style="width: 99%" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
                 </div>
+                <div id="inserir"></div>
                 <input class="btn" type="submit" name="submit" id="submit" value="Buscar" />
             </fieldset>
         </dd>

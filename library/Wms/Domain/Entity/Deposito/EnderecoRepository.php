@@ -215,7 +215,7 @@ class EnderecoRepository extends EntityRepository
         $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
         $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-        $sql = " SELECT COD_DEPOSITO_ENDERECO, NUM_NIVEL
+        $sql = " SELECT COD_DEPOSITO_ENDERECO, NUM_NIVEL, COD_CARACTERISTICA_ENDERECO
                  FROM DEPOSITO_ENDERECO
                  WHERE
                  (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)

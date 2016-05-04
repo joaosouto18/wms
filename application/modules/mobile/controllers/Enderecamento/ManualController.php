@@ -124,7 +124,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
         try {
 
-            $idEndereco = $params['endereco'];
+            $this->view->idEndereco = $idEndereco = $params['endereco'];
 
             $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -204,6 +204,9 @@ class Mobile_Enderecamento_ManualController extends Action
             $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
             $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
             $novaCapacidadePicking = 0;
+
+            if (isset($params['capacidadePicking']) && !empty($params['capacidadePicking']))
+                $novaCapacidadePicking = $params['capacidadePicking'];
 
             //VALIDA SE FOI BIPADO UM ENDEREÇO DE PICKING OU PICKING ROTATIVO
             if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
@@ -304,6 +307,44 @@ class Mobile_Enderecamento_ManualController extends Action
         return $paleteEn;
     }
 
+    public function verificarCaracteristicaEnderecoAction()
+    {
+        $codBarraEndereco = $this->_getParam('id');
+        $codEndereco = $this->_getParam('endereco');
+        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+        $LeituraColetor = new LeituraColetor();
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
+        $data = false;
+
+        //VALIDO PARA A PRIMEIRA TELA
+        if (isset($codBarraEndereco) && !empty($codBarraEndereco)) {
+            $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
+        //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
+        } elseif (isset($codEndereco) && !empty($codEndereco)) {
+            $enderecoEn = $enderecoRepo->find($codEndereco);
+            $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+            $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+            $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+            $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+
+            $rua         = substr("000" . $enderecoEn->getRua(), -$tamanhoRua, $tamanhoRua);
+            $predio      = substr("000" . $enderecoEn->getPredio(), -$tamanhoPredio, $tamanhoPredio);
+            $nivel       = substr("000" . $this->_getParam('nivel'), -$tamanhoNivel, $tamanhoNivel);
+            $apartamento = substr("000" . $enderecoEn->getApartamento(), -$tamanhoApartamento, $tamanhoApartamento);
+            $endereco   = $rua . $predio . $nivel . $apartamento;
+
+        }
+        $enderecoEn = $enderecoRepo->getEnderecoIdByDescricao($endereco);
+        $nivel = $enderecoEn[0]['NUM_NIVEL'];
+        $caracteristicaEndereco = $enderecoEn[0]['COD_CARACTERISTICA_ENDERECO'];
+
+        if (($nivel != 0 && $caracteristicaEndereco == $idCaracteristicaPickingRotativo) || ($caracteristicaEndereco == $idCaracteristicaPickingRotativo))
+            $data = true;
+
+        echo $this->_helper->json($data);
+
+    }
 
 }
 
