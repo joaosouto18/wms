@@ -11,6 +11,7 @@ class Reentrega extends Form
     public function init()
     {
         $this->setAttribs(array('id' => 'reentrega-form', 'class' => 'saveForm'));
+        $this->setAttrib('onkeydown', 'nextInput(this)');
 
         $this->setAction($this->getView()->url(array('controller' => 'reentrega', 'action' => 'buscar')));
 
@@ -21,7 +22,7 @@ class Reentrega extends Form
             ->addElement('text', 'notaFiscal', array(
             'label' => 'Número Nota Fiscal',
             'class' => 'notaFiscal',
-            'id' => 'notaFiscal'
+            'id' => 'notaFiscal',
         ))
             ->addElement('submit', 'submit', array(
             'label' => 'Buscar',

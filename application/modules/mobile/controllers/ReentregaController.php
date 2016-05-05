@@ -17,7 +17,7 @@ class Mobile_ReentregaController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
         $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
         $this->view->notasFiscais = $recebimentoReentregaNotaRepo->getRecebimentoReentregaByNota();
-        $this->view->form = new FormReentrega;
+//        $this->view->form = new FormReentrega;
     }
 
     public function buscarAction()
@@ -189,7 +189,7 @@ class Mobile_ReentregaController extends Action
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'nfsp.codProduto = es.codProduto AND nfsp.grade = es.dscGrade AND ped.id = es.pedido');
 
         if (isset($params['etiqueta']) && !empty($params['etiqueta'])) {
-            $sql->orWhere("es.id = $etiquetaSeparacao");
+            $sql->orWhere("es.id = '$etiquetaSeparacao'");
         }
 
         $resultado = $sql->getQuery()->getResult();

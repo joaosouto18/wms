@@ -8,7 +8,14 @@ jQuery(document).ready(function ($) {
             data: {
                 etiqueta: etiqueta
             },
+            beforeSend: function () {
+                $("#inserir").html('<center><img src="/img/ajax-loader.gif" width="31" height="31"/>Processando...</center>');
+                $("#inserir").show();
+                $("#submit").hide();
+            },
             success: function (dados) {
+                $("#submit").show();
+                $("#inserir").hide();
                 if (dados == '') {
                     alert('Etiqueta Invalida');
                     return false;
