@@ -6,7 +6,11 @@ use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\Entity;
+use Wms\Domain\Entity\Armazenagem\Estrutura\Tipo;
 use Wms\Domain\Entity\Armazenagem\Unitizador;
+use Wms\Domain\Entity\Deposito;
+use Wms\Domain\Entity\Deposito\AreaArmazenagem;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -264,7 +268,7 @@ class Importacao
         return $entityPedido;
     }
 
-    public function savePedidoProduto($em, $pedido)
+    public function savePedidoProduto($em, $pedido, $flush)
     {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
         $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
@@ -272,7 +276,10 @@ class Importacao
 
         $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
         if (!$entityPedidoProduto)
-            $entityPedidoProduto = $pedidoProdutoRepo->save($pedido); $em->flush();
+            $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
+
+        if ($flush)
+            $em->flush();
 
         return $entityPedidoProduto;
     }
@@ -317,16 +324,12 @@ class Importacao
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
-            /*$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-            $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);*/
-
             Configurator::configure($produtoEntity, $produto);
 
             $em->persist($produtoEntity);
 
             if ($novo == true) {
                 $em->flush();
-                $produtoRepo->updateSequence();
                 $em->clear();
             }
 
@@ -402,12 +405,16 @@ class Importacao
      */
     public function saveNormaPaletizacao($em, $arrDados)
     {
-        $entity = new Produto\NormaPaletizacao();
-
-        $arrDados["unitizador"] = $em->getRepository('wms:Produto\Unitizador')->findOneBy( array('id' => $arrDados['unitizador']) );
-
-        Configurator::configure($entity, $arrDados);
-        $em->persist($entity);
+        foreach($arrDados as $key=>$data) {
+            if (empty($data)) unset($arrDados[$key]);
+        }
+        $entity = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Produto\NormaPaletizacao();
+            $arrDados["unitizador"] = $em->getRepository('wms:Produto\Unitizador')->findOneBy(array('id' => $arrDados['unitizador']));
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
     }
 
     /**
@@ -416,9 +423,15 @@ class Importacao
      */
     public function saveUnitizador($em, $arrDados)
     {
-        $entity = new Unitizador();
-        Configurator::configure($entity, $arrDados);
-        $em->persist($entity);
+        foreach($arrDados as $key=>$data) {
+            if (empty($data)) unset($arrDados[$key]);
+        }
+        $entity = $em->getRepository('wms:Armazenagem\Unitizador')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Unitizador();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
     }
 
     /**
@@ -433,6 +446,119 @@ class Importacao
         $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy( array("id" => $arrDados['normaPaletizacao']));
         Configurator::configure($entity, $arrDados);
         $em->persist($entity);
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveCaracteristicaEndereco($em, $arrDados)
+    {
+        foreach($arrDados as $key=>$data) {
+            if (empty($data)) unset($arrDados[$key]);
+        }
+        $entity = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Endereco\Caracteristica();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveTipoEndereco($em, $arrDados)
+    {
+        foreach($arrDados as $key=>$data) {
+            if (empty($data)) unset($arrDados[$key]);
+        }
+        $entity = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Endereco\Tipo();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveTipoEstrArmazenamento($em, $arrDados)
+    {
+        $entity = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Tipo();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveAreaArmazenagem($em, $arrDados)
+    {
+        $deposito = $em->getRepository("wms:Deposito")->findOneBy(array("id" => $arrDados['deposito']));
+        if ($deposito)
+            $arrDados['deposito'] = $deposito;
+
+        $entity = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new AreaArmazenagem();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveDeposito($em, $arrDados)
+    {
+        $filial = $em->getRepository("wms:Filial")->findOneBy(array("id" => $arrDados['filial']));
+        if (!empty($filial))
+            $arrDados['filial'] = $filial;
+
+        $entity = $em->getRepository('wms:Deposito')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Deposito();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveEndereco($em, $arrDados)
+    {
+        if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica']))
+            $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
+
+        if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem']))
+            $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
+
+        if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco']))
+            $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
+
+        if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem']))
+            $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
+
+        if (isset($arrDados['deposito']) && !empty($arrDados['deposito']))
+            $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
+
+        $entity = $em->getRepository('wms:Deposito')->findOneBy($arrDados);
+        if (!$entity) {
+            $entity = new Endereco();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+        }
     }
 
     private function persistirVolumes($em, $produtoEntity, $volume) {

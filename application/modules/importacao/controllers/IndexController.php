@@ -155,7 +155,7 @@ class Importacao_IndexController extends Action
                                 }
                                 break;
                             case 'pedidoProduto':
-                                $importacaoService->savePedidoProduto($em, $arrRegistro);
+                                $importacaoService->savePedidoProduto($em, $arrRegistro, false);
                                 $countFlush++;
                                 break;
                             case 'carga':
@@ -168,6 +168,10 @@ class Importacao_IndexController extends Action
                                 break;
                             case 'dadosLogisticos':
                                 $importacaoService->saveDadosLogisticos($em, $arrRegistro);
+                                $countFlush++;
+                                break;
+                            case 'unitizador':
+                                $importacaoService->saveUnitizador($em, $arrRegistro);
                                 $countFlush++;
                                 break;
                             default:
@@ -374,7 +378,7 @@ class Importacao_IndexController extends Action
             $array['pedido'] = $importacao->savePedido($em, $array);
             foreach ($array['itens'] as $item) {
                 $item['pedido'] = $array['pedido'];
-                $importacao->savePedidoProduto($em, $item);
+                $importacao->savePedidoProduto($em, $item, true);
             }
 
             fclose($handle);
