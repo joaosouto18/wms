@@ -197,7 +197,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	  $em->commit();
 	  $em->flush();
-	  $this->updateSequence();
 	} catch (\Exception $e) {
 	  $em->rollback();
 	  throw new \Exception($e->getMessage());
