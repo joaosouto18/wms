@@ -1,0 +1,16 @@
+<?php
+echo $this->headLink()->appendStylesheet('/css/admin/form/dadoLogisticoForm.css');
+?>
+<div id="produto-dado-logistico">
+    <dd id="identification-element">
+
+
+        <fieldset id="fieldset-codigo-fornecedor">
+            <legend>Escolha o fornecedor e digite o código do produto no fornecedor escolhido</legend>
+            <?php echo $this->element->fornecedor; ?>
+            <?php echo $this->element->codigo; ?>
+            <?php echo $this->element->btnAdicionar; ?>
+        </fieldset>
+
+    </dd>
+</div>
