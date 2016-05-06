@@ -475,7 +475,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
 
     public function geraEtiquetaReentrega ($etiquetaSeparacanEn, $reentregaEn) {
-        $statusReentrega = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+        $statusReentrega = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
 
         $etiquetaSeparacanEn->setReentrega($reentregaEn);
         $etiquetaSeparacanEn->setCodReentrega($reentregaEn);

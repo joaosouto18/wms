@@ -77,7 +77,7 @@ class Mobile_ReentregaController extends Action
         $ordemServicoRepo->criarOsByReentrega($recebimentoReentregaEn);
 
         $this->addFlashMessage('success', 'Recebimento de Reentrega gerado com sucesso!');
-        $this->redirect('reconferir-produtos', 'reentrega', 'mobile',array('id'=>$recebimentoReentregaEn->getId()));
+        $this->redirect('reconferir-produtos', 'reentrega', 'mobile', array('id'=>$recebimentoReentregaEn->getId()));
     }
 
     public function reconferirProdutosAction()
