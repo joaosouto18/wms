@@ -19,7 +19,7 @@
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/reentrega.js')); ?>
 <?php //echo $this->form; ?>
 
-<form id="reentrega-form" class="saveForm">
+<form id="reentrega-form" class="saveForm" action="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'buscar')); ?>">
     <dt id="identification-label">&nbsp;</dt>
     <dd id="identification-element">
         <fieldset id="fieldset-identification">
@@ -39,7 +39,7 @@
 </form>
 
 
-<?php if (count($this->notasFiscais) >0 ) {?>
+<?php if (count($this->notasFiscais) > 0) {?>
 <div style="margin-top: 5pt">
     <form class="saveForm">
         <fieldset>
