@@ -209,9 +209,9 @@ class Web_ProdutoController extends Crud {
 
     public function codigoFornecedorAjaxAction()
     {
-        $resultArray[0]['id'] = 23;
+        $resultArray[0]['id'] = 59141;
         $resultArray[0]['label'] = 'Northern Lapwing';
-        $resultArray[1]['id'] = 54;
+        $resultArray[1]['id'] = 59171;
         $resultArray[1]['label'] = 'WHIRLPOOL S A';
 
         $this->_helper->json($resultArray);

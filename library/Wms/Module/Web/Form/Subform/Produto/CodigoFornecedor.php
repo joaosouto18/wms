@@ -17,7 +17,7 @@ class CodigoFornecedor extends SubForm
     {
         $this->addElement('hidden', 'id')
                 ->addElement('text', 'fornecedor', array(
-                    'label' => 'Fornecedor',
+                    'label' => 'CodigoFornecedor',
                     'size' => 80,
                 ))
                 ->addElement('text', 'codigo', array(
