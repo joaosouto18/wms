@@ -813,7 +813,7 @@ class RecebimentoRepository extends EntityRepository
                 ->where("v.codRecebimento = $idRecebimento");
         } else {
             $source = $this->getEntityManager()->createQueryBuilder()
-                ->select("DISTINCT p.id as codigo, p.grade as grade, p.descricao as produto,
+                ->select("DISTINCT p.id as codigo, p.grade as grade, p.descricao as produto, SUM(nfi.quantidade) qtdItensNf,
                     0 as qtdRecebida,
                     0 as qtdRecebimento,
                     0 as qtdEnderecada,
@@ -822,7 +822,8 @@ class RecebimentoRepository extends EntityRepository
                 ->from("wms:NotaFiscal", 'nf')
                 ->innerJoin("nf.itens", "nfi")
                 ->innerJoin("wms:Produto", 'p', 'WITH', 'p.grade = nfi.grade AND p.id = nfi.codProduto')
-                ->where("nf.recebimento = $idRecebimento");
+                ->where("nf.recebimento = $idRecebimento")
+                ->groupBy("p.id, p.grade, p.descricao");
         }
 
         $result = $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
