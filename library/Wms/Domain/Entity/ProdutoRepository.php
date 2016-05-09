@@ -102,13 +102,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	protected  function saveFornecedorReferencia($em, $dados, $produtoEntity)
 	{
+		$idProduto = $produtoEntity->getIdProduto();
+		$fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+
 		foreach($dados['fornecedor'] as $key => $fornecedorRef) {
 
-			$fornecedorEn = $em->getReference('wms:Pessoa\Papel\Fornecedor', $fornecedorRef['id']);
-			$fornRefEntity = new Referencia();
-			$fornRefEntity->setIdProduto($produtoEntity->getIdProduto());
+			$fornRefEntity = $fornecedorRefRepo->findBy(array('fornecedor' => $fornecedorRef['id'], 'idProduto' => $idProduto));
+			if (!$fornRefEntity) {
+				$fornRefEntity = new Referencia();
+				$fornRefEntity->setIdProduto($idProduto);
+				$fornecedorEn = $em->getReference('wms:Pessoa\Papel\Fornecedor', $fornecedorRef['id']);
+				$fornRefEntity->setFornecedor($fornecedorEn);
+			}
 			$fornRefEntity->setDscReferencia($fornecedorRef['cod']);
-			$fornRefEntity->setFornecedor($fornecedorEn);
 
 			$em->persist($fornRefEntity);
 		}

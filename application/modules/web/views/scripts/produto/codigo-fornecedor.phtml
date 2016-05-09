@@ -35,7 +35,6 @@
                 });
             },
             select: function (event, ui) {
-                // Set autocomplete element to display the label
                 this.value = ui.item.label;
                 // Store value in hidden field
                 $('#tempCodFornecedor').val(ui.item.id);
@@ -65,15 +64,18 @@
             <td width=""><span>Código do produto no fornecedor</span></td>
             <td width=""><span>Excluir?</span></td>
         </tr>
-        <tr class="gTResultSet ">
-            <td style="text-align:left">WHIRLPOOL S A</td>
-            <td style="text-align:left">WEP2334343</td>
-            <td style="text-align:left">
-                <a class="excluir-cod-fornecedor" title="Clique para Excluir" class="" href="javascript://">
-                    <img src="http://wms.local/img/icons/delete.png">
-                </a>
-            </td>
-        </tr>
+        <?php $codigosFornecedores = Zend_Layout::getMvcInstance()->getView()->codigosFornecedores;?>
+        <?php foreach($codigosFornecedores as $codigoFornecedor) : ?>
+            <tr class="gTResultSet ">
+                <td style="text-align:left"><?php echo $codigoFornecedor->getFornecedor()->getPessoa()->getNome(); ?></td>
+                <td style="text-align:left"><?php echo $codigoFornecedor->getDscReferencia() ?></td>
+                <td style="text-align:left">
+                    <a class="excluir-cod-fornecedor" title="Clique para Excluir" class="" href="javascript://">
+                        <img src="http://wms.local/img/icons/delete.png">
+                    </a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
         </tbody>
     </table>
 

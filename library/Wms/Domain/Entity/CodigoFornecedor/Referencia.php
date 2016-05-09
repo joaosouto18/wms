@@ -1,10 +1,7 @@
 <?php
-
 namespace Wms\Domain\Entity\CodigoFornecedor;
 
-
 /**
- *
  * @Table(name="FORNECEDOR_REFERENCIA")
  * @Entity(repositoryClass="Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository")
  */
@@ -12,7 +9,6 @@ class Referencia
 {
 
     /**
-     * @var integer $id
      * @Column(name="COD_FORN_REF", type="integer", nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")

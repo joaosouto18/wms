@@ -201,6 +201,8 @@ class Web_ProdutoController extends Crud {
 				
             }
             $form->setDefaultsFromEntity($entity); // pass values to form
+            $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+            $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
@@ -209,12 +211,12 @@ class Web_ProdutoController extends Crud {
 
     public function codigoFornecedorAjaxAction()
     {
-        $resultArray[0]['id'] = 59141;
-        $resultArray[0]['label'] = 'Northern Lapwing';
-        $resultArray[1]['id'] = 59171;
-        $resultArray[1]['label'] = 'WHIRLPOOL S A';
+        $term = $this->getRequest()->getParam('term');
+        /** @var $fornecedorRefRepo */
+        $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        $result = $fornecedorRefRepo->buscarFornecedorByNome($term);
 
-        $this->_helper->json($resultArray);
+        $this->_helper->json($result);
     }
 
     /**
