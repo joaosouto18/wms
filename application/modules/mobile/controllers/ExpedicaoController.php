@@ -122,7 +122,7 @@ class Mobile_ExpedicaoController extends Action
                     $embalagemEn = $embalagens['embalagem'];
                     $volumeEn = $embalagens['volume'];
 
-                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn);
+                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($idExpedicao, $codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn);
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
@@ -250,9 +250,19 @@ class Mobile_ExpedicaoController extends Action
                 if ((isset($idVolume)) && ($idVolume != null)) {
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                 }
-                $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
-                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoProdutoRepo */
+                $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
+
+                if ($embalagemEn != null) {
+                    $produtoEn = $embalagemEn->getProduto();
+                } else {
+                    $produtoEn = $volumeEn->getProduto();
+                }
+
+                $resultProdutoMapa = $mapaSeparacaoRepo->getMapaByProdutoAndExpedicao($idExpedicao, $mapaSeparacaoProdutoRepo, $produtoEn);
+
+                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$resultProdutoMapa['mapaEn'],$volumePatrimonioEn,$qtd);
                 $this->addFlashMessage('info','Produto conferido com sucesso');
                 $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/" . $idVolume);
 
@@ -1177,6 +1187,7 @@ class Mobile_ExpedicaoController extends Action
         }
 
     }
+
 
 }
 
