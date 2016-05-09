@@ -48,7 +48,10 @@
     $("#pbArquivo").progressbar();
     $("#pbLinha").progressbar();
     $("#startImport").click(function () {
+        $("#excptRw").hide();
+        $("#excptMsg").text("");
         $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-ajax");
+
     });
     function Zend_ProgressBar_Update(data)
     {
@@ -76,6 +79,7 @@
                 $("#excptMsg").text(status.exception);
                 $("#excptRw").show();
             }
+            console.log(status);
         }
     }
 </script>

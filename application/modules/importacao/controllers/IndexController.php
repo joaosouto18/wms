@@ -146,6 +146,10 @@ class Importacao_IndexController extends Action
                                 $importacaoService->saveCliente($em, $arrRegistro);
                                 $countFlush++;
                                 break;
+                            case 'carga':
+                                $importacaoService->saveCarga($em, $arrRegistro);
+                                $countFlush++;
+                                break;
                             case 'pedido':
                                 if ($arrRegistro['codPedido'] !== $numPedido) {
                                     $numPedido = $arrRegistro['codPedido'];
@@ -158,20 +162,12 @@ class Importacao_IndexController extends Action
                                 $importacaoService->savePedidoProduto($em, $arrRegistro, false);
                                 $countFlush++;
                                 break;
-                            case 'carga':
-                                $importacaoService->saveCarga($em, $arrRegistro);
+                            case 'dadoLogistico':
+                                $importacaoService->saveDadoLogistico($em, $arrRegistro);
                                 $countFlush++;
                                 break;
-                            case 'normaPaletizacao':
-                                $importacaoService->saveNormaPaletizacao($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'dadosLogisticos':
-                                $importacaoService->saveDadosLogisticos($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'unitizador':
-                                $importacaoService->saveUnitizador($em, $arrRegistro);
+                            case 'endereco':
+                                $importacaoService->saveEndereco($em, $arrRegistro);
                                 $countFlush++;
                                 break;
                             default:

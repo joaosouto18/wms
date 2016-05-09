@@ -191,10 +191,15 @@ class DadoLogistico
     /**
      * Informa o peso do volume
      * @param decimal $peso 
+     * @param bool $importacao
      */
-    public function setPeso($peso)
+    public function setPeso($peso, $importacao = null)
     {
-        $this->peso = Converter::brToEn($peso, 3);
+        if(empty($importacao)) {
+            $this->peso = Converter::brToEn($peso, 3);
+        } else {
+            $this->peso = $peso;
+        }
         return $this;
     }
 }
