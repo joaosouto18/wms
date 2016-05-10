@@ -78,16 +78,12 @@ class NotaFiscalRepository extends EntityRepository
     public function getItemConferencia($idRecebimento)
     {
         $sql = "
-            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util, NVL(pe.dth_inativacao, pv.dth_inativacao) data_inativacao
+            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util
             FROM nota_fiscal nf
             INNER JOIN nota_fiscal_item nfi ON (nf.cod_nota_fiscal = nfi.cod_nota_fiscal)
             INNER JOIN produto p ON (p.cod_produto = nfi.cod_produto AND p.dsc_grade = nfi.dsc_grade)
-            LEFT JOIN produto_embalagem pe ON pe.cod_produto = p.cod_produto AND pe.dsc_grade = p.dsc_grade
-            LEfT JOIN produto_volume pv ON pv.cod_produto = p.cod_produto AND pv.dsc_grade = p.dsc_grade
             WHERE nf.cod_recebimento = " . (int) $idRecebimento . " 
                 AND nf.cod_status = " . NotaFiscalEntity::STATUS_EM_RECEBIMENTO . "
-                AND pe.dth_inativacao IS NULL
-                AND pv.dth_inativacao IS NULL
                 AND NOT EXISTS (
                     SELECT 'x'
                     FROM ordem_servico os
@@ -97,7 +93,7 @@ class NotaFiscalRepository extends EntityRepository
                     AND rc.dsc_grade = nfi.dsc_grade
                     AND rc.qtd_divergencia = 0
                 )
-           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util, pe.dth_inativacao, pv.dth_inativacao
+           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util
            ORDER BY nfi.cod_produto, nfi.dsc_grade";
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
