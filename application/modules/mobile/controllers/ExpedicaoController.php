@@ -318,11 +318,16 @@ class Mobile_ExpedicaoController extends Action
         $sessao = new \Zend_Session_Namespace('coletor');
         $request = $this->getRequest();
         $idExpedicao      = $request->getParam('idExpedicao');
+        $idMapa           = $request->getParam('idMapa');
         $central          = $sessao->centralSelecionada;
+        $mapa             = $request->getParam('mapa', "N");
 
         $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
+            if ($mapa == 'S') {
+                $this->_redirect("mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao");
+            } 
             $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
         } else if ($result==0) {
             $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
