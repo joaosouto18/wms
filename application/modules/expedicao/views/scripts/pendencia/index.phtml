@@ -1,11 +1,24 @@
-<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'pendencia', 'action' =>'view' ))?>">
-<?php if ($this->showReport == true) {
-        echo $this->formSubmit("btnRelatorio-Produtos-Pendentes-Conferencia", "Visualizar Relatório", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 0 px;'));
-    }
-?>
 <div class="padding-top">
-    <?php 
+    <?php
         echo $this->gridCortes;
     ?>
+    <div style="float: right">
+        <form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'pendencia', 'action' =>'view' ))?>">
+            <?php if ($this->showReport == true)
+                 echo $this->formSubmit("btnRelatorio-Produtos-Pendentes-Conferencia", "Visualizar Relatório Etiquetas", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 0 px;'));
+            ?>
+        </form>
+    </div>
 </div>
-</form>
+<div class="padding-top">
+    <?php
+    echo $this->gridMapa;
+    ?>
+</div>
+<div style="float: right">
+    <form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'mapa', 'action' =>'relatorio-pendentes-ajax' ))?>">
+        <?php if ($this->showReport == true)
+            echo $this->formSubmit("btnRelatorio-Produtos-Pendentes-Mapas", "Visualizar Relatório Mapas", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 0 px;'));
+        ?>
+    </form>
+</div>
