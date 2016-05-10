@@ -106,7 +106,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 type: 'post',
                 dataType: 'json',
                 success: function (data) {
-                    if (data == 'N') {
+                    if (data == 'S') {
                         alert("Não é possível adicionar nova embalagem com parametro de código de barras desativado");
                         return false;
                     } else {
