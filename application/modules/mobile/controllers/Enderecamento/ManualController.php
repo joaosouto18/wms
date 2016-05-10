@@ -316,10 +316,12 @@ class Mobile_Enderecamento_ManualController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
         $data = false;
+        $primeiraTela = false;
 
         //VALIDO PARA A PRIMEIRA TELA
         if (isset($codBarraEndereco) && !empty($codBarraEndereco)) {
             $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
+            $primeiraTela = true;
         //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
         } elseif (isset($codEndereco) && !empty($codEndereco)) {
             $enderecoEn = $enderecoRepo->find($codEndereco);
@@ -339,7 +341,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $nivel = $enderecoEn[0]['NUM_NIVEL'];
         $caracteristicaEndereco = $enderecoEn[0]['COD_CARACTERISTICA_ENDERECO'];
 
-        if (($nivel != 0 && $caracteristicaEndereco == $idCaracteristicaPickingRotativo) || ($caracteristicaEndereco == $idCaracteristicaPickingRotativo))
+        if (($nivel != 0 && $caracteristicaEndereco == $idCaracteristicaPickingRotativo) || ($primeiraTela == false && $caracteristicaEndereco == $idCaracteristicaPickingRotativo))
             $data = true;
 
         echo $this->_helper->json($data);
