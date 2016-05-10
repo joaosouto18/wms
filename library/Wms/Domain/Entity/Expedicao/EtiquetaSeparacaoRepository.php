@@ -1089,6 +1089,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             //LINHA DE SEPARAÇÃO
             if ($quebra == "L") {
+                var_dump($pedidoProduto);
+                var_dump($pedidoProduto->getLinhaSeparacao());
+                exit;
                 $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
                 $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
 
