@@ -337,7 +337,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         '#embalagem-CBInterno change': function () {
             if($('#embalagem-CBInterno').val() == 'S'){
                 $('#embalagem-imprimirCB').val('S');
-                $('#embalagem-codigoBarras').val('').attr('readonly', false);
+                $('#embalagem-codigoBarras').val('').attr('readonly', true);
             }else{
                 $('#embalagem-imprimirCB').val('N');
                 $('#embalagem-codigoBarras').attr('readonly', false);
