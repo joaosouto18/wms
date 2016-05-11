@@ -36,7 +36,7 @@ class MapaSeparacao extends Pdf
         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
         $this->Cell(70, 5, utf8_decode("Produto") ,1, 0);
-        $this->Cell(20, 5, utf8_decode("Peso/Cubagem") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Peso/Cub.") ,1, 0);
         $this->Cell(25, 5, utf8_decode("Referência") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
