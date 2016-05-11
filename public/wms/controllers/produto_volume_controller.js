@@ -338,7 +338,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             type: 'post',
             dataType: 'json',
             success: function (data) {
-                if (data === 'N') {
+                if (data === 'S') {
                     $('#volume-codigoBarras').attr("disabled", true);
                 }
             }
