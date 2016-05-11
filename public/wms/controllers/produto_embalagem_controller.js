@@ -297,6 +297,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 type: 'post',
                                 dataType: 'json',
                                 success: function (data) {
+                                    alert('abc');
                                     if (data == 'S') {
                                         alert("Não é possível excluir embalagem com parametro de código de barras desativado");
                                         return false;
