@@ -91,6 +91,7 @@ class MapaSeparacao extends Pdf
                 $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getCodProduto(), 'grade' => $produto->getDscGrade()));
 
+                var_dump($pesoProduto); exit;
                 $endereco = $produto->getCodDepositoEndereco();
                 $dscEndereco = "";
                 if ($endereco != null) {
