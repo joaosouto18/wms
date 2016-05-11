@@ -35,7 +35,8 @@ class MapaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-        $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
+        $this->Cell(70, 5, utf8_decode("Produto") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Peso/Cubagem") ,1, 0);
         $this->Cell(25, 5, utf8_decode("Referência") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
@@ -84,8 +85,11 @@ class MapaSeparacao extends Pdf
 
             $this->AddPage();
             foreach ($produtos as $produto) {
-                $this->SetFont('Arial',  null, 8);
+                $this->SetFont('Arial', null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
+
+                $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getCodProduto(), 'grade' => $produto->getDscGrade()));
 
                 $endereco = $produto->getCodDepositoEndereco();
                 $dscEndereco = "";
@@ -95,7 +99,8 @@ class MapaSeparacao extends Pdf
                 $embalagem = $produto->getProdutoEmbalagem();
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
-                $this->Cell(90, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,45) ,0, 0);
+                $this->Cell(70, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,35) ,0, 0);
+                $this->Cell(20, 4, $pesoProduto->getPeso() . ' / ' . $pesoProduto->getCubagem() ,0, 0);
                 $this->Cell(25, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
