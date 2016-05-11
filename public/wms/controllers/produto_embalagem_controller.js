@@ -155,7 +155,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 type: 'post',
                 dataType: 'json',
                 success: function (data) {
-                    alert('abc');
                     if (data === 'S') {
                         $('#fieldset-embalagem #embalagem-codigoBarras').attr("disabled", true);
                     }
