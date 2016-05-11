@@ -83,15 +83,14 @@ class MapaSeparacao extends Pdf
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
 
+            /** @var \Doctrine\ORM\EntityManager $em */
+            $entity = \Zend_Registry::get('doctrine')->getEntityManager();
             $this->AddPage();
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
 
-                var_dump($produto->getProduto()->getId());
-                var_dump($produto->getProduto()->getGrade());
-                exit;
-                $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+                $pesoProdutoRepo = $entity->getRepository('wms:Produto\Peso');
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $endereco = $produto->getCodDepositoEndereco();
