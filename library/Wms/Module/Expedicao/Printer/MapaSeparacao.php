@@ -18,7 +18,7 @@ class MapaSeparacao extends Pdf
     {
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
-        $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1,"C");
+        $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO "), 0, 1,"C");
         $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
         $this->Cell(20, 3, "", 0, 1);
         $this->SetFont('Arial','B',10);
@@ -78,11 +78,11 @@ class MapaSeparacao extends Pdf
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
 
-            $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
 
             $this->AddPage();
+            $this->idMapa = $mapa->getId();
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial',  null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();

@@ -180,6 +180,16 @@ class Web_ProdutoController extends Crud {
                     $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
                 }
 
+                $tolerancia = strtoupper($params['produto']['pVariavel']);
+                if ($tolerancia != 'S') {
+                    $tolerancia = 'N';
+                }
+
+                if ($tolerancia == 'S' && !empty($params['produto']['percTolerancia']) ) {
+                    $entity->setPercTolerancia($params['produto']['percTolerancia']);
+                    $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
+                }
+
                 $this->repository->save($entity, $this->getRequest()->getParams());
                 $this->em->flush();
 
@@ -357,6 +367,12 @@ class Web_ProdutoController extends Crud {
             'codProduto' => $codProduto,
             'grade'      => $grade),
             $modelo);
+    }
+
+    public function verificarParametroCodigoBarrasAjaxAction()
+    {
+        $parametro = $this->getSystemParameterValue("ALTERAR_CODIGO_BARRAS");
+        $this->_helper->json($parametro, true);
     }
 
 }

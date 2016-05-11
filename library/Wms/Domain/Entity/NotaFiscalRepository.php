@@ -78,12 +78,16 @@ class NotaFiscalRepository extends EntityRepository
     public function getItemConferencia($idRecebimento)
     {
         $sql = "
-            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util
+            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util--, NVL(pe.dth_inativacao, pv.dth_inativacao) data_inativacao
             FROM nota_fiscal nf
             INNER JOIN nota_fiscal_item nfi ON (nf.cod_nota_fiscal = nfi.cod_nota_fiscal)
             INNER JOIN produto p ON (p.cod_produto = nfi.cod_produto AND p.dsc_grade = nfi.dsc_grade)
+           -- LEFT JOIN produto_embalagem pe ON pe.cod_produto = p.cod_produto AND pe.dsc_grade = p.dsc_grade
+           -- LEfT JOIN produto_volume pv ON pv.cod_produto = p.cod_produto AND pv.dsc_grade = p.dsc_grade
             WHERE nf.cod_recebimento = " . (int) $idRecebimento . " 
                 AND nf.cod_status = " . NotaFiscalEntity::STATUS_EM_RECEBIMENTO . "
+                --AND pe.dth_inativacao IS NULL
+                --AND pv.dth_inativacao IS NULL
                 AND NOT EXISTS (
                     SELECT 'x'
                     FROM ordem_servico os
@@ -93,7 +97,7 @@ class NotaFiscalRepository extends EntityRepository
                     AND rc.dsc_grade = nfi.dsc_grade
                     AND rc.qtd_divergencia = 0
                 )
-           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util
+           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util--, pe.dth_inativacao, pv.dth_inativacao
            ORDER BY nfi.cod_produto, nfi.dsc_grade";
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -272,7 +276,7 @@ class NotaFiscalRepository extends EntityRepository
         $dataEmissao = \DateTime::createFromFormat('d/m/Y', $dataEmissao);
 
         $sql = '
-            SELECT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, RC.QTD_AVARIA, MDR.DSC_MOTIVO_DIVER_RECEB
+            SELECT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, RC.QTD_AVARIA, MDR.DSC_MOTIVO_DIVER_RECEB, SUM(NFI.NUM_PESO) AS PESO_ITEM
             FROM NOTA_FISCAL NF
             INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
@@ -293,7 +297,9 @@ class NotaFiscalRepository extends EntityRepository
                                 AND RC2.COD_PRODUTO = RC.COD_PRODUTO 
                                 AND RC2.DSC_GRADE = RC.DSC_GRADE
                                 AND RC2.COD_RECEBIMENTO_CONFERENCIA > RC.COD_RECEBIMENTO_CONFERENCIA
-                                )';
+                                )
+			  GROUP BY
+			  NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, NFI.QTD_ITEM,RC2.QTD_DIVERGENCIA, RC.QTD_AVARIA, MDR.DSC_MOTIVO_DIVER_RECEB, NFI.NUM_PESO';
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -366,15 +372,19 @@ class NotaFiscalRepository extends EntityRepository
         extract($criteria);
 
         $sql = "SELECT R.COD_RECEBIMENTO, R.DTH_FINAL_RECEB, NF.NUM_NOTA_FISCAL, NF.COD_SERIE_NOTA_FISCAL, 
-                       NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, RC2.QTD_DIVERGENCIA,
-                       PROD.DSC_PRODUTO
+                       NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC2.QTD_DIVERGENCIA,0) AS QTD_DIVERGENCIA,
+                       PROD.DSC_PRODUTO, P.NOM_PESSOA, PF.NOM_PESSOA AS FORNECEDOR, NVL(SPP.NUM_PESO,0) AS NUM_PESO
                   FROM NOTA_FISCAL NF
             INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
             INNER JOIN NOTA_FISCAL_ITEM NFI ON (NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL)
             INNER JOIN PRODUTO PROD on (PROD.COD_PRODUTO = NFI.COD_PRODUTO AND PROD.DSC_GRADE = NFI.DSC_GRADE)
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+            INNER JOIN PESSOA P ON P.COD_PESSOA = OS.COD_PESSOA
             INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS AND RC.COD_PRODUTO = NFI.COD_PRODUTO AND RC.DSC_GRADE = NFI.DSC_GRADE)
             LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS AND RC2.COD_PRODUTO = NFI.COD_PRODUTO AND RC2.DSC_GRADE = NFI.DSC_GRADE AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL)
+            INNER JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
+            INNER JOIN PESSOA PF ON PF.COD_PESSOA = F.COD_FORNECEDOR
+            LEFT JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PROD.COD_PRODUTO AND SPP.DSC_GRADE = PROD.DSC_GRADE
                 WHERE 1 = 1
                     AND NOT EXISTS (
                         SELECT 'X'
@@ -406,6 +416,10 @@ class NotaFiscalRepository extends EntityRepository
         if (isset($dataFinal2) && !empty($dataFinal2)) {
             $dataFinal2 = \DateTime::createFromFormat('d/m/Y', $dataFinal2);
             $sql .= ' AND TRUNC(r.dth_final_receb) <= \'' . $dataFinal2->format('Y-m-d') . '\'';
+        }
+
+        if (isset($idRecebimento) && !empty($idRecebimento)) {
+            $sql .= " AND R.COD_RECEBIMENTO = $idRecebimento ";
         }
 
         $sql .= ' AND r.cod_status = ' . RecebimentoEntity::STATUS_FINALIZADO;
@@ -548,7 +562,12 @@ class NotaFiscalRepository extends EntityRepository
             } else {
                 //produtos sem dados logisticos - embalagem e volumes
                 $sql .= " AND ((PDL.NUM_CUBAGEM = 0 OR PDL.NUM_PESO = 0) OR (PDL.NUM_CUBAGEM IS NULL OR PDL.NUM_PESO IS NULL))
-                          AND ((PV.NUM_CUBAGEM = 0 OR PV.NUM_PESO = 0) OR (PV.NUM_CUBAGEM IS NULL OR PV.NUM_PESO IS NULL))";
+                          AND ((PV.NUM_CUBAGEM = 0 OR PV.NUM_PESO = 0) OR (PV.NUM_CUBAGEM IS NULL OR PV.NUM_PESO IS NULL))
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO,
+                              NVL(PV.COD_BARRAS, PE.COD_BARRAS), NVL(PV.NUM_ALTURA, PDL.NUM_ALTURA),
+                              NVL(PV.NUM_LARGURA, PDL.NUM_LARGURA), NVL(PV.NUM_PESO, PDL.NUM_PESO), NVL(PV.NUM_PROFUNDIDADE, PDL.NUM_PROFUNDIDADE),
+                              NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO), NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR),
+                              NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS), NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO)";
             }
         }
 
@@ -580,7 +599,8 @@ class NotaFiscalRepository extends EntityRepository
                         NVL(pe.descricao, \'\') descricaoEmbalagem,
                         NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
                         NVL(pv.descricao, \'\') descricaoVolume,
-                        NVL(pv.codigoSequencial, \'\') sequenciaVolume')
+                        NVL(pv.codigoSequencial, \'\') sequenciaVolume,
+                        NVL(pe.dataInativacao, pv.dataInativacao) dataInativacao')
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
@@ -616,13 +636,14 @@ class NotaFiscalRepository extends EntityRepository
     public function buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('NVL(rv.dataValidade,re.dataValidade) dataValidade, NVL(rv.id, re.id) id')
+            ->select('NVL(rv.dataValidade,re.dataValidade) dataValidade, NVL(rv.id, re.id) id, SUM( NVL(rv.numPeso, re.numPeso) ) peso')
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id')
             ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
             ->leftJoin('rv.volume', 'pv')
             ->leftJoin('re.embalagem', 'pe')
             ->where("(pv.codProduto = '$idProduto' and pv.grade = '$grade') or (pe.codProduto = '$idProduto' and pe.grade = '$grade')")
+            ->groupBy('rv.id, re.id, rv.dataValidade,re.dataValidade')
             ->orderBy('id', 'DESC');
         if (isset($idRecebimento) && !empty($idRecebimento)) {
             $sql->andWhere("r.id = $idRecebimento");
@@ -760,6 +781,25 @@ class NotaFiscalRepository extends EntityRepository
 
     }
 
+    public function getPesoByProduto($idRecebimento, $codProduto, $grade) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select("SUM(nfi.numPeso) as peso")
+            ->from("wms:NotaFiscal","nf")
+            ->leftJoin("nf.itens", "nfi")
+            ->where("nf.recebimento = '$idRecebimento'")
+            ->andWhere("nfi.codProduto = '$codProduto'")
+            ->andWhere("nfi.grade = '$grade'")
+            ->groupBy("nfi.codProduto");
+        $result = $dql->getQuery()->getArrayResult();
+
+        if ($result == NULL) {
+            return 0;
+        } else {
+            return $result[0]['peso'];
+        }
+
+    }
+
     public function buscarItensPorNovoRecebimento($idRecebimento, $idProduto)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
@@ -803,6 +843,7 @@ class NotaFiscalRepository extends EntityRepository
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
             // VALIDO SE OS PRODUTOS EXISTEM NO SISTEMA
+            $pesoTotal = 0;
             if (count($itens) > 0) {
                 foreach ($itens as $item) {
 
@@ -812,7 +853,16 @@ class NotaFiscalRepository extends EntityRepository
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
+                    $pesoItem = trim($item['numPeso']);
+                    if ($pesoItem == "") {
+                        $pesoItem = 0;
+                    } else {
+                        $pesoItem = (int) $pesoItem;
+                    }
+                    $pesoTotal = $pesoTotal + $pesoItem;
                 }
+            } else {
+                throw new \Exception('Nenhum Produto informado na nota');
             }
 
             if ($fornecedorEntity == null)
@@ -838,6 +888,7 @@ class NotaFiscalRepository extends EntityRepository
             $notaFiscalEntity->setStatus($statusEntity);
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
+            $notaFiscalEntity->setPesoTotal($pesoTotal);
 
             if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
@@ -848,14 +899,24 @@ class NotaFiscalRepository extends EntityRepository
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
 
+                    $pesoItem = trim($item['numPeso']);
+                    if ($pesoItem == "") {
+                        $pesoItem = 0;
+                    } else {
+                        $pesoItem = (int) $pesoItem;
+                    }
+
                     $itemEntity = new ItemNF;
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
                     $itemEntity->setProduto($produtoEntity);
                     $itemEntity->setGrade(trim($item['grade']));
+                    $itemEntity->setNumPeso($pesoItem);
+
                     $itemEntity->setQuantidade($item['quantidade']);
 
                     $notaFiscalEntity->getItens()->add($itemEntity);
                 }
+
             } else {
                 throw new \Exception("Nenhum item informado na nota");
             }
