@@ -297,7 +297,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 type: 'post',
                                 dataType: 'json',
                                 success: function (data) {
-                                    if (data == 'N') {
+                                    if (data == 'S') {
                                         alert("Não é possível excluir embalagem com parametro de código de barras desativado");
                                         return false;
                                     } else {
@@ -355,7 +355,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             $('#embalagem-descricao,#embalagem-pontoReposicao, #embalagem-capacidadePicking, #embalagem-quantidade, #embalagem-id, #embalagem-codigoBarras, #embalagem-codigoBarrasAntigo, #embalagem-endereco').val('');
             $('#embalagem-pontoReposicao, #embalagem-capacidadePicking').val('0');
             $('#embalagem-isPadrao').val('N').attr('disabled', false);
-            //$('#embalagem-codigoBarras').attr('disabled', false);
+            $('#embalagem-codigoBarras').attr('disabled', false);
             $('#embalagem-capacidadePicking').attr('disabled', false);
             $('#embalagem-pontoReposicao').attr('disabled', false);
             $('#embalagem-acao').val('incluir');
