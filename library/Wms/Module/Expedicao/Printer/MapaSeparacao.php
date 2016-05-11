@@ -74,7 +74,8 @@ class MapaSeparacao extends Pdf
 
 
         foreach ($mapaSeparacao as $mapa) {
-            $produtos = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
+            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
+            $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
             $quebras = $mapa->getDscQuebra();
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
@@ -83,14 +84,11 @@ class MapaSeparacao extends Pdf
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
 
-            /** @var \Doctrine\ORM\EntityManager $em */
-            $entity = \Zend_Registry::get('doctrine')->getEntityManager();
             $this->AddPage();
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
 
-                $pesoProdutoRepo = $entity->getRepository('wms:Produto\Peso');
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $endereco = $produto->getCodDepositoEndereco();

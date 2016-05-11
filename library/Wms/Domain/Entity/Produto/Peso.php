@@ -1,7 +1,6 @@
 <?php
 namespace Wms\Domain\Entity\Produto;
 
-
 /**
  * @Table(name="SUM_PESO_PRODUTO")
  * @Entity(repositoryClass="Wms\Domain\Entity\Produto\PesoRepository")
@@ -9,14 +8,14 @@ namespace Wms\Domain\Entity\Produto;
 class Peso
 {
     /**
-     * @Column(name="COD_PRODUTO", type="string", nullable=false)
-     * @var string
+     * @Id
+     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @var integer
      */
     protected $produto;
 
     /**
      * @Column(name="DSC_GRADE", type="string", nullable=false)
-     * @var string
      */
     protected $grade;
 
@@ -27,7 +26,6 @@ class Peso
 
     /**
      * @Column(name="NUM_CUBAGEM", type="string", nullable=false)
-     * @var string
      */
     protected $cubagem;
 
