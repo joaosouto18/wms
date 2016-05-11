@@ -100,7 +100,11 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
                 $this->Cell(70, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,35) ,0, 0);
-                $this->Cell(20, 4, $pesoProduto->getPeso() . ' / ' . $pesoProduto->getCubagem() ,0, 0);
+                if (!isset($pesoProduto) || empty($pesoProduto)) {
+                    $this->Cell(20, 4, '---' ,0, 0);
+                } else {
+                    $this->Cell(20, 4, $pesoProduto->getPeso() . ' / ' . $pesoProduto->getCubagem() ,0, 0);
+                }
                 $this->Cell(25, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
