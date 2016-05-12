@@ -163,11 +163,12 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $this->view->recebimentoStatus = json_encode($status, JSON_NUMERIC_CHECK);
             $this->view->recebimentoData = json_encode($data, JSON_NUMERIC_CHECK);
 
-            $produtosComDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos($indDadosLogisticos = 'S');
-            $this->view->produtosComDadosLogisticos = (int) $produtosComDadosLogisticos[0]['QTD_PRODUTO'];
+            $qtdProdutosGroupDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos();
+            $produtosComDadosLogisticos = $qtdProdutosGroupDadosLogisticos['SIM'];
+            $this->view->produtosComDadosLogisticos = (int) $produtosComDadosLogisticos;
 
-            $produtosSemDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos($indDadosLogisticos = 'N');
-            $this->view->produtosSemDadosLogisticos = (int) $produtosSemDadosLogisticos[0]['QTD_PRODUTO'];
+            $produtosSemDadosLogisticos = $qtdProdutosGroupDadosLogisticos['NAO'];
+            $this->view->produtosSemDadosLogisticos = (int) $produtosSemDadosLogisticos;
 
 //            $query = $this->conn->query("
 //                SELECT data, SUM(qtty) AS qtty, COUNT(*) AS qttyNF
