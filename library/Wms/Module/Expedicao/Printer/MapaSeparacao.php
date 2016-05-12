@@ -170,9 +170,9 @@ class MapaSeparacao extends Pdf
             $this->SetFont('Arial', 'B', 8);
             $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
             $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-            $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
+            $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
             $this->Cell(20, 5, utf8_decode("Peso/Cub.") ,1, 0);
-            $this->Cell(25, 5, utf8_decode("Referência") ,1, 0);
+            $this->Cell(15, 5, utf8_decode("Refer.") ,1, 0);
 //            $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);
             $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
             $this->Cell(20, 1, "", 0, 1);
@@ -191,7 +191,7 @@ class MapaSeparacao extends Pdf
                 $embalagem = $produto->getProdutoEmbalagem();
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
-                $this->Cell(90, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,60) ,0, 0);
+                $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
                 if (!isset($pesoProduto) || empty($pesoProduto)) {
                     $this->Cell(20, 4, '---' ,0, 0);
                 } else {
@@ -199,7 +199,7 @@ class MapaSeparacao extends Pdf
                     $cubagemTotal = $cubagemTotal + $pesoProduto->getCubagem();
                     $this->Cell(20, 4, $pesoProduto->getPeso() . ' / ' . $pesoProduto->getCubagem() ,0, 0);
                 }
-                $this->Cell(25, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
+                $this->Cell(20, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
 //                $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
@@ -218,9 +218,11 @@ class MapaSeparacao extends Pdf
             //Go to 1.5 cm from bottom
             $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
 
-            $this->Cell(20, 10, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial','B',10);
+            $this->SetY(255);
+            $this->Cell(20, 20, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial',null,10);
-            $this->Cell(20, 10, utf8_decode($this->quebrasEtiqueta), 0, 1);
+            $this->Cell(20, 20, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
             //$this->SetY(-92);
             $this->Image(@CodigoBarras::gerarNovo($mapa->getId()), 150, 280, 50);
