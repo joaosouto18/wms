@@ -55,6 +55,9 @@ Exemplo exportação/importação banco
 exp wms_develop_linhares/wms_adm@xe file=develop_linhares.dmp owner=wms_develop_linhares compress=Y grants=Y indexes=Y triggers=Y constraints=Y
 imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=Y constraints=Y
 
+exp wms_adm/wms_adm@10.150.5.248/xe file=D:\dmp.dmp owner=wms_adm compress=Y grants=Y indexes=Y triggers=Y constraints=Y
+imp wms_develop/wms_adm@localhost/xe file=C:/desenvolvimento/wmsdb/dmp.dmp fromuser=wms_adm touser=wms_develop ignore=y
+
 Documentação
 ===========================
 
