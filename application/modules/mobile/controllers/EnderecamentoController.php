@@ -22,14 +22,14 @@ class Mobile_EnderecamentoController extends Action
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-            $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
+            $Endereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
 
-            if (count($idEndereco) == 0) {
+            if (count($Endereco) == 0) {
                 $this->addFlashMessage('error','Endereço não encontrado');
                 $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
-            $nivelEndereco =  $idEndereco[0]['NUM_NIVEL'];
+            $nivelEndereco =  $Endereco[0]['NUM_NIVEL'];
 
             if ($nivelEndereco > 0 )
             {
@@ -37,11 +37,11 @@ class Mobile_EnderecamentoController extends Action
                 $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
-            $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
+            $idEndereco = $Endereco[0]['COD_DEPOSITO_ENDERECO'];
             $enderecoEn = $enderecoRepo->find($idEndereco);
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $result = $enderecoRepo->getProdutoByEndereco($codigoBarras,false);
+            $result = $enderecoRepo->getProdutoByEndereco($Endereco[0]['DSC_DEPOSITO_ENDERECO'],false);
 
             if (count($result) == 0)
             {

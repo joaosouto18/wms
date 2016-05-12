@@ -9,10 +9,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 
     public function indexAction() {
 
-        $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
-        print "A página demorou {$tempo_carregamento} segundos para carregar.";
-
-
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
         $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto(null, null, \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_DIVERGENTE);
@@ -38,8 +34,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
             $this->addFlashMessage("info","Existe(m) produto(s) no pulmão sem picking cadastrado " . $link);
         }
-        $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
-        print "A página demorou {$tempo_carregamento} segundos para carregar.";
         /*
          * INICIO COMENTARIO
 
@@ -151,12 +145,12 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
         //$jasper->runReport('/reports/samples/AllAccounts','PDF', null, true);
         try {
             $dql = $this->em->createQueryBuilder()
-                    ->select('s.sigla status')
-                    ->addSelect('(SELECT COUNT(r) FROM wms:Recebimento r WHERE r.status = s.id) qtty
+                ->select('s.sigla status')
+                ->addSelect('(SELECT COUNT(r) FROM wms:Recebimento r WHERE r.status = s.id) qtty
                         ')
-                    ->from('wms:Util\Sigla', 's')
-                    ->where('s.id IN (454, 456, 457, 459)')
-                    ->orderBy('s.referencia', 'ASC');
+                ->from('wms:Util\Sigla', 's')
+                ->where('s.id IN (454, 456, 457, 459)')
+                ->orderBy('s.referencia', 'ASC');
 
             $status = array();
             $data = array();
@@ -198,8 +192,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 //            }
 //
 //            $this->view->produtosPorMes = json_encode($data, JSON_NUMERIC_CHECK);
-            $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
-            print "A página demorou {$tempo_carregamento} segundos para carregar.";
         } catch (\Exception $e) {
             echo $e->getMessage();
             die;
