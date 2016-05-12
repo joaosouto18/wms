@@ -25,7 +25,7 @@
     </div>
     <div class="row" id="tbError" style="display: none">
         <p>Erro(s) no(s) arquivo(s):</p>
-        <table class="table">
+        <table class="table" style="width: 740px;">
             <thead>
                 <tr>
                     <th>Arquivo</th>
@@ -66,9 +66,9 @@
                     $.each( arrLines, function( linha, conteudo ) {
                         $("#tbErrResult").append(
                             "<tr>" +
-                                "<td>" + arquivo + "</td>" +
-                                "<td>" + linha + "</td>" +
-                                "<td>" + conteudo + "</td>" +
+                                "<td style='text-align:center;'>" + arquivo + "</td>" +
+                                "<td style='text-align:center;'>" + linha + "</td>" +
+                                "<td style='text-align:center;'>" + conteudo + "</td>" +
                             "</tr>"
                         );
                     })
@@ -79,7 +79,6 @@
                 $("#excptMsg").text(status.exception);
                 $("#excptRw").show();
             }
-            console.log(status);
         }
     }
 </script>

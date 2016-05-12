@@ -30,6 +30,7 @@ class Importacao_IndexController extends Action
     }
     public function iniciarAjaxAction()
     {
+
         try{
             set_error_handler(array($this,'custom_warning_handler'));
             ini_set('memory_limit', '-1');
@@ -167,8 +168,19 @@ class Importacao_IndexController extends Action
                                 $countFlush++;
                                 break;
                             case 'endereco':
-                                $importacaoService->saveEndereco($em, $arrRegistro);
-                                $countFlush++;
+                                $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
+                                $endereco = explode(".",$arrRegistro['endereco']);
+                                $stsEndereço = true;
+                                foreach ($endereco as $element){
+                                    if(strlen($element) < 1){
+                                        $arrErroRows[$i] = "Endereço incompleto";
+                                        $stsEndereço = false;
+                                    }
+                                }
+                                if ($stsEndereço) {
+                                    $importacaoService->saveEndereco($em, $arrRegistro);
+                                    $countFlush++;
+                                }
                                 break;
                             default:
                                 break;

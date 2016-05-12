@@ -477,8 +477,7 @@ class Importacao
 
         if (isset($arrDados['deposito']) && !empty($arrDados['deposito']))
             $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
-
-        $arrDados['endereco'] = str_replace(",",".",$arrDados['endereco']);
+        
         $endereco = explode(".",$arrDados['endereco']);
 
         $arrDados['rua'] = $endereco[0];
