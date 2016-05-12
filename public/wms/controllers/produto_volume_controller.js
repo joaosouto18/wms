@@ -136,7 +136,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             type: 'post',
             dataType: 'json',
             success: function (data) {
-                if (data == 'N') {
+                if (data == 'S') {
                     alert("Não é possível adicionar novo volume com parametro de código de barras desativado");
                     return false;
                 } else {
@@ -338,7 +338,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             type: 'post',
             dataType: 'json',
             success: function (data) {
-                if (data === 'N') {
+                if (data === 'S') {
                     $('#volume-codigoBarras').attr("disabled", true);
                 }
             }
@@ -407,7 +407,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 type: 'post',
                 dataType: 'json',
                 success: function (data) {
-                    if (data == 'N') {
+                    if (data == 'S') {
                         alert("Não é possível excluir volume com parametro de código de barras desativado");
                         return false;
                     } else {
