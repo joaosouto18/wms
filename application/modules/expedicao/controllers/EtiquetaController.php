@@ -118,7 +118,7 @@ class Expedicao_EtiquetaController  extends Action
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                $mapa->imprimir($idExpedicao);
+                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'));
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Mapas Impressos', $idExpedicao);
@@ -290,7 +290,7 @@ class Expedicao_EtiquetaController  extends Action
         $mapa = new MapaSeparacao;
 
         if (isset($reimprimirTodos) && $reimprimirTodos != null) {
-            $mapa->imprimir($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
         } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
             $codBarra    = $request->getParam('codBarra');
             if (!$codBarra) {
@@ -302,7 +302,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', "Mapa $codBarra não encontrado");
                 $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
             }
-            $mapa->imprimir($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $codBarra);
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $codBarra, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
