@@ -293,6 +293,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             alert(data.msg);
                             return false;
                         } else if (data.status == 'success') {
+                            //remove a div do endereco
+                                        model.elements().remove();
+                                        //reseta o form
+                                        este.resetarForm();
+                                         //carregar embalagens nos dados logisticos
+                                        este.carregarSelectEmbalagens();
                             //$.ajax({
                             //    url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
                             //    type: 'post',
