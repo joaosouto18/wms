@@ -829,38 +829,35 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
   /**
    * Busca a quantidade de produtos com ou sem dados logisticos.
-   * @param string $indDadosLogisticos
    */
-  public function buscarQtdProdutosDadosLogisticos($indDadosLogisticos) {
+    public function buscarQtdProdutosDadosLogisticos() {
 
-	$sql = "SELECT COUNT(P.COD_PRODUTO) AS QTD_PRODUTO
-                      FROM PRODUTO P";
+        $sql = "SELECT COUNT(*) as QTD, POSSUI
+                FROM (SELECT DISTINCT
+                        CASE WHEN NVL(PE.COD_PRODUTO_EMBALAGEM, PV.COD_PRODUTO_VOLUME) IS NULL THEN 'NAO' ELSE 'SIM' END as POSSUI,
+                             P.COD_PRODUTO,
+                             P.DSC_GRADE
+                        FROM PRODUTO P
+                        LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE)
+                       GROUP BY POSSUI
+                       ORDER BY POSSUI";
 
-	if ($indDadosLogisticos == 'S') {
-	  //produtos com dados logisticos - embalagem ou volumes
-	  $sql .= " WHERE (EXISTS (SELECT 'X'
-                                       FROM PRODUTO_VOLUME PVX 
-                                      WHERE PVX.COD_PRODUTO = P.COD_PRODUTO
-                                        AND PVX.DSC_GRADE = P.DSC_GRADE)
-                          OR EXISTS (SELECT 'X'
-                                       FROM PRODUTO_EMBALAGEM PEX 
-                                      WHERE PEX.COD_PRODUTO = P.COD_PRODUTO
-                                        AND PEX.DSC_GRADE = P.DSC_GRADE))";
-	} else {
-	  //produtos sem dados logisticos - embalagem e volumes
-	  $sql .= " WHERE (NOT EXISTS (SELECT 'X'
-                                           FROM PRODUTO_VOLUME PVX 
-                                          WHERE PVX.COD_PRODUTO = P.COD_PRODUTO
-                                            AND PVX.DSC_GRADE = P.DSC_GRADE)
-                          AND NOT EXISTS (SELECT 'X'
-                                           FROM PRODUTO_EMBALAGEM PEX 
-                                          WHERE PEX.COD_PRODUTO = P.COD_PRODUTO
-                                            AND PEX.DSC_GRADE = P.DSC_GRADE))";
-	}
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $sim = 0;
+        $nao = 0;
+        foreach ($result as $row) {
+            if ($row['POSSUI'] == 'SIM') {
+                $sim = $row['QTD'];
+            } else {
+                $nao = $row['QTD'];
+            }
+        }
 
-	return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-  }
-
+        return array('SIM'=>$sim,
+            'NAO'=>$nao);
+    }
+    
   private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
 	$dql = $this->getEntityManager()->createQueryBuilder()
 			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')

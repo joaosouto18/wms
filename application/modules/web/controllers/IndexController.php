@@ -9,10 +9,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 
     public function indexAction() {
 
-        $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
-        print "A página demorou {$tempo_carregamento} segundos para carregar.";
-
-
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
         $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto(null, null, \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_DIVERGENTE);
@@ -38,8 +34,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
             $this->addFlashMessage("info","Existe(m) produto(s) no pulmão sem picking cadastrado " . $link);
         }
-        $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
-        print "A página demorou {$tempo_carregamento} segundos para carregar.";
         /*
          * INICIO COMENTARIO
 
@@ -169,11 +163,12 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $this->view->recebimentoStatus = json_encode($status, JSON_NUMERIC_CHECK);
             $this->view->recebimentoData = json_encode($data, JSON_NUMERIC_CHECK);
 
-            $produtosComDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos($indDadosLogisticos = 'S');
-            $this->view->produtosComDadosLogisticos = (int) $produtosComDadosLogisticos[0]['QTD_PRODUTO'];
+            $qtdProdutosGroupDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos();
+            $produtosComDadosLogisticos = $qtdProdutosGroupDadosLogisticos['SIM'];
+            $this->view->produtosComDadosLogisticos = (int) $produtosComDadosLogisticos;
 
-            $produtosSemDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos($indDadosLogisticos = 'N');
-            $this->view->produtosSemDadosLogisticos = (int) $produtosSemDadosLogisticos[0]['QTD_PRODUTO'];
+            $produtosSemDadosLogisticos = $qtdProdutosGroupDadosLogisticos['NAO'];
+            $this->view->produtosSemDadosLogisticos = (int) $produtosSemDadosLogisticos;
 
 //            $query = $this->conn->query("
 //                SELECT data, SUM(qtty) AS qtty, COUNT(*) AS qttyNF
@@ -198,8 +193,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 //            }
 //
 //            $this->view->produtosPorMes = json_encode($data, JSON_NUMERIC_CHECK);
-            $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
-            print "A página demorou {$tempo_carregamento} segundos para carregar.";
         } catch (\Exception $e) {
             echo $e->getMessage();
             die;
