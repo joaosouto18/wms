@@ -8,7 +8,7 @@ use Wms\Domain\Entity\Pessoa;
  * Fornecedor
  *
  * @Table(name="FORNECEDOR")
- * @Entity(repositoryClass="Bisna\Base\Domain\Entity\Repository")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository")
  */
 class Fornecedor implements Ator
 {

@@ -853,7 +853,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                                           WHERE PVX.COD_PRODUTO = P.COD_PRODUTO
                                             AND PVX.DSC_GRADE = P.DSC_GRADE)
                           AND NOT EXISTS (SELECT 'X'
-                                           FROM PRODUTO_EMBALAGEM PEX 
+                                            FROM PRODUTO_EMBALAGEM PEX 
                                           WHERE PEX.COD_PRODUTO = P.COD_PRODUTO
                                             AND PEX.DSC_GRADE = P.DSC_GRADE))";
 	}
