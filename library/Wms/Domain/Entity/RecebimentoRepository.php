@@ -1338,9 +1338,7 @@ class RecebimentoRepository extends EntityRepository
         $SQL = "SELECT DISTINCT R.COD_RECEBIMENTO,
                                 R.DTH_INICIO_RECEB,
                                 B.DSC_BOX AS BOX,
-                                PJ.NOM_FANTASIA,
-                                V.QTD,
-                                NVL(P.QTD,0)
+                                PJ.NOM_FANTASIA
                   FROM (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO
                           FROM V_QTD_RECEBIMENTO V
                          GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) V
