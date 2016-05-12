@@ -9,10 +9,10 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 
     public function indexAction() {
 
-        for ($i=0; $i<100000000; $i++)
-            continue;
         $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
         print "A página demorou {$tempo_carregamento} segundos para carregar.";
+
+
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
         $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto(null, null, \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_DIVERGENTE);
@@ -38,8 +38,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
             $this->addFlashMessage("info","Existe(m) produto(s) no pulmão sem picking cadastrado " . $link);
         }
-        for ($i=0; $i<100000000; $i++)
-            continue;
         $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
         print "A página demorou {$tempo_carregamento} segundos para carregar.";
         /*
@@ -200,8 +198,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
 //            }
 //
 //            $this->view->produtosPorMes = json_encode($data, JSON_NUMERIC_CHECK);
-            for ($i=0; $i<100000000; $i++)
-                continue;
             $tempo_carregamento = mktime() - $_SERVER['REQUEST_TIME'];
             print "A página demorou {$tempo_carregamento} segundos para carregar.";
         } catch (\Exception $e) {
