@@ -31,6 +31,9 @@ class MapaSeparacao extends Pdf
         $stringCargas = null;
         foreach ($cargas as $key => $carga) {
             unset($carga['sequencia']);
+            if ($key >= 1) {
+                $stringCargas .= ',';
+            }
             $stringCargas .= implode(',', $carga);
         }
         $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
