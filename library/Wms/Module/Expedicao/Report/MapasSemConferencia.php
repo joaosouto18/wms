@@ -60,17 +60,10 @@ class MapasSemConferencia extends Pdf
         $this->Ln();
 
         foreach ($produtos as $key => $produto) {
-
             $this->Cell(20, 5, utf8_decode($produto["DSC_DEPOSITO_ENDERECO"]), 0);
             $this->Cell(20, 5, utf8_decode($produto["COD_PRODUTO"]), 0);
             $this->Cell(95, 5, utf8_decode($produto["DSC_PRODUTO"]), 0);
             $this->Cell(70, 5, utf8_decode($produto["QTD_CONFERIR"]), 0);
-            $this->Ln();
-            $cont++;
-            if ($cont == 35) {
-                $this->AddPage();
-                $cont = 0;
-            }
         }
     }
 
