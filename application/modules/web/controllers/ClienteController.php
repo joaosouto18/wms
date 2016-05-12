@@ -30,13 +30,13 @@ class Web_ClienteController extends \Wms\Controller\Action
                     ->select('c, p.nome, NVL(pf.cpf, pj.cnpj) cpfCnpj')
                     ->from('wms:Pessoa\Papel\Cliente', 'c')
                     ->innerJoin('c.pessoa', 'p')
-                    ->leftJoin('c.pessoaFisica', 'pf')
-                    ->leftJoin('c.pessoaJuridica', 'pj')
+                    ->leftJoin('wms:Pessoa\Fisica', 'pf', "WITH", "pf.id = p.id")
+                    ->leftJoin('wms:Pessoa\Juridica', 'pj', "WITH", "pj.id = p.id")
                     ->orderBy('p.nome');
 
             if (!empty($nome)) {
                 $nome = mb_strtoupper($nome, 'UTF-8');
-                $source->andWhere("p.nome LIKE '{$nome}%'");
+                $source->where("p.nome LIKE '%{$nome}%'");
             }
             if (!empty($cpf)) {
                 if (strlen($cpf) == 11) {

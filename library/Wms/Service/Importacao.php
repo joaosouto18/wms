@@ -124,7 +124,6 @@ class Importacao
         $ClienteRepo    = $repositorios['clienteRepo'];
         if (isset($cliente['codClienteExterno'])) {
             $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
-            return;
         } else {
             $entityCliente = null;
         }
