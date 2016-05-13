@@ -797,55 +797,101 @@ class RecebimentoRepository extends EntityRepository
     public function getProdutosByRecebimento($idRecebimento)
     {
 
-        /** @var \Wms\Domain\Entity\Recebimento $recebimentoEn */
-        $recebimentoEn = $this->findOneBy(array('id' => $idRecebimento));
+        $SQL = "SELECT V.COD_PRODUTO,
+                       V.DSC_GRADE,
+                       P.DSC_PRODUTO,
+                       NVL(NOTAFISCAL.QTD,0) as QTD_NOTA_FISCAL,
+                       NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0) as qtd_Recebimento,
+                       NVL(RECEBIDO.QTD,0) as qtd_Recebida,
+                       NVL(ENDERECADO.QTD,0) as qtd_Enderecada, 
+                       NVL(ENDERECAMENTO.QTD,0) as qtd_Enderecamento,
+                       (NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) + NVL(RECEBIDO.QTD,0) + NVL(ENDERECADO.QTD,0) + NVL(ENDERECAMENTO.QTD,0) as qtd_Total
+                  FROM (SELECT COD_PRODUTO, DSC_GRADE
+                          FROM V_QTD_RECEBIMENTO
+                         WHERE COD_RECEBIMENTO = $idRecebimento
+                           AND COD_PRODUTO IS NOT NULL
+                         UNION 
+                        SELECT COD_PRODUTO, DSC_GRADE
+                          FROM NOTA_FISCAL_ITEM NFI 
+                         INNER JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                         WHERE NF.COD_RECEBIMENTO = $idRecebimento) V
+                  LEFT JOIN (SELECT SUM(QTD) QTD,
+                                    COD_PRODUTO,
+                                    DSC_GRADE
+                               FROM V_QTD_RECEBIMENTO R 
+                              WHERE R.COD_RECEBIMENTO = $idRecebimento
+                              GROUP BY COD_PRODUTO, DSC_GRADE) CONFERIDO
+                    ON CONFERIDO.COD_PRODUTO = V.COD_PRODUTO
+                   AND CONFERIDO.DSC_GRADE = V.DSC_GRADE
+                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                                    COD_PRODUTO,
+                                    DSC_GRADE 
+                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                                       FROM PALETE P
+                                      INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                      WHERE P.COD_RECEBIMENTO = $idRecebimento
+                                        AND P.COD_STATUS = 534)
+                                      GROUP BY COD_PRODUTO, DSC_GRADE) RECEBIDO
+                    ON RECEBIDO.COD_PRODUTO = V.COD_PRODUTO
+                   AND RECEBIDO.DSC_GRADE = V.DSC_GRADE
+                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                                    COD_PRODUTO,
+                                    DSC_GRADE 
+                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                                       FROM PALETE P
+                                      INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                      WHERE P.COD_RECEBIMENTO = $idRecebimento
+                                        AND P.COD_STATUS = 536)
+                                      GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECADO
+                    ON ENDERECADO.COD_PRODUTO = V.COD_PRODUTO
+                   AND ENDERECADO.DSC_GRADE = V.DSC_GRADE
+                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                                    COD_PRODUTO,
+                                    DSC_GRADE 
+                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                                       FROM PALETE P
+                                      INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                      WHERE P.COD_RECEBIMENTO = $idRecebimento
+                                        AND P.COD_STATUS = 535)
+                                      GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECAMENTO
+                    ON ENDERECAMENTO.COD_PRODUTO = V.COD_PRODUTO
+                   AND ENDERECAMENTO.DSC_GRADE = V.DSC_GRADE   
+                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                                    COD_PRODUTO,
+                                    DSC_GRADE 
+                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                                       FROM PALETE P
+                                      INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                      WHERE P.COD_RECEBIMENTO = $idRecebimento
+                                        AND P.COD_STATUS <> 537)
+                                      GROUP BY COD_PRODUTO, DSC_GRADE) GERADO
+                    ON GERADO.COD_PRODUTO = V.COD_PRODUTO
+                   AND GERADO.DSC_GRADE = V.DSC_GRADE   
+                  LEFT JOIN (SELECT SUM(NFI.QTD_ITEM) as QTD,
+                                    NFI.COD_PRODUTO,
+                                    NFI.DSC_GRADE
+                               FROM NOTA_FISCAL NF
+                              INNER JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                              WHERE NF.COD_RECEBIMENTO = $idRecebimento
+                              GROUP BY COD_PRODUTO, DSC_GRADE) NOTAFISCAL
+                    ON NOTAFISCAL.COD_PRODUTO = V.COD_PRODUTO
+                   AND NOTAFISCAL.DSC_GRADE = V.DSC_GRADE
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE";
+        $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        if ($recebimentoEn->getStatus()->getId() == Recebimento::STATUS_DESFEITO) {
-            $source = $this->getEntityManager()->createQueryBuilder()
-                ->select("DISTINCT p.id as codigo, p.grade as grade, p.descricao as produto,
-                    0 as qtdRecebida,
-                    0 as qtdRecebimento,
-                    0 as qtdEnderecada,
-                    0 as qtdEnderecamento,
-                    0 as qtdTotal")
-                ->from("wms:Recebimento\VQtdRecebimento", "v")
-                ->leftJoin("wms:Produto", "p", "WITH", "p.id = v.codProduto AND p.grade = v.grade")
-                ->where("v.codRecebimento = $idRecebimento");
-        } else {
-            $source = $this->getEntityManager()->createQueryBuilder()
-                ->select("DISTINCT p.id as codigo, p.grade as grade, p.descricao as produto, SUM(nfi.quantidade) AS qtdItensNf,
-                    0 as qtdRecebida,
-                    0 as qtdRecebimento,
-                    0 as qtdEnderecada,
-                    0 as qtdEnderecamento,
-                    0 as qtdTotal")
-                ->from("wms:NotaFiscal", 'nf')
-                ->innerJoin("nf.itens", "nfi")
-                ->innerJoin("wms:Produto", 'p', 'WITH', 'p.grade = nfi.grade AND p.id = nfi.codProduto')
-//                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
-//                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade')
-//                ->where("nf.recebimento = $idRecebimento AND pe.dataInativacao is null AND pv.dataInativacao is null")
-                ->where("nf.recebimento = $idRecebimento")
-                ->groupBy("p.id, p.grade, p.descricao");
-        }
-
-
-        $result = $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-
-        foreach ($result as $key => $line) {
-            $qtdRecebimento = $paleteRepo->getQtdEmRecebimento($idRecebimento, $line['codigo'], $line['grade']);
-            $qtdRecebida = $paleteRepo->getQtdByProdutoAndStatus($idRecebimento, $line['codigo'], $line['grade'], PaleteEntity::STATUS_RECEBIDO);
-            $qtdEnderecada = $paleteRepo->getQtdByProdutoAndStatus($idRecebimento, $line['codigo'], $line['grade'], PaleteEntity::STATUS_ENDERECADO);
-            $qtdEnderecamento = $paleteRepo->getQtdByProdutoAndStatus($idRecebimento, $line['codigo'], $line['grade'], PaleteEntity::STATUS_EM_ENDERECAMENTO);
-            $qtdTotal = $qtdEnderecada + $qtdEnderecamento + $qtdRecebida + $qtdRecebimento;
-            $result[$key]['qtdRecebimento'] = $qtdRecebimento;
-            $result[$key]['qtdRecebida'] = $qtdRecebida;
-            $result[$key]['qtdEnderecada'] = $qtdEnderecada;
-            $result[$key]['qtdEnderecamento'] = $qtdEnderecamento;
-            $result[$key]['qtdTotal'] = $qtdTotal;
+        $result = array();
+        foreach ($resultado as $row){
+            $result[] = array(
+                'codigo'=>$row['COD_PRODUTO'],
+                'produto'=>$row['DSC_PRODUTO'],
+                'grade'=>$row['DSC_GRADE'],
+                'qtdItensNf'=>$row['QTD_NOTA_FISCAL'],
+                'qtdRecebimento'=>$row['QTD_RECEBIMENTO'],
+                'qtdRecebida'=>$row['QTD_RECEBIDA'],
+                'qtdEnderecamento'=>$row['QTD_ENDERECAMENTO'],
+                'qtdEnderecada'=>$row['QTD_ENDERECADA'],
+                'qtdTotal'=>$row['QTD_TOTAL']
+            );
         }
 
         return $result;
