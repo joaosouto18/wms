@@ -9,6 +9,7 @@
 
 use Wms\Module\Web\Controller\Action;
 use Wms\Module\Importacao\Form\Index as IndexForm;
+use Wms\Util\WmsCache;
 
 class Importacao_IndexController extends Action
 {
@@ -224,6 +225,16 @@ class Importacao_IndexController extends Action
 
     public function indexAction()
     {
+        if (!WmsCache::checkDataCache("teste")) {
+            $array = array(
+                'Key1' => 'value1',
+                'Key2' => 'value2',
+                'Key3' => 'value3'
+            );
+            WmsCache::setDataCache(30, "teste", $array);
+        } else {
+            var_dump(WmsCache::getDataCache("teste"));
+        }
         $form = new IndexForm();
         $this->view->form = $form;
 
