@@ -15,7 +15,7 @@ class MapaSeparacao extends Pdf
     protected $chaveCargas;
 
     //($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
-    public function layoutMapa($expedicao, $modelo, $codBarras = null, $status = null)
+    public function layoutMapa($expedicao, $modelo, $codBarras = null, $status)
     {
         switch ($modelo) {
             case 2:
