@@ -863,7 +863,7 @@ class RecebimentoRepository extends EntityRepository
 
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('r, b.descricao as dscBox, b, s.sigla as status, s.id as idStatus, p.nome as fornecedor, os.id idOrdemServicoManual,
-                    os2.id idOrdemServicoColetor, NVL(os.id, os2.id) idOrdemServico, PRODUTO_IMPRIMIR_CODIGO_BARRAS(r.id) AS indImprimirCB')
+                    os2.id idOrdemServicoColetor, NVL(os.id, os2.id) idOrdemServico, \'S\' AS indImprimirCB')
             ->addSelect("
                     (
                         SELECT COUNT(nf.id)
