@@ -190,7 +190,7 @@ class Web_ProdutoController extends Crud {
                     $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
                 }
 
-                $this->repository->save($entity, $this->getRequest()->getParams());
+                $this->repository->save($entity, $this->getRequest()->getParams(), true);
                 $this->em->flush();
 
                 $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
@@ -217,6 +217,21 @@ class Web_ProdutoController extends Crud {
         $result = $fornecedorRefRepo->buscarFornecedorByNome($term);
 
         $this->_helper->json($result);
+    }
+
+    public function excluirCodFornecedorAjaxAction()
+    {
+        $id = $this->getRequest()->getParam('id');
+        $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        try {
+            $fornEn = $fornecedorRefRepo->find($id);
+            $this->_em->remove($fornEn);
+            $this->_em->flush();
+            $this->_helper->json(array('success'));
+        } catch (Exception $e) {
+            $this->_helper->json(array('msg' => $e->getMessage()));
+        }
+
     }
 
     /**

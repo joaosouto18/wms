@@ -107,7 +107,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 		foreach($dados['fornecedor'] as $key => $fornecedorRef) {
 
-			$fornRefEntity = $fornecedorRefRepo->findBy(array('fornecedor' => $fornecedorRef['id'], 'idProduto' => $idProduto));
+			$fornRefEntity = $fornecedorRefRepo->findOneBy(array('fornecedor' => $fornecedorRef['id'], 'idProduto' => $idProduto));
 			if (!$fornRefEntity) {
 				$fornRefEntity = new Referencia();
 				$fornRefEntity->setIdProduto($idProduto);
@@ -120,7 +120,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		}
 	}
 
-	public function save(ProdutoEntity $produtoEntity, array $values)
+	public function save(ProdutoEntity $produtoEntity, array $values, $edit = false)
 	{
 
 		extract($values['produto']);
@@ -156,10 +156,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$produtoEntity->setReferencia($referencia);
 			$produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
 
-			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
-
 			$this->saveFornecedorReferencia($em, $values, $produtoEntity);
+
+			if ($edit == false) {
+				$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+				$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
+			}
 
 			$em->persist($produtoEntity);
 
