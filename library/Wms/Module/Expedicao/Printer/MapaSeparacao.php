@@ -12,7 +12,7 @@ class MapaSeparacao extends Pdf
     private $idMapa;
     private $idExpedicao;
     private $quebrasEtiqueta;
-    protected $chaveCargas;
+    protected $cargasSelecionadas;
 
     public function Header()
     {
@@ -27,14 +27,23 @@ class MapaSeparacao extends Pdf
         $this->SetFont('Arial','B',10);
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $em->getRepository('wms:Expedicao');
-        $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
-        $stringCargas = null;
-        foreach ($cargas as $key => $carga) {
-            unset($carga['sequencia']);
-            if ($key >= 1) {
-                $stringCargas .= ',';
+        $cargasSelecionadas = $this->getCargasSelecionadas();
+        if (empty($cargasSelecionadas)) {
+            $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
+            $stringCargas = null;
+            foreach ($cargas as $key => $carga) {
+                unset($carga['sequencia']);
+                if ($key >= 1) {
+                    $stringCargas .= ',';
+                }
+                $stringCargas .= implode(',', $carga);
             }
-            $stringCargas .= implode(',', $carga);
+        } else {
+            if (is_array($cargasSelecionadas)) {
+                $stringCargas = implode(',', $cargasSelecionadas);
+            } else {
+                $stringCargas = $cargasSelecionadas;
+            }
         }
         $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
         $this->SetFont('Arial',null,10);
@@ -132,4 +141,21 @@ class MapaSeparacao extends Pdf
         $em->flush();
         $em->clear();
     }
+
+    /**
+     * @return mixed
+     */
+    public function getCargasSelecionadas()
+    {
+        return $this->cargasSelecionadas;
+    }
+
+    /**
+     * @param mixed $cargasSelecionadas
+     */
+    public function setCargasSelecionadas($cargasSelecionadas)
+    {
+        $this->cargasSelecionadas = $cargasSelecionadas;
+    }
+
 }
