@@ -13,7 +13,7 @@ class WmsCache
 {
 
     /**
-     * Exemplo usado
+     * Exemplo de uso
      *
      * if (!WmsCache::checkDataCache("teste")) {
      *      $array = array(
@@ -46,9 +46,10 @@ class WmsCache
     }
 
     /**
+     * Método para a recuperação do objeto (caso exista) em cache
+     *
      * @param string $cacheName
      * @return false|mixed
-     * @throws \Exception
      */
     public static function getDataCache($cacheName){
 
@@ -58,14 +59,15 @@ class WmsCache
 
         }
 
-        throw new \Exception("Nenhum cache com este nome foi encontrado");
+        return false;
     }
 
     /**
+     * Método para salvar objetos em cache
+     *
      * @param int|null $lifeTime
      * @param string|null $cacheName
      * @param mixed|string|int|array|object $data
-     * @throws \Exception
      */
     public static function setDataCache($lifeTime = null, $cacheName = null, $data){
 
@@ -79,6 +81,8 @@ class WmsCache
     }
 
     /**
+     * Método para verificar se o cache existe ou ainda não expirou
+     *
      * @param string $cacheName
      * @return false|int
      */
@@ -89,8 +93,9 @@ class WmsCache
     }
 
     /**
+     * Método para excluir um objeto (caso exista) do cache
+     *
      * @param string $cacheName
-     * @throws \Exception
      */
     public static function deleteDataCache($cacheName){
 
@@ -99,7 +104,5 @@ class WmsCache
             self::_getCacheObject()->remove($cacheName);
 
         }
-
-        throw new \Exception("Nenhum cache com este nome foi encontrado");
     }
 }
