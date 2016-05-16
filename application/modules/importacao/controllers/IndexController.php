@@ -225,16 +225,6 @@ class Importacao_IndexController extends Action
 
     public function indexAction()
     {
-        if (!WmsCache::checkDataCache("teste")) {
-            $array = array(
-                'Key1' => 'value1',
-                'Key2' => 'value2',
-                'Key3' => 'value3'
-            );
-            WmsCache::setDataCache(30, "teste", $array);
-        } else {
-            var_dump(WmsCache::getDataCache("teste"));
-        }
         $form = new IndexForm();
         $this->view->form = $form;
 

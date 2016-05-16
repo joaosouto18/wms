@@ -11,6 +11,22 @@ namespace Wms\Util;
 
 class WmsCache
 {
+
+    /**
+     * Exemplo usado
+     *
+     * if (!WmsCache::checkDataCache("teste")) {
+     *      $array = array(
+     *          'Key1' => 'value1',
+     *          'Key2' => 'value2',
+     *          'Key3' => 'value3'
+     *      );
+     *      WmsCache::setDataCache(30, "teste", $array);
+     * } else {
+     *      var_dump(WmsCache::getDataCache("teste"));
+     * }
+     */
+
     /**
      * @param int|null $lifetime
      * @return \Zend_Cache_Core|\Zend_Cache_Frontend
@@ -67,11 +83,15 @@ class WmsCache
      * @return false|int
      */
     public static function checkDataCache($cacheName){
-        
+
         return self::_getCacheObject()->load($cacheName);
 
     }
 
+    /**
+     * @param string $cacheName
+     * @throws \Exception
+     */
     public static function deleteDataCache($cacheName){
 
         if (self::_getCacheObject()->test($cacheName)){
