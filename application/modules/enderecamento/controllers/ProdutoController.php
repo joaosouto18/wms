@@ -66,7 +66,7 @@ class Enderecamento_ProdutoController extends Action
 
         $resultado = array();
         foreach ($produtos as $row) {
-            if ($row['qtdTotal'] - $row['qtdEnderecada'] != 0) {
+            if ($row['qtdTotal'] - $row['qtdEnderecada'] > 0) {
                 $resultado[] = $row;
             }
         }
