@@ -34,6 +34,7 @@ class InventarioQuantidade extends \Core\Form
                     'required' => true,
                     'label' => 'Qtd Avaria',
                     'size' => 10,
+                    'value' => 0,
                     'maxlength' => 15
                 ))
                 ->addElement('submit', 'submit', array(

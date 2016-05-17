@@ -155,42 +155,88 @@ class Inventario
         $codProdutoVolume       = $params['codProdutoVolume'];
         $contagemEndId          = $params['contagemEndId'];
         $numContagem            = $params['numContagem'];
-        $divergencia            = $params['divergencia'];
+
+        $divergencia = null;
+        if (isset($params['divergencia'])) {
+            $divergencia            = $params['divergencia'];
+        }
 
         if ($divergencia == 1) {
             $numContagem++;
         }
 
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
+        $produtoVolumeRepo = $this->getEm()->getRepository("wms:Produto\Volume");
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
         if (empty($qtdConferida)) {
             $qtdConferida = 0;
         }
-        if (empty($contagemEndId)) {
-            $contagemEndEn =
-                $contagemEndRepo->save(array(
+
+        $parametroRepo = $this->getEm()->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'CONFERE_TODOS_VOLUMES'));
+
+        if ($parametro == NULL) {
+            $bipaTodosVolumes =  "S";
+        } else {
+            $bipaTodosVolumes =  $parametro->getValor();
+        }
+    
+        $embConferidos = array();
+        if (($bipaTodosVolumes == "S") || ($codProdutoEmbalagem != null)) {
+            $embalagem = array(
+                'idVolume' => $codProdutoVolume,
+                'idEmbalagem' =>$codProdutoEmbalagem);
+            $embConferidos[] = $embalagem;
+        } else {
+            $volumeEn = $produtoVolumeRepo->find($codProdutoVolume);
+            $volumes = $produtoVolumeRepo->findBy(array('normaPaletizacao'=>$volumeEn->getNormaPaletizacao()));
+            foreach ($volumes as $volumeEn) {
+                $embalagem = array(
+                    'idVolume' => $volumeEn->getId(),
+                    'idEmbalagem' => null);
+                $embConferidos[] = $embalagem;
+            }
+        }
+
+        foreach ($embConferidos as $embalagem){
+            $idEmbalagem = null;
+            $idVolume = null;
+            if (isset($embalagem['idEmbalagem'])) $idEmbalagem = $embalagem['idEmbalagem'];
+            if (isset($embalagem['idVolume'])) $idVolume = $embalagem['idVolume'];
+
+            $contagemEndEn = $contagemEndRepo->findOneBy(array(
+                'contagemOs' =>$idContagemOs,
+                'inventarioEndereco' => $idInventarioEnd,
+                'codProduto'=>$idProduto,
+                'grade' =>$grade,
+                'codProdutoEmbalagem'=>$idEmbalagem,
+                'codProdutoVolume'=>$idVolume,
+                'numContagem'=>$numContagem));
+            if ($contagemEndEn != null) {
+                $contagemEndEn->setQtdContada($contagemEndEn->getQtdContada()+$qtdConferida);
+                $contagemEndEn->setQtdAvaria($contagemEndEn->getQtdAvaria()+$qtdAvaria);
+                $this->_em->persist($contagemEndEn);
+                $contagemEndId = $contagemEndEn->getId();
+            } else {
+                $contagemEndEn = $contagemEndRepo->save(array(
                     'qtd' => $qtdConferida,
                     'idContagemOs' => $idContagemOs,
                     'idInventarioEnd' => $idInventarioEnd,
                     'qtdAvaria' => $qtdAvaria,
                     'codProduto' => $idProduto,
                     'grade' => $grade,
-                    'codProdutoEmbalagem' => $codProdutoEmbalagem,
-                    'codProdutoVolume' => $codProdutoVolume,
+                    'codProdutoEmbalagem' => $idEmbalagem,
+                    'codProdutoVolume' => $idVolume,
                     'numContagem' => $numContagem
                 ));
-            $contagemEndId = $contagemEndEn->getId();
-        } else {
-            $contagemEndEn = $contagemEndRepo->find($contagemEndId);
-            $contagemEndEn->setQtdContada($contagemEndEn->getQtdContada()+$qtdConferida);
-            $contagemEndEn->setQtdAvaria($contagemEndEn->getQtdAvaria()+$qtdAvaria);
-            $this->_em->persist($contagemEndEn);
-            $this->_em->flush();
+                $contagemEndId = $contagemEndEn->getId();
+            }
         }
-
-
+        $this->_em->flush();
         return array('contagemEndId' => $contagemEndId);
     }
+
 
     public function validaEstoqueAtual($params, $parametroSistema)
     {
