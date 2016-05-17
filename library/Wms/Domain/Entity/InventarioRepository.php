@@ -12,6 +12,53 @@ use Wms\Service\Mobile\Inventario as InventarioService;
 class InventarioRepository extends EntityRepository
 {
 
+    public function getInventarios(){
+        $SQL = "SELECT I.COD_INVENTARIO,
+                       S.DSC_SIGLA as STATUS,
+                       NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
+                       NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
+                       NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
+                       TO_CHAR(I.DTH_INICIO,'DD/MM/YYYY HH24:MI') as DTH_INICIO ,
+                       TO_CHAR(I.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO
+                  FROM INVENTARIO I
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
+                  LEFT JOIN (SELECT COUNT(*) as QTD,
+                                    COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO
+                              GROUP BY COD_INVENTARIO) QTD_IE ON QTD_IE.COD_INVENTARIO = I.COD_INVENTARIO
+                  LEFT JOIN (SELECT COUNT(*) as QTD,
+                                    COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO
+                              WHERE DIVERGENCIA = 1
+                              GROUP BY COD_INVENTARIO) QTD_DIV ON QTD_DIV.COD_INVENTARIO = I.COD_INVENTARIO
+                  LEFT JOIN (SELECT COUNT(*) as QTD,
+                                    COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO
+                              WHERE INVENTARIADO = 1
+                              GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO";
+
+        $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $result = array();
+        foreach ($records as $row){
+            $andamento = number_format(($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL'])*100,2) . "%";
+            if  ($row['STATUS'] == 'FINALIZADO') $andamento = "100,00%";
+
+            $values = array(
+                'id' => $row['COD_INVENTARIO'],
+                'qtdEndereco' => $row['QTD_END_TOTAL'],
+                'qtdDivergencia' => $row['QTD_DIV_TOTAL'],
+                'qtdInvetariado' => $row['QTD_INV_TOTAL'],
+                'andamento' =>  $andamento,
+                'dataInicio' => $row['DTH_INICIO'],
+                'dataFinalizacao' => $row['DTH_FINALIZACAO'],
+                'status' => $row['STATUS']);
+            $result[] = $values;
+        }
+
+        return $result;
+    }
+
     /**
      * @return Inventario
      * @throws \Exception

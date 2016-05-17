@@ -10,33 +10,9 @@ class Inventario extends Grid
     public function init()
     {
         $this->setAttrib('title','Inventario');
-        $source = $this->getEntityManager()->createQueryBuilder()
-            ->select("i, s.sigla as status, count(ie.id) as qtdEndereco")
-            ->addSelect("
-                    (
-                        SELECT COUNT(ie2.id)
-                        FROM wms:Inventario\Endereco ie2
-                        WHERE ie2.divergencia = 1
-                        AND ie2.inventario = i.id
-                    )
-                    AS qtdDivergencia
-                    ")
-            ->addSelect("
-                    (
-                        SELECT COUNT(ie3.id)
-                        FROM wms:Inventario\Endereco ie3
-                        WHERE ie3.inventariado = 1
-                        AND ie3.inventario = i.id
-                    )
-                    AS qtdInvetariado
-                    ")
-            ->from('wms:Inventario', 'i')
-            ->innerJoin('i.status', 's')
-            ->leftJoin("wms:Inventario\Endereco", 'ie', 'WITH', 'i.id = ie.inventario')
-            ->groupBy('i, s.sigla')
-            ->orderBy('i.id', 'DESC');
+        $source = $this->getEntityManager()->getRepository('wms:Inventario')->getInventarios();
 
-        $this->setSource(new \Core\Grid\Source\Doctrine($source))
+        $this->setSource(new \Core\Grid\Source\ArraySource($source))
             ->setId('monitoramento-inventario');
         $this->setShowExport(false);
         $this->addColumn(array(
@@ -58,12 +34,14 @@ class Inventario extends Grid
             ->addColumn(array(
                 'label' => 'Data Início',
                 'index' => 'dataInicio',
-                'render' => 'DataTime'
             ))
             ->addColumn(array(
                 'label' => 'Data Finalização',
                 'index' => 'dataFinalizacao',
-                'render' => 'DataTime'
+            ))
+            ->addColumn(array(
+                'label' => 'Andamento',
+                'index' => 'andamento',
             ))
             ->addColumn(array(
                 'label' => 'Status',
