@@ -12,7 +12,7 @@ use Wms\Service\Mobile\Inventario as InventarioService;
 class InventarioRepository extends EntityRepository
 {
 
-    public function getInventarios(){
+    public function getInventarios($criterio = null){
         $SQL = "SELECT I.COD_INVENTARIO,
                        S.DSC_SIGLA as STATUS,
                        NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
@@ -35,13 +35,19 @@ class InventarioRepository extends EntityRepository
                                     COD_INVENTARIO
                                FROM INVENTARIO_ENDERECO
                               WHERE INVENTARIADO = 1
-                              GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO";
+                              GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO
+          $criterio
+                              ";
 
         $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $result = array();
         foreach ($records as $row){
-            $andamento = number_format(($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL'])*100,2) . "%";
+
+            $andamento = "0,00%";
+            if ($row['QTD_END_TOTAL'] >0) {
+                $andamento = number_format(($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL'])*100,2) . "%";
+            }
             if  ($row['STATUS'] == 'FINALIZADO') $andamento = "100,00%";
 
             $values = array(
