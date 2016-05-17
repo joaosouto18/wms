@@ -117,23 +117,44 @@ class Inventario
         $info = $produtoRepo->getProdutoByCodBarras($codigoBarras);
 
         if ($info == NULL) {
-            $result = array(
-                'status' => 'error',
-                'msg' => 'Nenhum produto encontrado para o código de barras ' . $codigoBarras,
-                'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
-            );
-            return $result;
+            $paleteRepo = $this->getEm()->getRepository('wms:Enderecamento\Palete');
+            $coletorService = new \Wms\Service\Coletor();
+            $paleteEn = $paleteRepo->find($coletorService->retiraDigitoIdentificador($codigoBarras));
+            if ($paleteEn == null) {
+                $result = array(
+                    'status' => 'error',
+                    'msg' => 'Nenhum Produto ou U.M.A encontrado para o código de barras ' . $codigoBarras,
+                    'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
+                );
+                return $result;
+            } else {
+                $produtos = $paleteEn->getProdutosArray();
+                $idProduto = $produtos[0]['codProduto'];
+                $grade = $produtos[0]['grade'];
+                $idVolume = $produtos[0]['codProdutoVolume'];
+                $dscVolume = null;
+                if ($idVolume != null){
+                    $dscVolume = "VOLUME";
+                }
+            }
+        } else {
+            $idProduto = $info[0]['idProduto'];
+            $grade = $info[0]['grade'];
+            $idVolume = $info[0]['idVolume'];
+            $dscVolume = $info[0]['descricaoVolume'];
         }
 
-        $populateForm['idProduto']          = $info[0]['idProduto'];
-        $populateForm['grade']              = $info[0]['grade'];
+        $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
+
+        $populateForm['idProduto']          = $idProduto;
+        $populateForm['grade']              = $grade;
         $populateForm['idContagemOs']       = $params['idContagemOs'];
         $populateForm['codigoBarras']       = $params['codigoBarras'];
         $populateForm['idInventarioEnd']    = $params['idInventarioEnd'];
         $populateForm['idEndereco']         = $params['idEndereco'];
-
-        if ($info[0]['descricaoVolume'] != null) {
-            $populateForm['codProdutoVolume'] = $info[0]['idVolume'];
+        $populateForm['descricaoProduto']   = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
+        if ($dscVolume != null) {
+            $populateForm['codProdutoVolume'] = $idVolume;
         } else {
             $populateForm['codProdutoEmbalagem'] = 0;
         }

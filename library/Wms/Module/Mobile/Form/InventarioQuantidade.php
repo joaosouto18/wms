@@ -22,8 +22,15 @@ class InventarioQuantidade extends \Core\Form
                 ->addElement('hidden', 'codProdutoEmbalagem')
                 ->addElement('hidden', 'codProdutoVolume')
                 ->addElement('hidden', 'contagemEndId')
-                ->addElement('hidden', 'numContagem')
-                ->addElement('text', 'qtdConferida', array(
+                ->addElement('hidden', 'numContagem');
+
+                $text = new \Zend_Form_Element_Text('descricaoProduto');
+                $text->helper = 'formNote';
+
+                $this->addElement($text)
+
+
+            ->addElement('text', 'qtdConferida', array(
                     'required' => true,
                     'label' => 'Quantidade',
                     'size' => 10,
