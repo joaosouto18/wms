@@ -31,7 +31,7 @@ class MapasPendentes extends Grid
                     'index' => 'DSC_DEPOSITO_ENDERECO'
                 ));
 
-        $this->setShowExport(true);
+        $this->setShowExport(false);
 
         return $this;
     }
