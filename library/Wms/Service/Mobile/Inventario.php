@@ -367,7 +367,7 @@ class Inventario
                         continue;
                     }
                     $qtdTotal = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
-                    if (($qtdConferida == $qtdTotal) && ($contagemEndEn->getCodProduto() == $codProdutoEmbalagem) && ($contagemEndEn->getGrade() == $grade) &&
+                    if (($qtdConferida == $qtdTotal) && ($contagemEndEn->getCodProduto() == $codProduto) && ($contagemEndEn->getGrade() == $grade) &&
                         ( ($contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
                     ) {
                         $this->retiraDivergenciaContagemProduto($params);
