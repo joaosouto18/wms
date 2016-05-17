@@ -367,8 +367,8 @@ class Inventario
                         continue;
                     }
                     $qtdTotal = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
-                    if ( ($qtdConferida == $qtdTotal) &&
-                        ( ( $contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem ) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
+                    if (($qtdConferida == $qtdTotal) && ($contagemEndEn->getCodProduto() == $codProdutoEmbalagem) && ($contagemEndEn->getGrade() == $grade) &&
+                        ( ($contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
                     ) {
                         $this->retiraDivergenciaContagemProduto($params);
                         return true;
