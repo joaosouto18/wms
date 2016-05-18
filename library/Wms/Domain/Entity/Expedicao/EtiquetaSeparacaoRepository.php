@@ -849,10 +849,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$produtoEntity)
     {
-        var_dump($mapaSeparacaoEntity);
-        var_dump($produtoEntity);
-        exit;
-        
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$produtoEntity->getId(),'dscGrade'=>$produtoEntity->getGrade()));
 
@@ -871,10 +867,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
                 $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
                 $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
-                $abc =$qtdMapaSeparar % $qtdMapaProdutoEmbalagem;
-//                $this->_em->persist($mapaProdutoEntity);
-//                $this->_em->persist($mapaSeparar);
-//                $this->_em->flush();
+                $this->_em->persist($mapaProdutoEntity);
+                $this->_em->persist($mapaSeparar);
+                $this->_em->flush();
             }
         }
     }
