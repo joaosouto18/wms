@@ -828,6 +828,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
+                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$codProduto,$grade);
                 }
             else {
                     $view = \Zend_layout::getMvcInstance()->getView();
@@ -835,8 +836,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
                     throw new \Exception($mensagem);
                 }
-//                $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
             }
+
+
 
             $this->_em->flush();
             $this->_em->clear();
@@ -847,10 +849,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$produtoEntity)
+    private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$codProduto,$grade)
     {
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$produtoEntity->getId(),'dscGrade'=>$produtoEntity->getGrade()));
+        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$codProduto,'dscGrade'=>$grade));
 
         $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
         $mapaProdutoEntity = $mapaProdutos[0];
