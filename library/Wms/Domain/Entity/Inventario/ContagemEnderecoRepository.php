@@ -111,7 +111,7 @@ class ContagemEnderecoRepository extends EntityRepository
             ->innerJoin("co.os",'o')
             ->leftJoin('wms:Produto\Volume','pv','WITH','pv.id = ice.codProdutoVolume')
             ->leftJoin("o.pessoa",'pessoa')
-            ->innerJoin("ice.produto",'p')
+            ->leftJoin("ice.produto",'p')
             ->andWhere("ie.id = $codInvEndereco")
             ->orderBy('ice.numContagem, p.id, p.grade');
 
