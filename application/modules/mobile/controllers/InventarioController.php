@@ -157,6 +157,11 @@ class Mobile_InventarioController extends Action
                 //Verifica se existe contagem endereco
                 $result['populateForm']['contagemEndId'] = $this->checkErrors($inventarioService->verificaContagemEnd($result['populateForm']));
 
+                if ($result['populateForm']['pickinCorreto'] == false) {
+                    $endereço = $result['populateForm']['dscEndereco'];
+                    $this->addFlashMessage('warning','Este produto não possuí o endereço ' . $endereço . " como picking");
+                }
+                
                 $form->populate($result['populateForm']);
             }
             $this->view->form = $form;

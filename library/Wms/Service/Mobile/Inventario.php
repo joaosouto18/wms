@@ -168,12 +168,27 @@ class Inventario
         $idPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         $idPickingDinamico = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
+        $pickingCorreto = true;
+        if($enderecoEn->getIdCaracteristica() == $idPickingDinamico ||
+           $enderecoEn->getIdCaracteristica() == $idPicking) {
+            $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'ID');
+            $pickingCorreto = false;
+            foreach ($pickings as $pickingId) {
+                if ($pickingId == $idEndereco) {
+                    $pickingCorreto = true;
+                    continue;
+                }
+            }
+        }
+        
+        $populateForm['pickinCorreto']     = $pickingCorreto;
         $populateForm['idProduto']          = $idProduto;
         $populateForm['grade']              = $grade;
         $populateForm['idContagemOs']       = $params['idContagemOs'];
         $populateForm['codigoBarras']       = $params['codigoBarras'];
         $populateForm['idInventarioEnd']    = $params['idInventarioEnd'];
         $populateForm['idEndereco']         = $params['idEndereco'];
+        $populateForm['dscEndereco']        = $enderecoEn->getDescricao();
         $populateForm['descricaoProduto']   = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
         if ($dscVolume != null) {
             $populateForm['codProdutoVolume'] = $idVolume;
