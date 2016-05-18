@@ -652,7 +652,10 @@ class Inventario
             $params['codProdutoEmbalagem']  = $contagemEndEn->getCodProdutoEmbalagem();
             $params['codProdutoVolume']     = $contagemEndEn->getCodProdutoVolume();
 
-            $estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
+            $estoqueValidado = false;
+            //$estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
+            //@ToDo se der problema descomentar linha acima
+            
             $regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 

@@ -12,7 +12,7 @@ class ContagemEnderecoRepository extends EntityRepository
      * @return ContagemOS
      * @throws \Exception
      */
-    public function save($params)
+    public function save($params, $flush = true)
     {
         if (empty($params['idContagemOs'])) {
             throw new \Exception("idContagemOs não pode ser vazio");
@@ -23,7 +23,8 @@ class ContagemEnderecoRepository extends EntityRepository
         }
 
         $em = $this->getEntityManager();
-        $em->beginTransaction();
+        
+        if ($flush == true) $em->beginTransaction();
         try {
 
             $contagemEndEn = new ContagemEndereco();
@@ -54,11 +55,11 @@ class ContagemEnderecoRepository extends EntityRepository
             $contagemEndEn->setInventarioEndereco($inventarioEn);
 
             $em->persist($contagemEndEn);
-            $em->commit();
-            $em->flush();
+            if ($flush == true) $em->commit();
+            if ($flush == true) $em->flush();
 
         } catch(\Exception $e) {
-            $em->rollback();
+            if ($flush == true) $em->rollback();
             throw new \Exception();
         }
 
