@@ -39,6 +39,14 @@ class InventarioRepository extends EntityRepository
 
             $this->getEntityManager()->beginTransaction();
             foreach ($records as $row){
+
+                $idVolume = $row['COD_PRODUTO_VOLUME'];
+
+                $idEmbalagem = null;
+                if ( $row['COD_PRODUTO_EMBALAGEM'] != null) {
+                    $idEmbalagem = 0;
+                }
+
                 $contagemEndEn = $contagemEndRepo->save(array(
                     'qtd' => $row['QTD'],
                     'idContagemOs' => $idContagemOs,
@@ -46,8 +54,8 @@ class InventarioRepository extends EntityRepository
                     'qtdAvaria' => 0,
                     'codProduto' => $row['COD_PRODUTO'],
                     'grade' => $row['DSC_GRADE'],
-                    'codProdutoEmbalagem' => $row['COD_PRODUTO_EMBALAGEM'],
-                    'codProdutoVolume' => $row['COD_PRODUTO_VOLUME'],
+                    'codProdutoEmbalagem' => $idEmbalagem,
+                    'codProdutoVolume' => $idVolume,
                     'numContagem' => 1
                 ),
                 false);
