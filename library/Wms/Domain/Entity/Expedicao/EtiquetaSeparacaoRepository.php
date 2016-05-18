@@ -798,12 +798,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         } else {
                             $embalagemAtual = $menorEmbalagem;
                         }
-                        if ($codProduto == 88708) {
-                            var_dump($embalagemAtual);
-                            var_dump($embalagem);
-                            var_dump($menorEmbalagem);
-                            exit;
-                        }
 
                         $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
 
