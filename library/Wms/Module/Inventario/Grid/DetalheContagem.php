@@ -38,6 +38,10 @@ class DetalheContagem extends Grid
                 'index' => 'descricao'
             ))
             ->addColumn(array(
+                'label' => 'Volume',
+                'index' => 'volume'
+            ))
+            ->addColumn(array(
                 'label' => 'Quantidade Contada',
                 'index' => 'qtdContada'
             ))

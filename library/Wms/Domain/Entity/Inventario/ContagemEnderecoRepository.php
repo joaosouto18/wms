@@ -79,11 +79,6 @@ class ContagemEnderecoRepository extends EntityRepository
 
         $em->persist($inventarioContagemEnderecoEn);
         $em->flush();
-
-
-
-
-
     }
 
     public function getContagens($params)
@@ -108,15 +103,17 @@ class ContagemEnderecoRepository extends EntityRepository
     public function getDetalhesByInventarioEndereco($codInvEndereco)
     {
         $query = $this->_em->createQueryBuilder()
-            ->select('ice.numContagem, pessoa.nome, p.id, p.grade, p.descricao, ice.qtdContada, ice.qtdDivergencia')
+            ->select("ice.numContagem, pessoa.nome, p.id, p.grade, p.descricao, ice.qtdContada, ice.qtdDivergencia,
+                      nvl(pv.descricao,'Embalagem') as volume")
             ->from("wms:Inventario\ContagemEndereco","ice")
             ->innerJoin("ice.inventarioEndereco",'ie')
             ->innerJoin("ice.contagemOs",'co')
             ->innerJoin("co.os",'o')
+            ->leftJoin('wms:Produto\Volume','pv','WITH','pv.id = ice.codProdutoVolume')
             ->leftJoin("o.pessoa",'pessoa')
             ->innerJoin("ice.produto",'p')
             ->andWhere("ie.id = $codInvEndereco")
-            ->orderBy('p.id, p.grade, ice.numContagem');
+            ->orderBy('ice.numContagem, p.id, p.grade');
 
         return $query->getQuery()->getResult();
     }
