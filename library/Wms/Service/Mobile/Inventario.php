@@ -3,10 +3,26 @@
 namespace Wms\Service\Mobile;
 
 
+use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
+
 class Inventario
 {
 
     protected $_em;
+
+    public function getSystemParameterValue ($parametro)
+    {
+        $parametroRepo = $this->getEm()->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => $parametro));
+
+        if ($parametro == NULL) {
+            return "";
+        } else {
+            return $parametro->getValor();
+        }
+
+    }
 
     /**
      * @param mixed $em
@@ -145,6 +161,12 @@ class Inventario
         }
 
         $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
+        $idEndereco = $params['idEndereco'];
+        $enderecoRepo = $this->getEm()->getRepository('wms:Deposito\Endereco');
+        $enderecoEn = $enderecoRepo->find($idEndereco);
+
+        $idPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $idPickingDinamico = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
         $populateForm['idProduto']          = $idProduto;
         $populateForm['grade']              = $grade;
@@ -194,31 +216,35 @@ class Inventario
             $qtdConferida = 0;
         }
 
-        $parametroRepo = $this->getEm()->getRepository('wms:Sistema\Parametro');
-        $parametro = $parametroRepo->findOneBy(array('constante' => 'CONFERE_TODOS_VOLUMES'));
-
-        if ($parametro == NULL) {
-            $bipaTodosVolumes =  "S";
-        } else {
-            $bipaTodosVolumes =  $parametro->getValor();
-        }
-    
         $embConferidos = array();
-        if (($bipaTodosVolumes == "S") || ($codProdutoEmbalagem != null)) {
+        if ($codProdutoEmbalagem == null && $codProdutoVolume == null) {
+            //ENDEREÇO VAZIO
             $embalagem = array(
-                'idVolume' => $codProdutoVolume,
-                'idEmbalagem' =>$codProdutoEmbalagem);
+                'idVolume' => null,
+                'idEmbalagem' => null);
             $embConferidos[] = $embalagem;
         } else {
-            $volumeEn = $produtoVolumeRepo->find($codProdutoVolume);
-            $volumes = $produtoVolumeRepo->findBy(array('normaPaletizacao'=>$volumeEn->getNormaPaletizacao()));
-            foreach ($volumes as $volumeEn) {
+            //EXISTE PRODUTO NO ENDEREÇO
+            $bipaTodosVolumes = $this->getSystemParameterValue('CONFERE_TODOS_VOLUMES');
+            if (($bipaTodosVolumes == "S") || ($codProdutoEmbalagem != null)) {
+                //FOI BIPADO UMA EMBALAGEM OU DEVE SER BIPADO CADA VOLUME DO PRODUTO
                 $embalagem = array(
-                    'idVolume' => $volumeEn->getId(),
-                    'idEmbalagem' => null);
+                    'idVolume' => $codProdutoVolume,
+                    'idEmbalagem' =>$codProdutoEmbalagem);
                 $embConferidos[] = $embalagem;
+            } else {
+                //BIPOU UM VOLUME E O SISTEMA ESTA PARAMETRIZADO PARA OA BIPAR O VOLUME, BIPAR AUTOMATICAMENTE TODOS OS VOLUMES DO ENDEREÇO
+                $volumeEn = $produtoVolumeRepo->find($codProdutoVolume);
+                $volumes = $produtoVolumeRepo->findBy(array('normaPaletizacao'=>$volumeEn->getNormaPaletizacao()));
+                foreach ($volumes as $volumeEn) {
+                    $embalagem = array(
+                        'idVolume' => $volumeEn->getId(),
+                        'idEmbalagem' => null);
+                    $embConferidos[] = $embalagem;
+                }
             }
         }
+
 
         foreach ($embConferidos as $embalagem){
             $idEmbalagem = null;
