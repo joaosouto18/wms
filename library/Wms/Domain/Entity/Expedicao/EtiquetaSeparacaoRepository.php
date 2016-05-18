@@ -850,7 +850,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$produtoEntity)
     {
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produto'=>$produtoEntity));
+        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$produtoEntity->getId(),'dscGrade'=>$produtoEntity->getGrade()));
 
         $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
         $mapaProdutoEntity = $mapaProdutos[0];
