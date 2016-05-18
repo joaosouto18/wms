@@ -14,6 +14,13 @@ class InventarioRepository extends EntityRepository
 
     public function adicionaEstoqueContagemInicial($inventarioEn)
     {
+
+        /* @ToDo Parametro
+         * Pode virar parametro de acordo com o Ricardo
+         * Gera Posição do Estoque como primeira contagem?
+         */
+        return;
+        
         if ($this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL') != "S") {
             return;
         }
