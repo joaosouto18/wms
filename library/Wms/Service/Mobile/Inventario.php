@@ -696,14 +696,23 @@ class Inventario
             $params['codProdutoEmbalagem']  = $contagemEndEn->getCodProdutoEmbalagem();
             $params['codProdutoVolume']     = $contagemEndEn->getCodProdutoVolume();
 
-            $estoqueValidado = false;
-            //$estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
-            //@ToDo se der problema descomentar linha acima
+            /* @ToDo Parametro
+             * Pode virar parametro de acordo com o Ricardo
+             * Gera Posição do Estoque como primeira contagem?
+             */
+            //$estoqueValidado = false;
+            
+            $estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
 
 
-            //@ToDo se der problema descomentar linha abaixo
-            //$regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
-            $regraContagem = $this->novaRegraContagem($params,$regraContagemParam);
+
+            /* @ToDo Parametro
+             * Pode virar parametro de acordo com o Ricardo
+             * Gera Posição do Estoque como primeira contagem?
+             */
+            //$regraContagem = $this->novaRegraContagem($params,$regraContagemParam);
+            $regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
+            
 
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 
@@ -734,9 +743,9 @@ class Inventario
         $result            = $contagemEndRepo->getContagens($params);
 
         if ($params['regraContagem'] == 2) {
-           // $posicaoArray = count($result['contagens']);
-           // $result[$posicaoArray]['CONTAGEM'] = 2;
-           // $result[$posicaoArray]['DIVERGENCIA'] = null;
+            $posicaoArray = count($result['contagens']);
+            $result[$posicaoArray]['CONTAGEM'] = 2;
+            $result[$posicaoArray]['DIVERGENCIA'] = null;
         }
 
         return $result;
