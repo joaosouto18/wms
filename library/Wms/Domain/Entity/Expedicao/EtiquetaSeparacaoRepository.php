@@ -828,6 +828,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
+                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
                 }
                 else {
                     $view = \Zend_layout::getMvcInstance()->getView();
@@ -843,6 +844,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
+        }
+    }
+
+    private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$produtoEntity)
+    {
+        $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produto'=>$produtoEntity));
+
+        $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
+        $mapaProdutoEntity = $mapaProdutos[0];
+        foreach ($mapaProdutos as $mapaProduto) {
+            if ($qtdMapaProdutoEmbalagem < $mapaProduto->getQtdEmbalagem()) {
+                $qtdMapaProdutoEmbalagem = $mapaProduto->getQtdEmbalagem();
+                $mapaProdutoEntity = $mapaProduto;
+                continue;
+            }
+        }
+
+        foreach ($mapaProdutos as $key => $mapaSeparar) {
+            $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
+            if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
+                $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
+                $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
+                $this->_em->persist($mapaProdutoEntity);
+                $this->_em->persist($mapaSeparar);
+                $this->_em->flush();
+            }
         }
     }
 
