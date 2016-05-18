@@ -838,7 +838,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
 
-
+            $this->atualizaMapaSeparacaoProduto($idExpedicao);
 
             $this->_em->flush();
             $this->_em->clear();
@@ -849,31 +849,68 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$codProduto,$grade)
+//    private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$codProduto,$grade)
+    private function atualizaMapaSeparacaoProduto($idExpedicao)
     {
+        $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$codProduto,'dscGrade'=>$grade));
+        $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
+        foreach ($mapasSeparacao as $mapaSeparacao) {
+            $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacao->getId()));
+            foreach ($mapaProdutos as $mapaProduto) {
+                $idMapaSeparacao = $mapaProduto->getMapaSeparacao();
+                $idProduto = $mapaProduto->getProduto();
+                $grade = $mapaProduto->getDscGrade();
 
-        $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
-        $mapaProdutoEntity = $mapaProdutos[0];
+                $mapaProdutosEn = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
+                $qtdMapaProdutoEmbalagem = $mapaProdutosEn[0]->getQtdEmbalagem();
+                $mapaProdutoEntity = $mapaProdutosEn[0];
 
-        foreach ($mapaProdutos as $mapaProduto) {
-            if ($qtdMapaProdutoEmbalagem < $mapaProduto->getQtdEmbalagem()) {
-                $qtdMapaProdutoEmbalagem = $mapaProduto->getQtdEmbalagem();
-                $mapaProdutoEntity = $mapaProduto;
+                foreach ($mapaProdutosEn as $mapa) {
+                    if ($qtdMapaProdutoEmbalagem < $mapa->getQtdEmbalagem()) {
+                        $qtdMapaProdutoEmbalagem = $mapa->getQtdEmbalagem();
+                        $mapaProdutoEntity = $mapa;
+                    }
+                }
+
+                foreach ($mapaProdutosEn as $key => $mapaSeparar) {
+                    $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
+                    if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
+                        $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
+                        $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
+                        $this->_em->persist($mapaProdutoEntity);
+                        $this->_em->persist($mapaSeparar);
+                        $this->_em->flush();
+                    }
+                }
             }
         }
-
-        foreach ($mapaProdutos as $key => $mapaSeparar) {
-            $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
-            if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
-                $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
-                $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
-                $this->_em->persist($mapaProdutoEntity);
-                $this->_em->persist($mapaSeparar);
-                $this->_em->flush();
-            }
-        }
+//
+//
+//
+//
+//        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$codProduto,'dscGrade'=>$grade));
+//
+//        $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
+//        $mapaProdutoEntity = $mapaProdutos[0];
+//
+//        foreach ($mapaProdutos as $mapaProduto) {
+//            if ($qtdMapaProdutoEmbalagem < $mapaProduto->getQtdEmbalagem()) {
+//                $qtdMapaProdutoEmbalagem = $mapaProduto->getQtdEmbalagem();
+//                $mapaProdutoEntity = $mapaProduto;
+//            }
+//        }
+//
+//        foreach ($mapaProdutos as $key => $mapaSeparar) {
+//            $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
+//            if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
+//                $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
+//                $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
+//                $this->_em->persist($mapaProdutoEntity);
+//                $this->_em->persist($mapaSeparar);
+//                $this->_em->flush();
+//            }
+//        }
     }
 
     //pega o codigo de picking do produto ou caso o produto nao tenha picking pega o FIFO da reserva de saida (pulmao)
