@@ -122,7 +122,9 @@ class Mobile_InventarioController extends Action
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
 
-        if (isset($codigoBarras)) {
+
+        if (isset($codigoBarras) & $codigoBarras != "") {
+
             $form =  new \Wms\Module\Mobile\Form\InventarioQuantidade();
 
             $coletorService = new \Wms\Service\Coletor();
@@ -165,7 +167,25 @@ class Mobile_InventarioController extends Action
                 $form->populate($result['populateForm']);
             }
             $this->view->form = $form;
+
+        } else {
+
+            //NENHUM CÓDIGO DE BARRAS INFORMADO
+            $idInventario   = $params['idInventario'];
+            $numContagem    = $params['numContagem'];
+            if (isset($params['divergencia'])) {
+                $divergencia    = $params['divergencia'];
+            }
+
+            $result = array(
+                'status' => 'error',
+                'msg' => 'Nenhum Produto ou U.M.A informado',
+                'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
+            );
+
+            $this->checkErrors($result);
         }
+
         $this->view->urlVoltar       = '/mobile/inventario/consulta-endereco/idInventario/'.$params['idInventario'].'/numContagem/'.$params['numContagem'].'/divergencia/'.$divergencia;
 
         $this->render('form');

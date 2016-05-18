@@ -106,7 +106,7 @@ class Filtro extends Form
                 ->addElement('select', 'ativo', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('S' => 'Ativo', 'N' => 'Inativo')),
+                    'multiOptions' => array('firstOpt' => 'Ativo', 'options' => array('S' => 'Ativo', 'N' => 'Inativo')),
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('select', 'idCaracteristica', array(
