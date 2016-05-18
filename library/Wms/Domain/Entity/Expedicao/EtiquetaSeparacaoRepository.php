@@ -835,7 +835,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
                     throw new \Exception($mensagem);
                 }
-                $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
+//                $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
             }
 
             $this->_em->flush();
