@@ -864,9 +864,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         foreach ($mapaProdutos as $key => $mapaSeparar) {
-            $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
+            $qtdMapaSeparar = $mapaSeparar['QTD_SEPARAR'];
             if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
                 $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
+                $mapaSeparar = $mapaProdutoRepo->find($mapaSeparar['COD_MAPA_SEPARACAO']);
                 $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
                 $this->_em->persist($mapaProdutoEntity);
                 $this->_em->persist($mapaSeparar);
