@@ -16,15 +16,29 @@ class MapaSeparacao extends Pdf
 
     public function Header()
     {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
         $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO "), 0, 1,"C");
         $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
         $this->Cell(20, 3, "", 0, 1);
         $this->SetFont('Arial','B',10);
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $em->getRepository('wms:Expedicao');
+        $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
+        $stringCargas = null;
+        foreach ($cargas as $key => $carga) {
+            unset($carga['sequencia']);
+            if ($key >= 1) {
+                $stringCargas .= ',';
+            }
+            $stringCargas .= implode(',', $carga);
+        }
         $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
         $this->SetFont('Arial',null,10);
-        $this->Cell(4, 4, utf8_decode( $this->idExpedicao), 0, 1);
+        $this->Cell(4, 4, utf8_decode( $this->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
         $this->SetFont('Arial','B',10);
         $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
         $this->SetFont('Arial',null,10);

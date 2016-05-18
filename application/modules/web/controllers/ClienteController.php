@@ -27,12 +27,12 @@ class Web_ClienteController extends \Wms\Controller\Action
             extract($values);
 
             $source = $this->em->createQueryBuilder()
-                    ->select('c, p.nome, NVL(pf.cpf, pj.cnpj) cpfCnpj')
-                    ->from('wms:Pessoa\Papel\Cliente', 'c')
-                    ->innerJoin('c.pessoa', 'p')
-                    ->leftJoin('wms:Pessoa\Fisica', 'pf', "WITH", "pf.id = p.id")
-                    ->leftJoin('wms:Pessoa\Juridica', 'pj', "WITH", "pj.id = p.id")
-                    ->orderBy('p.nome');
+                ->select('c, p.nome, NVL(pf.cpf, pj.cnpj) cpfCnpj')
+                ->from('wms:Pessoa\Papel\Cliente', 'c')
+                ->innerJoin('c.pessoa', 'p')
+                ->leftJoin('wms:Pessoa\Fisica', 'pf', "WITH", "pf.id = p.id")
+                ->leftJoin('wms:Pessoa\Juridica', 'pj', "WITH", "pj.id = p.id")
+                ->orderBy('p.nome');
 
             if (!empty($nome)) {
                 $nome = mb_strtoupper($nome, 'UTF-8');
