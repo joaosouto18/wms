@@ -828,7 +828,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
-//                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
+                    $this->_em->flush();
+                    $this->_em->clear();
+                    $this->getEntityManager()->commit();
+                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
                 }
                 else {
                     $view = \Zend_layout::getMvcInstance()->getView();
@@ -850,39 +853,28 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     private function atualizaMapaSeparacaoProduto($mapaSeparacaoEntity,$produtoEntity)
     {
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-//        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$produtoEntity->getId(),'dscGrade'=>$produtoEntity->getGrade()));
+        $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'codProduto'=>$produtoEntity->getId(),'dscGrade'=>$produtoEntity->getGrade()));
 
-        $mapaProdutos = $this->getMapaSeparacaoProduto($mapaSeparacaoEntity->getId(),$produtoEntity->getId(),$produtoEntity->getGrade());
-        $qtdMapaProdutoEmbalagem = $mapaProdutos[0]['QTD_EMBALAGEM'];
+        $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
         $mapaProdutoEntity = $mapaProdutos[0];
 
         foreach ($mapaProdutos as $mapaProduto) {
-            if ($qtdMapaProdutoEmbalagem < $mapaProduto['QTD_EMBALAGEM']) {
-                $qtdMapaProdutoEmbalagem = $mapaProduto['QTD_EMBALAGEM'];
-                $mapaProdutoEntity = $mapaProdutoRepo->find($mapaProduto['COD_MAPA_SEPARACAO']);
+            if ($qtdMapaProdutoEmbalagem < $mapaProduto->getQtdEmbalagem()) {
+                $qtdMapaProdutoEmbalagem = $mapaProduto->getQtdEmbalagem();
+                $mapaProdutoEntity = $mapaProduto;
             }
         }
 
         foreach ($mapaProdutos as $key => $mapaSeparar) {
-            $qtdMapaSeparar = $mapaSeparar['QTD_SEPARAR'];
+            $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
             if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
                 $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
-                $mapaSeparar = $mapaProdutoRepo->find($mapaSeparar['COD_MAPA_SEPARACAO']);
                 $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
                 $this->_em->persist($mapaProdutoEntity);
                 $this->_em->persist($mapaSeparar);
                 $this->_em->flush();
             }
         }
-    }
-
-    private function getMapaSeparacaoProduto($idMapa, $idProduto, $grade)
-    {
-        $sql = "SELECT * FROM MAPA_SEPARACAO_PRODUTO MSP
-                WHERE MSP.COD_MAPA_SEPARACAO = $idMapa AND MSP.COD_PRODUTO = '$idProduto' AND MSP.DSC_GRADE = '$grade'";
-
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
     }
 
     //pega o codigo de picking do produto ou caso o produto nao tenha picking pega o FIFO da reserva de saida (pulmao)
