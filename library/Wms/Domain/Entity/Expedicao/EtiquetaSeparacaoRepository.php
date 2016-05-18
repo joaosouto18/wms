@@ -854,8 +854,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $qtdMapaProdutoEmbalagem = $mapaProdutos[0]->getQtdEmbalagem();
         $mapaProdutoEntity = $mapaProdutos[0];
-        if ($produtoEntity->getId() == 88708)
-            var_dump($mapaProdutos);exit;
+        if ($produtoEntity->getId() == 88708){
+            var_dump($mapaSeparacaoEntity);
+            var_dump($mapaProdutos);
+            exit;
+        }
 
         foreach ($mapaProdutos as $mapaProduto) {
             if ($qtdMapaProdutoEmbalagem < $mapaProduto->getQtdEmbalagem()) {
