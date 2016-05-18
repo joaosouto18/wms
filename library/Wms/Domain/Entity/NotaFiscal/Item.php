@@ -57,14 +57,6 @@ class Item
      * @var integer
      */
     protected $quantidade;
-
-    /**
-     * Peso da nota fiscal
-     *
-     * @Column(name="NUM_PESO", type="float", nullable=true)
-     * @var float
-     */
-    protected $numPeso;
     
     public function getId()
     {
@@ -113,38 +105,6 @@ class Item
     {
         $this->quantidade = $quantidade;
         return $this;
-    }
-
-    /**
-     * @param string $codProduto
-     */
-    public function setCodProduto($codProduto)
-    {
-        $this->codProduto = $codProduto;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCodProduto()
-    {
-        return $this->codProduto;
-    }
-
-    /**
-     * @param float $numPeso
-     */
-    public function setNumPeso($numPeso)
-    {
-        $this->numPeso = $numPeso;
-    }
-
-    /**
-     * @return float
-     */
-    public function getNumPeso()
-    {
-        return $this->numPeso;
     }
 
 }

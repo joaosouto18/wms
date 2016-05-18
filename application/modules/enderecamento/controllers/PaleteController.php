@@ -59,28 +59,25 @@ class Enderecamento_PaleteController extends Action
 
             $dadosPalete = array();
             $dadosPalete['idUma'] = $paleteId;
-            if (isset($paleteEn) && !empty($paleteEn)) {
-                if (null != $paleteEn->getDepositoEndereco()) {
-                    $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
-                } else {
-                    $dadosPalete['endereco'] = "";
-                }
-                if (null != $paleteEn->getProdutos()) {
-                    $paleteEn = $paleteEn->getProdutos();
-                }
-
-                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
-                if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
-                    $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
-                } else {
-                    $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
-                }
-                if ($embalagemEn->getEndereco() != null) {
-                    $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
-                }
+            if ($paleteEn->getDepositoEndereco() != null) {
+                $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
+            } else {
+                $dadosPalete['endereco'] = "";
             }
 
-        $paletesArray[] = $dadosPalete;
+            $paleteEn = $paleteEn->getProdutos();
+
+            $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+            if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
+                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
+            } else {
+                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
+            }
+            if ($embalagemEn->getEndereco() != null) {
+                $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
+            }
+
+            $paletesArray[] = $dadosPalete;
         }
 
         $param['idRecebimento'] = $params['id'];

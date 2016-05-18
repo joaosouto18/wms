@@ -11,8 +11,6 @@ class Item {
     public $grade;
     /** @var integer */
     public $quantidade;
-    /** @var double */
-    public $peso;
 }
 
 class Itens {
@@ -54,8 +52,6 @@ class notaFiscal {
     public $dataEntrada;
     /** @var string */
     public $bonificacao;
-    /** @var string */
-    public $peso;
     /** @var itensNf[] */
     public $itens = array();
 }
@@ -111,7 +107,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 'quantidadeConferida' => $item['QTD_CONFERIDA'],
                 'quantidadeAvaria' => $item['QTD_AVARIA'],
                 'motivoDivergencia' => $item['DSC_MOTIVO_DIVER_RECEB'],
-                'peso' => $item['PESO_ITEM']
             );
         }
 
@@ -128,7 +123,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'dataEmissao' => $notaFiscalEntity->getDataEmissao()->format('d/m/Y'),
             'placa' => $notaFiscalEntity->getPlaca(),
             'status' => $notaFiscalEntity->getStatus()->getSigla(),
-            'pesoTotal' => $notaFiscalEntity->getPesoTotal(),
             'dataEntrada' => $dataEntrada,
             'bonificacao' => $notaFiscalEntity->getBonificacao(),
             'itens' => $itens
@@ -176,7 +170,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->idProduto = $item['COD_PRODUTO'];
             $clsItensNf->quantidade = $item['QTD_ITEM'];
             $clsItensNf->grade = $item['DSC_GRADE'];
-            $clsItensNf->peso = $item['PESO_ITEM'];
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
             $clsNf->itens[] = $clsItensNf;
@@ -191,7 +184,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getId();
         $clsNf->numero = $notaFiscalEntity->getNumero();
         $clsNf->serie = $notaFiscalEntity->getSerie();
-        $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
         $clsNf->dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
         $clsNf->placa = $notaFiscalEntity->getPlaca();
         $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
@@ -217,13 +209,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
     {
-        $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
-            $em->beginTransaction();
+            $em = $this->__getDoctrineContainer()->getEntityManager();
 
-
-            //PREPARANDO AS INFORMAÇÔES PRA FORMATAR CORRETAMENTE
-            //BEGIN
             $idFornecedor = trim($idFornecedor);
             $numero = (int) trim($numero);
             $serie = trim($serie);
@@ -238,25 +226,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
-            //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
-            if (gettype($itens) != "array") {
-                $itensNf = array();
-                foreach ($itens->itens as $itemNf) {
-                    $itemWs['idProduto'] = trim($itemNf->idProduto);
-                    $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = trim($itemNf->quantidade);
-                    $itemWs['numPeso'] = trim($itemNf->peso);
-                    $itensNf[] = $itemWs;
-                }
-                $itens = $itensNf;
-            }
-            //END
-
-            if (count($itens) ==0) {
-                throw new \Exception('A Nota fiscal deve ter ao menos um item');
-            }
-            
-            //VERIFICO SE É UMA NOTA NOVA OU SE É ALTERAÇÃO DE ALGUMA NOTA JA EXISTENTE
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
             $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $fornecedorEntity->getId()));
@@ -266,21 +235,30 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
                     throw new \Exception ("Não é Possível alterar, NF cancelada ou já recebida");
                 }
-
-                //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
-                $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
-
-                //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
-                $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
-
             } else {
+                //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+                if (gettype($itens) != "array") {
+                    $itensNf = array();
+                    foreach ($itens->itens as $itemNf) {
+                        $itemWs['idProduto'] = trim($itemNf->idProduto);
+                        $itemWs['grade'] = trim($itemNf->grade);
+                        $itemWs['quantidade'] = trim($itemNf->quantidade);
+                        $itensNf[] = $itemWs;
+                    }
+                    $itens = $itensNf;
+                }
                 $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
+                return true;
             }
 
-            $em->commit();
+            //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
+            $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
+
+            //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
+            $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
+
             return true;
         } catch (\Exception $e) {
-            $em->rollback();
             throw new \Exception($e->getMessage());
         }
     }

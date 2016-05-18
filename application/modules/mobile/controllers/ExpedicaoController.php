@@ -122,7 +122,7 @@ class Mobile_ExpedicaoController extends Action
                     $embalagemEn = $embalagens['embalagem'];
                     $volumeEn = $embalagens['volume'];
 
-                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn);
+                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($idExpedicao, $codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn);
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
@@ -250,9 +250,19 @@ class Mobile_ExpedicaoController extends Action
                 if ((isset($idVolume)) && ($idVolume != null)) {
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                 }
-                $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
-                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoProdutoRepo */
+                $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
+
+                if ($embalagemEn != null) {
+                    $produtoEn = $embalagemEn->getProduto();
+                } else {
+                    $produtoEn = $volumeEn->getProduto();
+                }
+
+                $resultProdutoMapa = $mapaSeparacaoRepo->getMapaByProdutoAndExpedicao($idExpedicao, $mapaSeparacaoProdutoRepo, $produtoEn);
+
+                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$resultProdutoMapa['mapaEn'],$volumePatrimonioEn,$qtd);
                 $this->addFlashMessage('info','Produto conferido com sucesso');
                 $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/" . $idVolume);
 
@@ -308,11 +318,16 @@ class Mobile_ExpedicaoController extends Action
         $sessao = new \Zend_Session_Namespace('coletor');
         $request = $this->getRequest();
         $idExpedicao      = $request->getParam('idExpedicao');
+        $idMapa           = $request->getParam('idMapa');
         $central          = $sessao->centralSelecionada;
+        $mapa             = $request->getParam('mapa', "N");
 
         $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
+            if ($mapa == 'S') {
+                $this->_redirect("mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao");
+            } 
             $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
         } else if ($result==0) {
             $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
@@ -796,35 +811,6 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-
-//        VERIFICA SE O PRODUTO PERTENCE A ETIQUETA CORRETA
-        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
-        if (isset($etiquetaProduto)) {
-            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
-
-            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
-                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
-                //$this->_helper->messenger('info', $msg);
-
-                if ($this->bloquearOs=='S'){
-                    $this->bloqueioOs($idExpedicao, $msg, false);
-                    if ($this->_request->isXmlHttpRequest()) {
-                        $this->createXml("error",$msg,$this->createUrlMobile());
-                    } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-                        die();
-                    }
-                } else {
-                    $this->createXml("error",$msg);
-                    die();
-                }
-                return false;
-            }
-        }
-
-
         if ($etiqueta[0]['reentregaExpedicao'] == null) {
             $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
         } else {
@@ -883,31 +869,31 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-//        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
-//        if (isset($etiquetaProduto)) {
-//            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-//            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
-//
-//            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
-//                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
-//                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
-//                //$this->_helper->messenger('info', $msg);
-//
-//                if ($this->bloquearOs=='S'){
-//                    $this->bloqueioOs($idExpedicao, $msg, false);
-//                    if ($this->_request->isXmlHttpRequest()) {
-//                        $this->createXml("error",$msg,$this->createUrlMobile());
-//                    } else {
-//                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-//                        die();
-//                    }
-//                } else {
-//                    $this->createXml("error",$msg);
-//                    die();
-//                }
-//                return false;
-//            }
-//        }
+        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
+        if (isset($etiquetaProduto)) {
+            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
+            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+
+            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
+                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
+                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
+                //$this->_helper->messenger('info', $msg);
+
+                if ($this->bloquearOs=='S'){
+                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    if ($this->_request->isXmlHttpRequest()) {
+                        $this->createXml("error",$msg,$this->createUrlMobile());
+                    } else {
+                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        die();
+                    }
+                } else {
+                    $this->createXml("error",$msg);
+                    die();
+                }
+                return false;
+            }
+        }
 
         if (($etiqueta[0]['embalado'] == 'S') && (is_null($volume))) {
             $msg = "A etiqueta " . $etiquetaSeparacao . " precisa de um volume informado pois é Embalado";
@@ -1177,6 +1163,7 @@ class Mobile_ExpedicaoController extends Action
         }
 
     }
+
 
 }
 

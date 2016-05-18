@@ -9,6 +9,7 @@
 
 use Wms\Module\Web\Controller\Action;
 use Wms\Module\Importacao\Form\Index as IndexForm;
+use Wms\Util\WmsCache;
 
 class Importacao_IndexController extends Action
 {
@@ -30,6 +31,7 @@ class Importacao_IndexController extends Action
     }
     public function iniciarAjaxAction()
     {
+
         try{
             set_error_handler(array($this,'custom_warning_handler'));
             ini_set('memory_limit', '-1');
@@ -146,6 +148,10 @@ class Importacao_IndexController extends Action
                                 $importacaoService->saveCliente($em, $arrRegistro);
                                 $countFlush++;
                                 break;
+                            case 'carga':
+                                $importacaoService->saveCarga($em, $arrRegistro);
+                                $countFlush++;
+                                break;
                             case 'pedido':
                                 if ($arrRegistro['codPedido'] !== $numPedido) {
                                     $numPedido = $arrRegistro['codPedido'];
@@ -155,20 +161,27 @@ class Importacao_IndexController extends Action
                                 }
                                 break;
                             case 'pedidoProduto':
-                                $importacaoService->savePedidoProduto($em, $arrRegistro);
+                                $importacaoService->savePedidoProduto($em, $arrRegistro, false);
                                 $countFlush++;
                                 break;
-                            case 'carga':
-                                $importacaoService->saveCarga($em, $arrRegistro);
+                            case 'dadoLogistico':
+                                $importacaoService->saveDadoLogistico($em, $arrRegistro);
                                 $countFlush++;
                                 break;
-                            case 'normaPaletizacao':
-                                $importacaoService->saveNormaPaletizacao($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'dadosLogisticos':
-                                $importacaoService->saveDadosLogisticos($em, $arrRegistro);
-                                $countFlush++;
+                            case 'endereco':
+                                $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
+                                $endereco = explode(".",$arrRegistro['endereco']);
+                                $stsEndereço = true;
+                                foreach ($endereco as $element){
+                                    if(strlen($element) < 1){
+                                        $arrErroRows[$i] = "Endereço incompleto";
+                                        $stsEndereço = false;
+                                    }
+                                }
+                                if ($stsEndereço) {
+                                    $importacaoService->saveEndereco($em, $arrRegistro);
+                                    $countFlush++;
+                                }
                                 break;
                             default:
                                 break;
@@ -374,7 +387,7 @@ class Importacao_IndexController extends Action
             $array['pedido'] = $importacao->savePedido($em, $array);
             foreach ($array['itens'] as $item) {
                 $item['pedido'] = $array['pedido'];
-                $importacao->savePedidoProduto($em, $item);
+                $importacao->savePedidoProduto($em, $item, true);
             }
 
             fclose($handle);

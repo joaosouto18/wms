@@ -18,7 +18,7 @@ class MapaSeparacao extends Pdf
     {
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
-        $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1,"C");
+        $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO "), 0, 1,"C");
         $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
         $this->Cell(20, 3, "", 0, 1);
         $this->SetFont('Arial','B',10);
@@ -35,8 +35,8 @@ class MapaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-//        $this->Cell(20, 5, utf8_decode("Grade") ,1, 0);
-        $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Grade") ,1, 0);
+        $this->Cell(80, 5, utf8_decode("Produto") ,1, 0);
         $this->Cell(35, 5, utf8_decode("Embalagem") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
         $this->Cell(20, 1, "", 0, 1);
@@ -78,11 +78,11 @@ class MapaSeparacao extends Pdf
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
 
-            $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
 
             $this->AddPage();
+            $this->idMapa = $mapa->getId();
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial',  null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
@@ -95,8 +95,8 @@ class MapaSeparacao extends Pdf
                 $embalagem = $produto->getProdutoEmbalagem();
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
-//                $this->Cell(20, 4, utf8_decode($produto->getDscGrade()) ,0, 0);
-                $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,54) ,0, 0);
+                $this->Cell(20, 4, utf8_decode($produto->getDscGrade()) ,0, 0);
+                $this->Cell(80, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,54) ,0, 0);
                 $this->Cell(35, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);

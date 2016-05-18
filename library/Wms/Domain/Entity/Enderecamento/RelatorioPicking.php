@@ -27,22 +27,6 @@ class RelatorioPicking
     protected $depositoEndereco;
 
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
-     */
-    protected $codProduto;
-
-    /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
-     * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
-     */
-    protected $os;
-
-    /**
-     * @Column(name="DTH_COLETA", type="datetime", nullable=true)
-     */
-    protected $dataColeta;
-
-    /**
      * @param mixed $depositoEndereco
      */
     public function setDepositoEndereco($depositoEndereco)
@@ -72,38 +56,6 @@ class RelatorioPicking
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCodProduto()
-    {
-        return $this->codProduto;
-    }
-
-    /**
-     * @param mixed $codProduto
-     */
-    public function setCodProduto($codProduto)
-    {
-        $this->codProduto = $codProduto;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOs()
-    {
-        return $this->os;
-    }
-
-    /**
-     * @param mixed $os
-     */
-    public function setOs($os)
-    {
-        $this->os = $os;
     }
 
 }

@@ -1,11 +1,13 @@
 <?php
-
 // Define path to application directory
 defined('APPLICATION_PATH')
     || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
 
 defined('DATA_PATH')
 || define('DATA_PATH', realpath(dirname(__FILE__) . '/../data'));
+
+defined('CACHE_PATH')
+|| define('CACHE_PATH', realpath(dirname(__FILE__) . '/../cache'));
 
 // Define application environment
 defined('APPLICATION_ENV')

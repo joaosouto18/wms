@@ -34,7 +34,7 @@ class PerfilRepository extends EntityRepository {
             foreach ($permissoes as $idPermissao) {
                 // caso algum valor nao numerico
                 if(!is_numeric($idPermissao)) continue;
-
+                
                 $permissao = $this->getEntityManager()->getReference('wms:Sistema\Recurso\Vinculo', $idPermissao);
                 $perfil->getAcoes()->add($permissao);
             }

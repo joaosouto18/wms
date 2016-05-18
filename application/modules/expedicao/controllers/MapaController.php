@@ -29,4 +29,18 @@ class Expedicao_MapaController  extends Action
         $grid = new \Wms\Module\Expedicao\Grid\MapasPendentes();
         $this->view->grid = $grid->init($idExpedicao)->render();
     }
+
+    public function relatorioPendentesAjaxAction()
+    {
+        $idExpedicao = $this->getRequest()->getParam('id');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
+        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idExpedicao);
+
+        $RelatorioPendencias = new \Wms\Module\Expedicao\Report\MapasSemConferencia("L", "mm", "A4");
+        $RelatorioPendencias->imprimir($idExpedicao, $result);
+
+    }
+
 }

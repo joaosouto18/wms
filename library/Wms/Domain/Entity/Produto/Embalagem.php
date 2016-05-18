@@ -116,18 +116,6 @@ class Embalagem
      */
     protected $capacidadePicking;
 
-    /**
-     * @Column(name="DTH_INATIVACAO", type="datetime", nullable=true)
-     * @var datetime
-     */
-    protected $dataInativacao;
-
-    /**
-     * @Column(name="COD_USUARIO_INATIVACAO", type="integer", nullable=false)
-     * @var int
-     */
-    protected $usuarioInativacao;
-
     public function __construct()
     {
         $this->dadosLogisticos = new ArrayCollection;
@@ -335,38 +323,6 @@ class Embalagem
     public function getPontoReposicao()
     {
         return $this->pontoReposicao;
-    }
-
-    /**
-     * @return datetime
-     */
-    public function getDataInativacao()
-    {
-        return $this->dataInativacao;
-    }
-
-    /**
-     * @param datetime $dataInativacao
-     */
-    public function setDataInativacao($dataInativacao)
-    {
-        $this->dataInativacao = $dataInativacao;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUsuarioInativacao()
-    {
-        return $this->usuarioInativacao;
-    }
-
-    /**
-     * @param int $usuarioInativacao
-     */
-    public function setUsuarioInativacao($usuarioInativacao)
-    {
-        $this->usuarioInativacao = $usuarioInativacao;
     }
 
 }

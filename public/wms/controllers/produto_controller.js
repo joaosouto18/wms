@@ -13,21 +13,10 @@ $.Controller.extend('Wms.Controllers.Produto',
      * When the page loads, gets all produto_volumes to be displayed.
      */
     "{window} load": function() {
-
         //checo tipo comercializacao/embalagens
         this.validarEmbalagens();
         //checo tipo comercializacao/volumes
         this.validarVolumes();
-
-        $('#produto-diasVidaUtil').parent().hide();
-        $('#produto-diasVidaUtil').hide();
-
-        $('#produto-percTolerancia').parent().hide();
-        $('#produto-percTolerancia').hide();
-
-        $('#produto-toleranciaNominal').parent().hide();
-        $('#produto-toleranciaNominal').hide();
-
         //oculta campo de dias para vencimento
         if ($('#produto-validade').val() == 'S') {
             $('#produto-diasVidaUtil').show();
@@ -37,18 +26,7 @@ $.Controller.extend('Wms.Controllers.Produto',
             $('#produto-diasVidaUtil').parent().hide();
         }
 
-        if ($('#produto-pVariavel').val() == 'S') {
-            $('#produto-percTolerancia').parent().show();
-            $('#produto-percTolerancia').show();
-            $('#produto-toleranciaNominal').parent().show();
-            $('#produto-toleranciaNominal').show();
-        } else if ($('#produto-pVariavel').val() == 'N') {
-            $('#produto-percTolerancia').parent().hide();
-            $('#produto-percTolerancia').hide();
-            $('#produto-toleranciaNominal').parent().hide();
-            $('#produto-toleranciaNominal').hide();
-        }
-
+        
         //checa quantidade de volumes
         $(".btnSave").off('click').click(function(e) {
             ///checa embalagem e volume
@@ -57,31 +35,8 @@ $.Controller.extend('Wms.Controllers.Produto',
             
             $('.saveForm').submit();
         });
-
+        
     },
-    '#produto-pVariavel change' : function() {
-        if ($('#produto-pVariavel').val() == 'S') {
-            $('#produto-percTolerancia').parent().show();
-            $('#produto-percTolerancia').show();
-            $('#produto-toleranciaNominal').parent().show();
-            $('#produto-toleranciaNominal').show();
-        } else if ($('#produto-pVariavel').val() == 'N') {
-            $('#produto-percTolerancia').parent().hide();
-            $('#produto-percTolerancia').hide();
-            $('#produto-toleranciaNominal').parent().hide();
-            $('#produto-toleranciaNominal').hide();
-        }
-    },
-
-    '#produto-percTolerancia blur' : function() {
-        var pesoTotal = parseFloat($("#produto-peso").val());
-        var percTolerancia = parseFloat($("#produto-percTolerancia").val());
-        var pVariavel = pesoTotal*percTolerancia/100;
-
-        $("#produto-toleranciaNominal").val(pVariavel);
-    },
-
-
     /**
      * Valida os formularios de cadastro das Embalagens e Volumes
      */
@@ -198,7 +153,7 @@ $.Controller.extend('Wms.Controllers.Produto',
         var UNITARIO = 1;
         var COMPOSTO = 2;
         var KIT = 3;
-
+        
         // variaveis
         var idTipoComercializacao = parseInt($('#produto-idTipoComercializacao').val());
         var tabEmbalagem = $('#fieldset-embalagem').parents('.ui-tabs-panel');
