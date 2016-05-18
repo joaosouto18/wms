@@ -828,7 +828,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
-//                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
+                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
                 }
                 else {
                     $view = \Zend_layout::getMvcInstance()->getView();
@@ -862,16 +862,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
+        var_dump($qtdMapaProdutoEmbalagem);
+        var_dump($mapaProdutoEntity);
         foreach ($mapaProdutos as $key => $mapaSeparar) {
             $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
             if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
                 $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
                 $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
-                $this->_em->persist($mapaProdutoEntity);
-                $this->_em->persist($mapaSeparar);
-                $this->_em->flush();
+                $abc =$qtdMapaSeparar % $qtdMapaProdutoEmbalagem;
+                var_dump($abc);
+//                $this->_em->persist($mapaProdutoEntity);
+//                $this->_em->persist($mapaSeparar);
+//                $this->_em->flush();
             }
         }
+        exit;
     }
 
     //pega o codigo de picking do produto ou caso o produto nao tenha picking pega o FIFO da reserva de saida (pulmao)
