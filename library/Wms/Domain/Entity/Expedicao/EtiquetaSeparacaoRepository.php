@@ -783,8 +783,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
-                        var_dump($modeloSeparacaoEn); exit;
-                        if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
+                        if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == 'S') {
                             foreach ($embalagensEn as $embalagem) {
                                 if ($embalagem->getQuantidade() <= $quantidadeAtender) {
                                     //$embalagemAtual = COD_PRODUTO_EMBALAGEM 34221
