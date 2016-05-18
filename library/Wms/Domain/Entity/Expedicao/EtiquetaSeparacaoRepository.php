@@ -657,6 +657,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $produtoEntity  = $pedidoProduto->getProduto();
                 $quantidade     = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
 
+                if ($pedidoProduto->getProduto()->getId() == 88708) {
+                    var_dump($pedidoProduto->getQuantidade());
+                    var_dump($pedidoProduto->getQtdCortada());
+                    exit;
+                }
+
                 $pedidoEntity->setIndEtiquetaMapaGerado("S");
                 $this->getEntityManager()->persist($pedidoEntity);
 
@@ -780,19 +786,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
-                        if ($codProduto == 88708) {
-                            var_dump($modeloSeparacaoEn->getUtilizaCaixaMaster());
-                        }
-
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == 'S') {
                             foreach ($embalagensEn as $embalagem) {
-
-                                if ($codProduto == 88708) {
-                                    var_dump($embalagem->getQuantidade());
-                                    var_dump($quantidadeAtender);
-                                    exit;
-                                }
-
                                 if ($embalagem->getQuantidade() <= $quantidadeAtender) {
                                     $embalagemAtual = $embalagem;
                                     break;
