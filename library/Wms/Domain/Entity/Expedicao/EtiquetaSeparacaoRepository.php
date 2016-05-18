@@ -828,7 +828,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
-                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
+//                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity);
                 }
                 else {
                     $view = \Zend_layout::getMvcInstance()->getView();
