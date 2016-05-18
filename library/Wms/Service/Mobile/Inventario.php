@@ -231,6 +231,10 @@ class Inventario
             $qtdConferida = 0;
         }
 
+        if ($codProdutoEmbalagem != null) {
+            $codProdutoVolume = null;
+        }
+
         $embConferidos = array();
         if ($codProdutoEmbalagem == null && $codProdutoVolume == null) {
             //ENDEREÇO VAZIO
@@ -276,8 +280,8 @@ class Inventario
                 'codProdutoVolume'=>$idVolume,
                 'numContagem'=>$numContagem));
             if ($contagemEndEn != null) {
-                $contagemEndEn->setQtdContada($contagemEndEn->getQtdContada()+$qtdConferida);
-                $contagemEndEn->setQtdAvaria($contagemEndEn->getQtdAvaria()+$qtdAvaria);
+                $contagemEndEn->setQtdContada($qtdConferida);
+                $contagemEndEn->setQtdAvaria($qtdAvaria);
                 $this->_em->persist($contagemEndEn);
                 $contagemEndId = $contagemEndEn->getId();
             } else {
@@ -371,6 +375,46 @@ class Inventario
                 return true;
             }
 
+        }
+        return false;
+    }
+
+    public function novaRegraContagem($params, $parametroSistema){
+
+        if (empty($params['idInventarioEnd'])) {
+            throw new \Exception('idInventarioEnd não pode ser vazio');
+        }
+
+        $idInventarioEndereco =  $params['idInventarioEnd'];
+        $qtdContagensIguais = $parametroSistema;
+        $SQL = " SELECT MAX(QTD_IGUAL), 
+                        COD_PRODUTO,
+                        DSC_GRADE,
+                        COD_PRODUTO_VOLUME,
+                        COD_PRODUTO_EMBALAGEM
+                   FROM (SELECT COUNT(COD_INV_CONT_END) as QTD_IGUAL,
+                                QTD_CONTADA,
+                                COD_PRODUTO,
+                                DSC_GRADE,
+                                COD_PRODUTO_VOLUME,
+                                COD_PRODUTO_EMBALAGEM
+                           FROM INVENTARIO_CONTAGEM_ENDERECO 
+                          WHERE COD_INVENTARIO_ENDERECO = $idInventarioEndereco
+                          GROUP BY QTD_CONTADA,
+                                   COD_PRODUTO,
+                                   DSC_GRADE,
+                                   COD_PRODUTO_VOLUME,
+                                   COD_PRODUTO_EMBALAGEM) C
+                 HAVING MAX(QTD_IGUAL) < $qtdContagensIguais
+                  GROUP BY COD_PRODUTO,
+                           DSC_GRADE,
+                           COD_PRODUTO_VOLUME,
+                           COD_PRODUTO_EMBALAGEM
+          ";
+        $records =  $this->getEm()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($records) <=0) {
+            $this->retiraDivergenciaContagemProduto($params);
+            return true;
         }
         return false;
     }
@@ -655,8 +699,12 @@ class Inventario
             $estoqueValidado = false;
             //$estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
             //@ToDo se der problema descomentar linha acima
-            
-            $regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
+
+
+            //@ToDo se der problema descomentar linha abaixo
+            //$regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
+            $regraContagem = $this->novaRegraContagem($params,$regraContagemParam);
+
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 
             if (false == $regraContagem && $regraContagemParam == '2') {
@@ -686,9 +734,9 @@ class Inventario
         $result            = $contagemEndRepo->getContagens($params);
 
         if ($params['regraContagem'] == 2) {
-            $posicaoArray = count($result['contagens']);
-            $result[$posicaoArray]['CONTAGEM'] = 2;
-            $result[$posicaoArray]['DIVERGENCIA'] = null;
+           // $posicaoArray = count($result['contagens']);
+           // $result[$posicaoArray]['CONTAGEM'] = 2;
+           // $result[$posicaoArray]['DIVERGENCIA'] = null;
         }
 
         return $result;
