@@ -761,14 +761,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                         if ($embalagem->getIsPadrao() == "S") {
+                            //$qtdEmbalagemPadraoRecebimento = 30
                             $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
                             break;
                         }
                     }
+                    //$menorEmbalagem = cod_produto_embalagem 36173
                     $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
                     while ($quantidadeRestantePedido > 0) {
                         $embalagemAtual = null;
+                        //$quantidadeAtender = 90
                         $quantidadeAtender = $quantidadeRestantePedido;
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
@@ -780,9 +783,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
+                        var_dump($modeloSeparacaoEn); exit;
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
                                 if ($embalagem->getQuantidade() <= $quantidadeAtender) {
+                                    //$embalagemAtual = COD_PRODUTO_EMBALAGEM 34221
                                     $embalagemAtual = $embalagem;
                                     break;
                                 }
