@@ -212,7 +212,7 @@ class Web_ProdutoController extends Crud {
     public function codigoFornecedorAjaxAction()
     {
         $term = $this->getRequest()->getParam('term');
-        /** @var $fornecedorRefRepo */
+        /** @var \Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository $fornecedorRefRepo */
         $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
         $result = $fornecedorRefRepo->buscarFornecedorByNome($term);
 

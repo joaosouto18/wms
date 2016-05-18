@@ -8,7 +8,7 @@ use Wms\Domain\Entity\Pessoa;
  * Fornecedor
  *
  * @Table(name="FORNECEDOR")
- * @Entity(repositoryClass="Bisna\Base\Domain\Entity\Repository")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository")
  */
 class Fornecedor implements Ator
 {
@@ -17,8 +17,6 @@ class Fornecedor implements Ator
      * @var integer $id
      * @Column(name="COD_FORNECEDOR", type="integer", nullable=false)
      * @Id
-     * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_PESSOA_01", initialValue=1, allocationSize=100)
      */
     protected $id;
     /**
@@ -34,7 +32,7 @@ class Fornecedor implements Ator
 
     public function getId()
     {
-	return $this->id;
+	    return $this->id;
     }
 
     /**
@@ -47,23 +45,23 @@ class Fornecedor implements Ator
 
     public function getPessoa()
     {
-	return $this->pessoa;
+	    return $this->pessoa;
     }
 
     public function setPessoa($pessoa)
     {
-	$this->pessoa = $pessoa;
+	    $this->pessoa = $pessoa;
         return $this;
     }
 
     public function getIdExterno()
     {
-	return $this->idExterno;
+	    return $this->idExterno;
     }
 
     public function setIdExterno($idExterno)
     {
-	$this->idExterno = $idExterno;
+	    $this->idExterno = $idExterno;
         return $this;
     }
 
