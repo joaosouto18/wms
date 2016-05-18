@@ -12,6 +12,62 @@ use Wms\Service\Mobile\Inventario as InventarioService;
 class InventarioRepository extends EntityRepository
 {
 
+    public function adicionaEstoqueContagemInicial($inventarioEn)
+    {
+        if ($this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL') != "S") {
+            return;
+        }
+        
+        try {
+
+            $SQL = "SELECT IE.COD_INVENTARIO_ENDERECO,
+                           E.COD_PRODUTO,
+                           E.DSC_GRADE,
+                           E.COD_DEPOSITO_ENDERECO,
+                           NVL(E.QTD,0) as QTD,
+                           E.COD_PRODUTO_VOLUME,
+                           E.COD_PRODUTO_EMBALAGEM
+                      FROM INVENTARIO_ENDERECO IE
+                      LEFT JOIN ESTOQUE E ON E.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                     WHERE COD_INVENTARIO = " . $inventarioEn->getId();
+            $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+            $contagemEndRepo = $this->getEntityManager()->getRepository("wms:Inventario\ContagemEndereco");
+            $inventarioEndRepo = $this->getEntityManager()->getRepository("wms:Inventario\Endereco");
+
+            $idContagemOs = $this->criarOS($inventarioEn->getId());
+
+            $this->getEntityManager()->beginTransaction();
+            foreach ($records as $row){
+                $contagemEndEn = $contagemEndRepo->save(array(
+                    'qtd' => $row['QTD'],
+                    'idContagemOs' => $idContagemOs,
+                    'idInventarioEnd' => $row['COD_INVENTARIO_ENDERECO'],
+                    'qtdAvaria' => 0,
+                    'codProduto' => $row['COD_PRODUTO'],
+                    'grade' => $row['DSC_GRADE'],
+                    'codProdutoEmbalagem' => $row['COD_PRODUTO_EMBALAGEM'],
+                    'codProdutoVolume' => $row['COD_PRODUTO_VOLUME'],
+                    'numContagem' => 1
+                ),
+                false);
+                $inventarioEndEn = $inventarioEndRepo->find($row['COD_INVENTARIO_ENDERECO']);
+                $inventarioEndEn->setDivergencia(1);
+                $contagemEndEn->setQtdDivergencia($row['QTD']);
+                $contagemEndEn->setDivergencia(1);
+                $this->getEntityManager()->persist($inventarioEndEn);
+                $this->getEntityManager()->persist($contagemEndEn);
+
+            }
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
+        } catch(\Exception $e) {
+            $this->getEntityManager()->rollback();
+            throw new \Exception($e->getMessage());
+        }
+
+    }
+
     public function getInventarios($criterio = null){
         $SQL = "SELECT I.COD_INVENTARIO,
                        S.DSC_SIGLA as STATUS,
