@@ -852,6 +852,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
         $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
         foreach ($mapasSeparacao as $mapaSeparacao) {
             $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacao->getId()));
@@ -861,7 +862,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $grade = $mapaProduto->getDscGrade();
 
                 $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade),array('qtdEmbalagem' => 'DESC'));
-                $qtdMapaProdutoEmbalagem = $mapaProdutosEn[0]->getQtdEmbalagem();
+                $embalagemEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade), array('quantidade' => 'DESC'));
+                $qtdMapaProdutoEmbalagem = $embalagemEn[0]->getQuantidade();
                 $mapaProdutoEntity = $mapaProdutosEn[0];
 
                 foreach ($mapaProdutosEn as $key => $mapaSeparar) {
