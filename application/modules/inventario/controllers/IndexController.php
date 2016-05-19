@@ -27,11 +27,21 @@ class Inventario_IndexController  extends Action
 
         $values = $this->_getAllParams();
         
-        if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
-            $inventarioRepo->removeEnderecos($values['mass-id'], $id);
-            $this->_helper->messenger('success', 'Endereços removidos do inventario '.$id.' com sucesso');
-            return false;
+        if (isset($values['massaction-select'])){
+            if ($values['massaction-select'] == 'index/relatorio') {
+                $ids = implode(',',$values['mass-id']);
+                $movimentacoes = $inventarioRepo->getMovimentacaoEstoqueByInventario($ids);
+                $this->exportCSV($movimentacoes,'relatorio-movimentacao-estoque-ajax');
+            } else {
+                if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
+                    $inventarioRepo->removeEnderecos($values['mass-id'], $id);
+                    $this->_helper->messenger('success', 'Endereços removidos do inventario '.$id.' com sucesso');
+                    return false;
+                }
+            }
         }
+
+
 
         if (isset($id) && !empty($id)) {
             $inventarioEn = $inventarioRepo->find($id);
