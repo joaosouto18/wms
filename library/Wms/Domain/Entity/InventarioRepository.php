@@ -84,8 +84,25 @@ class InventarioRepository extends EntityRepository
     }
 
     public function getInventarios($criterio = null){
-        $SQL = "SELECT I.COD_INVENTARIO,
-                       S.DSC_SIGLA as STATUS,
+        $SQL = "SELECT COD_INVENTARIO,
+                       STATUS,
+                       QTD_END_TOTAL,
+                       QTD_DIV_TOTAL,
+                       QTD_INV_TOTAL,
+                       DTH_INICIO,
+                       DTH_FINALIZACAO,
+                       CASE WHEN STATUS = 'GERADO' THEN 1
+                            WHEN STATUS = 'LIBERADO' THEN 2
+                            WHEN STATUS = 'CONCLUIDO' THEN 3 
+                            WHEN STATUS = 'FINALIZADO' THEN 4
+                            WHEN STATUS = 'CANCELADO' THEN 5
+                            ELSE 6
+                       END AS SEQUENCIA
+                  FROM (
+               SELECT I.COD_INVENTARIO,
+                       CASE WHEN (S.DSC_SIGLA = 'LIBERADO') AND (NVL(QTD_IE.QTD,0) = NVL(QTD_INV.QTD,0)) THEN 'CONCLUIDO'
+                            ELSE S.DSC_SIGLA 
+                       END as STATUS,
                        NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
                        NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
                        NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
@@ -107,8 +124,8 @@ class InventarioRepository extends EntityRepository
                                FROM INVENTARIO_ENDERECO
                               WHERE INVENTARIADO = 1
                               GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO
-          $criterio
-          ORDER BY COD_INVENTARIO DESC
+          $criterio) I
+          ORDER BY SEQUENCIA, COD_INVENTARIO DESC
                               ";
 
         $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -116,12 +133,13 @@ class InventarioRepository extends EntityRepository
         $result = array();
         foreach ($records as $row){
 
-            $andamento = "0,00%";
-            if ($row['QTD_END_TOTAL'] >0) {
-                $andamento = number_format(($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL'])*100,2) . "%";
+            $andamento = 0;
+            if ($row['QTD_END_TOTAL'] > 0) {
+                $andamento = ($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL']);
             }
-            if  ($row['STATUS'] == 'FINALIZADO') $andamento = "100,00%";
+            if  ($row['STATUS'] == 'FINALIZADO') $andamento = 1;
 
+            $andamento = number_format($andamento,2)*100;
             $values = array(
                 'id' => $row['COD_INVENTARIO'],
                 'qtdEndereco' => $row['QTD_END_TOTAL'],
