@@ -15,6 +15,7 @@ use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Classe;
+use Wms\Domain\Entity\Util\SiglaRepository;
 use Wms\Module\Web\Controller\Action;
 use Wms\Util\CodigoBarras;
 use Zend\Stdlib\Configurator;
@@ -118,7 +119,6 @@ class Importacao
         $ClienteRepo    = $repositorios['clienteRepo'];
         if (isset($cliente['codClienteExterno'])) {
             $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
-            return;
         } else {
             $entityCliente = null;
         }
@@ -193,20 +193,100 @@ class Importacao
 
             $em->persist($entityCliente);
         }
+        return null;
     }
 
-    public function saveFornecedor($em, $codFornecedorExterno)
+    public function saveFornecedor($em, $fornecedor)
     {
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
-        $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $codFornecedorExterno));
 
-        if (!$entityFornecedor)
-            $entityFornecedor = new Fornecedor();
+        $entityFornecedor = null;
 
-        $entityFornecedor->setIdExterno($codFornecedorExterno);
-        $em->persist($entityFornecedor);
-        $em->flush();
-        return $entityFornecedor;
+        if (isset($fornecedor['idExterno'])) {
+            $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $fornecedor['idExterno']));
+        }
+
+        $entityPessoa = null;
+
+        if ($entityFornecedor == null) {
+
+            switch ($fornecedor['tipoPessoa']) {
+                case 'J':
+                    $fornecedor['pessoa']['tipo'] = 'J';
+
+                    $PessoaJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
+                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
+                    if ($entityPessoa) {
+                        break;
+                    }
+
+                    $fornecedor['pessoa']['juridica']['dataAbertura'] = null;
+                    $fornecedor['pessoa']['juridica']['cnpj'] = $fornecedor['cpf_cnpj'];
+                    $fornecedor['pessoa']['juridica']['idTipoOrganizacao'] = null;
+                    $fornecedor['pessoa']['juridica']['idRamoAtividade'] = null;
+                    $fornecedor['pessoa']['juridica']['nome'] = $fornecedor['nome'];
+                    if (isset($fornecedor['inscricaoEstadual']) && !empty($fornecedor['inscricaoEstadual']))
+                        $fornecedor['pessoa']['juridica']['inscricaoEstadual'] = $fornecedor['inscricaoEstadual'];
+
+                    break;
+                case 'F':
+
+                    $PessoaFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
+                    $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
+
+                    if ($entityPessoa) {
+                        break;
+                    }
+
+                    $fornecedor['pessoa']['tipo']              = 'F';
+                    $fornecedor['pessoa']['fisica']['cpf']     = $fornecedor['cpf_cnpj'];
+                    $fornecedor['pessoa']['fisica']['nome']    = $fornecedor['nome'];
+                    break;
+            }
+
+
+            if (isset($cliente['uf'])) {
+                /** @var SiglaRepository $SiglaRepo */
+                $SiglaRepo = $em->getRepository('wms:Util\Sigla');
+                $entitySigla = $SiglaRepo->findOneBy(array('referencia' => $fornecedor['uf']));
+            }
+
+            $fornecedor['cep'] = (isset($fornecedor['cep']) && !empty($fornecedor['cep']) ? $fornecedor['cep'] : '');
+            $fornecedor['enderecos'][0]['acao'] = 'incluir';
+            $fornecedor['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::COMERCIAL;
+
+            if (isset($fornecedor['complemento']))
+                $fornecedor['enderecos'][0]['complemento'] = $fornecedor['complemento'];
+            if (isset($fornecedor['logradouro']))
+                $fornecedor['enderecos'][0]['descricao'] = $fornecedor['logradouro'];
+            if (isset($fornecedor['referencia']))
+                $fornecedor['enderecos'][0]['pontoReferencia'] = $fornecedor['referencia'];
+            if (isset($fornecedor['bairro']))
+                $fornecedor['enderecos'][0]['bairro'] = $fornecedor['bairro'];
+            if (isset($fornecedor['cidade']))
+                $fornecedor['enderecos'][0]['localidade'] = $fornecedor['cidade'];
+            if (isset($fornecedor['numero']))
+                $fornecedor['enderecos'][0]['numero'] =  $fornecedor['numeor'];
+            if (isset($fornecedor['cep']))
+                $fornecedor['enderecos'][0]['cep'] = $fornecedor['cep'];
+            if (isset($entitySigla))
+                $fornecedor['enderecos'][0]['idUf'] = $entitySigla->getId();
+
+            $entityFornecedor  = new Fornecedor();
+
+            if ($entityPessoa == null) {
+                $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, false);
+            } else {
+                $entityFornecedor->setPessoa($entityPessoa);
+            }
+
+            $entityFornecedor->setId($entityPessoa->getId());
+            $entityFornecedor->setIdExterno($fornecedor['idExterno']);
+
+            $em->persist($entityFornecedor);
+        }
+        return null;
 
     }
 
