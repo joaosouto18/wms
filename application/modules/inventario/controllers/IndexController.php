@@ -38,6 +38,7 @@ class Inventario_IndexController  extends Action
                 $inventarioRepo->alteraStatus($inventarioEn, \Wms\Domain\Entity\Inventario::STATUS_LIBERADO);
                 $inventarioRepo->bloqueiaEnderecos($id);
                 $this->_helper->messenger('success', 'Inventário liberado com sucesso');
+                $this->redirect();
             }
         }
     }

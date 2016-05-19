@@ -58,10 +58,24 @@ class Inventario extends Grid
             ->addColumn(array(
                 'label' => 'Data Início',
                 'index' => 'dataInicio',
+                'render' => 'DataTime',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'date',
+                        'range' => false,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Data Finalização',
                 'index' => 'dataFinalizacao',
+                'render' => 'DataTime',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'date',
+                        'range' => false,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Andamento (%)',
@@ -83,6 +97,7 @@ class Inventario extends Grid
                         'attributes' => array(
                             'multiOptions' => array('GERADO'=>'GERADO',
                                                     'LIBERADO' => 'LIBERADO',
+                                                    'CONCLUIDO' => 'CONCLUIDO',
                                                     'FINALIZADO' => 'FINALIZADO',
                                                     'CANCELADO'=>'CANCELADO')
                         )
