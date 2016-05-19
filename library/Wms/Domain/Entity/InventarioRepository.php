@@ -108,6 +108,7 @@ class InventarioRepository extends EntityRepository
                               WHERE INVENTARIADO = 1
                               GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO
           $criterio
+          ORDER BY COD_INVENTARIO DESC
                               ";
 
         $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
