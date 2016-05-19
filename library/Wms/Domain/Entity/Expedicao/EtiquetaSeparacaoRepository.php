@@ -837,7 +837,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
 
-//            $this->atualizaMapaSeparacaoProduto($idExpedicao);
+            $this->atualizaMapaSeparacaoProduto($idExpedicao);
 
             $this->_em->flush();
             $this->_em->clear();
@@ -873,7 +873,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 //                }
 
                 foreach ($mapaProdutosEn as $key => $mapaSeparar) {
-                    if (count($mapaProdutosEn) <= 1) break;
+                    if (count($mapaProdutosEn) <= 1 || $mapaSeparar->getId() == $mapaProdutoEntity->getId()) break;
                     $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
                     if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
                         $mapaProdutoEntity->setQtdSeparar((floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)) + $mapaProdutoEntity->getQtdSeparar());
