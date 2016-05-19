@@ -106,8 +106,8 @@ class InventarioRepository extends EntityRepository
                        NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
                        NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
                        NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
-                       TO_CHAR(I.DTH_INICIO,'DD/MM/YYYY HH24:MI') as DTH_INICIO ,
-                       TO_CHAR(I.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO
+                       TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
+                       TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO
                   FROM INVENTARIO I
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
                   LEFT JOIN (SELECT COUNT(*) as QTD,
@@ -138,6 +138,18 @@ class InventarioRepository extends EntityRepository
                 $andamento = ($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL']);
             }
             if  ($row['STATUS'] == 'FINALIZADO') $andamento = 1;
+            $dataInicioBanco = explode('-',$row['DTH_INICIO']);
+            $dataInicio = new \DateTime();
+            $dataInicio->setDate($dataInicioBanco[2],$dataInicioBanco[1],$dataInicioBanco[0]);
+            $dataInicio->setTime($dataInicioBanco[3],$dataInicioBanco[4]);
+
+            $dataFinal = null;
+            if ($row['DTH_FINALIZACAO'] != "") {
+                $dataFinalBanco = explode('-',$row['DTH_FINALIZACAO']);
+                $dataFinal = new \DateTime();
+                $dataFinal->setDate($dataFinalBanco[2],$dataFinalBanco[1],$dataFinalBanco[0]);
+                $dataFinal->setTime($dataFinalBanco[3],$dataFinalBanco[4]);
+            }
 
             $andamento = number_format($andamento,2)*100;
             $values = array(
@@ -146,8 +158,8 @@ class InventarioRepository extends EntityRepository
                 'qtdDivergencia' => $row['QTD_DIV_TOTAL'],
                 'qtdInvetariado' => $row['QTD_INV_TOTAL'],
                 'andamento' =>  $andamento,
-                'dataInicio' => $row['DTH_INICIO'],
-                'dataFinalizacao' => $row['DTH_FINALIZACAO'],
+                'dataInicio' => $dataInicio,
+                'dataFinalizacao' => $dataFinal,
                 'status' => $row['STATUS']);
             $result[] = $values;
         }
