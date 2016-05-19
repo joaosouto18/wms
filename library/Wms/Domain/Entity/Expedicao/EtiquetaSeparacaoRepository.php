@@ -828,7 +828,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
-//                    $this->atualizaMapaSeparacaoProduto($mapaSeparacao,$codProduto,$grade);
                 }
             else {
                     $view = \Zend_layout::getMvcInstance()->getView();
@@ -862,24 +861,28 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $idProduto = $mapaProduto->getProduto();
                 $grade = $mapaProduto->getDscGrade();
 
-                $mapaProdutosEn = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
+                $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade),array('qtdEmbalagem' => 'DESC'));
                 $qtdMapaProdutoEmbalagem = $mapaProdutosEn[0]->getQtdEmbalagem();
                 $mapaProdutoEntity = $mapaProdutosEn[0];
 
-                foreach ($mapaProdutosEn as $mapa) {
-                    if ($qtdMapaProdutoEmbalagem < $mapa->getQtdEmbalagem()) {
-                        $qtdMapaProdutoEmbalagem = $mapa->getQtdEmbalagem();
-                        $mapaProdutoEntity = $mapa;
-                    }
-                }
+//                foreach ($mapaProdutosEn as $mapa) {
+//                    if ($qtdMapaProdutoEmbalagem < $mapa->getQtdEmbalagem()) {
+//                        $qtdMapaProdutoEmbalagem = $mapa->getQtdEmbalagem();
+//                        $mapaProdutoEntity = $mapa;
+//                    }
+//                }
 
                 foreach ($mapaProdutosEn as $key => $mapaSeparar) {
+                    if (count($mapaProdutosEn) <= 1) break;
                     $qtdMapaSeparar = $mapaSeparar->getQtdSeparar();
                     if ($qtdMapaSeparar / $qtdMapaProdutoEmbalagem >= 1) {
-                        $mapaProdutoEntity->setQtdSeparar($mapaProdutoEntity->getQtdSeparar() + (floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)));
+                        $mapaProdutoEntity->setQtdSeparar((floor($qtdMapaSeparar / $qtdMapaProdutoEmbalagem)) + $mapaProdutoEntity->getQtdSeparar());
                         $mapaSeparar->setQtdSeparar($qtdMapaSeparar % $qtdMapaProdutoEmbalagem);
                         $this->_em->persist($mapaProdutoEntity);
                         $this->_em->persist($mapaSeparar);
+                        if ($qtdMapaSeparar % $qtdMapaProdutoEmbalagem == 0)
+                            $this->_em->remove($mapaSeparar);
+
                         $this->_em->flush();
                     }
                 }
