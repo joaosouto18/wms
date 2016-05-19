@@ -10,9 +10,10 @@ class VSaldoRepository extends EntityRepository
     {
         $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
         $query = $this->getEntityManager()->createQueryBuilder()
-        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume')
+        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao')
         ->from("wms:Enderecamento\VSaldo","s")
         ->leftJoin("s.produto","p")
+        ->leftJoin('p.tipoComercializacao','tp')
         ->leftJoin("s.depositoEndereco", "e")
         ->orderBy("e.rua, lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
 

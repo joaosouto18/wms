@@ -17,19 +17,43 @@ class Inventario extends Grid
         $this->setShowExport(false);
         $this->addColumn(array(
                 'label' => 'Inventário',
-                'index' => 'id'
+                'index' => 'id',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
              ))
             ->addColumn(array(
                 'label' => 'Qtd Endereços',
                 'index' => 'qtdEndereco',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Qtd End. Divergência',
                 'index' => 'qtdDivergencia',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Qtd Inventariado',
                 'index' => 'qtdInvetariado',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Data Início',
@@ -40,8 +64,15 @@ class Inventario extends Grid
                 'index' => 'dataFinalizacao',
             ))
             ->addColumn(array(
-                'label' => 'Andamento',
+                'label' => 'Andamento (%)',
                 'index' => 'andamento',
+                'render' => 'N2',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Status',
@@ -90,7 +121,7 @@ class Inventario extends Grid
                 'cssClass' => '',
                 'pkIndex' => 'id',
                 'condition' => function ($row) {
-                    return $row['status'] == "LIBERADO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
+                    return $row['status'] == "CONCLUIDO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
                 },
             ))
             ->addAction(array(
@@ -152,7 +183,8 @@ class Inventario extends Grid
                 'condition' => function ($row) {
                     return $row['status'] == "LIBERADO";
                 },
-            ));
+            ))
+            ->setHasOrdering(true);
 
         return $this;
     }
