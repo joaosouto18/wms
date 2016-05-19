@@ -94,6 +94,7 @@ class ContagemEnderecoRepository extends EntityRepository
                         GROUP BY ICE.COD_INVENTARIO_ENDERECO) MAXCONT
                     ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
                 WHERE IE.COD_INVENTARIO = ".$idInventario."
+                  AND IE.INVENTARIADO IS NULL
                 ORDER BY CONTAGEM
          ";
 
