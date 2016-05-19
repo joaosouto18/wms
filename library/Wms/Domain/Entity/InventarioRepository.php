@@ -107,7 +107,7 @@ class InventarioRepository extends EntityRepository
                        NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
                        NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
                        TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
-                       TO_CHAR(I.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO
+                       TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO
                   FROM INVENTARIO I
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
                   LEFT JOIN (SELECT COUNT(*) as QTD,
