@@ -37,7 +37,7 @@ class Inventario extends Grid
                 ),
             ))
             ->addColumn(array(
-                'label' => 'Qtd End. Divergência',
+                'label' => 'Qtd Divergência',
                 'index' => 'qtdDivergencia',
                 'filter' => array(
                     'render' => array(
@@ -57,7 +57,7 @@ class Inventario extends Grid
                 ),
             ))
             ->addColumn(array(
-                'label' => 'Data Início',
+                'label' => 'Dt. Início',
                 'index' => 'dataInicio',
                 'render' => 'DataTime',
                 'filter' => array(
@@ -68,7 +68,7 @@ class Inventario extends Grid
                 ),
             ))
             ->addColumn(array(
-                'label' => 'Data Finalização',
+                'label' => 'Dt. Finalização',
                 'index' => 'dataFinalizacao',
                 'render' => 'DataTime',
                 'filter' => array(

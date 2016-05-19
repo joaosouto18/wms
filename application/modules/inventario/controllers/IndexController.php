@@ -95,7 +95,7 @@ class Inventario_IndexController  extends Action
             }
         }
     }
-    
+
     public function viewMovimentacoesAjaxAction() {
         $id = $this->_getParam('id');
         if (isset($id) && !empty($id)) {
