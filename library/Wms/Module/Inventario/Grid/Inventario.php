@@ -45,7 +45,20 @@ class Inventario extends Grid
             ))
             ->addColumn(array(
                 'label' => 'Status',
-                'index' => 'status'
+                'index' => 'status',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'select',
+                        'attributes' => array(
+                            'multiOptions' => array('GERADO'=>'GERADO',
+                                                    'LIBERADO' => 'LIBERADO',
+                                                    'FINALIZADO' => 'FINALIZADO',
+                                                    'CANCELADO'=>'CANCELADO')
+                        )
+                    ),
+                ),
+
+
             ))
             ->addAction(array(
                 'label' => 'Liberar',
