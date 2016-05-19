@@ -65,6 +65,11 @@ class EnderecoRepository extends EntityRepository
             $andDivergencia = " AND IE.DIVERGENCIA IS NULL ";
         }
 
+        $sqlWhereSubQuery = "";
+        if ($numContagem == 0) {
+            $sqlWhereSubQuery = "WHERE (CONTAGEM_INVENTARIADA IS NOT NULL OR DIVERGENCIA IS NOT NULL)";
+        }
+
         $andRua = null;
         if ($rua != null) {
             $andRua = " AND DE.NUM_RUA = ".$rua." ";
