@@ -612,4 +612,47 @@ class InventarioRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getMovimentacaoEstoqueByInventario ($idInventario) {
+        $SQL = "SELECT ESTQ.COD_INVENTARIO as \"Inventário\",
+                       DE.DSC_DEPOSITO_ENDERECO as \"Endereço\",
+                       ESTQ.COD_PRODUTO as \"Cod.Produto\",
+                       P.DSC_PRODUTO as \"Produto\",
+                       INV.QTD_CONFERIDA - ESTQ.QTD_MOVIMENTADA AS \"Estq.Inicial\",
+                       INV.QTD_CONFERIDA as \"Qtd.Conf.\",
+                       CASE WHEN ESTQ.QTD_MOVIMENTADA >0 THEN 'Entrada' ELSE 'Saída' END as \"Tipo Mov.\",
+                       ESTQ.QTD_MOVIMENTADA as \"Qtd.Mov.\"
+                  FROM (SELECT COD_INVENTARIO, COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, QTD_MOVIMENTADA
+                          FROM (SELECT OS.COD_INVENTARIO, HE.COD_DEPOSITO_ENDERECO, HE.COD_PRODUTO, HE.DSC_GRADE, HE.COD_PRODUTO_VOLUME,
+                                       CASE WHEN COD_PRODUTO_EMBALAGEM IS NOT NULL THEN 0 ELSE NULL END AS COD_PRODUTO_EMBALAGEM,
+                                       SUM(HE.QTD) as QTD_MOVIMENTADA
+                                  FROM HISTORICO_ESTOQUE HE
+                                 INNER JOIN INVENTARIO_CONTAGEM_OS OS ON OS.COD_OS = HE.COD_OS
+                                 GROUP BY OS.COD_INVENTARIO, HE.COD_DEPOSITO_ENDERECO, HE.COD_PRODUTO, HE.DSC_GRADE, HE.COD_PRODUTO_VOLUME, HE.COD_PRODUTO_EMBALAGEM) HE
+                         GROUP BY COD_INVENTARIO, COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, QTD_MOVIMENTADA) ESTQ
+             LEFT JOIN (SELECT COD_INVENTARIO, COD_DEPOSITO_ENDERECO, ICE.COD_PRODUTO, ICE.DSC_GRADE,
+                               NVL(ICE.QTD_AVARIA,0) + NVL(ICE.QTD_CONTADA,0) as QTD_CONFERIDA
+                          FROM INVENTARIO_ENDERECO IE 
+                         INNER JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                         INNER JOIN (SELECT MAX(COD_INV_CONT_END) ID, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_EMBALAGEM, COD_PRODUTO_VOLUME, COD_INVENTARIO_ENDERECO
+                                       FROM INVENTARIO_CONTAGEM_ENDERECO              
+                                      GROUP BY COD_PRODUTO, DSC_GRADE, COD_PRODUTO_EMBALAGEM, COD_PRODUTO_VOLUME, COD_INVENTARIO_ENDERECO) MID 
+                                 ON MID.ID = ICE.COD_INV_CONT_END
+                         WHERE IE.INVENTARIADO = 1
+                           AND IE.ATUALIZA_ESTOQUE = 1
+                         GROUP BY COD_INVENTARIO, COD_DEPOSITO_ENDERECO, ICE.COD_PRODUTO, ICE.DSC_GRADE, ICE.QTD_AVARIA, ICE.QTD_CONTADA) INV
+                    ON INV.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
+                   AND INV.COD_INVENTARIO = ESTQ.COD_INVENTARIO
+                   AND INV.COD_PRODUTO = ESTQ.COD_PRODUTO AND INV.DSC_GRADE = ESTQ.DSC_GRADE
+                   AND ESTQ.QTD_MOVIMENTADA <> 0 AND INV.QTD_CONFERIDA > 0
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ESTQ.COD_PRODUTO AND P.DSC_GRADE = ESTQ.DSC_GRADE
+                 WHERE NOT(ESTQ.QTD_MOVIMENTADA = 0 AND INV.QTD_CONFERIDA IS NULL AND ESTQ.COD_PRODUTO IS NOT NULL)
+                   AND ESTQ.COD_INVENTARIO IN ($idInventario)
+                 ORDER BY DSC_DEPOSITO_ENDERECO,
+                          COD_PRODUTO,
+                          DSC_GRADE,
+                          ESTQ.COD_INVENTARIO";
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }

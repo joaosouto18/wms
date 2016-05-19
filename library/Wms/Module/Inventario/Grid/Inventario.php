@@ -180,6 +180,16 @@ class Inventario extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Movimentações no Estoque',
+                'title' => 'Movimentações por Produto',
+                'actionName' => 'view-movimentacoes-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "FINALIZADO";
+                },
+            ))
+            ->addAction(array(
                 'label' => 'Imprimir Endereços',
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
