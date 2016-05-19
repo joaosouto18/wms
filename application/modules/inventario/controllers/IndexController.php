@@ -4,6 +4,17 @@ use Wms\Module\Inventario\Form\FiltroImpressao as FiltroEnderecoForm;
 
 class Inventario_IndexController  extends Action
 {
+
+    public function relatorioAction(){
+        $values = $this->_getAllParams();
+        /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
+        $inventarioRepo = $this->em->getRepository("wms:Inventario");
+
+        $ids = implode(',',$values['mass-id']);
+        $movimentacoes = $inventarioRepo->getMovimentacaoEstoqueByInventario($ids);
+        $this->exportCSV($movimentacoes,'relatorio-movimentacao-estoque-ajax');
+    }
+
     public function indexAction()
     {
         ini_set('max_execution_time', 3000);
@@ -15,6 +26,7 @@ class Inventario_IndexController  extends Action
         $inventarioRepo = $this->em->getRepository("wms:Inventario");
 
         $values = $this->_getAllParams();
+        
         if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {
             $inventarioRepo->removeEnderecos($values['mass-id'], $id);
             $this->_helper->messenger('success', 'Endereços removidos do inventario '.$id.' com sucesso');
@@ -83,7 +95,7 @@ class Inventario_IndexController  extends Action
             }
         }
     }
-
+    
     public function viewMovimentacoesAjaxAction() {
         $id = $this->_getParam('id');
         if (isset($id) && !empty($id)) {

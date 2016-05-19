@@ -15,6 +15,7 @@ class Inventario extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($source))
             ->setId('monitoramento-inventario');
         $this->setShowExport(false);
+        $this->addMassAction('index/relatorio','Movimentações no Estoque (xls)');
         $this->addColumn(array(
                 'label' => 'Inventário',
                 'index' => 'id',
