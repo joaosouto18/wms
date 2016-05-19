@@ -98,7 +98,7 @@ class Action extends \Core\Controller\Action
                    // $header = "Não existem nenhum registro com o filtro informado";
                 $strLine = "";
                 foreach ($header as $key => $line) {
-                    $strLine = $strLine . strtolower($key);
+                    $strLine = $strLine . utf8_decode($key);
                     if($strLine != "") $strLine = $strLine . ";";
                 }
                 $file .= $strLine . PHP_EOL;
@@ -112,7 +112,7 @@ class Action extends \Core\Controller\Action
                     if (($field instanceof \DateTime) == true) {
                         $strField = $field->format('d/m/Y');
                     }
-                    $strLine = $strLine . $strField;
+                    $strLine = $strLine . utf8_decode($strField);
                     if($strLine != "") $strLine = $strLine . ";";
                 }
                 $file .= $strLine . PHP_EOL;

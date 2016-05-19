@@ -15,6 +15,7 @@ class Inventario extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($source))
             ->setId('monitoramento-inventario');
         $this->setShowExport(false);
+        $this->addMassAction('index/relatorio','Movimentações no Estoque (xls)');
         $this->addColumn(array(
                 'label' => 'Inventário',
                 'index' => 'id',
@@ -178,6 +179,16 @@ class Inventario extends Grid
                 'actionName' => 'view-andamento-ajax',
                 'cssClass' => 'view-andamento dialogAjax',
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Movimentações no Estoque',
+                'title' => 'Movimentações por Produto',
+                'actionName' => 'view-movimentacoes-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "FINALIZADO";
+                },
             ))
             ->addAction(array(
                 'label' => 'Imprimir Endereços',
