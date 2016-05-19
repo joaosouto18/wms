@@ -94,7 +94,7 @@ class EnderecoRepository extends EntityRepository
                        INNER JOIN (SELECT MAX(NUM_CONTAGEM) MAXC,
                                           COD_INVENTARIO_ENDERECO
                                      FROM INVENTARIO_CONTAGEM_ENDERECO  
-                                    WHERE CONTAGEM_INVENTARIADA IS NOT NULL
+                                    WHERE (CONTAGEM_INVENTARIADA IS NOT NULL OR DIVERGENCIA IS NOT NULL)
                                     GROUP BY COD_INVENTARIO_ENDERECO) M ON M.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
                                                                        AND M.MAXC = ICE.NUM_CONTAGEM
                         GROUP BY ICE.COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME,PE.DSC_EMBALAGEM) MAXCONT
