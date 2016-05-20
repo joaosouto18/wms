@@ -883,9 +883,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
                 foreach ($mapaProdutosEn as $mapaProdutoRemover) {
-//                    $this->_em->remove($mapaProdutoRemover);
+                    $this->_em->remove($mapaProdutoRemover);
                 }
-//                $this->_em->flush();
+                $this->_em->flush();
 
                 foreach ($embalagensEn as $embalagem) {
                     while ($qtdTotalMapaProdutos >= $embalagem->getQuantidade()) {
