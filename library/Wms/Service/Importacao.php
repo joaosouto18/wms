@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Armazenagem\Unitizador;
+use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -196,7 +197,24 @@ class Importacao
         return null;
     }
 
-    public function saveFornecedor($em, $fornecedor)
+    public function saveReferenciaProduto($em, $referencia){
+        /**  @var EntityManager $em*/
+
+        $criteria = array(
+            "id" => $referencia['idProduto'],
+            "grade" => "UNICA"
+        );
+        /** @var Produto $produtoObj */
+        $produtoObj = $em->getRepository("wms:Produto")->findOneBy($criteria);
+        $entity = new Referencia();
+        $entity->setIdProduto($produtoObj->getIdProduto());
+        $entity->setFornecedor($referencia['fornecedor']);
+        $entity->setDscReferencia($referencia['dscReferencia']);
+
+        $em->persist($entity);
+    }
+
+    public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
     {
         /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
@@ -215,10 +233,12 @@ class Importacao
                 case 'J':
                     $fornecedor['pessoa']['tipo'] = 'J';
 
-                    $PessoaJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
-                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
-                    if ($entityPessoa) {
-                        break;
+                    if($verificarCpfCnpj) {
+                        $PessoaJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
+                        $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
+                        if ($entityPessoa) {
+                            break;
+                        }
                     }
 
                     $fornecedor['pessoa']['juridica']['dataAbertura'] = null;
@@ -232,11 +252,13 @@ class Importacao
                     break;
                 case 'F':
 
-                    $PessoaFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
-                    $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
+                    if ($verificarCpfCnpj) {
+                        $PessoaFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
+                        $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
 
-                    if ($entityPessoa) {
-                        break;
+                        if ($entityPessoa) {
+                            break;
+                        }
                     }
 
                     $fornecedor['pessoa']['tipo']              = 'F';
@@ -246,7 +268,7 @@ class Importacao
             }
 
 
-            if (isset($cliente['uf'])) {
+            if (isset($fornecedor['uf'])) {
                 /** @var SiglaRepository $SiglaRepo */
                 $SiglaRepo = $em->getRepository('wms:Util\Sigla');
                 $entitySigla = $SiglaRepo->findOneBy(array('referencia' => $fornecedor['uf']));
@@ -275,12 +297,13 @@ class Importacao
 
             $entityFornecedor  = new Fornecedor();
 
+            
             if ($entityPessoa == null) {
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, false);
-            } else {
-                $entityFornecedor->setPessoa($entityPessoa);
             }
 
+
+            $entityFornecedor->setPessoa($entityPessoa);
             $entityFornecedor->setId($entityPessoa->getId());
             $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 

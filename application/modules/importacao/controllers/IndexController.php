@@ -29,6 +29,274 @@ class Importacao_IndexController extends Action
         $this->_helper->json(array('result' => $errstr));
 
     }
+    
+    public function iniciarXlsAjaxAction(){
+        try {
+            require_once PHPEXCEL_PATH . DIRECTORY_SEPARATOR . "PHPExcel.php";
+
+            set_error_handler(array($this, 'custom_warning_handler'));
+            ini_set('memory_limit', '-1');
+            ini_set('max_execution_time', 3000);
+            $em = $this->getEntityManager();
+            $importacaoService = new \Wms\Service\Importacao();
+
+            $dir = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+
+            $produtoRepo = $em->getRepository('wms:Produto');
+            $enderecoRepo = $em->getRepository("wms:Deposito\Endereco");
+            $fabricanteRepo = $em->getRepository('wms:Fabricante');
+            $classeRepo = $em->getRepository('wms:Produto\Classe');
+            $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+            $camposRepo = $em->getRepository('wms:Importacao\Campos');
+            $pJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
+            $pFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
+            $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
+            $referenciaRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
+
+            $repositorios = array('produtoRepo' => $produtoRepo,
+                'enderecoRepo' => $enderecoRepo,
+                'fabricanteRepo' => $fabricanteRepo,
+                'classeRepo' => $classeRepo,
+                'embalagemRepo' => $embalagemRepo,);
+
+            $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));
+            $arrErros = array();
+            $countFlush = 0;
+
+            $config = array('updateMethodName' => 'Zend_ProgressBar_Update');
+            $adapter = new Zend_ProgressBar_Adapter_JsPush($config);
+
+            $this->statusProgress["tArquivo"] = count($arquivos);
+            $this->progressBar = new Zend_ProgressBar($adapter, 0, $this->statusProgress["tArquivo"]);
+
+            foreach ($arquivos as $key => $arquivo) {
+                $this->statusProgress["iArquivo"] = $key + 1;
+
+                $file = $arquivo->getNomeArquivo();
+                $caracterQuebra = $arquivo->getCaracterQuebra();
+                $cabecalho = $arquivo->getCabecalho();
+                $tabelaDestino = $arquivo->getTabelaDestino();
+
+                $archive = $dir . DIRECTORY_SEPARATOR . $file;
+                //$handle = fopen($archive, "r");
+                $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
+
+                //Obj de leitura xls
+                $objReader = new PHPExcel_Reader_Excel5();
+                $objReader->setReadDataOnly(true);
+                $objPHPExcel = $objReader->load($archive);
+
+                //Total de colunas
+                $cols = $objPHPExcel->setActiveSheetIndex(0)->getHighestColumn();
+                $tColunas = PHPExcel_Cell::columnIndexFromString($cols);
+
+                //Total de linhas
+                $tLinhas = $objPHPExcel->setActiveSheetIndex(0)->getHighestRow();
+
+                $this->statusProgress["tLinha"] = $tLinhas - 1;
+                $arrErroRows = array();
+
+                $numPedido=null;
+                $checkArray = array();
+
+                for ($linha = 1; $linha <= $tLinhas; $linha++) {
+                    if (ucfirst($cabecalho) == 'S') {
+                        if ($linha == 1) {
+                            continue;
+                        }
+                    }
+                    $this->statusProgress["iLinha"] = $linha - 1;
+
+                    $arrRegistro = array();
+
+                    /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                    foreach ($camposArquivo as $campo) {
+                        $coluna = $campo->getPosicaoTxt();
+                        if (($coluna == null) || ($tColunas - 1 < $coluna)) {
+                            $valorCampo = trim($campo->getValorPadrao());
+                        } else {
+                            $valorCampo = $objPHPExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+
+                            if ($valorCampo == "") {
+                                if ($campo->getPreenchObrigatorio() === "n") {
+                                    $valorCampo = trim($campo->getValorPadrao());
+                                } else {
+                                    $arrErroRows[$linha] = $objPHPExcel->getActiveSheet()->getHighestDataColumn($linha);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if ($campo->getTamanhoInicio() != "") {
+                            $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                        }
+                        $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+
+                    }
+
+                    switch ($tabelaDestino) {
+                        case 'produto':
+                            $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                            $countFlush++;
+                            break;
+                        case 'fabricante':
+                            $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                            $countFlush++;
+                            break;
+                        case 'classe':
+                            $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                            $countFlush++;
+                            break;
+                        case 'embalagem':
+                            $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                            $countFlush++;
+                            break;
+                        case 'fornecedor';
+                            $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
+                            if (strlen($cpf_cnpjFormatado) == 11){
+                                $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
+                                break;
+                            } else if (strlen($cpf_cnpjFormatado) == 14){
+                                $arrRegistro['tipoPessoa'] = "J";
+                            } else {
+                                $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
+                                break;
+                            }
+                            if (!in_array($arrRegistro['cpf_cnpj'],$checkArray )) {
+                                array_push($checkArray, $arrRegistro['cpf_cnpj']);
+                            } else {
+                                if ($arrRegistro['tipoPessoa'] == "J")
+                                    $arrErroRows[$linha] = "CNPJ repetido: " . $arrRegistro['cpf_cnpj'];
+
+                                if ($arrRegistro['tipoPessoa'] == "F")
+                                    $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
+
+                                break;
+                            }
+                            $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                            if ($entityPessoa) {
+                                $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                                break;
+                            }
+                            $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
+
+                            if ($entityPessoa) {
+                                $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                                break;
+                            }
+
+                            $importacaoService->saveFornecedor($em, $arrRegistro, false);
+                            $countFlush++;
+                            break;
+                        case 'cliente':
+                            $importacaoService->saveCliente($em, $arrRegistro);
+                            $countFlush++;
+                            break;
+                        case 'referencia':
+                            $registro = $arrRegistro['dscReferencia'] . " - CodInterno: " . $arrRegistro['codProduto'] . ' - CodFornecedor: ' . $arrRegistro['id'];
+                            if (!in_array($registro ,$checkArray )) {
+                                array_push($checkArray, $registro);
+                            } else {
+                                $arrErroRows[$linha] = "Referência repetida: " . $registro;
+                                break;
+                            }
+                            $arrRegistro['fornecedor'] = $fornecedorRepo->findOneBy(array('id'=> $arrRegistro['id']));
+                            if (empty($arrRegistro['fornecedor'])){
+                                $arrErroRows[$linha] = "Nenhum fornecedor encontrado com o código: " . $arrRegistro['id'];
+                                break;
+                            }
+                            unset($arrRegistro['id']);
+                            /** @var \Wms\Domain\Entity\Produto $prodEntity */
+                            $prodEntity = $produtoRepo->findOneBy(array('id'=>$arrRegistro['codProduto'],'grade'=>$arrRegistro['grade']));
+                            if (empty($prodEntity)){
+                                $arrErroRows[$linha] = "Nenhum produto de código: " . $arrRegistro['codProduto'] . ' e grade: ' . $arrRegistro['grade'];
+                                break;
+                            }
+                            unset($arrRegistro['codProduto']);
+                            unset($arrRegistro['grade']);
+
+                            $arrRegistro['idProduto'] = $prodEntity->getIdProduto();
+
+                            $refeEntity = $referenciaRepo->findOneBy($arrRegistro);
+
+                            if ($refeEntity) {
+                                $importacaoService->saveReferenciaProduto($em, $arrRegistro);
+                                $countFlush++;
+                            } else {
+                                $arrErroRows[$linha] = 'Referencia já registrada: '. $arrRegistro['dscReferencia'];
+                            }
+                            break;
+                        case 'carga':
+                            $importacaoService->saveCarga($em, $arrRegistro);
+                            $countFlush++;
+                            break;
+                        case 'pedido':
+                            if ($arrRegistro['codPedido'] !== $numPedido) {
+                                $numPedido = $arrRegistro['codPedido'];
+                                $importacaoService->savePedido($em, $arrRegistro);
+                                $countFlush++;
+                                break;
+                            }
+                            break;
+                        case 'pedidoProduto':
+                            $importacaoService->savePedidoProduto($em, $arrRegistro, false);
+                            $countFlush++;
+                            break;
+                        case 'dadoLogistico':
+                            $importacaoService->saveDadoLogistico($em, $arrRegistro);
+                            $countFlush++;
+                            break;
+                        case 'endereco':
+                            $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
+                            $endereco = explode(".",$arrRegistro['endereco']);
+                            $stsEndereço = true;
+                            foreach ($endereco as $element){
+                                if(strlen($element) < 1){
+                                    $arrErroRows[$linha] = "Endereço incompleto";
+                                    $stsEndereço = false;
+                                }
+                            }
+                            if ($stsEndereço) {
+                                $importacaoService->saveEndereco($em, $arrRegistro);
+                                $countFlush++;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    $this->progressBar->update(null, $this->statusProgress);
+
+                    if ($countFlush >= 40) {
+                        $countFlush = 0;
+                        $em->flush();
+                        $em->clear();
+                    }
+                }
+
+                $em->flush();
+
+                if (count($arrErroRows) > 0) {
+                    $arrErros[$file] = $arrErroRows;
+                }
+            }
+
+            if (count($arrErros) > 0) {
+                $this->statusProgress["error"] = $arrErros;
+                $this->progressBar->update(null, $this->statusProgress);
+                $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
+            };
+            $this->progressBar->update(null, $this->statusProgress);
+            $this->progressBar->finish();
+            $this->_helper->json(array('result' => "Importação concluída com sucesso"));
+
+        } catch (\Exception $e) {
+            $this->_helper->json(array('result' => $e->getMessage()));
+        } catch (Exception $e2) {
+            $this->_helper->json(array('result' => $e2->getMessage()));
+        }
+    }
+    
     public function iniciarAjaxAction()
     {
 

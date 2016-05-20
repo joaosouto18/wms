@@ -49,8 +49,10 @@
     $("#pbLinha").progressbar();
     $("#startImport").click(function () {
         $("#excptRw").hide();
+        $("#tbError").hide();
+        $("#tbErrResult").children().remove();
         $("#excptMsg").text("");
-        $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-ajax");
+        $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-xls-ajax");
 
     });
     function Zend_ProgressBar_Update(data)

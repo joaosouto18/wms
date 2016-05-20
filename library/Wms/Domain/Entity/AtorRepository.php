@@ -160,6 +160,10 @@ class AtorRepository extends EntityRepository {
                                 ->setTipo($tipoEndereco)
                                 ->setPessoa($pessoa);
 
+                        $enderecoEntity = $em->getRepository('wms:Pessoa\Endereco')->findBy($endereco->toArray());
+                        if (!empty($enderecoEntity))
+                            break;
+
                         $em->persist($endereco);
                         $pessoa->addEndereco($endereco);
                         break;
