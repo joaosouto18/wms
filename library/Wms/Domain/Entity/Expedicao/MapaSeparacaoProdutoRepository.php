@@ -11,11 +11,11 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     public function getMapaProdutoByProdutoAndMapa($idMapa, $idProduto, $grade)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('SUM(msp.qtdSeparar) qtdSeparar, msp.codPedidoProduto, IDENTITY(msp.codDepositoEndereco) codDepositoEndereco')
+            ->select('SUM(msp.qtdSeparar * pe.quantidade) qtdSeparar')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
-            ->where("ms.id = $idMapa AND msp.codProduto = '$idProduto' AND msp.dscGrade = '$grade'")
-            ->groupBy('msp.codPedidoProduto, msp.codDepositoEndereco');
+            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = msp.produtoEmbalagem')
+            ->where("ms.id = $idMapa AND msp.codProduto = '$idProduto' AND msp.dscGrade = '$grade'");
 
         return $sql->getQuery()->getResult();
     }

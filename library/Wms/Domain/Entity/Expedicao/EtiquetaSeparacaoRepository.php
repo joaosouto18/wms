@@ -852,12 +852,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $depositoEnderecoRepo */
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
         $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
-        $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
         $produtoRepo = $this->_em->getRepository('wms:Produto');
@@ -875,11 +875,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade),array('quantidade'=>'DESC'));
 
                 $mapaProdutos = $mapaProdutoRepo->getMapaProdutoByProdutoAndMapa($idMapaSeparacao, $idProduto, $grade);
+                $mapa = $mapaProdutoRepo->findOneBy(array('mapaSeparacao' => $idMapaSeparacao, 'codProduto' => $idProduto, 'dscGrade' => $grade));
                 $qtdTotalMapaProdutos = $mapaProdutos[0]['qtdSeparar'];
-                $idPedidoProduto = $mapaProdutos[0]['codPedidoProduto'];
+                $idPedidoProduto = $mapa->getCodPedidoProduto();
                 $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
-                $idDepositoEndereco = $mapaProdutos[0]['codDepositoEndereco'];
-                $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
+                $depositoEnderecoEn = $mapa->getCodDepositoEndereco();
 
                 $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
                 foreach ($mapaProdutosEn as $mapaProdutoRemover) {
