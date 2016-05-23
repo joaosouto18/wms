@@ -64,7 +64,7 @@ class Expedicao_CortePedidoController  extends Action
         $motivo   = $this->_getParam('motivoCorte');
         $senha    = $this->_getParam('senha');
         if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA')) {
-            $this->addFlashMessage('error','Senha Informáda Invalida');
+            $this->addFlashMessage('error','Senha Informada Inválida');
             $this->redirect("index",'index','expedicao');
 
         }
