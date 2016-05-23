@@ -2682,7 +2682,7 @@ class ExpedicaoRepository extends EntityRepository
 
         foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
             $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
-            $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque());
+            $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
             $entityReservaEstoque->setAtendida('C');
             $entityReservaEstoque->setDataAtendimento(new \Zend_Date);
             $this->getEntityManager()->persist($entityReservaEstoque);
