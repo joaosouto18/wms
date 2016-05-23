@@ -850,16 +850,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function atualizaMapaSeparacaoProduto($idExpedicao)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $depositoEnderecoRepo */
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
-        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
-        $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+        $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->_em->getRepository('wms:Produto');
 
         $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
