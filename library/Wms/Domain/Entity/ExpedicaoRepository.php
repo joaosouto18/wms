@@ -2648,11 +2648,11 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function     executaCortePedido($cortes, $motivo) {
+    public function executaCortePedido($cortes, $motivo) {
         //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
         foreach ($cortes as $codPedido => $produtos) {
-            foreach ($produtos as $codProduto=> $grades) {
-                foreach ($grades as $grade=> $quantidade) {
+            foreach ($produtos as $codProduto => $grades) {
+                foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0)) continue;
                     $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
                 }
@@ -2668,12 +2668,33 @@ class ExpedicaoRepository extends EntityRepository
         $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId(),
             'codProduto'=>$codProduto,
             'dscGrade'=>$grade));
+        $entidadeReservasEstoqueExpedicao = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao')->findBy(array('pedido'=>$codPedido));
+        $repositoryReservaEstoqueProduto = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+        $repositoryReservaEstoque = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
+        
         $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
         $qtdPedido   = $entidadePedidoProduto->getQuantidade();
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
         if (($qtdCortar + $qtdCortada) > $qtdPedido) {
             $qtdCortar = ($qtdPedido - $qtdCortada);
+        }
+
+        foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
+            $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
+            $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque());
+            $entityReservaEstoque->setAtendida('C');
+            $entityReservaEstoque->setDataAtendimento(new \Zend_Date);
+            $this->getEntityManager()->persist($entityReservaEstoque);
+            foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
+                $qtdReservada = $reservaEstoqueProduto->getQtd();
+                if ($qtdCortar + $qtdReservada == 0) {
+                    $this->getEntityManager()->remove($reservaEstoqueProduto);
+                } else {
+                    $reservaEstoqueProduto->setQtd($qtdReservada + $qtdCortar);
+                    $this->getEntityManager()->persist($reservaEstoqueProduto);
+                }
+            }
         }
 
         $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
