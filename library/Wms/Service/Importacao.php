@@ -199,19 +199,18 @@ class Importacao
 
     public function saveReferenciaProduto($em, $referencia){
         /**  @var EntityManager $em*/
+        try {
+            $entity = new Referencia();
+            $entity->setIdProduto($referencia['idProduto']);
+            $entity->setFornecedor($referencia['fornecedor']);
+            $entity->setDscReferencia($referencia['dscReferencia']);
 
-        $criteria = array(
-            "id" => $referencia['idProduto'],
-            "grade" => "UNICA"
-        );
-        /** @var Produto $produtoObj */
-        $produtoObj = $em->getRepository("wms:Produto")->findOneBy($criteria);
-        $entity = new Referencia();
-        $entity->setIdProduto($produtoObj->getIdProduto());
-        $entity->setFornecedor($referencia['fornecedor']);
-        $entity->setDscReferencia($referencia['dscReferencia']);
-
-        $em->persist($entity);
+            $em->persist($entity);
+            $em->flush();
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
