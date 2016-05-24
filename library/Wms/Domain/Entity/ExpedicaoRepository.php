@@ -2681,6 +2681,9 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
+            if ($reservaEstoqueExpedicao->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO)
+                throw new \Exception('Não é possível cortar pedido/produto com a expedição já finalizada!');
+
             $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
             $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
             $entityReservaEstoque->setAtendida('C');
