@@ -69,8 +69,22 @@ class Importacao_IndexController extends Action
                 $countFlush++;
                 break;
             case 'embalagem':
-                $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
-                $countFlush++;
+                $stsEndereço = true;
+                if (!empty($arrRegistro['endereco'])){
+                    $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
+                    $endereco = explode(".",$arrRegistro['endereco']);
+
+                    foreach ($endereco as $element){
+                        if(strlen($element) < 1){
+                            $arrErroRows[$linha] = "Endereço incompleto";
+                            $stsEndereço = false;
+                        }
+                    }
+                }
+                if ($stsEndereço) {
+                    $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                    $countFlush++;
+                }
                 break;
             case 'fornecedor';
                 $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);

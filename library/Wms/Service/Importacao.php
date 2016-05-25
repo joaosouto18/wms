@@ -479,8 +479,27 @@ class Importacao
                 'quantidade' => $registro['quantidade']
             ));
         }
+        
+        if (!empty($registro['endereco'])){
 
+            $endereco = explode(".",$registro['endereco']);
 
+            $arrDados['rua'] = $endereco[0];
+            $arrDados['predio'] = $endereco[1];
+            $arrDados['nivel'] = $endereco[2];
+            $arrDados['apartamento']= $endereco[3];
+
+            $endereco = $em->getRepository('wms:Deposito\Endereco')
+                ->findOneBy(array(
+                        'rua' => $endereco[0],
+                        'predio' => $endereco[1],
+                        'nivel' => $endereco[2],
+                        'apartamento' => $endereco[3])
+                );
+
+            $registro['endereco'] = $endereco;
+        }
+        
         if ($embalagemEntity == null) {
             /** @var \Wms\Domain\Entity\Produto $produto */
             $produto = $produtoRepo->findOneBy(array(
@@ -551,6 +570,7 @@ class Importacao
             );
             $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
         }
+
         unset($arrDados['codProduto']);
         unset($arrDados['grade']);
         unset($arrDados['codigoBarras']);
