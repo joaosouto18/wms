@@ -19,7 +19,7 @@ class Fornecedor implements Ator
     protected $idExterno;
     /**
      * @Id
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica", cascade={\"persist\"})
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica", cascade={"persist"})
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_PESSOA")
      */
     protected $pessoa;

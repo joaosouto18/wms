@@ -178,7 +178,7 @@ class Importacao_IndexController extends Action
                 $countFlush++;
                 break;
             case 'dadoLogistico':
-                $importacaoService->saveDadoLogistico($em, $arrRegistro);
+                $importacaoService->saveDadosLogisticos($em, $arrRegistro);
                 $countFlush++;
                 break;
             case 'endereco':
