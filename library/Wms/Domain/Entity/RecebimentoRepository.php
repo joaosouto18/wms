@@ -638,20 +638,13 @@ class RecebimentoRepository extends EntityRepository
         } else {
             $validade = null;
         }
-        if ( !empty( $params['numPeso']) )
-            $peso = (float) $params['numPeso'];
-        else
-            $peso = null;
 
-        $recebimentoEmbalagemEntity
-            ->setRecebimento($recebimentoEntity)
+        $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity)
             ->setOrdemServico($ordemServicoEntity)
             ->setEmbalagem($produtoEmbalagemEntity)
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
-
-        $recebimentoEmbalagemEntity->setNumPeso( $params['numPeso'] );
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
@@ -692,8 +685,6 @@ class RecebimentoRepository extends EntityRepository
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
-
-        $recebimentoVolumeEntity->setNumPeso($params['numPeso']);
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
@@ -871,9 +862,7 @@ class RecebimentoRepository extends EntityRepository
                 ->from("wms:NotaFiscal", 'nf')
                 ->innerJoin("nf.itens", "nfi")
                 ->innerJoin("wms:Produto", 'p', 'WITH', 'p.grade = nfi.grade AND p.id = nfi.codProduto')
-                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
-                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade')
-                ->where("nf.recebimento = $idRecebimento AND pe.dataInativacao is null AND pv.dataInativacao is null");
+                ->where("nf.recebimento = $idRecebimento");
         }
 
         $result = $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
@@ -1373,43 +1362,29 @@ class RecebimentoRepository extends EntityRepository
     }
 
 
-    public function naoEnderecadosByStatus($status = null)
+    public function naoEnderecadosByStatus($status = RecebimentoEntity::STATUS_FINALIZADO, $limit = 10)
     {
-        
-        $whereStatus = "";
-        if ($status != null) {
-            $whereStatus = " AND R.COD_STATUS = " . $status;
-        }
+        $query = '
+            SELECT r
+            FROM wms:Recebimento r
+            WHERE r.status = ' . $status . '
+                AND r.id IN (
+                    SELECT r2.id
+                    FROM wms:Enderecamento\Palete p
+                    JOIN p.recebimento r2
+                    WHERE p.status in ( ' . PaleteEntity::STATUS_EM_RECEBIMENTO . ',' . PaleteEntity::STATUS_RECEBIDO . ',' . PaleteEntity::STATUS_EM_ENDERECAMENTO . ' )
+                    OR r.id NOT IN (
+                        SELECT r2.id
+                        FROM wms:Enderecamento\Palete p2
+                        JOIN p2.recebimento r3
+                        WHERE r.id = r3.id
+                    )
+                )
 
-        $SQL = "SELECT DISTINCT R.COD_RECEBIMENTO,
-                                R.DTH_INICIO_RECEB,
-                                B.DSC_BOX AS BOX,
-                                PJ.NOM_FANTASIA
-                  FROM (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO
-                          FROM V_QTD_RECEBIMENTO V
-                         GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) V
-                  LEFT JOIN (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO 
-                               FROM (SELECT DISTINCT P.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, P.COD_RECEBIMENTO
-                                       FROM PALETE P
-                                       LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA) P
-                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO) P
-                         ON P.COD_PRODUTO = V.COD_PRODUTO
-                        AND P.DSC_GRADE = V.DSC_GRADE
-                        AND P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN BOX B ON B.COD_BOX = R.COD_BOX
-                  LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-                  INNER JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
-                  INNER JOIN PESSOA ON PESSOA.COD_PESSOA = F.COD_FORNECEDOR
-                  LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = PESSOA.COD_PESSOA
-                 WHERE V.QTD - NVL(P.QTD,0) >0
-                 $whereStatus
-                 ORDER BY R.DTH_INICIO_RECEB DESC
-";
-
-        return $this->getEntityManager()->getConnection()->query($SQL)
-            ->fetchAll(\PDO::FETCH_ASSOC);
+                ORDER BY r.id DESC
+         ';
+        $query =  $this->getEntityManager()->createQuery($query)->setMaxResults($limit);
+        return $query->getResult();
     }
-
 
 }

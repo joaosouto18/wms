@@ -1,4 +1,5 @@
 ﻿<script>
+
     function nextInput(event, id) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('uma').value != "") {
@@ -20,6 +21,7 @@
     {
         uma = document.getElementById('uma');
         endereco   = document.getElementById('endereco');
+
         if (uma.value !== "" && endereco.value !== "") {
             loadResult(uma, endereco);
         }
@@ -137,6 +139,7 @@
         showElement("formulario");
         document.getElementById('uma').focus();
     }
+
 </script>
 
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
@@ -148,7 +151,7 @@
 
     <div>
         <label>U.M.A:</label>
-        <input type="text" name="uma" id="uma" onkeydown="nextInput(event)" />
+        <input type="text" name="uma" id="uma" value="" onkeydown="nextInput(event)" />
     </div>
     <div>
         <label>ENDEREÇO:</label>
@@ -172,3 +175,4 @@
     <input type="submit" name="submit" id="submit" value="Buscar" />
     <input type="button" name="voltar" id="voltar" value="Voltar" onclick="voltarUma()" />
 </form>
+

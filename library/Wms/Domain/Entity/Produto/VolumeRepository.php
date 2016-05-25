@@ -19,13 +19,9 @@ class VolumeRepository extends EntityRepository
      *
      * @param array $values 
      */
-    public function save(ProdutoEntity $produtoEntity, array $values, $webservice = false)
+    public function save(ProdutoEntity $produtoEntity, array $values)
     {
         $em = $this->getEntityManager();
-        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
-
-        /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
-        $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
 
         extract($values);
 
@@ -61,20 +57,6 @@ class VolumeRepository extends EntityRepository
             }
             
             $volumeEntity->setEndereco($enderecoEntity);
-        }
-
-        if (isset($values['ativarDesativar']) && !empty($values['ativarDesativar'])){
-            if ($volumeEntity->getDataInativacao() == null) {
-                $volumeEntity->setDataInativacao(new \DateTime());
-                $volumeEntity->setUsuarioInativacao($idUsuario);
-                $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso');
-            }
-        } else {
-            if (!is_null($volumeEntity->getDataInativacao())) {
-                $volumeEntity->setDataInativacao(null);
-                $volumeEntity->setUsuarioInativacao(null);
-                $andamentoRepo->save($volumeEntity->getProduto()->getId(), $volumeEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso');
-            }
         }
 
         if (!empty($idNormaPaletizacao)) {

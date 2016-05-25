@@ -199,12 +199,6 @@ class EstoqueRepository extends EntityRepository
         } else {
             if ($enderecoEn->getDisponivel() == "N") {
                 $enderecoEn->setDisponivel("S");
-//                if ($estoqueEn->getUma()) {
-//                    $paleteEn = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete')->find($estoqueEn->getUma());
-//                    if ($paleteEn->getCodStatus() != \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO) {
-//                        $enderecoEn->setDisponivel("N");
-//                    }
-//                }
                 $em->persist($enderecoEn);
             }
         }
@@ -775,8 +769,8 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
-    public function getProdutoByNivel($dscEndereco, $nivel)
-    {
+    public function getProdutoByNivel($dscEndereco, $nivel) {
+
         if (is_null($nivel)) {
             throw new Exception('Nivel esperado');
         }
@@ -808,8 +802,7 @@ class EstoqueRepository extends EntityRepository
             ->andWhere("dep.predio = $predio")
             ->andWhere("dep.nivel = $nivel")
             ->andWhere("dep.apartamento =  $apartamento");
-
-        $result = $dql->getQuery()->getArrayResult();
+            $result = $dql->getQuery()->getArrayResult();
         return $result;
     }
 

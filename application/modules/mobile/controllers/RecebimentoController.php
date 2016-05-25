@@ -76,10 +76,8 @@ class Mobile_RecebimentoController extends Action
             
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
 
-            if ($notaFiscalEntity) {
-                $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
-                $this->view->fornecedor     = $notaFiscalEntity->getFornecedor()->getPessoa()->getNome();
-            }
+            if ($notaFiscalEntity)
+                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
 
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
@@ -139,9 +137,6 @@ class Mobile_RecebimentoController extends Action
             
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
-            if (!is_null($itemNF['dataInativacao']))
-                throw new \Exception('O produto ' . $itemNF['idProduto'] . ' grade ' . $itemNF['grade'] . ' está inativo!');
-
             if ($itemNF == null)
                 throw new \Exception('Nenhum produto encontrado no Recebimento com este Código de Barras. - ' . $codigoBarras);
 
@@ -157,17 +152,15 @@ class Mobile_RecebimentoController extends Action
                 $produtoEmbEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
                 $idProduto = $produtoEmbEn->getProduto()->getId();
                 $grade = $produtoEmbEn->getProduto()->getGrade();
-                $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
             } else {
                 $idProduto = $produtoVolumeEn->getCodProduto();
                 $grade = $produtoVolumeEn->getGrade();
-                $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
             }
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
                 $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
-                $dataValidade = $dataValidade->toString('dd/MM/YY');
+                $dataValidade = $dataValidade->toString('dd/MM/Y');
                 $this->view->dataValidade = $dataValidade;
             }
 
@@ -183,12 +176,6 @@ class Mobile_RecebimentoController extends Action
         $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getUnitizadoresByProduto($itemNF['idProduto'],$itemNF['grade']);
         $this->view->normasPaletizacao = $normasPaletizacao;
 
-        if ( !empty($pesoVariavel) )
-            $pesoVariavel = "S";
-        else
-            $pesoVariavel = "N";
-
-        $this->view->pesoVariavel = $pesoVariavel;
         $this->view->recebimento = $recebimentoEntity;
         $form->setDefault('idRecebimento', $idRecebimento);
         $this->view->form = $form;
@@ -204,6 +191,7 @@ class Mobile_RecebimentoController extends Action
 
         try {
             // data has been sent
+
             if (!$this->getRequest()->isPost())
                 throw new \Exception('Escaneie o volume/embalagem novamente.');
 
@@ -228,29 +216,7 @@ class Mobile_RecebimentoController extends Action
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
 
-                $dataValida = true;
-                if (strlen($params['dataValidade']) < 8) {
-                    $dataValida = false;
-                } else {
-                    $dia = substr($params['dataValidade'],0,2);
-                    if ($dia == false) $dataValida = false;
-                    $mes = substr($params['dataValidade'],3,2);
-                    if ($mes == false) $dataValida = false;
-                    $ano = substr($params['dataValidade'],6,2);
-                    if ($mes == false) $dataValida = false;
-
-                    if ($dataValida == true) {
-                        $data = $dia . "/" . $mes . "/20" . $ano;
-                        if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
-                    }
-                }
-
-                if ($dataValida == false) {
-                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
-                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                }
-
-                $params['dataValidade'] = new Zend_Date($data);
+                $params['dataValidade'] = new Zend_Date($params['dataValidade']);
                 if ($params['dataValidade'] <= $PeriodoUtil) {
                     //autoriza recebimento?
                     $arrayRedirect = array(
@@ -273,42 +239,6 @@ class Mobile_RecebimentoController extends Action
                 $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
             } else {
                 $params['dataValidade'] = null;
-            }
-
-            if ( !empty( $produtoEn->getToleranciaNominal() ) ){
-                if ( empty( $params['numPeso'] ) ) {
-                    $this->_helper->messenger('error', 'Informe o peso para conferência');
-                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                } else {
-                    $quantidade = (int) $qtdConferida;
-                    $pesoDigitado = str_replace(".",",",$params['numPeso']);
-                    $parametros['COD_PRODUTO'] = $produtoEn->getId();
-                    $tolerancia = (float) str_replace(",",".",$produtoEn->getToleranciaNominal());
-
-                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto( $parametros );
-                    $volumes = (int) $this->em->getRepository('wms:Recebimento\Volume')->getVolumeByRecebimentoProduto( $idRecebimento , $idProduto );
-
-                    if ( !empty($volumes) && count($volumes)!=0 ){
-                        $peso = (float) $pesoProduto[0]['NUM_PESO'] / count($volumes);
-                    } else {
-                        $peso = (float) $pesoProduto[0]['NUM_PESO'];
-                    }
-                    $pesoUnitarioMargemS = (float)  ( $pesoDigitado/$quantidade ) + $tolerancia;
-                    $pesoUnitarioMargemI = (float)  ( $pesoDigitado/$quantidade ) - $tolerancia;
-
-                    if ( !( $peso <= $pesoUnitarioMargemS && $peso >= $pesoUnitarioMargemI )  ){
-                        $this->_helper->messenger('error', 'O peso informado não confere com a tolerância permitida');
-                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                    } else {
-                        if ( !empty($volumes) && count($volumes)!=0 ){
-                            $params['numPeso'] = (float)  $params['numPeso'] / count($volumes);
-                        } else {
-                            $params['numPeso'] = (float)  $params['numPeso'];
-                        }
-                    }
-                }
-            } else {
-                $params['numPeso'] = null;
             }
 
             // caso embalagem

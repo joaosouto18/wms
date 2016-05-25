@@ -867,13 +867,17 @@ class NotaFiscalRepository extends EntityRepository
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
-                    $pesoItem = trim($item['numPeso']);
-                    if ($pesoItem == "") {
-                        $pesoItem = 0;
-                    } else {
-                        $pesoItem = (int) $pesoItem;
+                    $pesoTotal = 0;
+                    if (isset($item['numPeso'])) {
+                        $pesoItem = trim($item['numPeso']);
+                        if ($pesoItem == "") {
+                            $pesoItem = 0;
+                        } else {
+                            $pesoItem = (int) $pesoItem;
+                        }
+                        $pesoTotal = $pesoTotal + $pesoItem;
                     }
-                    $pesoTotal = $pesoTotal + $pesoItem;
+
                 }
             } else {
                 throw new \Exception('Nenhum Produto informado na nota');
@@ -913,11 +917,14 @@ class NotaFiscalRepository extends EntityRepository
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
 
-                    $pesoItem = trim($item['numPeso']);
-                    if ($pesoItem == "") {
-                        $pesoItem = 0;
-                    } else {
-                        $pesoItem = (int) $pesoItem;
+                    $pesoItem = 0;
+                    if (isset($item['numPeso'])) {
+                        $pesoItem = trim($item['numPeso']);
+                        if ($pesoItem == "") {
+                            $pesoItem = 0;
+                        } else {
+                            $pesoItem = (int) $pesoItem;
+                        }
                     }
 
                     $itemEntity = new ItemNF;

@@ -319,10 +319,20 @@ class Notafiscal_ImportarxmlController extends Crud
                 ";
                 $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-                if ( !empty($array[0]['COD_PRODUTO']) ){
+                $sql2 = "SELECT COD_PRODUTO, DSC_GRADE
+                        FROM PRODUTO P INNER JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
+                        WHERE FR.DSC_REFERENCIA = '$codigoProdutoNF' ";
+
+                $arrayCodFornecedores =$this->em->getConnection()->query($sql2)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if ( !empty($array[0]['COD_PRODUTO'])){
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
-                } else {
+                } elseif (!empty($arrayCodFornecedores[0]['COD_PRODUTO'])) {
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$arrayCodFornecedores[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$arrayCodFornecedores [0]['DSC_GRADE'];
+                }
+                else {
                     $this->isValid=false;
                     $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
                     $dscProduto = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['xProd'];

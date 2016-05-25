@@ -1,5 +1,6 @@
 <?php
 namespace Wms\Domain\Entity\Pessoa;
+use Wms\Domain\Configurator;
 
 /**
  * PessoaEndereco
@@ -92,17 +93,6 @@ class Endereco
     public function getId()
     {
 	return $this->id;
-    }
-
-    public function getIdPessoa()
-    {
-	return $this->idPessoa;
-    }
-
-    public function setIdPessoa($idPessoa)
-    {
-	$this->idPessoa = $idPessoa;
-        return $this;
     }
 
     public function getIdTipo()
@@ -247,4 +237,9 @@ class Endereco
         return $this;
     }
 
+    
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

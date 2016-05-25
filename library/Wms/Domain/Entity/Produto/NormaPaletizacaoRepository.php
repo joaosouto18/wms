@@ -62,7 +62,7 @@ class NormaPaletizacaoRepository extends EntityRepository
             ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
             ->leftJoin('pv.normaPaletizacao', 'np_volume')
             ->leftJoin('np_volume.unitizador', 'unitizador_volume')
-            ->where("p.id = '$codProduto'")
+            ->where("p.id = $codProduto")
             ->andWhere("p.grade = '$grade'");
 
         $result = $dql->getQuery()->getResult();

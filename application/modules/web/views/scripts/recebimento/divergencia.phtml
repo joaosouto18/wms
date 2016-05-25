@@ -23,13 +23,12 @@
             <thead>
                 <tr style="text-align: center; font-weight: bold; border-left: #666; background: #CCC; line-height: 22px">
                     <td colspan="2">Item</td>
-                    <td colspan="3">Qtde. Recebida </td>
+                    <td colspan="2">Qtde. Recebida </td>
                     <td colspan="3">Devolução</td>
                 </tr>
                 <tr class="gTTitle">
                     <td>Cód. - Produto</td>
                     <td>Grade</td>
-                    <td>Referência</td>
                     <td>Qtde. Conferida </td>
                     <td>Qtde. Avaria</td>
                     <td>Qtde. Divergência</td>
@@ -44,8 +43,7 @@
                     ?>
                     <tr height="35">
                         <td><?php echo $produtoConferencia['idProduto'] . ' - ' . $produtoConferencia['dscProduto'] ?></td>
-                        <td><?php echo $produtoConferencia['grade'] ?></td>
-                        <td><?php echo $produtoConferencia['referencia'] ?></td>
+                        <td ><?php echo $produtoConferencia['grade'] ?></td>
                         <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
                         <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
                         <td ><?php echo $produtoConferencia['qtdDivergencia'] . ' (' . $tipoDivergencia . ')' ?></td>
@@ -65,7 +63,7 @@
                     <td colspan="2">
                         Conferente: <strong><?php echo $this->ordemServicoEntity->getPessoa()->getNome(); ?></strong>
                     </td>
-                    <td colspan="3">
+                    <td colspan="2">
                         <?php
                         echo $this->formSubmit("btnRecontagem", "Gerar Recontagem", array('class' => 'btn', 'style' => 'margin-top: 0;'));
                         ?> 

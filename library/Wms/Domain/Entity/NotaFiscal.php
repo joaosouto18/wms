@@ -124,14 +124,6 @@ class NotaFiscal
      */
     protected $observacao;
 
-    /**
-     * Peso da nota fiscal
-     *
-     * @Column(name="PESO_TOTAL", type="float", nullable=true)
-     * @var float
-     */
-    protected $pesoTotal;
-
     public function __construct()
     {
         $this->itens = new ArrayCollection;
@@ -276,22 +268,6 @@ class NotaFiscal
     public function getObservacao()
     {
         return $this->observacao;
-    }
-
-    /**
-     * @param mixed $pesoTotal
-     */
-    public function setPesoTotal($pesoTotal)
-    {
-        $this->pesoTotal = $pesoTotal;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPesoTotal()
-    {
-        return $this->pesoTotal;
     }
 
 }

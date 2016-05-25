@@ -197,9 +197,3 @@ resources.frontController.params.displayExceptions = 1
 ;resources.doctrine.dbal.connections.default.parameters.dbname = "(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 31.31.31.31)(PORT = 1521))(CONNECT_DATA =(SERVER = DEDICATED)(SERVICE_NAME = XE)))"
 
 resources.doctrine.dbal.connections.default.sqlLoggerClass     = "Doctrine\DBAL\Logging\DebugStack"
-
-database.viewErp.habilitado = true
-database.viewErp.dbname = 192.168.0.144/WINT
-database.viewErp.user = othon
-database.viewErp.password = othon
-database.viewErp.characterSet = WE8ISO8859P1

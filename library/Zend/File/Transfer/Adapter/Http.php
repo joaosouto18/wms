@@ -381,7 +381,7 @@ class Zend_File_Transfer_Adapter_Http extends Zend_File_Transfer_Adapter_Abstrac
 
         if (isset($adapter) && isset($status['id'])) {
             if ($adapter instanceof Zend_ProgressBar_Adapter) {
-                require_once 'Zend/ProgressBar.php';
+                require_once 'Zend/progress-bar.php';
                 $adapter = new Zend_ProgressBar($adapter, 0, $status['total'], $session);
             }
 

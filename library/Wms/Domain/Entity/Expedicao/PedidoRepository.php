@@ -198,9 +198,6 @@ class PedidoRepository extends EntityRepository
      */
     public function remove(Pedido $pedidoEntity, $runFlush = true) {
 
-        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaSeparacaoReentregaRepo */
-        $EtiquetaSeparacaoReentregaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
-
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $etiquetas = $EtiquetaRepo->findBy(array('pedido'=>$pedidoEntity));
@@ -209,11 +206,6 @@ class PedidoRepository extends EntityRepository
 
         foreach($etiquetas as $etiqueta) {
             $this->_em->remove($etiqueta);
-
-            $etiquetaReentregaEntity = $EtiquetaSeparacaoReentregaRepo->findBy(array('etiquetaSeparacao' => $etiqueta->getId()));
-            if ($etiquetaReentregaEntity) {
-                $this->_em->remove($etiquetaReentregaEntity);
-            }
 
             if ($runFlush == true) {
                 $this->_em->flush();

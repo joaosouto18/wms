@@ -811,35 +811,6 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-
-//        VERIFICA SE O PRODUTO PERTENCE A ETIQUETA CORRETA
-        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
-        if (isset($etiquetaProduto)) {
-            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
-
-            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
-                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
-                //$this->_helper->messenger('info', $msg);
-
-                if ($this->bloquearOs=='S'){
-                    $this->bloqueioOs($idExpedicao, $msg, false);
-                    if ($this->_request->isXmlHttpRequest()) {
-                        $this->createXml("error",$msg,$this->createUrlMobile());
-                    } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-                        die();
-                    }
-                } else {
-                    $this->createXml("error",$msg);
-                    die();
-                }
-                return false;
-            }
-        }
-
-
         if ($etiqueta[0]['reentregaExpedicao'] == null) {
             $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
         } else {
@@ -898,31 +869,31 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-//        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
-//        if (isset($etiquetaProduto)) {
-//            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-//            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
-//
-//            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
-//                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
-//                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
-//                //$this->_helper->messenger('info', $msg);
-//
-//                if ($this->bloquearOs=='S'){
-//                    $this->bloqueioOs($idExpedicao, $msg, false);
-//                    if ($this->_request->isXmlHttpRequest()) {
-//                        $this->createXml("error",$msg,$this->createUrlMobile());
-//                    } else {
-//                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-//                        die();
-//                    }
-//                } else {
-//                    $this->createXml("error",$msg);
-//                    die();
-//                }
-//                return false;
-//            }
-//        }
+        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
+        if (isset($etiquetaProduto)) {
+            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
+            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+
+            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
+                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
+                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
+                //$this->_helper->messenger('info', $msg);
+
+                if ($this->bloquearOs=='S'){
+                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    if ($this->_request->isXmlHttpRequest()) {
+                        $this->createXml("error",$msg,$this->createUrlMobile());
+                    } else {
+                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        die();
+                    }
+                } else {
+                    $this->createXml("error",$msg);
+                    die();
+                }
+                return false;
+            }
+        }
 
         if (($etiqueta[0]['embalado'] == 'S') && (is_null($volume))) {
             $msg = "A etiqueta " . $etiquetaSeparacao . " precisa de um volume informado pois é Embalado";
