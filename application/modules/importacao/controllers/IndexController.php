@@ -106,8 +106,15 @@ class Importacao_IndexController extends Action
                     break;
                 }
 
-                $importacaoService->saveFornecedor($em, $arrRegistro, false);
-                $countFlush++;
+                $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);
+                if (is_string($result)){
+                    $arrErroRows[$linha] = $result;
+                    break;
+                } elseif (!empty($result)){
+                    $countFlush++;
+                } else {
+                    $arrErroRows[$linha] = "Ocorreu algum erro inesperado, contate o suporte.";
+                }
                 break;
             case 'cliente':
                 $importacaoService->saveCliente($em, $arrRegistro);
@@ -178,7 +185,7 @@ class Importacao_IndexController extends Action
                 $countFlush++;
                 break;
             case 'dadoLogistico':
-                $importacaoService->saveDadosLogisticos($em, $arrRegistro);
+                $importacaoService->saveDadoLogistico($em, $arrRegistro);
                 $countFlush++;
                 break;
             case 'endereco':
