@@ -500,7 +500,8 @@ class Importacao
 
             $enderecoEn = $endereco;
         }
-        
+
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
         if ($embalagemEntity == null) {
             /** @var \Wms\Domain\Entity\Produto $produto */
             $produto = $produtoRepo->findOneBy(array(
@@ -521,6 +522,9 @@ class Importacao
                 $embalagemEntity->setCodigoBarras($codigoBarras);
                 $em->persist($embalagemEntity);
             }
+        } else {
+            $embalagemEntity->setEndereco($enderecoEn);
+            $em->persist($embalagemEntity);
         }
     }
 
