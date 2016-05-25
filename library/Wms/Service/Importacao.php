@@ -479,7 +479,8 @@ class Importacao
                 'quantidade' => $registro['quantidade']
             ));
         }
-        
+
+        $enderecoEn = null;
         if (!empty($registro['endereco'])){
 
             $endereco = explode(".",$registro['endereco']);
@@ -497,7 +498,7 @@ class Importacao
                         'apartamento' => $endereco[3])
                 );
 
-            $registro['endereco'] = $endereco;
+            $enderecoEn = $endereco;
         }
         
         if ($embalagemEntity == null) {
@@ -512,6 +513,7 @@ class Importacao
             $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity,$registro);
             $embalagemEntity->setProduto($produto);
             $embalagemEntity->setCodigoBarras($codigoBarras);
+            $embalagemEntity->setEndereco($enderecoEn);
             $em->persist($embalagemEntity);
 
             if ($registro['codigoBarras'] == "") {
