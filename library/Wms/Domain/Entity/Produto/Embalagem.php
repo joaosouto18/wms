@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Produto;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 /**
  * Description of Embalagem
@@ -250,6 +251,9 @@ class Embalagem
         return $this->recebimentoEmbalagens;
     }
 
+    /**
+     * @return Endereco
+     */
     public function getEndereco()
     {
         return $this->endereco;

@@ -21,6 +21,7 @@ use Wms\Domain\Entity\Util\SiglaRepository;
 use Wms\Module\Web\Controller\Action;
 use Wms\Util\CodigoBarras;
 use Zend\Stdlib\Configurator;
+use Wms\Util\Endereco as EnderecoUtil;
 
 class Importacao
 {
@@ -515,6 +516,7 @@ class Importacao
             $embalagemEntity->setProduto($produto);
             $embalagemEntity->setCodigoBarras($codigoBarras);
             $embalagemEntity->setEndereco($enderecoEn);
+
             $em->persist($embalagemEntity);
 
             if ($registro['codigoBarras'] == "") {
@@ -630,10 +632,20 @@ class Importacao
                     'nivel' => $endereco[2],
                     'apartamento' => $endereco[3])
             );
+        $dscEndereco = array(
+            'RUA' => $endereco[0],
+            'PREDIO' => $endereco[1],
+            'NIVEL' => $endereco[2],
+            'APTO' => $endereco[3]);
+
+        $dscEndereco = EnderecoUtil::formatar($dscEndereco);
+
         if (!$entity) {
             $entity = new Endereco();
             Configurator::configure($entity, $arrDados);
+            $entity->setDescricao($dscEndereco);
             $em->persist($entity);
+            $em->flush();
         }
     }
 
