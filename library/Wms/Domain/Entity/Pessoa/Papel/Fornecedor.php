@@ -12,37 +12,21 @@ use Wms\Domain\Entity\Pessoa;
  */
 class Fornecedor implements Ator
 {
-
-    /**
-     * @var integer $id
-     * @Column(name="COD_FORNECEDOR", type="integer", nullable=false)
-     * @Id
-     */
-    protected $id;
     /**
      * @var string $idexterno
      * @Column(name="COD_EXTERNO", type="string", nullable=false)
      */
     protected $idExterno;
     /**
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica", cascade={"all"}, orphanRemoval=true)
+     * @Id
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica", cascade={"persist"})
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_PESSOA")
      */
     protected $pessoa;
 
-    public function getId()
-    {
-	    return $this->id;
-    }
-
     /**
-     * @param int $id
+     * @return Pessoa\Juridica
      */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
     public function getPessoa()
     {
 	    return $this->pessoa;

@@ -29,6 +29,457 @@ class Importacao_IndexController extends Action
         $this->_helper->json(array('result' => $errstr));
 
     }
+
+    private function setCaseImportacao($tabelaDestino, $em, $repositorios, $elements){
+        $importacaoService = new \Wms\Service\Importacao();
+
+        /** @var \Wms\Domain\Entity\PessoaJuridicaRepository $pJuridicaRepo */
+        $pJuridicaRepo = $repositorios['pjRepo'];
+
+        /** @var \Wms\Domain\Entity\PessoaFisicaRepository $pFisicaRepo */
+        $pFisicaRepo = $repositorios['pfRepo'];
+
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
+        $fornecedorRepo = $repositorios['fornecedorRepo'];
+
+        /** @var \Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository $referenciaRepo */
+        $referenciaRepo = $repositorios['referenciaRepo'];
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $repositorios['produtoRepo'];
+
+        $arrRegistro = $elements['arrRegistro'];
+        $arrErroRows = $elements['arrErroRows'];
+        $countFlush = $elements['countFlush'];
+        $linha = $elements['linha'];
+        $checkArray = $elements['checkArray'];
+        $numPedido = $elements['numPedido'];
+
+        switch ($tabelaDestino) {
+            case 'produto':
+                $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                $countFlush++;
+                break;
+            case 'fabricante':
+                $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                $countFlush++;
+                break;
+            case 'classe':
+                $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                $countFlush++;
+                break;
+            case 'embalagem':
+                $stsEndereço = true;
+                if (!empty($arrRegistro['endereco'])){
+                    $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
+                    $endereco = explode(".",$arrRegistro['endereco']);
+
+                    foreach ($endereco as $element){
+                        if(strlen($element) < 1){
+                            $arrErroRows[$linha] = "Endereço incompleto";
+                            $stsEndereço = false;
+                        }
+                    }
+                }
+                if ($stsEndereço) {
+                    $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                    $countFlush++;
+                }
+                break;
+            case 'fornecedor';
+                $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
+                if (strlen($cpf_cnpjFormatado) == 11){
+                    $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
+                    break;
+                } else if (strlen($cpf_cnpjFormatado) == 14){
+                    $arrRegistro['tipoPessoa'] = "J";
+                } else {
+                    $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
+                    break;
+                }
+                if (!in_array($arrRegistro['cpf_cnpj'],$checkArray )) {
+                    array_push($checkArray, $arrRegistro['cpf_cnpj']);
+                } else {
+                    if ($arrRegistro['tipoPessoa'] == "J")
+                        $arrErroRows[$linha] = "CNPJ repetido: " . $arrRegistro['cpf_cnpj'];
+
+                    if ($arrRegistro['tipoPessoa'] == "F")
+                        $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
+
+                    break;
+                }
+                $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                if ($entityPessoa) {
+                    $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                    break;
+                }
+                $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
+
+                if ($entityPessoa) {
+                    $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                    break;
+                }
+
+                $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);
+                if (is_string($result)){
+                    $arrErroRows[$linha] = $result;
+                    break;
+                } elseif (!empty($result)){
+                    $countFlush++;
+                } else {
+                    $arrErroRows[$linha] = "Ocorreu algum erro inesperado, contate o suporte.";
+                }
+                break;
+            case 'cliente':
+                $importacaoService->saveCliente($em, $arrRegistro);
+                $countFlush++;
+                break;
+            case 'referencia':
+                $registro = $arrRegistro['dscReferencia'] . " - CodInterno: " . $arrRegistro['codProduto'] . ' - CNPJ: ' . $arrRegistro['cnpj'];
+
+                if (!in_array($registro ,$checkArray )) {
+                    array_push($checkArray, $registro);
+                } else {
+                    $arrErroRows[$linha] = "Referência repetida: " . $registro;
+                    break;
+                }
+
+                $cnpj = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cnpj']);
+                $arrRegistro['fornecedor'] = $fornecedorRepo->getFornecedorByCNPJ($cnpj);
+                if (empty($arrRegistro['fornecedor'])){
+                    $arrErroRows[$linha] = "Nenhum fornecedor encontrado com o CNPJ: " . $arrRegistro['cnpj'];
+                    break;
+                }
+                unset($arrRegistro['cnpj']);
+
+                /** @var \Wms\Domain\Entity\Produto $prodEntity */
+                $prodEntity = $produtoRepo->findOneBy(array('id'=>$arrRegistro['codProduto'],'grade'=>$arrRegistro['grade']));
+                if (empty($prodEntity)){
+                    $arrErroRows[$linha] = "Nenhum produto de código: " . $arrRegistro['codProduto'] . ' e grade: ' . $arrRegistro['grade'];
+                    break;
+                }
+
+                unset($arrRegistro['codProduto']);
+                unset($arrRegistro['grade']);
+
+                $arrRegistro['idProduto'] = $prodEntity->getIdProduto();
+                $criteria = array(
+                    'idProduto' => $prodEntity->getIdProduto(),
+                    'fornecedor' => $arrRegistro['fornecedor']->getPessoa(),
+                    'dscReferencia' => $arrRegistro['dscReferencia']
+                );
+
+                $refeEntity = $referenciaRepo->findOneBy($criteria);
+
+                if (empty($refeEntity)) {
+                    $save = $importacaoService->saveReferenciaProduto($em, $arrRegistro);
+                    if (!is_string($save)) {
+                        $countFlush++;
+                    } else {
+                        $arrErroRows[$linha] = $save;
+                    }
+                } else {
+                    $arrErroRows[$linha] = 'Referencia já registrada: '. $arrRegistro['dscReferencia'];
+                }
+                break;
+            case 'carga':
+                $importacaoService->saveCarga($em, $arrRegistro);
+                $countFlush++;
+                break;
+            case 'pedido':
+                if ($arrRegistro['codPedido'] !== $numPedido) {
+                    $numPedido = $arrRegistro['codPedido'];
+                    $importacaoService->savePedido($em, $arrRegistro);
+                    $countFlush++;
+                    break;
+                }
+                break;
+            case 'pedidoProduto':
+                $importacaoService->savePedidoProduto($em, $arrRegistro, false);
+                $countFlush++;
+                break;
+            case 'dadoLogistico':
+                $importacaoService->saveDadoLogistico($em, $arrRegistro);
+                $countFlush++;
+                break;
+            case 'endereco':
+                $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
+                $endereco = explode(".",$arrRegistro['endereco']);
+                $stsEndereço = true;
+                foreach ($endereco as $element){
+                    if(strlen($element) < 1){
+                        $arrErroRows[$linha] = "Endereço incompleto";
+                        $stsEndereço = false;
+                    }
+                }
+                if ($stsEndereço) {
+                    $importacaoService->saveEndereco($em, $arrRegistro);
+                    $countFlush++;
+                }
+                break;
+            default:
+                break;
+        }
+
+        $result = array(
+            'numPedido' => $numPedido,
+            'checkArray' => $checkArray,
+            'arrErroRows' => $arrErroRows,
+            'countFlush' => $countFlush,
+            'linha' => $linha
+        );
+
+        return $result;
+    }
+    
+    public function iniciarXlsAjaxAction(){
+        try {
+
+            set_error_handler(array($this, 'custom_warning_handler'));
+            ini_set('memory_limit', '-1');
+            ini_set('max_execution_time', 3000);
+            $em = $this->getEntityManager();
+
+            $dir = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
+
+            $produtoRepo = $em->getRepository('wms:Produto');
+            $enderecoRepo = $em->getRepository("wms:Deposito\Endereco");
+            $fabricanteRepo = $em->getRepository('wms:Fabricante');
+            $classeRepo = $em->getRepository('wms:Produto\Classe');
+            $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+            $camposRepo = $em->getRepository('wms:Importacao\Campos');
+            $pJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
+            $pFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
+            $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
+            $referenciaRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
+
+            $repositorios = array(
+                'produtoRepo' => $produtoRepo,
+                'enderecoRepo' => $enderecoRepo,
+                'fabricanteRepo' => $fabricanteRepo,
+                'classeRepo' => $classeRepo,
+                'embalagemRepo' => $embalagemRepo,
+                'pjRepo' => $pJuridicaRepo,
+                'pfRepo' => $pFisicaRepo,
+                'fornecedorRepo' => $fornecedorRepo,
+                'referenciaRepo' => $referenciaRepo);
+
+            $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));
+            $arrErros = array();
+            $countFlush = 0;
+
+            $tLinhas = null;
+            $tColunas = null;
+            $objExcel = null;
+            $arquivoAtual = null;
+
+            $config = array('updateMethodName' => 'Zend_ProgressBar_Update');
+            $adapter = new Zend_ProgressBar_Adapter_JsPush($config);
+
+            $this->statusProgress["tArquivo"] = count($arquivos);
+            $this->progressBar = new Zend_ProgressBar($adapter, 0, $this->statusProgress["tArquivo"]);
+
+            /**
+             * @var  $key
+             * @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo
+             */
+            foreach ($arquivos as $key => $arquivo) {
+                $this->statusProgress["iArquivo"] = $key + 1;
+
+                $file = $arquivo->getNomeArquivo();
+                $archive = $dir . DIRECTORY_SEPARATOR . $file;
+                $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
+                $cabecalho = $arquivo->getCabecalho();
+                $tabelaDestino = $arquivo->getTabelaDestino();
+
+                $arrErroRows = array();
+                $numPedido = null;
+                $checkArray = array();
+
+                $exp = explode(".", $file);
+                $extencao = end($exp);
+
+                if ($extencao == "xls") {
+                    if ($file != $arquivoAtual) {
+                        require_once PHPEXCEL_PATH . DIRECTORY_SEPARATOR . "PHPExcel.php";
+
+                        //Obj de leitura xls
+                        $objReader = new PHPExcel_Reader_Excel5();
+                        $objReader->setReadDataOnly(true);
+                        $objExcel = $objReader->load($archive);
+
+                        //Total de colunas
+                        $cols = $objExcel->setActiveSheetIndex(0)->getHighestColumn();
+                        $tColunas = PHPExcel_Cell::columnIndexFromString($cols);
+
+                        //Total de linhas
+                        $tLinhas = $objExcel->setActiveSheetIndex(0)->getHighestRow();
+                        $arquivoAtual = $file;
+                    }
+
+                    $this->statusProgress["tLinha"] = $tLinhas - 1;
+
+                    for ($linha = 1; $linha <= $tLinhas; $linha++) {
+
+                        if (ucfirst($cabecalho) == 'S') {
+                            if ($linha == 1) {
+                                continue;
+                            }
+                        }
+
+                        $this->statusProgress["iLinha"] = $linha - 1;
+
+                        $arrRegistro = array();
+
+                        /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                        foreach ($camposArquivo as $campo) {
+                            $coluna = $campo->getPosicaoTxt();
+                            if (($coluna == null) || ($tColunas - 1 < $coluna)) {
+                                $valorCampo = trim($campo->getValorPadrao());
+                            } else {
+                                $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+
+                                if ($valorCampo == "") {
+                                    if ($campo->getPreenchObrigatorio() === "n") {
+                                        $valorCampo = trim($campo->getValorPadrao());
+                                    } else {
+                                        $arrErroRows[$linha] = "Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.";
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if ($campo->getTamanhoInicio() != "") {
+                                $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                            }
+
+                            $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+                        }
+
+                        $elements = array(
+                            'numPedido' => $numPedido,
+                            'checkArray' => $checkArray,
+                            'arrRegistro' => $arrRegistro,
+                            'arrErroRows' => $arrErroRows,
+                            'countFlush' => $countFlush,
+                            'linha' => $linha
+                        );
+
+                        $resultSetCase = $this->setCaseImportacao($tabelaDestino, $em, $repositorios, $elements);
+
+                        $arrErroRows = $resultSetCase['arrErroRows'];
+                        $countFlush = $resultSetCase['countFlush'];
+                        $checkArray = $resultSetCase['checkArray'];
+                        $numPedido = $resultSetCase['numPedido'];
+
+                        $this->progressBar->update(null, $this->statusProgress);
+
+                        if ($countFlush >= 40) {
+                            $countFlush = 0;
+                            $em->flush();
+                            $em->clear();
+                        }
+                    }
+                } elseif ($extencao == "csv") {
+
+                    $handle = fopen($archive, "r");
+
+                    $caracterQuebra = $arquivo->getCaracterQuebra();
+
+                    $i = 0;
+
+                    while ($linha = fgets($handle)) {
+                        $i = $i + 1;
+                        if (ucfirst($cabecalho) == 'S') {
+                            if ($i == 1) {
+                                continue;
+                            }
+                        }
+
+                        $this->statusProgress["iLinha"] = $i - 1;
+                        if ($caracterQuebra == "") {
+                            $conteudoArquivo = array(0 => $linha);
+                        } else {
+                            $conteudoArquivo = explode($caracterQuebra, $linha);
+                        }
+
+                        if (count(array_filter($conteudoArquivo)) > 1) {
+                            $arrRegistro = array();
+                            /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                            foreach ($camposArquivo as $campo) {
+                                if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo) - 1 < $campo->getPosicaoTxt())) {
+                                    $valorCampo = trim($campo->getValorPadrao());
+                                } else {
+                                    $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
+
+                                    if ($valorCampo == "") {
+                                        if ($campo->getPreenchObrigatorio() === "n") {
+                                            $valorCampo = trim($campo->getValorPadrao());
+                                        } else {
+                                            $arrErroRows[$i] = "Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.";
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if ($campo->getTamanhoInicio() != "") {
+                                    $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
+                                }
+                                $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+                            }
+
+                            $elements = array(
+                                'numPedido' => $numPedido,
+                                'checkArray' => $checkArray,
+                                'arrRegistro' => $arrRegistro,
+                                'arrErroRows' => $arrErroRows,
+                                'countFlush' => $countFlush,
+                                'linha' => $i
+                            );
+
+                            $resultSetCase = $this->setCaseImportacao($tabelaDestino, $em, $repositorios, $elements);
+
+                            $arrErroRows = $resultSetCase['arrErroRows'];
+                            $countFlush = $resultSetCase['countFlush'];
+                            $checkArray = $resultSetCase['checkArray'];
+                            $numPedido = $resultSetCase['numPedido'];
+
+                        } else {
+                            continue;
+                        }
+
+                        $this->progressBar->update(null, $this->statusProgress);
+
+                        if ($countFlush >= 40) {
+                            $countFlush = 0;
+                            $em->flush();
+                            $em->clear();
+                        }
+                    }
+                }
+                $em->flush();
+
+                if (count($arrErroRows) > 0) {
+                    $arrErros[$file] = $arrErroRows;
+                }
+            }
+
+            if (count($arrErros) > 0) {
+                $this->statusProgress["error"] = $arrErros;
+                $this->progressBar->update(null, $this->statusProgress);
+                $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
+            };
+            $this->progressBar->update(null, $this->statusProgress);
+            $this->progressBar->finish();
+            $this->_helper->json(array('result' => "Importação concluída com sucesso"));
+
+        } catch (\Exception $e) {
+            $this->_helper->json(array('result' => $e->getMessage()));
+        } catch (Exception $e2) {
+            $this->_helper->json(array('result' => $e2->getMessage()));
+        }
+    }
+    
     public function iniciarAjaxAction()
     {
 

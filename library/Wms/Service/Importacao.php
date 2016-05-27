@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Armazenagem\Unitizador;
+use Wms\Domain\Entity\CodigoFornecedor\Referencia;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -15,9 +17,11 @@ use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Classe;
+use Wms\Domain\Entity\Util\SiglaRepository;
 use Wms\Module\Web\Controller\Action;
 use Wms\Util\CodigoBarras;
 use Zend\Stdlib\Configurator;
+use Wms\Util\Endereco as EnderecoUtil;
 
 class Importacao
 {
@@ -118,7 +122,6 @@ class Importacao
         $ClienteRepo    = $repositorios['clienteRepo'];
         if (isset($cliente['codClienteExterno'])) {
             $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
-            return;
         } else {
             $entityCliente = null;
         }
@@ -193,20 +196,123 @@ class Importacao
 
             $em->persist($entityCliente);
         }
+        return null;
     }
 
-    public function saveFornecedor($em, $codFornecedorExterno)
+    public function saveReferenciaProduto($em, $referencia){
+        /**  @var EntityManager $em*/
+        try {
+            $entity = new Referencia();
+            $entity->setIdProduto($referencia['idProduto']);
+            $entity->setFornecedor($referencia['fornecedor']);
+            $entity->setDscReferencia($referencia['dscReferencia']);
+
+            $em->persist($entity);
+            $em->flush();
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
     {
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
-        $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $codFornecedorExterno));
 
-        if (!$entityFornecedor)
-            $entityFornecedor = new Fornecedor();
+        $entityFornecedor = null;
 
-        $entityFornecedor->setIdExterno($codFornecedorExterno);
-        $em->persist($entityFornecedor);
-        $em->flush();
-        return $entityFornecedor;
+        if (isset($fornecedor['idExterno'])) {
+            $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $fornecedor['idExterno']));
+        }
+
+        $entityPessoa = null;
+
+        if ($entityFornecedor == null) {
+
+            switch ($fornecedor['tipoPessoa']) {
+                case 'J':
+                    $fornecedor['pessoa']['tipo'] = 'J';
+
+                    if($verificarCpfCnpj) {
+                        $PessoaJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
+                        $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
+                        if ($entityPessoa) {
+                            break;
+                        }
+                    }
+
+                    $fornecedor['pessoa']['juridica']['dataAbertura'] = null;
+                    $fornecedor['pessoa']['juridica']['cnpj'] = $fornecedor['cpf_cnpj'];
+                    $fornecedor['pessoa']['juridica']['idTipoOrganizacao'] = null;
+                    $fornecedor['pessoa']['juridica']['idRamoAtividade'] = null;
+                    $fornecedor['pessoa']['juridica']['nome'] = $fornecedor['nome'];
+                    if (isset($fornecedor['inscricaoEstadual']) && !empty($fornecedor['inscricaoEstadual']))
+                        $fornecedor['pessoa']['juridica']['inscricaoEstadual'] = $fornecedor['inscricaoEstadual'];
+
+                    break;
+                case 'F':
+
+                    if ($verificarCpfCnpj) {
+                        $PessoaFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
+                        $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj'])));
+
+                        if ($entityPessoa) {
+                            break;
+                        }
+                    }
+
+                    $fornecedor['pessoa']['tipo']              = 'F';
+                    $fornecedor['pessoa']['fisica']['cpf']     = $fornecedor['cpf_cnpj'];
+                    $fornecedor['pessoa']['fisica']['nome']    = $fornecedor['nome'];
+                    break;
+            }
+
+
+            if (isset($fornecedor['uf'])) {
+                /** @var SiglaRepository $SiglaRepo */
+                $SiglaRepo = $em->getRepository('wms:Util\Sigla');
+                $entitySigla = $SiglaRepo->findOneBy(array('referencia' => $fornecedor['uf']));
+            }
+
+            $fornecedor['cep'] = (isset($fornecedor['cep']) && !empty($fornecedor['cep']) ? $fornecedor['cep'] : '');
+            $fornecedor['enderecos'][0]['acao'] = 'incluir';
+            $fornecedor['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::COMERCIAL;
+
+            if (isset($fornecedor['complemento']))
+                $fornecedor['enderecos'][0]['complemento'] = $fornecedor['complemento'];
+            if (isset($fornecedor['logradouro']))
+                $fornecedor['enderecos'][0]['descricao'] = $fornecedor['logradouro'];
+            if (isset($fornecedor['referencia']))
+                $fornecedor['enderecos'][0]['pontoReferencia'] = $fornecedor['referencia'];
+            if (isset($fornecedor['bairro']))
+                $fornecedor['enderecos'][0]['bairro'] = $fornecedor['bairro'];
+            if (isset($fornecedor['cidade']))
+                $fornecedor['enderecos'][0]['localidade'] = $fornecedor['cidade'];
+            if (isset($fornecedor['numero']))
+                $fornecedor['enderecos'][0]['numero'] =  $fornecedor['numeor'];
+            if (isset($fornecedor['cep']))
+                $fornecedor['enderecos'][0]['cep'] = $fornecedor['cep'];
+            if (isset($entitySigla))
+                $fornecedor['enderecos'][0]['idUf'] = $entitySigla->getId();
+
+            $entityFornecedor  = new Fornecedor();
+
+            
+            if ($entityPessoa == null) {
+                $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, false);
+            }
+
+            try {
+                $entityFornecedor->setPessoa($entityPessoa);
+                $entityFornecedor->setIdExterno($fornecedor['idExterno']);
+
+                $em->persist($entityFornecedor);
+            }catch (\Exception $e){
+                return $e->getMessage();
+            }
+        }
+        return null;
 
     }
 
@@ -264,7 +370,7 @@ class Importacao
         return $entityPedido;
     }
 
-    public function savePedidoProduto($em, $pedido)
+    public function savePedidoProduto($em, $pedido, $flush = true)
     {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
         $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
@@ -272,7 +378,10 @@ class Importacao
 
         $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
         if (!$entityPedidoProduto)
-            $entityPedidoProduto = $pedidoProdutoRepo->save($pedido); $em->flush();
+            $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
+        
+        if ($flush)
+            $em->flush();
 
         return $entityPedidoProduto;
     }
@@ -373,7 +482,28 @@ class Importacao
             ));
         }
 
+        $enderecoEn = null;
+        if (!empty($registro['endereco'])){
 
+            $endereco = explode(".",$registro['endereco']);
+
+            $arrDados['rua'] = $endereco[0];
+            $arrDados['predio'] = $endereco[1];
+            $arrDados['nivel'] = $endereco[2];
+            $arrDados['apartamento']= $endereco[3];
+
+            $endereco = $em->getRepository('wms:Deposito\Endereco')
+                ->findOneBy(array(
+                        'rua' => $endereco[0],
+                        'predio' => $endereco[1],
+                        'nivel' => $endereco[2],
+                        'apartamento' => $endereco[3])
+                );
+
+            $enderecoEn = $endereco;
+        }
+
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
         if ($embalagemEntity == null) {
             /** @var \Wms\Domain\Entity\Produto $produto */
             $produto = $produtoRepo->findOneBy(array(
@@ -386,6 +516,8 @@ class Importacao
             $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity,$registro);
             $embalagemEntity->setProduto($produto);
             $embalagemEntity->setCodigoBarras($codigoBarras);
+            $embalagemEntity->setEndereco($enderecoEn);
+
             $em->persist($embalagemEntity);
 
             if ($registro['codigoBarras'] == "") {
@@ -393,6 +525,9 @@ class Importacao
                 $embalagemEntity->setCodigoBarras($codigoBarras);
                 $em->persist($embalagemEntity);
             }
+        } else {
+            $embalagemEntity->setEndereco($enderecoEn);
+            $em->persist($embalagemEntity);
         }
     }
 
@@ -425,14 +560,94 @@ class Importacao
      * @param $em EntityManager
      * @param $arrDados
      */
-    public function saveDadosLogisticos($em, $arrDados)
+    public function saveDadoLogistico($em, $arrDados)
     {
-        $entity = new Produto\DadoLogistico();
-        $produto = $em->getRepository("wms:Produto")->findOneBy( array("codProduto" => $arrDados['codProduto'], "grade" => $arrDados['codGrade']) );
-        $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy( array("produto" => $produto, "grade" => $arrDados['codGrade']) );
+        //$produto = $em->getRepository("wms:Produto")->findOneBy( array("id" => $arrDados['id'], "grade" => $arrDados['grade']) );
         $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy( array("id" => $arrDados['normaPaletizacao']));
-        Configurator::configure($entity, $arrDados);
-        $em->persist($entity);
+        if (isset($arrDados['codigoBarras']) && !empty($arrDados['codigoBarras'])){
+            $criterio = array(
+                "codProduto" => $arrDados['codProduto'],
+                "grade" => $arrDados['grade'],
+                "codigoBarras" => $arrDados["codigoBarras"]
+            );
+            $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+        } else if (isset($arrDados['quantidade']) && !empty($arrDados['quantidade'])){
+            $criterio = array(
+                "codProduto" => $arrDados['codProduto'],
+                "grade" => $arrDados['grade'],
+                "quantidade" => $arrDados["quantidade"]
+            );
+            $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+        }
+
+        unset($arrDados['codProduto']);
+        unset($arrDados['grade']);
+        unset($arrDados['codigoBarras']);
+        unset($arrDados['quantidade']);
+
+        $arrDados['peso'] = str_replace(",",".",strpos($arrDados['peso'],",") ? $arrDados['peso'] : $arrDados['peso'] . ",0");
+        //$arrDados['peso'] = Converter::brToEn($arrDados['peso'],-3);
+
+        $entity = $em->getRepository('wms:Produto\DadoLogistico')->findOneBy($arrDados);
+
+        if(!$entity) {
+            $entity = new Produto\DadoLogistico();
+            Configurator::configure($entity, $arrDados);
+            $entity->setPeso($arrDados['peso'], true);
+            $em->persist($entity);
+        }
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $arrDados
+     */
+    public function saveEndereco($em, $arrDados)
+    {
+        if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica']))
+            $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
+
+        if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem']))
+            $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
+
+        if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco']))
+            $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
+
+        if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem']))
+            $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
+
+        if (isset($arrDados['deposito']) && !empty($arrDados['deposito']))
+            $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
+
+        $endereco = explode(".",$arrDados['endereco']);
+
+        $arrDados['rua'] = $endereco[0];
+        $arrDados['predio'] = $endereco[1];
+        $arrDados['nivel'] = $endereco[2];
+        $arrDados['apartamento']= $endereco[3];
+
+        $entity = $em->getRepository('wms:Deposito\Endereco')
+            ->findOneBy(array(
+                    'rua' => $endereco[0],
+                    'predio' => $endereco[1],
+                    'nivel' => $endereco[2],
+                    'apartamento' => $endereco[3])
+            );
+        $dscEndereco = array(
+            'RUA' => $endereco[0],
+            'PREDIO' => $endereco[1],
+            'NIVEL' => $endereco[2],
+            'APTO' => $endereco[3]);
+
+        $dscEndereco = EnderecoUtil::formatar($dscEndereco);
+
+        if (!$entity) {
+            $entity = new Endereco();
+            Configurator::configure($entity, $arrDados);
+            $entity->setDescricao($dscEndereco);
+            $em->persist($entity);
+            $em->flush();
+        }
     }
 
     private function persistirVolumes($em, $produtoEntity, $volume) {

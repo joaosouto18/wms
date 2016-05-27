@@ -22,8 +22,10 @@ class Referencia
     protected $idProduto;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Fornecedor")
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Fornecedor", cascade={"persist"})
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_FORNECEDOR")
+     * @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor
      */
     protected $fornecedor;
 
