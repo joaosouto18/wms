@@ -308,6 +308,7 @@ class Importacao
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
                 $em->persist($entityFornecedor);
+                return true;
             }catch (\Exception $e){
                 return $e->getMessage();
             }

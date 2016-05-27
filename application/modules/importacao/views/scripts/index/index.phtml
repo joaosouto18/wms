@@ -50,7 +50,7 @@
     $("#startImport").click(function () {
         $("#excptRw").hide();
         $("#tbError").hide();
-        $("#tbErrResult").children().remove();
+        $("#tbErrResult").html();
         $("#excptMsg").text("");
         $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-xls-ajax");
 
