@@ -314,6 +314,7 @@ class Importacao
 
             $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
             $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+			var_dump($produto['classe']);
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
