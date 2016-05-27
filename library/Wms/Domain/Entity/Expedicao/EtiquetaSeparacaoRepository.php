@@ -656,6 +656,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $pedidoEntity   = $pedidoProduto->getPedido();
                 $produtoEntity  = $pedidoProduto->getProduto();
                 $quantidade     = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
+                $depositoEnderecoEn = null;
 
                 $pedidoEntity->setIndEtiquetaMapaGerado("S");
                 $this->getEntityManager()->persist($pedidoEntity);
@@ -749,7 +750,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $qtdEmbalagemPadraoRecebimento = 1;
                     foreach ($embalagensEn as $embalagem) {
                         $endereco = $embalagem->getEndereco();
-                        $depositoEnderecoEn = null;
                         if ($endereco != null){
                             $depositoEnderecoEn = $endereco;
                         } else {
