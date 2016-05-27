@@ -145,8 +145,8 @@ class Produtos extends Pdf
         $qtdEmbalagemAnterior = null;
         $qtdIndPadrao = null;
 
-        foreach ($produtos as $key => $produto) {
-
+        foreach ($produtos as $key => $produtoEn) {
+            $produto = $produtoEn[0];
             $carga = 'Carga: ' . $produto->getCodCargaExterno() . ' / ' . $produto->getDscLinhaEntrega() . ' - ' . $produto->getDscItinerario() . ' - ' . $produto->getCodItinerario();
 
             if (($prodAnterior != $produto->getCodProduto()) OR ($gradeAnterior != $produto->getGrade())) {
@@ -162,7 +162,7 @@ class Produtos extends Pdf
                 $arrayQtd[] = $produto->getQuantidade();
             }
 
-            if (($produto == end($produtos)) || ($produtos[$key + 1]->getCodProduto() != $produto->getCodProduto()) || ($produtos[$key + 1]->getGrade() != $produto->getGrade())  ) {
+            if (($produtoEn == end($produtos)) || ($produtos[$key + 1][0]->getCodProduto() != $produto->getCodProduto()) || ($produtos[$key + 1][0]->getGrade() != $produto->getGrade())  ) {
                 foreach ($arrayCargas as $keyCarga => $tmpCarga) {
                     $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()] = $arrayQtd[$keyCarga] + $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()];
                 }
@@ -193,8 +193,8 @@ class Produtos extends Pdf
 
         unset($produto);
 
-        foreach ($produtos as $key => $produto) {
-
+        foreach ($produtos as $key => $produtoArr) {
+            $produto = $produtoArr[0];
             if (is_numeric($produto->getCodItinerario())) {
                 $codItinerario = "";
             } else {
@@ -215,7 +215,7 @@ class Produtos extends Pdf
 
                 switch($modelo) {
                     case 2:
-                        $this->Cell(15, 5, $produto->getCodProduto(), 1);
+                        $this->Cell(20, 5, $produto->getCodProduto(), 1);
                         $this->Cell(87, 5, utf8_decode(substr($produto->getDescricao(), 0, 40)), 1);
                         $this->Cell(30, 5, utf8_decode($produto->getLinhaSeparacao()), 1);
                         $this->Cell(5, 5, " ", 1);
@@ -225,7 +225,7 @@ class Produtos extends Pdf
                         $this->Ln();
                         break;
                     default:
-                        $this->Cell(15, 5, $produto->getCodProduto(), 1);
+                        $this->Cell(20, 5, $produto->getCodProduto(), 1);
                         $this->Cell(75, 5, utf8_decode(substr($produto->getDescricao(), 0, 40)), 1);
                         $this->Cell(22, 5, utf8_decode($produto->getLinhaSeparacao()), 1);
                         $this->Cell(20, 5, utf8_decode($produto->getGrade()), 1);
@@ -255,7 +255,7 @@ class Produtos extends Pdf
                 $embalagemAnterior = $produto->getVolume();
             }
 
-            if (($produto == end($produtos)) || !(($produtos[$key + 1]->getCodProduto() == $produto->getCodProduto()) && ($produtos[$key + 1]->getGrade() == $produto->getGrade()))  ) {
+            if (($produtoArr == end($produtos)) || !(($produtos[$key + 1][0]->getCodProduto() == $produto->getCodProduto()) && ($produtos[$key + 1][0]->getGrade() == $produto->getGrade()))  ) {
                 foreach ($arrayCargas as $keyCarga => $tmpCarga) {
                     $this->Cell(132, 5, "", 0);
                     $this->Cell(128, 5, $tmpCarga, "TB");

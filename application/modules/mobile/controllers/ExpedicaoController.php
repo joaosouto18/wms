@@ -717,9 +717,8 @@ class Mobile_ExpedicaoController extends Action
             $q1->setParameter('status', EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO);
             $q1->setParameter('dataConferencia', $date);
         } else {
-            $q1->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
-
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
+
             if ($verificaReconferencia == 'S') {
                 $expedEntity = $this->_em->getReference('wms:Expedicao',$idExpedicao);
                 $statusExped = $expedEntity->getStatus()->getId();
@@ -748,6 +747,8 @@ class Mobile_ExpedicaoController extends Action
                 $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
                 $q1->setParameter('dataConferencia', $date);
             }
+
+            $q1->setParameter('status', EtiquetaSeparacao::STATUS_CONFERIDO);
         }
 
         $q1->setParameter('osID', $sessao->osID);
