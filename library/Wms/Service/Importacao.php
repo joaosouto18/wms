@@ -313,7 +313,7 @@ class Importacao
                 return $e->getMessage();
             }
         }
-        return null;
+        return "Já existe fornecedor com este código ". $fornecedor['idExterno'];
 
     }
 

@@ -385,6 +385,8 @@ class Importacao_IndexController extends Action
                     $handle = fopen($archive, "r");
 
                     $caracterQuebra = $arquivo->getCaracterQuebra();
+                    
+                    $this->statusProgress["tLinha"] = count(file($archive)) - 1;
 
                     $i = 0;
 
