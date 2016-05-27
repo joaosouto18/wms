@@ -1,4 +1,33 @@
-<?php echo $this->render('recebimento/produto-detalhes.phtml');?>
+<script>
+    function dateFormat(elementName){
+        var element = document.getElementById(elementName)
+        var data = element.value;
+
+        var v = data;
+        if (v.match(/^\d{2}$/) !== null) {
+            this.value = v + '/';
+        }
+        else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
+            this.value = v + '/';
+
+        }
+
+        element.value = str;
+    }
+</script>
+
+<?php echo $this->render('recebimento/produto-detalhes.phtml');
+
+/*
+ *
+ * var textInput = document.getElementById(textbox).value
+        value = el.value;
+        el.value = value.replace(/^([\d]{4})([\d]{2})([\d]{2})$/,"$1/$2/$3");
+        alert("teste");
+        element.value = element.value.replace(/^([\d]{4})([\d]{2})([\d]{2})$/,"$1/$2/$3");
+
+ */
+?>
 
 <form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
 
@@ -38,38 +67,25 @@
                 <td><label class="field required" for="dataValidade">Data Validade</label></td>
             <?php endif; ?>
             <td><label class="field required" for="qtdConferida">Quantidade</label></td>
-            <?php if ( $this->pesoVariavel == 'S' ) : ?>
-                <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
-            <?php endif; ?>
             <td>Total Unidades</td>
         </tr>
 
         <tr>
             <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>"
+                <td><input type="text" placeholder="dd/mm/yyyy" maxlength="10" size="10" class="required focus" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>"
                            onkeyup="var v = this.value;
-
-                                    var key = event.keyCode;
-                                    if (key != 8) {
                                     if (v.match(/^\d{2}$/) !== null) {
                                         this.value = v + '/';
                                     }
                                     else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
                                         this.value = v + '/';
-                                    }
-
 
                                     }"/></td>
             <?php endif; ?>
             <td><input type="text" maxlength="15" value="" size="10" class=" required
             <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif?>
             " id="qtdConferida" name="qtdConferida" value="" /></td>
-            <?php if ( $this->pesoVariavel == 'S' ) : ?>
-                <td>
-                    <input type="text" maxlength="15" value="" size="10" class=" required" id="numPeso" name="numPeso" value="" />
-                </td>
-            <?php endif; ?>
             <td><span id="totalQuantidade">0</span></td>
         </tr>
 

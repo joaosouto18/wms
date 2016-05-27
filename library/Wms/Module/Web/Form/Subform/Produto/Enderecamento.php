@@ -57,7 +57,7 @@ class Enderecamento extends SubForm
         $volumeEn = $volumeRepo->findOneBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
 
         $enderecoReferencia = $produto->getEnderecoReferencia();
-        if (isset($enderecoReferencia) && !empty($enderecoReferencia)) {
+        if ($enderecoReferencia != null) {
             $enderecoReferencia = $enderecoReferencia->getDescricao();
         } else if (isset($embalagemEn) && !empty($embalagemEn)) {
             $embalagemEn = $embalagemEn->getEndereco();

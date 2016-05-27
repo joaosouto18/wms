@@ -131,34 +131,4 @@ class RecebimentoReentregaRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
-    public function buscar($data)
-    {
-        $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('rr.id, rr.dataCriacao, s.sigla status, s.id idStatus')
-            ->from('wms:Expedicao\RecebimentoReentrega', 'rr')
-            ->innerJoin('rr.status', 's')
-            ->leftJoin('wms:Expedicao\NotaFiscalSaidaAndamento', 'nfsa', 'WITH', 'nfsa.recebimentoReentrega = rr.id')
-            ->leftJoin('wms:Expedicao\NotaFiscalSaida', 'nfs', 'WITH', 'nfs.id = nfsa.NotaFiscalSaida')
-            ->groupBy('rr.id, rr.dataCriacao, s.sigla, s.id')
-            ->orderBy('rr.id');
-
-        if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
-            $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
-        }
-
-        if (isset($dataInicial1) && (!empty($dataInicial1)) && (!empty($dataInicial2))) {
-            $dataInicial1 = str_replace("/", "-", $dataInicial1);
-            $dataI1 = new \DateTime($dataInicial1);
-
-            $dataInicial2 = str_replace("/", "-", $dataInicial2);
-            $dataI2 = new \DateTime($dataInicial2);
-
-            $sql->andWhere("((TRUNC(rr.dataCriacao) >= ?1 AND TRUNC(rr.dataCriacao) <= ?2) OR rr.dataCriacao IS NULL)")
-                ->setParameter(1, $dataI1)
-                ->setParameter(2, $dataI2);
-        }
-
-        return $sql->getQuery()->getResult();
-    }
-
 }

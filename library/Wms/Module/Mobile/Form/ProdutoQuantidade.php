@@ -36,12 +36,6 @@ class ProdutoQuantidade extends \Core\Form
                     'maxlength' => 15,
                     'class' => 'focus',
                 ))
-                ->addElement('text', 'numPeso', array(
-                    'required' => true,
-                    'label' => 'Peso',
-                    'size' => 10,
-                    'maxlength' => 15
-                ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Salvar',
                     'class' => 'btn',

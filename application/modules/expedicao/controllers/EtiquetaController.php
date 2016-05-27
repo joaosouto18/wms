@@ -116,7 +116,6 @@ class Expedicao_EtiquetaController extends Action
         $tipo = $this->getRequest()->getParam('tipo');
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-        $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
@@ -133,6 +132,7 @@ class Expedicao_EtiquetaController extends Action
 
         }
         if ($tipo == "etiqueta") {
+            $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
 
@@ -153,6 +153,7 @@ class Expedicao_EtiquetaController extends Action
             }
         }
         if ($tipo == "reentrega") {
+
             $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
             if ($this->getRequest()->getParam('todas') == 'S') $status = null;
 
@@ -173,6 +174,7 @@ class Expedicao_EtiquetaController extends Action
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
             }
+
         }
     }
 
@@ -332,8 +334,6 @@ class Expedicao_EtiquetaController extends Action
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
             $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
-
-            $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
             if (count($pedidosProdutos) == 0) {
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)

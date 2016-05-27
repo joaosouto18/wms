@@ -1,23 +1,4 @@
-﻿<script>
-    function nextInput(event) {
-        if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('novoEndereco').value != "") {
-                nivel   = document.getElementById('nivel');
-                if (nivel) {
-                    nivel.focus();
-                    if(event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-</script>
-
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'confirma-enderecamento')) ?>" method="post">
+﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'confirma-enderecamento')) ?>" method="post">
     <div>
         <label>Quantidade:</label>
         <input type="text" name="qtd" id="qtd" value="<?php echo $this->qtd?>" />
@@ -25,7 +6,7 @@
 
     <div>
         <label>Novo Endereço:</label>
-        <input class="focus" type="text" name="novoEndereco" id="novoEndereco" onkeydown="nextInput(event)" />
+        <input class="focus" type="text" name="novoEndereco" id="novoEndereco" />
     </div>
 
     <div>

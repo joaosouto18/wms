@@ -56,7 +56,7 @@ class Expedicao_OndaRessuprimentoController  extends Action
 
         $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
 
-        if (count($verificaDisponibilidadeEstoquePedido) > 0){
+        if (count($verificaDisponibilidadeEstoquePedido) == 0){
             $idExp = $expedicoes = implode(',', $expedicoes);
 
             $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';

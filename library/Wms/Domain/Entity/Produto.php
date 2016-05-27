@@ -34,6 +34,11 @@ class Produto
     );
 
     /**
+     * @Column(name="ID_PRODUTO", type="integer", nullable=false)
+     */
+    protected $idProduto;
+    
+    /**
      * @Id
      * @Column(name="COD_PRODUTO", type="string", nullable=false)
      * @var string Código do produto
@@ -430,6 +435,22 @@ class Produto
     public function getToleranciaNominal()
     {
         return $this->toleranciaNominal;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIdProduto()
+    {
+        return $this->idProduto;
+    }
+
+    /**
+     * @param mixed $idProduto
+     */
+    public function setIdProduto($idProduto)
+    {
+        $this->idProduto = $idProduto;
     }
 
 

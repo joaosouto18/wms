@@ -138,18 +138,6 @@ class Volume
      */
     protected $capacidadePicking;
 
-    /**
-     * @Column(name="DTH_INATIVACAO", type="datetime", nullable=true)
-     * @var datetime
-     */
-    protected $dataInativacao;
-
-    /**
-     * @Column(name="COD_USUARIO_INATIVACAO", type="integer", nullable=false)
-     * @var int
-     */
-    protected $usuarioInativacao;
-
     public function __construct()
     {
         $this->recebimentoVolumes = new ArrayCollection;
@@ -447,38 +435,6 @@ class Volume
     public function setCodProduto($codProduto)
     {
         $this->codProduto = $codProduto;
-    }
-
-    /**
-     * @return datetime
-     */
-    public function getDataInativacao()
-    {
-        return $this->dataInativacao;
-    }
-
-    /**
-     * @param datetime $dataInativacao
-     */
-    public function setDataInativacao($dataInativacao)
-    {
-        $this->dataInativacao = $dataInativacao;
-    }
-
-    /**
-     * @return int
-     */
-    public function getUsuarioInativacao()
-    {
-        return $this->usuarioInativacao;
-    }
-
-    /**
-     * @param int $usuarioInativacao
-     */
-    public function setUsuarioInativacao($usuarioInativacao)
-    {
-        $this->usuarioInativacao = $usuarioInativacao;
     }
 
 }

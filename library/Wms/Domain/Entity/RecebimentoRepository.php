@@ -284,6 +284,15 @@ class RecebimentoRepository extends EntityRepository
     public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null)
     {
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+        $vQtdRecebimentoRepo = $this->_em->getRepository('wms:Recebimento\VQtdRecebimento');
+        $notafiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
+
+        $repositorios = array(
+            'notaFiscalRepo' => $notafiscalRepo,
+            'vQtdRecebimentoRepo' =>$vQtdRecebimentoRepo
+        );
+
+        $produtoRepo = $this->_em->getRepository('wms:Produto');
 
         // ordem servico
         $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
@@ -300,7 +309,7 @@ class RecebimentoRepository extends EntityRepository
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
-
+                $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto, 'grade'=>$grade));
                 if (isset($unMedida) && !empty($unMedida)) {
                     $quantidade = 1;
                     $idEmbalagem = null;
@@ -328,7 +337,9 @@ class RecebimentoRepository extends EntityRepository
                     }
 
                     $qtdConferida = (int)$qtdConferida * $quantidade;
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
+
+                    $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
                     }
@@ -349,14 +360,13 @@ class RecebimentoRepository extends EntityRepository
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade);
                     }
 
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria);
+                    $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
                     }
 
                 }
-
-
             }
         }
 
@@ -390,6 +400,32 @@ class RecebimentoRepository extends EntityRepository
                 'exception' => $result['exception'],
                 'concluido' => false);
         }
+    }
+
+    public function getDivergenciaPesoVariavel ($idRecebimento, $produtoEn, $repositorios){
+
+        $notaFiscalRepo = $repositorios['notaFiscalRepo'];
+        $vQtdRecebimentoRepo = $repositorios['vQtdRecebimentoRepo'];
+
+        if (($produtoEn->getPercTolerancia() != null) && ($produtoEn->getPercTolerancia() >0)) {
+            $pesoNota = $notaFiscalRepo->getPesoByProdutoAndRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade());
+            $vRecebimentoEn = $vQtdRecebimentoRepo->findOneBy(array('codRecebimento'=> $idRecebimento,
+                'codProduto'=> $produtoEn->getId(),
+                'grade'=>$produtoEn->getGrade()));
+
+            $pesoRecebimento = 0;
+            if ($vRecebimentoEn != null) {
+                $pesoRecebimento = $vRecebimentoEn->getPeso();
+            }
+            $toleranciaNominal = $produtoEn->getToleranciaNominal();
+
+            if (($pesoRecebimento > ($pesoNota+$toleranciaNominal)) || ($pesoRecebimento < ($pesoNota- $toleranciaNominal))) {
+                return "S";
+            }
+        }
+
+        return "N";
+
     }
 
 
@@ -529,7 +565,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $qtdAvaria Quantidade avariada do produto
      * @return integer Quantidade de divergencias
      */
-    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria)
+    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel)
     {
         $em = $this->getEntityManager();
 
@@ -540,6 +576,7 @@ class RecebimentoRepository extends EntityRepository
 
         $produtoEmbalagemEntity = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
 
+        $dataValidade = null;
         if (isset($produtoEmbalagemEntity) && !empty($produtoEmbalagemEntity)) {
             $recebimentoEmbalagemEntity = $em->getRepository('wms:Recebimento\Embalagem')->findOneBy(array('recebimento' => $recebimentoEntity, 'embalagem' => $produtoEmbalagemEntity));
             if (isset($recebimentoEmbalagemEntity) && !empty($recebimentoEmbalagemEntity)) {
@@ -549,24 +586,27 @@ class RecebimentoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
             $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEntity->getId(), null, $idProduto, $grade);
+
+            if (count($buscaDataProdutos) > 0) {
+                $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
+            }
+
         }
 
-        if (count($buscaDataProdutos) > 0) {
-            $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
-        }
 
         $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
 
         $conferenciaEntity = new ConferenciaEntity;
-        $conferenciaEntity->setRecebimento($recebimentoEntity)
-            ->setOrdemServico($ordemServicoEntity)
-            ->setDataConferencia(new \DateTime)
-            ->setQtdConferida($qtdConferida)
-            ->setProduto($produtoEntity)
-            ->setGrade($grade)
-            ->setQtdAvaria($qtdAvaria)
-            ->setQtdDivergencia($qtdDivergencia)
-            ->setDataValidade($dataValidade);
+        $conferenciaEntity->setRecebimento($recebimentoEntity);
+        $conferenciaEntity->setOrdemServico($ordemServicoEntity);
+        $conferenciaEntity->setDataConferencia(new \DateTime);
+        $conferenciaEntity->setQtdConferida($qtdConferida);
+        $conferenciaEntity->setProduto($produtoEntity);
+        $conferenciaEntity->setGrade($grade);
+        $conferenciaEntity->setQtdAvaria($qtdAvaria);
+        $conferenciaEntity->setQtdDivergencia($qtdDivergencia);
+        $conferenciaEntity->setDivergenciaPeso($divergenciaPesoVariavel);
+        $conferenciaEntity->setDataValidade($dataValidade);
 
         $em->persist($conferenciaEntity);
         $em->flush();
@@ -598,20 +638,13 @@ class RecebimentoRepository extends EntityRepository
         } else {
             $validade = null;
         }
-        if ( !empty( $params['numPeso']) )
-            $peso = (float) $params['numPeso'];
-        else
-            $peso = null;
 
-        $recebimentoEmbalagemEntity
-            ->setRecebimento($recebimentoEntity)
+        $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity)
             ->setOrdemServico($ordemServicoEntity)
             ->setEmbalagem($produtoEmbalagemEntity)
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
-
-        $recebimentoEmbalagemEntity->setNumPeso( $params['numPeso'] );
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
@@ -652,8 +685,6 @@ class RecebimentoRepository extends EntityRepository
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
-
-        $recebimentoVolumeEntity->setNumPeso($params['numPeso']);
 
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
@@ -831,9 +862,7 @@ class RecebimentoRepository extends EntityRepository
                 ->from("wms:NotaFiscal", 'nf')
                 ->innerJoin("nf.itens", "nfi")
                 ->innerJoin("wms:Produto", 'p', 'WITH', 'p.grade = nfi.grade AND p.id = nfi.codProduto')
-                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
-                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade')
-                ->where("nf.recebimento = $idRecebimento AND pe.dataInativacao is null AND pv.dataInativacao is null");
+                ->where("nf.recebimento = $idRecebimento");
         }
 
         $result = $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
@@ -1333,43 +1362,29 @@ class RecebimentoRepository extends EntityRepository
     }
 
 
-    public function naoEnderecadosByStatus($status = null)
+    public function naoEnderecadosByStatus($status = RecebimentoEntity::STATUS_FINALIZADO, $limit = 10)
     {
-        
-        $whereStatus = "";
-        if ($status != null) {
-            $whereStatus = " AND R.COD_STATUS = " . $status;
-        }
+        $query = '
+            SELECT r
+            FROM wms:Recebimento r
+            WHERE r.status = ' . $status . '
+                AND r.id IN (
+                    SELECT r2.id
+                    FROM wms:Enderecamento\Palete p
+                    JOIN p.recebimento r2
+                    WHERE p.status in ( ' . PaleteEntity::STATUS_EM_RECEBIMENTO . ',' . PaleteEntity::STATUS_RECEBIDO . ',' . PaleteEntity::STATUS_EM_ENDERECAMENTO . ' )
+                    OR r.id NOT IN (
+                        SELECT r2.id
+                        FROM wms:Enderecamento\Palete p2
+                        JOIN p2.recebimento r3
+                        WHERE r.id = r3.id
+                    )
+                )
 
-        $SQL = "SELECT DISTINCT R.COD_RECEBIMENTO,
-                                R.DTH_INICIO_RECEB,
-                                B.DSC_BOX AS BOX,
-                                PJ.NOM_FANTASIA
-                  FROM (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO
-                          FROM V_QTD_RECEBIMENTO V
-                         GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) V
-                  LEFT JOIN (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO 
-                               FROM (SELECT DISTINCT P.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, P.COD_RECEBIMENTO
-                                       FROM PALETE P
-                                       LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA) P
-                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO) P
-                         ON P.COD_PRODUTO = V.COD_PRODUTO
-                        AND P.DSC_GRADE = V.DSC_GRADE
-                        AND P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN BOX B ON B.COD_BOX = R.COD_BOX
-                  LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-                  INNER JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
-                  INNER JOIN PESSOA ON PESSOA.COD_PESSOA = F.COD_FORNECEDOR
-                  LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = PESSOA.COD_PESSOA
-                 WHERE V.QTD - NVL(P.QTD,0) >0
-                 $whereStatus
-                 ORDER BY R.DTH_INICIO_RECEB DESC
-";
-
-        return $this->getEntityManager()->getConnection()->query($SQL)
-            ->fetchAll(\PDO::FETCH_ASSOC);
+                ORDER BY r.id DESC
+         ';
+        $query =  $this->getEntityManager()->createQuery($query)->setMaxResults($limit);
+        return $query->getResult();
     }
-
 
 }

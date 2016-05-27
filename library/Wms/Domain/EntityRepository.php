@@ -37,24 +37,13 @@ class EntityRepository extends EntityRepositoryDoctrine
 	return $array;
     }
 
-    static function conexaoViewERP()
-    {
-        $config = \Zend_Registry::get('config');
-        $conexao = oci_connect($config->database->viewErp->user,
-            $config->database->viewErp->password,
-            $config->database->viewErp->dbname,
-            $config->database->viewErp->characterSet);
-        return $conexao;
-    }
-
-	static function nativeQuery($query, $fetch = 'all', $conexao = null)
-    {
-        $config = \Zend_Registry::get('config');
-        if ($conexao == null) {
-            $conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
-                $config->resources->doctrine->dbal->connections->default->parameters->password,
-                $config->resources->doctrine->dbal->connections->default->parameters->dbname);
-        }
+	static function nativeQuery($query, $fetch = 'all')
+	{
+		$config = \Zend_Registry::get('config');
+		$conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
+			$config->resources->doctrine->dbal->connections->default->parameters->password,
+			$config->resources->doctrine->dbal->connections->default->parameters->dbname);
+        $arrayResult = array();
 
 		if (!$conexao) {
 			$erro = oci_error();

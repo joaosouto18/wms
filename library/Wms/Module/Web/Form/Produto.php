@@ -27,11 +27,12 @@ class Produto extends Form
         $formIdentificacao = new IdentificacaoForm;
         $formIdentificacao->removeDisplayGroup('identificacao');
 
-        $this->addSubFormTab('Produto', $formIdentificacao, 'produto','produto/identificacao-form.phtml');
+        $this->addSubFormTab('Produto', $formIdentificacao, 'produto');
         $this->addSubFormTab('Embalagens', new EmbalagemForm, 'embalagem', 'produto/embalagem-form.phtml');
         $this->addSubFormTab('Volumes', new VolumeForm, 'volume', 'produto/volume-form.phtml');
         $this->addSubFormTab('Dados Logísticos', new DadosLogisticosForm, 'dadoLogistico', 'produto/dado-logistico-form.phtml');
         $this->addSubFormTab('Enderecamento', new EnderecamentoForm, 'enderecamento', 'produto/enderecamento.phtml');
+        $this->addSubFormTab('Código Fornecedor', new Form\Subform\Produto\CodigoFornecedor(), 'codigoFornecedor', 'produto/codigo-fornecedor.phtml');
 
     }
 
@@ -45,7 +46,7 @@ class Produto extends Form
         $this->getSubForm('embalagem')->setDefaultsFromEntity($produto);
         $this->getSubForm('volume')->setDefaultsFromEntity($produto);
         $this->getSubForm('enderecamento')->setDefaultsFromEntity($produto);
-
+        $this->getSubForm('codigoFornecedor')->setDefaultsFromEntity($produto);
     }
 
 }

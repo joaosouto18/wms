@@ -74,15 +74,10 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                     LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                    LEFT JOIN PRODUTO P ON PP.COD_PRODUTO = P.COD_PRODUTO AND PP.DSC_GRADE = P.DSC_GRADE
-                    LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
-                    LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND P.CENTRAL_ENTREGA = $filialExterno
-                          AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
-                          AND PE.DTH_INATIVACAO IS NULL
-                          AND PV.DTH_INATIVACAO IS NULL
+                          AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0))>0
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -99,14 +94,10 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN CARGA          C ON C.COD_CARGA = PED.COD_CARGA
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     LEFT JOIN PRODUTO        P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
-                    LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
-                    LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
                     WHERE PED.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND PED.CENTRAL_ENTREGA = $filialExterno
                           AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
-                          AND PE.DTH_INATIVACAO IS NULL
-                          AND PV.DTH_INATIVACAO IS NULL
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, E.COD_EXPEDICAO, PED.COD_PEDIDO";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -122,14 +113,9 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                     LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                    LEFT JOIN PRODUTO P ON PP.COD_PRODUTO = P.COD_PRODUTO AND PP.DSC_GRADE = P.DSC_GRADE
-                    LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
-                    LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND P.CENTRAL_ENTREGA = $filialExterno
-                          AND PE.DTH_INATIVACAO IS NULL
-                          AND PV.DTH_INATIVACAO IS NULL
                           ";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
@@ -467,27 +453,7 @@ class ExpedicaoRepository extends EntityRepository
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
-        $result = $source->getQuery()->getArrayResult();
-
-        if (count($result) == 0) {
-            $source = $this->getEntityManager()->createQueryBuilder()
-                ->select('r.codCarga')
-                ->from('wms:Expedicao', 'e')
-                ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
-                ->innerJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'c.id = r.carga')
-                ->where('e.id = :idExpedicao')
-                ->distinct(true)
-                ->setParameter('idExpedicao', $idExpedicao);
-            if (count($source->getQuery()->getArrayResult()) >0) {
-                $sessao = new \Zend_Session_Namespace('deposito');
-                $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-                $central = $deposito->getFilial()->getCodExterno();
-
-                $result =array(0=>array('centralEntrega'=>$central));
-            }
-        }
-
-        return $result;
+        return $source->getQuery()->getArrayResult();
     }
 
     /**
@@ -511,11 +477,7 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $qtdEtiquetasPendenteCorte = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, $expedicaoEn, $centralEstoque);
-
-        $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE;
-        $pendenciasReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), $status);
-
-        if (($qtdEtiquetasPendenteCorte > 0) OR (count($pendenciasReentrega) > 0)) {
+        if ($qtdEtiquetasPendenteCorte > 0) {
             return true;
         } else {
             return false;
@@ -986,7 +948,7 @@ class ExpedicaoRepository extends EntityRepository
                 ->from('wms:Expedicao', 'e')
                 ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
                 ->innerJoin('wms:Expedicao\Pedido', 'pedido', 'WITH', 'c.id = pedido.carga')
-                ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = pedido.itinerario')
+                ->innerJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = pedido.itinerario')
                 ->where('e.id = :idExpedicao')
                 ->distinct(true)
                 ->setParameter('idExpedicao', $idExpedicao);
@@ -1004,13 +966,6 @@ class ExpedicaoRepository extends EntityRepository
             ->select('rp')
             ->from('wms:Expedicao\VRelProdutos', 'rp')
             ->leftJoin('wms:Produto','p','WITH','p.id = rp.codProduto AND p.grade = rp.grade')
-
-            ->leftJoin('wms:Expedicao\Carga', 'c', 'WITH', 'rp.codCarga = c.id')
-            ->leftJoin('wms:Expedicao\Pedido', 'ped', 'WITH', 'c.id = ped.carga')
-            ->leftJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'ped.id = nfsp.pedido')
-            ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
-            ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
-
             ->where('rp.codExpedicao in (' . $idExpedicao . ')')
             ->andWhere('rp.centralEntrega = :centralEntrega')
             ->setParameter('centralEntrega', $central);
@@ -1165,7 +1120,7 @@ class ExpedicaoRepository extends EntityRepository
         $WhereExpedicao = "";
 
         if (isset($idDepositoLogado)) {
-            $andWhere = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
+            $andWhere = "WHERE P.CENTRAL_ENTREGA = '$idDepositoLogado'";
         } else {
             $andWhere = '';
         }
@@ -1260,7 +1215,6 @@ class ExpedicaoRepository extends EntityRepository
                        P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
-                       NVL(COUNT(REE.COD_REENTREGA),0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                           ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MSCONF.QTD_TOTAL_CONF_MANUAL,0) ) * 100) / (NVL(MSP.QTD_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2))
@@ -1333,7 +1287,6 @@ class ExpedicaoRepository extends EntityRepository
                                    WHERE 1 = 1 ' .  $FullWhere .'
                               GROUP BY C.COD_EXPEDICAO, MAP.QTD, PED.QTD) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
-                  LEFT JOIN REENTREGA REE ON REE.COD_CARGA = CA.COD_CARGA
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
@@ -1342,7 +1295,7 @@ class ExpedicaoRepository extends EntityRepository
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
                                LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                               WHERE 1 = 1  '.$FullWhere.$andWhere.'
+                               WHERE 1 = 1  '.$FullWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
                  WHERE 1 = 1'. $FullWhere . '
                   GROUP BY E.COD_EXPEDICAO,
@@ -1362,8 +1315,8 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-//        return \Wms\Domain\EntityRepository::nativeQuery($sql);
-        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+        //return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 
@@ -1560,9 +1513,9 @@ class ExpedicaoRepository extends EntityRepository
                  ORDER BY E.COD_EXPEDICAO DESC
                      ';
 
-//        return \Wms\Domain\EntityRepository::nativeQuery($sql);
-        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+        //$result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        //return $result;
     }
 
     /**

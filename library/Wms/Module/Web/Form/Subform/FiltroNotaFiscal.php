@@ -15,14 +15,6 @@ class FiltroNotaFiscal extends Form
     public function init()
     {
         $em = $this->getEm();
-        $repoPerfil = $em->getRepository('wms:Acesso\Perfil');
-        $repoFornecedor = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
-
-        $fornecedores = array();
-
-        foreach ($repoFornecedor->findAll() as $fornecedor) {
-            //$fornecedores[$fornecedor->getId()] = $fornecedor->getPessoa()->getNome();
-        }
 
         //form's attr
         $this->setAttribs(array('id' => 'filtro-nota-fiscal', 'class' => 'filtro'));

@@ -79,12 +79,6 @@ class Palete
     protected $tipoEnderecamento;
 
     /**
-     *@Column(name="PESO", type="float")
-     * @var float
-     */
-    protected $peso;
-
-    /**
      * @param mixed $codStatus
      */
     public function setCodStatus($codStatus)
@@ -257,22 +251,6 @@ class Palete
     public function setTipoEnderecamento($tipoEnderecamento)
     {
         $this->tipoEnderecamento = $tipoEnderecamento;
-    }
-
-    /**
-     * @param float $peso
-     */
-    public function setPeso($peso)
-    {
-        $this->peso = $peso;
-    }
-
-    /**
-     * @return float
-     */
-    public function getPeso()
-    {
-        return $this->peso;
     }
 
 }

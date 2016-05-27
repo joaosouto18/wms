@@ -23,14 +23,10 @@ class FiltroProdutoRecebido extends Form
                     'class' => 'filtro',
                     'id' => 'filtro-produtos-conferidos-form',
                 ))
-                ->addElement('text', 'idRecebimento', array(
-                    'size' => 10,
-                    'label' => 'Cod. Recebimento',
-                    'class' => 'focus'
-                ))
                 ->addElement('text', 'idProduto', array(
                     'size' => 12,
                     'label' => 'Cod. produto',
+                    'class' => 'focus',
                 ));
                 if ($utilizaGrade == "S") {
                     $this->addElement('text', 'grade', array(
@@ -60,7 +56,7 @@ class FiltroProdutoRecebido extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('idRecebimento', 'idProduto', 'grade', 'descricao', 'dataFinal1', 'dataFinal2', 'submit'), 'identificacao', array('legend' => 'Busca')
+                ->addDisplayGroup(array('idProduto', 'grade', 'descricao', 'dataFinal1', 'dataFinal2', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
     }
 

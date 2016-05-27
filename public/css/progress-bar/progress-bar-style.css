@@ -1,0 +1,9 @@
+.progress-bar-div {
+    width:75%;
+    position:relative;
+}
+.progress-bar-text {
+    position:absolute;
+    top:0;
+    left:0;
+}

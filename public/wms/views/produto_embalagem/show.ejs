@@ -2,22 +2,7 @@
 
     <table>
         <tr class="actions">
-
-            <td colspan="3" <%if(this.dataInativacao=='EMB. ATIVA'){%>
-                <%='style="float:left; font-weight: bold;color:darkgreen"'%>
-            <%} else {%>
-                <%='style="float:left; font-weight: bold;color:red"'%>
-            <%}%>
-                <div style="float:right">
-                    Data de Inativação:
-                </div>
-                <div>
-                    <input id="ativarDesativar" value="<%=this.id%>" type="checkbox" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> />
-                    <span style{float:left} id="dataInativacao" class="dataInativacao"><%=this.dataInativacao%></span>
-                </div>
-            </td>
-
-            <td colspan="4">
+            <td colspan="6">
                 <a href="javascript://" class="btnAction btn-editar-embalagem" title="Clique para Editar">
                     <img src="<%=URL_SISTEMA%>/img/icons/application_edit.png"" /> Editar
                 </a>
@@ -57,8 +42,9 @@
             <td><span class="endereco"><%=this.pontoReposicao%><span></td>
             <td><span class="endereco"><%=this.capacidadePicking%><span></td>
         </tr>
-    </table>
 
+    </table>
+    
     <input type="hidden" name="embalagens[<%=this.id%>][acao]" class="acao" value="<%=this.acao%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][id]" class="embalagem-id" value="<%=this.id%>"/>
     <input type="hidden" name="embalagens[<%=this.id%>][descricao]" class="embalagem-descricao" value="<%=this.descricao%>"/>
