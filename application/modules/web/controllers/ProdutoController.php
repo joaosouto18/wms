@@ -180,7 +180,7 @@ class Web_ProdutoController extends Crud {
                     $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
                 }
 
-                $tolerancia = strtoupper($params['produto']['pVariavel']);
+                /*$tolerancia = strtoupper($params['produto']['pVariavel']);
                 if ($tolerancia != 'S') {
                     $tolerancia = 'N';
                 }
@@ -188,7 +188,7 @@ class Web_ProdutoController extends Crud {
                 if ($tolerancia == 'S' && !empty($params['produto']['percTolerancia']) ) {
                     $entity->setPercTolerancia($params['produto']['percTolerancia']);
                     $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
-                }
+                }*/
 
                 $this->repository->save($entity, $this->getRequest()->getParams(), true);
                 $this->em->flush();

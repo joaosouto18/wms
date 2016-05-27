@@ -324,6 +324,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 					$embalagemEntity->setPontoReposicao($pontoReposicao);
 
 					$em->persist($embalagemEntity);
+					$em->flush();
 					break;
 				case 'excluir':
 
@@ -480,8 +481,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						break;
 					case 'alterar':
 						$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-						$andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:
-			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+						$dscNormaPaletizacao = $normaPaletizacaoEntity->getUnitizador()->getDescricao();
+						$numNorma = $normaPaletizacaoEntity->getNumNorma();
+						$andamentoRepo->save($idProduto, $grade, false, "Norma de paletização alterada. Unitizador:" . $dscNormaPaletizacao." Norma:".$numNorma);
 
 						$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
 						break;

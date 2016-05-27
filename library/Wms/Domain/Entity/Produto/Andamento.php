@@ -34,7 +34,7 @@ class Andamento
     protected $produto;
 
     /**
-     * @Column(name="COD_PRODUTO",type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      */
     protected $codProduto;
 
@@ -52,7 +52,7 @@ class Andamento
     protected $dataAndamento;
 
     /**
-     * @var Wms\Domain\Entity\Usuario $usuario
+     * @var \Wms\Domain\Entity\Usuario $usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
      * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
      */

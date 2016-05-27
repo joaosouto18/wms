@@ -10,7 +10,7 @@ namespace Wms\Domain\Entity\Expedicao;
 class VProdutoEndereco
 {
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      * @id
      */
     protected $codProduto;

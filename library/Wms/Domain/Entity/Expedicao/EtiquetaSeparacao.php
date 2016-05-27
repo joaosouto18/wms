@@ -72,7 +72,7 @@ class EtiquetaSeparacao
     protected $codReferencia;
 
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      */
     protected $codProduto;
 
