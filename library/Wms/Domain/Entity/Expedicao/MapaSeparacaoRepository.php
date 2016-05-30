@@ -328,7 +328,7 @@ class MapaSeparacaoRepository extends EntityRepository
         if (isset($embalagem) && !is_null($embalagem)) {
             $produto = $embalagem->getCodProduto();
             $grade = $embalagem->getGrade();
-            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = '$produto' AND MSP.DSC_GRADE = '$grade'";
+            $sql .= " AND MSP.COD_PRODUTO = '$produto' AND MSP.DSC_GRADE = '$grade'";
         }
 
 
