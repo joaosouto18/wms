@@ -59,11 +59,15 @@ class Mobile_ExpedicaoController extends Action
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
 
+        $sessao = new \Zend_Session_Namespace('coletor');
+        $central = $sessao->centralSelecionada;
+
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $dscVolume = "";
         $this->view->idVolume = $idVolume;
         $this->view->idMapa = $idMapa;
         $this->view->idExpedicao = $idExpedicao;
+        $this->view->central = $central;
 
         $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
         if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {

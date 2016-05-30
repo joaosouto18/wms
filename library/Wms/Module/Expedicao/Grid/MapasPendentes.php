@@ -12,10 +12,10 @@ class MapasPendentes extends Grid
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
         $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idMapa);
 
-        $this->setAttrib('title','Mapas Separação Conferir');
+        $this->setAttrib('title','Mapas SeparaÃ§Ã£o Conferir');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
-                    'label' => utf8_encode('Código'),
+                    'label' => utf8_encode('CÃ³digo'),
                     'index' => 'COD_PRODUTO',
                 ))
                 ->addColumn(array(
@@ -27,7 +27,7 @@ class MapasPendentes extends Grid
                     'index' => 'QTD_CONFERIR',
                 ))
                 ->addColumn(array(
-                    'label' => utf8_encode('Endereço'),
+                    'label' => utf8_encode('EndereÃ§o'),
                     'index' => 'DSC_DEPOSITO_ENDERECO'
                 ));
 
