@@ -621,7 +621,7 @@ class NotaFiscalRepository extends EntityRepository
                     WHERE os.recebimento = nf.recebimento
                         AND rc.produto = p.id
                         AND rc.grade = p.grade
-                        AND rc.qtdDivergencia = 0
+                        AND ((rc.qtdDivergencia = 0) AND (rc.divergenciaPeso = \'N\'))
                 )')
                 ->setParameters(
                 array(
@@ -682,6 +682,20 @@ class NotaFiscalRepository extends EntityRepository
                 ->groupBy('p.id, nfi.grade, p.descricao, tc.id');
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function getPesoByProdutoAndRecebimento($codRecebimento, $codProduto, $grade) {
+
+        $SQL = " SELECT NVL(SUM(NUM_PESO),0) as PESO
+                   FROM NOTA_FISCAL NF
+                   LEFT JOIN NOTA_FISCAL_ITEM NFI ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
+         WHERE NF.COD_RECEBIMENTO = $codRecebimento
+           AND COD_PRODUTO = '$codProduto'
+           AND DSC_GRADE = '$grade'";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result[0]['PESO'];
     }
 
     /**

@@ -1,13 +1,26 @@
 <?php
+
 namespace Wms\Domain\Entity\Pessoa\Papel;
 
-use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\AtorRepository;
-use DoctrineExtensions\Versionable\Exception;
-use Wms\Domain\Entity\Ator;
+use Wms\Domain\Entity\AtorRepository;
 
 class FornecedorRepository extends AtorRepository
 {
+
+    public function getAll(){
+        $SQL = "SELECT F.COD_FORNECEDOR,
+                       P.NOM_PESSOA
+                  FROM FORNECEDOR F
+                  LEFT JOIN PESSOA P ON P.COD_PESSOA = F.COD_FORNECEDOR";
+        $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arrayResult = array();
+        foreach ($resultado as $linha) {
+            $arrayResult[$linha['COD_FORNECEDOR']] = $linha['NOM_PESSOA'];
+        }
+        return $arrayResult;
+        
+    }
 
     public function save($idFornecedor)
     {
@@ -54,3 +67,4 @@ class FornecedorRepository extends AtorRepository
         return null;
     }
 }
+
