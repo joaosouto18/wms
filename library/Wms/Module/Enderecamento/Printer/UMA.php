@@ -6,6 +6,7 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Domain\Entity\NotaFiscal\Item;
 
 class UMA extends Pdf
 {
@@ -83,12 +84,17 @@ class UMA extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(7, 7, 0);
-        $ProdutoRepository   = $em->getRepository('wms:Produto');
+        $ProdutoRepository    = $em->getRepository('wms:Produto');
+        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
+        $notaFiscalItemRepository = $em->getRepository('wms:NotaFiscal\Item');
 
         $codProduto     = $params['codProduto'];
         $grade          = $params['grade'];
         $idRecebimento  = $params['idRecebimento'];
 
+//        $notaFiscalEn = $notaFiscalItemRepository->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'notaFiscal' => array('recebimento' => 3932)));
+//        $notaFiscalEn = $notaFiscalItemRepository->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'notaFiscal' => array('id' => 16630, 'recebimento' => null)));
+//        var_dump($notaFiscalEn); exit;
         $produtoEn  = $ProdutoRepository->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
 
         if ($produtoEn == null) {
@@ -96,7 +102,7 @@ class UMA extends Pdf
             $produtoEn  = $ProdutoRepository->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
         }
 
-        $this->layout($params['paletes'], $produtoEn,$modelo,$params);
+        $this->layout($params['paletes'], $produtoEn, $modelo, $params);
         $this->Output('UMA-'.$idRecebimento.'-'.$codProduto.'.pdf','D');
     }
 

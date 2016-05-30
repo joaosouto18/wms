@@ -318,11 +318,11 @@ class MapaSeparacaoRepository extends EntityRepository
                 FROM MAPA_SEPARACAO MS
                 INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 LEFT JOIN (
-                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO_EMBALAGEM, MSC.COD_PRODUTO_VOLUME
+                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE
                   FROM MAPA_SEPARACAO MS1
                   INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
-                  GROUP BY MSC.COD_PRODUTO_EMBALAGEM, MSC.COD_PRODUTO_VOLUME, MS1.COD_MAPA_SEPARACAO
-                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND (MSC.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM OR MSC.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME)
+                  GROUP BY MSC.COD, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO
+                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND (MSC.COD_PRODUTO = MSP.COD_PRODUTO) AND (MSC.DSC_GRADE = MSP.DSC_GRADE)
                 WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
 
         if (isset($embalagem) && !is_null($embalagem))
@@ -331,7 +331,7 @@ class MapaSeparacaoRepository extends EntityRepository
         if (isset($volume) && !is_null($volume))
             $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
 
-        $sql .= " GROUP BY MSP.COD_PRODUTO_EMBALAGEM, MSP.COD_PRODUTO_VOLUME";
+        $sql .= " GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 

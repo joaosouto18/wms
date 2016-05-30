@@ -51,7 +51,7 @@ class NotaFiscal
      * 
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa\Papel\Fornecedor", cascade={"persist"})
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_FORNECEDOR")
-     * @var Wms\Domain\Entity\Pessoa\Papel\Fornecedor
+     * @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor
      */
     protected $fornecedor;
 
@@ -76,7 +76,7 @@ class NotaFiscal
      * 
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Recebimento", cascade={"persist"})
      * @JoinColumn(name="COD_RECEBIMENTO", referencedColumnName="COD_RECEBIMENTO")
-     * @var Wms\Domain\Entity\Recebimento
+     * @var \Wms\Domain\Entity\Recebimento
      */
     protected $recebimento;
 
