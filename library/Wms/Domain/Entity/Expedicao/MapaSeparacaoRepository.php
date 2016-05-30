@@ -325,8 +325,12 @@ class MapaSeparacaoRepository extends EntityRepository
                   ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND (MSC.COD_PRODUTO = MSP.COD_PRODUTO) AND (MSC.DSC_GRADE = MSP.DSC_GRADE)
                 WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
 
-        if (isset($embalagem) && !is_null($embalagem))
-            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = " . $embalagem->getCodProduto() . ' AND MSP.DSC_GRADE = ' . $embalagem->getGrade();
+        if (isset($embalagem) && !is_null($embalagem)) {
+            $produto = $embalagem->getCodProduto();
+            $grade = $embalagem->getGrade();
+            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = '$produto' AND MSP.DSC_GRADE = '$grade'";
+        }
+
 
         if (isset($volume) && !is_null($volume))
             $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
