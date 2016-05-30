@@ -321,12 +321,12 @@ class MapaSeparacaoRepository extends EntityRepository
                   SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE
                   FROM MAPA_SEPARACAO MS1
                   INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
-                  GROUP BY MSC.COD, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO
+                  GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO
                   ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND (MSC.COD_PRODUTO = MSP.COD_PRODUTO) AND (MSC.DSC_GRADE = MSP.DSC_GRADE)
                 WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
 
         if (isset($embalagem) && !is_null($embalagem))
-            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = " . $embalagem->getId();
+            $sql .= " AND MSP.COD_PRODUTO_EMBALAGEM = " . $embalagem->getCodProduto() . ' AND MSP.DSC_GRADE = ' . $embalagem->getGrade();
 
         if (isset($volume) && !is_null($volume))
             $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
