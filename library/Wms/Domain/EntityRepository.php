@@ -15,11 +15,11 @@ class EntityRepository extends EntityRepositoryDoctrine
      */
     public function getIdDescricao(array $criteria = array())
     {
-	$array = array();
-	foreach ($this->findBy($criteria) as $entity)
-	    $array[$entity->getId()] = $entity->getDescricao();
+        $array = array();
+        foreach ($this->findBy($criteria) as $entity)
+            $array[$entity->getId()] = $entity->getDescricao();
 
-	return $array;
+        return $array;
     }
 
     /**
@@ -30,34 +30,45 @@ class EntityRepository extends EntityRepositoryDoctrine
      */
     public function getIdNome(array $criteria = array())
     {
-	$array = array();
-	foreach ($this->findBy($criteria) as $entity)
-	    $array[$entity->getId()] = $entity->getNome();
+        $array = array();
+        foreach ($this->findBy($criteria) as $entity)
+            $array[$entity->getId()] = $entity->getNome();
 
-	return $array;
+        return $array;
     }
 
-	static function nativeQuery($query, $fetch = 'all')
-	{
-		$config = \Zend_Registry::get('config');
-		$conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
-			$config->resources->doctrine->dbal->connections->default->parameters->password,
-			$config->resources->doctrine->dbal->connections->default->parameters->dbname);
-        $arrayResult = array();
+    static function conexaoViewERP()
+    {
+        $config = \Zend_Registry::get('config');
+        $conexao = oci_connect($config->database->viewErp->user,
+            $config->database->viewErp->password,
+            $config->database->viewErp->dbname,
+            $config->database->viewErp->characterSet);
+        return $conexao;
+    }
 
-		if (!$conexao) {
-			$erro = oci_error();
+    static function nativeQuery($query, $fetch = 'all', $conexao = null)
+    {
+        $config = \Zend_Registry::get('config');
+        if ($conexao == null) {
+            $conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
+                $config->resources->doctrine->dbal->connections->default->parameters->password,
+                $config->resources->doctrine->dbal->connections->default->parameters->dbname);
+        }
+
+        if (!$conexao) {
+            $erro = oci_error();
             throw new \Exception($erro['message']);
-		}
+        }
 
-		$res = oci_parse($conexao, $query) or die ("erro");
+        $res = oci_parse($conexao, $query) or die ("erro");
         if (!$res) {
             $erro = oci_error($conexao);
             oci_close($conexao);
             throw new \Exception($erro['message'] . " - consulta: " . $query);
         }
 
-		$e = oci_execute($res);
+        $e = oci_execute($res);
         if (!$e) {
             $erro = oci_error($res);
             oci_free_statement($res);
@@ -78,10 +89,10 @@ class EntityRepository extends EntityRepositoryDoctrine
             $arrayResult[] = $newLine;
         }
 
-		//fecha a conexão atual
-		oci_free_statement($res);
-		oci_close($conexao);
-		return $arrayResult;
-	}
+        //fecha a conexão atual
+        oci_free_statement($res);
+        oci_close($conexao);
+        return $arrayResult;
+    }
 
 }

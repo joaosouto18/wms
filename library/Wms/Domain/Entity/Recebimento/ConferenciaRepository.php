@@ -157,16 +157,76 @@ class ConferenciaRepository extends EntityRepository
      */
     public function getProdutoDivergencia($idOrdemServico)
     {
-        $sql = $this->getEntityManager()->createQuery('
-                SELECT c.id, p.id idProduto, p.grade, p.descricao dscProduto, c.qtdConferida, c.qtdAvaria, c.qtdDivergencia 
-                FROM wms:Recebimento\Conferencia c
-                INNER JOIN c.produto p
-                WHERE c.ordemServico = ?1
-                    AND p.grade = c.grade
-                    AND c.qtdDivergencia != 0')
-                ->setParameter(1, $idOrdemServico);
+        
+        $SQL = " SELECT RC.COD_RECEBIMENTO_CONFERENCIA, 
+                        P.COD_PRODUTO,
+                        P.DSC_GRADE,
+                        P.DSC_PRODUTO,
+                        RC.QTD_CONFERIDA,
+                        RC.QTD_AVARIA,
+                        RC.QTD_DIVERGENCIA,
+                        PESONF.PESO as PESO_NF,
+                        P.DSC_REFERENCIA,
+                        NVL(V.NUM_PESO,0) as PES_RECEBIDO,
+                        P.TOLERANCIA_NOMINAL
+                   FROM RECEBIMENTO_CONFERENCIA RC
+                  INNER JOIN PRODUTO P ON P.COD_PRODUTO = RC.COD_PRODUTO AND P.DSC_GRADE = RC.DSC_GRADE
+                   LEFT JOIN V_QTD_RECEBIMENTO V ON V.COD_PRODUTO = RC.COD_PRODUTO
+                                                AND V.DSC_GRADE = RC.DSC_GRADE
+                                                AND V.COD_OS = RC.COD_OS
+                                                AND V.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
+                  INNER JOIN (SELECT SUM(NUM_PESO) PESO,
+                                    NFI.COD_PRODUTO,
+                                    NFI.DSC_GRADE,
+                                    NF.COD_RECEBIMENTO
+                               FROM NOTA_FISCAL NF
+                               LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                               GROUP BY NFI.COD_PRODUTO,
+                                        NFI.DSC_GRADE,
+                                        NF.COD_RECEBIMENTO) PESONF ON PESONF.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
+                                                                  AND PESONF.COD_PRODUTO = RC.COD_PRODUTO
+                                                                  AND PESONF.DSC_GRADE = RC.DSC_GRADE
+                  WHERE RC.COD_OS = $idOrdemServico
+                    AND (RC.QTD_DIVERGENCIA <> 0 OR RC.IND_DIVERGENCIA_PESO = 'S')";
+        $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $sql->getResult();
+        $resultArr = array();
+        foreach ($result as $line) {
+            $idProduto = $line['COD_PRODUTO'];
+            $idRecebimentoConferencia = $line['COD_RECEBIMENTO_CONFERENCIA'];
+            $grade = $line['DSC_GRADE'];
+            $dscProduto = $line['DSC_PRODUTO'];
+            $qtdConferida = $line['QTD_CONFERIDA'];
+            $qtdAvaria = $line['QTD_AVARIA'];
+            $qtdDivergencia = $line['QTD_DIVERGENCIA'];
+            $pesoNf = $line['PESO_NF'];
+            $pesoRecebimento = $line ['PES_RECEBIDO'];
+            $toleranciaNominal = $line['TOLERANCIA_NOMINAL'];
+            $referencia = $line['DSC_REFERENCIA'];
+
+            if ($qtdDivergencia == 0) {
+                $qtdConferida = $pesoRecebimento . " Kg";
+                if ($pesoRecebimento > $pesoNf -$toleranciaNominal) {
+                    $qtdDivergencia = $pesoRecebimento - $pesoNf - $toleranciaNominal;
+                } else {
+                    $qtdDivergencia = $pesoRecebimento - $pesoNf + $toleranciaNominal;
+                }
+                $qtdDivergencia = $qtdDivergencia . " Kg";
+            }
+
+            $resultArr[] = array(
+                'id'=>$idRecebimentoConferencia,
+                'idProduto' =>$idProduto,
+                'grade' => $grade,
+                'dscProduto' => $dscProduto,
+                'qtdConferida' => $qtdConferida,
+                'qtdAvaria' => $qtdAvaria,
+                'qtdDivergencia' => $qtdDivergencia,
+                'referencia' => $referencia
+            );
+        }
+        return $resultArr;
+
     }
 
 }
