@@ -10,7 +10,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
 
     public function getProdutosConferir($id)
     {
-        $sql = "SELECT ((MSP.QTD_SEPARAR - MSP.QTD_CORTADO) - NVL(SUM(MSC.QTD_CONFERIDA),0)) AS QTD_CONFERIR,
+        $sql = "SELECT SUM(MSP.QTD_SEPARAR) - SUM(MSP.QTD_CORTADO) - NVL(SUM(MSC.QTD_CONFERIDA),0) AS QTD_CONFERIR,
                          MSP.COD_PRODUTO,
                                  MSP.DSC_GRADE,
                                  P.DSC_PRODUTO,
@@ -29,13 +29,11 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = END.COD_DEPOSITO_ENDERECO
 
                    WHERE MS.COD_MAPA_SEPARACAO = $id
-                   HAVING (MSP.QTD_SEPARAR - MSP.QTD_CORTADO - NVL(SUM(MSC.QTD_CONFERIDA),0)) > 0
+                   HAVING (SUM(MSP.QTD_SEPARAR) - SUM(MSP.QTD_CORTADO) - NVL(SUM(MSC.QTD_CONFERIDA),0)) > 0
                    GROUP BY MSP.COD_PRODUTO,
                          MSP.DSC_GRADE,
-                                     MSP.QTD_SEPARAR,
-                                     MSP.QTD_CORTADO,
-                                     P.DSC_PRODUTO,
-                                     DE.DSC_DEPOSITO_ENDERECO";
+                         P.DSC_PRODUTO,
+                         DE.DSC_DEPOSITO_ENDERECO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
