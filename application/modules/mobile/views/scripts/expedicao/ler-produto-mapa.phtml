@@ -59,8 +59,16 @@
     </dd>
 </form>
 
-<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar' ))?>">
+<form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'conferencia', 'action' =>'finalizar'))?>">
     <input type="hidden" id="id" name="id" value="<?php echo $this->idExpedicao; ?>">
     <input type="hidden" id="centrais" name="centrais" value="<?php echo $this->central; ?>">
-    <input type="submit" name="btnFinalizar" id="submit" value="finalizaColetor" class="finalizar">
+    <input type="hidden" id="origin" name="origin" value="coletor">
+    <table>
+        <tr>
+            <td>
+                <input type="submit" name="btnFinalizar" id="submit" value="Finalizar" class="btn">
+            </td>
+        </tr>
+    </table>
+
 </form>

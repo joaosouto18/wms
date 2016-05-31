@@ -61,6 +61,17 @@ class Expedicao_ConferenciaController extends Action
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
+
+                if ($origin == 'coletor') {
+                    if ($result == 'true') {
+                        $result = 'Expedição Finalizada com Sucesso!';
+                        if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
+                            $redirect = true;
+                        }
+                    }
+                    $this->addFlashMessage('success', $result);
+                    $this->_redirect('/mobile/expedicao/index/idCentral/'.$centrais);
+                }
                 if ($result == 'true') {
                     if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
                         $redirect = true;
