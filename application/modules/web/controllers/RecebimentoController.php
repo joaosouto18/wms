@@ -1340,4 +1340,14 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     }
 
+    public function usuarioRecebimentoPdfAction()
+    {
+        $idRecebimento = $this->_getParam('id',0);
+        /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $recebimentoDescargaRepo */
+        $recebimentoDescargaRepo = $this->getEntityManager()->getRepository('wms:Recebimento\Descarga');
+        $recebimentoDescarga = $recebimentoDescargaRepo->getInfosDescarga($idRecebimento);
+
+        $this->exportPDF($recebimentoDescarga, 'usuario_descarga_'.$idRecebimento, 'Usuários Descarga Recebimento '.$idRecebimento, 'P');
+    }
+
 }

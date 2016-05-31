@@ -81,6 +81,11 @@ class DescargaRepository extends EntityRepository
             $source->andWhere("TRUNC(rd.dataVinculo) between '$dataInicio' AND '$dataFim'");
         }
 
+        if (!empty($params['recebimento'])) {
+            $source->andWhere('r.id = :idRecebimento')
+                ->setParameter('idRecebimento', $params['recebimento']);
+        }
+
         return $source->getQuery()->getResult();
     }
 
