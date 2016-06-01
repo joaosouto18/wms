@@ -9,6 +9,31 @@ INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_A
   SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),
   (select COD_ACAO from acao where NOM_ACAO like 'index'), 'Index Importação');
 
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
+    SQ_ACAO_01.NEXTVAL, 'Alterar Status do Arquivo de Importação', 'alterar-status');
+
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
+  SQ_ACAO_01.NEXTVAL, 'Lista de campos', 'lista-campos-importacao');
+
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
+  SQ_ACAO_01.NEXTVAL, 'Configurar Importação', 'configuracao-importacao');
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (
+  SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),
+  (select COD_ACAO from acao where NOM_ACAO like 'index'), 'Index Importação');
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (
+  SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),
+  (select COD_ACAO from acao where NOM_ACAO like 'alterar-status'), 'Alterar Status do Arquivo de Importação');
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (
+  SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),
+  (select COD_ACAO from acao where NOM_ACAO like 'configuracao-importacao'), 'Configurar Importação');
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (
+  SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),
+  (select COD_ACAO from acao where NOM_ACAO like 'lista-campos-importacao'), 'Lista de campos');
+
 INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO, DSC_URL, DSC_TARGET, SHOW) VALUES (
  SQ_MENU_ITEM_01.NEXTVAL, 0,0,'Importação',10,'#','_self','S');
 
@@ -20,6 +45,15 @@ INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, 
       and cod_acao = (select COD_ACAO from acao where NOM_ACAO like 'index')),
   (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE COD_PAI = 0 AND DSC_MENU_ITEM = 'Importação'),
   'Importar Arquivos', 1, '#', '_self', 'S');
+
+INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO, DSC_URL, DSC_TARGET, SHOW) VALUES (
+  SQ_MENU_ITEM_01.NEXTVAL,
+  (SELECT COD_RECURSO_ACAO
+     FROM RECURSO_ACAO
+    where COD_RECURSO = (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index')
+      and cod_acao = (select COD_ACAO from acao where NOM_ACAO like 'configuracao-importacao')),
+  (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE COD_PAI = 0 AND DSC_MENU_ITEM = 'Importação'),
+  'Configurações de importação', 2, '#', '_self', 'S');
 
 UPDATE MENU_ITEM SET NUM_PESO = 11 WHERE COD_PAI = 0 AND DSC_MENU_ITEM = 'Relatórios';
 
