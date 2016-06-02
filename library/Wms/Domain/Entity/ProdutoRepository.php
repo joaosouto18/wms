@@ -830,10 +830,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	/**
 	 * Busca a quantidade de produtos com ou sem dados logisticos.
 	 */
-	public function buscarQtdProdutosDadosLogisticos($indDadosLogisticos) {
+	public function buscarQtdProdutosDadosLogisticos() {
 
-		$sql = "SELECT COUNT(P.COD_PRODUTO) AS QTD_PRODUTO
-                      FROM PRODUTO P";
+		$sql = "SELECT COUNT(*) as QTD, POSSUI
+               FROM (SELECT DISTINCT
+                       CASE WHEN NVL(PE.COD_PRODUTO_EMBALAGEM, PV.COD_PRODUTO_VOLUME) IS NULL THEN 'NAO' ELSE 'SIM' END as POSSUI,
+                            P.COD_PRODUTO,
+                            P.DSC_GRADE
+                       FROM PRODUTO P
+                       LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                       LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE)
+                      GROUP BY POSSUI
+                      ORDER BY POSSUI";
 
 		$result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 		$sim = 0;
