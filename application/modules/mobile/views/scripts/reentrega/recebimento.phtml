@@ -1,18 +1,58 @@
-<?php echo $this->form; ?>
-<?php if (count($this->notasFiscais) >0) {?>
-<div style="margin-top: 5pt">
-    <form class="saveForm">
-        <fieldset>
-            <legend>Recebimentos Gerados</legend>
-            <ul class="menu">
-                <?php foreach($this->notasFiscais as $notaFiscal) : ?>
-                    <li>
-                        <a href="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'reconferir-produtos', 'id' => $notaFiscal['recebimento'])); ?>" > <?php echo 'Recebimento '.$notaFiscal['recebimento'] ?></a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+<script>
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codEtiqueta').value != "") {
+                notaFiscal   = document.getElementById('notaFiscal');
+                if (notaFiscal) {
+                    notaFiscal.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+<?php $this->headScript()->appendFile($this->baseUrl('coletor/reentrega.js')); ?>
+<?php //echo $this->form; ?>
 
+<form id="reentrega-form" class="saveForm" action="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'buscar')); ?>">
+    <dt id="identification-label">&nbsp;</dt>
+    <dd id="identification-element">
+        <fieldset id="fieldset-identification">
+            <legend>Gerar Recebimento</legend>
+            <div class="field">
+                <label><?php echo utf8_encode('C�digo Barras Etiqueta:') ?></label>
+                <input style="width: 99%" maxlength="100" class="focus codEtiqueta" size="40" type="text" name="codEtiqueta" id="codEtiqueta" value="" onkeydown="nextInput(event)" />
+            </div>
+            <div class="field">
+                <label><?php echo utf8_encode('N�mero Nota Fiscal:') ?></label>
+                <input style="width: 99%" maxlength="100" size="40" type="text" name="notaFiscal" id="notaFiscal" class="notaFiscal" value="" onkeydown="nextInput(event)"/>
+            </div>
+            <div id="inserir"></div>
+            <input class="btn" type="submit" name="submit" id="submit" value="Buscar" />
         </fieldset>
-    </form>
-</div>
+    </dd>
+</form>
+
+
+<?php if (count($this->notasFiscais) > 0) {?>
+    <div style="margin-top: 5pt">
+        <form class="saveForm">
+            <fieldset>
+                <legend>Recebimentos Gerados</legend>
+                <ul class="menu">
+                    <?php foreach($this->notasFiscais as $notaFiscal) : ?>
+                        <li>
+                            <a href="<?php echo $this->url(array('controller' => 'reentrega', 'action' => 'reconferir-produtos', 'id' => $notaFiscal['recebimento'])); ?>" > <?php echo 'Recebimento '.$notaFiscal['recebimento'] ?> - NF:<?php echo $notaFiscal['numeroNf'] ?></a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+
+            </fieldset>
+        </form>
+    </div>
 <?php }?>

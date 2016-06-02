@@ -531,13 +531,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				if (!isset($acao))
 					continue;
 
-		switch ($acao) {
-		  case 'excluir':
-			$normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
-			break;
+				switch ($acao) {
+					case 'excluir':
+						$normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
+						break;
+				}
+			}
 		}
-	  }
-	}
 
 		return true;
 	}
@@ -829,8 +829,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-  private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
-	$dql = $this->getEntityManager()->createQueryBuilder()
+	private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
+		$dql = $this->getEntityManager()->createQueryBuilder()
 			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
@@ -838,82 +838,82 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			->andWhere('pe.grade = ?2')
 			->andWhere('pe.isPadrao like ?3')
 			->setParameters(array(
-		1 => $produtoEntity->getId(),
-		2 => $produtoEntity->getGrade(),
-		3 => 'N'
-	));
+				1 => $produtoEntity->getId(),
+				2 => $produtoEntity->getGrade(),
+				3 => 'N'
+			));
 
-	$dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
-	
-	if (empty($dadosLogisticosEmbalagens)) {
-	  $dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
-			->from('wms:Produto\DadoLogistico', 'pdl')
-			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
-			->where('pe.codProduto = ?1')
-			->andWhere('pe.grade = ?2')
-			->andWhere('pe.isPadrao like ?3')
-			->setParameters(array(
-		1 => $produtoEntity->getId(),
-		2 => $produtoEntity->getGrade(),
-		3 => 'S'
-	));
+		$dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
 
-	  $dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
+		if (empty($dadosLogisticosEmbalagens)) {
+			$dql = $this->getEntityManager()->createQueryBuilder()
+				->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
+				->from('wms:Produto\DadoLogistico', 'pdl')
+				->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+				->where('pe.codProduto = ?1')
+				->andWhere('pe.grade = ?2')
+				->andWhere('pe.isPadrao like ?3')
+				->setParameters(array(
+					1 => $produtoEntity->getId(),
+					2 => $produtoEntity->getGrade(),
+					3 => 'S'
+				));
+
+			$dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
+		}
+
+		$dadosLogisticos = array();
+
+		$client = $this->getSoapClient();
+
+		$i = 0;
+		foreach ($dadosLogisticosEmbalagens as $embalagem) {
+
+			$dadosLogisticos[$i] = array(
+				'altura' => $embalagem['altura'],
+				'largura' => $embalagem['largura'],
+				'profundidade' => $embalagem['profundidade'],
+				'cubagem' => $embalagem['cubagem'],
+				'peso' => $embalagem['peso'],
+				'descricao' => $embalagem['descricao'],
+				'quantidade' => $embalagem['quantidade'],
+			);
+
+			$i++;
+		}
+
+		return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticos);
+
 	}
-	
-	$dadosLogisticos = array();
-	
-	$client = $this->getSoapClient();
 
-	$i = 0;
-	foreach ($dadosLogisticosEmbalagens as $embalagem) {
+	private function enviaDadosLogisticosVolumes($produtoEntity, array $values = array()) {
 
-	  $dadosLogisticos[$i] = array(
-		  'altura' => $embalagem['altura'],
-		  'largura' => $embalagem['largura'],
-		  'profundidade' => $embalagem['profundidade'],
-		  'cubagem' => $embalagem['cubagem'],
-		  'peso' => $embalagem['peso'],
-		  'descricao' => $embalagem['descricao'],
-          'quantidade' => $embalagem['quantidade'],
-	  );
+		extract($values);
+		// volumes
+		if (!isset($volumes))
+			return false;
 
-	  $i++;
+		$client = $this->getSoapClient();
+
+		$dadosLogisticosVolume = array();
+
+		$i = 0;
+		foreach ($volumes as $id => $itemVolume) {
+			extract($itemVolume);
+
+			$dadosLogisticosVolume[$i] = array(
+				'largura' => \Core\Util\Converter::brToEn($largura, 3),
+				'altura' => \Core\Util\Converter::brToEn($altura, 3),
+				'profundidade' => \Core\Util\Converter::brToEn($profundidade, 3),
+				'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
+				'peso' => \Core\Util\Converter::brToEn($peso, 3),
+				'descricao' => $descricao,
+				'quantidade' => 1
+			);
+			$i++;
+		}
+		return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticosVolume);
 	}
-	  
-	  return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticos);
-
-  }
-
-  private function enviaDadosLogisticosVolumes($produtoEntity, array $values = array()) {
-
-	extract($values);
-	// volumes
-	if (!isset($volumes))
-	  return false;
-
-	$client = $this->getSoapClient();
-
-	$dadosLogisticosVolume = array();
-
-	$i = 0;
-	foreach ($volumes as $id => $itemVolume) {
-	  extract($itemVolume);
-
-	  $dadosLogisticosVolume[$i] = array(
-		  'largura' => \Core\Util\Converter::brToEn($largura, 3),
-		  'altura' => \Core\Util\Converter::brToEn($altura, 3),
-		  'profundidade' => \Core\Util\Converter::brToEn($profundidade, 3),
-		  'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
-		  'peso' => \Core\Util\Converter::brToEn($peso, 3),
-		  'descricao' => $descricao,
-          'quantidade' => 1
-	  );
-	  $i++;
-	}
-	  return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticosVolume);
-  }
 
 	private function getSoapClient() {
 		$conf = new \Zend_Config_Ini(APPLICATION_PATH . '/configs/webservices.ini', APPLICATION_ENV);
@@ -964,107 +964,107 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			->where('p.id = :codProduto')
 			->setParameter('codProduto',ProdutoUtil::formatar($codProduto));
 
-        $produtos = $queryBuilder->getQuery()->getArrayResult();
-        $grades = array();
-        foreach($produtos as $produto) {
-            $grades[] = $produto['grade'];
-        }
-        return $grades;
-    }
+		$produtos = $queryBuilder->getQuery()->getArrayResult();
+		$grades = array();
+		foreach($produtos as $produto) {
+			$grades[] = $produto['grade'];
+		}
+		return $grades;
+	}
 
-    public function getEnderecoPicking($produtoEntity,$tipoRetorno = "DSC")
-    {
-        $enderecoPicking = null;
-        if ($produtoEntity == null) {
-            return $enderecoPicking;
-        }
+	public function getEnderecoPicking($produtoEntity,$tipoRetorno = "DSC")
+	{
+		$enderecoPicking = null;
+		if ($produtoEntity == null) {
+			return $enderecoPicking;
+		}
 
-        if (count($produtoEntity->getEmbalagens()) > 0) {
-            $embalagemEn = $produtoEntity->getEmbalagens();
-        } else {
-            $embalagemEn = $produtoEntity->getVolumes();
-        }
+		if (count($produtoEntity->getEmbalagens()) > 0) {
+			$embalagemEn = $produtoEntity->getEmbalagens();
+		} else {
+			$embalagemEn = $produtoEntity->getVolumes();
+		}
 
-        if ($embalagemEn[0] == null) {
-            return null;
-        }
+		if ($embalagemEn[0] == null) {
+			return null;
+		}
 
-        $enderecoPicking = array();
-        foreach($embalagemEn as $key => $embalagem) {
-            if ($embalagem->getEndereco() != null) {
-                if ($tipoRetorno == "DSC"){
-                    $enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
-                } else {
-                    $enderecoPicking[$key] = $embalagem->getEndereco()->getId();
-                }
-            } else{
-                $enderecoPicking = null;
-                break;
-            }
-        }
-        return $enderecoPicking;
-    }
+		$enderecoPicking = array();
+		foreach($embalagemEn as $key => $embalagem) {
+			if ($embalagem->getEndereco() != null) {
+				if ($tipoRetorno == "DSC"){
+					$enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
+				} else {
+					$enderecoPicking[$key] = $embalagem->getEndereco()->getId();
+				}
+			} else{
+				$enderecoPicking = null;
+				break;
+			}
+		}
+		return $enderecoPicking;
+	}
 
-    public function getNormaPaletizacaoPadrao($codProduto, $grade) {
+	public function getNormaPaletizacaoPadrao($codProduto, $grade) {
 
-        $produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-        $volumes = $produtoEntity->getVolumes();
-        $embalagens = $produtoEntity->getEmbalagens();
+		$produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+		$volumes = $produtoEntity->getVolumes();
+		$embalagens = $produtoEntity->getEmbalagens();
 
-        $idNorma = NULL;
-        $unidadePadrao = "";
-        $unitizador = "";
-        $qtdNorma = 0;
-        $lastro = 0;
-        $camadas = 0;
-        $dscProduto = $produtoEntity->getDescricao();
-        $result = array();
+		$idNorma = NULL;
+		$unidadePadrao = "";
+		$unitizador = "";
+		$qtdNorma = 0;
+		$lastro = 0;
+		$camadas = 0;
+		$dscProduto = $produtoEntity->getDescricao();
+		$result = array();
 
-        foreach ($embalagens as $embalagem) {
-            if ($embalagem->getIsPadrao()=="S") {
-                $dadosLogisticos = $embalagem->getDadosLogisticos();
-                $unidadePadrao = $embalagem->getDescricao();
-                if (count($dadosLogisticos) >0){
-                    $keyPadrao = 0;
-                    foreach ($dadosLogisticos as $key => $normaPaletizacao) {
-                        if ($normaPaletizacao->getNormaPaletizacao()->getIsPadrao() == 'S') {
-                            $keyPadrao = $key;
-                        }
-                    }
-                    $idNorma = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getId();
-                    $qtdNorma = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumNorma();
-                    $lastro = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumLastro();
-                    $camadas = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumCamadas();
-                    $unitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getDescricao();
-                    break;
-                }
-            }
-        }
+		foreach ($embalagens as $embalagem) {
+			if ($embalagem->getIsPadrao()=="S") {
+				$dadosLogisticos = $embalagem->getDadosLogisticos();
+				$unidadePadrao = $embalagem->getDescricao();
+				if (count($dadosLogisticos) >0){
+					$keyPadrao = 0;
+					foreach ($dadosLogisticos as $key => $normaPaletizacao) {
+						if ($normaPaletizacao->getNormaPaletizacao()->getIsPadrao() == 'S') {
+							$keyPadrao = $key;
+						}
+					}
+					$idNorma = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getId();
+					$qtdNorma = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumNorma();
+					$lastro = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumLastro();
+					$camadas = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumCamadas();
+					$unitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getDescricao();
+					break;
+				}
+			}
+		}
 
-        foreach ($volumes as $volume) {
-            $norma = $volume->getNormaPaletizacao()->getId();
-            if ($norma != NULL) {
-                $unidadePadrao = $volume->getDescricao();
-                $qtdNorma = $volume->getNormaPaletizacao()->getNumNorma();
-                $lastro = $volume->getNormaPaletizacao()->getNumLastro();
-                $camadas = $volume->getNormaPaletizacao()->getNumCamadas();
-                $unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
-                $idNorma = $norma;
-                break;
-            }
-        }
+		foreach ($volumes as $volume) {
+			$norma = $volume->getNormaPaletizacao()->getId();
+			if ($norma != NULL) {
+				$unidadePadrao = $volume->getDescricao();
+				$qtdNorma = $volume->getNormaPaletizacao()->getNumNorma();
+				$lastro = $volume->getNormaPaletizacao()->getNumLastro();
+				$camadas = $volume->getNormaPaletizacao()->getNumCamadas();
+				$unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
+				$idNorma = $norma;
+				break;
+			}
+		}
 
-        $result['idNorma'] = $idNorma;
-        $result['unidade'] = $unidadePadrao;
-        $result['unitizador'] = $unitizador;
-        $result['qtdNorma'] = $qtdNorma;
-        $result['lastro'] = $lastro;
-        $result['camadas'] = $camadas;
-        $result['dscProduto'] = $dscProduto;
+		$result['idNorma'] = $idNorma;
+		$result['unidade'] = $unidadePadrao;
+		$result['unitizador'] = $unitizador;
+		$result['qtdNorma'] = $qtdNorma;
+		$result['lastro'] = $lastro;
+		$result['camadas'] = $camadas;
+		$result['dscProduto'] = $dscProduto;
 
-        return $result;
+		return $result;
 
-    }
+	}
 
 	public function getDadosProdutos($params)
 	{
@@ -1114,25 +1114,25 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             LEFT JOIN UNITIZADOR U2 ON NP2.COD_UNITIZADOR = U2.COD_UNITIZADOR
             LEFT JOIN DEPOSITO_ENDERECO DEE ON DEE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
             LEFT JOIN DEPOSITO_ENDERECO DEV ON DEV.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO";
-        $queryWhere = "";
-        if (!empty($params['grandeza'])) {
-            $queryWhere = " WHERE ";
-            $grandeza = $params['grandeza'];
-            $grandeza = implode(',',$grandeza);
-            $queryWhere = $queryWhere . " P.COD_LINHA_SEPARACAO IN ($grandeza) ";
-        }
-        $sql = $sql . $queryWhere . " ORDER BY P.COD_PRODUTO, P.DSC_GRADE, NVL(PV.COD_SEQUENCIAL_VOLUME,PE.QTD_EMBALAGEM)";
+		$queryWhere = "";
+		if (!empty($params['grandeza'])) {
+			$queryWhere = " WHERE ";
+			$grandeza = $params['grandeza'];
+			$grandeza = implode(',',$grandeza);
+			$queryWhere = $queryWhere . " P.COD_LINHA_SEPARACAO IN ($grandeza) ";
+		}
+		$sql = $sql . $queryWhere . " ORDER BY P.COD_PRODUTO, P.DSC_GRADE, NVL(PV.COD_SEQUENCIAL_VOLUME,PE.QTD_EMBALAGEM)";
 
-        $resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-        return $resultado;
-    }
+		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+		return $resultado;
+	}
 
-    public function relatorioListagemProdutos(array $params = array())
-    {
-        extract ($params);
-        $linhaseparacao = $params['idLinhaSeparacao'];
+	public function relatorioListagemProdutos(array $params = array())
+	{
+		extract ($params);
+		$linhaseparacao = $params['idLinhaSeparacao'];
 
-        $sql = "SELECT DISTINCT P.COD_PRODUTO,
+		$sql = "SELECT DISTINCT P.COD_PRODUTO,
                        P.DSC_PRODUTO,
                        P.DSC_GRADE,
                        P.NUM_VOLUMES,
@@ -1149,32 +1149,32 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       AND P.COD_LINHA_SEPARACAO = $linhaseparacao
                 ORDER BY PICKING";
 
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-    }
+		return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+	}
 
-    public function getEmbalagensByCodBarras($codBarras){
-        $sql = "SELECT NVL(PE.COD_PRODUTO_EMBALAGEM,0) as EMBALAGEM,
+	public function getEmbalagensByCodBarras($codBarras){
+		$sql = "SELECT NVL(PE.COD_PRODUTO_EMBALAGEM,0) as EMBALAGEM,
                        NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
                   FROM PRODUTO P
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE)
                   LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE)
                  WHERE PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras'";
-        $result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        $embalagenEn = null;
-        $volumeEn = null;
-        if (count($result) >0){
-            $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->find($result[0]['EMBALAGEM']);
-            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->find($result[0]['VOLUME']);
-        }
-        return array('embalagem'=>$embalagenEn,
-                     'volume'=>$volumeEn);
-    }
+		$result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+		$embalagenEn = null;
+		$volumeEn = null;
+		if (count($result) >0){
+			$embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->find($result[0]['EMBALAGEM']);
+			$volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->find($result[0]['VOLUME']);
+		}
+		return array('embalagem'=>$embalagenEn,
+			'volume'=>$volumeEn);
+	}
 
-    public function getProdutoByCodBarras($codigoBarras)
-    {
-        // busco produto
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('  p.id idProduto, p.descricao, p.grade,
+	public function getProdutoByCodBarras($codigoBarras)
+	{
+		// busco produto
+		$dql = $this->getEntityManager()->createQueryBuilder()
+			->select('  p.id idProduto, p.descricao, p.grade,
                         pe.id idEmbalagem, pv.id idVolume, p.numVolumes, ls.descricao as linhaSeparacao,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(unitizador_embalagem.id, unitizador_volume.id) idUnitizador,
@@ -1189,37 +1189,37 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(pv.descricao, \'\') descricaoVolume,
                         NVL(de1.descricao, de2.descricao) picking,
                         NVL(pv.codigoSequencial, \'\') sequenciaVolume')
-            ->from('wms:Produto', 'p')
-            ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
-            ->leftJoin('p.linhaSeparacao', 'ls')
-            ->leftJoin('pe.dadosLogisticos', 'dl')
-            ->leftJoin('pe.endereco', 'de1')
-            ->leftJoin('dl.normaPaletizacao', 'np_embalagem')
-            ->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-            ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
-            ->leftJoin('pv.endereco', 'de2')
-            ->leftJoin('pv.normaPaletizacao', 'np_volume')
-            ->leftJoin('np_volume.unitizador', 'unitizador_volume')
-            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-            ->setParameters(
-                array(
-                    'codigoBarras' => $codigoBarras,
-                )
-            );
+			->from('wms:Produto', 'p')
+			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
+			->leftJoin('p.linhaSeparacao', 'ls')
+			->leftJoin('pe.dadosLogisticos', 'dl')
+			->leftJoin('pe.endereco', 'de1')
+			->leftJoin('dl.normaPaletizacao', 'np_embalagem')
+			->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
+			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+			->leftJoin('pv.endereco', 'de2')
+			->leftJoin('pv.normaPaletizacao', 'np_volume')
+			->leftJoin('np_volume.unitizador', 'unitizador_volume')
+			->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+			->setParameters(
+				array(
+					'codigoBarras' => $codigoBarras,
+				)
+			);
 
-        return $dql->getQuery()->getArrayResult();
-    }
+		return $dql->getQuery()->getArrayResult();
+	}
 
-    public function relatorioProdutosSemPicking(array $params = array())
-    {
-        extract ($params);
-        $cond="";
-        if (!empty($params['rua'])){
-            $rua = $params['rua'];
-            $cond=" AND  DE.NUM_RUA = ".$rua." ";
-        }
+	public function relatorioProdutosSemPicking(array $params = array())
+	{
+		extract ($params);
+		$cond="";
+		if (!empty($params['rua'])){
+			$rua = $params['rua'];
+			$cond=" AND  DE.NUM_RUA = ".$rua." ";
+		}
 
-        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
+		$sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
                        DE.IND_ATIVO  as \"ativo\",
@@ -1232,137 +1232,137 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       ".$cond."
                 ORDER BY \"descricao\"";
 
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-    }
+		return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+	}
 
-    public function verificaSeEProdutoComposto($idProduto)
-    {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.numVolumes')
-            ->from('wms:Produto', 'p')
-            ->where('p.id = :codProduto')
-            ->setParameter('codProduto', $idProduto);
+	public function verificaSeEProdutoComposto($idProduto)
+	{
+		$dql = $this->getEntityManager()->createQueryBuilder()
+			->select('p.numVolumes')
+			->from('wms:Produto', 'p')
+			->where('p.id = :codProduto')
+			->setParameter('codProduto', $idProduto);
 
-        return $dql->getQuery()->getResult();
-    }
+		return $dql->getQuery()->getResult();
+	}
 
-    public function getProdutoEmbalagem()
-    {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.grade, pe.id')
-            ->from('wms:Produto\Embalagem', 'pe')
-            ->orderBy('pe.isPadrao', 'desc');
+	public function getProdutoEmbalagem()
+	{
+		$dql = $this->getEntityManager()->createQueryBuilder()
+			->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.grade, pe.id')
+			->from('wms:Produto\Embalagem', 'pe')
+			->orderBy('pe.isPadrao', 'desc');
 
-        return $dql->getQuery()->getResult();
+		return $dql->getQuery()->getResult();
 
-    }
+	}
 
-    public function getSequenciaEndAutomaticoCaracEndereco($codProduto,$grade, $inner = false) {
-        if ($inner == true) {
-            $join = " INNER ";
-        } else {
-            $join = " LEFT ";
-        }
+	public function getSequenciaEndAutomaticoCaracEndereco($codProduto,$grade, $inner = false) {
+		if ($inner == true) {
+			$join = " INNER ";
+		} else {
+			$join = " LEFT ";
+		}
 
-        $SQL = "  SELECT TP.COD_CARACTERISTICA_ENDERECO as ID, TP.DSC_CARACTERISTICA_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+		$SQL = "  SELECT TP.COD_CARACTERISTICA_ENDERECO as ID, TP.DSC_CARACTERISTICA_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM CARACTERISTICA_ENDERECO TP
                     $join JOIN PRODUTO_END_CARACT_END P
                       ON P.COD_CARACTERISTICA_ENDERECO = TP.COD_CARACTERISTICA_ENDERECO
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_CARACTERISTICA_ENDERECO";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
 		return $result;
-    }
+	}
 
-    public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
-        if ($inner == true) {
-            $join = " INNER ";
-        } else {
-            $join = " LEFT ";
-        }
+	public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
+		if ($inner == true) {
+			$join = " INNER ";
+		} else {
+			$join = " LEFT ";
+		}
 
-        $SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+		$SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM TIPO_ENDERECO TP
                     $join JOIN PRODUTO_END_TIPO_ENDERECO P
                       ON P.COD_TIPO_ENDERECO = TP.COD_TIPO_ENDERECO
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_TIPO_ENDERECO";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
-    }
+		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+		return $result;
+	}
 
-    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade, $inner = false) {
-        if ($inner == true) {
-            $join = " INNER ";
-        } else {
-            $join = " LEFT ";
-        }
+	public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade, $inner = false) {
+		if ($inner == true) {
+			$join = " INNER ";
+		} else {
+			$join = " LEFT ";
+		}
 
-        $SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+		$SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM AREA_ARMAZENAGEM TP
                    $join JOIN PRODUTO_END_AREA_ARMAZENAGEM P
                       ON P.COD_AREA_ARMAZENAGEM = TP.COD_AREA_ARMAZENAGEM
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_AREA_ARMAZENAGEM";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
-    }
+		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+		return $result;
+	}
 
-    public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade, $inner = false) {
+	public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade, $inner = false) {
 
-        if ($inner == true) {
-            $join = " INNER ";
-        } else {
-            $join = " LEFT ";
-        }
-        $SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+		if ($inner == true) {
+			$join = " INNER ";
+		} else {
+			$join = " LEFT ";
+		}
+		$SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM TIPO_EST_ARMAZ TP
                    $join JOIN PRODUTO_END_TIPO_EST_ARMAZ P
                       ON P.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_TIPO_EST_ARMAZ";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
-    }
+		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+		return $result;
+	}
 
-    public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
-        $enderecoReferencia = null;
+	public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
+		$enderecoReferencia = null;
 
-        //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
-        $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+		//PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
+		$enderecoReferencia = $produtoEn->getEnderecoReferencia();
 
-        //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
-        if ($enderecoReferencia == null) {
-            $embalagens = $produtoEn->getEmbalagens();
-            foreach ($embalagens as $embalagem) {
-                if ($embalagem->getEndereco() != null) {
-                    $enderecoReferencia = $embalagem->getEndereco();
-                    break;
-                }
-            }
-        }
-        if ($enderecoReferencia == null) {
-            $volumes = $produtoEn->getVolumes();
-            foreach ($volumes as $volume) {
-                if ($volume->getEndereco() != null) {
-                    $enderecoReferencia = $volume->getEndereco();
-                    break;
-                }
-            }
-        }
+		//SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
+		if ($enderecoReferencia == null) {
+			$embalagens = $produtoEn->getEmbalagens();
+			foreach ($embalagens as $embalagem) {
+				if ($embalagem->getEndereco() != null) {
+					$enderecoReferencia = $embalagem->getEndereco();
+					break;
+				}
+			}
+		}
+		if ($enderecoReferencia == null) {
+			$volumes = $produtoEn->getVolumes();
+			foreach ($volumes as $volume) {
+				if ($volume->getEndereco() != null) {
+					$enderecoReferencia = $volume->getEndereco();
+					break;
+				}
+			}
+		}
 
-        //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
-        if ($enderecoReferencia == null) {
-            $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
-        }
+		//SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
+		if ($enderecoReferencia == null) {
+			$enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
+		}
 
-        return $enderecoReferencia;
-    }
+		return $enderecoReferencia;
+	}
 
 
 }

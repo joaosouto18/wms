@@ -281,11 +281,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         return $result;
     }
-
-    public function getEtiquetasByExpedicao($idExpedicao, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null)
+    
+    public function getEtiquetasByExpedicao($idExpedicao = null, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null, $idEtiquetas = null)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
+            ->select('etq.id, es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia
@@ -295,16 +295,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->leftjoin('etq.codDepositoEndereco', 'de')
-            ->where('es.codExpedicao = :idExpedicao')
-            ->distinct(true)
-            ->setParameter('idExpedicao', $idExpedicao);
+            ->distinct(true);
 
-        if ($status) {
+        if ($idExpedicao != null) {
+            $dql->andWhere('es.codExpedicao = :idExpedicao')
+                ->setParameter('idExpedicao', $idExpedicao);
+        }
+        
+        if ($status != null) {
             $dql->andWhere('es.codStatus = :Status')
                 ->setParameter('Status', $status);
         }
+        
+        if ($idEtiquetas != null) {
+            $dql->andWhere('etq.id IN (' . $idEtiquetas .')');
+        }
 
-        if ($pontoTransbordo) {
+        if ($pontoTransbordo != null) {
             $expedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
             $expedicaoEntity = $expedicaoRepo->find($idExpedicao);
 
@@ -511,13 +518,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     public function geraMapaReentrega($produtoEntity, $quantidade, $expedicaoEntity){
+
+        if ($quantidade <= 0) return;
+
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $quebras = array(0=>'RE');
+        $quebras = array(0=>array('tipoQuebra'=>'RE'));
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
         $codProduto = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+
 
         if ($produtoEntity->getVolumes()->count() > 0) {
             $arrayVolumes = $produtoEntity->getVolumes()->toArray();
@@ -665,6 +676,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         for($i=0;$i<$quantidade;$i++) {
                             $codReferencia = null;
                             foreach ($arrayVolumes as $volumeEntity) {
+
+                                if (!is_null($volumeEntity->getDataInativacao()))
+                                    continue;
+
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasNaoFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
 
@@ -696,6 +711,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     } else {
                         foreach ($arrayVolumes as $volumeEntity) {
+                            
+                            $depositoEnderecoEn = null;
+                            if (!is_null($volumeEntity->getDataInativacao()))
+                                continue;
+
                             $endereco = $volumeEntity->getEndereco();
                             if (isset($endereco) && !empty($endereco)) {
                                 $depositoEnderecoEn = $volumeEntity->getEndereco();
@@ -722,6 +742,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
                 else if ($produtoEntity->getEmbalagens()->count() > 0) {
+                    $depositoEnderecoEn = null;
                     $codProduto = $pedidoProduto->getProduto()->getId();
                     $grade = $pedidoProduto->getProduto()->getGrade();
                     $embalagensEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'DESC'));
@@ -762,7 +783,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
-                        if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == 'S') {
+                        if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
                                 if ($embalagem->getQuantidade() <= $quantidadeAtender) {
                                     $embalagemAtual = $embalagem;
@@ -784,6 +805,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
                             $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
                         }
+
+                        if (!is_null($embalagemAtual->getDataInativacao()))
+                            continue;
+
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
@@ -1114,8 +1139,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             //LINHA DE SEPARAÇÃO
             if ($quebra == "L") {
-                $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
-                $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
+
+                $codLinhaSeparacao = 0;
+                $nomLinha = "(SEM LINHA DE SEPARACAO)";
+                if ($pedidoProduto->getProduto()->getLinhaSeparacao() != null) {
+                    $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
+                    $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
+                }
 
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
@@ -1370,11 +1400,57 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $senhaDigitada == $senhaAutorizacao;
     }
 
+    private function cortaEtiquetaReentrega($etiquetaEntity){
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaReentregaRepo */
+        $EtiquetaReentregaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
+
+        $etiquetaReentregaEn = $EtiquetaReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiquetaEntity->getId()));
+        if ($etiquetaReentregaEn == null) return false;
+
+        $statusCortadoEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_CORTADO);
+            $etiquetaReentregaEn->setCodStatus(EtiquetaSeparacao::STATUS_CORTADO);
+            $etiquetaReentregaEn->setStatus($statusCortadoEntity);
+        $this->getEntityManager()->persist($etiquetaReentregaEn);
+
+        if ($etiquetaEntity->getCodReferencia() != null) {
+            $etiquetasRelacionadasEn = $this->findBy(array('codReferencia'=>$etiquetaEntity->getCodReferencia()));
+            $etiquetaPrincipal = $this->findBy(array('id'=>$etiquetaEntity->getCodReferencia()));
+            $etiquetasRelacionadasEn = array_merge($etiquetasRelacionadasEn, $etiquetaPrincipal);
+        } else {
+            $etiquetasRelacionadasEn = $this->findBy(array('codReferencia'=>$etiquetaEntity->getId()));
+        }
+
+        if ($etiquetasRelacionadasEn != null) {
+            $statusPendenteCorteEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiqueta */
+            foreach ($etiquetasRelacionadasEn as $etiqueta) {
+                $etiquetaReentregaRelacionadaEn = $EtiquetaReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta->getId()));
+                if ($etiquetaReentregaRelacionadaEn != null) {
+                    if ($etiquetaReentregaRelacionadaEn->getCodStatus() != EtiquetaSeparacao::STATUS_CORTADO) {
+                            $etiquetaReentregaRelacionadaEn->setCodStatus(EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                            $etiquetaReentregaRelacionadaEn->setStatus($statusPendenteCorteEntity);
+                        $this->getEntityManager()->persist($etiquetaReentregaRelacionadaEn);
+                    }
+                }
+            }
+        }
+
+        $this->getEntityManager()->flush();
+        return true;
+
+    }
+
     /**
      * @param $etiquetaEntity
      */
     public function cortar($etiquetaEntity, $corteTodosVolumes = false)
     {
+
+        if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
+            return true;
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
@@ -1469,9 +1545,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $pedidosNaoCancelados = $ExpedicaoRepository->countPedidosNaoCancelados($idExpedicao);
 
         if ($pedidosNaoCancelados == 0) {
+
             $qtdCorte     = $this->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_CORTADO,$idExpedicao);
             $qtdEtiquetas = $this->getEtiquetasByStatus(null,$idExpedicao);
-            if ($qtdCorte == $qtdEtiquetas) {
+
+            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO;
+            $reentregasCortadas = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+            $reentregasTotal = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, null);
+
+
+            if (($qtdCorte == $qtdEtiquetas) AND (count($reentregasCortadas) == count($reentregasTotal))) {
                 $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
                 $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
                 $this->_em->flush();
@@ -1725,19 +1808,27 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $SQL = "
         SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
                PROD.COD_PRODUTO,
-               PROD.DSC_GRADE,
                PROD.DSC_PRODUTO PRODUTO,
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
-               PES.NOM_PESSOA as CLIENTE
+               PES.NOM_PESSOA as CLIENTE,
+               P.COD_PEDIDO as PEDIDO,
+               C.COD_CARGA_EXTERNO AS CARGA,
+               CA.COD_CARGA_EXTERNO AS CARGA_ANTIGA
          FROM REENTREGA R
          LEFT JOIN CARGA C ON C.COD_CARGA = R.COD_CARGA
-         LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_REENTREGA = R.COD_REENTREGA
+        INNER JOIN ETIQUETA_SEPARACAO ES ON ES.COD_REENTREGA = R.COD_REENTREGA
          LEFT JOIN ETIQUETA_SEPARACAO_REENTREGA ESR ON ESR.COD_ETIQUETA_SEPARACAO = ES.COD_ETIQUETA_SEPARACAO
          LEFT JOIN PEDIDO P ON ES.COD_PEDIDO = P.COD_PEDIDO
          LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
          LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
          LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = ES.COD_PRODUTO AND PROD.DSC_GRADE = ES.DSC_GRADE
          LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+
+         INNER JOIN NOTA_FISCAL_SAIDA NFS ON R.COD_NOTA_FISCAL_SAIDA = NFS.COD_NOTA_FISCAL_SAIDA
+         INNER JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSP ON NFSP.COD_NOTA_FISCAL_SAIDA = NFS.COD_NOTA_FISCAL_SAIDA
+         INNER JOIN PEDIDO PED ON NFSP.COD_PEDIDO = PED.COD_PEDIDO
+         INNER JOIN CARGA CA ON PED.COD_CARGA = CA.COD_CARGA
+
          WHERE 1 = 1
            AND C.COD_EXPEDICAO = $idExpedicao
         ";
@@ -1749,6 +1840,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($central != null) {
             $SQL = $SQL . " AND P.PONTO_TRANSBORDO = $central";
         }
+        $SQL .= " GROUP BY ES.COD_ETIQUETA_SEPARACAO,
+                   PROD.COD_PRODUTO,
+                   PROD.DSC_PRODUTO,
+                   PE.DSC_EMBALAGEM, PV.DSC_VOLUME,
+                   PES.NOM_PESSOA,
+                   P.COD_PEDIDO,
+                   C.COD_CARGA_EXTERNO,
+                   CA.COD_CARGA_EXTERNO";
 
         $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);

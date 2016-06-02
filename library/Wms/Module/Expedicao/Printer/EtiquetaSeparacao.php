@@ -68,23 +68,20 @@ class EtiquetaSeparacao extends Pdf
         $this->chaveCargas = $chaveCarga;
     }
 
-    public function imprimirReentrega($idExpedicao, $modelo){
+    public function imprimirReentrega($idExpedicao, $status, $modelo){
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
-        \Zend_Layout::getMvcInstance()->disableLayout(true);
-        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
-
-        $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
-
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $etiquetaSeparacaoReentregaRepo */
+        $etiquetaSeparacaoReentregaRepo = $em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
 
         $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
 
         if (count($pendencias) <= 0) {
-            throw new \Exception('Não Existe Etiquetas de Reentrega!');
+            throw new \Exception('Não Existe Etiquetas de Reentrega com pendência de impressão!');
         }
         $idEtiqueta = array();
         foreach ($pendencias as $pendencia) {
@@ -95,12 +92,16 @@ class EtiquetaSeparacao extends Pdf
 
         foreach($etiquetas as $etiqueta) {
             $this->etqMae = false;
-            $this->layoutEtiqueta($etiqueta, count($etiquetas), false, $modelo, true);
+            $this->layoutEtiqueta($etiqueta['id'], count($etiquetas), false, $modelo, true);
+
+            $etiquetaSeparacaoReentregaEn = $etiquetaSeparacaoReentregaRepo->find($etiqueta['id']);
+            $etiquetaSeparacaoReentregaEn->setStatus(Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            $em->persist($etiquetaSeparacaoReentregaEn);
         }
-
-        $this->Output('Etiquetas-reentrega-'.$idExpedicao.'-'.'.pdf','D');
-
+        $em->flush();
+        $this->Output('Etiquetas-reentrega-'.$idExpedicao.'.pdf','D');
     }
+
 
     public function imprimir(array $params = array(), $modelo)
     {
@@ -257,7 +258,7 @@ class EtiquetaSeparacao extends Pdf
 
         $strReimpressao = "";
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
-
+		
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;

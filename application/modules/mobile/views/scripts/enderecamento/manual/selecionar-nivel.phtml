@@ -1,0 +1,16 @@
+﻿<?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
+<form id="formulario">
+        <dt id="identification-label">&nbsp;</dt>
+        <dd id="identification-element">
+            <fieldset id="fieldset-identification">
+                <legend>Endereçamento Manual</legend>
+                <div class="field">
+                    <label>Informe um nivel:</label>
+                    <input style="width: 99%" class="focus" maxlength="100" size="40" type="text" name="nivel" id="nivel" value="" />
+                </div>
+                <div id="inserir"></div>
+                <input type="hidden" name="endereco" id="endereco" value="<?php echo $this->idEndereco ?>" />
+                <input class="btn" type="submit" name="submit" id="submit" value="Buscar" />
+            </fieldset>
+        </dd>
+</form>

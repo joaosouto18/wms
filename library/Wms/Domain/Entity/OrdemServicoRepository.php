@@ -127,8 +127,6 @@ class OrdemServicoRepository extends EntityRepository
 
     public function getOsByExpedicao ($idExpedicao)
     {
-        $_em = $this->getEntityManager();
-
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
             ->select('os.id,
                       os.dataInicial,
@@ -138,9 +136,11 @@ class OrdemServicoRepository extends EntityRepository
             ->from('wms:OrdemServico', 'os')
             ->innerJoin("os.pessoa", "p")
             ->innerJoin("os.atividade", "atv")
-            ->addSelect("( SELECT COUNT(es) as qtdConferido
-                             FROM wms:Expedicao\EtiquetaSeparacao es
-                            WHERE es.codOS = os.id
+            ->addSelect("( SELECT NVL(SUM(msc.qtdConferida), COUNT(es.id))
+                             FROM wms:OrdemServico os1
+                             LEFT JOIN wms:Expedicao\EtiquetaSeparacao es WITH es.codOS = os1.id
+                             LEFT JOIN wms:Expedicao\MapaSeparacaoConferencia msc WITH msc.codOS = os1.id
+                            WHERE os1.id = os.id
                           ) as qtdConferida")
             ->addSelect("( SELECT COUNT(es2) as qtdConferidoTransbordo
                             FROM wms:Expedicao\EtiquetaSeparacao es2

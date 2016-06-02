@@ -17,19 +17,7 @@ class Enderecamento_ProdutoController extends Action
         }
 
         $idRecebimento   = $this->getRequest()->getParam('id');
-
-        $buttons[] =  array(
-            'label' => 'Voltar para Busca de Recebimentos',
-            'cssClass' => 'btnBack',
-            'urlParams' => array(
-                'module' => 'recebimento',
-                'controller' => 'index',
-                'action' => 'index'
-            ),
-            'tag' => 'a'
-        );
-
-        Page::configure(array('buttons' => $buttons));
+        $this->configurePage();
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
@@ -49,6 +37,40 @@ class Enderecamento_ProdutoController extends Action
         $Grid = new ProdutosGrid();
         $this->view->grid = $Grid->init($idRecebimento, $recebimento->getStatus())
             ->render();
+    }
+
+    private function configurePage()
+    {
+        $buttons[] =  array(
+            'label' => 'Voltar para Busca de Recebimentos',
+            'cssClass' => 'btnBack',
+            'urlParams' => array(
+                'module' => 'recebimento',
+                'controller' => 'index',
+                'action' => 'index'
+            ),
+
+            'tag' => 'a'
+        );
+
+        Page::configure(array('buttons' => $buttons));
+    }
+
+    public function imprimirAjaxAction()
+    {
+        $idRecebimento = $this->_getParam('id',0);
+
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo    = $this->getEntityManager()->getRepository('wms:Recebimento');
+        $produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+
+        $resultado = array();
+        foreach ($produtos as $row) {
+            if ($row['qtdTotal'] - $row['qtdEnderecada'] > 0) {
+                $resultado[] = $row;
+            }
+        }
+        $this->exportPDF($resultado,'produtos_nao_enderecados',"Relatório de Produtos não endereçados do Recebimento $idRecebimento","L");
     }
 
     public function alterarNormaAction(){

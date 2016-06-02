@@ -26,14 +26,14 @@ class Item
      * 
      * @ManyToOne(targetEntity="Wms\Domain\Entity\NotaFiscal")
      * @JoinColumn(name="COD_NOTA_FISCAL", referencedColumnName="COD_NOTA_FISCAL")
-     * @var Wms\Domain\Entity\NotaFiscal
+     * @var \Wms\Domain\Entity\NotaFiscal
      */
     protected $notaFiscal;
     /**
      * Grade do produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
-     * @var Wms\Domain\Entity\Produto
+     * @var \Wms\Domain\Entity\Produto
      */
     protected $produto;
     /**
