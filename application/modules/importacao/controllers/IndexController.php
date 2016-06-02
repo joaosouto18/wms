@@ -338,7 +338,7 @@ class Importacao_IndexController extends Action
                                 $valorCampo = trim($campo->getValorPadrao());
                             } else {
                                 $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
-
+                                $valorCampo = utf8_encode($valorCampo);
                                 if ($valorCampo == "") {
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
@@ -353,7 +353,7 @@ class Importacao_IndexController extends Action
                                 $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
                             }
 
-                            $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
+                            $arrRegistro[$campo->getNomeCampo()] = utf8_decode($valorCampo);
                         }
 
                         $elements = array(
@@ -389,6 +389,7 @@ class Importacao_IndexController extends Action
                     $i = 0;
 
                     while ($linha = fgets($handle)) {
+                        $linha = utf8_encode($linha);
                         $i = $i + 1;
                         if (ucfirst($cabecalho) == 'S') {
                             if ($i == 1) {
