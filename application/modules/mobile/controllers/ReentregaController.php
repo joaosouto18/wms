@@ -2,6 +2,7 @@
 use Wms\Controller\Action;
 use Wms\Module\Mobile\Form\Reentrega as FormReentrega;
 use Wms\Module\Mobile\Form\ConferirProdutosReentrega as FormConferirProdutosReentrega;
+use Wms\Service\Coletor as LeituraColetor;
 
 class Mobile_ReentregaController extends Action
 {
@@ -84,6 +85,11 @@ class Mobile_ReentregaController extends Action
         $params = $this->_getAllParams();
         $this->view->id = $params['id'];
 
+        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+        $modeloSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->findOneBy(array('id' => $idModeloSeparacao));
+        $this->view->modeloSeparacao = $modeloSeparacao->getTipoSeparacaoFracionado();
+        $this->view->modeloSeparacao = "M";
+
         if (isset($params['submit'])) {
             if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
                 try {
@@ -99,6 +105,10 @@ class Mobile_ReentregaController extends Action
                 $this->_helper->messenger('error', 'Preencha todos os campos corretamente');
             }
         }
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
+        $notaFiscalSaidaRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+        $getQtdProdutosDivergentes   = $notaFiscalSaidaRepo->getQtdProdutoDivergentesByNota(array('id' => $params['id']));
+        $this->view->listaProdutos = $getQtdProdutosDivergentes;
     }
 
     public function finalizarConferenciaAction()
@@ -110,7 +120,7 @@ class Mobile_ReentregaController extends Action
             $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
             $result = $recebimentoReentregaRepo->finalizarConferencia($params);
 
-            $this->addFlashMessage('error', "Notas Fiscais Recebidas com sucesso");
+            $this->addFlashMessage('success', "Notas Fiscais Recebidas com sucesso");
             $this->_redirect('/mobile/reentrega/recebimento');
 
         } catch (\Exception $e) {
@@ -158,10 +168,29 @@ class Mobile_ReentregaController extends Action
             $this->redirect('recebimento', 'reentrega', 'mobile');
 
         }
-
-
-
     }
 
+    public function getNotaOrCodBarrasByCampoBipadoAction()
+    {
+        $params = $this->_getAllParams();
+        $LeituraColetor = new LeituraColetor();
+        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($params['etiqueta']);
+
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('nfs.numeroNf, es.id')
+            ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
+            ->innerJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+            ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsped', 'WITH', 'nfsped.notaFiscalSaida = nfs.id')
+            ->innerJoin('nfsped.pedido', 'ped')
+            ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'nfsp.codProduto = es.codProduto AND nfsp.grade = es.dscGrade AND ped.id = es.pedido');
+
+        if (isset($params['etiqueta']) && !empty($params['etiqueta'])) {
+            $sql->orWhere("es.id = $etiquetaSeparacao");
+        }
+
+        $resultado = $sql->getQuery()->getResult();
+
+        $this->_helper->json($resultado, true);
+    }
 }
 

@@ -37,6 +37,10 @@ class Produtos extends Grid
                     'index' => 'grade',
                 ))
                 ->addColumn(array(
+                    'label' => 'Qtd. Itens',
+                    'index' => 'qtdItensNf'
+                ))
+                ->addColumn(array(
                     'label' => 'Qtd.Recebimento',
                     'index' => 'qtdRecebimento',
                 ))

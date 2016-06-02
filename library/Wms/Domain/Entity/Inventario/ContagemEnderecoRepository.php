@@ -12,7 +12,7 @@ class ContagemEnderecoRepository extends EntityRepository
      * @return ContagemOS
      * @throws \Exception
      */
-    public function save($params)
+    public function save($params, $flush = true)
     {
         if (empty($params['idContagemOs'])) {
             throw new \Exception("idContagemOs não pode ser vazio");
@@ -23,7 +23,8 @@ class ContagemEnderecoRepository extends EntityRepository
         }
 
         $em = $this->getEntityManager();
-        $em->beginTransaction();
+        
+        if ($flush == true) $em->beginTransaction();
         try {
 
             $contagemEndEn = new ContagemEndereco();
@@ -54,11 +55,11 @@ class ContagemEnderecoRepository extends EntityRepository
             $contagemEndEn->setInventarioEndereco($inventarioEn);
 
             $em->persist($contagemEndEn);
-            $em->commit();
-            $em->flush();
+            if ($flush == true) $em->commit();
+            if ($flush == true) $em->flush();
 
         } catch(\Exception $e) {
-            $em->rollback();
+            if ($flush == true) $em->rollback();
             throw new \Exception();
         }
 
@@ -78,11 +79,6 @@ class ContagemEnderecoRepository extends EntityRepository
 
         $em->persist($inventarioContagemEnderecoEn);
         $em->flush();
-
-
-
-
-
     }
 
     public function getContagens($params)
@@ -98,6 +94,7 @@ class ContagemEnderecoRepository extends EntityRepository
                         GROUP BY ICE.COD_INVENTARIO_ENDERECO) MAXCONT
                     ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
                 WHERE IE.COD_INVENTARIO = ".$idInventario."
+                  AND IE.INVENTARIADO IS NULL
                 ORDER BY CONTAGEM
          ";
 
@@ -107,15 +104,17 @@ class ContagemEnderecoRepository extends EntityRepository
     public function getDetalhesByInventarioEndereco($codInvEndereco)
     {
         $query = $this->_em->createQueryBuilder()
-            ->select('ice.numContagem, pessoa.nome, p.id, p.grade, p.descricao, ice.qtdContada, ice.qtdDivergencia')
+            ->select("ice.numContagem, pessoa.nome, p.id, p.grade, p.descricao, ice.qtdContada, ice.qtdDivergencia,
+                      nvl(pv.descricao,'Embalagem') as volume")
             ->from("wms:Inventario\ContagemEndereco","ice")
             ->innerJoin("ice.inventarioEndereco",'ie')
             ->innerJoin("ice.contagemOs",'co')
             ->innerJoin("co.os",'o')
+            ->leftJoin('wms:Produto\Volume','pv','WITH','pv.id = ice.codProdutoVolume')
             ->leftJoin("o.pessoa",'pessoa')
-            ->innerJoin("ice.produto",'p')
+            ->leftJoin("ice.produto",'p')
             ->andWhere("ie.id = $codInvEndereco")
-            ->orderBy('p.id, p.grade, ice.numContagem');
+            ->orderBy('ice.numContagem, p.id, p.grade');
 
         return $query->getQuery()->getResult();
     }

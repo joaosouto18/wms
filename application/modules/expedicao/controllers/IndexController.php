@@ -74,7 +74,11 @@ class Expedicao_IndexController  extends Action
         $this->view->grid = $Grid->init($params)
             ->render();
 
-        $this->view->refresh = true;
+
+        if ($this->getSystemParameterValue('REFRESH_INDEX_EXPEDICAO') == 'S') {
+            $this->view->refresh = true;
+        }
+
         ini_set('max_execution_time', 30);
 
     }

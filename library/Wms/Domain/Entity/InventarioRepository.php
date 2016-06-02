@@ -12,6 +12,161 @@ use Wms\Service\Mobile\Inventario as InventarioService;
 class InventarioRepository extends EntityRepository
 {
 
+    public function adicionaEstoqueContagemInicial($inventarioEn)
+    {
+
+        /* @ToDo Parametro
+         * Pode virar parametro de acordo com o Ricardo
+         * Gera Posição do Estoque como primeira contagem?
+         */
+        return;
+        
+        if ($this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL') != "S") {
+            return;
+        }
+        
+        try {
+
+            $SQL = "SELECT IE.COD_INVENTARIO_ENDERECO,
+                           E.COD_PRODUTO,
+                           E.DSC_GRADE,
+                           E.COD_DEPOSITO_ENDERECO,
+                           NVL(E.QTD,0) as QTD,
+                           E.COD_PRODUTO_VOLUME,
+                           E.COD_PRODUTO_EMBALAGEM
+                      FROM INVENTARIO_ENDERECO IE
+                      LEFT JOIN ESTOQUE E ON E.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                     WHERE COD_INVENTARIO = " . $inventarioEn->getId();
+            $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+            $contagemEndRepo = $this->getEntityManager()->getRepository("wms:Inventario\ContagemEndereco");
+            $inventarioEndRepo = $this->getEntityManager()->getRepository("wms:Inventario\Endereco");
+
+            $idContagemOs = $this->criarOS($inventarioEn->getId());
+
+            $this->getEntityManager()->beginTransaction();
+            foreach ($records as $row){
+
+                $idVolume = $row['COD_PRODUTO_VOLUME'];
+
+                $idEmbalagem = null;
+                if ( $row['COD_PRODUTO_EMBALAGEM'] != null) {
+                    $idEmbalagem = 0;
+                }
+
+                $contagemEndEn = $contagemEndRepo->save(array(
+                    'qtd' => $row['QTD'],
+                    'idContagemOs' => $idContagemOs,
+                    'idInventarioEnd' => $row['COD_INVENTARIO_ENDERECO'],
+                    'qtdAvaria' => 0,
+                    'codProduto' => $row['COD_PRODUTO'],
+                    'grade' => $row['DSC_GRADE'],
+                    'codProdutoEmbalagem' => $idEmbalagem,
+                    'codProdutoVolume' => $idVolume,
+                    'numContagem' => 1
+                ),
+                false);
+                $inventarioEndEn = $inventarioEndRepo->find($row['COD_INVENTARIO_ENDERECO']);
+                $inventarioEndEn->setDivergencia(1);
+                $contagemEndEn->setQtdDivergencia($row['QTD']);
+                $contagemEndEn->setDivergencia(1);
+                $this->getEntityManager()->persist($inventarioEndEn);
+                $this->getEntityManager()->persist($contagemEndEn);
+
+            }
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
+        } catch(\Exception $e) {
+            $this->getEntityManager()->rollback();
+            throw new \Exception($e->getMessage());
+        }
+
+    }
+
+    public function getInventarios($criterio = null){
+        $SQL = "SELECT COD_INVENTARIO,
+                       STATUS,
+                       QTD_END_TOTAL,
+                       QTD_DIV_TOTAL,
+                       QTD_INV_TOTAL,
+                       DTH_INICIO,
+                       DTH_FINALIZACAO,
+                       CASE WHEN STATUS = 'GERADO' THEN 1
+                            WHEN STATUS = 'LIBERADO' THEN 2
+                            WHEN STATUS = 'CONCLUIDO' THEN 3 
+                            WHEN STATUS = 'FINALIZADO' THEN 4
+                            WHEN STATUS = 'CANCELADO' THEN 5
+                            ELSE 6
+                       END AS SEQUENCIA
+                  FROM (
+               SELECT I.COD_INVENTARIO,
+                       CASE WHEN (S.DSC_SIGLA = 'LIBERADO') AND (NVL(QTD_IE.QTD,0) = NVL(QTD_INV.QTD,0)) THEN 'CONCLUIDO'
+                            ELSE S.DSC_SIGLA 
+                       END as STATUS,
+                       NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
+                       NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
+                       NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
+                       TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
+                       TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO
+                  FROM INVENTARIO I
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
+                  LEFT JOIN (SELECT COUNT(*) as QTD,
+                                    COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO
+                              GROUP BY COD_INVENTARIO) QTD_IE ON QTD_IE.COD_INVENTARIO = I.COD_INVENTARIO
+                  LEFT JOIN (SELECT COUNT(*) as QTD,
+                                    COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO
+                              WHERE DIVERGENCIA = 1
+                              GROUP BY COD_INVENTARIO) QTD_DIV ON QTD_DIV.COD_INVENTARIO = I.COD_INVENTARIO
+                  LEFT JOIN (SELECT COUNT(*) as QTD,
+                                    COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO
+                              WHERE INVENTARIADO = 1
+                              GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO
+          $criterio) I
+          ORDER BY SEQUENCIA, COD_INVENTARIO DESC
+                              ";
+
+        $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $result = array();
+        foreach ($records as $row){
+
+            $andamento = 0;
+            if ($row['QTD_END_TOTAL'] > 0) {
+                $andamento = ($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL']);
+            }
+            if  ($row['STATUS'] == 'FINALIZADO') $andamento = 1;
+            $dataInicioBanco = explode('-',$row['DTH_INICIO']);
+            $dataInicio = new \DateTime();
+            $dataInicio->setDate($dataInicioBanco[2],$dataInicioBanco[1],$dataInicioBanco[0]);
+            $dataInicio->setTime($dataInicioBanco[3],$dataInicioBanco[4]);
+
+            $dataFinal = null;
+            if ($row['DTH_FINALIZACAO'] != "") {
+                $dataFinalBanco = explode('-',$row['DTH_FINALIZACAO']);
+                $dataFinal = new \DateTime();
+                $dataFinal->setDate($dataFinalBanco[2],$dataFinalBanco[1],$dataFinalBanco[0]);
+                $dataFinal->setTime($dataFinalBanco[3],$dataFinalBanco[4]);
+            }
+
+            $andamento = number_format($andamento,2)*100;
+            $values = array(
+                'id' => $row['COD_INVENTARIO'],
+                'qtdEndereco' => $row['QTD_END_TOTAL'],
+                'qtdDivergencia' => $row['QTD_DIV_TOTAL'],
+                'qtdInvetariado' => $row['QTD_INV_TOTAL'],
+                'andamento' =>  $andamento,
+                'dataInicio' => $dataInicio,
+                'dataFinalizacao' => $dataFinal,
+                'status' => $row['STATUS']);
+            $result[] = $values;
+        }
+
+        return $result;
+    }
+
     /**
      * @return Inventario
      * @throws \Exception
@@ -458,6 +613,49 @@ class InventarioRepository extends EntityRepository
         $sql .= " ORDER BY DSC_DEPOSITO_ENDERECO ASC";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getMovimentacaoEstoqueByInventario ($idInventario) {
+        $SQL = "SELECT ESTQ.COD_INVENTARIO as \"Inventário\",
+                       DE.DSC_DEPOSITO_ENDERECO as \"Endereço\",
+                       ESTQ.COD_PRODUTO as \"Cod.Produto\",
+                       P.DSC_PRODUTO as \"Produto\",
+                       INV.QTD_CONFERIDA - ESTQ.QTD_MOVIMENTADA AS \"Estq.Inicial\",
+                       INV.QTD_CONFERIDA as \"Qtd.Conf.\",
+                       CASE WHEN ESTQ.QTD_MOVIMENTADA >0 THEN 'Entrada' ELSE 'Saída' END as \"Tipo Mov.\",
+                       ESTQ.QTD_MOVIMENTADA as \"Qtd.Mov.\"
+                  FROM (SELECT COD_INVENTARIO, COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, QTD_MOVIMENTADA
+                          FROM (SELECT OS.COD_INVENTARIO, HE.COD_DEPOSITO_ENDERECO, HE.COD_PRODUTO, HE.DSC_GRADE, HE.COD_PRODUTO_VOLUME,
+                                       CASE WHEN COD_PRODUTO_EMBALAGEM IS NOT NULL THEN 0 ELSE NULL END AS COD_PRODUTO_EMBALAGEM,
+                                       SUM(HE.QTD) as QTD_MOVIMENTADA
+                                  FROM HISTORICO_ESTOQUE HE
+                                 INNER JOIN INVENTARIO_CONTAGEM_OS OS ON OS.COD_OS = HE.COD_OS
+                                 GROUP BY OS.COD_INVENTARIO, HE.COD_DEPOSITO_ENDERECO, HE.COD_PRODUTO, HE.DSC_GRADE, HE.COD_PRODUTO_VOLUME, HE.COD_PRODUTO_EMBALAGEM) HE
+                         GROUP BY COD_INVENTARIO, COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, QTD_MOVIMENTADA) ESTQ
+             LEFT JOIN (SELECT COD_INVENTARIO, COD_DEPOSITO_ENDERECO, ICE.COD_PRODUTO, ICE.DSC_GRADE,
+                               NVL(ICE.QTD_AVARIA,0) + NVL(ICE.QTD_CONTADA,0) as QTD_CONFERIDA
+                          FROM INVENTARIO_ENDERECO IE 
+                         INNER JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                         INNER JOIN (SELECT MAX(COD_INV_CONT_END) ID, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_EMBALAGEM, COD_PRODUTO_VOLUME, COD_INVENTARIO_ENDERECO
+                                       FROM INVENTARIO_CONTAGEM_ENDERECO              
+                                      GROUP BY COD_PRODUTO, DSC_GRADE, COD_PRODUTO_EMBALAGEM, COD_PRODUTO_VOLUME, COD_INVENTARIO_ENDERECO) MID 
+                                 ON MID.ID = ICE.COD_INV_CONT_END
+                         WHERE IE.INVENTARIADO = 1
+                           AND IE.ATUALIZA_ESTOQUE = 1
+                         GROUP BY COD_INVENTARIO, COD_DEPOSITO_ENDERECO, ICE.COD_PRODUTO, ICE.DSC_GRADE, ICE.QTD_AVARIA, ICE.QTD_CONTADA) INV
+                    ON INV.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
+                   AND INV.COD_INVENTARIO = ESTQ.COD_INVENTARIO
+                   AND INV.COD_PRODUTO = ESTQ.COD_PRODUTO AND INV.DSC_GRADE = ESTQ.DSC_GRADE
+                   AND ESTQ.QTD_MOVIMENTADA <> 0 AND INV.QTD_CONFERIDA > 0
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ESTQ.COD_PRODUTO AND P.DSC_GRADE = ESTQ.DSC_GRADE
+                 WHERE NOT(ESTQ.QTD_MOVIMENTADA = 0 AND INV.QTD_CONFERIDA IS NULL AND ESTQ.COD_PRODUTO IS NOT NULL)
+                   AND ESTQ.COD_INVENTARIO IN ($idInventario)
+                 ORDER BY DSC_DEPOSITO_ENDERECO,
+                          COD_PRODUTO,
+                          DSC_GRADE,
+                          ESTQ.COD_INVENTARIO";
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

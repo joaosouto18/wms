@@ -10,64 +10,102 @@ class Inventario extends Grid
     public function init()
     {
         $this->setAttrib('title','Inventario');
-        $source = $this->getEntityManager()->createQueryBuilder()
-            ->select("i, s.sigla as status, count(ie.id) as qtdEndereco")
-            ->addSelect("
-                    (
-                        SELECT COUNT(ie2.id)
-                        FROM wms:Inventario\Endereco ie2
-                        WHERE ie2.divergencia = 1
-                        AND ie2.inventario = i.id
-                    )
-                    AS qtdDivergencia
-                    ")
-            ->addSelect("
-                    (
-                        SELECT COUNT(ie3.id)
-                        FROM wms:Inventario\Endereco ie3
-                        WHERE ie3.inventariado = 1
-                        AND ie3.inventario = i.id
-                    )
-                    AS qtdInvetariado
-                    ")
-            ->from('wms:Inventario', 'i')
-            ->innerJoin('i.status', 's')
-            ->leftJoin("wms:Inventario\Endereco", 'ie', 'WITH', 'i.id = ie.inventario')
-            ->groupBy('i, s.sigla')
-            ->orderBy('i.id', 'DESC');
+        $source = $this->getEntityManager()->getRepository('wms:Inventario')->getInventarios();
 
-        $this->setSource(new \Core\Grid\Source\Doctrine($source))
+        $this->setSource(new \Core\Grid\Source\ArraySource($source))
             ->setId('monitoramento-inventario');
         $this->setShowExport(false);
+        $this->addMassAction('index/relatorio','Movimentações no Estoque (xls)');
         $this->addColumn(array(
                 'label' => 'Inventário',
-                'index' => 'id'
+                'index' => 'id',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
              ))
             ->addColumn(array(
                 'label' => 'Qtd Endereços',
                 'index' => 'qtdEndereco',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
-                'label' => 'Qtd End. Divergência',
+                'label' => 'Qtd Divergência',
                 'index' => 'qtdDivergencia',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Qtd Inventariado',
                 'index' => 'qtdInvetariado',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
-                'label' => 'Data Início',
+                'label' => 'Dt. Início',
                 'index' => 'dataInicio',
-                'render' => 'DataTime'
+                'render' => 'DataTime',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'date',
+                        'range' => false,
+                    ),
+                ),
             ))
             ->addColumn(array(
-                'label' => 'Data Finalização',
+                'label' => 'Dt. Finalização',
                 'index' => 'dataFinalizacao',
-                'render' => 'DataTime'
+                'render' => 'DataTime',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'date',
+                        'range' => false,
+                    ),
+                ),
+            ))
+            ->addColumn(array(
+                'label' => 'Andamento (%)',
+                'index' => 'andamento',
+                'render' => 'N2',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'centesimal',
+                        'range' => true,
+                    ),
+                ),
             ))
             ->addColumn(array(
                 'label' => 'Status',
-                'index' => 'status'
+                'index' => 'status',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'select',
+                        'attributes' => array(
+                            'multiOptions' => array('GERADO'=>'GERADO',
+                                                    'LIBERADO' => 'LIBERADO',
+                                                    'CONCLUIDO' => 'CONCLUIDO',
+                                                    'FINALIZADO' => 'FINALIZADO',
+                                                    'CANCELADO'=>'CANCELADO')
+                        )
+                    ),
+                ),
+
+
             ))
             ->addAction(array(
                 'label' => 'Liberar',
@@ -99,7 +137,7 @@ class Inventario extends Grid
                 'cssClass' => '',
                 'pkIndex' => 'id',
                 'condition' => function ($row) {
-                    return $row['status'] == "LIBERADO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
+                    return $row['status'] == "CONCLUIDO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
                 },
             ))
             ->addAction(array(
@@ -143,6 +181,16 @@ class Inventario extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Movimentações no Estoque',
+                'title' => 'Movimentações por Produto',
+                'actionName' => 'view-movimentacoes-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "FINALIZADO";
+                },
+            ))
+            ->addAction(array(
                 'label' => 'Imprimir Endereços',
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
@@ -161,7 +209,8 @@ class Inventario extends Grid
                 'condition' => function ($row) {
                     return $row['status'] == "LIBERADO";
                 },
-            ));
+            ))
+            ->setHasOrdering(true);
 
         return $this;
     }

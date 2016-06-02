@@ -187,6 +187,14 @@ class Recebimento extends Grid
                     'controllerName' => 'recebimento',
                     'pkIndex' => 'id'
                 ))
+                ->addAction(array(
+                    'label' => 'Funcionário Descarga',
+                    'title' => 'Funcionários que descarregaram o Recebimento',
+                    'actionName' => 'usuario-recebimento-pdf',
+                    'cssClass' => 'pdf',
+                    'pkIndex' => 'id',
+                    'target' => '_blank',
+                ))
 
                 ->setShowExport(true)
                 ->setShowMassActions($params);

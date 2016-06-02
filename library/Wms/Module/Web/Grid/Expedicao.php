@@ -189,6 +189,18 @@ class Expedicao extends Grid
                 'cssClass' => 'dialogAjax'
             ))
             ->addAction(array(
+                'label' => 'Relatório de Reentregas',
+                'modelName' => 'expedicao',
+                'controllerName' => 'etiqueta',
+                'actionName' => 'gerar-pdf-ajax',
+                'params' => array('tipo' => 'relatorio-reentrega','central'=>'','todas'=>'S'),
+                'cssClass' => 'pdf',
+                'condition' => function ($row) {
+                    return ($row['reentrega'] > 0) and ($row['imprimir'] != "SIM") ;
+                },
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Relatório de Produtos',
                 'target' => '_blank',
                 'modelName' => 'expedicao',

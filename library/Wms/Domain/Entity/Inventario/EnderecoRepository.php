@@ -65,6 +65,11 @@ class EnderecoRepository extends EntityRepository
             $andDivergencia = " AND IE.DIVERGENCIA IS NULL ";
         }
 
+        $sqlWhereSubQuery = "";
+        if ($numContagem == 0) {
+            $sqlWhereSubQuery = "WHERE (CONTAGEM_INVENTARIADA IS NOT NULL OR DIVERGENCIA IS NOT NULL)";
+        }
+
         $andRua = null;
         if ($rua != null) {
             $andRua = " AND DE.NUM_RUA = ".$rua." ";
@@ -86,12 +91,18 @@ class EnderecoRepository extends EntityRepository
         $sql = "$campos
           FROM INVENTARIO_ENDERECO IE
           LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
-          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, NVL(PV.DSC_VOLUME,'EMBALAGEM') COMERCIALIZACAO
+          LEFT JOIN (SELECT MAX(NUM_CONTAGEM) as ULTCONT, ICE.COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, NVL(PV.DSC_VOLUME,'EMBALAGEM') COMERCIALIZACAO
                         FROM INVENTARIO_CONTAGEM_ENDERECO ICE
                         LEFT JOIN PRODUTO P ON ICE.COD_PRODUTO = P.COD_PRODUTO AND ICE.DSC_GRADE = P.DSC_GRADE
-                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
-                        LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
-                        GROUP BY COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME,PE.DSC_EMBALAGEM) MAXCONT
+                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ICE.COD_PRODUTO_EMBALAGEM
+                        LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ICE.COD_PRODUTO_VOLUME
+                       INNER JOIN (SELECT MAX(NUM_CONTAGEM) MAXC,
+                                          COD_INVENTARIO_ENDERECO
+                                     FROM INVENTARIO_CONTAGEM_ENDERECO  
+                                    $sqlWhereSubQuery
+                                    GROUP BY COD_INVENTARIO_ENDERECO) M ON M.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+                                                                       AND M.MAXC = ICE.NUM_CONTAGEM
+                        GROUP BY ICE.COD_INVENTARIO_ENDERECO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME,PE.DSC_EMBALAGEM) MAXCONT
             ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
          WHERE IE.COD_INVENTARIO = ".$idInventario."
          $andContagem

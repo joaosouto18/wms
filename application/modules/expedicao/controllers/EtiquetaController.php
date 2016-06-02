@@ -153,9 +153,8 @@ class Expedicao_EtiquetaController extends Action
             }
         }
         if ($tipo == "reentrega") {
-
             $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
-            if ($this->getRequest()->getParam('todas') == 'S') $status = null;
+                if ($this->getRequest()->getParam('todas') == 'S') $status = null;
 
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();
@@ -174,8 +173,15 @@ class Expedicao_EtiquetaController extends Action
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
             }
-
         }
+
+        if ($tipo == "relatorio-reentrega") {
+            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, null);
+            $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','L');
+        }
+
     }
 
     public function semDadosAction()

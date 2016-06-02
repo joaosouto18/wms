@@ -119,7 +119,7 @@ class Mobile_OrdemServicoController extends Action
     {
         /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
         $inventarioRepo = $this->em->getRepository('wms:Inventario');
-        $this->view->inventarios = $inventarioRepo->getByStatus(\Wms\Domain\Entity\Inventario::STATUS_LIBERADO);
+        $this->view->inventarios = $inventarioRepo->getInventarios("WHERE I.COD_STATUS = " . \Wms\Domain\Entity\Inventario::STATUS_LIBERADO . " AND NVL(QTD_IE.QTD,0) > NVL(QTD_INV.QTD,0)");
     }
 
 }
