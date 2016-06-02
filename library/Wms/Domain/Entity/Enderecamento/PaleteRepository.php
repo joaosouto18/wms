@@ -699,6 +699,7 @@ class PaleteRepository extends EntityRepository
             $paleteProduto->setValidade($dataValidade);
             $this->_em->persist($paleteProduto);
         }
+        return $paleteEn;
     }
 
 

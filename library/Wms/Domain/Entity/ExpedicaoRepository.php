@@ -2611,11 +2611,11 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function     executaCortePedido($cortes, $motivo) {
+    public function executaCortePedido($cortes, $motivo) {
         //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
         foreach ($cortes as $codPedido => $produtos) {
-            foreach ($produtos as $codProduto=> $grades) {
-                foreach ($grades as $grade=> $quantidade) {
+            foreach ($produtos as $codProduto => $grades) {
+                foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0)) continue;
                     $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
                 }
@@ -2675,7 +2675,7 @@ class ExpedicaoRepository extends EntityRepository
             if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
                 $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
             }
-            $mapa->setQtdCortado($qtdCortarMapa);
+            $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
             $this->getEntityManager()->persist($mapa);
             $qtdCortar = $qtdCortar - $qtdCortarMapa;
         }

@@ -15,7 +15,7 @@ class MapasPendentes extends Grid
         $this->setAttrib('title','Mapas Separação Conferir');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->addColumn(array(
-                'label' => utf8_encode('Código'),
+                'label' => 'Código',
                 'index' => 'COD_PRODUTO',
             ))
             ->addColumn(array(
@@ -27,7 +27,7 @@ class MapasPendentes extends Grid
                 'index' => 'QTD_CONFERIR',
             ))
             ->addColumn(array(
-                'label' => utf8_encode('Endereço'),
+                'label' => 'Endereço',
                 'index' => 'DSC_DEPOSITO_ENDERECO'
             ));
 
