@@ -532,8 +532,6 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
-            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-            $recebimentoRepo    = $this->em->getRepository('wms:Recebimento');
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
 
