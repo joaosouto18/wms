@@ -232,7 +232,7 @@ class Importacao_IndexController extends Action
         return $result;
     }
     
-    public function iniciarXlsAjaxAction(){
+    public function iniciarAjaxAction(){
         try {
 
             set_error_handler(array($this, 'custom_warning_handler'));
@@ -385,6 +385,8 @@ class Importacao_IndexController extends Action
                     $handle = fopen($archive, "r");
 
                     $caracterQuebra = $arquivo->getCaracterQuebra();
+                    
+                    $this->statusProgress["tLinha"] = count(file($archive)) - 1;
 
                     $i = 0;
 
@@ -480,199 +482,33 @@ class Importacao_IndexController extends Action
             $this->_helper->json(array('result' => $e2->getMessage()));
         }
     }
-    
-    public function iniciarAjaxAction()
+
+    public function alterarStatusAction()
     {
+        try {
+            $id = $this->getRequest()->getParam('id');
 
-        try{
-            set_error_handler(array($this,'custom_warning_handler'));
-            ini_set('memory_limit', '-1');
-            ini_set('max_execution_time', 3000);
-            $em = $this->getEntityManager();
+            $impArquivoService = new \Wms\Service\ImportacaoArquivo($this->getEntityManager());
+            $impArquivoService->alterarStatus($id);
 
-            $dir = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
-            $importacaoService = new \Wms\Service\Importacao();
-
-            $produtoRepo    = $em->getRepository('wms:Produto');
-            $enderecoRepo   = $em->getRepository("wms:Deposito\Endereco");
-            $fabricanteRepo = $em->getRepository('wms:Fabricante');
-            $classeRepo     = $em->getRepository('wms:Produto\Classe');
-            $embalagemRepo  = $em->getRepository('wms:Produto\Embalagem');
-            $camposRepo     = $em->getRepository('wms:Importacao\Campos');
-
-            $repositorios = array('produtoRepo'    => $produtoRepo,
-                                  'enderecoRepo'   => $enderecoRepo,
-                                  'fabricanteRepo' => $fabricanteRepo,
-                                  'classeRepo'     => $classeRepo,
-                                  'embalagemRepo'  => $embalagemRepo,);
-
-            $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo'=>'S'),array('sequencia' => 'ASC'));
-            $arrErros = array();
-            $countFlush = 0;
-
-            $config = array('updateMethodName' => 'Zend_ProgressBar_Update');
-            $adapter = new Zend_ProgressBar_Adapter_JsPush($config);
-
-            $this->statusProgress["tArquivo"] = count($arquivos);
-            $this->progressBar = new Zend_ProgressBar($adapter, 0, $this->statusProgress["tArquivo"]);
-
-            foreach ($arquivos as $key => $arquivo) {
-                $this->statusProgress["iArquivo"] = $key + 1;
-
-                $file = $arquivo->getNomeArquivo();
-                $caracterQuebra = $arquivo->getCaracterQuebra();
-                $cabecalho = $arquivo->getCabecalho();
-                $tabelaDestino = $arquivo->getTabelaDestino();
-
-                $archive = $dir . DIRECTORY_SEPARATOR . $file;
-                $handle = fopen($archive, "r");
-                $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
-
-                $i = 0;
-                $arrErroRows = array();
-                $this->statusProgress["tLinha"] = count(file($archive)) - 1;
-
-                // Variável apenas para comparação do número do pedido atual com o anterior na importação de pedidos
-                $numPedido = null;
-
-                while($linha = fgets($handle)) {
-                    $i = $i+1;
-                    if (ucfirst($cabecalho) == 'S') {
-                        if ($i == 1) {
-                            continue;
-                        }
-                    }
-
-                    $this->statusProgress["iLinha"] = $i-1;
-                    if ($caracterQuebra == "") {
-                        $conteudoArquivo = array(0=>$linha);
-                    }   else {
-                        $conteudoArquivo = explode($caracterQuebra, $linha);
-                    }
-
-                    if (count(array_filter($conteudoArquivo)) > 1) {
-                        $arrRegistro = array();
-                        /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
-                        foreach ($camposArquivo as $campo) {
-                            if (($campo->getPosicaoTxt() == null) || (count($conteudoArquivo) - 1 < $campo->getPosicaoTxt())) {
-                                $valorCampo = trim($campo->getValorPadrao());
-                            } else {
-                                $valorCampo = trim($conteudoArquivo[$campo->getPosicaoTxt()]);
-
-                                if ($valorCampo == "") {
-                                    if ($campo->getPreenchObrigatorio() === "n") {
-                                        $valorCampo = trim($campo->getValorPadrao());
-                                    } else {
-                                        $arrErroRows[$i] = $conteudoArquivo;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if ($campo->getTamanhoInicio() != "") {
-                                $valorCampo = substr($valorCampo, $campo->getTamanhoInicio(), $campo->getTamanhoFim());
-                            }
-                            $arrRegistro[$campo->getNomeCampo()] = $valorCampo;
-                        }
-
-                        switch ($tabelaDestino) {
-                            case 'produto':
-                                $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
-                                $countFlush++;
-                                break;
-                            case 'fabricante':
-                                $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
-                                $countFlush++;
-                                break;
-                            case 'classe':
-                                $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
-                                $countFlush++;
-                                break;
-                            case 'embalagem':
-                                $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
-                                $countFlush++;
-                                break;
-                            case 'pessoa';
-                                $importacaoService->savePessoa($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'cliente':
-                                $importacaoService->saveCliente($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'carga':
-                                $importacaoService->saveCarga($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'pedido':
-                                if ($arrRegistro['codPedido'] !== $numPedido) {
-                                    $numPedido = $arrRegistro['codPedido'];
-                                    $importacaoService->savePedido($em, $arrRegistro);
-                                    $countFlush++;
-                                    break;
-                                }
-                                break;
-                            case 'pedidoProduto':
-                                $importacaoService->savePedidoProduto($em, $arrRegistro, false);
-                                $countFlush++;
-                                break;
-                            case 'dadoLogistico':
-                                $importacaoService->saveDadoLogistico($em, $arrRegistro);
-                                $countFlush++;
-                                break;
-                            case 'endereco':
-                                $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
-                                $endereco = explode(".",$arrRegistro['endereco']);
-                                $stsEndereço = true;
-                                foreach ($endereco as $element){
-                                    if(strlen($element) < 1){
-                                        $arrErroRows[$i] = "Endereço incompleto";
-                                        $stsEndereço = false;
-                                    }
-                                }
-                                if ($stsEndereço) {
-                                    $importacaoService->saveEndereco($em, $arrRegistro);
-                                    $countFlush++;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        continue;
-                    }
-
-                    if ($countFlush >= 40){
-                        $countFlush = 0;
-                        $em->flush();
-                        $em->clear();
-                    }
-
-                    $this->progressBar->update(null,$this->statusProgress);
-                }
-
-                $em->flush();
-
-                if (count($arrErroRows) > 0) {
-                    $arrErros[$file] = $arrErroRows;
-                }
-            }
-
-            if (count($arrErros) > 0){
-                $this->statusProgress["error"] = $arrErros;
-                $this->progressBar->update(null, $this->statusProgress);
-                $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
-            };
-            $this->progressBar->update(null,$this->statusProgress);
-            $this->progressBar->finish();
-            $this->_helper->json(array('result' => "Importação concluída com sucesso"));
-        } catch (\Exception $e) {
-            $this->_helper->json(array('result' => $e->getMessage()));
-        } catch (Exception $e2) {
-            $this->_helper->json(array('result' => $e2->getMessage()));
+            $this->addFlashMessage('success', 'Arquivo de importação alterado com sucesso.');
+        }catch (Exception $e){
+            $this->addFlashMessage('error', $e->getMessage());
         }
+        $this->redirect('configuracao-importacao');
+    }
 
+    public function listaCamposImportacaoAction()
+    {
+        $id = $this->getRequest()->getParam('id');
+        $grid = new \Wms\Module\Importacao\Grid\ListaCamposImportacao();
+        $this->view->grid = $grid->init($id)->render();
+    }
 
+    public function configuracaoImportacaoAction()
+    {
+        $grid = new \Wms\Module\Importacao\Grid\ConfiguracaoImportacao();
+        $this->view->grid = $grid->init()->render();
     }
 
     public function indexAction()

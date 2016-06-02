@@ -308,11 +308,12 @@ class Importacao
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
                 $em->persist($entityFornecedor);
+                return true;
             }catch (\Exception $e){
                 return $e->getMessage();
             }
         }
-        return null;
+        return "Já existe fornecedor com este código ". $fornecedor['idExterno'];
 
     }
 
@@ -423,6 +424,7 @@ class Importacao
 
             $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
             $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+			var_dump($produto['classe']);
             $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 

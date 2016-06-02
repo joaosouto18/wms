@@ -10,7 +10,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 class VSaldoCompleto
 {
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      * @id
      */
     protected $codProduto;

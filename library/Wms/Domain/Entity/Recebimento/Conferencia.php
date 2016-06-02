@@ -48,7 +48,7 @@ class Conferencia
 
     /**
      * @var string Grade do produto
-     * @Column(name="COD_PRODUTO", type="string", length=10, nullable=false)
+     * @Column(name="COD_PRODUTO", type="string" , nullable=false)
      */
     protected $codProduto;
 

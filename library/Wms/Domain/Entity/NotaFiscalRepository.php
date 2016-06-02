@@ -906,7 +906,7 @@ class NotaFiscalRepository extends EntityRepository
             $notaFiscalEntity->setStatus($statusEntity);
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
-            $notaFiscalEntity->setPesoTotal($pesoTotal);
+            //$notaFiscalEntity->setPesoTotal($pesoTotal);
 
             if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
@@ -931,7 +931,7 @@ class NotaFiscalRepository extends EntityRepository
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
                     $itemEntity->setProduto($produtoEntity);
                     $itemEntity->setGrade(trim($item['grade']));
-                    $itemEntity->setNumPeso($pesoItem);
+                    //$itemEntity->setNumPeso($pesoItem);
 
                     $itemEntity->setQuantidade($item['quantidade']);
 

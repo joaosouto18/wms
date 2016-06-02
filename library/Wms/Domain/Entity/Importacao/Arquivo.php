@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Importacao;
+use Wms\Domain\Configurator;
 
 /**
  *
@@ -9,12 +10,17 @@ namespace Wms\Domain\Entity\Importacao;
  */
 class Arquivo
 {
+
+    const STS_ATIVO = "S";
+    const STS_INATIVO = "N";
+
     /**
      * @Id
      * @Column(name="COD_IMPORTACAO_ARQUIVO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
      * @SequenceGenerator(sequenceName="SQ_IMPORTACAO_ARQUIVO_01", initialValue=1, allocationSize=100)
      */
+
     protected $id;
     
     /**
@@ -157,6 +163,11 @@ class Arquivo
     public function setSequencia($sequencia)
     {
         $this->sequencia = $sequencia;
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
     }
 
 }
