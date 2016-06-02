@@ -55,6 +55,10 @@ class ProdutosMapa extends Grid
                 'index' => 'QTD_CONFERIDA',
             ))
             ->addColumn(array(
+                'label' => 'Qtd. Cortado',
+                'index' => 'QTD_CORTADO',
+            ))
+            ->addColumn(array(
                 'label' => 'Conferido',
                 'index' => 'CONFERIDO',
             ))

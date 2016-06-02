@@ -52,6 +52,7 @@ class Expedicao_CortePedidoController  extends Action
             }
         }
         $this->view->pedidoCompleto = $pedidoCompleto;
+        $this->view->idExpedicao = $this->_getParam('COD_EXPEDICAO');
 
         //'pedidos'=>array(20009662,11022547)
         $pedidos = $this->getEntityManager()->getRepository('wms:Expedicao')->getPedidosParaCorteByParams($params);
@@ -65,8 +66,7 @@ class Expedicao_CortePedidoController  extends Action
         $senha    = $this->_getParam('senha');
         if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA')) {
             $this->addFlashMessage('error','Senha Informada Inválida');
-            $this->redirect("index",'index','expedicao');
-
+            $this->_redirect('/expedicao/os/index/id/'.$this->_getParam('idExpedicao'));
         }
 
         try {
@@ -81,6 +81,6 @@ class Expedicao_CortePedidoController  extends Action
             $this->addFlashMessage('error',$e->getMessage());
         }
 
-        $this->redirect("index",'index','expedicao');
+        $this->_redirect('/expedicao/os/index/id/'.$this->_getParam('idExpedicao'));
     }
 }

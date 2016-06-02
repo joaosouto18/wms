@@ -2675,7 +2675,7 @@ class ExpedicaoRepository extends EntityRepository
             if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
                 $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
             }
-            $mapa->setQtdCortado($qtdCortarMapa);
+            $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
             $this->getEntityManager()->persist($mapa);
             $qtdCortar = $qtdCortar - $qtdCortarMapa;
         }
