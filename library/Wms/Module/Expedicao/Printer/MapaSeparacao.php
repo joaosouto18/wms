@@ -193,7 +193,7 @@ class MapaSeparacao extends Pdf
                 if ($endereco != null) {
                     $dscEndereco = $endereco->getDescricao();
                 }
-                $embalagemEn = $embalagemRepo->findOneBy(array('id' => $produto->getProdutoEmbalagem()->getId(), 'isPadrao' => 'S'));
+                $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
                 $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
