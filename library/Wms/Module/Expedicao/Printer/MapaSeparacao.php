@@ -201,7 +201,12 @@ class MapaSeparacao extends Pdf
                     $pesoTotal = $pesoTotal + $pesoProduto->getPeso();
                     $cubagemTotal = $cubagemTotal + $pesoProduto->getCubagem();
                 }
-                $this->Cell(30, 4, $embalagemEn->getCodigoBarras() ,0, 0);
+                $codigoBarras = '';
+                if (isset($embalagemEn) && !empty($embalagemEn))
+                    $codigoBarras = $embalagemEn->getCodigoBarras();
+
+
+                $this->Cell(30, 4, $codigoBarras, 0, 0);
                 $this->Cell(15, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
 //                $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(15, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
