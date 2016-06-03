@@ -134,6 +134,7 @@ class MapaSeparacao extends Pdf
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
 
         foreach ($mapaSeparacao as $mapa) {
@@ -192,7 +193,7 @@ class MapaSeparacao extends Pdf
                 if ($endereco != null) {
                     $dscEndereco = $endereco->getDescricao();
                 }
-                $embalagem = $produto->getProdutoEmbalagem();
+                $embalagemEn = $embalagemRepo->findOneBy(array('id' => $produto->getProdutoEmbalagem()->getId(), 'isPadrao' => 'S'));
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
                 $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
@@ -200,7 +201,7 @@ class MapaSeparacao extends Pdf
                     $pesoTotal = $pesoTotal + $pesoProduto->getPeso();
                     $cubagemTotal = $cubagemTotal + $pesoProduto->getCubagem();
                 }
-                $this->Cell(30, 4, $embalagem->getCodigoBarras() ,0, 0);
+                $this->Cell(30, 4, $embalagemEn->getCodigoBarras() ,0, 0);
                 $this->Cell(15, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
 //                $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(15, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
