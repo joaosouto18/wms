@@ -76,13 +76,15 @@ class Importacao_IndexController extends Action
 
                     foreach ($endereco as $element){
                         if(strlen($element) < 1){
-                            $arrErroRows[$linha] = "Endereço incompleto";
-                            $stsEndereço = false;
+                            $arrErroRows[$linha] = "Embalagem sem picking - CodProduto: " . $arrRegistro['codProduto'];
                         }
                     }
                 }
-                if ($stsEndereço) {
-                    $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+
+                $result =  $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                if (is_string($result)){
+                    $arrErroRows[$linha] = $result;
+                } else {
                     $countFlush++;
                 }
                 break;

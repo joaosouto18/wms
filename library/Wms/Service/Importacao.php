@@ -461,74 +461,78 @@ class Importacao
 
     public function saveEmbalagens($em, $registro, $repositorios)
     {
-        /** @var EntityManager $em */
+        try {
+            /** @var EntityManager $em */
 
-        $produtoRepo = $repositorios['produtoRepo'];
-        $embalagemRepo = $repositorios['embalagemRepo'];
+            $produtoRepo = $repositorios['produtoRepo'];
+            $embalagemRepo = $repositorios['embalagemRepo'];
 
-        $codigoBarras = "";
-        if ($registro['codigoBarras'] != "") {
-            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
-            $embalagemEntity = $embalagemRepo->findOneBy(array(
-                'codProduto' => $registro['codProduto'],
-                'grade' => $registro['grade'],
-                'codigoBarras' => $codigoBarras
-            ));
-        } else {
-            $registro['CBInterno'] = 'S';
-            $embalagemEntity = $embalagemRepo->findOneBy(array(
-                'codProduto' => $registro['codProduto'],
-                'grade' => $registro['grade'],
-                'quantidade' => $registro['quantidade']
-            ));
-        }
+            $codigoBarras = "";
+            if ($registro['codigoBarras'] != "") {
+                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
+                $embalagemEntity = $embalagemRepo->findOneBy(array(
+                    'codProduto' => $registro['codProduto'],
+                    'grade' => $registro['grade'],
+                    'codigoBarras' => $codigoBarras
+                ));
+            } else {
+                $registro['CBInterno'] = 'S';
+                $embalagemEntity = $embalagemRepo->findOneBy(array(
+                    'codProduto' => $registro['codProduto'],
+                    'grade' => $registro['grade'],
+                    'quantidade' => $registro['quantidade']
+                ));
+            }
 
-        $enderecoEn = null;
-        if (!empty($registro['endereco'])){
+            $enderecoEn = null;
+            if (!empty($registro['endereco'])) {
 
-            $endereco = explode(".",$registro['endereco']);
+                $endereco = explode(".", $registro['endereco']);
 
-            $arrDados['rua'] = $endereco[0];
-            $arrDados['predio'] = $endereco[1];
-            $arrDados['nivel'] = $endereco[2];
-            $arrDados['apartamento']= $endereco[3];
+                $arrDados['rua'] = $endereco[0];
+                $arrDados['predio'] = $endereco[1];
+                $arrDados['nivel'] = $endereco[2];
+                $arrDados['apartamento'] = $endereco[3];
 
-            $endereco = $em->getRepository('wms:Deposito\Endereco')
-                ->findOneBy(array(
-                        'rua' => $endereco[0],
-                        'predio' => $endereco[1],
-                        'nivel' => $endereco[2],
-                        'apartamento' => $endereco[3])
-                );
+                $endereco = $em->getRepository('wms:Deposito\Endereco')
+                    ->findOneBy(array(
+                            'rua' => $endereco[0],
+                            'predio' => $endereco[1],
+                            'nivel' => $endereco[2],
+                            'apartamento' => $endereco[3])
+                    );
 
-            $enderecoEn = $endereco;
-        }
-
-        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
-        if ($embalagemEntity == null) {
-            /** @var \Wms\Domain\Entity\Produto $produto */
-            $produto = $produtoRepo->findOneBy(array(
-                'id' => $registro['codProduto'],
-                'grade' => $registro['grade'],
-            ));
+                $enderecoEn = $endereco;
+            }
 
             /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
-            $embalagemEntity = new Produto\Embalagem();
-            $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity,$registro);
-            $embalagemEntity->setProduto($produto);
-            $embalagemEntity->setCodigoBarras($codigoBarras);
-            $embalagemEntity->setEndereco($enderecoEn);
+            if ($embalagemEntity == null) {
+                /** @var \Wms\Domain\Entity\Produto $produto */
+                $produto = $produtoRepo->findOneBy(array(
+                    'id' => $registro['codProduto'],
+                    'grade' => $registro['grade'],
+                ));
 
-            $em->persist($embalagemEntity);
+                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
+                $embalagemEntity = new Produto\Embalagem();
+                $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity, $registro);
+                $embalagemEntity->setProduto($produto);
+                if ($registro['codigoBarras'] == "") {
+                    $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                    $embalagemEntity->setCodigoBarras($codigoBarras);
+                } else {
+                    $embalagemEntity->setCodigoBarras($codigoBarras);
+                }
+                $embalagemEntity->setEndereco($enderecoEn);
+                $em->persist($embalagemEntity);
 
-            if ($registro['codigoBarras'] == "") {
-                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-                $embalagemEntity->setCodigoBarras($codigoBarras);
+            } else {
+                $embalagemEntity->setEndereco($enderecoEn);
                 $em->persist($embalagemEntity);
             }
-        } else {
-            $embalagemEntity->setEndereco($enderecoEn);
-            $em->persist($embalagemEntity);
+            return true;
+        }catch (\Exception $e) {
+            return "Endereço: " . $registro['endereco'] . " Código de barras: " . $registro['codigoBarras'] . ". Exception: " . $e->getMessage();
         }
     }
 
