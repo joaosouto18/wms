@@ -30,7 +30,7 @@ class Importacao
     {
         /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
         $classeRepo = $repositorios['classeRepo'];
-        $entityClasse = $classeRepo->save($idClasse, $nome, $idClassePai, false);
+        $entityClasse = $classeRepo->save((int)$idClasse, $nome, (int)$idClassePai, false);
         return $entityClasse;
 
     }
@@ -424,8 +424,7 @@ class Importacao
 
             $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
             $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
-			var_dump($produto['classe']);
-            $produto['classe'] = $em->getReference('wms:Produto\Classe', $produto['classe']);
+            $produto['classe'] = $em->getReference('wms:Produto\Classe', (int)$produto['classe']);
             $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
             $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
