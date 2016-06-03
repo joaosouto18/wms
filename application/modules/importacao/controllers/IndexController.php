@@ -31,6 +31,7 @@ class Importacao_IndexController extends Action
     }
 
     private function setCaseImportacao($tabelaDestino, $em, $repositorios, $elements){
+
         $importacaoService = new \Wms\Service\Importacao();
 
         /** @var \Wms\Domain\Entity\PessoaJuridicaRepository $pJuridicaRepo */
@@ -55,172 +56,178 @@ class Importacao_IndexController extends Action
         $checkArray = $elements['checkArray'];
         $numPedido = $elements['numPedido'];
 
-        switch ($tabelaDestino) {
-            case 'produto':
-                $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
-                $countFlush++;
-                break;
-            case 'fabricante':
-                $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
-                $countFlush++;
-                break;
-            case 'classe':
-                $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
-                $countFlush++;
-                break;
-            case 'embalagem':
-                $stsEndereço = true;
-                if (!empty($arrRegistro['endereco'])){
-                    $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
-                    $endereco = explode(".",$arrRegistro['endereco']);
+        try {
 
-                    foreach ($endereco as $element){
-                        if(strlen($element) < 1){
-                            $arrErroRows[$linha] = "Embalagem sem picking - CodProduto: " . $arrRegistro['codProduto'];
+
+            switch ($tabelaDestino) {
+                case 'produto':
+                    $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                    $countFlush++;
+                    break;
+                case 'fabricante':
+                    $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                    $countFlush++;
+                    break;
+                case 'classe':
+                    $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                    $countFlush++;
+                    break;
+                case 'embalagem':
+                    $stsEndereço = true;
+                    if (!empty($arrRegistro['endereco'])) {
+                        $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
+                        $endereco = explode(".", $arrRegistro['endereco']);
+
+                        foreach ($endereco as $element) {
+                            if (strlen($element) < 1) {
+                                $arrErroRows[$linha] = "Embalagem sem picking - CodProduto: " . $arrRegistro['codProduto'];
+                            }
                         }
                     }
-                }
 
-                $result =  $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
-                if (is_string($result)){
-                    $arrErroRows[$linha] = $result;
-                } else {
-                    $countFlush++;
-                }
-                break;
-            case 'fornecedor';
-                $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
-                if (strlen($cpf_cnpjFormatado) == 11){
-                    $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
+                    $result = $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
-                } else if (strlen($cpf_cnpjFormatado) == 14){
-                    $arrRegistro['tipoPessoa'] = "J";
-                } else {
-                    $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
-                    break;
-                }
-                if (!in_array($arrRegistro['cpf_cnpj'],$checkArray )) {
-                    array_push($checkArray, $arrRegistro['cpf_cnpj']);
-                } else {
-                    if ($arrRegistro['tipoPessoa'] == "J")
-                        $arrErroRows[$linha] = "CNPJ repetido: " . $arrRegistro['cpf_cnpj'];
+                case 'fornecedor';
+                    $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
+                    if (strlen($cpf_cnpjFormatado) == 11) {
+                        $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    } else if (strlen($cpf_cnpjFormatado) == 14) {
+                        $arrRegistro['tipoPessoa'] = "J";
+                    } else {
+                        $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    }
+                    if (!in_array($arrRegistro['cpf_cnpj'], $checkArray)) {
+                        array_push($checkArray, $arrRegistro['cpf_cnpj']);
+                    } else {
+                        if ($arrRegistro['tipoPessoa'] == "J")
+                            $arrErroRows[$linha] = "CNPJ repetido: " . $arrRegistro['cpf_cnpj'];
 
-                    if ($arrRegistro['tipoPessoa'] == "F")
-                        $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
+                        if ($arrRegistro['tipoPessoa'] == "F")
+                            $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
 
-                    break;
-                }
-                $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
-                if ($entityPessoa) {
-                    $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
-                    break;
-                }
-                $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
+                        break;
+                    }
+                    $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                    if ($entityPessoa) {
+                        $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    }
+                    $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
 
-                if ($entityPessoa) {
-                    $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
-                    break;
-                }
+                    if ($entityPessoa) {
+                        $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    }
 
-                $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);
-                if (is_string($result)){
-                    $arrErroRows[$linha] = $result;
-                    break;
-                } elseif (!empty($result)){
-                    $countFlush++;
-                } else {
-                    $arrErroRows[$linha] = "Ocorreu algum erro inesperado, contate o suporte.";
-                }
-                break;
-            case 'cliente':
-                $importacaoService->saveCliente($em, $arrRegistro);
-                $countFlush++;
-                break;
-            case 'referencia':
-                $registro = $arrRegistro['dscReferencia'] . " - CodInterno: " . $arrRegistro['codProduto'] . ' - CNPJ: ' . $arrRegistro['cnpj'];
-
-                if (!in_array($registro ,$checkArray )) {
-                    array_push($checkArray, $registro);
-                } else {
-                    $arrErroRows[$linha] = "Referência repetida: " . $registro;
-                    break;
-                }
-
-                $cnpj = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cnpj']);
-                $arrRegistro['fornecedor'] = $fornecedorRepo->getFornecedorByCNPJ($cnpj);
-                if (empty($arrRegistro['fornecedor'])){
-                    $arrErroRows[$linha] = "Nenhum fornecedor encontrado com o CNPJ: " . $arrRegistro['cnpj'];
-                    break;
-                }
-                unset($arrRegistro['cnpj']);
-
-                /** @var \Wms\Domain\Entity\Produto $prodEntity */
-                $prodEntity = $produtoRepo->findOneBy(array('id'=>$arrRegistro['codProduto'],'grade'=>$arrRegistro['grade']));
-                if (empty($prodEntity)){
-                    $arrErroRows[$linha] = "Nenhum produto de código: " . $arrRegistro['codProduto'] . ' e grade: ' . $arrRegistro['grade'];
-                    break;
-                }
-
-                unset($arrRegistro['codProduto']);
-                unset($arrRegistro['grade']);
-
-                $arrRegistro['idProduto'] = $prodEntity->getIdProduto();
-                $criteria = array(
-                    'idProduto' => $prodEntity->getIdProduto(),
-                    'fornecedor' => $arrRegistro['fornecedor']->getPessoa(),
-                    'dscReferencia' => $arrRegistro['dscReferencia']
-                );
-
-                $refeEntity = $referenciaRepo->findOneBy($criteria);
-
-                if (empty($refeEntity)) {
-                    $save = $importacaoService->saveReferenciaProduto($em, $arrRegistro);
-                    if (!is_string($save)) {
+                    $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                        break;
+                    } elseif (!empty($result)) {
                         $countFlush++;
                     } else {
-                        $arrErroRows[$linha] = $save;
+                        $arrErroRows[$linha] = "Ocorreu algum erro inesperado, contate o suporte.";
                     }
-                } else {
-                    $arrErroRows[$linha] = 'Referencia já registrada: '. $arrRegistro['dscReferencia'];
-                }
-                break;
-            case 'carga':
-                $importacaoService->saveCarga($em, $arrRegistro);
-                $countFlush++;
-                break;
-            case 'pedido':
-                if ($arrRegistro['codPedido'] !== $numPedido) {
-                    $numPedido = $arrRegistro['codPedido'];
-                    $importacaoService->savePedido($em, $arrRegistro);
+                    break;
+                case 'cliente':
+                    $importacaoService->saveCliente($em, $arrRegistro);
                     $countFlush++;
                     break;
-                }
-                break;
-            case 'pedidoProduto':
-                $importacaoService->savePedidoProduto($em, $arrRegistro, false);
-                $countFlush++;
-                break;
-            case 'dadoLogistico':
-                $importacaoService->saveDadoLogistico($em, $arrRegistro);
-                $countFlush++;
-                break;
-            case 'endereco':
-                $arrRegistro['endereco'] = str_replace(",",".",$arrRegistro['endereco']);
-                $endereco = explode(".",$arrRegistro['endereco']);
-                $stsEndereço = true;
-                foreach ($endereco as $element){
-                    if(strlen($element) < 1){
-                        $arrErroRows[$linha] = "Endereço incompleto";
-                        $stsEndereço = false;
+                case 'referencia':
+                    $registro = $arrRegistro['dscReferencia'] . " - CodInterno: " . $arrRegistro['codProduto'] . ' - CNPJ: ' . $arrRegistro['cnpj'];
+
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Referência repetida: " . $registro;
+                        break;
                     }
-                }
-                if ($stsEndereço) {
-                    $importacaoService->saveEndereco($em, $arrRegistro);
+
+                    $cnpj = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cnpj']);
+                    $arrRegistro['fornecedor'] = $fornecedorRepo->getFornecedorByCNPJ($cnpj);
+                    if (empty($arrRegistro['fornecedor'])) {
+                        $arrErroRows[$linha] = "Nenhum fornecedor encontrado com o CNPJ: " . $arrRegistro['cnpj'];
+                        break;
+                    }
+                    unset($arrRegistro['cnpj']);
+
+                    /** @var \Wms\Domain\Entity\Produto $prodEntity */
+                    $prodEntity = $produtoRepo->findOneBy(array('id' => $arrRegistro['codProduto'], 'grade' => $arrRegistro['grade']));
+                    if (empty($prodEntity)) {
+                        $arrErroRows[$linha] = "Nenhum produto de código: " . $arrRegistro['codProduto'] . ' e grade: ' . $arrRegistro['grade'];
+                        break;
+                    }
+
+                    unset($arrRegistro['codProduto']);
+                    unset($arrRegistro['grade']);
+
+                    $arrRegistro['idProduto'] = $prodEntity->getIdProduto();
+                    $criteria = array(
+                        'idProduto' => $prodEntity->getIdProduto(),
+                        'fornecedor' => $arrRegistro['fornecedor']->getPessoa(),
+                        'dscReferencia' => $arrRegistro['dscReferencia']
+                    );
+
+                    $refeEntity = $referenciaRepo->findOneBy($criteria);
+
+                    if (empty($refeEntity)) {
+                        $save = $importacaoService->saveReferenciaProduto($em, $arrRegistro);
+                        if (!is_string($save)) {
+                            $countFlush++;
+                        } else {
+                            $arrErroRows[$linha] = $save;
+                        }
+                    } else {
+                        $arrErroRows[$linha] = 'Referencia já registrada: ' . $arrRegistro['dscReferencia'];
+                    }
+                    break;
+                case 'carga':
+                    $importacaoService->saveCarga($em, $arrRegistro);
                     $countFlush++;
-                }
-                break;
-            default:
-                break;
+                    break;
+                case 'pedido':
+                    if ($arrRegistro['codPedido'] !== $numPedido) {
+                        $numPedido = $arrRegistro['codPedido'];
+                        $importacaoService->savePedido($em, $arrRegistro);
+                        $countFlush++;
+                        break;
+                    }
+                    break;
+                case 'pedidoProduto':
+                    $importacaoService->savePedidoProduto($em, $arrRegistro, false);
+                    $countFlush++;
+                    break;
+                case 'dadoLogistico':
+                    $importacaoService->saveDadoLogistico($em, $arrRegistro);
+                    $countFlush++;
+                    break;
+                case 'endereco':
+                    $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
+                    $endereco = explode(".", $arrRegistro['endereco']);
+                    $stsEndereço = true;
+                    foreach ($endereco as $element) {
+                        if (strlen($element) < 1) {
+                            $arrErroRows[$linha] = "Endereço incompleto";
+                            $stsEndereço = false;
+                        }
+                    }
+                    if ($stsEndereço) {
+                        $importacaoService->saveEndereco($em, $arrRegistro);
+                        $countFlush++;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }catch(Exception $e){
+            $arrErroRows[$linha] = $e->getMessage();
         }
 
         $result = array(
