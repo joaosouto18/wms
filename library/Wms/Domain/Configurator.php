@@ -60,7 +60,7 @@ class Configurator {
         }
 
         $tryCall = (bool) $tryCall && method_exists($element, '__call');
-        $return = [];
+        $return = array();
 
         foreach (get_class_methods($element) as $method)
         {
