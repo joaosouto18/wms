@@ -139,6 +139,7 @@ class MapaSeparacao extends Pdf
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
             $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+            $carga = $produtos[0]->getPedidoProduto()->getPedido()->getCarga()->getCodCargaExterno();
             $quebras = $mapa->getDscQuebra();
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
@@ -156,25 +157,24 @@ class MapaSeparacao extends Pdf
             $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1,"C");
             $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
             $this->Cell(20, 3, "", 0, 1);
-            $this->SetFont('Arial','B',10);
-            $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+            $this->SetFont('Arial','',10);
+            $this->Cell(24, 4, utf8_decode('EXPEDIÇÃO: ' . utf8_decode( $this->idExpedicao) . ' - CARGA: ' . $carga), 0, 0);
             $this->SetFont('Arial',null,10);
-            $this->Cell(4, 4, utf8_decode( $this->idExpedicao), 0, 1);
+            $this->Cell(4, 4, '', 0, 1);
             $this->SetFont('Arial','B',10);
             $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
-
 
             $this->Cell(20, 4, "", 0, 1);
             $this->SetFont('Arial', 'B', 8);
             $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
             $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
             $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
-            $this->Cell(20, 5, utf8_decode("Peso/Cub.") ,1, 0);
+            $this->Cell(30, 5, utf8_decode("Cod. Barras") ,1, 0);
             $this->Cell(15, 5, utf8_decode("Refer.") ,1, 0);
 //            $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);
-            $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
+            $this->Cell(12, 5, utf8_decode("Quant.") ,1, 1);
             $this->Cell(20, 1, "", 0, 1);
 
             foreach ($produtos as $produto) {
@@ -192,16 +192,14 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
                 $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
-                if (!isset($pesoProduto) || empty($pesoProduto)) {
-                    $this->Cell(20, 4, '---' ,0, 0);
-                } else {
+                if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal = $pesoTotal + $pesoProduto->getPeso();
                     $cubagemTotal = $cubagemTotal + $pesoProduto->getCubagem();
-                    $this->Cell(20, 4, $pesoProduto->getPeso() . ' / ' . $pesoProduto->getCubagem() ,0, 0);
                 }
-                $this->Cell(20, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
+                $this->Cell(30, 4, $embalagem->getCodigoBarras() ,0, 0);
+                $this->Cell(15, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
 //                $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
-                $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
+                $this->Cell(15, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                 $this->Cell(20, 1, "", 0, 1);
             }
