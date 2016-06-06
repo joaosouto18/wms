@@ -28,10 +28,14 @@ class Importacao
 
     public function saveClasse($em, $idClasse, $nome, $idClassePai = null, $repositorios)
     {
-        /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
-        $classeRepo = $repositorios['classeRepo'];
-        $entityClasse = $classeRepo->save((int)$idClasse, $nome, (int)$idClassePai, false);
-        return $entityClasse;
+        try {
+            /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
+            $classeRepo = $repositorios['classeRepo'];
+            $entityClasse = $classeRepo->save((int)$idClasse, $nome, (int)$idClassePai, false);
+            return $entityClasse;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
 
     }
 
@@ -111,97 +115,103 @@ class Importacao
 
     public function saveCliente($em, $cliente)
     {
-        $repositorios = array(
-            'clienteRepo' => $em->getRepository('wms:Pessoa\Papel\Cliente'),
-            'pessoaJuridicaRepo' => $em->getRepository('wms:Pessoa\Juridica'),
-            'pessoaFisicaRepo' => $em->getRepository('wms:Pessoa\Fisica'),
-            'siglaRepo' => $em->getRepository('wms:Util\Sigla'),
-        );
+        try {
+            $repositorios = array(
+                'clienteRepo' => $em->getRepository('wms:Pessoa\Papel\Cliente'),
+                'pessoaJuridicaRepo' => $em->getRepository('wms:Pessoa\Juridica'),
+                'pessoaFisicaRepo' => $em->getRepository('wms:Pessoa\Fisica'),
+                'siglaRepo' => $em->getRepository('wms:Util\Sigla'),
+            );
 
-        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
-        $ClienteRepo    = $repositorios['clienteRepo'];
-        if (isset($cliente['codClienteExterno'])) {
-            $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
-        } else {
-            $entityCliente = null;
-        }
-        $entityPessoa = null;
-
-        if ($entityCliente == null) {
-
-            switch ($cliente['tipoPessoa']) {
-                case 'J':
-                    $cliente['pessoa']['tipo'] = 'J';
-
-                    $PessoaJuridicaRepo    = $repositorios['pessoaJuridicaRepo'];
-                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($cliente['cpf_cnpj'])));
-                    if ($entityPessoa) {
-                        break;
-                    }
-
-                    $cliente['pessoa']['juridica']['dataAbertura'] = null;
-                    $cliente['pessoa']['juridica']['cnpj'] = $cliente['cpf_cnpj'];
-                    $cliente['pessoa']['juridica']['idTipoOrganizacao'] = null;
-                    $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
-                    $cliente['pessoa']['juridica']['nome'] = $cliente['nome'];
-                    break;
-                case 'F':
-
-                    $PessoaFisicaRepo    = $repositorios['pessoaFisicaRepo'];
-                    $entityPessoa       = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($cliente['cpf_cnpj'])));
-                    if ($entityPessoa) {
-                        break;
-                    }
-
-                    $cliente['pessoa']['tipo']              = 'F';
-                    $cliente['pessoa']['fisica']['cpf']     = $cliente['cpf_cnpj'];
-                    $cliente['pessoa']['fisica']['nome']    = $cliente['nome'];
-                    break;
-            }
-
-            $SiglaRepo      = $repositorios['siglaRepo'];
-            $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
-
-            $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
-            $cliente['enderecos'][0]['acao'] = 'incluir';
-            $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
-
-            if (isset($cliente['complemento']))
-                $cliente['enderecos'][0]['complemento'] = $cliente['complemento'];
-            if (isset($cliente['logradouro']))
-                $cliente['enderecos'][0]['descricao'] = $cliente['logradouro'];
-            if (isset($cliente['referencia']))
-                $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
-            if (isset($cliente['bairro']))
-                $cliente['enderecos'][0]['bairro'] = $cliente['bairro'];
-            if (isset($cliente['cidade']))
-                $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
-            if (isset($cliente['numero']))
-                $cliente['enderecos'][0]['numero'] =  $cliente['numeor'];
-            if (isset($cliente['cep']))
-                $cliente['enderecos'][0]['cep'] = $cliente['cep'];
-            if (isset($entitySigla))
-                $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
-
-            $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
-
-            if ($entityPessoa == null) {
-                $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
+            /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $ClienteRepo */
+            $ClienteRepo = $repositorios['clienteRepo'];
+            if (isset($cliente['codClienteExterno'])) {
+                $entityCliente = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codClienteExterno']));
             } else {
-                $entityCliente->setPessoa($entityPessoa);
+                $entityCliente = null;
             }
+            $entityPessoa = null;
 
-            $entityCliente->setId($entityPessoa->getId());
-            $entityCliente->setCodClienteExterno($cliente['codClienteExterno']);
+            if ($entityCliente == null) {
 
-            $em->persist($entityCliente);
+                switch ($cliente['tipoPessoa']) {
+                    case 'J':
+                        $cliente['pessoa']['tipo'] = 'J';
+
+                        $PessoaJuridicaRepo = $repositorios['pessoaJuridicaRepo'];
+                        $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => String::retirarMaskCpfCnpj($cliente['cpf_cnpj'])));
+                        if ($entityPessoa) {
+                            break;
+                        }
+
+                        $cliente['pessoa']['juridica']['dataAbertura'] = null;
+                        $cliente['pessoa']['juridica']['cnpj'] = $cliente['cpf_cnpj'];
+                        $cliente['pessoa']['juridica']['idTipoOrganizacao'] = null;
+                        $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
+                        $cliente['pessoa']['juridica']['nome'] = $cliente['nome'];
+                        break;
+                    case 'F':
+
+                        $PessoaFisicaRepo = $repositorios['pessoaFisicaRepo'];
+                        $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => String::retirarMaskCpfCnpj($cliente['cpf_cnpj'])));
+                        if ($entityPessoa) {
+                            break;
+                        }
+
+                        $cliente['pessoa']['tipo'] = 'F';
+                        $cliente['pessoa']['fisica']['cpf'] = $cliente['cpf_cnpj'];
+                        $cliente['pessoa']['fisica']['nome'] = $cliente['nome'];
+                        break;
+                }
+
+                $SiglaRepo = $repositorios['siglaRepo'];
+                $entitySigla = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
+
+                $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
+                $cliente['enderecos'][0]['acao'] = 'incluir';
+                $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
+
+                if (isset($cliente['complemento']))
+                    $cliente['enderecos'][0]['complemento'] = $cliente['complemento'];
+                if (isset($cliente['logradouro']))
+                    $cliente['enderecos'][0]['descricao'] = $cliente['logradouro'];
+                if (isset($cliente['referencia']))
+                    $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
+                if (isset($cliente['bairro']))
+                    $cliente['enderecos'][0]['bairro'] = $cliente['bairro'];
+                if (isset($cliente['cidade']))
+                    $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
+                if (isset($cliente['numero']))
+                    $cliente['enderecos'][0]['numero'] = $cliente['numeor'];
+                if (isset($cliente['cep']))
+                    $cliente['enderecos'][0]['cep'] = $cliente['cep'];
+                if (isset($entitySigla))
+                    $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
+
+                $entityCliente = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
+
+                if ($entityPessoa == null) {
+                    $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
+                } else {
+                    $entityCliente->setPessoa($entityPessoa);
+                }
+
+                $entityCliente->setId($entityPessoa->getId());
+                $entityCliente->setCodClienteExterno($cliente['codClienteExterno']);
+
+                $em->persist($entityCliente);
+
+            }
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
         }
-        return null;
     }
 
     public function saveReferenciaProduto($em, $referencia){
-        /**  @var EntityManager $em*/
+
         try {
+            /**  @var EntityManager $em*/
             $entity = new Referencia();
             $entity->setIdProduto($referencia['idProduto']);
             $entity->setFornecedor($referencia['fornecedor']);
@@ -217,6 +227,7 @@ class Importacao
 
     public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
     {
+
         /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
         $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
 
@@ -298,7 +309,7 @@ class Importacao
 
             $entityFornecedor  = new Fornecedor();
 
-            
+
             if ($entityPessoa == null) {
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, false);
             }
@@ -334,66 +345,85 @@ class Importacao
 
     public function saveExpedicao($em, $placaExpedicao)
     {
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-        $expedicaoRepo = $em->getRepository('wms:Expedicao');
-        $entityExpedicao = $expedicaoRepo->save($placaExpedicao);
-        return $entityExpedicao;
+        try {
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $em->getRepository('wms:Expedicao');
+            $entityExpedicao = $expedicaoRepo->save($placaExpedicao);
+            return $entityExpedicao;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function saveCarga($em, $carga)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
-        $cargaRepo = $em->getRepository('wms:Expedicao\Carga');
-        $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $carga['codCargaExterno']));
-        if (!$entityCarga)
-            $entityCarga = $cargaRepo->save($carga, true);
+        try {
+            /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
+            $cargaRepo = $em->getRepository('wms:Expedicao\Carga');
+            $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $carga['codCargaExterno']));
+            if (!$entityCarga)
+                $entityCarga = $cargaRepo->save($carga, true);
 
-        return $entityCarga;
+            return $entityCarga;
+        } catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function savePedido($em, $pedido)
     {
-        $pedido['pontoTransbordo'] = null;
-        $pedido['envioParaLoja'] = null;
+        try {
+            $pedido['pontoTransbordo'] = null;
+            $pedido['envioParaLoja'] = null;
 
-        $pedido['itinerario'] = $em->getReference('wms:expedicao\Itinerario', $pedido['itinerario']);
-        $pedido['carga'] = $em->getReference("wms:expedicao\Carga", $pedido['codCarga']);
-        $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
+            $pedido['itinerario'] = $em->getReference('wms:expedicao\Itinerario', $pedido['itinerario']);
+            $pedido['carga'] = $em->getReference("wms:expedicao\Carga", $pedido['codCarga']);
+            $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
 
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-        $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
-        $entityPedido = $pedidoRepo->findOneBy(array('id' => $pedido['codPedido']));
-        if (!$entityPedido) {
-            $entityPedido = $pedidoRepo->save($pedido);
-            $em->persist();
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
+            $entityPedido = $pedidoRepo->findOneBy(array('id' => $pedido['codPedido']));
+            if (!$entityPedido) {
+                $entityPedido = $pedidoRepo->save($pedido);
+                $em->persist();
+            }
+
+            return $entityPedido;
+        }catch (\Exception $e){
+            return $e->getMessage();
         }
 
-        return $entityPedido;
     }
 
     public function savePedidoProduto($em, $pedido, $flush = true)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
-        $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
-        $pedido['produto'] = $em->getRepository('wms:Produto')->findOneBy(array('id' => $pedido['codProduto'], 'grade' => $pedido['grade']));
+        try {
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+            $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
+            $pedido['produto'] = $em->getRepository('wms:Produto')->findOneBy(array('id' => $pedido['codProduto'], 'grade' => $pedido['grade']));
 
-        $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
-        if (!$entityPedidoProduto)
-            $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
-        
-        if ($flush)
-            $em->flush();
+            $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
+            if (!$entityPedidoProduto)
+                $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
 
-        return $entityPedidoProduto;
+            if ($flush)
+                $em->flush();
+
+            return $entityPedidoProduto;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function saveFabricante($em, $idFabricante, $nome, $repositorios)
-    {
-        /** @var \Wms\Domain\Entity\FabricanteRepository $fabricanteRepo */
-        $fabricanteRepo = $repositorios['fabricanteRepo'];
-        $entityFabricante = $fabricanteRepo->save($idFabricante, $nome, false);
-        return $entityFabricante;
-
+    {   try {
+            /** @var \Wms\Domain\Entity\FabricanteRepository $fabricanteRepo */
+            $fabricanteRepo = $repositorios['fabricanteRepo'];
+            $entityFabricante = $fabricanteRepo->save($idFabricante, $nome, false);
+            return $entityFabricante;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function saveProduto($em, $produto, $repositorios)
@@ -438,24 +468,29 @@ class Importacao
                 $em->flush();
                 $em->clear();
             }
-
+            return true;
         } catch (\Exception $e) {
             $em->rollback();
-            throw new \Exception($e->getMessage());
+            return $e->getMessage();
         }
     }
 
     public function saveFilial($em, $values)
     {
-        /** @var \Wms\Domain\Entity\FilialRepository $filialRepo */
-        $filialRepo = $em->getRepository('wms:Filial');
-        $filianEn = $filialRepo->findOneBy(array('codExterno' => $values['pessoa']['juridica']['codExterno']));
+        try {
+            /** @var \Wms\Domain\Entity\FilialRepository $filialRepo */
+            $filialRepo = $em->getRepository('wms:Filial');
+            $filianEn = $filialRepo->findOneBy(array('codExterno' => $values['pessoa']['juridica']['codExterno']));
 
-        if (!$filianEn) {
-            $filianEn = new Filial();
+            if (!$filianEn) {
+                $filianEn = new Filial();
+            }
+
+            $filialRepo->save($filianEn, $values);
+            return true;
+        }catch(\Exception $e){
+            return $e->getMessage();
         }
-
-        $filialRepo->save($filianEn, $values);
     }
 
     public function saveEmbalagens($em, $registro, $repositorios)
@@ -535,18 +570,19 @@ class Importacao
         }
     }
 
-    /**
-     * @param $em EntityManager
-     * @param $arrDados
-     */
     public function saveNormaPaletizacao($em, $arrDados)
     {
-        $entity = new Produto\NormaPaletizacao();
+        try {
+            $entity = new Produto\NormaPaletizacao();
 
-        $arrDados["unitizador"] = $em->getRepository('wms:Produto\Unitizador')->findOneBy( array('id' => $arrDados['unitizador']) );
+            $arrDados["unitizador"] = $em->getRepository('wms:Produto\Unitizador')->findOneBy(array('id' => $arrDados['unitizador']));
 
-        Configurator::configure($entity, $arrDados);
-        $em->persist($entity);
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -555,9 +591,14 @@ class Importacao
      */
     public function saveUnitizador($em, $arrDados)
     {
-        $entity = new Unitizador();
-        Configurator::configure($entity, $arrDados);
-        $em->persist($entity);
+        try {
+            $entity = new Unitizador();
+            Configurator::configure($entity, $arrDados);
+            $em->persist($entity);
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -566,39 +607,45 @@ class Importacao
      */
     public function saveDadoLogistico($em, $arrDados)
     {
-        //$produto = $em->getRepository("wms:Produto")->findOneBy( array("id" => $arrDados['id'], "grade" => $arrDados['grade']) );
-        $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy( array("id" => $arrDados['normaPaletizacao']));
-        if (isset($arrDados['codigoBarras']) && !empty($arrDados['codigoBarras'])){
-            $criterio = array(
-                "codProduto" => $arrDados['codProduto'],
-                "grade" => $arrDados['grade'],
-                "codigoBarras" => $arrDados["codigoBarras"]
-            );
-            $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
-        } else if (isset($arrDados['quantidade']) && !empty($arrDados['quantidade'])){
-            $criterio = array(
-                "codProduto" => $arrDados['codProduto'],
-                "grade" => $arrDados['grade'],
-                "quantidade" => $arrDados["quantidade"]
-            );
-            $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
-        }
+        try {
+            //$produto = $em->getRepository("wms:Produto")->findOneBy( array("id" => $arrDados['id'], "grade" => $arrDados['grade']) );
+            $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy(array("id" => $arrDados['normaPaletizacao']));
+            if (isset($arrDados['codigoBarras']) && !empty($arrDados['codigoBarras'])) {
+                $criterio = array(
+                    "codProduto" => $arrDados['codProduto'],
+                    "grade" => $arrDados['grade'],
+                    "codigoBarras" => $arrDados["codigoBarras"]
+                );
+                $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+            } else if (isset($arrDados['quantidade']) && !empty($arrDados['quantidade'])) {
+                $criterio = array(
+                    "codProduto" => $arrDados['codProduto'],
+                    "grade" => $arrDados['grade'],
+                    "quantidade" => $arrDados["quantidade"]
+                );
+                $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+            }
 
-        unset($arrDados['codProduto']);
-        unset($arrDados['grade']);
-        unset($arrDados['codigoBarras']);
-        unset($arrDados['quantidade']);
+            unset($arrDados['codProduto']);
+            unset($arrDados['grade']);
+            unset($arrDados['codigoBarras']);
+            unset($arrDados['quantidade']);
 
-        $arrDados['peso'] = str_replace(",",".",strpos($arrDados['peso'],",") ? $arrDados['peso'] : $arrDados['peso'] . ",0");
-        //$arrDados['peso'] = Converter::brToEn($arrDados['peso'],-3);
+            $arrDados['peso'] = str_replace(",", ".", strpos($arrDados['peso'], ",") ? $arrDados['peso'] : $arrDados['peso'] . ",0");
+            //$arrDados['peso'] = Converter::brToEn($arrDados['peso'],-3);
 
-        $entity = $em->getRepository('wms:Produto\DadoLogistico')->findOneBy($arrDados);
+            $entity = $em->getRepository('wms:Produto\DadoLogistico')->findOneBy($arrDados);
 
-        if(!$entity) {
-            $entity = new Produto\DadoLogistico();
-            Configurator::configure($entity, $arrDados);
-            $entity->setPeso($arrDados['peso'], true);
-            $em->persist($entity);
+            if (!$entity) {
+                $entity = new Produto\DadoLogistico();
+                Configurator::configure($entity, $arrDados);
+                $entity->setPeso($arrDados['peso'], true);
+                $em->persist($entity);
+            }
+            return true;
+        }catch (\Exception $e){
+            $e->getMessage();
+            return $e->getMessage();
         }
     }
 
@@ -608,49 +655,54 @@ class Importacao
      */
     public function saveEndereco($em, $arrDados)
     {
-        if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica']))
-            $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
+        try {
+            if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica']))
+                $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
 
-        if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem']))
-            $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
+            if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem']))
+                $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
 
-        if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco']))
-            $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
+            if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco']))
+                $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
 
-        if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem']))
-            $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
+            if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem']))
+                $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
 
-        if (isset($arrDados['deposito']) && !empty($arrDados['deposito']))
-            $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
+            if (isset($arrDados['deposito']) && !empty($arrDados['deposito']))
+                $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
 
-        $endereco = explode(".",$arrDados['endereco']);
+            $endereco = explode(".", $arrDados['endereco']);
 
-        $arrDados['rua'] = $endereco[0];
-        $arrDados['predio'] = $endereco[1];
-        $arrDados['nivel'] = $endereco[2];
-        $arrDados['apartamento']= $endereco[3];
+            $arrDados['rua'] = $endereco[0];
+            $arrDados['predio'] = $endereco[1];
+            $arrDados['nivel'] = $endereco[2];
+            $arrDados['apartamento'] = $endereco[3];
 
-        $entity = $em->getRepository('wms:Deposito\Endereco')
-            ->findOneBy(array(
-                    'rua' => $endereco[0],
-                    'predio' => $endereco[1],
-                    'nivel' => $endereco[2],
-                    'apartamento' => $endereco[3])
-            );
-        $dscEndereco = array(
-            'RUA' => $endereco[0],
-            'PREDIO' => $endereco[1],
-            'NIVEL' => $endereco[2],
-            'APTO' => $endereco[3]);
+            $entity = $em->getRepository('wms:Deposito\Endereco')
+                ->findOneBy(array(
+                        'rua' => $endereco[0],
+                        'predio' => $endereco[1],
+                        'nivel' => $endereco[2],
+                        'apartamento' => $endereco[3])
+                );
+            $dscEndereco = array(
+                'RUA' => $endereco[0],
+                'PREDIO' => $endereco[1],
+                'NIVEL' => $endereco[2],
+                'APTO' => $endereco[3]);
 
-        $dscEndereco = EnderecoUtil::formatar($dscEndereco);
+            $dscEndereco = EnderecoUtil::formatar($dscEndereco);
 
-        if (!$entity) {
-            $entity = new Endereco();
-            Configurator::configure($entity, $arrDados);
-            $entity->setDescricao($dscEndereco);
-            $em->persist($entity);
-            $em->flush();
+            if (!$entity) {
+                $entity = new Endereco();
+                Configurator::configure($entity, $arrDados);
+                $entity->setDescricao($dscEndereco);
+                $em->persist($entity);
+                $em->flush();
+            }
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
         }
     }
 

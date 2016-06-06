@@ -61,16 +61,28 @@ class Importacao_IndexController extends Action
 
             switch ($tabelaDestino) {
                 case 'produto':
-                    $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
-                    $countFlush++;
+                    $result = $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'fabricante':
-                    $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
-                    $countFlush++;
+                    $result = $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'classe':
-                    $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
-                    $countFlush++;
+                    $result = $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'embalagem':
                     $stsEndereço = true;
@@ -129,16 +141,17 @@ class Importacao_IndexController extends Action
                     $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
-                        break;
-                    } elseif (!empty($result)) {
-                        $countFlush++;
                     } else {
-                        $arrErroRows[$linha] = "Ocorreu algum erro inesperado, contate o suporte.";
+                        $countFlush++;
                     }
                     break;
                 case 'cliente':
-                    $importacaoService->saveCliente($em, $arrRegistro);
-                    $countFlush++;
+                    $result = $importacaoService->saveCliente($em, $arrRegistro);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'referencia':
                     $registro = $arrRegistro['dscReferencia'] . " - CodInterno: " . $arrRegistro['codProduto'] . ' - CNPJ: ' . $arrRegistro['cnpj'];
@@ -189,8 +202,12 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'carga':
-                    $importacaoService->saveCarga($em, $arrRegistro);
-                    $countFlush++;
+                    $result = $importacaoService->saveCarga($em, $arrRegistro);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'pedido':
                     if ($arrRegistro['codPedido'] !== $numPedido) {
@@ -201,12 +218,20 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'pedidoProduto':
-                    $importacaoService->savePedidoProduto($em, $arrRegistro, false);
-                    $countFlush++;
+                    $result = $importacaoService->savePedidoProduto($em, $arrRegistro, false);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'dadoLogistico':
-                    $importacaoService->saveDadoLogistico($em, $arrRegistro);
-                    $countFlush++;
+                    $result = $importacaoService->saveDadoLogistico($em, $arrRegistro);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
                     break;
                 case 'endereco':
                     $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
@@ -219,8 +244,12 @@ class Importacao_IndexController extends Action
                         }
                     }
                     if ($stsEndereço) {
-                        $importacaoService->saveEndereco($em, $arrRegistro);
-                        $countFlush++;
+                        $result = $importacaoService->saveEndereco($em, $arrRegistro);
+                        if (is_string($result)) {
+                            $arrErroRows[$linha] = $result;
+                        } else {
+                            $countFlush++;
+                        }
                     }
                     break;
                 default:
