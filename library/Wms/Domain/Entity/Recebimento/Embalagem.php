@@ -73,8 +73,10 @@ class Embalagem
     protected $dataValidade;
 
     /**
-     * @param \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @Column(name="NUM_PESO", type="string")
      */
+    protected $numPeso;
+
     public function setNormaPaletizacao($normaPaletizacao)
     {
         $this->normaPaletizacao = $normaPaletizacao;
@@ -162,6 +164,22 @@ class Embalagem
     public function setDataValidade($dataValidade)
     {
         $this->dataValidade = $dataValidade;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNumPeso()
+    {
+        return $this->numPeso;
+    }
+
+    /**
+     * @param mixed $numPeso
+     */
+    public function setNumPeso($numPeso)
+    {
+        $this->numPeso = $numPeso;
     }
 
 }
