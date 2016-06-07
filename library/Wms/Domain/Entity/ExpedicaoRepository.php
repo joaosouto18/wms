@@ -886,7 +886,7 @@ class ExpedicaoRepository extends EntityRepository
             }
             if (isset($colCarga) && !empty($colCarga))
                 $result[$key]['CARGA'] = implode(', ', $colCarga);
-            
+
             if (isset($colItinerario) && !empty($colItinerario))
                 $result[$key]['ITINERARIO'] = implode(', ', $colItinerario);
 
