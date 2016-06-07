@@ -62,6 +62,7 @@ class Expedicao_ConferenciaController extends Action
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
 
+                exit;
                 if ($origin == 'coletor') {
                     if ($result == 'true') {
                         $result = 'Expedição Finalizada com Sucesso!';

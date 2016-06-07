@@ -881,6 +881,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
                 $depositoEnderecoEn = $mapa->getCodDepositoEndereco();
 
+//                var_dump($pedidoProduto); exit;
                 $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
                 foreach ($mapaProdutosEn as $mapaProdutoRemover) {
                     $this->_em->remove($mapaProdutoRemover);
@@ -1300,6 +1301,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setCodDepositoEndereco($depositoEndereco);
+            $mapaProduto->setPedidoProduto($pedidoProduto);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
         }
