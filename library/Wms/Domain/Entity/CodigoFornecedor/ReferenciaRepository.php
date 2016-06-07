@@ -11,13 +11,14 @@ class ReferenciaRepository extends EntityRepository
         if ($term == null or empty($term)) {
             throw new \Exception('Termo obrigatório');
         }
-
+        $teste = 'CONCAT(p.nome, CONCAT(" - (",CONCAT(p.cnpj,")")))';
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('f.id, p.nome as label')
+            ->select('f.id, CONCAT(p.nome, CONCAT(\' - (\',CONCAT(p.cnpj,\')\')))as label')
             ->from('wms:Pessoa\Papel\Fornecedor', 'f')
             ->innerJoin('f.pessoa', 'p')
             ->where("UPPER(p.nome) like UPPER('%$term%')");
 
-        return $dql->getQuery()->getResult(\PDO::FETCH_ASSOC);
+        $result = $dql->getQuery()->getResult(\PDO::FETCH_ASSOC);
+        return $result;
     }
 }
