@@ -522,6 +522,7 @@ class ExpedicaoRepository extends EntityRepository
 
     public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false)
     {
+        var_dump($idExpedicao); exit;
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
@@ -886,7 +887,7 @@ class ExpedicaoRepository extends EntityRepository
             }
             if (isset($colCarga) && !empty($colCarga))
                 $result[$key]['CARGA'] = implode(', ', $colCarga);
-            
+
             if (isset($colItinerario) && !empty($colItinerario))
                 $result[$key]['ITINERARIO'] = implode(', ', $colItinerario);
 
