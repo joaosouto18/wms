@@ -358,8 +358,7 @@ class MapaSeparacaoRepository extends EntityRepository
             'mapaProdutoEn' => $mapaProdutoEn);
     }
 
-    public function validaProdutoMapa($idExpedicao, $codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn)
-    {
+    public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn) {
         $mensagemColetor = false;
         $produtoEn = null;
 
@@ -373,16 +372,16 @@ class MapaSeparacaoRepository extends EntityRepository
             else
                 $produtoEn = $volumeEn->getProduto();
 
-            $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
-            $resultProdutoMapa = $this->getMapaByProdutoAndExpedicao($idExpedicao,$mapaSeparacaoProdutoRepo, $produtoEn);
-            if ($resultProdutoMapa['mapaEn'] == null) {
+            $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $mapaEn->getId(),
+                'codProduto' => $produtoEn->getId(),                                                                                                                             'dscGrade' => $produtoEn->getGrade()));
+            if ($mapaSeparacaoProduto == null) {
                 $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " não se encontra no mapa selecionado");
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não se encontra no mapa selecionado");
             }
 
-            if ($resultProdutoMapa['mapaProdutoEn']->getIndConferido() == "S") {
+            if ($mapaSeparacaoProduto[0]->getIndConferido() == "S") {
                 $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " já está conferido no mapa selecionado");
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " já está conferido no mapa selecionado");
             }
 
             $embalado = false;
@@ -393,7 +392,7 @@ class MapaSeparacaoRepository extends EntityRepository
                     }
                 } else {
                     $embalagens = $embalagemEn->getProduto()->getEmbalagens();
-                    foreach ($embalagens as $emb) {
+                    foreach ($embalagens as $emb){
                         if ($emb->getIsPadrao() == "S") {
                             if ($embalagemEn->getQuantidade() < $emb->getQuantidade()) {
                                 $embalado = true;
@@ -405,26 +404,26 @@ class MapaSeparacaoRepository extends EntityRepository
             }
 
             $dscEmbalagem = "";
-            if ($embalagemEn != null) {
-                $dscEmbalagem = " - " . $embalagemEn->getDescricao() . " (" . $embalagemEn->getQuantidade() . ") - ";
+            if ($embalagemEn != null){
+                $dscEmbalagem = " - " . $embalagemEn->getDescricao() . " (".$embalagemEn->getQuantidade().") - ";
             }
             if ((isset($volumePatrimonioEn)) && ($volumePatrimonioEn != null) && ($embalado == false)) {
                 $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . $dscEmbalagem . " não é embalado");
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " não é embalado");
             }
 
             if ((!(isset($volumePatrimonioEn)) || ($volumePatrimonioEn == null)) && ($embalado == true)) {
                 $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . $dscEmbalagem . " é embalado");
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " é embalado");
             }
         } catch (\Exception $e) {
             if ($mensagemColetor == true) {
-                return array('return' => false, 'message' => $e->getMessage());
+                return array('return'=>false, 'message'=>$e->getMessage());
             } else {
                 throw new \Exception($e->getMessage());
             }
         }
-        return array('return' => true);
+        return array('return'=>true);
     }
 
     public function getQtdConferidaByVolumePatrimonio($idExpedicao, $idVolume)
