@@ -884,8 +884,11 @@ class ExpedicaoRepository extends EntityRepository
             foreach ($cargas as $carga) {
                 $colCarga[] = $carga->getCodCargaExterno();
             }
-            $result[$key]['CARGA'] = implode(', ', $colCarga);
-            $result[$key]['ITINERARIO'] = implode(', ', $colItinerario);
+            if (isset($colCarga) && !empty($colCarga))
+                $result[$key]['CARGA'] = implode(', ', $colCarga);
+            
+            if (isset($colItinerario) && !empty($colItinerario))
+                $result[$key]['ITINERARIO'] = implode(', ', $colItinerario);
 
             unset($colCarga);
             unset($colItinerario);
