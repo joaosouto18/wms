@@ -102,7 +102,7 @@ class Volume
 
     /**
      * Norma de paletizacao do volume
-     * 
+     *
      * @var Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\NormaPaletizacao", cascade={"persist"})
      * @JoinColumn(name="COD_NORMA_PALETIZACAO", referencedColumnName="COD_NORMA_PALETIZACAO")
@@ -138,6 +138,18 @@ class Volume
      */
     protected $capacidadePicking;
 
+    /**
+     * @Column(name="DTH_INATIVACAO", type="datetime", nullable=true)
+     * @var datetime
+     */
+    protected $dataInativacao;
+
+    /**
+     * @Column(name="COD_USUARIO_INATIVACAO", type="integer", nullable=false)
+     * @var int
+     */
+    protected $usuarioInativacao;
+
     public function __construct()
     {
         $this->recebimentoVolumes = new ArrayCollection;
@@ -163,7 +175,7 @@ class Volume
 
     /**
      * Informa o produto no qual este volume compõe
-     * @param Produto $produto 
+     * @param Produto $produto
      */
     public function setProduto(ProdutoEntity $produto)
     {
@@ -193,7 +205,7 @@ class Volume
 
     /**
      * Informa o código sequencial do volume
-     * @param integer $codigoSequencial 
+     * @param integer $codigoSequencial
      */
     public function setCodigoSequencial($codigoSequencial)
     {
@@ -231,7 +243,7 @@ class Volume
 
     /**
      * Informa a altura do volume
-     * @param decimal $altura 
+     * @param decimal $altura
      */
     public function setAltura($altura)
     {
@@ -250,7 +262,7 @@ class Volume
 
     /**
      * Informa a largura do volume
-     * @param decimal $largura 
+     * @param decimal $largura
      */
     public function setLargura($largura)
     {
@@ -269,7 +281,7 @@ class Volume
 
     /**
      * Informa a profundidade do volume
-     * @param decimal $profundidade 
+     * @param decimal $profundidade
      */
     public function setProfundidade($profundidade)
     {
@@ -288,7 +300,7 @@ class Volume
 
     /**
      * Informa a cubagem do volume
-     * @param decimal $cubagem 
+     * @param decimal $cubagem
      */
     public function setCubagem($cubagem)
     {
@@ -307,7 +319,7 @@ class Volume
 
     /**
      * Informa o peso do volume
-     * @param decimal $peso 
+     * @param decimal $peso
      */
     public function setPeso($peso)
     {
@@ -337,7 +349,7 @@ class Volume
 
     /**
      * Informa o código de barras do volume
-     * @param string $codigoBarras 
+     * @param string $codigoBarras
      */
     public function setCodigoBarras($codigoBarras)
     {
@@ -435,6 +447,38 @@ class Volume
     public function setCodProduto($codProduto)
     {
         $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return datetime
+     */
+    public function getDataInativacao()
+    {
+        return $this->dataInativacao;
+    }
+
+    /**
+     * @param datetime $dataInativacao
+     */
+    public function setDataInativacao($dataInativacao)
+    {
+        $this->dataInativacao = $dataInativacao;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUsuarioInativacao()
+    {
+        return $this->usuarioInativacao;
+    }
+
+    /**
+     * @param int $usuarioInativacao
+     */
+    public function setUsuarioInativacao($usuarioInativacao)
+    {
+        $this->usuarioInativacao = $usuarioInativacao;
     }
 
 }
