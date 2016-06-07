@@ -342,7 +342,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
-                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido')
+                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, etq.produtoEmbalagem codProdutoEmbalagem')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->leftJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','etq.id = es.codBarras')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
@@ -350,7 +350,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->andWhere('etq.id <= '.$codigoFinal)
             ->andWhere('etq.reimpressao IS NULL')
             ->orderBy("es.codBarras","DESC");
-        ;
 
         $result = $dql->getQuery()->getResult();
         return $result;
