@@ -73,7 +73,8 @@ class Embalagem
     protected $dataValidade;
 
     /**
-     * @Column(name="NUM_PESO", type="string")
+     * @Column(name="NUM_PESO", type="float")
+     * @var float
      */
     protected $numPeso;
 
@@ -167,7 +168,7 @@ class Embalagem
     }
 
     /**
-     * @return mixed
+     * @return float
      */
     public function getNumPeso()
     {
@@ -175,11 +176,12 @@ class Embalagem
     }
 
     /**
-     * @param mixed $numPeso
+     * @param float $numPeso
      */
     public function setNumPeso($numPeso)
     {
         $this->numPeso = $numPeso;
     }
 
+    
 }

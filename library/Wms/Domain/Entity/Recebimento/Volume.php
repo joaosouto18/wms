@@ -73,7 +73,8 @@ class Volume
     protected $dataValidade;
 
     /**
-     * @Column(name="NUM_PESO", type=string)
+     * @Column(name="NUM_PESO", type="float")
+     * @var float
      */
     protected $numPeso;
 
@@ -170,7 +171,7 @@ class Volume
     }
 
     /**
-     * @return mixed
+     * @return float
      */
     public function getNumPeso()
     {
@@ -178,7 +179,7 @@ class Volume
     }
 
     /**
-     * @param mixed $numPeso
+     * @param float $numPeso
      */
     public function setNumPeso($numPeso)
     {
