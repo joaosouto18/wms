@@ -49,6 +49,12 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $repositorios['produtoRepo'];
 
+        /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
+        $dadoLogisticoRepo = $repositorios['dadoLogisticoRepo'];
+
+        /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
+        $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
+
         $arrRegistro = $elements['arrRegistro'];
         $arrErroRows = $elements['arrErroRows'];
         $countFlush = $elements['countFlush'];
@@ -233,6 +239,18 @@ class Importacao_IndexController extends Action
                         $countFlush++;
                     }
                     break;
+                case 'normaPaletizacao':
+                    $check = $normaPaletizacaoRepo->findOneBy($arrRegistro);
+                    if (!empty($check)){
+                        $arrErroRows[$linha] = "Esta norma já foi cadastrada " . http_build_query($arrRegistro, '', ' ');
+                    }
+                    $result = $importacaoService->saveNormaPaletizacao($em, $arrRegistro);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
+                    break;
                 case 'endereco':
                     $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
                     $endereco = explode(".", $arrRegistro['endereco']);
@@ -290,6 +308,8 @@ class Importacao_IndexController extends Action
             $pFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
             $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
             $referenciaRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
+            $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
+            $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
 
             $repositorios = array(
                 'produtoRepo' => $produtoRepo,
@@ -300,7 +320,10 @@ class Importacao_IndexController extends Action
                 'pjRepo' => $pJuridicaRepo,
                 'pfRepo' => $pFisicaRepo,
                 'fornecedorRepo' => $fornecedorRepo,
-                'referenciaRepo' => $referenciaRepo);
+                'referenciaRepo' => $referenciaRepo,
+                'normaPaletizacaoRepo' => $normaPaletizacaoRepo,
+                'dadoLogisticoRepo' => $dadoLogisticoRepo
+            );
 
             $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));
             $arrErros = array();
