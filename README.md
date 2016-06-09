@@ -29,6 +29,9 @@ https://www.virtualbox.org/wiki/Downloads
 Configuração banco local
 ===========================
 
+DROP USER wms_dbevelop CASCADE;
+DROP TABLESPACE wms_develop;
+
 ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;
 
 CREATE TABLESPACE wms_develop
@@ -37,7 +40,7 @@ AUTOEXTEND ON NEXT 512k MAXSIZE 2000M
 BLOCKSIZE 16k
 EXTENT MANAGEMENT LOCAL UNIFORM SIZE 512K
 SEGMENT SPACE MANAGEMENT AUTO
-ONLINE
+ONLINE;
 
 CREATE USER wms_develop
 IDENTIFIED BY wms_adm
@@ -48,7 +51,7 @@ GRANT ALL PRIVILEGES TO wms_develop;
 -- Desabilita expiração de senha no Oracle --
 ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED
-PASSWORD_LIFE_TIME UNLcIMITED;
+PASSWORD_LIFE_TIME UNLIMITED;
 
 Exemplo exportação/importação banco
 ===========================
