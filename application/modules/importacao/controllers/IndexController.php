@@ -70,6 +70,23 @@ class Importacao_IndexController extends Action
 
             switch ($tabelaDestino) {
                 case 'produto':
+                    $registro = http_build_query($arrRegistro, '', ' ');
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Produto repetido: " . $registro;
+                        break;
+                    }
+                    $criterio = array(
+                        'id' => $arrRegistro['id'],
+                        'grade' => $arrRegistro['grade']
+                    );
+                    $check = $produtoRepo->findBy($criterio);
+
+                    if (!empty($check)){
+                        $arrErroRows[$linha] = "Este produto já foi cadastrado " . $registro;
+                        break;
+                    }
                     $result = $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
