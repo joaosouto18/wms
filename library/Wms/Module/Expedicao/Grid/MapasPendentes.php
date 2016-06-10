@@ -23,6 +23,10 @@ class MapasPendentes extends Grid
                 'index' => 'DSC_PRODUTO',
             ))
             ->addColumn(array(
+                'label' => 'Cod. Barras',
+                'index' => 'COD_BARRAS'
+            ))
+            ->addColumn(array(
                 'label' => 'Quantidade',
                 'index' => 'QTD_CONFERIR',
             ))

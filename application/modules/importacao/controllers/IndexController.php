@@ -49,6 +49,15 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $repositorios['produtoRepo'];
 
+        /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
+        $dadoLogisticoRepo = $repositorios['dadoLogisticoRepo'];
+        
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $repositorios['embalagemRepo'];
+
+        /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
+        $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
+
         $arrRegistro = $elements['arrRegistro'];
         $arrErroRows = $elements['arrErroRows'];
         $countFlush = $elements['countFlush'];
@@ -225,7 +234,77 @@ class Importacao_IndexController extends Action
                         $countFlush++;
                     }
                     break;
+                case 'normaPaletizacao':
+                    $registro = http_build_query($arrRegistro, '', ' ');
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Norma repetida: " . $registro;
+                        break;
+                    }
+
+                    $check = $normaPaletizacaoRepo->findBy($arrRegistro);
+
+                    if (!empty($check)){
+                        $arrErroRows[$linha] = "Esta norma já foi cadastrada " . $registro;
+                        break;
+                    }
+                    $result = $importacaoService->saveNormaPaletizacao($em, $arrRegistro);
+                    if (is_string($result)) {
+                        $arrErroRows[$linha] = $result;
+                    } else {
+                        $countFlush++;
+                    }
+                    break;
                 case 'dadoLogistico':
+                    $registro = http_build_query($arrRegistro, '', ' ');
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Dado logistico repetido: " . $registro;
+                        break;
+                    }
+                    $criterioEmb = array(
+                        'codProduto' => $arrRegistro['codProduto'],
+                        'grade' => $arrRegistro['grade']
+                    );
+
+                    if (isset($arrRegistro['codigoBarras']) && !empty($arrRegistro['codigoBarras'])){
+                        $criterioEmb['codigoBarras'] = $arrRegistro['codigoBarras'];
+                    } else {
+                        $criterioEmb['quantidade'] = $arrRegistro['quantidade'];
+                        unset($arrRegistro['quantidade']);
+                    }
+
+                    unset($arrRegistro['codProduto']);
+                    unset($arrRegistro['grade']);
+                    unset($arrRegistro['quantidade']);
+                    unset($arrRegistro['codigoBarras']);
+
+                    $arrRegistro['embalagem'] = $embalagemRepo->findOneBy($criterioEmb);
+
+                    $criterioNorma = array(
+                        "numLastro" => $arrRegistro["numLastro"],
+                        "numCamadas" => $arrRegistro["numCamadas"],
+                        "numPeso" => $arrRegistro["numPeso"],
+                        "numNorma" => $arrRegistro["numNorma"],
+                        "unitizador" => $arrRegistro["unitizador"],
+                        "isPadrao" => $arrRegistro["isPadrao"],
+                    );
+                    unset($arrRegistro['numLastro']);
+                    unset($arrRegistro['numCamadas']);
+                    unset($arrRegistro['numPeso']);
+                    unset($arrRegistro['numNorma']);
+                    unset($arrRegistro['unitizador']);
+                    unset($arrRegistro['isPadrao']);
+                    $arrRegistro['normaPaletizacao'] = $normaPaletizacaoRepo->findOneBy($criterioNorma);
+
+                    $check = $dadoLogisticoRepo->findBy($arrRegistro);
+
+                    if (!empty($check)){
+                        $arrErroRows[$linha] = "Esta dado logistico já foi cadastrado " . $registro;
+                        break;
+                    }
                     $result = $importacaoService->saveDadoLogistico($em, $arrRegistro);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
@@ -290,6 +369,8 @@ class Importacao_IndexController extends Action
             $pFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
             $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
             $referenciaRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
+            $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
+            $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
 
             $repositorios = array(
                 'produtoRepo' => $produtoRepo,
@@ -300,7 +381,10 @@ class Importacao_IndexController extends Action
                 'pjRepo' => $pJuridicaRepo,
                 'pfRepo' => $pFisicaRepo,
                 'fornecedorRepo' => $fornecedorRepo,
-                'referenciaRepo' => $referenciaRepo);
+                'referenciaRepo' => $referenciaRepo,
+                'normaPaletizacaoRepo' => $normaPaletizacaoRepo,
+                'dadoLogisticoRepo' => $dadoLogisticoRepo
+            );
 
             $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));
             $arrErros = array();
