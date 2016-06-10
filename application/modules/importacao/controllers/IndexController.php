@@ -67,7 +67,6 @@ class Importacao_IndexController extends Action
 
         try {
 
-
             switch ($tabelaDestino) {
                 case 'produto':
                     $registro = http_build_query($arrRegistro, '', ' ');
@@ -347,6 +346,8 @@ class Importacao_IndexController extends Action
                             $countFlush++;
                         }
                     }
+                    break;
+                case "expedicao":
                     break;
                 default:
                     break;
