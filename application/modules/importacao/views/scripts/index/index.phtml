@@ -78,7 +78,7 @@
                 $("#tbError").show();
             }
             if (status.exception != null){
-                $("<h2>").text(status.exception).appendTo("#excptMsg");
+                $("<h2>").text("Linha: "+status.iLinha+ "  -  " +status.exception).appendTo("#excptMsg");
                 $("#excptRw").show();
             }
         }
