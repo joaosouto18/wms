@@ -26,15 +26,15 @@ class Web_ProdutoVolumeController extends Crud
         $params = $this->getRequest()->getParams();
 
         $dql = $em->createQueryBuilder()
-                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+            ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador')
-                ->from('wms:Produto\Volume', 'v')
-                ->innerJoin('v.normaPaletizacao', 'np')
-                ->innerJoin('np.unitizador', 'u')
-                ->where('v.codProduto = ?1')
-                ->setParameter(1, $params['idProduto'])
-                ->andWhere('v.grade = :grade')
-                ->setParameter('grade', $params['grade']);
+            ->from('wms:Produto\Volume', 'v')
+            ->innerJoin('v.normaPaletizacao', 'np')
+            ->innerJoin('np.unitizador', 'u')
+            ->where('v.codProduto = ?1')
+            ->setParameter(1, $params['idProduto'])
+            ->andWhere('v.grade = :grade')
+            ->setParameter('grade', $params['grade']);
 
         $normasPaletizacao = array();
 
@@ -68,9 +68,17 @@ class Web_ProdutoVolumeController extends Crud
             }
 
             $volumes = $em->getRepository('wms:Produto\Volume')
-                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']), array('codigoSequencial' => 'ASC'));
+                ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']), array('codigoSequencial' => 'ASC'));
 
             foreach ($volumes as $volume) {
+
+                $dataInativacao = "VOL. ATIVO";
+                $checked = '';
+                if (!is_null($volume->getDataInativacao())) {
+                    $dataInativacao = $volume->getDataInativacao();
+                    $checked = 'checked ';
+                    $dataInativacao = $dataInativacao->format('d/m/Y');
+                }
 
                 $idNormaPaletizacao = ($volume->getNormaPaletizacao()) ? $volume->getNormaPaletizacao()->getId() : 0;
 
@@ -94,6 +102,8 @@ class Web_ProdutoVolumeController extends Crud
                     'codigoBarras' => $volume->getCodigoBarras(),
                     'endereco' => ($volume->getEndereco()) ? $volume->getEndereco()->getDescricao() : '',
                     'acao' => 'alterar',
+                    'ativarDesativar' => $checked,
+                    'dataInativacao' => $dataInativacao,
                 );
             }
         }
@@ -112,6 +122,15 @@ class Web_ProdutoVolumeController extends Crud
         $arrayVolumes = array();
 
         foreach ($volumes as $volume) {
+
+            $dataInativacao = "VOL. ATIVO";
+            $checked = '';
+            if (!is_null($volume->getDataInativacao())) {
+                $dataInativacao = $volume->getDataInativacao();
+                $checked = 'checked ';
+                $dataInativacao = $dataInativacao->format('d/m/Y');
+            }
+
             $arrayVolumes[] = array(
                 'id' => $volume->getId(),
                 'codigoSequencial' => $volume->getCodigoSequencial(),
@@ -122,14 +141,15 @@ class Web_ProdutoVolumeController extends Crud
                 'peso' => $volume->getPeso(),
                 'descricao' => $volume->getDescricao(),
                 'normaPaletizacao' => $volume->getNormaPaletizacao()->getId(),
+                'ativarDesativar' => $checked,
+                'dataInativacao' => $dataInativacao,
             );
         }
-
         $this->_helper->json($arrayVolumes, true);
     }
 
     /**
-     * 
+     *
      */
     public function detalhesAjaxAction()
     {
