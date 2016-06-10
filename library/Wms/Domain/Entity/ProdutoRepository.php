@@ -258,7 +258,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						}
 
 						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-							if (is_null($embalagemEntity->getDataInativacao())) {
+							if ($webservice == true) {
+								$embalagemEntity->setDataInativacao(null);
+								$embalagemEntity->setUsuarioInativacao($idUsuario);
+								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
+							} elseif (is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(new \DateTime());
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
@@ -315,7 +319,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
 
 						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-							if (is_null($embalagemEntity->getDataInativacao())) {
+							if ($webservice == true) {
+								$embalagemEntity->setDataInativacao(null);
+								$embalagemEntity->setUsuarioInativacao($idUsuario);
+								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
+							} elseif (is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(new \DateTime());
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);

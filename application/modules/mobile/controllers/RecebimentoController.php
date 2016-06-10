@@ -63,7 +63,7 @@ class Mobile_RecebimentoController extends Action
 
     /**
      *
-     * @throws \Exception 
+     * @throws \Exception
      */
     public function lerCodigoBarrasAction()
     {
@@ -73,11 +73,13 @@ class Mobile_RecebimentoController extends Action
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
-            
+
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
 
-            if ($notaFiscalEntity)
-                $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
+            if ($notaFiscalEntity) {
+                $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
+                $this->view->fornecedor     = $notaFiscalEntity->getFornecedor()->getPessoa()->getNome();
+            }
 
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
@@ -87,7 +89,7 @@ class Mobile_RecebimentoController extends Action
 
             if (isset($retorno['criado']) && $retorno['criado'])
                 $this->_helper->messenger('info', $retorno['mensagem']);
-            
+
             if(isset($retorno['finalizado']) && $retorno['finalizado']){
                 $this->_helper->messenger('error', $retorno['mensagem']);
                 $this->redirect('conferencia-recebimento', 'ordem-servico');
@@ -111,7 +113,7 @@ class Mobile_RecebimentoController extends Action
 
     /**
      *
-     * @throws \Exception 
+     * @throws \Exception
      */
     public function produtoQuantidadeAction()
     {
@@ -129,13 +131,16 @@ class Mobile_RecebimentoController extends Action
 
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
-            
+
             $recebimentoService = new \Wms\Service\Recebimento;
 
             // testa codigo de barras
             $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
-            
+
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
+
+            if (!is_null($itemNF['dataInativacao']))
+                throw new \Exception('O produto ' . $itemNF['idProduto'] . ' grade ' . $itemNF['grade'] . ' está inativo!');
 
             if ($itemNF == null)
                 throw new \Exception('Nenhum produto encontrado no Recebimento com este Código de Barras. - ' . $codigoBarras);
@@ -160,7 +165,7 @@ class Mobile_RecebimentoController extends Action
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
                 $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
-                $dataValidade = $dataValidade->toString('dd/MM/Y');
+                $dataValidade = $dataValidade->toString('dd/MM/YY');
                 $this->view->dataValidade = $dataValidade;
             }
 
@@ -216,7 +221,29 @@ class Mobile_RecebimentoController extends Action
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
 
-                $params['dataValidade'] = new Zend_Date($params['dataValidade']);
+                $dataValida = true;
+                if (strlen($params['dataValidade']) < 8) {
+                    $dataValida = false;
+                } else {
+                    $dia = substr($params['dataValidade'],0,2);
+                    if ($dia == false) $dataValida = false;
+                    $mes = substr($params['dataValidade'],3,2);
+                    if ($mes == false) $dataValida = false;
+                    $ano = substr($params['dataValidade'],6,2);
+                    if ($mes == false) $dataValida = false;
+
+                    if ($dataValida == true) {
+                        $data = $dia . "/" . $mes . "/20" . $ano;
+                        if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
+                    }
+                }
+
+                if ($dataValida == false) {
+                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                }
+
+                $params['dataValidade'] = new Zend_Date($data);
                 if ($params['dataValidade'] <= $PeriodoUtil) {
                     //autoriza recebimento?
                     $arrayRedirect = array(
@@ -246,8 +273,8 @@ class Mobile_RecebimentoController extends Action
                 // gravo conferencia do item
                 $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
                 $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
-            } 
-            
+            }
+
             // caso volume
             if ($this->_hasParam('idProdutoVolume')) {
                 $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);

@@ -24,7 +24,6 @@ class Expedicao_MapaController  extends Action
 
     public function pendentesConferenciaAction()
     {
-        $idExpedicao = $this->_getParam('id');
         $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
 
         $grid = new \Wms\Module\Expedicao\Grid\MapasPendentes();
