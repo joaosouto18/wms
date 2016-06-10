@@ -26,6 +26,7 @@ class Importacao_IndexController extends Action
     public function custom_warning_handler($errno, $errstr) {
         $this->statusProgress["exception"] = $errstr;
         $this->progressBar->update(null, $this->statusProgress);
+        $this->statusProgress["exception"] = null;
         $this->_helper->json(array('result' => $errstr));
 
     }
@@ -67,7 +68,6 @@ class Importacao_IndexController extends Action
 
         try {
 
-
             switch ($tabelaDestino) {
                 case 'produto':
                     $registro = http_build_query($arrRegistro, '', ' ');
@@ -77,9 +77,9 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = "Produto repetido: " . $registro;
                         break;
                     }
-                    $criterio = array(
-                        'id' => $arrRegistro['id'],
+                    $criterio = array('id' => $arrRegistro['id'],
                         'grade' => $arrRegistro['grade']
+
                     );
                     $check = $produtoRepo->findBy($criterio);
 
@@ -348,6 +348,8 @@ class Importacao_IndexController extends Action
                         }
                     }
                     break;
+                case "expedicao":
+                    break;
                 default:
                     break;
             }
@@ -478,7 +480,7 @@ class Importacao_IndexController extends Action
                             } else {
                                 $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
                                 $valorCampo = utf8_encode($valorCampo);
-                                if ($valorCampo == "") {
+                                if (empty($valorCampo)) {
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
                                     } else {
