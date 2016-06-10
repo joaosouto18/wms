@@ -575,7 +575,7 @@ class Importacao
         try {
             $entity = new Produto\NormaPaletizacao();
 
-            $arrDados["unitizador"] = $em->getRepository('wms:Produto\Unitizador')->findOneBy(array('id' => $arrDados['unitizador']));
+            $arrDados["unitizador"] = $em->getRepository('wms:Armazenagem\Unitizador')->findOneBy(array('id' => $arrDados['unitizador']));
 
             Configurator::configure($entity, $arrDados);
             $em->persist($entity);
@@ -609,27 +609,35 @@ class Importacao
     {
         try {
             //$produto = $em->getRepository("wms:Produto")->findOneBy( array("id" => $arrDados['id'], "grade" => $arrDados['grade']) );
-            $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy(array("id" => $arrDados['normaPaletizacao']));
-            if (isset($arrDados['codigoBarras']) && !empty($arrDados['codigoBarras'])) {
-                $criterio = array(
-                    "codProduto" => $arrDados['codProduto'],
-                    "grade" => $arrDados['grade'],
-                    "codigoBarras" => $arrDados["codigoBarras"]
-                );
-                $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
-            } else if (isset($arrDados['quantidade']) && !empty($arrDados['quantidade'])) {
-                $criterio = array(
-                    "codProduto" => $arrDados['codProduto'],
-                    "grade" => $arrDados['grade'],
-                    "quantidade" => $arrDados["quantidade"]
-                );
-                $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+            if (!is_object($arrDados["normaPaletizacao"]))
+                $arrDados["normaPaletizacao"] = $em->getRepository('wms:Produto\NormaPaletizacao')->findOneBy(array("id" => $arrDados['normaPaletizacao']));
+
+            if (!isset($arrDados['embalagem']) || !is_object($arrDados['embalagem'])) {
+                if (isset($arrDados['codigoBarras']) && !empty($arrDados['codigoBarras'])) {
+                    $criterio = array(
+                        "codProduto" => $arrDados['codProduto'],
+                        "grade" => $arrDados['grade'],
+                        "codigoBarras" => $arrDados["codigoBarras"]
+                    );
+                    $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+                } else if (isset($arrDados['quantidade']) && !empty($arrDados['quantidade'])) {
+                    $criterio = array(
+                        "codProduto" => $arrDados['codProduto'],
+                        "grade" => $arrDados['grade'],
+                        "quantidade" => $arrDados["quantidade"]
+                    );
+                    $arrDados["embalagem"] = $em->getRepository('wms:Produto\Embalagem')->findOneBy($criterio);
+                }
+
+                unset($arrDados['codProduto']);
+                unset($arrDados['grade']);
+                unset($arrDados['codigoBarras']);
+                unset($arrDados['quantidade']);
             }
 
-            unset($arrDados['codProduto']);
-            unset($arrDados['grade']);
-            unset($arrDados['codigoBarras']);
-            unset($arrDados['quantidade']);
+            if (!isset($arrDados['cubagem']) || empty($arrDados['cubagem'])){
+                $arrDados['cubagem'] = $arrDados['largura'] * $arrDados['largura'] * $arrDados['profundidade'];
+            }
 
             $arrDados['peso'] = str_replace(",", ".", strpos($arrDados['peso'], ",") ? $arrDados['peso'] : $arrDados['peso'] . ",0");
             //$arrDados['peso'] = Converter::brToEn($arrDados['peso'],-3);

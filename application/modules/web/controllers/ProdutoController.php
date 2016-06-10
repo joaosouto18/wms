@@ -356,14 +356,14 @@ class Web_ProdutoController extends Crud {
                     $normasPaletizacao[$key]['dadosLogisticos'][] = array(
                         'id' => $dadoLogistico->getId(),
                         'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'idEmbalagem' => $dadoLogistico->getEmbalagem()->getId(),
+                        'idEmbalagem' => (is_object($dadoLogistico->getEmbalagem()))?$dadoLogistico->getEmbalagem()->getId():null,
                         'largura' => $dadoLogistico->getLargura(),
                         'altura' => $dadoLogistico->getAltura(),
                         'profundidade' => $dadoLogistico->getProfundidade(),
                         'cubagem' => $dadoLogistico->getCubagem(),
                         'peso' => $dadoLogistico->getPeso(),
                         'normaPaletizacao' => $dadoLogistico->getNormaPaletizacao()->getId(),
-                        'dscEmbalagem' => $dadoLogistico->getEmbalagem()->getDescricao(),
+                        'dscEmbalagem' => (is_object($dadoLogistico->getEmbalagem()))?$dadoLogistico->getEmbalagem()->getDescricao():null,
                     );
                 }
             }
