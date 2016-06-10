@@ -39,7 +39,7 @@
     </div>
     <div id="excptRw" style="display: none">
         <p>Erro de exceção:</p>
-        <h2 style="color: red;" id="excptMsg"></h2>
+        <div style="color: red;" id="excptMsg"></div>
     </div>
     <iframe src="" id="frameTeste" style="display: none"></iframe>
 </div>
@@ -50,8 +50,8 @@
     $("#startImport").click(function () {
         $("#excptRw").hide();
         $("#tbError").hide();
-        $("#tbErrResult").html();
-        $("#excptMsg").text("");
+        $("#tbErrResult").children("tr").remove();
+        $("#excptMsg").children("h2").remove();
         $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-ajax");
 
     });
@@ -78,7 +78,7 @@
                 $("#tbError").show();
             }
             if (status.exception != null){
-                $("#excptMsg").text(status.exception);
+                $("<h2>").text(status.exception).appendTo("#excptMsg");
                 $("#excptRw").show();
             }
         }
