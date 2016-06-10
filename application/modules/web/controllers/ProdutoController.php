@@ -25,10 +25,10 @@ class Web_ProdutoController extends Crud {
         if ($values) {
             $grid = new DadoLogisticoGrid;
             $this->view->grid = $grid->init($values)
-                    ->render();
+                ->render();
 
             $form->setSession($values)
-                    ->populate($values);
+                ->populate($values);
         }
 
         $this->view->form = $form;
@@ -43,16 +43,16 @@ class Web_ProdutoController extends Crud {
         $params = $this->getRequest()->getParams();
 
         $dql = $em->createQueryBuilder()
-                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+            ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador')
-                ->from('wms:Produto\Embalagem', 'e')
-                ->innerJoin('e.dadosLogisticos', 'dl')
-                ->innerJoin('dl.normaPaletizacao', 'np')
-                ->innerJoin('np.unitizador', 'u')
-                ->where('e.codProduto = ?1')
-                ->setParameter(1, $params['idProduto'])
-                ->andWhere('e.grade = :grade')
-                ->setParameter('grade', $params['grade']);
+            ->from('wms:Produto\Embalagem', 'e')
+            ->innerJoin('e.dadosLogisticos', 'dl')
+            ->innerJoin('dl.normaPaletizacao', 'np')
+            ->innerJoin('np.unitizador', 'u')
+            ->where('e.codProduto = ?1')
+            ->setParameter(1, $params['idProduto'])
+            ->andWhere('e.grade = :grade')
+            ->setParameter('grade', $params['grade']);
 
         $normasPaletizacao = array();
 
@@ -86,7 +86,7 @@ class Web_ProdutoController extends Crud {
             }
 
             $dadosLogisticos = $em->getRepository('wms:Produto\DadoLogistico')
-                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']));
+                ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']));
 
             foreach ($dadosLogisticos as $dadoLogistico) {
 
@@ -114,11 +114,11 @@ class Web_ProdutoController extends Crud {
 
     /**
      * Edita um registro
-     * @return void 
+     * @return void
      */
     public function editAction() {
         //adding default buttons to the page
-            Page::configure(array(
+        Page::configure(array(
             'buttons' => array(
                 array(
                     'label' => 'Voltar',
@@ -148,7 +148,7 @@ class Web_ProdutoController extends Crud {
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
             $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
-            
+
             if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
 
                 $linhaEn = $entity->getLinhaSeparacao();
@@ -180,7 +180,7 @@ class Web_ProdutoController extends Crud {
                     $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
                 }
 
-                /*$tolerancia = strtoupper($params['produto']['pVariavel']);
+                $tolerancia = strtoupper($params['produto']['pVariavel']);
                 if ($tolerancia != 'S') {
                     $tolerancia = 'N';
                 }
@@ -188,9 +188,9 @@ class Web_ProdutoController extends Crud {
                 if ($tolerancia == 'S' && !empty($params['produto']['percTolerancia']) ) {
                     $entity->setPercTolerancia($params['produto']['percTolerancia']);
                     $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
-                }*/
+                }
 
-                $this->repository->save($entity, $this->getRequest()->getParams(), true);
+                $this->repository->save($entity, $this->getRequest()->getParams());
                 $this->em->flush();
 
                 $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
@@ -198,44 +198,17 @@ class Web_ProdutoController extends Crud {
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');
-				
+
             }
             $form->setDefaultsFromEntity($entity); // pass values to form
-            $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
-            $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
         $this->view->form = $form;
     }
 
-    public function codigoFornecedorAjaxAction()
-    {
-        $term = $this->getRequest()->getParam('term');
-        /** @var \Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository $fornecedorRefRepo */
-        $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
-        $result = $fornecedorRefRepo->buscarFornecedorByNome($term);
-
-        $this->_helper->json($result);
-    }
-
-    public function excluirCodFornecedorAjaxAction()
-    {
-        $id = $this->getRequest()->getParam('id');
-        $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
-        try {
-            $fornEn = $fornecedorRefRepo->find($id);
-            $this->_em->remove($fornEn);
-            $this->_em->flush();
-            $this->_helper->json(array('success'));
-        } catch (Exception $e) {
-            $this->_helper->json(array('msg' => $e->getMessage()));
-        }
-
-    }
-
     /**
-     * 
+     *
      */
     public function dadoLogisticoAjaxAction() {
         $params = $this->getRequest()->getParams();
@@ -317,16 +290,16 @@ class Web_ProdutoController extends Crud {
             }
 
             $dql = $em->createQueryBuilder()
-                    ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador')
-                    ->from('wms:Produto\Embalagem', 'e')
-                    ->innerJoin('e.dadosLogisticos', 'dl')
-                    ->innerJoin('dl.normaPaletizacao', 'np')
-                    ->innerJoin('np.unitizador', 'u')
-                    ->where('e.codProduto = ?1')
-                    ->setParameter(1, $params['id'])
-                    ->andWhere('e.grade = :grade')
-                    ->setParameter('grade', $params['grade']);
+                ->from('wms:Produto\Embalagem', 'e')
+                ->innerJoin('e.dadosLogisticos', 'dl')
+                ->innerJoin('dl.normaPaletizacao', 'np')
+                ->innerJoin('np.unitizador', 'u')
+                ->where('e.codProduto = ?1')
+                ->setParameter(1, $params['id'])
+                ->andWhere('e.grade = :grade')
+                ->setParameter('grade', $params['grade']);
 
             // loop para agrupar normas repetidas, já que a bosta do oracle não faz
             foreach ($dql->getQuery()->getResult() as $row) {
@@ -347,7 +320,7 @@ class Web_ProdutoController extends Crud {
             foreach ($normasPaletizacao as $key => $normaPaletizacao) {
 
                 $dadosLogisticos = $em->getRepository('wms:Produto\DadoLogistico')
-                        ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']));
+                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']));
 
                 foreach ($dadosLogisticos as $dadoLogistico) {
 
@@ -356,14 +329,14 @@ class Web_ProdutoController extends Crud {
                     $normasPaletizacao[$key]['dadosLogisticos'][] = array(
                         'id' => $dadoLogistico->getId(),
                         'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'idEmbalagem' => (is_object($dadoLogistico->getEmbalagem()))?$dadoLogistico->getEmbalagem()->getId():null,
+                        'idEmbalagem' => $dadoLogistico->getEmbalagem()->getId(),
                         'largura' => $dadoLogistico->getLargura(),
                         'altura' => $dadoLogistico->getAltura(),
                         'profundidade' => $dadoLogistico->getProfundidade(),
                         'cubagem' => $dadoLogistico->getCubagem(),
                         'peso' => $dadoLogistico->getPeso(),
                         'normaPaletizacao' => $dadoLogistico->getNormaPaletizacao()->getId(),
-                        'dscEmbalagem' => (is_object($dadoLogistico->getEmbalagem()))?$dadoLogistico->getEmbalagem()->getDescricao():null,
+                        'dscEmbalagem' => $dadoLogistico->getEmbalagem()->getDescricao(),
                     );
                 }
             }
