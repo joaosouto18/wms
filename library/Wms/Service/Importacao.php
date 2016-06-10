@@ -428,45 +428,35 @@ class Importacao
 
     public function saveProduto($em, $produto, $repositorios)
     {
-        $produtoRepo  = $repositorios['produtoRepo'];
-        $enderecoRepo = $repositorios['enderecoRepo'];
-        $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
-
-        $novo = false;
-        if ($produtoEntity == null) {
-            $produtoEntity = new Produto();
-            $novo = true;
-        }
-
         try {
-            $dscEndereco = '';
-            if (isset($produto['enderecoReferencia'])) {
-                $dscEndereco = $produto['enderecoReferencia'];
-            }
-            if ($dscEndereco != "") {
-                $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$dscEndereco));
-                if ($enderecoEn == null) {
-                    throw new \Exception("Endereço de referencia para endereçamento automático inválido");
-                } else {
-                    $produto['enderecoReferencia'] = $enderecoEn;
+            $produtoRepo  = $repositorios['produtoRepo'];
+            $enderecoRepo = $repositorios['enderecoRepo'];
+            $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
+
+
+            if ($produtoEntity == null) {
+                $produtoEntity = new Produto();
+
+                if (isset($produto['enderecoReferencia'])) {
+                    $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$produto['enderecoReferencia']));
+                    if ($enderecoEn == null) {
+                        throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+                    } else {
+                        $produto['enderecoReferencia'] = $enderecoEn;
+                    }
                 }
-            }
 
-            $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
-            $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
-            $produto['classe'] = $em->getReference('wms:Produto\Classe', (int)$produto['classe']);
-            $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
+                $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
+                $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+                $produto['classe'] = $em->getReference('wms:Produto\Classe', (int)$produto['classe']);
+                $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
 
-            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-            $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);
+                $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+                $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);
 
-            Configurator::configure($produtoEntity, $produto);
+                Configurator::configure($produtoEntity, $produto);
 
-            $em->persist($produtoEntity);
-
-            if ($novo == true) {
-                $em->flush();
-                $em->clear();
+                $em->persist($produtoEntity);
             }
             return true;
         } catch (\Exception $e) {
