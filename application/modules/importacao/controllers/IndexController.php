@@ -172,6 +172,40 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'cliente':
+                    $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
+                    if (strlen($cpf_cnpjFormatado) == 11) {
+                        $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    } else if (strlen($cpf_cnpjFormatado) == 14) {
+                        $arrRegistro['tipoPessoa'] = "J";
+                    } else {
+                        $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    }
+                    if (!in_array($arrRegistro['cpf_cnpj'], $checkArray)) {
+                        array_push($checkArray, $arrRegistro['cpf_cnpj']);
+                    } else {
+                        if ($arrRegistro['tipoPessoa'] == "J")
+                            $arrErroRows[$linha] = "CNPJ repetido: " . $arrRegistro['cpf_cnpj'];
+
+                        if ($arrRegistro['tipoPessoa'] == "F")
+                            $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
+
+                        break;
+                    }
+
+                    $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                    if ($entityPessoa) {
+                        $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    }
+                    $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
+
+                    if ($entityPessoa) {
+                        $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
+                        break;
+                    }
+
                     $result = $importacaoService->saveCliente($em, $arrRegistro);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
