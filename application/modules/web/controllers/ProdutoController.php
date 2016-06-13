@@ -201,6 +201,8 @@ class Web_ProdutoController extends Crud {
 
             }
             $form->setDefaultsFromEntity($entity); // pass values to form
+            $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+            $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
