@@ -1349,8 +1349,8 @@ class ExpedicaoRepository extends EntityRepository
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 //        echo $sql;
-//        return \Wms\Domain\EntityRepository::nativeQuery($sql);
-        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+//        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 
