@@ -5,7 +5,6 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
 	Wms\Domain\Entity\Produto as ProdutoEntity,
 	Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
-	Wms\Domain\Entity\Produto\Volume as VolumeEntity,
 	Wms\Domain\Entity\Produto\NormaPaletizacao as NormaPaletizacaoEntity,
 	Doctrine\Common\Persistence\ObjectRepository,
 	Doctrine\ORM\Id\SequenceGenerator,
@@ -13,6 +12,7 @@ use Doctrine\ORM\EntityRepository,
 	Wms\Util\Endereco as EnderecoUtil,
 	Core\Util\Produto as ProdutoUtil;
 use DoctrineExtensions\Versionable\Exception;
+use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 
 /**
  *
@@ -99,6 +99,26 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		}
 	}
 
+	protected  function saveFornecedorReferencia($em, $dados, $produtoEntity)
+	{
+		$idProduto = $produtoEntity->getIdProduto();
+		$fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+
+		foreach($dados['fornecedor'] as $key => $fornecedorRef) {
+
+			$fornRefEntity = $fornecedorRefRepo->findBy(array('fornecedor' => $fornecedorRef['id'], 'idProduto' => $idProduto));
+			if (!$fornRefEntity) {
+				$fornRefEntity = new Referencia();
+				$fornRefEntity->setIdProduto($idProduto);
+				$fornecedorEn = $em->getReference('wms:Pessoa\Papel\Fornecedor', $fornecedorRef['id']);
+				$fornRefEntity->setFornecedor($fornecedorEn);
+			}
+			$fornRefEntity->setDscReferencia($fornecedorRef['cod']);
+
+			$em->persist($fornRefEntity);
+		}
+	}
+
 	public function save(ProdutoEntity $produtoEntity, array $values) {
 
 		extract($values['produto']);
@@ -133,6 +153,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$produtoEntity->setNumVolumes($numVolumes);
 			$produtoEntity->setReferencia($referencia);
 			$produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
+
+			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
+
+			$this->saveFornecedorReferencia($em, $values, $produtoEntity);
 
 			$em->persist($produtoEntity);
 
