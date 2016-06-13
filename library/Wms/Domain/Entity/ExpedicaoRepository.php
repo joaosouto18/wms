@@ -1348,7 +1348,7 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-        echo $sql;
+//        echo $sql;
 //        return \Wms\Domain\EntityRepository::nativeQuery($sql);
         return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
