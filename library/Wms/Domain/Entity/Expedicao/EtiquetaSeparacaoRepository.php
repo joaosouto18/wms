@@ -744,7 +744,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $depositoEnderecoEn = null;
                     $codProduto = $pedidoProduto->getProduto()->getId();
                     $grade = $pedidoProduto->getProduto()->getGrade();
-                    $embalagensEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'DESC'));
+                    $embalagensEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
 
                     $quantidadeRestantePedido = $quantidade;
 
@@ -797,6 +797,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $embalagemAtual = $menorEmbalagem;
                         }
 
+                        if (!is_null($embalagemAtual->getDataInativacao()))
+                            continue;
+
                         $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
@@ -804,9 +807,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
                             $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
                         }
-
-                        if (!is_null($embalagemAtual->getDataInativacao()))
-                            continue;
 
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
@@ -872,7 +872,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $grade = $mapaProduto['dscGrade'];
                 $produtoEntity = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-                $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade),array('quantidade'=>'DESC'));
+                $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade, 'dataInativacao' => null),array('quantidade'=>'DESC'));
 
                 $mapaProdutos = $mapaProdutoRepo->getMapaProdutoByProdutoAndMapa($idMapaSeparacao, $idProduto, $grade);
                 $mapa = $mapaProdutoRepo->findOneBy(array('mapaSeparacao' => $idMapaSeparacao, 'codProduto' => $idProduto, 'dscGrade' => $grade));
