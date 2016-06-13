@@ -8,7 +8,7 @@ use Wms\Domain\Entity\Pessoa;
  * Fornecedor
  *
  * @Table(name="FORNECEDOR")
- * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository")
+ * @Entity(repositoryClass="Bisna\Base\Domain\Entity\Repository")
  */
 class Fornecedor implements Ator
 {
@@ -17,24 +17,21 @@ class Fornecedor implements Ator
      * @var integer $id
      * @Column(name="COD_FORNECEDOR", type="integer", nullable=false)
      * @Id
+     * @GeneratedValue(strategy="SEQUENCE")
+     * @SequenceGenerator(sequenceName="SQ_PESSOA_01", initialValue=1, allocationSize=100)
      */
     protected $id;
-    
     /**
      * @var string $idexterno
      * @Column(name="COD_EXTERNO", type="string", nullable=false)
      */
     protected $idExterno;
-    
     /**
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica", cascade={"persist"})
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica", cascade={"all"}, orphanRemoval=true)
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_PESSOA")
      */
     protected $pessoa;
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
@@ -47,29 +44,26 @@ class Fornecedor implements Ator
     {
         $this->id = $id;
     }
-    
-    /**
-     * @return Pessoa\Juridica
-     */
+
     public function getPessoa()
     {
-	    return $this->pessoa;
+        return $this->pessoa;
     }
 
     public function setPessoa($pessoa)
     {
-	    $this->pessoa = $pessoa;
+        $this->pessoa = $pessoa;
         return $this;
     }
 
     public function getIdExterno()
     {
-	    return $this->idExterno;
+        return $this->idExterno;
     }
 
     public function setIdExterno($idExterno)
     {
-	    $this->idExterno = $idExterno;
+        $this->idExterno = $idExterno;
         return $this;
     }
 

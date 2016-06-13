@@ -221,7 +221,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                        'descricao' => $descricaoEmbalagem,
+                        'descricao' => $descricaoEmbalagem
                     );
 
                     if ($encontrouEmbalagem == false) {
