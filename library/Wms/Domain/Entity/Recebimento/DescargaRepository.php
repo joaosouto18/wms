@@ -60,7 +60,7 @@ class DescargaRepository extends EntityRepository
             ->from('wms:Recebimento\Descarga', 'rd')
             ->innerjoin('rd.usuario', 'u')
             ->innerjoin('rd.recebimento', 'r')
-            ->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'r.id = p.recebimento')
+            ->leftJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'r.id = p.recebimento')
             ->orderBy('r.id')
             ->groupBy('r.id, u.login, rd.dataVinculo');
 
