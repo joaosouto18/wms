@@ -165,7 +165,7 @@ class Importacao
                         break;
                 }
 
-                /*$SiglaRepo = $repositorios['siglaRepo'];
+                $SiglaRepo = $repositorios['siglaRepo'];
                 $entitySigla = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
 
                 $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
@@ -187,7 +187,7 @@ class Importacao
                 if (isset($cliente['cep']))
                     $cliente['enderecos'][0]['cep'] = $cliente['cep'];
                 if (isset($entitySigla))
-                    $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();*/
+                    $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
 
                 $entityCliente = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 
