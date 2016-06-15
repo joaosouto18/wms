@@ -183,12 +183,19 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         }
 
         if (isset($params['btnImprimir'])) {
-            if ($parametroEtiquetaVolume == 1) {
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-                $gerarEtiqueta->imprimirExpedicaoModelo1($volumePatrimonio);
-            } else {
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
-                $gerarEtiqueta->imprimirExpedicaoModelo2($volumePatrimonio);
+            switch ($parametroEtiquetaVolume) {
+                case 1:
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+                    $gerarEtiqueta->imprimirExpedicaoModelo1($volumePatrimonio);
+                    break;
+                case 2:
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
+                    $gerarEtiqueta->imprimirExpedicaoModelo2($volumePatrimonio);
+                    break;
+                case 3:
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
+                    $gerarEtiqueta->imprimirExpedicaoModelo3($volumePatrimonio);
+                    break;
             }
         }
     }
