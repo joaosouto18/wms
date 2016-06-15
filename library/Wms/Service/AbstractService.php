@@ -26,9 +26,20 @@ abstract class AbstractService
         $this->em = $em;
     }
 
-    public function insert(array $data)
+    /**
+     * @param object|array $data
+     * @return null | object
+     * @throws \Exception
+     */
+    public function insert($data)
     {
-        $entity = new $this->entity($data);
+        $entity = null;
+        if (is_array($data)) {
+            $entity = new $this->entity();
+            Configurator::configure($entity, $data);
+        } else if (is_object($data)){
+            $entity = $data;
+        }
 
         $this->em->persist($entity);
         $this->em->flush();
@@ -62,4 +73,23 @@ abstract class AbstractService
         return $entity;
     }
 
+    public function get($id)
+    {
+        return $this->em->getRepository($this->entity)->find($id);
+    }
+
+    public function findBy(array $criteria)
+    {
+        return $this->em->getRepository($this->entity)->findBy($criteria);
+    }
+
+    public function findOneBy(array $criteria)
+    {
+        return $this->em->getRepository($this->entity)->findOneBy($criteria);
+    }
+
+    public function findAll()
+    {
+        return $this->em->getRepository($this->entity)->findAll();
+    }
 }

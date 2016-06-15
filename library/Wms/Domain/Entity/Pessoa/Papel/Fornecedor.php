@@ -4,21 +4,30 @@ namespace Wms\Domain\Entity\Pessoa\Papel;
 use Wms\Domain\Entity\Ator;
 use Wms\Domain\Entity\Pessoa;
 
-/**
+/*
  * Fornecedor
  *
  * @Table(name="FORNECEDOR")
  * @Entity(repositoryClass="Bisna\Base\Domain\Entity\Repository")
  */
+/**
+ * Fornecedor
+ *
+ * @Table(name="FORNECEDOR")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository")
+ */
 class Fornecedor implements Ator
 {
 
+    /*     
+    * @GeneratedValue(strategy="SEQUENCE")
+    * @SequenceGenerator(sequenceName="SQ_PESSOA_01", initialValue=1, allocationSize=100)
+    */
+    
     /**
      * @var integer $id
      * @Column(name="COD_FORNECEDOR", type="integer", nullable=false)
      * @Id
-     * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_PESSOA_01", initialValue=1, allocationSize=100)
      */
     protected $id;
     /**
@@ -45,6 +54,9 @@ class Fornecedor implements Ator
         $this->id = $id;
     }
 
+    /**
+     * @return Pessoa\Juridica
+     */
     public function getPessoa()
     {
         return $this->pessoa;

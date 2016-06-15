@@ -27,8 +27,8 @@ class FornecedorRepository extends AtorRepository
         $em = $this->getEntityManager();
         $em->beginTransaction();
         try {
-            $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
-            $fornecedorEn = $fornecedorRepo->findOneBy(array('codClienteExterno' => $idFornecedor));
+
+            $fornecedorEn = $this->findOneBy(array('codClienteExterno' => $idFornecedor));
             if (!$fornecedorEn)
                 $fornecedorEn = new Fornecedor();
 

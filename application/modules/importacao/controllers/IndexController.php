@@ -59,6 +59,9 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
         $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
 
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $expedicaoRepo */
+        $cargaRepo = $repositorios['cargaRepo'];
+
         $arrRegistro = $elements['arrRegistro'];
         $arrErroRows = $elements['arrErroRows'];
         $countFlush = $elements['countFlush'];
@@ -261,23 +264,32 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = 'Referencia já registrada: ' . $arrRegistro['dscReferencia'];
                     }
                     break;
-                case 'carga':
-                    $result = $importacaoService->saveCarga($em, $arrRegistro);
+                case 'pedido':
+                    $registro = http_build_query($arrRegistro, '', ' ');
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Pedido repetido: " . $registro;
+                        break;
+                    }
+
+                    $result = $importacaoService->savePedido($em, $arrRegistro);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
                     } else {
                         $countFlush++;
                     }
-                    break;
-                case 'pedido':
-                    if ($arrRegistro['codPedido'] !== $numPedido) {
-                        $numPedido = $arrRegistro['codPedido'];
-                        $importacaoService->savePedido($em, $arrRegistro);
-                        $countFlush++;
-                        break;
-                    }
+
                     break;
                 case 'pedidoProduto':
+                    $registro = http_build_query($arrRegistro, '', ' ');
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Produto repetido neste pedido: " . $registro;
+                        break;
+                    }
+
                     $result = $importacaoService->savePedidoProduto($em, $arrRegistro, false);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
@@ -324,7 +336,6 @@ class Importacao_IndexController extends Action
                         $criterioEmb['codigoBarras'] = $arrRegistro['codigoBarras'];
                     } else {
                         $criterioEmb['quantidade'] = $arrRegistro['quantidade'];
-                        unset($arrRegistro['quantidade']);
                     }
 
                     unset($arrRegistro['codProduto']);
@@ -382,7 +393,27 @@ class Importacao_IndexController extends Action
                         }
                     }
                     break;
-                case "expedicao":
+                case "carga":
+                    $registro = http_build_query($arrRegistro, '', ' ');
+
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Dados de carga repetidos: " . $registro;
+                        break;
+                    }
+                    $codTipoCarga = $arrRegistro['codTipoCarga'];
+                    unset($arrRegistro['codTipoCarga']);
+                    $check = $cargaRepo->findBy($arrRegistro);
+                    $arrRegistro['codTipoCarga'] = $codTipoCarga;
+                    if (empty($check)){
+                        $result = $importacaoService->saveCarga($em, $arrRegistro);
+                        if (is_string($result)) {
+                            $arrErroRows[$linha] = $result;
+                        } else {
+                            $countFlush++;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -424,6 +455,7 @@ class Importacao_IndexController extends Action
             $referenciaRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
             $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
             $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+            $cargaRepo  = $em->getRepository('wms:Expedicao\Carga');
 
             $repositorios = array(
                 'produtoRepo' => $produtoRepo,
@@ -436,7 +468,8 @@ class Importacao_IndexController extends Action
                 'fornecedorRepo' => $fornecedorRepo,
                 'referenciaRepo' => $referenciaRepo,
                 'normaPaletizacaoRepo' => $normaPaletizacaoRepo,
-                'dadoLogisticoRepo' => $dadoLogisticoRepo
+                'dadoLogisticoRepo' => $dadoLogisticoRepo,
+                'cargaRepo' => $cargaRepo,
             );
 
             $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));

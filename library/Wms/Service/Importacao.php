@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Entity\Armazenagem\Unitizador;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -315,7 +316,7 @@ class Importacao
             }
 
             try {
-                $entityFornecedor->setPessoa($entityPessoa);
+                $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
                 $em->persist($entityFornecedor);
@@ -360,9 +361,23 @@ class Importacao
         try {
             /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
             $cargaRepo = $em->getRepository('wms:Expedicao\Carga');
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expediacaoRepo */
+            $expediacaoRepo = $em->getRepository('wms:Expedicao');
+
+            $carga['idExpedicao'] = $expediacaoRepo->findOneBy(array('placaExpedicao' => $carga['placaExpedicao'], 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
+
+            if ($carga['idExpedicao'] == null) {
+                $carga['idExpedicao'] = $expediacaoRepo->save($carga['placaExpedicao']);
+            }
+            
+            if ($carga['idExpedicao']->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
+                return 'Expedicao ' . $carga['idExpedicao']->getId() . ' já está finalizada';
+            }
+            
             $entityCarga = $cargaRepo->findOneBy(array('codCargaExterno' => $carga['codCargaExterno']));
             if (!$entityCarga)
-                $entityCarga = $cargaRepo->save($carga, true);
+                $entityCarga = $cargaRepo->save($carga, false);
 
             return $entityCarga;
         } catch (\Exception $e){
@@ -372,12 +387,13 @@ class Importacao
 
     public function savePedido($em, $pedido)
     {
+        /** @var EntityManager $em */
         try {
             $pedido['pontoTransbordo'] = null;
             $pedido['envioParaLoja'] = null;
 
-            $pedido['itinerario'] = $em->getReference('wms:expedicao\Itinerario', $pedido['itinerario']);
-            $pedido['carga'] = $em->getReference("wms:expedicao\Carga", $pedido['codCarga']);
+            $pedido['itinerario'] = $em->getRepository('wms:expedicao\Itinerario')->findOneBy(array('id'=> $pedido['itinerario']));
+            $pedido['carga'] = $em->getRepository("wms:expedicao\Carga")->findOneBy(array('codCargaExterno' => (int)$pedido['codCargaExterno']));
             $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
@@ -385,7 +401,6 @@ class Importacao
             $entityPedido = $pedidoRepo->findOneBy(array('id' => $pedido['codPedido']));
             if (!$entityPedido) {
                 $entityPedido = $pedidoRepo->save($pedido);
-                $em->persist();
             }
 
             return $entityPedido;
@@ -401,7 +416,7 @@ class Importacao
             /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
             $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
             $pedido['produto'] = $em->getRepository('wms:Produto')->findOneBy(array('id' => $pedido['codProduto'], 'grade' => $pedido['grade']));
-
+            $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
             if (!$entityPedidoProduto)
                 $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
