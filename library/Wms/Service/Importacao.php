@@ -448,17 +448,7 @@ class Importacao
             $produtoRepo  = $repositorios['produtoRepo'];
             $enderecoRepo = $repositorios['enderecoRepo'];
             $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
-
-            $fornRefe = null;
-            if (!empty($produto['referencia'])) {
-                $fornRefe = array(
-                    'dscReferencia'=> $produto['referencia'],
-                    'fornecedor'=> $produto['fornecedor'],
-                );
-            }
-            unset($produto['fornecedor']);
-            unset($produto['referencia']);
-
+            
             if ($produtoEntity == null) {
                 $produtoEntity = new Produto();
 
@@ -482,22 +472,6 @@ class Importacao
                 Configurator::configure($produtoEntity, $produto);
 
                 $em->persist($produtoEntity);
-            }
-
-            if (!empty($fornRefe)){
-                $referenciaRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
-                $criteria = array(
-                    "idProduto" => $produtoEntity->getIdProduto(),
-                    "dscReferencia" => $fornRefe
-                );
-                $refeEntity = $referenciaRepo->findOneBy($criteria);
-                if (empty($refeEntity)){
-                    $refeEntity = new Referencia();
-                    $refeEntity->setDscReferencia($fornRefe);
-                    $refeEntity->setFornecedor($fornRefe['fornecedor']);
-                    $refeEntity->setIdProduto($produtoEntity->getIdProduto());
-                    $em->persist($refeEntity);
-                }
             }
             return true;
         } catch (\Exception $e) {
