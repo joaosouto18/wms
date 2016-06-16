@@ -260,7 +260,9 @@ class EtiquetaVolume extends eFPDF
                 $dataEmissao = $volume['dataInicio']->format('d/M/Y');
             }
             $impressao = utf8_decode(substr("CLI.: $volume[quebra]\n",0,50));
-            $impressao .= utf8_decode("CIDADE: $volume[localidade] - $volume[estado]\n");
+            if (isset($volume['localidade']) && $volume['estado']) {
+                $impressao .= utf8_decode("CIDADE: $volume[localidade] - $volume[estado]\n");
+            }
             $impressao .= utf8_decode("PEDIDO: $volume[pedido] - DATA: $dataEmissao\n");
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
