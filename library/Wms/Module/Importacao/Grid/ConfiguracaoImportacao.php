@@ -65,7 +65,7 @@ class ConfiguracaoImportacao extends Grid
                 'pkIndex' => array('id'),
             ))
             ->addAction(array(
-                'label' => 'Campos para deste elemento',
+                'label' => 'Campos deste elemento',
                 'actionName' => 'lista-campos-importacao',
                 'pkIndex' => array('id')
             ));
