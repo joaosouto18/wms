@@ -114,7 +114,7 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'embalagem':
-                    $stsEndereço = true;
+
                     if (!empty($arrRegistro['endereco'])) {
                         $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
                         $endereco = explode(".", $arrRegistro['endereco']);
@@ -126,6 +126,26 @@ class Importacao_IndexController extends Action
                         }
                     }
 
+                    $embalagemEntity = null;
+                    if ($arrRegistro['codigoBarras'] != "") {
+                        $codigoBarras = \Wms\Util\CodigoBarras::formatarCodigoEAN128Embalagem($arrRegistro['codigoBarras']);
+                        $embalagemEntity = $embalagemRepo->findOneBy(array(
+                            'codProduto' => $arrRegistro['codProduto'],
+                            'grade' => $arrRegistro['grade'],
+                            'codigoBarras' => $codigoBarras
+                        ));
+                    } else {
+                        $arrRegistro['CBInterno'] = 'S';
+                        $embalagemEntity = $embalagemRepo->findOneBy(array(
+                            'codProduto' => $arrRegistro['codProduto'],
+                            'grade' => $arrRegistro['grade'],
+                            'quantidade' => $arrRegistro['quantidade']
+                        ));
+                    }
+                    if (!empty($embalagemEntity)){
+                        $arrErroRows[$linha] = "Embalagem já cadastrada " . http_build_query($arrRegistro, '', ' ');
+                        break;
+                    };
                     $result = $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
                     if (is_string($result)) {
                         $arrErroRows[$linha] = $result;
@@ -684,7 +704,7 @@ class Importacao_IndexController extends Action
                 }
 
                 $arquivo->setUltimaImportacao(new DateTime());
-                $em->persist($arquivo);
+                $em->merge($arquivo);
                 $em->flush();
 
                 if (count($arrErroRows) > 0) {
