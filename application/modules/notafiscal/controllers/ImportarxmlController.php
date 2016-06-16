@@ -152,15 +152,6 @@ class Notafiscal_ImportarxmlController extends Crud
 
         //Dados para a Tabela NOTA_FISCAL
 
-        if ( !empty($dados["NFe"]["infNFe"]['ide']['serie']) )
-            $arrayRetorno['NotaFiscal']['COD_SERIE_NOTA_FISCAL']=$dados["NFe"]["infNFe"]['ide']['serie'];
-        else {
-            $this->isValid=false;
-            $arrayRetorno['NotValid']['tags'][]='serie';
-            $arrayRetorno['NotValid']['valores']['serie']=$dados["NFe"]["infNFe"]['ide']['serie'];
-            $this->falhas[] = "Série da Nota Fiscal inválida | Série:" . $dados["NFe"]["infNFe"]['ide']['serie'];
-        }
-
         if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
             $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
             $dataEmissao=new Zend_Date($dEmi, 'dd-mm-yyyy', 'en');
