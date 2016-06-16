@@ -36,6 +36,8 @@ class EquipeSeparacao extends Form
                 ))
             ->addDisplayGroup(array('pessoa','etiquetaInicial','etiquetaFinal', 'submit'), 'identificacao', array('legend' => 'Vincular')
         );
+        $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
+        $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoSubmit(event)');
     }
 
 }
