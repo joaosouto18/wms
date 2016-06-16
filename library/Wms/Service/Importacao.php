@@ -451,8 +451,12 @@ class Importacao
 
             $fornRefe = null;
             if (!empty($produto['referencia'])) {
-                $fornRefe = $produto['referencia'];
+                $fornRefe = array(
+                    'dscReferencia'=> $produto['referencia'],
+                    'fornecedor'=> $produto['fornecedor'],
+                );
             }
+            unset($produto['fornecedor']);
             unset($produto['referencia']);
 
             if ($produtoEntity == null) {
@@ -490,6 +494,7 @@ class Importacao
                 if (empty($refeEntity)){
                     $refeEntity = new Referencia();
                     $refeEntity->setDscReferencia($fornRefe);
+                    $refeEntity->setFornecedor($fornRefe['fornecedor']);
                     $refeEntity->setIdProduto($produtoEntity->getIdProduto());
                     $em->persist($refeEntity);
                 }
