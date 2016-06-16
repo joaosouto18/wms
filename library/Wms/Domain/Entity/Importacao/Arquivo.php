@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Importacao;
+
 use Wms\Domain\Configurator;
 
 /**
@@ -52,6 +53,12 @@ class Arquivo
      * @Column(name="IND_ATIVO", type="string", nullable=true)
      */
     protected $ativo;
+
+    /**
+     * @var \DateTime
+     * @Column(name="ULTIMA_IMPORTACAO", type="date", nullable=false)
+     */
+    protected $ultimaImportacao;
 
     /**
      * @return mixed
@@ -163,6 +170,22 @@ class Arquivo
     public function setSequencia($sequencia)
     {
         $this->sequencia = $sequencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUltimaImportacao()
+    {
+        return $this->ultimaImportacao;
+    }
+
+    /**
+     * @param mixed $ultimaImportacao
+     */
+    public function setUltimaImportacao($ultimaImportacao)
+    {
+        $this->ultimaImportacao = $ultimaImportacao;
     }
 
     public function toArray()
