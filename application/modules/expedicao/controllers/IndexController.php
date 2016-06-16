@@ -1,6 +1,7 @@
 <?php
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Grid\Expedicao as ExpedicaoGrid,
+    Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\PesoCargas as PesoCargasGrid;
@@ -268,6 +269,64 @@ class Expedicao_IndexController  extends Action
         $declaracaoReport->imprimir($result);
     }
 
+    public function apontamentoSeparacaoAction(){
+        $form = new \Wms\Module\Expedicao\Form\EquipeSeparacao();
+
+        $params = $form->getParams();
+        if ( !empty($params) ) {
+            $idEtiqueta1 = $params['etiquetaInicial'];
+            $idEtiqueta2 = $params['etiquetaFinal'];
+            $idUsuario = $params['pessoa'];
+
+            $LeituraColetor = new LeituraColetor();
+            $etiquetaInicial = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta1);;
+            $etiquetaFinal = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta2);;
+
+            $idEtiqueta1 = $etiquetaInicial;
+            $idEtiqueta2 = $etiquetaFinal;
+
+            if (is_null($idEtiqueta2) or ($idEtiqueta2=="")) {
+                $idEtiqueta2 = $idEtiqueta1;
+            }
+
+            if (is_null($idEtiqueta1) or ($idEtiqueta1=="")) {
+                $idEtiqueta1 = $idEtiqueta2;
+            }
+
+            $etiquetaInicial = $idEtiqueta1;
+            $etiquetaFinal = $idEtiqueta2;
+            if ($idEtiqueta1 > $idEtiqueta2){
+                $etiquetaFinal = $idEtiqueta1;
+                $etiquetaInicial = $idEtiqueta2;
+            }
+
+            $erro = false;
+            if (is_null($idEtiqueta1) or ($idEtiqueta1=="")) {
+                $this->addFlashMessage("error","Informe ao menos uma etiqueta");
+                $erro = true;
+            }
+            
+            if (is_null($idUsuario)) {
+                $this->addFlashMessage("error","Informe um usuário para vincular");
+                $erro = true;
+            }
+            
+            if ($erro == false) {
+                $equipeSeparacao = new Expedicao\EquipeSeparacao();
+                $equipeSeparacao->setCodUsuario($idUsuario);
+                $equipeSeparacao->setDataVinculo(new \DateTime());
+                $equipeSeparacao->setEtiquetaInicial($etiquetaInicial);
+                $equipeSeparacao->setEtiquetaFinal($etiquetaFinal);
+                $this->getEntityManager()->persist($equipeSeparacao);
+                $this->getEntityManager()->flush();
+                $this->addFlashMessage("success","Equipe de Separação vinculada com sucesso");
+                $this->redirect('apontamento-separacao');
+            }
+        }
+
+        $this->view->form = $form;
+    }
+    
     public function equipeCarregamentoAction()
     {
         $form = new \Wms\Module\Expedicao\Form\EquipeCarregamento();
