@@ -752,7 +752,7 @@ class Importacao_IndexController extends Action
         }
 
         $form = new IndexForm();
-        $this->view->ultData = $dtUltImp->format('d/m/Y');
+        $this->view->ultData = ($dtUltImp)?$dtUltImp->format('d/m/Y'):'S/ Registros';
         $this->view->form = $form;
 
         /*$form = new IndexForm();
