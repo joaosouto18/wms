@@ -6,7 +6,10 @@
 //echo $this->form;
 ?>
 <div align="center">
-    <button type="button" id="startImport">Iniciar importação</button>
+    <div class="row">
+        <h2><strong>Ultima importação - <?php echo $this->ultData; ?></strong></h2><br />
+        <button type="button" id="startImport">Iniciar importação</button>
+    </div><br />
     <div class="row">
         <div class="progress-bar-div">
             <div id="pbArquivo"></div>

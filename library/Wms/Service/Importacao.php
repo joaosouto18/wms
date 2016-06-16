@@ -443,12 +443,12 @@ class Importacao
 
     public function saveProduto($em, $produto, $repositorios)
     {
+        /** @var EntityManager $em */
         try {
             $produtoRepo  = $repositorios['produtoRepo'];
             $enderecoRepo = $repositorios['enderecoRepo'];
             $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
-
-
+            
             if ($produtoEntity == null) {
                 $produtoEntity = new Produto();
 

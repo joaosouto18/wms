@@ -456,6 +456,7 @@ class Importacao_IndexController extends Action
             $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
             $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
             $cargaRepo  = $em->getRepository('wms:Expedicao\Carga');
+            $impArquivoRepo = $em->getRepository('wms:Importacao\Arquivo');
 
             $repositorios = array(
                 'produtoRepo' => $produtoRepo,
@@ -471,8 +472,21 @@ class Importacao_IndexController extends Action
                 'dadoLogisticoRepo' => $dadoLogisticoRepo,
                 'cargaRepo' => $cargaRepo,
             );
+            
 
-            $arquivos = $em->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));
+            $arquivos = $impArquivoRepo->findBy(array('ativo' => 'S'), array('sequencia' => 'ASC'));
+
+            $dtUltImp = null;
+            /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
+            foreach ($arquivos as $arquivo){
+                $dtCheck = $arquivo->getUltimaImportacao();
+                if (empty($dtUltImp)){
+                    $dtUltImp = $dtCheck;
+                } else if ($dtUltImp < $dtCheck) {
+                    $dtUltImp = $dtCheck;
+                }
+            }
+
             $arrErros = array();
             $countFlush = 0;
 
@@ -668,6 +682,9 @@ class Importacao_IndexController extends Action
                         }
                     }
                 }
+
+                $arquivo->setUltimaImportacao(new DateTime());
+                $em->persist($arquivo);
                 $em->flush();
 
                 if (count($arrErroRows) > 0) {
@@ -721,7 +738,21 @@ class Importacao_IndexController extends Action
 
     public function indexAction()
     {
+        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array(), array('sequencia' => 'ASC'));
+
+        $dtUltImp = null;
+        /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
+        foreach ($arquivos as $arquivo){
+            $dtCheck = $arquivo->getUltimaImportacao();
+            if (empty($dtUltImp)){
+                $dtUltImp = $dtCheck;
+            } else if ($dtUltImp < $dtCheck) {
+                $dtUltImp = $dtCheck;
+            }
+        }
+
         $form = new IndexForm();
+        $this->view->ultData = ($dtUltImp)?$dtUltImp->format('d/m/Y'):'S/ Registros';
         $this->view->form = $form;
 
         /*$form = new IndexForm();
