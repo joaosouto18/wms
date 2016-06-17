@@ -27,6 +27,10 @@ class MapasPendentes extends Grid
                 'index' => 'COD_BARRAS'
             ))
             ->addColumn(array(
+                'label' => 'Quantidade',
+                'index' => 'QTD_SEPARAR'
+            ))
+            ->addColumn(array(
                 'label' => 'Qtd. Faltante',
                 'index' => 'QTD_CONFERIR',
             ))
