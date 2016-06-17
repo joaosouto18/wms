@@ -192,6 +192,8 @@ class Mobile_Enderecamento_ManualController extends Action
             $LeituraColetor = new LeituraColetor();
             $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
 
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $ederecoRepo */
@@ -211,45 +213,80 @@ class Mobile_Enderecamento_ManualController extends Action
             if (isset($params['capacidadePicking']) && !empty($params['capacidadePicking']))
                 $novaCapacidadePicking = $params['capacidadePicking'];
 
-            //VALIDA SE FOI BIPADO UM ENDEREÇO DE PICKING OU PICKING ROTATIVO
-            if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
-                $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'id');
-                $idPicking = null;
-                //APENAS SE O PRODUTO NÃO TIVER PICKING DEFINIDO
-                if ($pickings == null) {
-                    switch ($enderecoEn->getIdCaracteristica()) {
-                        case $idCaracteristicaPicking:
-                                throw new \Exception("Foi selecionado um endereço de picking para um produto sem picking definido");
-                            break;
-                        case $idCaracteristicaPickingRotativo: //REGRA DO PICKING ROTATIVO
-                            $idPicking = $enderecoEn->getId();
-                            $embalagens = $produtoEn->getEmbalagens();
-                            $volumes = $produtoEn->getVolumes();
-
-                            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
-                            foreach ($embalagens as $embalagemEn) {
-                                $embalagemEn->setCapacidadePicking($novaCapacidadePicking);
-                                $embalagemEn->setEndereco($enderecoEn);
-                                $this->getEntityManager()->persist($embalagemEn);
-                            }
-
-                            /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
-                            foreach ($volumes as $volumeEn) {
-                                $volumeEn->setCapacidadePicking($novaCapacidadePicking);
-                                $volumeEn->setEndereco($enderecoEn);
-                                $this->getEntityManager()->persist($volumeEn);
-                            }
-                            break;
+            $embalagens = $produtoEn->getEmbalagens();
+            foreach ($embalagens as $embalagemEn) {
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                    throw new \Exception('O produto já está cadastrado no Picking '. $embalagemEn->getEndereco()->getDescricao());
+                }
+                if ($embalagemEn->getEndereco()->getId() != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                    $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
+                    if (isset($estoqueEn) && !empty($estoqueEn)) {
+                        throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
+                    } else {
+                        $embalagemEn->setCapacidadePicking($novaCapacidadePicking);
+                        $embalagemEn->setEndereco($enderecoEn);
+                        $this->getEntityManager()->persist($embalagemEn);
                     }
-                } else{
-                    $idPicking = $pickings[0];
                 }
-
-                if ($idPicking != $enderecoEn->getId()) {
-                    throw new \Exception("O produto informado já está cadastrado no Picking " . $enderecoEn->getDescricao());
-                }
-
             }
+
+            $volumes = $produtoEn->getVolumes();
+            foreach ($volumes as $volumeEn) {
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $volumeEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                    throw new \Exception('O produto já está cadastrado no Picking '. $volumeEn->getEndereco()->getDescricao());
+                }
+                if ($volumeEn->getEndereco()->getId() != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                    $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
+                    if (isset($estoqueEn) && !empty($estoqueEn)) {
+                        throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
+                    } else {
+                        $volumeEn->setCapacidadePicking($novaCapacidadePicking);
+                        $volumeEn->setEndereco($enderecoEn);
+                        $this->getEntityManager()->persist($volumeEn);
+                    }
+                }
+            }
+
+
+            //VALIDA SE FOI BIPADO UM ENDEREÇO DE PICKING OU PICKING ROTATIVO
+//            if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+//                $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'id');
+//                $idPicking = null;
+//                //APENAS SE O PRODUTO NÃO TIVER PICKING DEFINIDO
+//                if ($pickings == null) {
+//                    switch ($enderecoEn->getIdCaracteristica()) {
+//                        case $idCaracteristicaPicking:
+//                                throw new \Exception("Foi selecionado um endereço de picking para um produto sem picking definido");
+//                            break;
+//                        case $idCaracteristicaPickingRotativo: //REGRA DO PICKING ROTATIVO
+//                            $idPicking = $enderecoEn->getId();
+//                            $embalagens = $produtoEn->getEmbalagens();
+//                            $volumes = $produtoEn->getVolumes();
+//
+//                            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+//                            foreach ($embalagens as $embalagemEn) {
+//                                $embalagemEn->setCapacidadePicking($novaCapacidadePicking);
+//                                $embalagemEn->setEndereco($enderecoEn);
+//                                $this->getEntityManager()->persist($embalagemEn);
+//                            }
+//
+//                            /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
+//                            foreach ($volumes as $volumeEn) {
+//                                $volumeEn->setCapacidadePicking($novaCapacidadePicking);
+//                                $volumeEn->setEndereco($enderecoEn);
+//                                $this->getEntityManager()->persist($volumeEn);
+//                            }
+//                            break;
+//                    }
+//                } else {
+//                    $idPicking = $pickings[0];
+//                }
+//
+//                if ($idPicking != $enderecoEn->getId()) {
+//                    throw new \Exception("O produto informado já está cadastrado no Picking " . $enderecoEn->getDescricao());
+//                }
+//
+//            }
             
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
