@@ -271,8 +271,34 @@ class Expedicao_IndexController  extends Action
 
     public function apontamentoSeparacaoAction(){
         $form = new \Wms\Module\Expedicao\Form\EquipeSeparacao();
+        $formMapaSeparacao = new \Wms\Module\Expedicao\Form\EquipeSeparacaoMapa();
 
+        $paramsMapaSeparacao = $formMapaSeparacao->getParams();
         $params = $form->getParams();
+
+        if (!empty($paramsMapaSeparacao) && isset($paramsMapaSeparacao)) {
+            $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($paramsMapaSeparacao['codMapaSeparacao']);
+            $codUsuario = $paramsMapaSeparacao['pessoa'];
+
+            if (empty($mapaSeparacaoEn) || !isset($mapaSeparacaoEn)) {
+                $this->addFlashMessage("error","Mapa de Separação não informado ou inválido");
+                $this->redirect('apontamento-separacao');
+            }
+
+            if (is_null($codUsuario)) {
+                $this->addFlashMessage("error","Informe um usuário para vincular");
+                $this->redirect('apontamento-separacao');
+            }
+
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaRepo->save($mapaSeparacaoEn,$codUsuario);
+
+            $this->addFlashMessage("success","Conferente vinculado com sucesso ao Mapa de Separação!");
+            $this->redirect('apontamento-separacao');
+
+        }
+
         if ( !empty($params) ) {
             $idEtiqueta1 = $params['etiquetaInicial'];
             $idEtiqueta2 = $params['etiquetaFinal'];
@@ -325,6 +351,7 @@ class Expedicao_IndexController  extends Action
         }
 
         $this->view->form = $form;
+        $this->view->formMapaSeparacao = $formMapaSeparacao;
     }
     
     public function equipeCarregamentoAction()
