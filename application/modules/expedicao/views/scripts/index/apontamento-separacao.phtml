@@ -1,0 +1,40 @@
+<script>
+    function gotoFinal(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetaInicial').value != "") {
+                codBarrasFinal   = document.getElementById('etiquetaFinal');
+                if (codBarrasFinal) {
+                    codBarrasFinal.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    function gotoSubmit(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetaFinal').value != "") {
+                senha   = document.getElementById('pessoa');
+                if (senha) {
+                    senha.focus();
+                    
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+
+<?php
+echo $this->form;
+echo $this->formMapaSeparacao;
+?>
