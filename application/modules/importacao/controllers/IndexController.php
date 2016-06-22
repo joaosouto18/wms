@@ -62,6 +62,9 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $expedicaoRepo */
         $cargaRepo = $repositorios['cargaRepo'];
 
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
+        $clienteRepo = $repositorios['clienteRepo'];
+
         $arrRegistro = $elements['arrRegistro'];
         $arrErroRows = $elements['arrErroRows'];
         $countFlush = $elements['countFlush'];
@@ -219,14 +222,36 @@ class Importacao_IndexController extends Action
 
                     $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
                     if ($entityPessoa) {
-                        $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $cliente = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
+                        if ($cliente){
+                            $arrErroRows[$linha] = "Cliente já cadastrado:". $arrRegistro['nome'];
+                            break;
+                        } else {
+                            $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa,$arrRegistro['codClienteExterno']);
+                            if (is_string($result)) {
+                                $arrErroRows[$linha] = $result;
+                            } else {
+                                $countFlush++;
+                            }
+                            break;
+                        }
                     }
+                    
                     $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
-
                     if ($entityPessoa) {
-                        $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $cliente = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
+                        if ($cliente){
+                            $arrErroRows[$linha] = "Cliente já cadastrado:". $arrRegistro['nome'];
+                            break;
+                        } else {
+                            $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa,$arrRegistro['codClienteExterno']);
+                            if (is_string($result)) {
+                                $arrErroRows[$linha] = $result;
+                            } else {
+                                $countFlush++;
+                            }
+                            break;
+                        }
                     }
 
                     $result = $importacaoService->saveCliente($em, $arrRegistro);
@@ -477,6 +502,7 @@ class Importacao_IndexController extends Action
             $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
             $cargaRepo  = $em->getRepository('wms:Expedicao\Carga');
             $impArquivoRepo = $em->getRepository('wms:Importacao\Arquivo');
+            $clienteRepo = $em->getRepository('wms:Pessoa\Papel\Cliente');
 
             $repositorios = array(
                 'produtoRepo' => $produtoRepo,
@@ -491,6 +517,7 @@ class Importacao_IndexController extends Action
                 'normaPaletizacaoRepo' => $normaPaletizacaoRepo,
                 'dadoLogisticoRepo' => $dadoLogisticoRepo,
                 'cargaRepo' => $cargaRepo,
+                'clienteRepo' => $clienteRepo,
             );
             
 

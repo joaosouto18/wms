@@ -193,36 +193,52 @@ class Mobile_ExpedicaoController extends Action
 
         $dscVolume = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio')->find($volume)->getDescricao();
 
-        $codPessoa = $clienteEn[0]->getPessoa()->getNome();
+        /** @var Expedicao $expedicaoEn */
+        $expedicaoEn = $this->em->find('wms:Expedicao', $idExpedicao);
+
+        /** @var \Wms\Domain\Entity\Pessoa $empresa */
+        $pessoaEmpresa = $this->em->find('wms:Pessoa',1);
+
+        /** @var \Wms\Domain\Entity\Pessoa $pessoaCliente */
+        $pessoaCliente = $clienteEn[0]->getPessoa();
+        
+        $codPessoa = $pessoaCliente->getNome();
         $cargas = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga();
-        $pedidos = $cargas[0]->getPedido();
-		$pedido = $pedidos[0]->getId();
+        $pedido = $cargas[0]->getPedido();
+		$idPedido = $pedido[0]->getId();
+
+        /** @var \Doctrine\ORM\PersistentCollection $enderecoCollection */
+        $enderecoCollection = $pessoaCliente->getEnderecos();
+        $endereco = $enderecoCollection->first();
 
         $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
         if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
-            $rows = array();
+
             $fields = array();
             $fields['expedicao'] = $idExpedicao;
             $fields['volume'] = $volume;
+            $fields['dataInicio'] = $expedicaoEn->getDataInicio();
+            $fields['emissor'] = $pessoaEmpresa->getNome();
+            $fields['localidade'] = $endereco->getLocalidade();
+            $fields['estado'] = $endereco->getUf()->getReferencia();
             $fields['descricao'] = $dscVolume;
             $fields['quebra'] = $codPessoa;
-            $fields['pedido'] = $pedido;
+            $fields['pedido'] = $idPedido;
             $fields['produtos'] = $produtos;
-            $rows[] = $fields;
 
             switch ($parametroEtiquetaVolume) {
                 case 1:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-                    $gerarEtiqueta->imprimirExpedicaoModelo1($rows);
+                    $gerarEtiqueta->imprimirExpedicaoModelo1($fields);
                     break;
                 case 2:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
-                    $gerarEtiqueta->imprimirExpedicaoModelo2($rows);
+                    $gerarEtiqueta->imprimirExpedicaoModelo2($fields);
                     break;
                 case 3:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-                    $gerarEtiqueta->imprimirExpedicaoModelo3($rows);
+                    $gerarEtiqueta->imprimirExpedicaoModelo3($fields, false);
                     break;
             }
 
