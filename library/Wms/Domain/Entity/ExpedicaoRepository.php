@@ -2637,7 +2637,8 @@ class ExpedicaoRepository extends EntityRepository
         $entidadeReservasEstoqueExpedicao = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao')->findBy(array('pedido'=>$codPedido));
         $repositoryReservaEstoqueProduto = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
         $repositoryReservaEstoque = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-        
+        $repositoryMapaConferencia = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
         $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
         $qtdPedido   = $entidadePedidoProduto->getQuantidade();
 
@@ -2678,6 +2679,14 @@ class ExpedicaoRepository extends EntityRepository
             if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
                 $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
             }
+
+            if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
+                $mapaConferenciaEn = $repositoryMapaConferencia->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                foreach ($mapaConferenciaEn as $conferencia) {
+                    $this->getEntityManager()->remove($conferencia);
+                }
+            }
+
             $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
             $this->getEntityManager()->persist($mapa);
             $qtdCortar = $qtdCortar - $qtdCortarMapa;
