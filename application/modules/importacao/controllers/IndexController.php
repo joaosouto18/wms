@@ -178,16 +178,41 @@ class Importacao_IndexController extends Action
 
                         break;
                     }
+
                     $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+
                     if ($entityPessoa) {
-                        $arrErroRows[$linha] = "CNPJ já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $fornecedor = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
+                        if ($fornecedor){
+                            $arrErroRows[$linha] = "Fornecedor já cadastrado:". $arrRegistro['nome'];
+                            break;
+                        } else {
+                            $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa,$arrRegistro['idExterno']);
+                            if (is_string($result)) {
+                                $arrErroRows[$linha] = $result;
+                            } else {
+                                $countFlush++;
+                            }
+                            break;
+                        }
                     }
+
                     $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
 
                     if ($entityPessoa) {
-                        $arrErroRows[$linha] = "CPF já foi cadastrado: " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $fornecedor = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
+                        if ($fornecedor){
+                            $arrErroRows[$linha] = "Fornecedor já cadastrado:". $arrRegistro['nome'];
+                            break;
+                        } else {
+                            $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa,$arrRegistro['idExterno']);
+                            if (is_string($result)) {
+                                $arrErroRows[$linha] = $result;
+                            } else {
+                                $countFlush++;
+                            }
+                            break;
+                        }
                     }
 
                     $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);

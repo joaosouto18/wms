@@ -113,6 +113,7 @@ class Importacao
         $em->persist($pessoa);
 
     }
+
     public function savePessoaEmCliente($em, $pessoa, $codExterno)
     {
         try {
@@ -120,6 +121,20 @@ class Importacao
             $entity->setPessoa($pessoa);
             $entity->setId($pessoa->getId());
             $entity->setCodClienteExterno($codExterno);
+            $em->persist($entity);
+            return true;
+        }catch (\Exception $e){
+            return $e->getMessage();
+        }
+
+    }
+
+    public function savePessoaEmFornecedor($em, $pessoa, $codExterno)
+    {
+        try {
+            $entity = new Fornecedor();
+            $entity->setPessoa($pessoa);
+            $entity->setIdExterno($codExterno);
             $em->persist($entity);
             return true;
         }catch (\Exception $e){
