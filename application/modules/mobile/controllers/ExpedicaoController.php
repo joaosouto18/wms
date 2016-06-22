@@ -109,7 +109,8 @@ class Mobile_ExpedicaoController extends Action
                             if ($modeloSeparacaoEn->getTipoQuebraVolume() == 'C') {
                                 $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
                                 $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => 'C'));
-                                $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
+                                if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
+                                    $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
                             }
                             $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, $codQuebra);
 
