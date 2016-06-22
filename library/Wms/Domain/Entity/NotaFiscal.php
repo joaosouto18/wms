@@ -290,5 +290,5 @@ class NotaFiscal
     {
         $this->pesoTotal = $pesoTotal;
     }
-    
+
 }

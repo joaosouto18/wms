@@ -636,7 +636,7 @@ class ExpedicaoRepository extends EntityRepository
     public function validaVolumesPatrimonio($idExpedicao){
 
         $volumesPatrimonioRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ExpedicaoVolumePatrimonio");
-        $volumesEn = $volumesPatrimonioRepo->findBy(array('expedicao'=> $idExpedicao));
+        $volumesEn = $volumesPatrimonioRepo->findBy(array('expedicao' => $idExpedicao));
 
         /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonio $volumeEn */
         foreach ($volumesEn as $volumeEn) {
