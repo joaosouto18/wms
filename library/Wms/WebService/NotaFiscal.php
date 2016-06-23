@@ -11,6 +11,8 @@ class Item {
     public $grade;
     /** @var integer */
     public $quantidade;
+    /** @var double */
+    public $peso;
 }
 
 class Itens {
@@ -52,6 +54,8 @@ class notaFiscal {
     public $dataEntrada;
     /** @var string */
     public $bonificacao;
+    /** @var string */
+    public $peso;
     /** @var itensNf[] */
     public $itens = array();
 }
@@ -91,7 +95,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'serie' => $serie,
             'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao),
             'status' => $idStatus,
-                ));
+        ));
 
         if ($notaFiscalEntity == null)
             throw new \Exception('NotaFiscal não encontrada');
@@ -107,6 +111,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 'quantidadeConferida' => $item['QTD_CONFERIDA'],
                 'quantidadeAvaria' => $item['QTD_AVARIA'],
                 'motivoDivergencia' => $item['DSC_MOTIVO_DIVER_RECEB'],
+                'peso' => $item['PESO_ITEM']
             );
         }
 
@@ -123,6 +128,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'dataEmissao' => $notaFiscalEntity->getDataEmissao()->format('d/m/Y'),
             'placa' => $notaFiscalEntity->getPlaca(),
             'status' => $notaFiscalEntity->getStatus()->getSigla(),
+            'pesoTotal' => $notaFiscalEntity->getPesoTotal(),
             'dataEntrada' => $dataEntrada,
             'bonificacao' => $notaFiscalEntity->getBonificacao(),
             'itens' => $itens
@@ -170,6 +176,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->idProduto = $item['COD_PRODUTO'];
             $clsItensNf->quantidade = $item['QTD_ITEM'];
             $clsItensNf->grade = $item['DSC_GRADE'];
+            $clsItensNf->peso = $item['PESO_ITEM'];
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
             $clsNf->itens[] = $clsItensNf;
@@ -184,6 +191,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getId();
         $clsNf->numero = $notaFiscalEntity->getNumero();
         $clsNf->serie = $notaFiscalEntity->getSerie();
+        $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
         $clsNf->dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
         $clsNf->placa = $notaFiscalEntity->getPlaca();
         $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
@@ -196,7 +204,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * Salva uma Nota Fiscal no WMS
-     * 
+     *
      * @param string $idFornecedor Codigo do fornecedor
      * @param string $numero Numero da nota fiscal
      * @param string $serie Serie da nota fiscal
@@ -237,6 +245,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
                     $itemWs['quantidade'] = trim($itemNf->quantidade);
+                    $itemWs['numPeso'] = trim($itemNf->peso);
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
@@ -310,7 +319,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * Retorna Nota fiscal ativa no WMS ( Integrada, Em Recebimento ou Recebida )
-     * 
+     *
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota fiscal
@@ -331,7 +340,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             throw new \Exception('Codigo de Fornecedor invalido');
 
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
-                ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
+            ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
 
         if ($notaFiscalEntity == null)
             throw new \Exception('Nota Fiscal não encontrada');
@@ -343,9 +352,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     }
 
     /**
-     * Descarta uma nota desvinculando ela do recebimento. 
+     * Descarta uma nota desvinculando ela do recebimento.
      * Ação pode ser executada em qualquer status em que a nota esteja.
-     * 
+     *
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota fiscal
@@ -374,7 +383,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'numero' => $numero,
             'serie' => $serie,
             'dataEmissao' => $dataEmissao,
-                ));
+        ));
 
         $em->getRepository('wms:NotaFiscal')->descartar($notaFiscalEntity->getId(), $observacao);
 
@@ -384,7 +393,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     /**
      * Desfazer uma nota, basicamente ela é cancelada. Caso o recebimento não possua mais notas ele também é cancelado
      * Ação pode ser executada em qualquer status válido ( Integrada, Em Recebimento ou Recebida ) em que a nota esteja.
-     * 
+     *
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota fiscal
@@ -407,9 +416,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             throw new \Exception('Codigo de Fornecedor invalido');
 
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
-                ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
+            ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
 
-        if (!$notaFiscalEntity) 
+        if (!$notaFiscalEntity)
             throw new \Exception('Não há Nota Fiscal válida para ser cancelada');
 
         $em->getRepository('wms:NotaFiscal')->desfazer($notaFiscalEntity->getId(), $observacao);

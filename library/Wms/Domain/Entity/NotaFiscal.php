@@ -124,6 +124,11 @@ class NotaFiscal
      */
     protected $observacao;
 
+    /**
+     * @Column(name="PESO_TOTAL", type="string")
+     */
+    protected $pesoTotal;
+
     public function __construct()
     {
         $this->itens = new ArrayCollection;
@@ -268,6 +273,22 @@ class NotaFiscal
     public function getObservacao()
     {
         return $this->observacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPesoTotal()
+    {
+        return $this->pesoTotal;
+    }
+
+    /**
+     * @param mixed $pesoTotal
+     */
+    public function setPesoTotal($pesoTotal)
+    {
+        $this->pesoTotal = $pesoTotal;
     }
 
 }

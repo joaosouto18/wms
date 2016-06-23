@@ -572,7 +572,7 @@ class NotaFiscalRepository extends EntityRepository
     {
         // busco produto
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao, 
+            ->select('nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
                         tc.id idTipoComercializacao, tc.descricao tipoComercializacao,
                         pe.id idEmbalagem, pv.id idVolume, p.validade,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
@@ -676,7 +676,7 @@ class NotaFiscalRepository extends EntityRepository
     public function buscarProdutosImprimirCodigoBarras($idRecebimento)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nf.numero as numNota, nf.serie, 
+            ->select('nf.numero as numNota, nf.serie,
                           nfi.id as idNotaFiscalItem, nfi.quantidade as qtdItem,
                           pj.nomeFantasia as fornecedor,
                           p.id as idProduto, p.grade, p.descricao as dscProduto,

@@ -88,7 +88,7 @@ class notaFiscal {
     public $pedidos;
     /** @var integer */
     public $numeroNf;
-        /** @var string */
+    /** @var string */
     public $serieNf;
     /** @var string */
     public $cnpjEmitente;
@@ -407,7 +407,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         if (($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) ||
             ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) ||
-		    ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
+            ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
             return array('liberado' => true);
         } else {
             return array('liberado' => false);
@@ -551,7 +551,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         if (isset($expedicaoEntity) && is_object($expedicaoEntity)) {
             $hoje = new \DateTime("now");
             if ($expedicaoEntity->getDataInicio()->format('Y-m-d') != $hoje->format('Y-m-d')) {
-               throw new \Exception('Existem expedições antigas para a placa ' . $carga['placaExpedicao'] . ' abertas no sistema');
+                throw new \Exception('Existem expedições antigas para a placa ' . $carga['placaExpedicao'] . ' abertas no sistema');
             }
         }
 
@@ -830,7 +830,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
             throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
         }
-				
+
         return $entityExpedicao;
     }
 
@@ -1003,11 +1003,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $notaFiscalEn = $notaFiscalRepository->findOneBy(array('numeroNf' =>  (int) trim($numeroNf),
-                                                                   'codPessoa' => $pessoaEn->getId(),
-                                                                   'serieNf' => trim($serieNF)));
+                'codPessoa' => $pessoaEn->getId(),
+                'serieNf' => trim($serieNF)));
 
             $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno' => trim($numeroCarga),
-                                                         'tipoCarga' => $tipoCarga->getId()));
+                'tipoCarga' => $tipoCarga->getId()));
 
             if (is_null($notaFiscalEn)) {
                 throw new \Exception('Nota Fiscal ' . $numeroNf . " / " . $serieNF . " não encontrada");
@@ -1017,8 +1017,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 throw new \Exception(strtolower($tipoCarga->getSigla()) . " " . $numeroCarga . " não encontrada");
             }
 
+
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+            $parametro = $parametroRepo->findOneBy(array('constante' => 'CONFERE_RECEBIMENTO_REENTREGA'));
+
+            if ($parametro->getValor() == 'S') {
+                if ($notaFiscalEn->getStatus()->getId() != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
+                    throw new \Exception('Nota Fiscal de reentrega ' . $numeroNf . " / " . $serieNF . " ainda não foi recebida");
+                }
+            }
+
             $reentregaEn = $reentregaRepository->findOneBy(array('codNotaFiscalSaida' => $notaFiscalEn->getId(),
-                                                                 'codCarga' => $cargaEn->getId()));
+                'codCarga' => $cargaEn->getId()));
 
             if ($reentregaEn != null) {
                 return true;
@@ -1026,12 +1036,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $reentregaEn = new Expedicao\Reentrega();
-                $reentregaEn->setIndEtiquetaMapaGerado("N");
-                $reentregaEn->setCarga($cargaEn);
-                $reentregaEn->setCodCarga($cargaEn->getId());
-                $reentregaEn->setNotaFiscalSaida($notaFiscalEn);
-                $reentregaEn->setCodNotaFiscalSaida($notaFiscalEn->getId());
-                $reentregaEn->setDataReentrega(new \DateTime());
+            $reentregaEn->setIndEtiquetaMapaGerado("N");
+            $reentregaEn->setCarga($cargaEn);
+            $reentregaEn->setCodCarga($cargaEn->getId());
+            $reentregaEn->setNotaFiscalSaida($notaFiscalEn);
+            $reentregaEn->setCodNotaFiscalSaida($notaFiscalEn->getId());
+            $reentregaEn->setDataReentrega(new \DateTime());
             $this->_em->persist($reentregaEn);
 
             $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::REENTREGA_DEFINIDA, true, $cargaEn->getExpedicao(), $reentregaEn);
