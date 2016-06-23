@@ -158,6 +158,7 @@ class Importacao_IndexController extends Action
                     break;
                 case 'fornecedor';
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
+                    
                     if (strlen($cpf_cnpjFormatado) == 11) {
                         $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
                         break;
@@ -167,6 +168,7 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
                         break;
                     }
+                    
                     if (!in_array($arrRegistro['cpf_cnpj'], $checkArray)) {
                         array_push($checkArray, $arrRegistro['cpf_cnpj']);
                     } else {

@@ -195,7 +195,7 @@ class Embalagem
 
     /**
      * Retorna a quantidade que contem nesta embalagem
-     * @return type 
+     * @return integer 
      */
     public function getQuantidade()
     {

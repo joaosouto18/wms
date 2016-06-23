@@ -18,12 +18,16 @@ class CodigoFornecedor extends SubForm
         $this->addElement('hidden', 'id')
                 ->addElement('text', 'fornecedor', array(
                     'label' => 'Nome do Fornecedor',
-                    'size' => 80,
+                    'size' => 70,
                 ))
                 ->addElement('text', 'codigo', array(
                     'label' => 'Código do produto no fornecedor',
                     'size' => 45,
                     'maxlength' => 250,
+                ))
+                ->addElement('select','embalagem', array(
+                    'label' => 'Embalagem padrão',
+                    'multiOptions' => array(),
                 ))
                 ->addElement('submit', 'btnAdicionar', array(
                     'label' => 'Adicionar',

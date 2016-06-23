@@ -140,6 +140,7 @@ class Web_ProdutoController extends Crud {
 
 //finds the form class from the entity name
         $formClass = '\\Wms\Module\Web\Form\\' . $this->entityName;
+        /** @var \Wms\Module\Web\Form\Produto $form */
         $form = new $formClass;
 
         try {
@@ -204,6 +205,30 @@ class Web_ProdutoController extends Crud {
             $form->setDefaultsFromEntity($entity); // pass values to form
             $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
             $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
+            $repoEmbalagem = $this->_em->getRepository('wms:Produto\Embalagem');
+
+            /** @var \Wms\Module\Web\Form\Subform\Produto\CodigoFornecedor $subFormCodForn */
+            $subFormCodForn = $form->getSubForm('codigoFornecedor');
+
+            /** @var Zend_Form_Element_Select $selectEmbalagem */
+            $selectEmbalagem = $subFormCodForn->getElement('embalagem');
+
+            $criterio = array(
+                'codProduto' => $params['id'],
+                'grade' => $params['grade']
+            );
+
+            $orderBy = array('isPadrao' => 'DESC', 'descricao' => 'ASC');
+
+            $embalagens = $repoEmbalagem->findBy($criterio, $orderBy);
+            $options = array();
+            /** @var Produto\Embalagem $embalagem */
+            foreach ($embalagens as $embalagem){
+                $options[$embalagem->getId()] = $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+            }
+
+            $selectEmbalagem->setMultiOptions($options);
+
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }

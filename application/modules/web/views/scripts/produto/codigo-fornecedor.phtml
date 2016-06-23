@@ -3,24 +3,50 @@
 
         $( "#btn-salvar-codigo-fornecedor" )
             .live('click', function(event){
+                var gridFornecedor = $('.grid-codFornecedor');
+                var tempIdForn = $("#tempCodFornecedor");
+                var inptTxtForn = $("#codigoFornecedor-fornecedor");
+                var inptCodForn = $("#codigoFornecedor-codigo");
+                var inptEmbalagem = $("#codigoFornecedor-embalagem");
 
-                $('.grid-codFornecedor').append('<tr class="gTResultSet"> <td style="text-align:left">'+$("#codigoFornecedor-fornecedor").val()+'</td> <td style="text-align:left">'+$("#codigoFornecedor-codigo").val()+'</td> <td style="text-align:left"> <a href="javascript://" class="excluir-cod-fornecedor" title="Clique para Excluir"> <img src="http://wms.local/img/icons/delete.png"> </a> </td> </tr>');
-                $('.grid-codFornecedor').append('<input type="hidden" name="fornecedor['+$("#tempCodFornecedor").val()+'][id]" value="'+$("#tempCodFornecedor").val()+'" />');
-                $('.grid-codFornecedor').append('<input type="hidden" name="fornecedor['+$("#tempCodFornecedor").val()+'][cod]" value="'+$("#codigoFornecedor-codigo").val()+'" />');
-                $('#codigoFornecedor-fornecedor').val('');
-                event.preventDefault();
+                if (tempIdForn.val() != "" && inptCodForn.val() != "" && inptEmbalagem.val() != "") {
+                    gridFornecedor.append('' +
+                        '<tr class="gTResultSet">' +
+                        '<td style="text-align:left">' + inptTxtForn.val() + '</td>' +
+                        '<td style="text-align:left">' + inptCodForn.val() + '</td>' +
+                        '<td style="text-align:left">' + inptEmbalagem.children('option:selected').text() + '</td>' +
+                        '<td style="text-align:left"> <a href="javascript://" class="excluir-cod-fornecedor" data-id="' + tempIdForn.val() + '" title="Clique para Excluir"> <img src="http://wms.local/img/icons/delete.png"> </a> </td>' +
+                        '</tr>');
+                    gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][id]" value="' + tempIdForn.val() + '" />');
+                    gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][cod]" value="' + inptCodForn.val() + '" />');
+                    gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][embalagem]" value="' + inptEmbalagem.val() + '" />');
+                    inptTxtForn.val('');
+                    inptCodForn.val('');
+                    tempIdForn.val('');
+                    inptEmbalagem.children('option:selected').prop('selected', false);
+                    inptEmbalagem.children('option[value=""]').prop('selected', true);
+                    event.preventDefault();
+                } else {
+                    alert("Preencha todos os dados e tente novamente!");
+                }
             });
 
 
         $( '.excluir-cod-fornecedor' )
             .live( 'click', function(event) {
-                id = $(this).attr('data-id');
-                thisId = $(this);
-                $.getJSON( "/produto/excluir-cod-fornecedor-ajax/id/"+id, function( data) {
-                    thisId.parent().parent().remove();
-                });
+                var confirmacao = confirm("Deseja realmente excluir esta relação?");
+                if (confirmacao) {
+                    var idCod = $(this).data('id');
+                    var thisId = $(this);
+                    $.getJSON("/produto/excluir-cod-fornecedor-ajax/id/" + idCod, function (data) {
+                        thisId.parent().parent().parent().parent().children("input[name^='fornecedor[" + idCod + "]']").each(function () {
+                            $(this).remove();
+                        });
+                        thisId.parent().parent().remove();
+                    });
 
-                event.preventDefault();
+                    event.preventDefault();
+                }
             });
 
         var cache = {};
@@ -58,17 +84,20 @@
             <legend>Escolha o fornecedor e digite o código do produto no fornecedor escolhido</legend>
             <?php echo $this->element->fornecedor; ?>
             <?php echo $this->element->codigo; ?>
+            <?php echo $this->element->embalagem; ?>
             <?php echo $this->element->btnAdicionar; ?>
         </fieldset>
     </dd>
     <input type="hidden" value="" id="tempCodFornecedor" name="tempCodFornecedor" />
 
     <table class="gTable grid-codFornecedor">
-        <tbody><tr class="gTTitle">
-            <td width=""><span>Fornecedor</span></td>
-            <td width=""><span>Código do produto no fornecedor</span></td>
-            <td width=""><span>Excluir?</span></td>
-        </tr>
+        <tbody>
+            <tr class="gTTitle">
+                <td width="45%"><span>Fornecedor</span></td>
+                <td width="25%"><span>Código do produto no fornecedor</span></td>
+                <td width="23%"><span>Embalagem padrão</span></td>
+                <td width="7%"><span>Excluir?</span></td>
+            </tr>
         <?php $codigosFornecedores = Zend_Layout::getMvcInstance()->getView()->codigosFornecedores;?>
 
         <?php if (count($codigosFornecedores) >= 1) : ?>

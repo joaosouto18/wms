@@ -4,7 +4,6 @@ namespace Wms\Module\Web\Form;
 
 use Wms\Module\Web\Form,
     Wms\Domain\Entity\Produto as ProdutoEntity,
-    Core\Form\SubForm,
     Wms\Module\Web\Form\Subform\Produto\Identificacao as IdentificacaoForm,
     Wms\Module\Web\Form\Subform\Produto\Embalagem as EmbalagemForm,
     Wms\Module\Web\Form\Subform\Produto\Volume as VolumeForm,

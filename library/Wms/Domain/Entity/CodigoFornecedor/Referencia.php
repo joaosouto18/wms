@@ -30,6 +30,14 @@ class Referencia
     protected $fornecedor;
 
     /**
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem", cascade={"persist"})
+     * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
+     * @var \Wms\Domain\Entity\Produto\Embalagem
+     */
+    protected $embalagem;
+
+    /**
      * @Column(name="DSC_REFERENCIA", type="string", length=1, nullable=true)
      */
     protected $dscReferencia;
@@ -96,6 +104,22 @@ class Referencia
     public function setDscReferencia($dscReferencia)
     {
         $this->dscReferencia = $dscReferencia;
+    }
+
+    /**
+     * @return \Wms\Domain\Entity\Produto\Embalagem
+     */
+    public function getEmbalagem()
+    {
+        return $this->embalagem;
+    }
+
+    /**
+     * @param \Wms\Domain\Entity\Produto\Embalagem $embalagem
+     */
+    public function setEmbalagem($embalagem)
+    {
+        $this->embalagem = $embalagem;
     }
 
 }
