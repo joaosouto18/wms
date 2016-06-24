@@ -924,6 +924,7 @@ class Mobile_EnderecamentoController extends Action
                 $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
+                var_dump($params['embalagem']); exit;
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
@@ -933,7 +934,6 @@ class Mobile_EnderecamentoController extends Action
 
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
 
-                    var_dump($enderecoAntigo); exit;
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
