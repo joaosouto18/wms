@@ -474,9 +474,11 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = "Dados de carga repetidos: " . $registro;
                         break;
                     }
+                    
                     $codTipoCarga = $arrRegistro['codTipoCarga'];
                     unset($arrRegistro['codTipoCarga']);
                     $check = $cargaRepo->findBy($arrRegistro);
+                    
                     $arrRegistro['codTipoCarga'] = $codTipoCarga;
                     if (empty($check)){
                         $result = $importacaoService->saveCarga($em, $arrRegistro);

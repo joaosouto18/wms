@@ -192,14 +192,19 @@ class Web_ProdutoController extends Crud {
                     $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
                 }
 
-                $this->repository->save($entity, $this->getRequest()->getParams(), true);
-                $this->em->flush();
+                $result = $this->repository->save($entity, $this->getRequest()->getParams(), true);
+                if (is_string($result)){
+                    $this->addFlashMessage('error', $result);
+                    $this->_redirect('/produto/edit/id/'.$params['id'].'/grade/'.$params['grade']);
+                } else {
+                    $this->em->flush();
+                }
 
                 $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
                 $andamentoRepo->save($params['id'], $params['grade'], false, 'Produto alterado com sucesso.');
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
-                $this->_redirect('/produto');
+                $this->_redirect('/produto/edit/id/'.$params['id'].'/grade/'.$params['grade']);
 
             }
             $form->setDefaultsFromEntity($entity); // pass values to form

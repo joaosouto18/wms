@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\NotaFiscal\Item as ItemNF,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Core\Util\Produto as ProdutoUtil;
+use Wms\Domain\Entity\CodigoFornecedor\Referencia;
+use Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository;
 
 /**
  * NotaFiscal
@@ -845,6 +847,9 @@ class NotaFiscalRepository extends EntityRepository
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
 
+            /** @var ReferenciaRepository $fornRefRepo */
+            $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
+
             if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
@@ -858,8 +863,14 @@ class NotaFiscalRepository extends EntityRepository
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
                     $itemEntity->setProduto($produtoEntity);
                     $itemEntity->setGrade(trim($item['grade']));
-                    $itemEntity->setQuantidade($item['quantidade']);
 
+                    if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
+                        $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
+                        $itemEntity->setQuantidade($qtd);
+                    } else {
+                        $itemEntity->setQuantidade($item['quantidade']);
+                    }
+                    
                     $notaFiscalEntity->getItens()->add($itemEntity);
                 }
             } else {

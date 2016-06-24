@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity;
 
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver\OCI8\OCI8Exception;
 use Doctrine\ORM\EntityRepository,
 	Wms\Domain\Entity\Produto as ProdutoEntity,
 	Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
@@ -11,6 +13,7 @@ use Doctrine\ORM\EntityRepository,
 	Wms\Util\CodigoBarras,
 	Wms\Util\Endereco as EnderecoUtil,
 	Core\Util\Produto as ProdutoUtil;
+use Doctrine\ORM\ORMException;
 use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Produto\Embalagem;
@@ -166,7 +169,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			switch ($idTipoComercializacao) {
 				case ProdutoEntity::TIPO_UNITARIO:
 					// gravo embalagens
-					$this->persistirEmbalagens($produtoEntity, $values);
+					$result = $this->persistirEmbalagens($produtoEntity, $values);
+					
+					if (is_string($result)){
+						$em->rollback();
+						return $result;
+					}
 					// gravo dados logisticos
 					$this->persistirDadosLogisticos($values, $produtoEntity);
 
@@ -225,6 +233,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$em->rollback();
 			throw new \Exception($e->getMessage());
 		}
+		return true;
 	}
 
 	/**
@@ -376,9 +385,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						if (!$embalagemEntity) {
 							throw new \Exception('Codigo da Embalagem inválido.');
 						}
-
-						$em->remove($embalagemEntity);
-						$em->flush();
+						try {
+							$em->remove($embalagemEntity);
+							$em->flush();
+						}catch (\Exception $e) {
+							$previus = $e->getPrevious();
+							if ($previus->getCode() == 2292){
+								$return = "A embalagem com código de barras " . $embalagemEntity->getCodigoBarras() . ' não pode ser excluida por estar ligada à um fornecedor.';
+								return $return;
+							}
+						}
 						break;
 
 					default:

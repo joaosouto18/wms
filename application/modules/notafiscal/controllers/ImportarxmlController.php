@@ -310,24 +310,29 @@ class Notafiscal_ImportarxmlController extends Crud
 
                 $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
                 $sql = "
-                SELECT COD_PRODUTO, DSC_GRADE
+                SELECT P.COD_PRODUTO, P.DSC_GRADE, PE.QTD_EMBALAGEM
                     FROM PRODUTO P
+                    LEFT JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
+                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = FR.COD_PRODUTO_EMBALAGEM
                     WHERE P.DSC_REFERENCIA = '$codigoProdutoNF'
                 ";
                 $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-                $sql2 = "SELECT COD_PRODUTO, DSC_GRADE
+                $sql2 = "SELECT P.COD_PRODUTO, P.DSC_GRADE, PE.QTD_EMBALAGEM
                         FROM PRODUTO P INNER JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
+                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = FR.COD_PRODUTO_EMBALAGEM
                         WHERE FR.DSC_REFERENCIA = '$codigoProdutoNF' ";
 
                 $arrayCodFornecedores =$this->em->getConnection()->query($sql2)->fetchAll(\PDO::FETCH_ASSOC);
 
                 if ( !empty($array[0]['COD_PRODUTO'])){
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $array[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $array[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $array[0]['QTD_EMBALAGEM'];
                 } elseif (!empty($arrayCodFornecedores[0]['COD_PRODUTO'])) {
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$arrayCodFornecedores[0]['COD_PRODUTO'];
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$arrayCodFornecedores [0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $arrayCodFornecedores[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $arrayCodFornecedores[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $arrayCodFornecedores[0]['QTD_EMBALAGEM'];
                 }
                 else {
                     $this->isValid=false;
