@@ -929,7 +929,7 @@ class Mobile_EnderecamentoController extends Action
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                     if (!isset($newEndereco) || empty($newEndereco))
-                        throw new \Exception("Novo Endereço não reconhecido!");
+                        throw new \Exception("Novo Endereço não encontrado!");
 
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
 
