@@ -835,10 +835,13 @@ class Mobile_EnderecamentoController extends Action
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
             }
 
+            var_dump($enderecoAntigo);
             $enderecoAntigo = $this->getEnderecoByParametro($enderecoAntigo);
             if ($enderecoAntigo) {
                 $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo[0]['DSC_DEPOSITO_ENDERECO'], $nivelAntigo);
             }
+            var_dump($enderecoAntigo);
+            exit;
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
@@ -971,7 +974,6 @@ class Mobile_EnderecamentoController extends Action
                     }
 
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
-                    var_dump('abc'); exit;
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
