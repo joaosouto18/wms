@@ -970,11 +970,8 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
-                    var_dump($enderecoAntigo);
-                    var_dump($embalagemEn->getCodProduto());
-                    var_dump($embalagemEn->getGrade());
-                    exit;
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
+                    var_dump($estoqueEn); exit;
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
