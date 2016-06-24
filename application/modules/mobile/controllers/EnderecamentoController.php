@@ -933,8 +933,6 @@ class Mobile_EnderecamentoController extends Action
 
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
 
-                    var_dump('abc');
-                    var_dump($enderecoAntigo); exit;
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
