@@ -53,13 +53,9 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
                 $embalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
-                $recebimentoEmbalagem = $embalagemRepo->getEmbalagemByRecebimento($params['id'], $codProduto, $grade);
+                $recebimentoEmbalagem = $embalagemRepo->getEmbalagensVolumesByRecebimento($params['id'], $params['produto']);
 
-                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $volumeRepo */
-                $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
-                $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $codProduto, $grade);
-
-                if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
+                if (count($recebimentoEmbalagem) <= 0)
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
 
                 $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -67,7 +63,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
-                $paleteProdutoEn = $paleteProdutoRepo->getQtdTtotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
+                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
                 if ($qtdRecebimentoEn->getQtd() < trim($params['qtd']) + $paleteProdutoEn[0]['qtd'])
                     throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
