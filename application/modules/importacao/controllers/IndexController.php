@@ -181,10 +181,11 @@ class Importacao_IndexController extends Action
                         break;
                     }
 
+                    /** @var \Wms\Domain\Entity\Pessoa\Juridica $entityPessoa */
                     $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
 
                     if ($entityPessoa) {
-                        $fornecedor = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
+                        $fornecedor = $fornecedorRepo->findBy(array("id"=> $entityPessoa->getId()));
                         if ($fornecedor){
                             $arrErroRows[$linha] = "Fornecedor já cadastrado:". $arrRegistro['nome'];
                             break;
@@ -199,15 +200,16 @@ class Importacao_IndexController extends Action
                         }
                     }
 
+                    /** @var \Wms\Domain\Entity\Pessoa\Fisica $entityPessoa */
                     $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
 
                     if ($entityPessoa) {
-                        $fornecedor = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
+                        $fornecedor = $fornecedorRepo->findBy(array("id"=> $entityPessoa->getId()));
                         if ($fornecedor){
                             $arrErroRows[$linha] = "Fornecedor já cadastrado:". $arrRegistro['nome'];
                             break;
                         } else {
-                            $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa,$arrRegistro['idExterno']);
+                            $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
                             if (is_string($result)) {
                                 $arrErroRows[$linha] = $result;
                             } else {

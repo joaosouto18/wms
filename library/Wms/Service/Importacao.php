@@ -12,6 +12,7 @@ use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
+use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
 use Wms\Domain\Entity\Pessoa\Juridica;
 use Wms\Domain\Entity\Pessoa\Papel\Cliente;
@@ -129,11 +130,18 @@ class Importacao
 
     }
 
+    /**
+     * @param $em EntityManager
+     * @param $pessoa Pessoa
+     * @param $codExterno string
+     * @return bool|string
+     */
     public function savePessoaEmFornecedor($em, $pessoa, $codExterno)
     {
         try {
             $entity = new Fornecedor();
             $entity->setPessoa($pessoa);
+            $entity->setId($pessoa->getId());
             $entity->setIdExterno($codExterno);
             $em->persist($entity);
             return true;
