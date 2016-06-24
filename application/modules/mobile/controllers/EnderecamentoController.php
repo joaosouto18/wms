@@ -835,13 +835,10 @@ class Mobile_EnderecamentoController extends Action
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
             }
 
-            var_dump($enderecoAntigo);
             $enderecoAntigo = $this->getEnderecoByParametro($enderecoAntigo);
             if ($enderecoAntigo) {
                 $enderecoAntigo = $this->getEnderecoNivel($enderecoAntigo[0]['DSC_DEPOSITO_ENDERECO'], $nivelAntigo);
             }
-            var_dump($enderecoAntigo);
-            exit;
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
@@ -921,6 +918,7 @@ class Mobile_EnderecamentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                 }
             } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+                var_dump($enderecoAntigo); exit;
                 $LeituraColetor = new LeituraColetor();
                 $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
 
