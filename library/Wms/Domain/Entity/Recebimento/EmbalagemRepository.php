@@ -16,6 +16,7 @@ class EmbalagemRepository extends EntityRepository
             ->andWhere("e.codProduto = '$codProduto'")
             ->andWhere("e.grade = '$grade'");
 
+        echo $source->getQuery()->getSQL(); exit;
         return $source->getQuery()->getArrayResult();
     }
 
