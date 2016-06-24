@@ -918,7 +918,6 @@ class Mobile_EnderecamentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                 }
             } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
-                var_dump($enderecoAntigo); exit;
                 $LeituraColetor = new LeituraColetor();
                 $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
 
@@ -971,6 +970,8 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    var_dump($embalagemEn->getCodProduto());
+                    var_dump($enderecoAntigo); exit;
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
