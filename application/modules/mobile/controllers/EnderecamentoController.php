@@ -933,6 +933,7 @@ class Mobile_EnderecamentoController extends Action
 
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
 
+                    var_dump($enderecoAntigo); exit;
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
@@ -970,9 +971,6 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
-                    var_dump('abc');
-                    var_dump($embalagemEn->getCodProduto());
-                    var_dump($enderecoAntigo); exit;
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
