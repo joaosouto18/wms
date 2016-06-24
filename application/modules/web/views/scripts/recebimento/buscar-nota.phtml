@@ -5,6 +5,16 @@ echo $this->render('recebimento/view-gerar-recebimento.phtml');
 <script>
     $(document).ready(function(){
         $("#formGerarRecebmento").preventDoubleSubmission()
+
+        $(document).ready(function(){
+            $('#todos').live('click',function(){
+                var checked_status = this.checked;
+                $("input").each(function()
+                {
+                    this.checked = checked_status;
+                });
+            });
+        });
     });
     jQuery.fn.preventDoubleSubmission = function() {
         $(this).on('submit',function(e){

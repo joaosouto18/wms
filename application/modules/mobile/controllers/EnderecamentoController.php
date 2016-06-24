@@ -928,6 +928,9 @@ class Mobile_EnderecamentoController extends Action
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    if (!isset($newEndereco) || empty($newEndereco))
+                        throw new \Exception("Novo Endereço não reconhecido!");
+
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||

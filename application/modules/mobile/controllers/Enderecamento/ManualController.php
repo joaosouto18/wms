@@ -32,14 +32,6 @@ class Mobile_Enderecamento_ManualController extends Action
                 unset($params['action']);
                 unset($params['submit']);
 
-                /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
-                $recebimentoEmbalagem = $embalagemRepo->getEmbalagemByRecebimento($params['id'], $params['produto']);
-
-                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $volumeRepo */
-                $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
-                $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $params['produto']);
-
                 /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                 $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
                 $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['produto']));
@@ -47,6 +39,9 @@ class Mobile_Enderecamento_ManualController extends Action
                 /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
                 $volumeRepo = $em->getRepository('wms:Produto\Volume');
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['produto']));
+
+                if (!$embalagemEn && !$volumeEn)
+                    throw new \Exception("O código de barras informado não existe!");
 
                 if ($embalagemEn) {
                     $codProduto = $embalagemEn->getCodProduto();
@@ -56,8 +51,13 @@ class Mobile_Enderecamento_ManualController extends Action
                     $grade = $volumeEn->getGrade();
                 }
 
-                if (!$embalagemEn && !$volumeEn)
-                    throw new \Exception("O código de barras informado não existe!");
+                /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
+                $recebimentoEmbalagem = $embalagemRepo->getEmbalagemByRecebimento($params['id'], $codProduto, $grade);
+
+                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $volumeRepo */
+                $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
+                $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $codProduto, $grade);
 
                 if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
@@ -65,6 +65,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
                 $qtdRecebimentoEn = $qtdRecebimentoRepo->findOneBy(array('codRecebimento' => $params['id'], 'codProduto' => $codProduto, 'grade' => $grade));
 
+                /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
                 $paleteProdutoEn = $paleteProdutoRepo->getQtdTtotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
@@ -215,10 +216,15 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                $enderecoEmbalagemEn = $embalagemEn->getEndereco();
+                $idEnderecoEmbalagem = null;
+                if (isset($enderecoEmbalagemEn) && !empty($enderecoEmbalagemEn))
+                    $idEnderecoEmbalagem = $embalagemEn->getEndereco()->getId();
+
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $idEnderecoEmbalagem != $enderecoEn->getId()) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $embalagemEn->getEndereco()->getDescricao());
                 }
-                if ($embalagemEn->getEndereco()->getId() != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if ($idEnderecoEmbalagem != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                     if (isset($estoqueEn) && !empty($estoqueEn)) {
                         throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');

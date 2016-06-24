@@ -292,6 +292,11 @@ class Expedicao_IndexController  extends Action
 
             /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
             $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacaoEn));
+            if (isset($apontamentoMapaEn) && !empty($apontamentoMapaEn)) {
+                $this->addFlashMessage("error","Mapa de Separação ja vinculado a usuário!");
+                $this->redirect('apontamento-separacao');
+            }
             $apontamentoMapaRepo->save($mapaSeparacaoEn,$codUsuario);
 
             $this->addFlashMessage("success","Conferente vinculado com sucesso ao Mapa de Separação!");

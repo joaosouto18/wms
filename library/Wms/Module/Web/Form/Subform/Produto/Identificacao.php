@@ -91,13 +91,34 @@ class Identificacao extends SubForm
                 ))
                 ->addElement('text', 'cubagem', array(
                     'label' => 'Cubagem Total (m³)',
-                    'size' => 15,
+                    'size' => 18,
                     'readonly' => 'readonly',
                     'alt' => 'centesimal',
                 ))                             
                 ->addDisplayGroup(
                         array('idLinhaSeparacao', 'idTipoComercializacao', 'numVolumes', 'referencia', 'codigoBarrasBase', 'CBInterno', 'imprimirCB', 'peso', 'cubagem'), 'logistico', array('legend' => 'Dados Logisticos')
                 );
+
+                $this->addElement('select', 'pVariavel', array(
+                    'label' => 'Possui Peso Variável? (S/N)',
+                    'multiOptions' => array(
+                        'S' => 'S',
+                        'N' => 'N'
+                    )))
+                    ->addElement('text', 'percTolerancia', array(
+                        'label' => 'Porcentagem de Tolerância %',
+                        'size' => 18,
+                        'maxlength' => 18,
+                    ))
+                    ->addElement('text', 'toleranciaNominal', array(
+                        'label' => 'Peso Nominal (Kg)',
+                        'size' => 18,
+                        'readonly' => 'readonly',
+                    ))
+                    ->addDisplayGroup(
+                        array('pVariavel', 'percTolerancia','toleranciaNominal'), 'pesoVariavel', array('legend' => 'Peso Variável')
+                    );
+
 
                 $this
                     ->addElement('select', 'validade', array(
@@ -121,6 +142,12 @@ class Identificacao extends SubForm
     {
         $idLinhaSeparacao = ($produto->getLinhaSeparacao()) ? $produto->getLinhaSeparacao()->getId() : 0;
 
+        $tolerancia = $produto->getPercTolerancia();
+        if ( empty( $tolerancia ) ){
+            $tolerancia="N";
+        } else {
+            $tolerancia="S";
+        }
         $values = array(
             'id' => $produto->getId(),
             'idClasse' => $produto->getClasse()->getId(),
@@ -134,6 +161,9 @@ class Identificacao extends SubForm
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
             'validade' => $produto->getValidade(),
             'diasVidaUtil' => $produto->getDiasVidaUtil(),
+            'pVariavel' => $tolerancia,
+            'percTolerancia' => $produto->getPercTolerancia(),
+            'toleranciaNominal' => $produto->getToleranciaNominal()
         );
 
         $this->setDefaults($values);

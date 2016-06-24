@@ -608,6 +608,7 @@ class NotaFiscalRepository extends EntityRepository
                         AND rc.produto = p.id
                         AND rc.grade = p.grade
                         AND rc.qtdDivergencia = 0
+                        AND (rc.divergenciaPeso = \'N\')
                 )')
             ->setParameters(
                 array(
@@ -638,6 +639,21 @@ class NotaFiscalRepository extends EntityRepository
         }
 
         return $sql->getQuery()->setMaxResults(1)->getOneOrNullResult();
+    }
+
+    public function getPesoByProdutoAndRecebimento($codRecebimento, $codProduto, $grade)
+    {
+
+        $SQL = " SELECT NVL(SUM(NUM_PESO),0) as PESO
+                   FROM NOTA_FISCAL NF
+                   LEFT JOIN NOTA_FISCAL_ITEM NFI ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
+         WHERE NF.COD_RECEBIMENTO = $codRecebimento
+           AND COD_PRODUTO = '$codProduto'
+           AND DSC_GRADE = '$grade'";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result[0]['PESO'];
     }
 
     /**
@@ -853,18 +869,29 @@ class NotaFiscalRepository extends EntityRepository
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
-
+                    $pesoTotal = 0;
+                    if (isset($item['numPeso'])) {
+                        $pesoItem = trim($item['numPeso']);
+                        if ($pesoItem == "") {
+                            $pesoItem = 0;
+                        } else {
+                            $pesoItem = (int) $pesoItem;
+                        }
+                        $pesoTotal = $pesoTotal + $pesoItem;
+                    }
                     $itemEntity = new ItemNF;
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
                     $itemEntity->setProduto($produtoEntity);
                     $itemEntity->setGrade(trim($item['grade']));
                     $itemEntity->setQuantidade($item['quantidade']);
+                    $itemEntity->setNumPeso($pesoItem);
 
                     $notaFiscalEntity->getItens()->add($itemEntity);
                 }
             } else {
                 throw new \Exception("Nenhum item informado na nota");
             }
+            $notaFiscalEntity->setPesoTotal($pesoTotal);
             $em->persist($notaFiscalEntity);
             $em->flush();
 
