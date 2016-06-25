@@ -53,9 +53,13 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
                 $embalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
-                $recebimentoEmbalagem = $embalagemRepo->getEmbalagensVolumesByRecebimento($params['id'], $params['produto']);
+                $recebimentoEmbalagem = $embalagemRepo->getEmbalagemByRecebimento($params['id'], $codProduto, $grade);
 
-                if (count($recebimentoEmbalagem) <= 0)
+                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $volumeRepo */
+                $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
+                $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $codProduto, $grade);
+
+                if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
 
                 $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -202,7 +206,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($produto);
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->find($idEndereco);
-            
+
             $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
             $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
             $novaCapacidadePicking = 0;
@@ -212,15 +216,10 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
-                $enderecoEmbalagemEn = $embalagemEn->getEndereco();
-                $idEnderecoEmbalagem = null;
-                if (isset($enderecoEmbalagemEn) && !empty($enderecoEmbalagemEn))
-                    $idEnderecoEmbalagem = $embalagemEn->getEndereco()->getId();
-
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $idEnderecoEmbalagem != $enderecoEn->getId()) {
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $embalagemEn->getEndereco()->getDescricao());
                 }
-                if ($idEnderecoEmbalagem != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if ($embalagemEn->getEndereco()->getId() != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                     if (isset($estoqueEn) && !empty($estoqueEn)) {
                         throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
@@ -251,14 +250,14 @@ class Mobile_Enderecamento_ManualController extends Action
 
 
             //VALIDA SE FOI BIPADO UM ENDEREÇO DE PICKING OU PICKING ROTATIVO
-//            if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+//             if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
 //                $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'id');
 //                $idPicking = null;
 //                //APENAS SE O PRODUTO NÃO TIVER PICKING DEFINIDO
 //                if ($pickings == null) {
 //                    switch ($enderecoEn->getIdCaracteristica()) {
 //                        case $idCaracteristicaPicking:
-//                                throw new \Exception("Foi selecionado um endereço de picking para um produto sem picking definido");
+//                            throw new \Exception("Foi selecionado um endereço de picking para um produto sem picking definido");
 //                            break;
 //                        case $idCaracteristicaPickingRotativo: //REGRA DO PICKING ROTATIVO
 //                            $idPicking = $enderecoEn->getId();
@@ -280,7 +279,7 @@ class Mobile_Enderecamento_ManualController extends Action
 //                            }
 //                            break;
 //                    }
-//                } else {
+//                } else{
 //                    $idPicking = $pickings[0];
 //                }
 //
@@ -289,7 +288,7 @@ class Mobile_Enderecamento_ManualController extends Action
 //                }
 //
 //            }
-            
+
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa);
@@ -359,6 +358,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
         $data = false;
         $primeiraTela = false;
+        $endereco = null;
 
         //VALIDO PARA A PRIMEIRA TELA
         if (isset($codBarraEndereco) && !empty($codBarraEndereco)) {
