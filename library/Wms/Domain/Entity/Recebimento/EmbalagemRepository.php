@@ -22,7 +22,7 @@ class EmbalagemRepository extends EntityRepository
     public function getEmbalagensVolumesByRecebimento($codRecebimento,$codigoBarras)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('')
+            ->select('re')
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
             ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id')
