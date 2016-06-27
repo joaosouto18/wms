@@ -816,7 +816,7 @@ class NotaFiscalRepository extends EntityRepository
 
         return $entity;
     }
-    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null) {
+    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $pesototal) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -861,6 +861,7 @@ class NotaFiscalRepository extends EntityRepository
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
 
+            $pesoTotal = 0;
             if (count($itens) > 0) {                //itera nos itens das notas
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
@@ -869,13 +870,12 @@ class NotaFiscalRepository extends EntityRepository
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
-                    $pesoTotal = 0;
-                    if (isset($item['numPeso'])) {
-                        $pesoItem = trim($item['numPeso']);
+                    if (isset($item['peso'])) {
+                        $pesoItem = trim($item['peso']);
                         if ($pesoItem == "") {
                             $pesoItem = 0;
                         } else {
-                            $pesoItem = (int) $pesoItem;
+                            $pesoItem = (float)$pesoItem;
                         }
                         $pesoTotal = $pesoTotal + $pesoItem;
                     }
@@ -958,6 +958,7 @@ class NotaFiscalRepository extends EntityRepository
                 $itemEntity->setProduto($produtoEntity);
                 $itemEntity->setGrade(trim($item['grade']));
                 $itemEntity->setQuantidade($item['quantidade']);
+                $itemEntity->setNumPeso($item['peso']);
 
                 $notaFiscalEntity->getItens()->add($itemEntity);
             }
@@ -967,7 +968,5 @@ class NotaFiscalRepository extends EntityRepository
             $em->rollback();
             throw new \Exception($e->getMessage());
         }
-
     }
-
 }
