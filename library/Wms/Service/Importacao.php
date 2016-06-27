@@ -426,7 +426,10 @@ class Importacao
     {
         /** @var EntityManager $em */
         try {
-            $pedido['pontoTransbordo'] = null;
+            
+            if (!isset($pedido['pontoTransbordo']))
+                $pedido['pontoTransbordo'] = null;
+
             $pedido['envioParaLoja'] = null;
 
             $pedido['itinerario'] = $em->getRepository('wms:expedicao\Itinerario')->findOneBy(array('id'=> $pedido['itinerario']));
