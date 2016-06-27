@@ -370,6 +370,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
                 $unMedida = $this->getRequest()->getParam('unMedida');
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
+                $numPeso = $this->getRequest()->getParam('numPeso');
 
                 $hoje = new Zend_Date;
                 foreach ($dataValidade as $idProduto => $grades) {
@@ -386,14 +387,15 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                                     'idOrdemServico' => serialize($idOrdemServico), 'qtdNFs' => serialize($qtdNFs),
                                     'qtdAvarias' => serialize($qtdAvarias), 'qtdConferidas' => serialize($qtdConferidas),
                                     'idConferente' => serialize($idConferente), 'gravaRecebimentoVolumeEmbalagem' => true,
-                                    'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade), 'conferenciaCega' => true));
+                                    'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade),
+                                    'conferenciaCega' => true, 'numPeso' => serialize($numPeso)));
                             }
                         }
 
                     }
                 }
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];
