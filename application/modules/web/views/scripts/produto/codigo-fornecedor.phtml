@@ -101,10 +101,14 @@
         <?php $codigosFornecedores = Zend_Layout::getMvcInstance()->getView()->codigosFornecedores;?>
 
         <?php if (count($codigosFornecedores) >= 1) : ?>
-            <?php foreach($codigosFornecedores as $codigoFornecedor) : ?>
+            <?php
+            /** @var \Wms\Domain\Entity\CodigoFornecedor\Referencia $codigoFornecedor */
+            foreach($codigosFornecedores as $codigoFornecedor) :
+                $embTxt = $codigoFornecedor->getEmbalagem()->getDescricao() . "(" . $codigoFornecedor->getEmbalagem()->getQuantidade() . ")" ;?>
                 <tr class="gTResultSet ">
                     <td style="text-align:left"><?php echo $codigoFornecedor->getFornecedor()->getPessoa()->getNome(); ?></td>
                     <td style="text-align:left"><?php echo $codigoFornecedor->getDscReferencia() ?></td>
+                    <td style="text-align:left"><?php echo $embTxt ?></td>
                     <td style="text-align:left">
                         <a class="excluir-cod-fornecedor" title="Clique para Excluir" class="" data-id="<?php echo $codigoFornecedor->getId(); ?>" href="javascript://">
                             <img src="http://wms.local/img/icons/delete.png">
