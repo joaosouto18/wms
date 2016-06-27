@@ -120,12 +120,28 @@ class Mobile_RecebimentoController extends Action
         // carrega js da pg
         $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/mobile/recebimento/produto-quantidade.js');
 
+        $idRecebimento = $this->getRequest()->getParam('idRecebimento');
+        $codigoBarras = $this->getRequest()->getParam('codigoBarras');
+
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
+        $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+        $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
+        $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $produtoEmbEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
+
+        if (isset($produtoEmbEn) && !empty($produtoEmbEn)) {
+            $idProduto = $produtoEmbEn->getProduto()->getId();
+            $grade = $produtoEmbEn->getProduto()->getGrade();
+            $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
+        } else {
+            $idProduto = $produtoVolumeEn->getCodProduto();
+            $grade = $produtoVolumeEn->getGrade();
+            $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
+        }
         $form = new ProdutoQuantidadeForm;
 
         try {
-            $idRecebimento = $this->getRequest()->getParam('idRecebimento');
-            $codigoBarras = $this->getRequest()->getParam('codigoBarras');
-
             $recebimentoEntity = $this->em->getReference('wms:Recebimento', $idRecebimento);
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
 
@@ -148,21 +164,15 @@ class Mobile_RecebimentoController extends Action
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
 
-            /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
-            $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
-            $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
-            if ($produtoVolumeEn == null) {
-                /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
-                $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-                $produtoEmbEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
-                $idProduto = $produtoEmbEn->getProduto()->getId();
-                $grade = $produtoEmbEn->getProduto()->getGrade();
-                $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
-            } else {
-                $idProduto = $produtoVolumeEn->getCodProduto();
-                $grade = $produtoVolumeEn->getGrade();
-                $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
-            }
+//            if ($produtoVolumeEn == null) {
+//                $idProduto = $produtoEmbEn->getProduto()->getId();
+//                $grade = $produtoEmbEn->getProduto()->getGrade();
+//                $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
+//            } else {
+//                $idProduto = $produtoVolumeEn->getCodProduto();
+//                $grade = $produtoVolumeEn->getGrade();
+//                $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
+//            }
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
@@ -183,10 +193,10 @@ class Mobile_RecebimentoController extends Action
         $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getUnitizadoresByProduto($itemNF['idProduto'],$itemNF['grade']);
         $this->view->normasPaletizacao = $normasPaletizacao;
 
-        if ( !empty($pesoVariavel) )
-            $pesoVariavel = "S";
-        else
-            $pesoVariavel = "N";
+//        if ( !empty($pesoVariavel) )
+//            $pesoVariavel = "S";
+//        else
+//            $pesoVariavel = "N";
 
         $this->view->pesoVariavel = $pesoVariavel;
         $this->view->recebimento = $recebimentoEntity;
