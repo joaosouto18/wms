@@ -357,7 +357,7 @@ $.Controller.extend('Wms.Controllers.Produto',
 
                     blocosDadosLogisticos.each( function() {
                         var idEmbalagem = $(this).find('.idEmbalagem').val();
-                        var pesoVolume = parseFloat($(this).find('.peso').val().replace('.','').replace(',','.'))
+                        var pesoVolume = parseFloat($(this).find('.peso').val().replace('.','').replace(',','.'));
                         var idEmbalagemRecebimento = Wms.Controllers.ProdutoEmbalagem.prototype.buscarEmbalagemRecebimento();
 
                         if ( idEmbalagem == idEmbalagemRecebimento ) {
