@@ -142,12 +142,6 @@ class Identificacao extends SubForm
     {
         $idLinhaSeparacao = ($produto->getLinhaSeparacao()) ? $produto->getLinhaSeparacao()->getId() : 0;
 
-        $tolerancia = $produto->getPercTolerancia();
-        if ( empty( $tolerancia ) ){
-            $tolerancia="N";
-        } else {
-            $tolerancia="S";
-        }
         $values = array(
             'id' => $produto->getId(),
             'idClasse' => $produto->getClasse()->getId(),
@@ -156,12 +150,14 @@ class Identificacao extends SubForm
             'idLinhaSeparacao' => $idLinhaSeparacao,
             'numVolumes' => $produto->getNumVolumes(),
             'referencia' => $produto->getReferencia(),
+            'peso' => 10,
+            'cubagem' => 0.1000,
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
             'validade' => $produto->getValidade(),
             'diasVidaUtil' => $produto->getDiasVidaUtil(),
-            'pVariavel' => $tolerancia,
+            'pVariavel' => $produto->getPossuiPesoVariavel(),
             'percTolerancia' => $produto->getPercTolerancia(),
             'toleranciaNominal' => $produto->getToleranciaNominal()
         );

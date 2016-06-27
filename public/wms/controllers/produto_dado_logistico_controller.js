@@ -16,13 +16,13 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
      * Carrega configuracoes iniciais
      */
     "{window} load": function() {
-        if($(".grupoDadosLogisticos").size() == 0) {        
+        if($(".grupoDadosLogisticos").size() == 0) {
             var idProduto = $('#produto-id').val();
             var grade = $('#produto-grade').val();
         
             if (idProduto != '' && grade != '') {
                 Wms.Models.ProdutoDadoLogistico.findNormasPaletizacao({
-                    idProduto:idProduto, 
+                    idProduto:idProduto,
                     grade:grade
                 }, this.callback('listNorma'));
             }
