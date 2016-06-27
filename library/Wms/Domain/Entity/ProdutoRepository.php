@@ -1176,7 +1176,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 FROM
                  SUM_PESO_PRODUTO
                 WHERE
-                  COD_PRODUTO = ".$params['COD_PRODUTO']."
+                  COD_PRODUTO = '$params[COD_PRODUTO]'
+                  AND DSC_GRADE = '$params[DSC_GRADE]'
            ";
 
 		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);

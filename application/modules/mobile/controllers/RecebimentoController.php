@@ -133,11 +133,11 @@ class Mobile_RecebimentoController extends Action
         if (isset($produtoEmbEn) && !empty($produtoEmbEn)) {
             $idProduto = $produtoEmbEn->getProduto()->getId();
             $grade = $produtoEmbEn->getProduto()->getGrade();
-            $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
+            $pesoVariavel = $produtoEmbEn->getProduto()->getPossuiPesoVariavel();
         } else {
             $idProduto = $produtoVolumeEn->getCodProduto();
             $grade = $produtoVolumeEn->getGrade();
-            $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
+            $pesoVariavel = $produtoVolumeEn->getProduto()->getPossuiPesoVariavel();
         }
         $form = new ProdutoQuantidadeForm;
 
@@ -285,35 +285,38 @@ class Mobile_RecebimentoController extends Action
                 $params['dataValidade'] = null;
             }
 
-            if ( !empty( $produtoEn->getToleranciaNominal() ) ){
-                if ( empty( $params['numPeso'] ) ) {
+            if ($produtoEn->getPossuiPesoVariavel() == 'S'){
+                if (empty($params['numPeso'])) {
                     $this->_helper->messenger('error', 'Informe o peso para conferência');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 } else {
                     $quantidade = (int) $qtdConferida;
-                    $pesoDigitado = str_replace(".",",",$params['numPeso']);
+                    $pesoDigitado = str_replace(",",".",$params['numPeso']);
+                    $params['numPeso'] = str_replace(",",".",$params['numPeso']);
                     $parametros['COD_PRODUTO'] = $produtoEn->getId();
-                    $tolerancia = (float) str_replace(",",".",$produtoEn->getToleranciaNominal());
+                    $parametros['DSC_GRADE'] = $produtoEn->getGrade();
+                    $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
 
-                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto( $parametros );
-                    $volumes = (int) $this->em->getRepository('wms:Recebimento\Volume')->getVolumeByRecebimentoProduto( $idRecebimento , $idProduto );
+                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto($parametros);
+                    $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
 
-                    if ( !empty($volumes) && count($volumes)!=0 ){
+                    if (!empty($volumes) && count($volumes) != 0){
                         $peso = (float) $pesoProduto[0]['NUM_PESO'] / count($volumes);
                     } else {
                         $peso = (float) $pesoProduto[0]['NUM_PESO'];
                     }
+
                     $pesoUnitarioMargemS = (float)  ( $pesoDigitado/$quantidade ) + $tolerancia;
                     $pesoUnitarioMargemI = (float)  ( $pesoDigitado/$quantidade ) - $tolerancia;
 
-                    if ( !( $peso <= $pesoUnitarioMargemS && $peso >= $pesoUnitarioMargemI )  ){
+                    if (!($peso <= $pesoUnitarioMargemS && $peso >= $pesoUnitarioMargemI)){
                         $this->_helper->messenger('error', 'O peso informado não confere com a tolerância permitida');
                         $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                     } else {
                         if ( !empty($volumes) && count($volumes)!=0 ){
-                            $params['numPeso'] = (float)  $params['numPeso'] / count($volumes);
+                            $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
                         } else {
-                            $params['numPeso'] = (float)  $params['numPeso'];
+                            $params['numPeso'] = (float)$params['numPeso'];
                         }
                     }
                 }
