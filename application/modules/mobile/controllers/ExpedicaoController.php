@@ -103,6 +103,7 @@ class Mobile_ExpedicaoController extends Action
                             $idVolume = $codBarras;
                             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                             $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
+                            /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
                             $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
 
                             $codQuebra = 0;
@@ -186,9 +187,10 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
 
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
-        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao));
+        /** @var Expedicao\ExpedicaoVolumePatrimonio $expVolumePatrimonioEn */
+        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findOneBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao));
 
-        $codCliente = $expVolumePatrimonioEn[0]->getTipoVolume();
+        $codCliente = $expVolumePatrimonioEn->getTipoVolume();
         $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
         $clienteEn = $clienteRepo->findBy(array('codClienteExterno' => $codCliente));
 
@@ -204,7 +206,7 @@ class Mobile_ExpedicaoController extends Action
         $pessoaCliente = $clienteEn[0]->getPessoa();
         
         $codPessoa = $pessoaCliente->getNome();
-        $cargas = $expVolumePatrimonioEn[0]->getExpedicao()->getCarga();
+        $cargas = $expVolumePatrimonioEn->getExpedicao()->getCarga();
         $pedido = $cargas[0]->getPedido();
 		$idPedido = $pedido[0]->getId();
 
@@ -227,6 +229,9 @@ class Mobile_ExpedicaoController extends Action
             $fields['quebra'] = $codPessoa;
             $fields['pedido'] = $idPedido;
             $fields['produtos'] = $produtos;
+            if (!empty($expVolumePatrimonioEn->getSequencia()))
+                $fields['sequencia'] = $expVolumePatrimonioEn->getSequencia();
+
 
             switch ($parametroEtiquetaVolume) {
                 case 1:

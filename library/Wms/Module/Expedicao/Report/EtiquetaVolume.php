@@ -315,6 +315,13 @@ class EtiquetaVolume extends eFPDF
                 $type = 'code128';
                 $black = '000000';
                 $data = Barcode::fpdf($this, $black, $x, $y, $angle, $type, array('code' => $volume['volume']), 0.42, 10);
+
+                if (isset($volume['sequencia']) && !empty($volume['sequencia'])) {
+                    /* Código de sequência */
+                    $this->SetFont('Arial', 'B', 13);
+                    $this->SetXY(93, 42);
+                    $this->MultiCell(70, 3.8, $volume['sequencia'], 0, 'L');
+                }
             }
         } else {
             $volume = $volumePatrimonio;
@@ -384,10 +391,12 @@ class EtiquetaVolume extends eFPDF
             $black    = '000000';
             $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$volume['volume']),0.42,10);
 
-            /* Código do volume */
-            $this->SetFont('Arial', 'B', 8.5);
-            $this->SetXY(85,42);
-            $this->MultiCell(70,3.8,"VOLUME: $volume[volume]",0,'L');
+            if (isset($volume['sequencia']) && !empty($volume['sequencia'])) {
+                /* Código de sequência */
+                $this->SetFont('Arial', 'B', 13);
+                $this->SetXY(93, 42);
+                $this->MultiCell(70, 3.8, $volume['sequencia'], 0, 'L');
+            }
         }
 
         $this->Output('Volume-Patrimonio.pdf','I');

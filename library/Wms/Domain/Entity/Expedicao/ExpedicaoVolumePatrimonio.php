@@ -46,14 +46,14 @@ class ExpedicaoVolumePatrimonio
     protected $tipoVolume;
 
     /**
-     * @var Wms\Domain\Entity\Usuario $usuario
+     * @var \Wms\Domain\Entity\Usuario $usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
      * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
      */
     protected $usuario;
 
     /**
-     * @var Wms\Domain\Entity\Usuario $usuario
+     * @var \Wms\Domain\Entity\Usuario $usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
      * @JoinColumn(name="COD_USUARIO_LACRE", referencedColumnName="COD_USUARIO")
      */
@@ -69,6 +69,12 @@ class ExpedicaoVolumePatrimonio
      * @Column(name="DTH_VINCULO_LACRE", type="datetime")
      */
     protected $dataVinculoLacre;
+    
+    /** 
+     * @var  int
+     * @Column(name="NUM_SEQUENCIA", type="integer")
+     */
+    protected $sequencia;
 
     /**
      * @param mixed $tipoVolume
@@ -137,7 +143,7 @@ class ExpedicaoVolumePatrimonio
     }
 
     /**
-     * @return Wms\Domain\Entity\Usuario
+     * @return \Wms\Domain\Entity\Usuario
      */
     public function getUsuario()
     {
@@ -145,7 +151,7 @@ class ExpedicaoVolumePatrimonio
     }
 
     /**
-     * @param Wms\Domain\Entity\Usuario $usuario
+     * @param \Wms\Domain\Entity\Usuario $usuario
      */
     public function setUsuario($usuario)
     {
@@ -185,7 +191,7 @@ class ExpedicaoVolumePatrimonio
     }
 
     /**
-     * @return Wms\Domain\Entity\Usuario
+     * @return \Wms\Domain\Entity\Usuario
      */
     public function getUsuarioLacre()
     {
@@ -193,11 +199,26 @@ class ExpedicaoVolumePatrimonio
     }
 
     /**
-     * @param Wms\Domain\Entity\Usuario $usuarioLacre
+     * @param \Wms\Domain\Entity\Usuario $usuarioLacre
      */
     public function setUsuarioLacre($usuarioLacre)
     {
         $this->usuarioLacre = $usuarioLacre;
     }
 
+    /**
+     * @return int
+     */
+    public function getSequencia()
+    {
+        return $this->sequencia;
+    }
+
+    /**
+     * @param int $sequencia
+     */
+    public function setSequencia($sequencia)
+    {
+        $this->sequencia = $sequencia;
+    }
 }

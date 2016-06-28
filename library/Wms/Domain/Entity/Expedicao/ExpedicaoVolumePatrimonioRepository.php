@@ -34,20 +34,20 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $entityVolumePatrimonio->setOcupado('S');
             $em->persist($entityVolumePatrimonio);
 
-            $volumePatrimonioRepo   = $em->getRepository('wms:Expedicao\VolumePatrimonio');
-            $entityVolPatrimonio    = $volumePatrimonioRepo->findOneBy(array('id' => $volume));
             $expedicaoRepo          = $em->getRepository('wms:Expedicao');
             $entityExpedicao        = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
             $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
             $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
 
             $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
+            $countVolumes = count($this->findBy(array('expedicao' => $idExpedicao))) + 1;
 
             if (count($arrayExpVolPatrimonioEn) ==0){
                 $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
-                $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
+                $enExpVolumePatrimonio->setVolumePatrimonio($entityVolumePatrimonio);
                 $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
                 $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
+                $enExpVolumePatrimonio->setSequencia($countVolumes);
                 $enExpVolumePatrimonio->setUsuario($usuario);
                 $em->persist($enExpVolumePatrimonio);
             }
@@ -59,7 +59,7 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $em->rollback();
             throw new \Exception($e->getMessage());
         }
-     }
+    }
 
     public function validarEtiquetaVolume($volume)
     {
