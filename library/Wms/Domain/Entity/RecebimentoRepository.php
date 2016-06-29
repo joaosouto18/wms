@@ -388,7 +388,7 @@ class RecebimentoRepository extends EntityRepository
 
 
 
-                    $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade);
+                    $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
                     $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
                     $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
 
@@ -432,7 +432,7 @@ class RecebimentoRepository extends EntityRepository
 
 
 
-                    $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade);
+                    $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
                     $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
                     $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
 
