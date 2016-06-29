@@ -104,11 +104,13 @@
             <?php
             /** @var \Wms\Domain\Entity\CodigoFornecedor\Referencia $codigoFornecedor */
             foreach($codigosFornecedores as $codigoFornecedor) :
-                $embTxt = $codigoFornecedor->getEmbalagem()->getDescricao() . "(" . $codigoFornecedor->getEmbalagem()->getQuantidade() . ")" ;?>
+                $embTxt = null;
+                if (!empty($codigoFornecedor->getEmbalagem()))
+                    $embTxt = $codigoFornecedor->getEmbalagem()->getDescricao() . "(" . $codigoFornecedor->getEmbalagem()->getQuantidade() . ")" ;?>
                 <tr class="gTResultSet ">
                     <td style="text-align:left"><?php echo $codigoFornecedor->getFornecedor()->getPessoa()->getNome(); ?></td>
                     <td style="text-align:left"><?php echo $codigoFornecedor->getDscReferencia() ?></td>
-                    <td style="text-align:left"><?php echo $embTxt ?></td>
+                    <td style="text-align:left"><?php echo  (!empty($embTxt))? $embTxt: "Sem embalagem padrão"?></td>
                     <td style="text-align:left">
                         <a class="excluir-cod-fornecedor" title="Clique para Excluir" class="" data-id="<?php echo $codigoFornecedor->getId(); ?>" href="javascript://">
                             <img src="/img/icons/delete.png">
