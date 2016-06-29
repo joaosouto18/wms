@@ -55,7 +55,7 @@ class Mobile_RecebimentoController extends Action
         if ($result['concluido'] == true) {
             $this->addFlashMessage('success', $result['message']);
         } else {
-            $this->addFlashMessage('error', "Existem divergencias neste recebimento. Consulte a mesa de operações para mais detalhes");
+            $this->addFlashMessage('error', $result['message']);
         }
 
         $this->_redirect('/mobile/ordem-servico/conferencia-recebimento');
@@ -290,35 +290,35 @@ class Mobile_RecebimentoController extends Action
                     $this->_helper->messenger('error', 'Informe o peso para conferência');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 } else {
-                    $quantidade = (int) $qtdConferida;
-                    $pesoDigitado = str_replace(",",".",$params['numPeso']);
+//                    $quantidade = (int) $qtdConferida;
+//                    $pesoDigitado = str_replace(",",".",$params['numPeso']);
                     $params['numPeso'] = str_replace(",",".",$params['numPeso']);
                     $parametros['COD_PRODUTO'] = $produtoEn->getId();
                     $parametros['DSC_GRADE'] = $produtoEn->getGrade();
-                    $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
+//                    $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
 
-                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto($parametros);
+//                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto($parametros);
                     $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
 
-                    if (!empty($volumes) && count($volumes) != 0){
-                        $peso = (float) $pesoProduto[0]['NUM_PESO'] / count($volumes);
-                    } else {
-                        $peso = (float) $pesoProduto[0]['NUM_PESO'];
-                    }
+//                    if (!empty($volumes) && count($volumes) != 0){
+//                        $peso = (float) $pesoProduto[0]['NUM_PESO'] / count($volumes);
+//                    } else {
+//                        $peso = (float) $pesoProduto[0]['NUM_PESO'];
+//                    }
 
-                    $pesoUnitarioMargemS = (float)  ( $pesoDigitado/$quantidade ) + $tolerancia;
-                    $pesoUnitarioMargemI = (float)  ( $pesoDigitado/$quantidade ) - $tolerancia;
+//                    $pesoUnitarioMargemS = (float) ($peso * $quantidade) + $tolerancia;
+//                    $pesoUnitarioMargemI = (float) ($peso * $quantidade) - $tolerancia;
 
-                    if (!($peso <= $pesoUnitarioMargemS && $peso >= $pesoUnitarioMargemI)){
-                        $this->_helper->messenger('error', 'O peso informado não confere com a tolerância permitida');
-                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                    } else {
+//                    if (!($pesoDigitado <= $pesoUnitarioMargemS && $pesoDigitado >= $pesoUnitarioMargemI)){
+//                        $this->_helper->messenger('error', 'O peso informado não confere com a tolerância permitida');
+//                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+//                    } else {
                         if ( !empty($volumes) && count($volumes)!=0 ){
                             $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
                         } else {
                             $params['numPeso'] = (float)$params['numPeso'];
                         }
-                    }
+//                    }
                 }
             } else {
                 $params['numPeso'] = null;

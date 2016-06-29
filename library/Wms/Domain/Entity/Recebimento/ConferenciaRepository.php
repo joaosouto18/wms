@@ -226,4 +226,21 @@ class ConferenciaRepository extends EntityRepository
         return $resultArr;
     }
 
+    public function getSumPesoTotalRecebimentoProduto($recebimento,$codProduto,$grade)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('NVL(SUM(re.numPeso),SUM(rv.numPeso)) numPeso, NVL(SUM(re.qtdConferida),SUM(rv.qtdConferida)) qtdConferida')
+            ->from('wms:Produto', 'p')
+            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id AND pe.grade = p.grade')
+            ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = p.id AND pv.grade = p.grade')
+            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.embalagem = pe.id')
+            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.volume = pv.id')
+            ->leftJoin('wms:Recebimento', 'r', 'WITH', 'r.id = re.recebimento OR r.id = rv.recebimento')
+            ->where("r.id = $recebimento")
+            ->andWhere("p.id = '$codProduto'")
+            ->andWhere("p.grade = '$grade'");
+
+        return $sql->getQuery()->getResult();
+    }
+
 }
