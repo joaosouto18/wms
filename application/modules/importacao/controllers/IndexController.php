@@ -181,41 +181,43 @@ class Importacao_IndexController extends Action
                         break;
                     }
 
-                    /** @var \Wms\Domain\Entity\Pessoa\Juridica $entityPessoa */
-                    $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                    if($arrRegistro['tipoPessoa'] == 'J') {
+                        /** @var \Wms\Domain\Entity\Pessoa\Juridica $entityPessoa */
+                        $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
 
-                    if ($entityPessoa) {
-                        $fornecedor = $fornecedorRepo->findBy(array("id"=> $entityPessoa->getId()));
-                        if ($fornecedor){
-                            $arrErroRows[$linha] = "Fornecedor já cadastrado:". $arrRegistro['nome'];
-                            break;
-                        } else {
-                            $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa,$arrRegistro['idExterno']);
-                            if (is_string($result)) {
-                                $arrErroRows[$linha] = $result;
+                        if ($entityPessoa) {
+                            $fornecedor = $fornecedorRepo->findBy(array("id" => $entityPessoa->getId()));
+                            if ($fornecedor) {
+                                $arrErroRows[$linha] = "Fornecedor já cadastrado:" . $arrRegistro['nome'];
+                                break;
                             } else {
-                                $countFlush++;
+                                $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
+                                if (is_string($result)) {
+                                    $arrErroRows[$linha] = $result;
+                                } else {
+                                    $countFlush++;
+                                }
+                                break;
                             }
-                            break;
                         }
-                    }
+                    } else if ($arrRegistro['tipoPessoa'] == 'F') {
+                        /** @var \Wms\Domain\Entity\Pessoa\Fisica $entityPessoa */
+                        $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
 
-                    /** @var \Wms\Domain\Entity\Pessoa\Fisica $entityPessoa */
-                    $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
-
-                    if ($entityPessoa) {
-                        $fornecedor = $fornecedorRepo->findBy(array("id"=> $entityPessoa->getId()));
-                        if ($fornecedor){
-                            $arrErroRows[$linha] = "Fornecedor já cadastrado:". $arrRegistro['nome'];
-                            break;
-                        } else {
-                            $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
-                            if (is_string($result)) {
-                                $arrErroRows[$linha] = $result;
+                        if ($entityPessoa) {
+                            $fornecedor = $fornecedorRepo->findBy(array("id" => $entityPessoa->getId()));
+                            if ($fornecedor) {
+                                $arrErroRows[$linha] = "Fornecedor já cadastrado:" . $arrRegistro['nome'];
+                                break;
                             } else {
-                                $countFlush++;
+                                $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
+                                if (is_string($result)) {
+                                    $arrErroRows[$linha] = $result;
+                                } else {
+                                    $countFlush++;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
 
@@ -249,37 +251,39 @@ class Importacao_IndexController extends Action
                         break;
                     }
 
-                    $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
-                    if ($entityPessoa) {
-                        $cliente = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
-                        if ($cliente){
-                            $arrErroRows[$linha] = "Cliente já cadastrado:". $arrRegistro['nome'];
-                            break;
-                        } else {
-                            $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa,$arrRegistro['codClienteExterno']);
-                            if (is_string($result)) {
-                                $arrErroRows[$linha] = $result;
+                    if ($arrRegistro['tipoPessoa'] == 'J') {
+                        $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                        if ($entityPessoa) {
+                            $cliente = $clienteRepo->findBy(array("id" => $entityPessoa->getId()));
+                            if ($cliente) {
+                                $arrErroRows[$linha] = "Cliente já cadastrado:" . $arrRegistro['nome'];
+                                break;
                             } else {
-                                $countFlush++;
+                                $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa, $arrRegistro['codClienteExterno']);
+                                if (is_string($result)) {
+                                    $arrErroRows[$linha] = $result;
+                                } else {
+                                    $countFlush++;
+                                }
+                                break;
                             }
-                            break;
                         }
-                    }
-                    
-                    $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
-                    if ($entityPessoa) {
-                        $cliente = $clienteRepo->findBy(array("id"=> $entityPessoa->getId()));
-                        if ($cliente){
-                            $arrErroRows[$linha] = "Cliente já cadastrado:". $arrRegistro['nome'];
-                            break;
-                        } else {
-                            $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa,$arrRegistro['codClienteExterno']);
-                            if (is_string($result)) {
-                                $arrErroRows[$linha] = $result;
+                    } else if ($arrRegistro['tipoPessoa'] == 'F') {
+                        $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
+                        if ($entityPessoa) {
+                            $cliente = $clienteRepo->findBy(array("id" => $entityPessoa->getId()));
+                            if ($cliente) {
+                                $arrErroRows[$linha] = "Cliente já cadastrado:" . $arrRegistro['nome'];
+                                break;
                             } else {
-                                $countFlush++;
+                                $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa, $arrRegistro['codClienteExterno']);
+                                if (is_string($result)) {
+                                    $arrErroRows[$linha] = $result;
+                                } else {
+                                    $countFlush++;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
 
