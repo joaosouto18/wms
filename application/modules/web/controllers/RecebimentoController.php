@@ -507,8 +507,31 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             if ($notaFiscalEntity)
                 $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
 
-            //produtos
-            $produtosDivergencia = $this->em->getRepository('wms:Recebimento\Conferencia')->getProdutoDivergencia($idOrdemServico);
+            /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
+            $conferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
+            $produtosDivergencia = $conferenciaRepo->getProdutoDivergencia($idOrdemServico);
+
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $this->_em->getRepository('wms:Produto');
+            /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */
+            $pesoProdutoRepo = $this->_em->getRepository('wms:Produto\Peso');
+
+            $sumPesosRecebimentoProdutos = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($recebimentoEntity->getId(), null, null, $ordemServicoEntity);
+
+            //NAO EXIBE O BOTAO DE "Fechar Recebimento com Divergencia" CASO A DIVERGENCIA SEJA APENAS NO PESO
+            $this->view->pesoDivergente = false;
+            foreach ($sumPesosRecebimentoProdutos as $sumPesoRecebimento) {
+                $produtoEn = $produtoRepo->findOneBy(array('id' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
+                $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
+                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
+                $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) + $tolerancia;
+                $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) - $tolerancia;
+
+                if (!((float)$sumPesoRecebimento['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimento['numPeso'] >= $pesoUnitarioMargemI)) {
+                    $this->view->pesoDivergente = true;
+                    break;
+                }
+            }
 
             $this->view->ordemServicoEntity = $ordemServicoEntity;
 
