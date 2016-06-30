@@ -245,11 +245,15 @@ class EtiquetaVolume extends eFPDF
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
-
+        
         $this->SetMargins(3, 1.5, 0);
         $this->SetAutoPageBreak(0,0);
         if ($arrayVolumes) {
             foreach ($volumePatrimonio as $volume) {
+
+                if (!isset($volumePatrimonio['emissor']) || empty($volumePatrimonio['emissor']))
+                    $volumePatrimonio['emissor'] = $em->find('wms:Pessoa',1)->getNome();
+                
                 $this->SetFont('Arial', 'B', 20);
                 //coloca o cod barras
                 $this->AddPage();
@@ -324,6 +328,10 @@ class EtiquetaVolume extends eFPDF
                 }
             }
         } else {
+            
+            if (!isset($volumePatrimonio['emissor']) || empty($volumePatrimonio['emissor']))
+                $volumePatrimonio['emissor'] = $em->find('wms:Pessoa',1)->getNome();
+            
             $volume = $volumePatrimonio;
             $this->SetFont('Arial', 'B', 20);
             //coloca o cod barras

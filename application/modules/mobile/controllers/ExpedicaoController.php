@@ -199,7 +199,7 @@ class Mobile_ExpedicaoController extends Action
         /** @var Expedicao $expedicaoEn */
         $expedicaoEn = $this->em->find('wms:Expedicao', $idExpedicao);
 
-        /** @var \Wms\Domain\Entity\Pessoa $empresa */
+        /** @var \Wms\Domain\Entity\Pessoa $pessoaEmpresa */
         $pessoaEmpresa = $this->em->find('wms:Pessoa',1);
 
         /** @var \Wms\Domain\Entity\Pessoa $pessoaCliente */

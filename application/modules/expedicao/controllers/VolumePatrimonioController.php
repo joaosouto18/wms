@@ -175,6 +175,11 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         $this->view->volumesPatrimonio = $volumePatrimonio;
         $this->idExpedicao = $idExpedicao;
 
+        /** @var \Wms\Domain\Entity\Pessoa $pessoaEmpresa */
+        $pessoaEmpresa = $this->em->find('wms:Pessoa',1);
+
+        $volumePatrimonio['emissor'] = $pessoaEmpresa->getNome();
+
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
 
         foreach ($volumePatrimonio as $key => $volume) {
