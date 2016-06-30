@@ -340,6 +340,7 @@ class Inventario
                     $contagemEndEn->setQtdDivergencia($quantidadeContada-$quantidadeEstoque);
                     $contagemEndEn->setDivergencia(1);
                     $this->getEm()->persist($inventarioEndEn);
+                    $this->getEm()->persist($contagemEndEn);
                     $this->getEm()->flush();
                     return false;
                 }
@@ -349,6 +350,7 @@ class Inventario
                 $contagemEndEn->setQtdDivergencia($quantidadeContada);
                 $contagemEndEn->setDivergencia(1);
                 $this->getEm()->persist($inventarioEndEn);
+                $this->getEm()->persist($contagemEndEn);
                 $this->getEm()->flush();
                 return false;
             }
@@ -562,7 +564,7 @@ class Inventario
         if ($codProdutoVolume != null) {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoVolume' => $codProdutoVolume));
         } elseif($codProdutoEmbalagem != null) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => $codProdutoEmbalagem));
+            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => $codProdutoEmbalagem, 'codProduto' => $params['idProduto'], 'grade' => $params['grade']));
         }else {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
         }

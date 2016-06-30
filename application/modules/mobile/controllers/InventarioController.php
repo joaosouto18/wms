@@ -122,7 +122,6 @@ class Mobile_InventarioController extends Action
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
 
-
         if (isset($codigoBarras) & $codigoBarras != "") {
 
             $form =  new \Wms\Module\Mobile\Form\InventarioQuantidade();
@@ -132,7 +131,6 @@ class Mobile_InventarioController extends Action
             $params['codigoBarras'] = $codigoBarras;
 
             if ($codigoBarras == 0 && is_integer($codigoBarras)) {
-
                 $params = $this->_getAllParams();
                 $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
                 $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
@@ -140,7 +138,7 @@ class Mobile_InventarioController extends Action
                 $this->checkErrors($inventarioService->checaSeInventariado($params));
                 $inventarioService->contagemEndereco($params);
                 if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
-                    $this->addFlashMessage('success', 'Endereço vazio invetariado com sucesso');
+                    $this->addFlashMessage('success', 'Endereço vazio inventariado com sucesso');
                 } else {
                     $this->addFlashMessage('warning', 'Contagem de endereço finalizada com divergência');
                 }
@@ -150,7 +148,6 @@ class Mobile_InventarioController extends Action
                     'divergencia' => $divergencia
                 ));
             } else {
-
                 $result = $inventarioService->consultarProduto($params);
                 $this->checkErrors($result);
                 $result['populateForm']['numContagem']   =  $params['numContagem'];
