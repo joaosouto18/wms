@@ -780,12 +780,13 @@ class Importacao_IndexController extends Action
             $this->progressBar->update(null, $this->statusProgress);
             $this->progressBar->finish();
 
+            echo Zend_Json::encode(array('result' => 'ok'));
+            exit;
+
         } catch (\Exception $e) {
             echo Zend_Json::encode(array('result' => $e->getMessage()));
+            exit;
         }
-
-        echo Zend_Json::encode(array('result' => 'ok'));
-        exit;
     }
 
     public function alterarStatusAction()
