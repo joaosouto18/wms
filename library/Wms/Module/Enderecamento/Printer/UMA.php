@@ -221,13 +221,13 @@ class UMA extends Pdf
         }
 
         $this->SetFont('Arial', 'B', $font_size);
-
         $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
 
         $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(30,35);
         if (isset($params['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
@@ -237,22 +237,46 @@ class UMA extends Pdf
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(25,20,"Qtd",0,0);
-
-        $this->SetFont('Arial', 'B', 72);
-        $this->Cell(75,20,$palete['qtd'],0,1);
-
-        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(10,55);
         $this->Cell(55,20,utf8_decode("Endereço"),0,0);
 
-        $this->SetFont('Arial', 'B', 72);
-        $this->Cell(95,25,$palete['endereco'],0,1);
+        $this->SetFont('Arial', 'B', 55);
+        $this->SetXY(10,70);
+        if (isset($palete['endereco']) && !empty($palete['endereco'])) {
+            $this->Cell(95, 27, $palete['endereco'], 0, 1);
+        } else {
+            $this->Cell(95,27,'--.---.--.--',0,1);
+        }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(55,45,utf8_decode("Prod"),0,0);
+        $this->SetXY(145,55);
+        $this->Cell(25,20,'Nota',0,1);
 
-        $this->SetFont('Arial', 'B', 132);
-        $this->Cell(95,45,$codigoProduto,0,1);
+        $this->SetFont('Arial', 'B', 55);
+        $this->SetXY(173,55);
+        $this->Cell(25,20,$params['notaFiscal']->getNumero(),0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(145,77);
+        $this->Cell(25,20,'Entrada da Nota',0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(235,77);
+        $this->Cell(25,20,$params['notaFiscal']->getDataEntrada()->format('d/m/Y'),0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(210,110);
+        $this->Cell(25,30,"Qtd",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(25,30,$palete['qtd'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(15,110);
+        $this->Cell(45,30,utf8_decode("Prod"),0,0);
+
+        $this->SetFont('Arial', 'B', 100);
+        $this->Cell(95,30,$codigoProduto,0,1);
 
     }
 
