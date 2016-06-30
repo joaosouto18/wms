@@ -354,15 +354,17 @@ class RecebimentoRepository extends EntityRepository
 
                     $qtdConferida = $qtdConferida * $quantidade;
 
-                    //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
-                    $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
-                    $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
-                    $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
+                    if ($produtoEn->getPossuiPesoVariavel() == 'S') {
+                        //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
+                        $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
+                        $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
+                        $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
 
-                    if (!((float)$sumPesoRecebimentoProduto[0]['numPeso']  <= $pesoUnitarioMargemS && (float)$sumPesoRecebimentoProduto[0]['numPeso'] >= $pesoUnitarioMargemI)) {
-                        return array('message' => "O peso do produto $idProduto - grade $grade não confere com a tolerância permitida",
-                            'exception' => null,
-                            'concluido' => false);
+                        if (!((float)$sumPesoRecebimentoProduto[0]['numPeso']  <= $pesoUnitarioMargemS && (float)$sumPesoRecebimentoProduto[0]['numPeso'] >= $pesoUnitarioMargemI)) {
+                            return array('message' => "O peso do produto $idProduto - grade $grade não confere com a tolerância permitida",
+                                'exception' => null,
+                                'concluido' => false);
+                        }
                     }
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
@@ -387,17 +389,19 @@ class RecebimentoRepository extends EntityRepository
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
                     }
 
-                    //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
-                    $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
-                    $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
-                    $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
+                    if ($produtoEn->getPossuiPesoVariavel() == 'S') {
+                        //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
+                        $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
+                        $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
+                        $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
 
-                    if (!((float)$sumPesoRecebimentoProduto[0]['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimentoProduto[0]['numPeso'] >= $pesoUnitarioMargemI)) {
-                        return array('message' => "O peso do produto $idProduto - grade $grade não confere com a tolerância permitida",
-                            'exception' => null,
-                            'concluido' => false);
+                        if (!((float)$sumPesoRecebimentoProduto[0]['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimentoProduto[0]['numPeso'] >= $pesoUnitarioMargemI)) {
+                            return array('message' => "O peso do produto $idProduto - grade $grade não confere com a tolerância permitida",
+                                'exception' => null,
+                                'concluido' => false);
+                        }
                     }
-
+                    
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
                     if ($qtdDivergencia != 0) {
