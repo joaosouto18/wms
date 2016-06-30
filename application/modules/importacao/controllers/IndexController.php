@@ -160,12 +160,12 @@ class Importacao_IndexController extends Action
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
                     
                     if (strlen($cpf_cnpjFormatado) == 11) {
-                        $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
+                        $arrErroRows[$linha] = 'Proibido importar fornecedor por CPF ' . $arrRegistro['cpf_cnpj'];
                         break;
                     } else if (strlen($cpf_cnpjFormatado) == 14) {
                         $arrRegistro['tipoPessoa'] = "J";
                     } else {
-                        $arrErroRows[$linha] = "CNPJ ou CPF fora do padrão: " . $arrRegistro['cpf_cnpj'];
+                        $arrErroRows[$linha] = 'CNPJ fora do padrão: ' . $arrRegistro['cpf_cnpj'];
                         break;
                     }
                     
@@ -173,10 +173,10 @@ class Importacao_IndexController extends Action
                         array_push($checkArray, $arrRegistro['cpf_cnpj']);
                     } else {
                         if ($arrRegistro['tipoPessoa'] == "J")
-                            $arrErroRows[$linha] = "CNPJ repetido: " . $arrRegistro['cpf_cnpj'];
+                            $arrErroRows[$linha] = 'CNPJ repetido: ' . $arrRegistro['cpf_cnpj'];
 
                         if ($arrRegistro['tipoPessoa'] == "F")
-                            $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
+                            $arrErroRows[$linha] = 'CPF repetido: ' . $arrRegistro['cpf_cnpj'];
 
                         break;
                     }
@@ -188,7 +188,7 @@ class Importacao_IndexController extends Action
                         if ($entityPessoa) {
                             $fornecedor = $fornecedorRepo->findBy(array("id" => $entityPessoa->getId()));
                             if ($fornecedor) {
-                                $arrErroRows[$linha] = "Fornecedor já cadastrado:" . $arrRegistro['nome'];
+                                $arrErroRows[$linha] = 'Fornecedor já cadastrado: ' . $arrRegistro['nome'];
                                 break;
                             } else {
                                 $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
@@ -207,7 +207,7 @@ class Importacao_IndexController extends Action
                         if ($entityPessoa) {
                             $fornecedor = $fornecedorRepo->findBy(array("id" => $entityPessoa->getId()));
                             if ($fornecedor) {
-                                $arrErroRows[$linha] = "Fornecedor já cadastrado:" . $arrRegistro['nome'];
+                                $arrErroRows[$linha] = 'Fornecedor já cadastrado: ' . $arrRegistro['nome'];
                                 break;
                             } else {
                                 $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
@@ -256,7 +256,7 @@ class Importacao_IndexController extends Action
                         if ($entityPessoa) {
                             $cliente = $clienteRepo->findBy(array("id" => $entityPessoa->getId()));
                             if ($cliente) {
-                                $arrErroRows[$linha] = "Cliente já cadastrado:" . $arrRegistro['nome'];
+                                $arrErroRows[$linha] = "Cliente já cadastrado: " . $arrRegistro['nome'];
                                 break;
                             } else {
                                 $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa, $arrRegistro['codClienteExterno']);
@@ -273,7 +273,7 @@ class Importacao_IndexController extends Action
                         if ($entityPessoa) {
                             $cliente = $clienteRepo->findBy(array("id" => $entityPessoa->getId()));
                             if ($cliente) {
-                                $arrErroRows[$linha] = "Cliente já cadastrado:" . $arrRegistro['nome'];
+                                $arrErroRows[$linha] = "Cliente já cadastrado: " . $arrRegistro['nome'];
                                 break;
                             } else {
                                 $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa, $arrRegistro['codClienteExterno']);
@@ -332,11 +332,11 @@ class Importacao_IndexController extends Action
                     $refeEntity = $referenciaRepo->findOneBy($criteria);
 
                     if (empty($refeEntity)) {
-                        $save = $importacaoService->saveReferenciaProduto($em, $arrRegistro);
-                        if (!is_string($save)) {
+                        $result = $importacaoService->saveReferenciaProduto($em, $arrRegistro);
+                        if (!is_string($result)) {
                             $countFlush++;
                         } else {
-                            $arrErroRows[$linha] = $save;
+                            $arrErroRows[$linha] = $result;
                         }
                     } else {
                         $arrErroRows[$linha] = 'Referencia já registrada: ' . $arrRegistro['dscReferencia'];
@@ -776,18 +776,16 @@ class Importacao_IndexController extends Action
 
             if (count($arrErros) > 0) {
                 $this->statusProgress["error"] = $arrErros;
-                $this->progressBar->update(null, $this->statusProgress);
-                $this->_helper->json(array('result' => "Ocorreram Falhas na importação"));
             };
             $this->progressBar->update(null, $this->statusProgress);
             $this->progressBar->finish();
-            $this->_helper->json(array('result' => "Importação concluída com sucesso"));
 
         } catch (\Exception $e) {
-            $this->_helper->json(array('result' => $e->getMessage()));
-        } catch (Exception $e2) {
-            $this->_helper->json(array('result' => $e2->getMessage()));
+            echo Zend_Json::encode(array('result' => $e->getMessage()));
         }
+
+        echo Zend_Json::encode(array('result' => 'ok'));
+        exit;
     }
 
     public function alterarStatusAction()

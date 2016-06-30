@@ -426,7 +426,7 @@ class Importacao
     {
         /** @var EntityManager $em */
         try {
-            
+            $em->beginTransaction();
             if (!isset($pedido['pontoTransbordo']))
                 $pedido['pontoTransbordo'] = null;
 
@@ -445,6 +445,7 @@ class Importacao
 
             return $entityPedido;
         }catch (\Exception $e){
+            $em->rollback();
             return $e->getMessage();
         }
 
