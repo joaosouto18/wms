@@ -251,8 +251,8 @@ class EtiquetaVolume extends eFPDF
         if ($arrayVolumes) {
             foreach ($volumePatrimonio as $volume) {
 
-                if (!isset($volumePatrimonio['emissor']) || empty($volumePatrimonio['emissor']))
-                    $volumePatrimonio['emissor'] = $em->find('wms:Pessoa',1)->getNome();
+                if (!isset($volume['emissor']) || empty($volume['emissor']))
+                    $volume['emissor'] = $em->find('wms:Pessoa',1)->getNome();
                 
                 $this->SetFont('Arial', 'B', 20);
                 //coloca o cod barras
@@ -328,11 +328,11 @@ class EtiquetaVolume extends eFPDF
                 }
             }
         } else {
-            
-            if (!isset($volumePatrimonio['emissor']) || empty($volumePatrimonio['emissor']))
-                $volumePatrimonio['emissor'] = $em->find('wms:Pessoa',1)->getNome();
-            
             $volume = $volumePatrimonio;
+
+            if (!isset($volume['emissor']) || empty($volume['emissor']))
+                $volume['emissor'] = $em->find('wms:Pessoa',1)->getNome();
+
             $this->SetFont('Arial', 'B', 20);
             //coloca o cod barras
             $this->AddPage();
