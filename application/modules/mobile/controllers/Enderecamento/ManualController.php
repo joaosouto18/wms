@@ -216,10 +216,14 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                $endereco = null;
+                if ($embalagemEn->getEndereco()!= null)
+                    $endereco = $embalagemEn->getEndereco()->getId();
+
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId()) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $embalagemEn->getEndereco()->getDescricao());
                 }
-                if ($embalagemEn->getEndereco()->getId() != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                     if (isset($estoqueEn) && !empty($estoqueEn)) {
                         throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
