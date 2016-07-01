@@ -8,21 +8,15 @@ class EquipeSeparacaoMapa extends Form
 
     public function init()
     {
-        /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
-        $UsuarioRepo                = $this->getEm()->getRepository('wms:Usuario');
-        $usuario     = $UsuarioRepo->selectUsuario('AUXILIAR EXPEDICAO');
-
         $this->setAttribs(array(
             'method' => 'get',
         ))
-            ->addElement('select', 'pessoa', array(
-                'mostrarSelecione' => false,
-                'class' => 'medio',
-                'multiOptions' => array('options' => $usuario),
-                'decorators' => array('ViewHelper'),
+            ->addElement('text', 'pessoa', array(
+                'size' => 15,
+                'label' => utf8_encode('Matrícula Conferente'),
             ))
             ->addElement('text', 'codMapaSeparacao', array(
-                'size' => 10,
+                'size' => 12,
                 'label' => utf8_encode('Mapa Separacao'),
             ))
             ->addElement('submit', 'salvarMapa', array(
