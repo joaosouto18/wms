@@ -95,7 +95,7 @@ class Importacao_IndexController extends Action
                     }
                     $result = $importacaoService->saveProduto($em, $arrRegistro, $repositorios);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -103,7 +103,7 @@ class Importacao_IndexController extends Action
                 case 'fabricante':
                     $result = $importacaoService->saveFabricante($em, $arrRegistro['id'], $arrRegistro['nome'], $repositorios);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -111,7 +111,7 @@ class Importacao_IndexController extends Action
                 case 'classe':
                     $result = $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -151,7 +151,7 @@ class Importacao_IndexController extends Action
                     };
                     $result = $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -193,7 +193,7 @@ class Importacao_IndexController extends Action
                             } else {
                                 $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
                                 if (is_string($result)) {
-                                    $arrErroRows[$linha] = $result;
+                                    $arrErroRows['exception'] = $result;
                                 } else {
                                     $countFlush++;
                                 }
@@ -212,7 +212,7 @@ class Importacao_IndexController extends Action
                             } else {
                                 $result = $importacaoService->savePessoaEmFornecedor($em, $entityPessoa, $arrRegistro['idExterno']);
                                 if (is_string($result)) {
-                                    $arrErroRows[$linha] = $result;
+                                    $arrErroRows['exception'] = $result;
                                 } else {
                                     $countFlush++;
                                 }
@@ -223,7 +223,7 @@ class Importacao_IndexController extends Action
 
                     $result = $importacaoService->saveFornecedor($em, $arrRegistro, false);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -261,7 +261,7 @@ class Importacao_IndexController extends Action
                             } else {
                                 $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa, $arrRegistro['codClienteExterno']);
                                 if (is_string($result)) {
-                                    $arrErroRows[$linha] = $result;
+                                    $arrErroRows['exception'] = $result;
                                 } else {
                                     $countFlush++;
                                 }
@@ -278,7 +278,7 @@ class Importacao_IndexController extends Action
                             } else {
                                 $result = $importacaoService->savePessoaEmCliente($em, $entityPessoa, $arrRegistro['codClienteExterno']);
                                 if (is_string($result)) {
-                                    $arrErroRows[$linha] = $result;
+                                    $arrErroRows['exception'] = $result;
                                 } else {
                                     $countFlush++;
                                 }
@@ -289,7 +289,7 @@ class Importacao_IndexController extends Action
 
                     $result = $importacaoService->saveCliente($em, $arrRegistro);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -336,7 +336,7 @@ class Importacao_IndexController extends Action
                         if (!is_string($result)) {
                             $countFlush++;
                         } else {
-                            $arrErroRows[$linha] = $result;
+                            $arrErroRows['exception'] = $result;
                         }
                     } else {
                         $arrErroRows[$linha] = 'Referencia já registrada: ' . $arrRegistro['dscReferencia'];
@@ -353,7 +353,7 @@ class Importacao_IndexController extends Action
 
                     $result = $importacaoService->savePedido($em, $arrRegistro);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -370,7 +370,7 @@ class Importacao_IndexController extends Action
 
                     $result = $importacaoService->savePedidoProduto($em, $arrRegistro, false);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -392,7 +392,7 @@ class Importacao_IndexController extends Action
                     }
                     $result = $importacaoService->saveNormaPaletizacao($em, $arrRegistro);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -447,7 +447,7 @@ class Importacao_IndexController extends Action
                     }
                     $result = $importacaoService->saveDadoLogistico($em, $arrRegistro);
                     if (is_string($result)) {
-                        $arrErroRows[$linha] = $result;
+                        $arrErroRows['exception'] = $result;
                     } else {
                         $countFlush++;
                     }
@@ -465,7 +465,7 @@ class Importacao_IndexController extends Action
                     if ($stsEndereço) {
                         $result = $importacaoService->saveEndereco($em, $arrRegistro);
                         if (is_string($result)) {
-                            $arrErroRows[$linha] = $result;
+                            $arrErroRows['exception'] = $result;
                         } else {
                             $countFlush++;
                         }
@@ -489,7 +489,7 @@ class Importacao_IndexController extends Action
                     if (empty($check)){
                         $result = $importacaoService->saveCarga($em, $arrRegistro);
                         if (is_string($result)) {
-                            $arrErroRows[$linha] = $result;
+                            $arrErroRows['exception'] = $result;
                         } else {
                             $countFlush++;
                         }
@@ -499,7 +499,7 @@ class Importacao_IndexController extends Action
                     break;
             }
         }catch(Exception $e){
-            $arrErroRows[$linha] = $e->getMessage();
+            $arrErroRows['exception'] = $e->getMessage();
         }
 
         $result = array(
@@ -514,12 +514,15 @@ class Importacao_IndexController extends Action
     }
     
     public function iniciarAjaxAction(){
+
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+
         try {
 
             set_error_handler(array($this, 'custom_warning_handler'));
             ini_set('memory_limit', '-1');
             ini_set('max_execution_time', 3000);
-            $em = $this->getEntityManager();
 
             $dir = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
 
@@ -676,12 +679,20 @@ class Importacao_IndexController extends Action
                         $checkArray = $resultSetCase['checkArray'];
                         $numPedido = $resultSetCase['numPedido'];
 
+                        if (isset($arrErroRows['exception']) && !empty($arrErroRows['exception'])) {
+                            $this->statusProgress['exception'] = $arrErroRows['exception'];
+                            $this->progressBar->update(null, $this->statusProgress);
+                            $this->progressBar->finish();
+                            $em->rollback();
+                            echo Zend_Json::encode(array('result' => 'Exception'));
+                            exit;
+                        }
+
                         $this->progressBar->update(null, $this->statusProgress);
 
                         if ($countFlush >= 40) {
                             $countFlush = 0;
                             $em->flush();
-                            $em->clear();
                         }
                     }
                 } elseif ($extencao == "csv") {
@@ -755,12 +766,20 @@ class Importacao_IndexController extends Action
                             continue;
                         }
 
+                        if (isset($arrErroRows['exception']) && !empty($arrErroRows['exception'])) {
+                            $this->statusProgress['exception'] = $arrErroRows['exception'];
+                            $this->progressBar->update(null, $this->statusProgress);
+                            $this->progressBar->finish();
+                            $em->rollback();
+                            echo Zend_Json::encode(array('result' => 'Exception'));
+                            exit;
+                        }
+
                         $this->progressBar->update(null, $this->statusProgress);
 
                         if ($countFlush >= 40) {
                             $countFlush = 0;
                             $em->flush();
-                            $em->clear();
                         }
                     }
                 }
@@ -779,12 +798,15 @@ class Importacao_IndexController extends Action
             };
             $this->progressBar->update(null, $this->statusProgress);
             $this->progressBar->finish();
-
+            $em->commit();
             echo Zend_Json::encode(array('result' => 'ok'));
             exit;
 
         } catch (\Exception $e) {
-            echo Zend_Json::encode(array('result' => $e->getMessage()));
+            $em->rollback();
+            $this->progressBar->update(null, $this->statusProgress);
+            $this->progressBar->finish();
+            echo Zend_Json::encode(array('result' => 'Exception'));
             exit;
         }
     }
