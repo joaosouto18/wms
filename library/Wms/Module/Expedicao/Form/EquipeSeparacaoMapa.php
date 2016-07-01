@@ -10,6 +10,7 @@ class EquipeSeparacaoMapa extends Form
     {
         $this->setAttribs(array(
             'method' => 'get',
+            'onkeydown' => 'nextInput(event);'
         ))
             ->addElement('text', 'pessoa', array(
                 'size' => 15,
