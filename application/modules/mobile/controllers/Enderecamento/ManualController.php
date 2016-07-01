@@ -220,7 +220,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 if (!is_null($embalagemEn->getEndereco()))
                     $endereco = $embalagemEn->getEndereco()->getId();
 
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId()) {
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $embalagemEn->getEndereco()->getDescricao());
                 }
                 if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -241,7 +241,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 if (!is_null($volumeEn->getEndereco()))
                     $endereco = $volumeEn->getEndereco()->getId();
 
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId()) {
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $volumeEn->getEndereco()->getDescricao());
                 }
                 if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
