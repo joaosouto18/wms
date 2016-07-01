@@ -134,10 +134,13 @@ class Mobile_RecebimentoController extends Action
             $idProduto = $produtoEmbEn->getProduto()->getId();
             $grade = $produtoEmbEn->getProduto()->getGrade();
             $pesoVariavel = $produtoEmbEn->getProduto()->getPossuiPesoVariavel();
-        } else {
+        } else if (isset($produtoVolumeEn) && !empty($produtoVolumeEn)){
             $idProduto = $produtoVolumeEn->getCodProduto();
             $grade = $produtoVolumeEn->getGrade();
             $pesoVariavel = $produtoVolumeEn->getProduto()->getPossuiPesoVariavel();
+        } else {
+            $this->addFlashMessage('error', 'Código de Barras inválido');
+            $this->redirect('ler-codigo-barras','recebimento','mobile', array('idRecebimento' => $idRecebimento));
         }
         $form = new ProdutoQuantidadeForm;
 
