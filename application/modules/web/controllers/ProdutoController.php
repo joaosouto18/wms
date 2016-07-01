@@ -318,7 +318,7 @@ class Web_ProdutoController extends Crud {
 
             $dql = $em->createQueryBuilder()
                 ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
-                    u.id idUnitizador, u.descricao unitizador')
+                    u.id idUnitizador, u.descricao unitizador, e.id embalagem')
                 ->from('wms:Produto\Embalagem', 'e')
                 ->innerJoin('e.dadosLogisticos', 'dl')
                 ->innerJoin('dl.normaPaletizacao', 'np')
@@ -339,6 +339,7 @@ class Web_ProdutoController extends Crud {
                     'isPadrao' => ($row['isPadrao'] == 'S') ? 'Sim' : 'Não',
                     'idUnitizador' => $row['idUnitizador'],
                     'unitizador' => $row['unitizador'],
+                    'embalagem' => $row['embalagem']
                 );
             }
 
@@ -347,7 +348,7 @@ class Web_ProdutoController extends Crud {
             foreach ($normasPaletizacao as $key => $normaPaletizacao) {
 
                 $dadosLogisticos = $em->getRepository('wms:Produto\DadoLogistico')
-                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']));
+                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id'], 'embalagem' => $normaPaletizacao['embalagem']));
 
                 foreach ($dadosLogisticos as $dadoLogistico) {
 
