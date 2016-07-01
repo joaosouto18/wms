@@ -217,7 +217,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
                 $endereco = null;
-                if ($embalagemEn->getEndereco()!= null)
+                if (!is_null($embalagemEn->getEndereco()))
                     $endereco = $embalagemEn->getEndereco()->getId();
 
                 if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId()) {
@@ -237,10 +237,14 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $volumes = $produtoEn->getVolumes();
             foreach ($volumes as $volumeEn) {
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $volumeEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                $endereco = null;
+                if (!is_null($volumeEn->getEndereco()))
+                    $endereco = $volumeEn->getEndereco()->getId();
+
+                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId()) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $volumeEn->getEndereco()->getDescricao());
                 }
-                if ($volumeEn->getEndereco()->getId() != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                     if (isset($estoqueEn) && !empty($estoqueEn)) {
                         throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
