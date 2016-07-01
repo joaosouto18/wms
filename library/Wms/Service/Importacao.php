@@ -515,7 +515,6 @@ class Importacao
             }
             return true;
         } catch (\Exception $e) {
-            $em->rollback();
             return $e->getMessage();
         }
     }
