@@ -46,9 +46,11 @@ class Mobile_Enderecamento_ManualController extends Action
                 if ($embalagemEn) {
                     $codProduto = $embalagemEn->getCodProduto();
                     $grade = $embalagemEn->getGrade();
+                    $this->view->capacidadePicking = $embalagemEn->getCapacidadePicking();
                 } else {
                     $codProduto = $volumeEn->getCodProduto();
                     $grade = $volumeEn->getGrade();
+                    $this->view->capacidadePicking = $volumeEn->getCapacidadePicking();
                 }
 
                 /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
@@ -130,7 +132,6 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->idEndereco = $idEndereco = $params['endereco'];
             $produtoEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $params['produto']));
             $this->view->capacidadePicking = $produtoEn->getCapacidadePicking();
-
 
             $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 

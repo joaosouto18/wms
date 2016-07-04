@@ -26,7 +26,7 @@ jQuery(document).ready(function ($) {
                 if (data == 'true') {
                     capacidadePicking = '<div class="field">' +
                         '<label>Capac. Picking:</label>' +
-                        '<input style="width: 99%" maxlength="100" size="40" type="text" name="capacidadePicking" id="capacidadePicking" value="" />' +
+                        '<input style="width: 99%" maxlength="100" size="40" type="text" name="capacidadePicking" id="capacidadePicking" value="' + $('#capacidadePicking').val() + '" />' +
                         '</div>';
                 }
                 $('#inserir').html(capacidadePicking);
