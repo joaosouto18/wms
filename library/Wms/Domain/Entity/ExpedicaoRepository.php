@@ -2631,9 +2631,11 @@ class ExpedicaoRepository extends EntityRepository
 
         $pedidosCortadosExpedicao = $this->pedidosCortadosExpedicao($idExpedicao);
         if (count($pedidosCortadosExpedicao) > 0) {
-            /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
             $expedicaoEntity = $this->find($idExpedicao);
-            $this->alteraStatus($expedicaoEntity, Expedicao::STATUS_FINALIZADO);
+            $expedicaoEntity->setStatus(Expedicao::STATUS_FINALIZADO );
+            $expedicaoEntity->setDataFinalizacao(new \DateTime());
+            $this->_em->persist($expedicaoEntity);
+            $this->_em->flush();
         }
     }
 
