@@ -2047,8 +2047,8 @@ class ExpedicaoRepository extends EntityRepository
                     foreach ($fracionados as $chvFrac => $vlrFrac){
                         $verificaFrac=false;
 
-                        $sql="select E.COD_ETIQUETA_MAE from
-                                ETIQUETA_MAE E
+                        $sql="select E.COD_ETIQUETA_MAE
+                                from ETIQUETA_MAE E
                                 INNER JOIN ETIQUETA_MAE_QUEBRA EQ ON (E.COD_ETIQUETA_MAE=EQ.COD_ETIQUETA_MAE)
                             WHERE E.COD_EXPEDICAO=".$idExpedicao;
 
@@ -2614,7 +2614,7 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function executaCortePedido($cortes, $motivo) {
+    public function executaCortePedido($cortes, $motivo, $idExpedicao = null) {
         //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
         foreach ($cortes as $codPedido => $produtos) {
             foreach ($produtos as $codProduto => $grades) {
@@ -2624,11 +2624,31 @@ class ExpedicaoRepository extends EntityRepository
                 }
             }
             $pedidoProdutoCortado = $this->pedidoProdutoCortado($codPedido);
-
             if (count($pedidoProdutoCortado) == 0) {
                 $this->removePedidoCortado($codPedido);
             }
         }
+
+        $pedidosCortadosExpedicao = $this->pedidosCortadosExpedicao($idExpedicao);
+        if (count($pedidosCortadosExpedicao) > 0) {
+            /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
+            $expedicaoEntity = $this->find($idExpedicao);
+            $this->alteraStatus($expedicaoEntity, Expedicao::STATUS_FINALIZADO);
+        }
+    }
+
+    private function pedidosCortadosExpedicao($idExpedicao)
+    {
+        $sql = "SELECT SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0))
+                    FROM EXPEDICAO E
+                    INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    WHERE E.COD_EXPEDICAO = $idExpedicao
+                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE
+                    HAVING SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) > 0";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function removePedidoCortado($codPedido)
