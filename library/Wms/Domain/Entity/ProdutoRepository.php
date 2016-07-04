@@ -263,7 +263,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setIsPadrao($isPadrao);
 						$embalagemEntity->setCBInterno($CBInterno);
 						$embalagemEntity->setImprimirCB($imprimirCB);
-						$embalagemEntity->setCodigoBarras($codigoBarras);
+						$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						$embalagemEntity->setEmbalado($embalado);
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
@@ -309,7 +309,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 						if ($CBInterno == 'S') {
 							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-							$embalagemEntity->setCodigoBarras($codigoBarras);
+							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						}
 
 						break;
@@ -337,7 +337,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						// verifica se o codigo de barras é automatico
 						if ($CBInterno == 'S') {
 							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($id);
-							$embalagemEntity->setCodigoBarras($codigoBarras);
+							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						}
 						$embalagemEntity->setEmbalado($embalado);
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
