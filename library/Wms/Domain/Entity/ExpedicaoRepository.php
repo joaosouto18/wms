@@ -2646,7 +2646,7 @@ class ExpedicaoRepository extends EntityRepository
                     WHERE P.COD_PEDIDO = $codPedido
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE
                     HAVING SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) > 0";
-        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
