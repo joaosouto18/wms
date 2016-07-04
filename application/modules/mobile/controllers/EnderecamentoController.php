@@ -851,6 +851,12 @@ class Mobile_EnderecamentoController extends Action
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
+                    if (!isset($endereco) || empty($endereco)) {
+                        $this->addFlashMessage('error', 'Novo Endereço não Encontrado!');
+                        $this->_redirect('/mobile/enderecamento/movimentacao');
+                    }
+
+
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
