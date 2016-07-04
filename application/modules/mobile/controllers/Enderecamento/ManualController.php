@@ -127,8 +127,10 @@ class Mobile_Enderecamento_ManualController extends Action
         $urlOrigem = $params['urlOrigem'];
 
         try {
-
             $this->view->idEndereco = $idEndereco = $params['endereco'];
+            $produtoEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $params['produto']));
+            $this->view->capacidadePicking = $produtoEn->getCapacidadePicking();
+
 
             $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -140,7 +142,6 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->endereco = $enderecoEn->getDescricao();
 
             if (isset($params['submit'])&& $params['submit'] != null) {
-
                 if (trim($params['nivel']) != "") {
                     $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
                     $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
