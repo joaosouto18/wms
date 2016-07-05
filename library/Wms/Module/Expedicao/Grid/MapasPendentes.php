@@ -6,26 +6,38 @@ use Wms\Module\Web\Grid;
 
 class MapasPendentes extends Grid
 {
-    public function init($idExpedicao)
+    public function init($idMapa)
     {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idExpedicao);
+        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idMapa);
 
-        $this->setAttrib('title','Mapas Separação Conferir');
+        $this->setAttrib('title','Mapas SeparaÃ§Ã£o Conferir');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
-                ->addColumn(array(
-                    'label' => utf8_encode('Código'),
-                    'index' => 'COD_PRODUTO',
-                ))
-                ->addColumn(array(
-                    'label' => 'Produto',
-                    'index' => 'DSC_PRODUTO',
-                ))
-                ->addColumn(array(
-                    'label' => 'Quantidade',
-                    'index' => 'QTD_CONFERIR',
-                ));
+            ->addColumn(array(
+                'label' => 'CÃ³digo',
+                'index' => 'COD_PRODUTO',
+            ))
+            ->addColumn(array(
+                'label' => 'Produto',
+                'index' => 'DSC_PRODUTO',
+            ))
+            ->addColumn(array(
+                'label' => 'Cod. Barras',
+                'index' => 'COD_BARRAS'
+            ))
+            ->addColumn(array(
+                'label' => 'Quantidade',
+                'index' => 'QTD_SEPARAR'
+            ))
+            ->addColumn(array(
+                'label' => 'Qtd. Faltante',
+                'index' => 'QTD_CONFERIR',
+            ))
+            ->addColumn(array(
+                'label' => 'EndereÃ§o',
+                'index' => 'DSC_DEPOSITO_ENDERECO'
+            ));
 
         $this->setShowExport(false);
 

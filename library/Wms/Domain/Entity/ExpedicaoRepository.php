@@ -88,17 +88,17 @@ class ExpedicaoRepository extends EntityRepository
         $Query = "SELECT PP.COD_PRODUTO,
                          PP.DSC_GRADE,
                          SUM (NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) as QTD,
-                         E.COD_EXPEDICAO
-                    FROM PEDIDO P
-                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
+                         E.COD_EXPEDICAO, PED.COD_PEDIDO
+                    FROM PEDIDO PED
+                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = PED.COD_PEDIDO
+                    LEFT JOIN CARGA          C ON C.COD_CARGA = PED.COD_CARGA
                     LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     LEFT JOIN PRODUTO        P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
-                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
+                    WHERE PED.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
-                          AND P.CENTRAL_ENTREGA = $filialExterno
+                          AND PED.CENTRAL_ENTREGA = $filialExterno
                           AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE,E.COD_EXPEDICAO";
+                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, E.COD_EXPEDICAO, PED.COD_PEDIDO";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -274,7 +274,7 @@ class ExpedicaoRepository extends EntityRepository
                         PROD.DSC_PRODUTO as Produto,
                         NVL(E.QTD,0) AS Estoque,
                         (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
-                   FROM (SELECT SUM(PP.QUANTIDADE - PP.QTD_CORTADA) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
+                   FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
                            FROM PEDIDO P
                           INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                           INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
@@ -304,7 +304,7 @@ class ExpedicaoRepository extends EntityRepository
               LEFT JOIN PRODUTO PROD
                      ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
                   WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
-                    AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido <0) PROD
+                    AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
                   ORDER BY Codigo, Grade, Produto
         ";
 
@@ -453,27 +453,7 @@ class ExpedicaoRepository extends EntityRepository
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
-        $result = $source->getQuery()->getArrayResult();
-
-        if (count($result) == 0) {
-            $source = $this->getEntityManager()->createQueryBuilder()
-                ->select('r.codCarga')
-                ->from('wms:Expedicao', 'e')
-                ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
-                ->innerJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'c.id = r.carga')
-                ->where('e.id = :idExpedicao')
-                ->distinct(true)
-                ->setParameter('idExpedicao', $idExpedicao);
-            if (count($source->getQuery()->getArrayResult()) >0) {
-                $sessao = new \Zend_Session_Namespace('deposito');
-                $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-                $central = $deposito->getFilial()->getCodExterno();
-
-                $result =array(0=>array('centralEntrega'=>$central));
-            }
-        }
-
-        return $result;
+        return $source->getQuery()->getArrayResult();
     }
 
     /**
@@ -497,11 +477,7 @@ class ExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $qtdEtiquetasPendenteCorte = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, $expedicaoEn, $centralEstoque);
-
-        $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE;
-        $pendenciasReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), $status);
-
-        if (($qtdEtiquetasPendenteCorte > 0) OR (count($pendenciasReentrega) > 0)) {
+        if ($qtdEtiquetasPendenteCorte > 0) {
             return true;
         } else {
             return false;
@@ -660,7 +636,7 @@ class ExpedicaoRepository extends EntityRepository
     public function validaVolumesPatrimonio($idExpedicao){
 
         $volumesPatrimonioRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ExpedicaoVolumePatrimonio");
-        $volumesEn = $volumesPatrimonioRepo->findBy(array('expedicao'=> $idExpedicao));
+        $volumesEn = $volumesPatrimonioRepo->findBy(array('expedicao' => $idExpedicao));
 
         /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonio $volumeEn */
         foreach ($volumesEn as $volumeEn) {
@@ -908,8 +884,11 @@ class ExpedicaoRepository extends EntityRepository
             foreach ($cargas as $carga) {
                 $colCarga[] = $carga->getCodCargaExterno();
             }
-            $result[$key]['CARGA'] = implode(', ', $colCarga);
-            $result[$key]['ITINERARIO'] = implode(', ', $colItinerario);
+            if (isset($colCarga) && !empty($colCarga))
+                $result[$key]['CARGA'] = implode(', ', $colCarga);
+
+            if (isset($colItinerario) && !empty($colItinerario))
+                $result[$key]['ITINERARIO'] = implode(', ', $colItinerario);
 
             unset($colCarga);
             unset($colItinerario);
@@ -1006,11 +985,11 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         if(!is_null($cargas) && is_array($cargas)) {
-           $cargas = implode(',',$cargas);
-           $source->andWhere("rp.codCargaExterno in ($cargas)");
+            $cargas = implode(',',$cargas);
+            $source->andWhere("rp.codCargaExterno in ($cargas)");
         } else if (!is_null($cargas)) {
             $source->andWhere('rp.codCargaExterno = :cargas')
-                   ->setParameter('cargas', $cargas);
+                ->setParameter('cargas', $cargas);
         }
 
         return $source->getQuery()->getResult();
@@ -2635,11 +2614,11 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function     executaCortePedido($cortes, $motivo) {
+    public function executaCortePedido($cortes, $motivo) {
         //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
         foreach ($cortes as $codPedido => $produtos) {
-            foreach ($produtos as $codProduto=> $grades) {
-                foreach ($grades as $grade=> $quantidade) {
+            foreach ($produtos as $codProduto => $grades) {
+                foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0)) continue;
                     $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
                 }
@@ -2655,12 +2634,37 @@ class ExpedicaoRepository extends EntityRepository
         $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId(),
             'codProduto'=>$codProduto,
             'dscGrade'=>$grade));
+        $entidadeReservasEstoqueExpedicao = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao')->findBy(array('pedido'=>$codPedido));
+        $repositoryReservaEstoqueProduto = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+        $repositoryReservaEstoque = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
+        $repositoryMapaConferencia = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
         $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
         $qtdPedido   = $entidadePedidoProduto->getQuantidade();
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
         if (($qtdCortar + $qtdCortada) > $qtdPedido) {
             $qtdCortar = ($qtdPedido - $qtdCortada);
+        }
+
+        foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
+//            if ($reservaEstoqueExpedicao->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO)
+//                throw new \Exception('Não é possível cortar pedido/produto com a expedição já finalizada!');
+
+            $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
+            $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
+            $entityReservaEstoque->setAtendida('C');
+            $entityReservaEstoque->setDataAtendimento(new \DateTime());
+            $this->getEntityManager()->persist($entityReservaEstoque);
+            foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
+                $qtdReservada = $reservaEstoqueProduto->getQtd();
+                if ($qtdCortar + $qtdReservada == 0) {
+                    $this->getEntityManager()->remove($reservaEstoqueProduto);
+                } else {
+                    $reservaEstoqueProduto->setQtd($qtdReservada + $qtdCortar);
+                    $this->getEntityManager()->persist($reservaEstoqueProduto);
+                }
+            }
         }
 
         $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
@@ -2675,7 +2679,15 @@ class ExpedicaoRepository extends EntityRepository
             if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
                 $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
             }
-            $mapa->setQtdCortado($qtdCortarMapa);
+
+            if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
+                $mapaConferenciaEn = $repositoryMapaConferencia->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                foreach ($mapaConferenciaEn as $conferencia) {
+                    $this->getEntityManager()->remove($conferencia);
+                }
+            }
+
+            $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
             $this->getEntityManager()->persist($mapa);
             $qtdCortar = $qtdCortar - $qtdCortarMapa;
         }

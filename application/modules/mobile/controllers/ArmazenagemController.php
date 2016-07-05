@@ -11,18 +11,26 @@ class Mobile_ArmazenagemController  extends Action
                 'label' => 'ENDEREÇAMENTO',
             ),
             2 => array (
+                'url' => 'enderecamento_reabastecimento-manual',
+                'label' => 'REABASTECIMENTO MANUAL',
+            ),
+            3 => array (
                 'url' => 'enderecamento/leitura-picking' ,
                 'label' => 'SELECIONAR PICKING',
             ),
-            3 => array (
+            4 => array (
                 'url' => 'ressuprimento/listar-picking',
                 'label' => 'RESSUPRIMENTO PREVENTIVO',
             ),
-            4 => array (
+            5 => array (
                 'url' => 'enderecamento_automatico/lista-recebimento',
                 'label' => 'ENDEREÇAMENTO AUTOMÁTICO',
             ),
-            5 => array (
+            6 => array (
+                'url' => 'enderecamento_manual' ,
+                'label' => 'ENDEREÇAMENTO MANUAL',
+            ),
+            7 => array (
                 'url' => 'enderecamento/movimentacao',
                 'label' => 'TRANSFERÊNCIA DE ESTOQUE',
             ),

@@ -11,7 +11,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
         foreach ($produtos as $produto){
-            $reservaEstoqueRepo->adicionaReservaEstoque($produto['idPicking'],$produto['produtos'],"S","E",$produto['idExpedicao']);
+            $reservaEstoqueRepo->adicionaReservaEstoque($produto['idPicking'],$produto['produtos'],"S","E",$produto['idExpedicao'],null,null,null,$produto['idPedido']);
         }
     }
 
@@ -25,6 +25,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
 
         foreach ($produtos as $produto) {
             $idExpedicao = $produto['idExpedicao'];
+            $idPedido = $produto['idPedido'];
             $codProduto = $produto['produtos'][0]['codProduto'];
             $grade = $produto['produtos'][0]['grade'];
             $qtdRestante = $produto['produtos'][0]['qtd'];
@@ -48,7 +49,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                         $produtosSeparar[$key]['qtd'] = ($qtdSeparar * -1);
                     }
 
-                    $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$produtosSeparar,"S","E",$idExpedicao);
+                    $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$produtosSeparar,"S","E",$idExpedicao,null,null,null,$idPedido);
                 }
             }
 

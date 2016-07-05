@@ -9,6 +9,46 @@ use Doctrine\ORM\EntityRepository,
 
 class FabricanteRepository extends EntityRepository implements ObjectRepository
 {
+
+    public function save($idFabricante, $nome, $flush = true)
+    {
+        $idFabricante = trim($idFabricante);
+        $nome = trim($nome);
+
+        $em = $this->getEntityManager();
+        if ($flush == true) {
+            $em->beginTransaction();
+        }
+
+        try {
+            $fabricanteEn = $this->findOneBy(array('id' => $idFabricante));
+            $novo = false;
+            if (!$fabricanteEn) {
+                $novo = true;
+                $fabricanteEn = new FabricanteEntity();
+            }
+
+            $fabricanteEn->setId($idFabricante);
+            $fabricanteEn->setNome($nome);
+
+            $em->persist($fabricanteEn);
+
+            if ($flush == true) {
+                $em->flush();
+                $em->commit();
+            } else {
+                if ($novo == true) {
+                    $em->flush();
+                    $em->clear();
+                }
+            }
+        } catch (\Exception $e) {
+            if ($flush == true) {
+                $em->rollback();
+            }
+            throw $e;
+        }
+    }
     
     public function remove($id)
     {

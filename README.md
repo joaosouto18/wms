@@ -29,15 +29,18 @@ https://www.virtualbox.org/wiki/Downloads
 Configuração banco local
 ===========================
 
+DROP USER wms_dbevelop CASCADE;
+DROP TABLESPACE wms_develop;
+
 ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;
 
 CREATE TABLESPACE wms_develop
 LOGGING DATAFILE 'E:\tablespace\wms_develop.dbf' SIZE 10M
-AUTOEXTEND ON NEXT 512k MAXSIZE UNLIMITED
+AUTOEXTEND ON NEXT 512k MAXSIZE 2000M
 BLOCKSIZE 16k
 EXTENT MANAGEMENT LOCAL UNIFORM SIZE 512K
 SEGMENT SPACE MANAGEMENT AUTO
-ONLINE
+ONLINE;
 
 CREATE USER wms_develop
 IDENTIFIED BY wms_adm
@@ -48,7 +51,7 @@ GRANT ALL PRIVILEGES TO wms_develop;
 -- Desabilita expiração de senha no Oracle --
 ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED
-PASSWORD_LIFE_TIME UNLcIMITED;
+PASSWORD_LIFE_TIME UNLIMITED;
 
 Exemplo exportação/importação banco
 ===========================
@@ -56,6 +59,9 @@ exp wms_adm/wms_adm@orams-cluster.simonet.com.br/Pwms file=wms_simonetti.dmp own
 
 exp wms_develop_linhares/wms_adm@xe file=develop_linhares.dmp owner=wms_develop_linhares compress=Y grants=Y indexes=Y triggers=Y constraints=Y
 imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=Y constraints=Y
+
+exp wms_adm/wms_adm@10.150.5.248/xe file=D:\dmp.dmp owner=wms_adm compress=Y grants=Y indexes=Y triggers=Y constraints=Y
+imp wms_develop/wms_adm@localhost/xe file=C:/desenvolvimento/wmsdb/dmp.dmp fromuser=wms_adm touser=wms_develop ignore=y
 
 Documentação
 ===========================

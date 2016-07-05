@@ -1,0 +1,89 @@
+<?php
+    $this->headScript()->appendFile('/jquery-ui-1.11.4/jquery-ui.js');
+    $this->headLink()->appendStylesheet('/jquery-ui-1.11.4/jquery-ui.css');
+    $this->headLink()->appendStylesheet('/css/progress-bar/progress-bar-style.css');
+
+//echo $this->form;
+?>
+<div align="center">
+    <div class="row">
+        <h2><strong>Ultima importação - <?php echo $this->ultData; ?></strong></h2><br />
+        <button type="button" id="startImport">Iniciar importação</button>
+    </div><br />
+    <div class="row">
+        <div class="progress-bar-div">
+            <div id="pbArquivo"></div>
+            <div align="center" class="progress-bar-text">
+                <b id="pbTxtArquivo">Arquivo 0 de 0</b>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="progress-bar-div">
+            <div id="pbLinha"></div>
+            <div align="center" class="progress-bar-text">
+                <b id="pbTxtLinha">Linha 0 de 0</b>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="tbError" style="display: none">
+        <p>Ocorrêcia(s) durante a importação:</p>
+        <table class="table" style="width: 740px;">
+            <thead>
+                <tr>
+                    <th>Arquivo</th>
+                    <th>Linha</th>
+                    <th>Conteúdo</th>
+                </tr>
+            </thead>
+            <tbody id="tbErrResult">
+            </tbody>
+        </table>
+    </div>
+    <div id="excptRw" style="display: none">
+        <p>Erro de exceção:</p>
+        <div style="color: red;" id="excptMsg"></div>
+    </div>
+    <iframe src="" id="frameTeste" style="display: none"></iframe>
+</div>
+
+<script type="text/javascript">
+    $("#pbArquivo").progressbar();
+    $("#pbLinha").progressbar();
+    $("#startImport").click(function () {
+        $("#excptRw").hide();
+        $("#tbError").hide();
+        $("#tbErrResult").children("tr").remove();
+        $("#excptMsg").children("h2").remove();
+        $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-ajax");
+
+    });
+    function Zend_ProgressBar_Update(data)
+    {
+        var status = data.text;
+        if (status != null) {
+            $("#pbArquivo").progressbar({value: status.iArquivo, max: status.tArquivo});
+            $("#pbTxtArquivo").text("Arquivo " + status.iArquivo + " de " + status.tArquivo);
+            $("#pbLinha").progressbar({value: status.iLinha, max: status.tLinha});
+            $("#pbTxtLinha").text("Linha " + status.iLinha + " de " + status.tLinha);
+            if (status.error != null){
+                $.each( status.error, function( arquivo, arrLines ) {
+                    $.each( arrLines, function( linha, conteudo ) {
+                        $("#tbErrResult").append(
+                            "<tr>" +
+                                "<td style='text-align:center;'>" + arquivo + "</td>" +
+                                "<td style='text-align:center;'>" + linha + "</td>" +
+                                "<td style='text-align:center;'>" + conteudo + "</td>" +
+                            "</tr>"
+                        );
+                    })
+                });
+                $("#tbError").show();
+            }
+            if (status.exception != null){
+                $("<h2>").text("Linha: "+status.iLinha+ "  -  " +status.exception).appendTo("#excptMsg");
+                $("#excptRw").show();
+            }
+        }
+    }
+</script>

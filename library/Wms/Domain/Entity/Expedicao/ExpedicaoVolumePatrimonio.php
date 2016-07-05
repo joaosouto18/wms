@@ -46,11 +46,35 @@ class ExpedicaoVolumePatrimonio
     protected $tipoVolume;
 
     /**
-     * @var Wms\Domain\Entity\Usuario $usuario
+     * @var \Wms\Domain\Entity\Usuario $usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
      * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
      */
     protected $usuario;
+
+    /**
+     * @var \Wms\Domain\Entity\Usuario $usuario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
+     * @JoinColumn(name="COD_USUARIO_LACRE", referencedColumnName="COD_USUARIO")
+     */
+    protected $usuarioLacre;
+
+    /**
+     * @Column(name="NUM_LACRE", type="string")
+     * @var string
+     */
+    protected $lacre;
+
+    /**
+     * @Column(name="DTH_VINCULO_LACRE", type="datetime")
+     */
+    protected $dataVinculoLacre;
+    
+    /** 
+     * @var  int
+     * @Column(name="NUM_SEQUENCIA", type="integer")
+     */
+    protected $sequencia;
 
     /**
      * @param mixed $tipoVolume
@@ -119,7 +143,7 @@ class ExpedicaoVolumePatrimonio
     }
 
     /**
-     * @return Wms\Domain\Entity\Usuario
+     * @return \Wms\Domain\Entity\Usuario
      */
     public function getUsuario()
     {
@@ -127,11 +151,74 @@ class ExpedicaoVolumePatrimonio
     }
 
     /**
-     * @param Wms\Domain\Entity\Usuario $usuario
+     * @param \Wms\Domain\Entity\Usuario $usuario
      */
     public function setUsuario($usuario)
     {
         $this->usuario = $usuario;
     }
 
+    /**
+     * @return string
+     */
+    public function getLacre()
+    {
+        return $this->lacre;
+    }
+
+    /**
+     * @param string $lacre
+     */
+    public function setLacre($lacre)
+    {
+        $this->lacre = $lacre;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataVinculoLacre()
+    {
+        return $this->dataVinculoLacre;
+    }
+
+    /**
+     * @param mixed $dataVinculoLacre
+     */
+    public function setDataVinculoLacre($dataVinculoLacre)
+    {
+        $this->dataVinculoLacre = $dataVinculoLacre;
+    }
+
+    /**
+     * @return \Wms\Domain\Entity\Usuario
+     */
+    public function getUsuarioLacre()
+    {
+        return $this->usuarioLacre;
+    }
+
+    /**
+     * @param \Wms\Domain\Entity\Usuario $usuarioLacre
+     */
+    public function setUsuarioLacre($usuarioLacre)
+    {
+        $this->usuarioLacre = $usuarioLacre;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSequencia()
+    {
+        return $this->sequencia;
+    }
+
+    /**
+     * @param int $sequencia
+     */
+    public function setSequencia($sequencia)
+    {
+        $this->sequencia = $sequencia;
+    }
 }

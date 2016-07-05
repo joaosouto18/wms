@@ -112,11 +112,11 @@ class OrdemServicoRepository extends EntityRepository
      * @param integer $idOrdemServico
      * @return boolean
      */
-    public function finalizar($idOrdemServico)
+    public function finalizar($idOrdemServico, $observacao='Recebimento Finalizado.')
     {
         $ordemServicoEntity = $this->find($idOrdemServico);
 
-        $ordemServicoEntity->setDscObservacao('Recebimento Finalizado.')
+        $ordemServicoEntity->setDscObservacao($observacao)
             ->setDataFinal(new \DateTime());
 
         $this->getEntityManager()->persist($ordemServicoEntity);
@@ -127,8 +127,6 @@ class OrdemServicoRepository extends EntityRepository
 
     public function getOsByExpedicao ($idExpedicao)
     {
-        $_em = $this->getEntityManager();
-
         $queryBuilder = $this->getEntityManager()->createQueryBuilder()
             ->select('os.id,
                       os.dataInicial,
@@ -138,9 +136,11 @@ class OrdemServicoRepository extends EntityRepository
             ->from('wms:OrdemServico', 'os')
             ->innerJoin("os.pessoa", "p")
             ->innerJoin("os.atividade", "atv")
-            ->addSelect("( SELECT COUNT(es) as qtdConferido
-                             FROM wms:Expedicao\EtiquetaSeparacao es
-                            WHERE es.codOS = os.id
+            ->addSelect("( SELECT NVL(SUM(msc.qtdConferida), COUNT(es.id))
+                             FROM wms:OrdemServico os1
+                             LEFT JOIN wms:Expedicao\EtiquetaSeparacao es WITH es.codOS = os1.id
+                             LEFT JOIN wms:Expedicao\MapaSeparacaoConferencia msc WITH msc.codOS = os1.id
+                            WHERE os1.id = os.id
                           ) as qtdConferida")
             ->addSelect("( SELECT COUNT(es2) as qtdConferidoTransbordo
                             FROM wms:Expedicao\EtiquetaSeparacao es2
@@ -298,6 +298,32 @@ class OrdemServicoRepository extends EntityRepository
                        OR SEGUNDA.COD_EXPEDICAO = $idExpedicao";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function criarOs($params)
+    {
+        if (!$params['atividade']) {
+            throw new \Exception('Atividade não informada');
+        }
+        if (!$params['observacao']) {
+            throw new \Exception('Observação não informada');
+        }
+
+        $em = $this->getEntityManager();
+        $atividadeEntity = $em->getReference('wms:Atividade', $params['atividade']);
+
+        $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+        $pessoaEntity = $em->getReference('wms:Pessoa', $idPessoa);
+
+        $ordemServicoEn = new OrdemServico();
+        $ordemServicoEn->setDataInicial(new \DateTime);
+        $ordemServicoEn->setAtividade($atividadeEntity);
+        $ordemServicoEn->setDscObservacao($params['observacao']);
+        $ordemServicoEn->setPessoa($pessoaEntity);
+
+        $this->_em->persist($ordemServicoEn);
+        $this->_em->flush();
+        return $ordemServicoEn;
     }
 
     public function criarOsByReentrega($recebimentoReentregaEn)

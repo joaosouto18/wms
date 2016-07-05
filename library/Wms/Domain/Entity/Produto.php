@@ -34,6 +34,11 @@ class Produto
     );
 
     /**
+     * @Column(name="ID_PRODUTO", type="integer", nullable=false)
+     */
+    protected $idProduto;
+    
+    /**
      * @Id
      * @Column(name="COD_PRODUTO", type="string", nullable=false)
      * @var string Código do produto
@@ -123,6 +128,18 @@ class Produto
      * @var string
      */
     protected $validade;
+
+    /**
+     * @Column(name="PERC_TOLERANCIA", type="float", nullable=false)
+     * @var float
+     */
+    protected $percTolerancia;
+
+    /**
+     * @Column(name="TOLERANCIA_NOMINAL", type="float", nullable=false)
+     * @var float
+     */
+    protected $toleranciaNominal;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco", cascade={"persist"})
@@ -387,5 +404,54 @@ class Produto
     {
         return $this->enderecoReferencia;
     }
+
+    /**
+     * @param float $percTolerancia
+     */
+    public function setPercTolerancia($percTolerancia)
+    {
+        $this->percTolerancia = $percTolerancia;
+    }
+
+    /**
+     * @return float
+     */
+    public function getPercTolerancia()
+    {
+        return $this->percTolerancia;
+    }
+
+    /**
+     * @param float $toleranciaNominal
+     */
+    public function setToleranciaNominal($toleranciaNominal)
+    {
+        $this->toleranciaNominal = $toleranciaNominal;
+    }
+
+    /**
+     * @return float
+     */
+    public function getToleranciaNominal()
+    {
+        return $this->toleranciaNominal;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIdProduto()
+    {
+        return $this->idProduto;
+    }
+
+    /**
+     * @param mixed $idProduto
+     */
+    public function setIdProduto($idProduto)
+    {
+        $this->idProduto = $idProduto;
+    }
+
 
 }

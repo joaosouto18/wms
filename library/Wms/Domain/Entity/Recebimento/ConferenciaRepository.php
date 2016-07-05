@@ -16,7 +16,7 @@ class ConferenciaRepository extends EntityRepository
 
     public function getLastOsConferencia ($idRecebimento, $idProduto, $grade)
     {
-		$query = "
+        $query = "
 					SELECT DTH_FINAL_ATIVIDADE, COD_OS FROM (
 					SELECT CASE WHEN OS.DTH_FINAL_ATIVIDADE IS NULL THEN TO_DATE('31/12/9999','dd/mm/yyyy')
 								ELSE OS.DTH_FINAL_ATIVIDADE END AS DTH_FINAL_ATIVIDADE,
@@ -29,12 +29,12 @@ class ConferenciaRepository extends EntityRepository
 		";
         $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
 
-		if ($result == NULL) {
-			return 0;
-		} else {
-			return $result[0]['COD_OS'];
-		}
-	}
+        if ($result == NULL) {
+            return 0;
+        } else {
+            return $result[0]['COD_OS'];
+        }
+    }
 
     public function getLastOsRecebimentoEmbalagem ($idRecebimento, $idProduto, $grade)
     {
@@ -119,14 +119,14 @@ class ConferenciaRepository extends EntityRepository
     }
 
     public function getQtdByRecebimentoEmbalagemAndNorma ($idOs, $codProduto, $grade){
-        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * PE.QTD_EMBALAGEM) as QTD, RE.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR
+        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * PE.QTD_EMBALAGEM) as QTD, RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) as NUM_NORMA, NP.COD_UNITIZADOR
                   FROM RECEBIMENTO_EMBALAGEM RE
                  INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
                  INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = RE.COD_NORMA_PALETIZACAO
                  WHERE COD_OS = '$idOs'
                    AND PE.COD_PRODUTO = '$codProduto'
                    AND PE.DSC_GRADE = '$grade'
-                 GROUP BY RE.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR";
+                 GROUP BY RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) , NP.COD_UNITIZADOR";
         $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -153,18 +153,18 @@ class ConferenciaRepository extends EntityRepository
     /**
      *
      * @param int $idOrdemServico
-     * @return array Result set 
+     * @return array Result set
      */
     public function getProdutoDivergencia($idOrdemServico)
     {
         $sql = $this->getEntityManager()->createQuery('
-                SELECT c.id, p.id idProduto, p.grade, p.descricao dscProduto, c.qtdConferida, c.qtdAvaria, c.qtdDivergencia 
+                SELECT c.id, p.id idProduto, p.grade, p.descricao dscProduto, c.qtdConferida, c.qtdAvaria, c.qtdDivergencia, p.referencia
                 FROM wms:Recebimento\Conferencia c
                 INNER JOIN c.produto p
                 WHERE c.ordemServico = ?1
                     AND p.grade = c.grade
                     AND c.qtdDivergencia != 0')
-                ->setParameter(1, $idOrdemServico);
+            ->setParameter(1, $idOrdemServico);
 
         return $sql->getResult();
     }

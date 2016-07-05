@@ -1,0 +1,43 @@
+<script type="application/javascript">
+    $('#volumePatrimonio').live('blur', function() {
+        var dados = '';
+        $.ajax({
+            url:'/mobile/expedicao/vincular-lacre/id/' +$('#volumePatrimonio').val(),
+            success: function(data) {
+                dados = '<div class="control-group">' +
+                    '<label class="control-label" for="expedicao"> Expedição: '+ data['expedicao'] + '</label>' +
+                    '<input type="hidden" name="expedicao" value="' + data['expedicao'] + '">' +
+                    '<label class="control-label" for="data"> Data: '+ data['data'] +'</label>' +
+                    '<input type="hidden" name="data" value="' + data['data'] + '" >' +
+                    '<input type="hidden" name="id" value=" ' + data['id'] + '" >' +
+                    '</div>';
+                $('#dadosExpedicao').html(dados);
+            },
+            error: function() {
+                alert('Volume Patrimônio nao encontrado!');
+                $('#dadosExpedicao').html(dados);
+            }
+        });
+    });
+</script>
+
+<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post">
+
+    <div class="control-group">
+        <label class="control-label" for="volumePatrimonio"> Volume Patrimônio</label>
+        <div class="controls">
+            <input type="text" name="volumePatrimonio" id="volumePatrimonio" >
+        </div>
+    </div>
+
+    <div id="dadosExpedicao"></div>
+
+    <div class="control-group">
+        <label class="control-label" for="numeroLacre"> Número do Lacre</label>
+        <div class="controls">
+            <input type="text" name="numeroLacre" id="numeroLacre">
+        </div>
+    </div>
+
+    <input type="submit" name="submit" id="submit" value="Vincular" class="btn">
+</form>

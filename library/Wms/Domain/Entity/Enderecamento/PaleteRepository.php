@@ -15,41 +15,46 @@ class PaleteRepository extends EntityRepository
     {
         extract($params);
 
-        $query = "
-            SELECT DISTINCT R.COD_RECEBIMENTO,
-                   TO_CHAR(R.DTH_INICIO_RECEB,'DD/MM/YYYY') as DTH_INICIO_RECEB,
-                   TO_CHAR(R.DTH_FINAL_RECEB, 'DD/MM/YYYY') as DTH_FINAL_RECEB,
-                   S.DSC_SIGLA,
-                   NF.COD_FORNECEDOR,
-                   FORNECEDOR.NOM_PESSOA FORNECEDOR,
-                   NVL(QTD.QTD,0) as QTD_TOTAL,
-                   NVL(PRQ.QTD_ENDERECAMENTO,0) as QTD_ENDERECAMENTO,
-                   NVL(PRE.QTD_ENDERECADO,0) as QTD_ENDERECADO,
-                   NVL(QTD.QTD,0) - NVL(PRQ.QTD_ENDERECAMENTO,0) - NVL(PRE.QTD_ENDERECADO,0) as QTD_RECEBIMENTO
-              FROM RECEBIMENTO R
-              LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-              LEFT JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
-              LEFT JOIN (SELECT PJ.COD_PESSOA, P.NOM_PESSOA
-                         FROM PESSOA_JURIDICA PJ
-                         LEFT JOIN PESSOA P ON PJ.COD_PESSOA = P.COD_PESSOA) FORNECEDOR ON F.COD_FORNECEDOR = FORNECEDOR.COD_PESSOA
-              LEFT JOIN (SELECT SUM(QTD) as QTD,
-                                COD_RECEBIMENTO
-                           FROM V_QTD_RECEBIMENTO
-                          GROUP BY COD_RECEBIMENTO) QTD ON QTD.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-              LEFT JOIN (SELECT COD_RECEBIMENTO, UMA
-                   FROM PALETE
-                  WHERE COD_STATUS = 535
-                  GROUP BY COD_RECEBIMENTO, UMA) QE ON R.COD_RECEBIMENTO = QE.COD_RECEBIMENTO
-              LEFT JOIN (SELECT SUM(QTD) as QTD_ENDERECAMENTO, UMA
-                   FROM PALETE_PRODUTO GROUP BY UMA) PRQ ON PRQ.UMA = QE.UMA
-              LEFT JOIN (SELECT COD_RECEBIMENTO, UMA
-                   FROM PALETE
-                  WHERE COD_STATUS = 536
-                  GROUP BY COD_RECEBIMENTO, UMA) QF ON R.COD_RECEBIMENTO = QF.COD_RECEBIMENTO
-              LEFT JOIN (SELECT SUM(QTD) as QTD_ENDERECADO, UMA
-                   FROM PALETE_PRODUTO GROUP BY UMA) PRE ON PRE.UMA = QF.UMA
-              LEFT JOIN SIGLA S ON R.COD_STATUS = S.COD_SIGLA
-              LEFT JOIN PALETE PA ON R.COD_RECEBIMENTO = PA.COD_RECEBIMENTO
+        $query = "SELECT QTD.QTD QTD_TOTAL, NFI.COD_PRODUTO, NFI.DSC_GRADE, PRQ.QTD_ENDERECAMENTO, R.COD_RECEBIMENTO,
+                    TO_CHAR(R.DTH_INICIO_RECEB,'DD/MM/YYYY') as DTH_INICIO_RECEB,
+                    TO_CHAR(R.DTH_FINAL_RECEB, 'DD/MM/YYYY') as DTH_FINAL_RECEB,
+                    S.DSC_SIGLA, MAX(NF.COD_FORNECEDOR) COD_FORNECEDOR, MAX(FORNECEDOR.NOM_PESSOA) FORNECEDOR,
+                    NVL(PRQ.QTD_ENDERECAMENTO,0) as QTD_ENDERECAMENTO, NVL(PRE.QTD_ENDERECADO,0) as QTD_ENDERECADO,
+                    NVL(QTD.QTD,0) - NVL(PRQ.QTD_ENDERECAMENTO,0) as QTD_RECEBIMENTO
+                    FROM RECEBIMENTO R
+                    LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                    LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                    LEFT JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
+                    LEFT JOIN (
+                      SELECT PJ.COD_PESSOA, P.NOM_PESSOA
+                      FROM PESSOA_JURIDICA PJ
+                      INNER JOIN PESSOA P ON PJ.COD_PESSOA = P.COD_PESSOA) FORNECEDOR ON F.COD_FORNECEDOR = FORNECEDOR.COD_PESSOA
+                    RIGHT JOIN (
+                      SELECT VR.QTD QTD, VR.COD_RECEBIMENTO, NFI.COD_PRODUTO, NFI.DSC_GRADE
+                      FROM RECEBIMENTO R
+                      RIGHT JOIN NOTA_FISCAL NF ON NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                      RIGHT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                      RIGHT JOIN V_QTD_RECEBIMENTO VR ON VR.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND VR.COD_PRODUTO = NFI.COD_PRODUTO AND VR.DSC_GRADE = NFI.DSC_GRADE
+
+                      GROUP BY VR.COD_RECEBIMENTO, NFI.COD_PRODUTO, NFI.DSC_GRADE, VR.QTD
+                      ) QTD ON QTD.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD.COD_PRODUTO = NFI.COD_PRODUTO AND QTD.DSC_GRADE = NFI.DSC_GRADE
+                    LEFT JOIN (
+                      SELECT SUM(QTD) as QTD_ENDERECAMENTO, PP.COD_PRODUTO, PP.DSC_GRADE
+                      FROM PALETE_PRODUTO PP
+                      INNER JOIN PALETE P ON P.UMA = PP.UMA
+                      LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
+                      WHERE P.COD_STATUS = 536
+                      GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PRQ ON PRQ.COD_PRODUTO = NFI.COD_PRODUTO AND PRQ.DSC_GRADE = NFI.DSC_GRADE
+                    LEFT JOIN (
+                      SELECT SUM(QTD) as QTD_ENDERECADO, PP.COD_PRODUTO, PP.DSC_GRADE
+                      FROM PALETE_PRODUTO PP
+                      INNER JOIN PALETE P ON P.UMA = PP.UMA
+                      LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
+                      WHERE P.COD_STATUS = 536
+                      GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PRE ON PRE.COD_PRODUTO = NFI.COD_PRODUTO AND PRE.DSC_GRADE = NFI.DSC_GRADE
+                    LEFT JOIN SIGLA S ON R.COD_STATUS = S.COD_SIGLA
+                    LEFT JOIN PALETE PA ON R.COD_RECEBIMENTO = PA.COD_RECEBIMENTO
+
         ";
 
         $queryWhere = " WHERE ";
@@ -97,7 +102,10 @@ class PaleteRepository extends EntityRepository
             $filter = true;
         }
 
-        if ($filter == true) {$query = $query . $queryWhere . " ORDER BY R.COD_RECEBIMENTO";}
+        if ($filter == true) {$query = $query . $queryWhere . " GROUP BY QTD.QTD, NFI.COD_PRODUTO, NFI.DSC_GRADE,
+                    PRQ.QTD_ENDERECAMENTO, R.COD_RECEBIMENTO, R.DTH_INICIO_RECEB,
+                    R.DTH_FINAL_RECEB, S.DSC_SIGLA, PRQ.QTD_ENDERECAMENTO, PRE.QTD_ENDERECADO
+                    ORDER BY R.COD_RECEBIMENTO ASC";}
 
         $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         $resultadoFinal = array();
@@ -691,6 +699,7 @@ class PaleteRepository extends EntityRepository
             $paleteProduto->setValidade($dataValidade);
             $this->_em->persist($paleteProduto);
         }
+        return $paleteEn;
     }
 
 

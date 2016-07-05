@@ -4,7 +4,6 @@ namespace Wms\Module\Web\Form;
 
 use Wms\Module\Web\Form,
     Wms\Domain\Entity\Produto as ProdutoEntity,
-    Core\Form\SubForm,
     Wms\Module\Web\Form\Subform\Produto\Identificacao as IdentificacaoForm,
     Wms\Module\Web\Form\Subform\Produto\Embalagem as EmbalagemForm,
     Wms\Module\Web\Form\Subform\Produto\Volume as VolumeForm,
@@ -32,6 +31,7 @@ class Produto extends Form
         $this->addSubFormTab('Volumes', new VolumeForm, 'volume', 'produto/volume-form.phtml');
         $this->addSubFormTab('Dados Logísticos', new DadosLogisticosForm, 'dadoLogistico', 'produto/dado-logistico-form.phtml');
         $this->addSubFormTab('Enderecamento', new EnderecamentoForm, 'enderecamento', 'produto/enderecamento.phtml');
+        $this->addSubFormTab('Código Fornecedor', new Form\Subform\Produto\CodigoFornecedor(), 'codigoFornecedor', 'produto/codigo-fornecedor.phtml');
 
     }
 
@@ -45,7 +45,7 @@ class Produto extends Form
         $this->getSubForm('embalagem')->setDefaultsFromEntity($produto);
         $this->getSubForm('volume')->setDefaultsFromEntity($produto);
         $this->getSubForm('enderecamento')->setDefaultsFromEntity($produto);
-
+        $this->getSubForm('codigoFornecedor')->setDefaultsFromEntity($produto);
     }
 
 }

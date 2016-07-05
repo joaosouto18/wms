@@ -77,6 +77,7 @@ class AtorRepository extends EntityRepository {
             }
 
             $pessoa->setNome($values['pessoa']['juridica']['nome']);
+            $pessoa->setNomeFantasia($values['pessoa']['juridica']['nome']);
 
             //configura através de um array de opções
             \Zend\Stdlib\Configurator::configure($pessoa, $values['pessoa']['juridica']);
@@ -158,6 +159,10 @@ class AtorRepository extends EntityRepository {
                         $endereco->setUf($uf)
                                 ->setTipo($tipoEndereco)
                                 ->setPessoa($pessoa);
+
+                        $enderecoEntity = $em->getRepository('wms:Pessoa\Endereco')->findBy($endereco->toArray());
+                        if (!empty($enderecoEntity))
+                            break;
 
                         $em->persist($endereco);
                         $pessoa->addEndereco($endereco);

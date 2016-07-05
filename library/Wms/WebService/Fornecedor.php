@@ -55,9 +55,11 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     private function inserir($idFornecedor, $cnpj, $insc, $nome)
     {
-        $service = $this->__getServiceLocator()->getService('Fornecedor');
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
+
+        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
+        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
         $pessoaJuridica = $em->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => str_replace(array('.', '-', '/'), '', $cnpj)));
 
         if ($pessoaJuridica == null)
@@ -68,11 +70,14 @@ class Wms_WebService_Fornecedor extends Wms_WebService
                 ->setCnpj($cnpj)
                 ->setInscricaoEstadual($insc);
 
+        $em->persist($pessoaJuridica);
+
         $fornecedorEntity = new \Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
         $fornecedorEntity->setPessoa($pessoaJuridica)
-                ->setIdExterno($idFornecedor);
-
-        if (!$service->post($fornecedorEntity))
+                ->setIdExterno($idFornecedor)
+                ->setId($pessoaJuridica->getId());
+        
+        if (!$fornecedorSvc->insert($fornecedorEntity))
             throw new \Exception('Houve um erro ao inserir um novo fornecedor');
 
         return true;
@@ -89,9 +94,15 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     private function alterar($idFornecedor, $cnpj, $insc, $nome)
     {
-        $service = $this->__getServiceLocator()->getService('Fornecedor');
-        $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
 
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+
+        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
+        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
+        $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
+        
         if ($fornecedorEntity == null)
             throw new \Exception('Não foi possível alterar Fornecedor inexistente');
 
@@ -102,9 +113,13 @@ class Wms_WebService_Fornecedor extends Wms_WebService
                 ->setInscricaoEstadual($insc);
 
         $fornecedorEntity->setPessoa($pessoaJuridica)
-                ->setIdExterno($idFornecedor);
+                ->setIdExterno($idFornecedor)
+                ->setId($pessoaJuridica->getId());
 
-        if (!$service->put($fornecedorEntity))
+        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
+        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+        
+        if (!$fornecedorSvc->insert($fornecedorEntity))
             throw new \Exception('Houve um erro ao alterar um novo fornecedor');
 
         return true;
@@ -126,8 +141,13 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         $insc = trim($insc);
         $nome = trim($nome);
 
-        $service = $this->__getServiceLocator()->getService('Fornecedor');
-        $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+
+        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
+        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
+        $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
 
         //novo fornecedor
         $op = ($fornecedorEntity == null) ? $this->inserir($idFornecedor, $cnpj, $insc, $nome) :
@@ -149,13 +169,18 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     {
         $idFornecedor = trim($idFornecedor);
 
-        $service = $this->__getServiceLocator()->getService('Fornecedor');
-        $fornecedorEntity = $service->findOneBy(array('idExterno' => $idFornecedor));
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+
+        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
+        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
+        $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
 
         if ($fornecedorEntity == null)
             throw new \Exception('Fornecedor não encontrado');
         
-        if (!$service->delete($fornecedorEntity->getId()))
+        if (!$fornecedorSvc->delete($fornecedorEntity->getId()))
             throw new \Exception('Não foi possível deletar o fornedor ID:' . $idFornecedor);
 
         return true;
@@ -170,14 +195,22 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        $result = $em->createQueryBuilder()
+        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
+        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+
+        $fornecedores = $fornecedorSvc->findAll();
+
+        if ($fornecedores == null)
+            throw new \Exception('Não foi possível recuperar os fornecedores:');
+
+/*        $result = $em->createQueryBuilder()
                 ->select('f.idExterno as idFornecedor, p.cnpj, p.nome, p.inscricaoEstadual as insc')
                 ->from('wms:Pessoa\Papel\Fornecedor', 'f')
                 ->innerJoin('f.pessoa', 'p')
                 ->orderBy('p.nome')
                 ->getQuery()
                 ->getArrayResult();
-
+        
         if ($result == null)
             throw new \Exception('Não foi possível recuperar os fornecedores:');
 
@@ -191,9 +224,9 @@ class Wms_WebService_Fornecedor extends Wms_WebService
             $fornecedores[] = $for;
         }
         $clsFornecedres = new fornecedores();
-        $clsFornecedres->fornecedores = $fornecedores;
+        $clsFornecedres->fornecedores = $fornecedores;*/
 
-        return $clsFornecedres;
+        return array('fornecedores' => $fornecedores);
     }
 
 }

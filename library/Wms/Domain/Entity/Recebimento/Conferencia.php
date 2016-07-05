@@ -48,7 +48,7 @@ class Conferencia
 
     /**
      * @var string Grade do produto
-     * @Column(name="COD_PRODUTO", type="string", length=10, nullable=false)
+     * @Column(name="COD_PRODUTO", type="string" , nullable=false)
      */
     protected $codProduto;
 
@@ -110,6 +110,12 @@ class Conferencia
      */
     protected $dataValidade;
 
+    /**
+     * @var string Grade do produto
+     * @Column(name="IND_DIVERGENCIA_PESO", type="string", length=10, nullable=false)
+     */
+    protected $divergenciaPeso;
+    
     public function getId()
     {
         return $this->id;
@@ -241,4 +247,36 @@ class Conferencia
         $this->dataValidade = $dataValidade;
     }
 
+    /**
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDivergenciaPeso()
+    {
+        return $this->divergenciaPeso;
+    }
+
+    /**
+     * @param string $divergenciaPeso
+     */
+    public function setDivergenciaPeso($divergenciaPeso)
+    {
+        $this->divergenciaPeso = $divergenciaPeso;
+    }
+    
 }

@@ -66,6 +66,7 @@ class Mapas extends Grid
                     'controllername' => 'mapa',
                     'actionName' => 'pendentes-conferencia',
                     'cssClass' => 'dialogAjax',
+                    'pkIndex' => 'COD_MAPA_SEPARACAO'
                 ));
 
         return $this;

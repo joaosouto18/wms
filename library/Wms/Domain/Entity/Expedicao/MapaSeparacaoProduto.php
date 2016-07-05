@@ -81,6 +81,12 @@ class MapaSeparacaoProduto
     protected $codPedidoProduto;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\PedidoProduto")
+     * @JoinColumn(name="COD_PEDIDO_PRODUTO", referencedColumnName="COD_PEDIDO_PRODUTO")
+     */
+    protected $pedidoProduto;
+
+    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
@@ -294,4 +300,20 @@ class MapaSeparacaoProduto
         return $this->qtdCortado;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getPedidoProduto()
+    {
+        return $this->pedidoProduto;
+    }
+
+    /**
+     * @param mixed $pedidoProduto
+     */
+    public function setPedidoProduto($pedidoProduto)
+    {
+        $this->pedidoProduto = $pedidoProduto;
+    }
+    
 }

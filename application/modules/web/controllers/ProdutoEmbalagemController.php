@@ -26,6 +26,15 @@ class Web_ProdutoEmbalagemController extends Crud
         $arrayEmbalagens = array();
 
         foreach ($embalagens as $embalagem) {
+
+            $dataInativacao = "EMB. ATIVA";
+            $checked = '';
+            if (!is_null($embalagem->getDataInativacao())) {
+                $dataInativacao = $embalagem->getDataInativacao();
+                $checked = 'checked ';
+                $dataInativacao = $dataInativacao->format('d/m/Y');
+            }
+
             $arrayEmbalagens[] = array(
                 'id' => $embalagem->getId(),
                 'descricao' => $embalagem->getDescricao(),
@@ -42,6 +51,8 @@ class Web_ProdutoEmbalagemController extends Crud
                 'capacidadePicking' => $embalagem->getCapacidadePicking(),
                 'pontoReposicao' => $embalagem->getPontoReposicao(),
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
+                'ativarDesativar' => $checked,
+                'dataInativacao' => $dataInativacao,
             );
         }
 
@@ -68,19 +79,19 @@ class Web_ProdutoEmbalagemController extends Crud
             }
 
             $dql = $this->getEntityManager()->createQueryBuilder()
-                    ->select('nfi.id, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
+                ->select('nfi.id, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
                        NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                        NVL(pe.descricao, \'\') descricaoEmbalagem,
                        NVL(pv.descricao, \'\') descricaoVolume')
-                    ->from('wms:NotaFiscal', 'nf')
-                    ->innerJoin('nf.itens', 'nfi')
-                    ->innerJoin('nfi.produto', 'p')
-                    ->leftJoin('p.embalagens', 'pe')
-                    ->leftJoin('p.volumes', 'pv')
-                    ->andWhere('p.grade = nfi.grade')
-                    ->andWhere('(pe.grade = p.grade OR pv.grade = p.grade)')
-                    ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-                    ->setParameter('codigoBarras', $codigoBarras);
+                ->from('wms:NotaFiscal', 'nf')
+                ->innerJoin('nf.itens', 'nfi')
+                ->innerJoin('nfi.produto', 'p')
+                ->leftJoin('p.embalagens', 'pe')
+                ->leftJoin('p.volumes', 'pv')
+                ->andWhere('p.grade = nfi.grade')
+                ->andWhere('(pe.grade = p.grade OR pv.grade = p.grade)')
+                ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+                ->setParameter('codigoBarras', $codigoBarras);
 
             $produto = $dql->getQuery()->getResult();
 

@@ -17,7 +17,7 @@ class Mobile_ReentregaController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
         $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
         $this->view->notasFiscais = $recebimentoReentregaNotaRepo->getRecebimentoReentregaByNota();
-        $this->view->form = new FormReentrega;
+//        $this->view->form = new FormReentrega;
     }
 
     public function buscarAction()
@@ -77,7 +77,7 @@ class Mobile_ReentregaController extends Action
         $ordemServicoRepo->criarOsByReentrega($recebimentoReentregaEn);
 
         $this->addFlashMessage('success', 'Recebimento de Reentrega gerado com sucesso!');
-        $this->redirect('reconferir-produtos', 'reentrega', 'mobile',array('id'=>$recebimentoReentregaEn->getId()));
+        $this->redirect('reconferir-produtos', 'reentrega', 'mobile', array('id'=>$recebimentoReentregaEn->getId()));
     }
 
     public function reconferirProdutosAction()
@@ -89,14 +89,14 @@ class Mobile_ReentregaController extends Action
         $modeloSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->findOneBy(array('id' => $idModeloSeparacao));
         $this->view->modeloSeparacao = $modeloSeparacao->getTipoSeparacaoFracionado();
         $this->view->modeloSeparacao = "M";
-        
+
         if (isset($params['submit'])) {
             if (isset($params['qtd']) && !empty($params['qtd']) && isset($params['codBarras']) && !empty($params['codBarras'])) {
                 try {
                     /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
                     $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
                     $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
-                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " conferido com sucesso");
+                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
 
                 } catch (\Exception $e) {
                     $this->_helper->messenger('error', utf8_decode($e->getMessage()));
@@ -127,11 +127,6 @@ class Mobile_ReentregaController extends Action
             $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
         }
-
-    }
-
-    public function visualizarDivergenciaAction()
-    {
 
     }
 
@@ -190,7 +185,7 @@ class Mobile_ReentregaController extends Action
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'nfsp.codProduto = es.codProduto AND nfsp.grade = es.dscGrade AND ped.id = es.pedido');
 
         if (isset($params['etiqueta']) && !empty($params['etiqueta'])) {
-            $sql->orWhere("es.id = $etiquetaSeparacao");
+            $sql->orWhere("es.id = '$etiquetaSeparacao'");
         }
 
         $resultado = $sql->getQuery()->getResult();

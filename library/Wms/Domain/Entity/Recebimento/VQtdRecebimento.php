@@ -20,7 +20,7 @@ class VQtdRecebimento
     protected $codRecebimento;
 
     /**
-     * @Column(name="COD_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_PRODUTO", type="string", nullable=false)
      * @id
      */
     protected $codProduto;
@@ -41,7 +41,11 @@ class VQtdRecebimento
      */
     protected $codNormaPaletizacao;
 
-
+    /**
+     * @Column(name="NUM_PESO", type="decimal", nullable=false)
+     */
+    protected $peso;
+    
     /**
      * @param mixed $codOs
      */
@@ -138,4 +142,20 @@ class VQtdRecebimento
         return $this->codNormaPaletizacao;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getPeso()
+    {
+        return $this->peso;
+    }
+
+    /**
+     * @param mixed $peso
+     */
+    public function setPeso($peso)
+    {
+        $this->peso = $peso;
+    }
+    
 }

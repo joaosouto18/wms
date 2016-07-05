@@ -36,8 +36,10 @@ class MapaSeparacaoRepository extends EntityRepository
                        P.DSC_PRODUTO,
                        NVL(CONF.NUM_CONFERENCIA,0) as NUM_CONFERENCIA,
                        SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) as QTD_SEPARAR,
+                       SUM(MSP.QTD_CORTADO) as QTD_CORTADO,
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
-                       CASE WHEN (MSP.IND_CONFERIDO = 'S') OR NVL(CONF.QTD_CONFERIDA,0) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) THEN 'CONFERIDO'
+                       CASE WHEN (MSP.IND_CONFERIDO = 'S') OR NVL(CONF.QTD_CONFERIDA,0) + SUM(MSP.QTD_CORTADO) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) OR NVL(CONF.QTD_CONFERIDA,0) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) THEN 'CONFERIDO'
+                            WHEN (SUM(MSP.QTD_CORTADO) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)) THEN 'CORTADO'
                             ELSE 'PENDENTE'
                        END AS CONFERIDO
                   FROM MAPA_SEPARACAO_PRODUTO MSP
@@ -288,25 +290,25 @@ class MapaSeparacaoRepository extends EntityRepository
             $produtoEn = $volumeEn->getProduto();
         }
 
-        if (($qtdConferida + $qtdCortada + ($qtdEmbalagem*$quantidade)) > $qtdMapa) {
-           throw new \Exception("Quantidade informada excede a quantidade solicitada no mapa");
+        if (($qtdConferida + $qtdCortada + ($qtdEmbalagem * $quantidade)) > $qtdMapa) {
+            throw new \Exception("Quantidade informada excede a quantidade solicitada no mapa");
         }
         $sessao = new \Zend_Session_Namespace('coletor');
 
         $novaConferencia = new MapaSeparacaoConferencia();
-            $novaConferencia->setMapaSeparacao($mapaEn);
-            $novaConferencia->setCodOS($sessao->osID);
-            $novaConferencia->setCodProduto($produtoEn->getId());
-            $novaConferencia->setDscGrade($produtoEn->getGrade());
-            $novaConferencia->setProduto($produtoEn);
-            $novaConferencia->setIndConferenciaFechada("N");
-            $novaConferencia->setNumConferencia($numConferencia);
-            $novaConferencia->setProdutoEmbalagem($embalagemEn);
-            $novaConferencia->setProdutoVolume($volumeEn);
-            $novaConferencia->setQtdEmbalagem($qtdEmbalagem);
-            $novaConferencia->setQtdConferida($quantidade);
-            $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
-            $novaConferencia->setDataConferencia(new \DateTime());
+        $novaConferencia->setMapaSeparacao($mapaEn);
+        $novaConferencia->setCodOS($sessao->osID);
+        $novaConferencia->setCodProduto($produtoEn->getId());
+        $novaConferencia->setDscGrade($produtoEn->getGrade());
+        $novaConferencia->setProduto($produtoEn);
+        $novaConferencia->setIndConferenciaFechada("N");
+        $novaConferencia->setNumConferencia($numConferencia);
+        $novaConferencia->setProdutoEmbalagem($embalagemEn);
+        $novaConferencia->setProdutoVolume($volumeEn);
+        $novaConferencia->setQtdEmbalagem($qtdEmbalagem);
+        $novaConferencia->setQtdConferida($quantidade);
+        $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
+        $novaConferencia->setDataConferencia(new \DateTime());
         $this->getEntityManager()->persist($novaConferencia);
         $this->getEntityManager()->flush();
 
@@ -316,9 +318,9 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
         $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
 
-        $mapas = $this->findBy(array('expedicao'=>$idExpedicao));
+        $mapas = $this->findBy(array('expedicao' => $idExpedicao));
         foreach ($mapas as $mapa) {
-            $mapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapa->getId(),'indConferido'=>'N'));
+            $mapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapa->getId(), 'indConferido' => 'N'));
             foreach ($mapaProduto as $produtoEn) {
                 $produtoEn->setIndConferido('S');
                 $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
@@ -330,7 +332,31 @@ class MapaSeparacaoRepository extends EntityRepository
             $this->getEntityManager()->persist($mapa);
         }
         $this->getEntityManager()->flush();
-}
+    }
+
+    /**
+     * @param $mapaSeparacaoRepo
+     * @param $idExpedicao
+     * @param $mapaSeparacaoProdutoRepo
+     * @param $produtoEn
+     * @return mixed
+     */
+    public function getMapaByProdutoAndExpedicao($idExpedicao, $mapaSeparacaoProdutoRepo, $produtoEn)
+    {
+        $mapasEn = $this->findBy(array('expedicao' => $idExpedicao));
+        foreach ($mapasEn as $mapaEn) {
+            $mapaProdutoEn = $mapaSeparacaoProdutoRepo->findOneBy(array('mapaSeparacao' => $mapaEn->getId(),
+                'codProduto' => $produtoEn->getId(),
+                'dscGrade' => $produtoEn->getGrade()));
+            if ($mapaProdutoEn != null) {
+                $mapaEn = $mapaProdutoEn->getMapaSeparacao();
+                break;
+            }
+        }
+        return array(
+            'mapaEn' => $mapaEn,
+            'mapaProdutoEn' => $mapaProdutoEn);
+    }
 
     public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn) {
         $mensagemColetor = false;
@@ -400,7 +426,8 @@ class MapaSeparacaoRepository extends EntityRepository
         return array('return'=>true);
     }
 
-    public function getQtdConferidaByVolumePatrimonio ($idExpedicao, $idVolume) {
+    public function getQtdConferidaByVolumePatrimonio($idExpedicao, $idVolume)
+    {
         $SQL = "SELECT NVL(SUM(MC.QTD_EMBALAGEM * MC.QTD_CONFERIDA),0) as QTD_CONFERIDA
                   FROM MAPA_SEPARACAO_CONFERENCIA MC
                  INNER JOIN (SELECT MAX(NUM_CONFERENCIA) MAX_C, COD_PRODUTO, DSC_GRADE , NVL(COD_PRODUTO_VOLUME,0) VOLUME, COD_MAPA_SEPARACAO
@@ -427,5 +454,49 @@ class MapaSeparacaoRepository extends EntityRepository
 
         return $dql->getQuery()->getResult();
     }
+
+    public function verificaConferenciaProduto($idMapaSeparacao,$embalagem,$volume)
+    {
+        $sql = "SELECT SUM(NVL(MSP.QTD_SEPARAR, 0)) - SUM(NVL(MSC.QTD_CONFERIDA, 0)) AS QTD_PRODUTO_CONFERIR
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE
+                  FROM MAPA_SEPARACAO MS1
+                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
+                  GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO
+                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND (MSC.COD_PRODUTO = MSP.COD_PRODUTO) AND (MSC.DSC_GRADE = MSP.DSC_GRADE)
+                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
+
+        if (isset($embalagem) && !is_null($embalagem)) {
+            $produto = $embalagem->getCodProduto();
+            $grade = $embalagem->getGrade();
+            $sql .= " AND MSP.COD_PRODUTO = '$produto' AND MSP.DSC_GRADE = '$grade'";
+        }
+
+
+        if (isset($volume) && !is_null($volume))
+            $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
+
+        $sql .= " GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function verificaConferenciaMapa($idMapaSeparacao)
+    {
+        $sql = "SELECT SUM(NVL(MSP.QTD_SEPARAR, 0)) - SUM(NVL(MSC.QTD_CONFERIDA, 0)) AS QTD_PRODUTO_CONFERIR
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE
+                  FROM MAPA_SEPARACAO MS1
+                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
+                  GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO
+                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO AND MSC.DSC_GRADE = MSP.DSC_GRADE
+                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE ";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+    
 
 }

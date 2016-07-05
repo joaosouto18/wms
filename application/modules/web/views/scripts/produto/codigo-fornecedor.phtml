@@ -1,0 +1,126 @@
+<script>
+    $(function() {
+
+        $( "#btn-salvar-codigo-fornecedor" )
+            .live('click', function(event){
+                var gridFornecedor = $('.grid-codFornecedor');
+                var tempIdForn = $("#tempCodFornecedor");
+                var inptTxtForn = $("#codigoFornecedor-fornecedor");
+                var inptCodForn = $("#codigoFornecedor-codigo");
+                var inptEmbalagem = $("#codigoFornecedor-embalagem");
+
+                if (tempIdForn.val() != "" && inptCodForn.val() != "" && inptEmbalagem.val() != "") {
+                    gridFornecedor.append('' +
+                        '<tr class="gTResultSet">' +
+                        '<td style="text-align:left">' + inptTxtForn.val() + '</td>' +
+                        '<td style="text-align:left">' + inptCodForn.val() + '</td>' +
+                        '<td style="text-align:left">' + inptEmbalagem.children('option:selected').text() + '</td>' +
+                        '<td style="text-align:left"> <a href="javascript://" class="excluir-cod-fornecedor" data-id="' + tempIdForn.val() + '" title="Clique para Excluir"> <img src="http://wms.local/img/icons/delete.png"> </a> </td>' +
+                        '</tr>');
+                    gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][id]" value="' + tempIdForn.val() + '" />');
+                    gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][cod]" value="' + inptCodForn.val() + '" />');
+                    gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][embalagem]" value="' + inptEmbalagem.val() + '" />');
+                    inptTxtForn.val('');
+                    inptCodForn.val('');
+                    tempIdForn.val('');
+                    inptEmbalagem.children('option:selected').prop('selected', false);
+                    inptEmbalagem.children('option[value=""]').prop('selected', true);
+                    event.preventDefault();
+                } else {
+                    alert("Preencha todos os dados e tente novamente!");
+                }
+            });
+
+
+        $( '.excluir-cod-fornecedor' )
+            .live( 'click', function(event) {
+                var confirmacao = confirm("Deseja realmente excluir esta relação?");
+                if (confirmacao) {
+                    var idCod = $(this).data('id');
+                    var thisId = $(this);
+                    $.getJSON("/produto/excluir-cod-fornecedor-ajax/id/" + idCod, function (data) {
+                        thisId.parent().parent().parent().parent().children("input[name^='fornecedor[" + idCod + "]']").each(function () {
+                            $(this).remove();
+                        });
+                        thisId.parent().parent().remove();
+                    });
+
+                    event.preventDefault();
+                }
+            });
+
+        var cache = {};
+
+        $( "#codigoFornecedor-fornecedor" ).autocomplete({
+            minLength: 2,
+            source: function( request, response ) {
+                var term = request.term;
+                if ( term in cache ) {
+                    response( cache[ term ] );
+                    return;
+                }
+
+                $.getJSON( "/produto/codigo-fornecedor-ajax", request, function( data, status, xhr ) {
+                    cache[ term ] = data;
+                    response( data );
+                });
+            },
+            select: function (event, ui) {
+                this.value = ui.item.label;
+                // Store value in hidden field
+                $('#tempCodFornecedor').val(ui.item.id);
+                // Prevent default behaviour
+                return false;
+            }
+        });
+
+    });
+
+</script>
+
+<div id="produto-codigo-fornecedor">
+    <dd id="identification-element">
+        <fieldset id="fieldset-codigo-fornecedor">
+            <legend>Escolha o fornecedor e digite o código do produto no fornecedor escolhido</legend>
+            <?php echo $this->element->fornecedor; ?>
+            <?php echo $this->element->codigo; ?>
+            <?php echo $this->element->embalagem; ?>
+            <?php echo $this->element->btnAdicionar; ?>
+        </fieldset>
+    </dd>
+    <input type="hidden" value="" id="tempCodFornecedor" name="tempCodFornecedor" />
+
+    <table class="gTable grid-codFornecedor">
+        <tbody>
+            <tr class="gTTitle">
+                <td width="45%"><span>Fornecedor</span></td>
+                <td width="25%"><span>Código do produto no fornecedor</span></td>
+                <td width="23%"><span>Embalagem padrão</span></td>
+                <td width="7%"><span>Excluir?</span></td>
+            </tr>
+        <?php $codigosFornecedores = Zend_Layout::getMvcInstance()->getView()->codigosFornecedores;?>
+
+        <?php if (count($codigosFornecedores) >= 1) : ?>
+            <?php
+            /** @var \Wms\Domain\Entity\CodigoFornecedor\Referencia $codigoFornecedor */
+            foreach($codigosFornecedores as $codigoFornecedor) :
+                $embTxt = null;
+                if (!empty($codigoFornecedor->getEmbalagem()))
+                    $embTxt = $codigoFornecedor->getEmbalagem()->getDescricao() . "(" . $codigoFornecedor->getEmbalagem()->getQuantidade() . ")" ;?>
+                <tr class="gTResultSet ">
+                    <td style="text-align:left"><?php echo $codigoFornecedor->getFornecedor()->getPessoa()->getNome(); ?></td>
+                    <td style="text-align:left"><?php echo $codigoFornecedor->getDscReferencia() ?></td>
+                    <td style="text-align:left"><?php echo  (!empty($embTxt))? $embTxt: "Sem embalagem padrão"?></td>
+                    <td style="text-align:left">
+                        <a class="excluir-cod-fornecedor" title="Clique para Excluir" class="" data-id="<?php echo $codigoFornecedor->getId(); ?>" href="javascript://">
+                            <img src="/img/icons/delete.png">
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+        </tbody>
+    </table>
+
+</div>

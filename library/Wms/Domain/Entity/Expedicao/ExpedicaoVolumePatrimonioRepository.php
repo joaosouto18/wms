@@ -34,20 +34,20 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $entityVolumePatrimonio->setOcupado('S');
             $em->persist($entityVolumePatrimonio);
 
-            $volumePatrimonioRepo   = $em->getRepository('wms:Expedicao\VolumePatrimonio');
-            $entityVolPatrimonio    = $volumePatrimonioRepo->findOneBy(array('id' => $volume));
             $expedicaoRepo          = $em->getRepository('wms:Expedicao');
             $entityExpedicao        = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
             $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
             $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
 
             $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
+            $countVolumes = count($this->findBy(array('expedicao' => $idExpedicao))) + 1;
 
             if (count($arrayExpVolPatrimonioEn) ==0){
                 $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
-                $enExpVolumePatrimonio->setVolumePatrimonio($entityVolPatrimonio);
+                $enExpVolumePatrimonio->setVolumePatrimonio($entityVolumePatrimonio);
                 $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
                 $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
+                $enExpVolumePatrimonio->setSequencia($countVolumes);
                 $enExpVolumePatrimonio->setUsuario($usuario);
                 $em->persist($enExpVolumePatrimonio);
             }
@@ -59,7 +59,7 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $em->rollback();
             throw new \Exception($e->getMessage());
         }
-     }
+    }
 
     public function validarEtiquetaVolume($volume)
     {
@@ -261,6 +261,32 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             ->groupBy("msc.codProduto, msc.dscGrade, p.descricao");
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function vinculaLacre($params)
+    {
+        $expedicaoVolumePatrimonioEn = $this->getEntityManager()->getReference('wms:Expedicao\ExpedicaoVolumePatrimonio', $params['id']);
+
+        $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+        if ($expedicaoVolumePatrimonioEn) {
+            $observacao = 'Lacre '. $expedicaoVolumePatrimonioEn->getLacre() . ' alterado para lacre '. $params['numeroLacre'];
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+            $andamentoRepo->save($observacao, $params['expedicao'], false, true);
+
+            $expedicaoVolumePatrimonioEn->setDataVinculoLacre(new \DateTime());
+            $expedicaoVolumePatrimonioEn->setLacre($params['numeroLacre']);
+            $expedicaoVolumePatrimonioEn->setUsuarioLacre($usuario);
+
+            $this->getEntityManager()->persist($expedicaoVolumePatrimonioEn);
+            $this->getEntityManager()->flush();
+
+            return true;
+        }
+
+        return false;
+
     }
 
 }

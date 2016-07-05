@@ -72,7 +72,7 @@ class Identificacao extends SubForm
                 ->addElement('text', 'referencia', array(
                     'label' => 'Referência',
                     'size' => 10,
-                    'maxlength' => 10,
+                    'maxlength' => 50,
                 ))
                 ->addElement('numeric', 'numVolumes', array(
                     'label' => 'Nº Volumes',

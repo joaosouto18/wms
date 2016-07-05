@@ -1,12 +1,14 @@
 <?php
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Grid\Expedicao as ExpedicaoGrid,
+    Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\PesoCargas as PesoCargasGrid;
 
 class Expedicao_IndexController  extends Action
 {
+
     public function indexAction()
     {
         $form = new FiltroExpedicaoMercadoria();
@@ -267,6 +269,91 @@ class Expedicao_IndexController  extends Action
         $declaracaoReport->imprimir($result);
     }
 
+    public function apontamentoSeparacaoAction(){
+        $form = new \Wms\Module\Expedicao\Form\EquipeSeparacao();
+        $formMapaSeparacao = new \Wms\Module\Expedicao\Form\EquipeSeparacaoMapa();
+
+        $paramsMapaSeparacao = $formMapaSeparacao->getParams();
+        $params = $form->getParams();
+
+        if (!empty($paramsMapaSeparacao) && isset($paramsMapaSeparacao)) {
+            $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($paramsMapaSeparacao['codMapaSeparacao']);
+            $codUsuario = $paramsMapaSeparacao['pessoa'];
+
+            if (empty($mapaSeparacaoEn) || !isset($mapaSeparacaoEn)) {
+                $this->addFlashMessage("error","Mapa de Separação não informado ou inválido");
+                $this->redirect('apontamento-separacao');
+            }
+
+            if (is_null($codUsuario)) {
+                $this->addFlashMessage("error","Informe um usuário para vincular");
+                $this->redirect('apontamento-separacao');
+            }
+
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaRepo->save($mapaSeparacaoEn,$codUsuario);
+
+            $this->addFlashMessage("success","Conferente vinculado com sucesso ao Mapa de Separação!");
+            $this->redirect('apontamento-separacao');
+
+        }
+
+        if ( !empty($params) ) {
+            $idEtiqueta1 = $params['etiquetaInicial'];
+            $idEtiqueta2 = $params['etiquetaFinal'];
+            $idUsuario = $params['pessoa'];
+
+            $LeituraColetor = new LeituraColetor();
+            $etiquetaInicial = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta1);;
+            $etiquetaFinal = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta2);;
+
+            $idEtiqueta1 = $etiquetaInicial;
+            $idEtiqueta2 = $etiquetaFinal;
+
+            if (is_null($idEtiqueta2) or ($idEtiqueta2=="")) {
+                $idEtiqueta2 = $idEtiqueta1;
+            }
+
+            if (is_null($idEtiqueta1) or ($idEtiqueta1=="")) {
+                $idEtiqueta1 = $idEtiqueta2;
+            }
+
+            $etiquetaInicial = $idEtiqueta1;
+            $etiquetaFinal = $idEtiqueta2;
+            if ($idEtiqueta1 > $idEtiqueta2){
+                $etiquetaFinal = $idEtiqueta1;
+                $etiquetaInicial = $idEtiqueta2;
+            }
+
+            $erro = false;
+            if (is_null($idEtiqueta1) or ($idEtiqueta1=="")) {
+                $this->addFlashMessage("error","Informe ao menos uma etiqueta");
+                $erro = true;
+            }
+            
+            if (is_null($idUsuario)) {
+                $this->addFlashMessage("error","Informe um usuário para vincular");
+                $erro = true;
+            }
+            
+            if ($erro == false) {
+                $equipeSeparacao = new Expedicao\EquipeSeparacao();
+                $equipeSeparacao->setCodUsuario($idUsuario);
+                $equipeSeparacao->setDataVinculo(new \DateTime());
+                $equipeSeparacao->setEtiquetaInicial($etiquetaInicial);
+                $equipeSeparacao->setEtiquetaFinal($etiquetaFinal);
+                $this->getEntityManager()->persist($equipeSeparacao);
+                $this->getEntityManager()->flush();
+                $this->addFlashMessage("success","Equipe de Separação vinculada com sucesso");
+                $this->redirect('apontamento-separacao');
+            }
+        }
+
+        $this->view->form = $form;
+        $this->view->formMapaSeparacao = $formMapaSeparacao;
+    }
+    
     public function equipeCarregamentoAction()
     {
         $form = new \Wms\Module\Expedicao\Form\EquipeCarregamento();
@@ -276,7 +363,40 @@ class Expedicao_IndexController  extends Action
         $grid = new \Wms\Module\Expedicao\Grid\EquipeCarregamento();
         $this->view->grid = $grid->init($params)
             ->render();
+    }
 
+    public function acertarReservaEstoqueAjaxAction()
+    {
+        set_time_limit(0);
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+        $reservaEstoqueExpedicaoRepo = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao');
+        $reservaEstoqueExpedicao = $reservaEstoqueExpedicaoRepo->findBy(array('pedido' => null));
+
+        foreach ($reservaEstoqueExpedicao as $reservaEstoqueExpedicaoEn) {
+            $idExpedicao = $reservaEstoqueExpedicaoEn->getExpedicao()->getId();
+            $idReservaEstoque = $reservaEstoqueExpedicaoEn->getReservaEstoque()->getId();
+            $sql = "SELECT P.COD_PEDIDO FROM PEDIDO P
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    INNER JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
+                    INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE AND REP.COD_PRODUTO = PP.COD_PRODUTO AND REP.DSC_GRADE = PP.DSC_GRADE
+                    WHERE E.COD_EXPEDICAO = $idExpedicao
+                    AND RE.COD_RESERVA_ESTOQUE = $idReservaEstoque";
+
+            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            $codPedido = $result[0]['COD_PEDIDO'];
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
+
+            $reservaEstoqueExpedicaoEn->setPedido($pedidoEn);
+            $this->_em->persist($reservaEstoqueExpedicaoEn);
+            $this->_em->flush();
+        }
+        var_dump('sucesso!');exit;
     }
 
 

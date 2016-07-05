@@ -7,6 +7,26 @@ use Wms\Domain\Entity\Ator;
 
 class ClienteRepository extends AtorRepository
 {
+
+    public function save($idCliente)
+    {
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
+        try {
+            $clienteRepo = $em->getRepository('wms:Pessoa\Papel\Cliente');
+            $clienteEn = $clienteRepo->findOneBy(array('codClienteExterno' => $idCliente));
+            if (!$clienteEn)
+                $clienteEn = new Cliente();
+
+            $clienteEn->setCodClienteExterno($idCliente);
+            $em->persist($clienteEn);
+
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw $e;
+        }
+    }
+
     public function getCliente($params)
     {
         $codCliente = (isset($params['codCliente']) ? $params['codCliente'] : null);

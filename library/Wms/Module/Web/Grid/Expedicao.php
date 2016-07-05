@@ -196,8 +196,8 @@ class Expedicao extends Grid
                 'params' => array('tipo' => 'relatorio-reentrega','central'=>'','todas'=>'S'),
                 'cssClass' => 'pdf',
                 'condition' => function ($row) {
-                        return ($row['reentrega'] > 0) and ($row['imprimir'] != "SIM") ;
-                    },
+                    return ($row['reentrega'] > 0) and ($row['imprimir'] != "SIM") ;
+                },
                 'pkIndex' => 'id'
             ))
             ->addAction(array(

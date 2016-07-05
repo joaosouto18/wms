@@ -8,17 +8,17 @@ $.Model.extend('Wms.Models.Enderecamento',
      * @param {Function} error a callback function for an error in the ajax request.
      */
     findAll: function( params, success, error ){
-        $.ajax({
-            url: URL_MODULO + '/endereco/filtrar/',
-            type: 'post',
-            dataType: 'html',
-            data: params,
-            error: error,
-            success: function(data) {
-                $('#resultado-filtro').html (data);
-            }
-        })
-    },
+    $.ajax({
+        url: URL_MODULO + '/endereco/filtrar/',
+        type: 'post',
+        dataType: 'html',
+        data: params,
+        error: error,
+        success: function(data) {
+            $('#resultado-filtro').html (data);
+        }
+    })
+},
 
     findMovimentacao: function(params, success, error) {
         $.ajax({

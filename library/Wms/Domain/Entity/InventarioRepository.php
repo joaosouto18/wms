@@ -497,7 +497,8 @@ class InventarioRepository extends EntityRepository
             ,
                 NVL(exp.id,NVL(ressup.id,NVL(palete.id,'')))
             ) as origemReserva,
-            CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva
+            CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva,
+            NVL(ped.id,'') as pedido
             ")
             ->from("wms:Ressuprimento\ReservaEstoque","re")
             ->innerJoin('re.endereco', 'd')
@@ -505,7 +506,8 @@ class InventarioRepository extends EntityRepository
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueExpedicao','reexp','WITH','reexp.reservaEstoque = re.id')
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueEnderecamento','reend','WITH','reend.reservaEstoque = re.id')
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueOnda','reond','WITH','reond.reservaEstoque = re.id')
-            ->leftJoin('reexp.expedicao','exp')
+            ->leftJoin('reexp.pedido','ped')
+            ->leftJoin('reexp.expedicao', 'exp')
             ->leftJoin('reond.ondaRessuprimentoOs','ressup')
             ->leftJoin('reend.palete','palete')
             ->leftJoin('re.produtos','rep')
@@ -513,6 +515,7 @@ class InventarioRepository extends EntityRepository
             ->andWhere("re.atendida = 'N'")
             ->andWhere("ie.inventario = $idInventario")
             ->distinct(true);
+
         return $source->getQuery()->getResult();
     }
 

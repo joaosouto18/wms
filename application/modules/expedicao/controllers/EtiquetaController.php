@@ -118,7 +118,7 @@ class Expedicao_EtiquetaController  extends Action
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                $mapa->imprimir($idExpedicao);
+                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Mapas Impressos', $idExpedicao);
@@ -149,11 +149,16 @@ class Expedicao_EtiquetaController  extends Action
             }
         }
         if ($tipo == "reentrega") {
+//            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
+            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
+            if ($this->getRequest()->getParam('todas') == 'S') $status = null;
+
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
+            $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
@@ -165,17 +170,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
             }
-
-            $Etiqueta->imprimirReentrega($idExpedicao, $modelo);
         }
-
-        if ($tipo == "relatorio-reentrega") {
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-            $pendencias = $etiquetaRepo->getEtiquetasReentrega($idExpedicao, null);
-            $this->exportPDF($pendencias,'pendencias-reentrega','Reentregas na expedição','L');
-        }
-
     }
 
     public function semDadosAction() 
@@ -295,7 +290,7 @@ class Expedicao_EtiquetaController  extends Action
         $mapa = new MapaSeparacao;
 
         if (isset($reimprimirTodos) && $reimprimirTodos != null) {
-            $mapa->imprimir($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
         } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
             $codBarra    = $request->getParam('codBarra');
             if (!$codBarra) {
@@ -307,7 +302,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', "Mapa $codBarra não encontrado");
                 $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
             }
-            $mapa->imprimir($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $codBarra);
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $codBarra, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
@@ -334,6 +329,8 @@ class Expedicao_EtiquetaController  extends Action
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
             $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
 
+            $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+
             if (count($pedidosProdutos) == 0) {
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
                      && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
@@ -341,7 +338,7 @@ class Expedicao_EtiquetaController  extends Action
                     $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
                 }
             } else {
-                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,1);
+                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao);
             }
 
             $this->getEntityManager()->commit();

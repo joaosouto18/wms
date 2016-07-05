@@ -88,7 +88,7 @@ class notaFiscal {
     public $pedidos;
     /** @var integer */
     public $numeroNf;
-        /** @var string */
+    /** @var string */
     public $serieNf;
     /** @var string */
     public $cnpjEmitente;
@@ -407,7 +407,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         if (($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) ||
             ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_SEGUNDA_CONFERENCIA) ||
-		    ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
+            ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO)) {
             return array('liberado' => true);
         } else {
             return array('liberado' => false);
@@ -551,7 +551,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         if (isset($expedicaoEntity) && is_object($expedicaoEntity)) {
             $hoje = new \DateTime("now");
             if ($expedicaoEntity->getDataInicio()->format('Y-m-d') != $hoje->format('Y-m-d')) {
-               throw new \Exception('Existem expedições antigas para a placa ' . $carga['placaExpedicao'] . ' abertas no sistema');
+                throw new \Exception('Existem expedições antigas para a placa ' . $carga['placaExpedicao'] . ' abertas no sistema');
             }
         }
 
@@ -718,7 +718,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     }
 
-    protected function findClienteByCodigoExterno ($repositorios, $cliente) {
+    public function findClienteByCodigoExterno ($repositorios, $cliente) {
         $ClienteRepo    = $repositorios['clienteRepo'];
         $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
 
@@ -758,19 +758,25 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
 
             $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
+            $cliente['enderecos'][0]['acao'] = 'incluir';
+            $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
 
-            $cliente['enderecos'][0] = array (
-                'acao' => 'incluir',
-                'idTipo' => \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA,
-                'idUf' => $entitySigla->getId(),
-                'complemento' => $cliente['complemento'],
-                'descricao' => $cliente['logradouro'],
-                'pontoReferencia' => $cliente['referencia'],
-                'bairro' => $cliente['bairro'],
-                'localidade' => $cliente['cidade'],
-                'numero' => $cliente['numero'],
-                'cep' => $cliente['cep'],
-            );
+            if (isset($cliente['complemento']))
+                $cliente['enderecos'][0]['complemento'] = $cliente['complemento'];
+            if (isset($cliente['logradouro']))
+                $cliente['enderecos'][0]['descricao'] = $cliente['logradouro'];
+            if (isset($cliente['referencia']))
+                $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
+            if (isset($cliente['bairro']))
+                $cliente['enderecos'][0]['bairro'];
+            if (isset($cliente['cidade']))
+                $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
+            if (isset($cliente['numero']))
+                $cliente['enderecos'][0]['numero'];
+            if (isset($cliente['cep']))
+                $cliente['enderecos'][0]['cep'] = $cliente['cep'];
+            if (isset($entitySigla))
+                $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
 
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 
@@ -824,7 +830,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
             throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
         }
-				
+
         return $entityExpedicao;
     }
 
@@ -997,11 +1003,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $notaFiscalEn = $notaFiscalRepository->findOneBy(array('numeroNf' =>  (int) trim($numeroNf),
-                                                                   'codPessoa' => $pessoaEn->getId(),
-                                                                   'serieNf' => trim($serieNF)));
+                'codPessoa' => $pessoaEn->getId(),
+                'serieNf' => trim($serieNF)));
 
             $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno' => trim($numeroCarga),
-                                                         'tipoCarga' => $tipoCarga->getId()));
+                'tipoCarga' => $tipoCarga->getId()));
 
             if (is_null($notaFiscalEn)) {
                 throw new \Exception('Nota Fiscal ' . $numeroNf . " / " . $serieNF . " não encontrada");
@@ -1022,7 +1028,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $reentregaEn = $reentregaRepository->findOneBy(array('codNotaFiscalSaida' => $notaFiscalEn->getId(),
-                                                                 'codCarga' => $cargaEn->getId()));
+                'codCarga' => $cargaEn->getId()));
 
             if ($reentregaEn != null) {
                 return true;
@@ -1030,12 +1036,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $reentregaEn = new Expedicao\Reentrega();
-                $reentregaEn->setIndEtiquetaMapaGerado("N");
-                $reentregaEn->setCarga($cargaEn);
-                $reentregaEn->setCodCarga($cargaEn->getId());
-                $reentregaEn->setNotaFiscalSaida($notaFiscalEn);
-                $reentregaEn->setCodNotaFiscalSaida($notaFiscalEn->getId());
-                $reentregaEn->setDataReentrega(new \DateTime());
+            $reentregaEn->setIndEtiquetaMapaGerado("N");
+            $reentregaEn->setCarga($cargaEn);
+            $reentregaEn->setCodCarga($cargaEn->getId());
+            $reentregaEn->setNotaFiscalSaida($notaFiscalEn);
+            $reentregaEn->setCodNotaFiscalSaida($notaFiscalEn->getId());
+            $reentregaEn->setDataReentrega(new \DateTime());
             $this->_em->persist($reentregaEn);
 
             $andamentoNFRepo->save($notaFiscalEn, Expedicao\NotaFiscalSaida::REENTREGA_DEFINIDA, true, $cargaEn->getExpedicao(), $reentregaEn);

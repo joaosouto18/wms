@@ -4,7 +4,8 @@ use Wms\Module\Web\Controller\Action,
 
 class Enderecamento_Relatorio_PickingController extends Action
 {
-    public function indexAction() {
+    public function indexAction()
+    {
         $this->configurePage();
 
         /** @var \Wms\Domain\Entity\Enderecamento\RelatorioPickingRepository $relatorioRepo */
@@ -22,6 +23,10 @@ class Enderecamento_Relatorio_PickingController extends Action
 
         $enderecosSelecionados = $relatorioRepo->getSelecionados();
         $this->view->pickings = $enderecosSelecionados;
+
+        $gridReabastecimento = new \Wms\Module\Enderecamento\Grid\Reabastecimento();
+        $gridReabastecimento->init();
+        $this->view->gridReabastecimento = $gridReabastecimento;
 
     }
 
@@ -77,6 +82,22 @@ class Enderecamento_Relatorio_PickingController extends Action
 
         $relatorio = new \Wms\Module\Enderecamento\Report\AbastecimentoPicking();
         $relatorio->imprimir($result);
+    }
+
+    public function imprimirAjaxAction()
+    {
+        $codOs = $this->_getParam('id');
+        ini_set('max_execution_time', 3000);
+        $relatorio = new \Wms\Module\Enderecamento\Report\ReabastecimentoManual();
+        $relatorio->imprimir($codOs,false);
+    }
+
+    public function imprimirRupturaAjaxAction()
+    {
+        $codOs = $this->_getParam('id');
+        ini_set('max_execution_time', 3000);
+        $relatorio = new \Wms\Module\Enderecamento\Report\ReabastecimentoManual();
+        $relatorio->imprimir($codOs,true);
     }
 
     public function limparAction() {

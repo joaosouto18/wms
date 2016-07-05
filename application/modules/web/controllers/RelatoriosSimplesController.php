@@ -47,15 +47,7 @@ class Web_RelatoriosSimplesController extends Crud
 
                 if ( !empty($consulta) ){
                     if ( $consulta!=false ){
-
                         if ($params['tipo']=='pdf'){
-
-                            /*$Report = new \Wms\Module\Web\Report\RelatoriosSimples();
-
-                            if ( $Report->init($consulta,$relatorio ) ) {
-                                $this->addFlashMessage('error', 'Erro ao gerar o relatório');
-                            }*/
-
                             $nome=strtoupper($relatorio);
                             $titulo=$consulta['titulo'];
                             unset($consulta['titulo']);

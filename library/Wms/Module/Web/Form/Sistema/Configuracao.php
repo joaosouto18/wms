@@ -37,7 +37,7 @@ class Configuracao extends Form
 
                 $elementArray = array(
                     'size' => 20,
-                    'maxlength' => 40,
+                    'maxlength' => 60,
                     'label' => $parametro->getTitulo(),
                     'value' => $parametro->getValor(),
                 );

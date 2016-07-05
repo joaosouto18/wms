@@ -5,8 +5,8 @@
     <?php elseif(count($this->recebimentos) > 0): ?>
         <?php foreach($this->recebimentos as $recebimento): ?>
             <li>
-                <a href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'listar-paletes', 'id' => $recebimento->getId())); ?>"
-                   title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?></a>
+                <a href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'listar-paletes', 'id' => $recebimento['COD_RECEBIMENTO'])); ?>"
+                   title="<?php echo $recebimento['COD_RECEBIMENTO'] ?>" >Cod. Receb. <?php echo $recebimento['COD_RECEBIMENTO'] ?> - Box <?php echo $recebimento['BOX'] ?></a>
             </li>
         <?php endforeach; ?>
     <?php endif;?>

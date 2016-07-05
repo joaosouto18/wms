@@ -24,9 +24,33 @@ class Expedicao_MapaController  extends Action
 
     public function pendentesConferenciaAction()
     {
-        $idExpedicao = $this->_getParam('id');
+        $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
 
         $grid = new \Wms\Module\Expedicao\Grid\MapasPendentes();
-        $this->view->grid = $grid->init($idExpedicao)->render();
+        $this->view->grid = $grid->init($idMapa)->render();
     }
+
+    public function imprimirAjaxAction()
+    {
+        $idMapa = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
+        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idMapa);
+
+        $this->exportPDF($result, 'Produtos_Sem_conferencia_Mapa', 'Produtos nao conferidos do Mapa ' . $idMapa, 'L');
+    }
+
+    public function relatorioPendentesAjaxAction()
+    {
+        $idExpedicao = $this->getRequest()->getParam('id');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
+        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idExpedicao);
+
+        $RelatorioPendencias = new \Wms\Module\Expedicao\Report\MapasSemConferencia("L", "mm", "A4");
+        $RelatorioPendencias->imprimir($idExpedicao, $result);
+
+    }
+
 }

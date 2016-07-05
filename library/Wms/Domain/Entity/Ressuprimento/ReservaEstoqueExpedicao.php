@@ -22,6 +22,12 @@ class ReservaEstoqueExpedicao
      */
     protected $expedicao;
 
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Pedido")
+     * @JoinColumn(name="COD_PEDIDO", referencedColumnName="COD_PEDIDO")
+     */
+    protected $pedido;
+
     public function setExpedicao($expedicao)
     {
         $this->expedicao = $expedicao;
@@ -42,5 +48,20 @@ class ReservaEstoqueExpedicao
         return $this->reservaEstoque;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getPedido()
+    {
+        return $this->pedido;
+    }
+
+    /**
+     * @param mixed $pedido
+     */
+    public function setPedido($pedido)
+    {
+        $this->pedido = $pedido;
+    }
 
 }
