@@ -135,8 +135,16 @@ class Mobile_InventarioController extends Action
                 $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
                 $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
 
+                /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
+                $contagemEndRepo         = $this->getEntityManager()->getRepository("wms:Inventario\ContagemEndereco");
+                $verificaPrimeiroBipe    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProduto' => null, 'grade' => null));
+                if (count($verificaPrimeiroBipe) > 0) {
+                    $inventarioService->removeEnderecoInventario($params, true);
+                }
+
                 $this->checkErrors($inventarioService->checaSeInventariado($params));
                 $inventarioService->contagemEndereco($params);
+
                 if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
                     $this->addFlashMessage('success', 'Endereço vazio inventariado com sucesso');
                 } else {
