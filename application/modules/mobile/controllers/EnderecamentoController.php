@@ -851,6 +851,12 @@ class Mobile_EnderecamentoController extends Action
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
+                    if (!isset($endereco) || empty($endereco)) {
+                        $this->addFlashMessage('error', 'Novo Endereço não Encontrado!');
+                        $this->_redirect('/mobile/enderecamento/movimentacao');
+                    }
+
+
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
@@ -928,6 +934,9 @@ class Mobile_EnderecamentoController extends Action
                     $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
+                    if (!isset($newEndereco) || empty($newEndereco))
+                        throw new \Exception("Novo Endereço não encontrado!");
+
                     $params['endereco'] = $endereco = $this->getEnderecoNivel($newEndereco[0]['DSC_DEPOSITO_ENDERECO'], $nivelNovo);
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
@@ -967,7 +976,7 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 

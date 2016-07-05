@@ -370,6 +370,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
                 $unMedida = $this->getRequest()->getParam('unMedida');
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
+                $numPeso = $this->getRequest()->getParam('numPeso');
 
                 $hoje = new Zend_Date;
                 foreach ($dataValidade as $idProduto => $grades) {
@@ -386,14 +387,15 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                                     'idOrdemServico' => serialize($idOrdemServico), 'qtdNFs' => serialize($qtdNFs),
                                     'qtdAvarias' => serialize($qtdAvarias), 'qtdConferidas' => serialize($qtdConferidas),
                                     'idConferente' => serialize($idConferente), 'gravaRecebimentoVolumeEmbalagem' => true,
-                                    'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade), 'conferenciaCega' => true));
+                                    'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade),
+                                    'conferenciaCega' => true, 'numPeso' => serialize($numPeso)));
                             }
                         }
 
                     }
                 }
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];
@@ -505,8 +507,31 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             if ($notaFiscalEntity)
                 $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
 
-            //produtos
-            $produtosDivergencia = $this->em->getRepository('wms:Recebimento\Conferencia')->getProdutoDivergencia($idOrdemServico);
+            /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
+            $conferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
+            $produtosDivergencia = $conferenciaRepo->getProdutoDivergencia($idOrdemServico);
+
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $this->_em->getRepository('wms:Produto');
+            /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */
+            $pesoProdutoRepo = $this->_em->getRepository('wms:Produto\Peso');
+
+            $sumPesosRecebimentoProdutos = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($recebimentoEntity->getId(), null, null, $ordemServicoEntity);
+
+            //NAO EXIBE O BOTAO DE "Fechar Recebimento com Divergencia" CASO A DIVERGENCIA SEJA APENAS NO PESO
+            $this->view->pesoDivergente = false;
+            foreach ($sumPesosRecebimentoProdutos as $sumPesoRecebimento) {
+                $produtoEn = $produtoRepo->findOneBy(array('id' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
+                $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
+                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
+                $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) + $tolerancia;
+                $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) - $tolerancia;
+
+                if (!((float)$sumPesoRecebimento['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimento['numPeso'] >= $pesoUnitarioMargemI)) {
+                    $this->view->pesoDivergente = true;
+                    break;
+                }
+            }
 
             $this->view->ordemServicoEntity = $ordemServicoEntity;
 

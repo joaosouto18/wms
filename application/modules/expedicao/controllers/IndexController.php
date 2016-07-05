@@ -269,30 +269,38 @@ class Expedicao_IndexController  extends Action
         $declaracaoReport->imprimir($result);
     }
 
-    public function apontamentoSeparacaoAction(){
+    public function apontamentoSeparacaoAction()
+    {
         $form = new \Wms\Module\Expedicao\Form\EquipeSeparacao();
         $formMapaSeparacao = new \Wms\Module\Expedicao\Form\EquipeSeparacaoMapa();
+        /** @var \Wms\Domain\Entity\PessoaFisicaRepository $pessoaFisicaRepo */
+        $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
 
         $paramsMapaSeparacao = $formMapaSeparacao->getParams();
         $params = $form->getParams();
 
         if (!empty($paramsMapaSeparacao) && isset($paramsMapaSeparacao)) {
             $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($paramsMapaSeparacao['codMapaSeparacao']);
-            $codUsuario = $paramsMapaSeparacao['pessoa'];
+            $usuarioEn = $pessoaFisicaRepo->findOneBy(array('matriculaEmprego' => $paramsMapaSeparacao['pessoa']));
 
             if (empty($mapaSeparacaoEn) || !isset($mapaSeparacaoEn)) {
                 $this->addFlashMessage("error","Mapa de Separação não informado ou inválido");
                 $this->redirect('apontamento-separacao');
             }
 
-            if (is_null($codUsuario)) {
-                $this->addFlashMessage("error","Informe um usuário para vincular");
+            if (is_null($usuarioEn)) {
+                $this->addFlashMessage("error","Conferente não encontrado");
                 $this->redirect('apontamento-separacao');
             }
 
             /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
             $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-            $apontamentoMapaRepo->save($mapaSeparacaoEn,$codUsuario);
+            $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacaoEn));
+            if (isset($apontamentoMapaEn) && !empty($apontamentoMapaEn)) {
+                $this->addFlashMessage("error","Mapa de Separação ja vinculado a usuário!");
+                $this->redirect('apontamento-separacao');
+            }
+            $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
 
             $this->addFlashMessage("success","Conferente vinculado com sucesso ao Mapa de Separação!");
             $this->redirect('apontamento-separacao');
@@ -302,7 +310,7 @@ class Expedicao_IndexController  extends Action
         if ( !empty($params) ) {
             $idEtiqueta1 = $params['etiquetaInicial'];
             $idEtiqueta2 = $params['etiquetaFinal'];
-            $idUsuario = $params['pessoa'];
+            $usuarioEn = $pessoaFisicaRepo->findOneBy(array('matriculaEmprego' => $paramsMapaSeparacao['pessoa']));
 
             $LeituraColetor = new LeituraColetor();
             $etiquetaInicial = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta1);;
@@ -332,14 +340,14 @@ class Expedicao_IndexController  extends Action
                 $erro = true;
             }
             
-            if (is_null($idUsuario)) {
-                $this->addFlashMessage("error","Informe um usuário para vincular");
+            if (is_null($usuarioEn)) {
+                $this->addFlashMessage("error","Conferente não encontrado");
                 $erro = true;
             }
             
             if ($erro == false) {
                 $equipeSeparacao = new Expedicao\EquipeSeparacao();
-                $equipeSeparacao->setCodUsuario($idUsuario);
+                $equipeSeparacao->setCodUsuario($usuarioEn->getId());
                 $equipeSeparacao->setDataVinculo(new \DateTime());
                 $equipeSeparacao->setEtiquetaInicial($etiquetaInicial);
                 $equipeSeparacao->setEtiquetaFinal($etiquetaFinal);

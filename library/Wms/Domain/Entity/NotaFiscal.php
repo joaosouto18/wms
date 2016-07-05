@@ -125,7 +125,10 @@ class NotaFiscal
     protected $observacao;
 
     /**
-     * @Column(name="PESO_TOTAL", type="string")
+     * Peso da nota fiscal
+     *
+     * @Column(name="PESO_TOTAL", type="float", nullable=true)
+     * @var float
      */
     protected $pesoTotal;
 

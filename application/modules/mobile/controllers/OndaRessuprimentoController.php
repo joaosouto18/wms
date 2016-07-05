@@ -137,7 +137,10 @@ class Mobile_OndaRessuprimentoController extends Action
 
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-        $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        $enderecoEn = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
+        $result = $estoqueRepo->getProdutoByNivel($enderecoEn[0]['DSC_DEPOSITO_ENDERECO'], $nivel);
 
         if ($result == NULL)
         {

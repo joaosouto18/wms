@@ -73,7 +73,7 @@ class Expedicao_CortePedidoController  extends Action
             $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
-            $expedicaoRepo->executaCortePedido($qtdCorte,$motivo);
+            $expedicaoRepo->executaCortePedido($qtdCorte,$motivo,$this->_getParam('idExpedicao'));
             $this->getEntityManager()->commit();
             $this->addFlashMessage('success','Pedidos Cortados com Sucesso');
         } catch (\Exception $e) {

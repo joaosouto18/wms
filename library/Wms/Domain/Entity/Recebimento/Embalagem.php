@@ -78,6 +78,9 @@ class Embalagem
      */
     protected $numPeso;
 
+    /**
+     * @param \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     */
     public function setNormaPaletizacao($normaPaletizacao)
     {
         $this->normaPaletizacao = $normaPaletizacao;
