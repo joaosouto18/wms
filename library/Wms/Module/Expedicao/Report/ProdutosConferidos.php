@@ -71,7 +71,7 @@ class ProdutosConferidos extends Pdf
             $this->Cell(45, 5, $result['grade'],0, 1);
             $this->Cell(30, 5, utf8_decode("Cód. Estoque:  ") . $result['codEstoque'] ,0, 0);
             $this->Cell(70, 5, utf8_decode("Embalagem: ") . $result['embalagem'] ,0, 0);
-            $this->Cell(50, 5, utf8_decode("Data Conferência:  ") . $result['dataConferencia']->format('d/m/Y H:i:s') ,0, 0);
+            $this->Cell(50, 5, utf8_decode("Data Conferência:  ") . $result['dataConferencia']->format('d/m/y H:i:s') ,0, 0);
             $this->Cell(75, 5, utf8_decode("Conferente:  ") . $result['conferente'] ,0, 0);
             $this->Cell(40, 5, utf8_decode("Volume Patrimônio") . $result['volumePatrimonio'], 0, 1);
             $this->Line(8,$this->GetY(), 290,$this->GetY());

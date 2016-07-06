@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Expedicao;
 
 /**
  *
@@ -25,6 +26,7 @@ class ExpedicaoVolumePatrimonio
     protected $volumePatrimonio;
 
     /**
+     * @var Expedicao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao")
      * @JoinColumn(name="COD_EXPEDICAO", referencedColumnName="COD_EXPEDICAO")
      */

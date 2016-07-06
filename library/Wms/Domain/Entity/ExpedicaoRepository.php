@@ -1791,6 +1791,74 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
+    /**
+     * @param $idVolume int 'ID do VolumePatrimonio'
+     * @param $idExpedicao int 'ID da Expedição'
+     * 
+     * @return array
+     */
+    public function getVolumesExpedicaoFinalizadosByVolumeExpedicao($idVolume, $idExpedicao){
+
+        $sql = "SELECT
+                    EMB.COD_BARRAS codBarras,
+                    P.COD_PRODUTO codProduto,
+                    P.DSC_PRODUTO produto,
+                    P.DSC_GRADE grade,
+                    CL2.NOM_PESSOA cliente,
+                    NVL(ES1.COD_ESTOQUE, ES2.COD_ESTOQUE) codEstoque,
+                    CASE WHEN EMB.DSC_EMBALAGEM IS NULL THEN VOL.DSC_VOLUME ELSE EMB.DSC_EMBALAGEM END AS embalagem,
+                    CONF.NOM_PESSOA conferente,
+                    MSC.DTH_CONFERENCIA dataConferencia,
+                    CONCAT(CONCAT(VP.DSC_VOLUME_PATRIMONIO, ' '), VP.COD_VOLUME_PATRIMONIO) volumePatrimonio
+                FROM MAPA_SEPARACAO_CONFERENCIA MSC
+                INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                INNER JOIN PRODUTO P ON P.COD_PRODUTO = MSC.COD_PRODUTO AND P.DSC_GRADE = MSC.DSC_GRADE
+                LEFT JOIN PRODUTO_VOLUME VOL ON MSC.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
+                LEFT JOIN PRODUTO_EMBALAGEM EMB ON MSC.COD_PRODUTO_EMBALAGEM = EMB.COD_PRODUTO_EMBALAGEM
+                INNER JOIN EXPEDICAO_VOLUME_PATRIMONIO EVP ON EVP.COD_EXPEDICAO = MS.COD_EXPEDICAO AND EVP.COD_VOLUME_PATRIMONIO = MSC.COD_VOLUME_PATRIMONIO
+                LEFT JOIN CLIENTE CL ON CL.COD_CLIENTE_EXTERNO = EVP.COD_TIPO_VOLUME
+                INNER JOIN PESSOA CL2 ON CL.COD_PESSOA = CL2.COD_PESSOA
+                LEFT JOIN ESTOQUE ES1 ON ES1.COD_PRODUTO = MSC.COD_PRODUTO AND ES1.COD_PRODUTO_EMBALAGEM = EMB.COD_PRODUTO_EMBALAGEM
+                LEFT JOIN ESTOQUE ES2 ON ES2.COD_PRODUTO = MSC.COD_PRODUTO AND ES2.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
+                INNER JOIN PESSOA CONF ON EVP.COD_USUARIO = CONF.COD_PESSOA
+                INNER JOIN VOLUME_PATRIMONIO VP ON MSC.COD_VOLUME_PATRIMONIO = VP.COD_VOLUME_PATRIMONIO
+                WHERE MSC.COD_VOLUME_PATRIMONIO = $idVolume AND MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (526,531,532)" ;
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+/*        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select("
+                    emb.codigoBarras codBarras,
+                    p.id codProduto,
+                    p.descricao produto,
+                    p.grade,
+                    cl2.nome cliente,
+                    NVL(est1.id, est2.id) codEstoque,
+                    CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END AS embalagem,
+                    conf.nome conferente,
+                    msc.dataConferencia dataConferencia,
+                    CONCAT(CONCAT(vp.descricao, ' '), vp.id) volumePatrimonio")
+            ->from('wms:Expedicao\MapaSeparacaoConferencia','msc')
+            ->innerJoin('msc.mapaSeparacao', 'ms')
+            ->innerJoin('msc.produto','p', 'WITH' , "p.id = msc.codProduto AND p.grade = msc.dscGrade")
+            ->leftJoin('msc.produtoVolume', 'vol', 'WITH' , "vol.id = msc.codProduto AND p.grade = msc.dscGrade")
+            ->leftJoin('msc.produtoEmbalagem', 'emb', 'WITH' , "emb.id = msc.codProduto AND p.grade = msc.dscGrade")
+            ->innerJoin('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp', 'WITH', 'evp.expedicao = ms.expedicao AND evp.volumePatrimonio = msc.volumePatrimonio')
+            ->leftJoin('wms:Pessoa\Papel\Cliente', 'cl', 'WITH' , 'cl.codClienteExterno = evp.tipoVolume')
+            ->innerJoin('cl.pessoa', 'cl2')
+            ->leftJoin('wms:Enderecamento\Estoque', 'est1', 'WITH', 'est1.produto = p AND est1.produtoEmbalagem = emb')
+            ->leftJoin('wms:Enderecamento\Estoque', 'est2', 'WITH', 'est2.produto = p AND est1.produtoVolume = vol')
+            ->innerJoin('wms:Pessoa', 'conf', 'WITH', 'evp.usuario = conf')
+            ->innerJoin('msc.volumePatrimonio', 'vp')
+            ->where("ms.expedicao = $idExpedicao")
+            ->andWhere("msc.volumePatrimonio = $idVolume")
+            ->andWhere('ms.codStatus IN (526,531,532)');
+
+        $result = $dql->getQuery()->getResult();*/
+
+        return $result;
+    }
+
     public function getProdutosEmbalado($idExpedicao)
     {
         $source = $this->_em->createQueryBuilder()
@@ -2019,7 +2087,7 @@ class ExpedicaoRepository extends EntityRepository
                 INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                 INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
                 INNER JOIN PEDIDO p ON p.COD_CARGA = C.COD_CARGA
-                INNER JOIN ETIQUETA_SEPARACAO es ON p.COD_PEDIDO = es.COD_PEDIDO AND evp.COD_VOLUME_PATRIMONIO = es.COD_VOLUME_PATRIMONIO
+                LEFT JOIN ETIQUETA_SEPARACAO es ON p.COD_PEDIDO = es.COD_PEDIDO AND evp.COD_VOLUME_PATRIMONIO = es.COD_VOLUME_PATRIMONIO
                 INNER JOIN PESSOA pes ON pes.COD_PESSOA = p.COD_PESSOA
                 INNER JOIN ITINERARIO i ON i.COD_ITINERARIO = p.COD_ITINERARIO
                 WHERE evp.COD_EXPEDICAO = $idExpedicao

@@ -358,6 +358,44 @@ class Expedicao_OsController extends Action
                 $idVolume = $values['volumes'];
             }
             $result = $expedicaoRepo->getEtiquetasConferidasByVolume($idExpedicao,$idVolume);
+
+            if (empty($result)) {
+                $result = $expedicaoRepo->getVolumesExpedicaoFinalizadosByVolumeExpedicao($idVolume, $idExpedicao);
+                foreach ($result as $key => $index){
+                    $result[$key]['codBarras'] = $index['CODBARRAS'];
+                    unset($result[$key]['CODBARRAS']);
+
+                    $result[$key]['codProduto'] = $index['CODPRODUTO'];
+                    unset($result[$key]['CODPRODUTO']);
+
+                    $result[$key]['produto'] = $index['PRODUTO'];
+                    unset($result[$key]['PRODUTO']);
+
+                    $result[$key]['grade'] = $index['GRADE'];
+                    unset($result[$key]['GRADE']);
+
+                    $result[$key]['codEstoque'] = $index['CODESTOQUE'];
+                    unset($result[$key]['CODESTOQUE']);
+
+                    $result[$key]['embalagem'] = $index['EMBALAGEM'];
+                    unset($result[$key]['EMBALAGEM']);
+
+                    $result[$key]['conferente'] = $index['CONFERENTE'];
+                    unset($result[$key]['CONFERENTE']);
+
+                    $result[$key]['dataConferencia'] = new DateTime($index['DATACONFERENCIA']);
+                    unset($result[$key]['DATACONFERENCIA']);
+
+                    $result[$key]['cliente'] = $index['CLIENTE'];
+                    unset($result[$key]['CLIENTE']);
+
+                    $result[$key]['volumePatrimonio'] = $index['VOLUMEPATRIMONIO'];
+                    unset($result[$key]['VOLUMEPATRIMONIO']);
+                    
+                    $result[$key]['codCargaExterno'] = "N/D";
+                }
+            }
+            
             if (isset($values['exportarpdf'])) {
                 unset($values);
                 $form->getElement('exportarpdf')->setValue(null);

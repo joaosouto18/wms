@@ -105,7 +105,7 @@ class NotaFiscal
     protected $dataEntrada;
     
     /**
-     * @var Wms\Domain\Entity\Filial
+     * @var \Wms\Domain\Entity\Filial
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Filial")
      * @JoinColumn(name="COD_FILIAL", referencedColumnName="COD_FILIAL") 
      */
