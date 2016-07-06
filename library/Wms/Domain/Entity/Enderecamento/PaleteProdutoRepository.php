@@ -7,7 +7,7 @@ use DoctrineExtensions\Versionable\Exception;
 
 class PaleteProdutoRepository extends EntityRepository
 {
-    public function getQtdTtotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade)
+    public function getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('SUM(pp.qtd) qtd')

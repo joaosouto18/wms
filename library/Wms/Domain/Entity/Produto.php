@@ -147,6 +147,12 @@ class Produto
      */
     protected $enderecoReferencia;
 
+    /**
+     * @Column(name="IND_POSSUI_PESO_VARIAVEL", type="string", nullable=false)
+     * @var string
+     */
+    protected $possuiPesoVariavel;
+
     public function __construct()
     {
         $this->volumes = new ArrayCollection;
@@ -453,5 +459,20 @@ class Produto
         $this->idProduto = $idProduto;
     }
 
+    /**
+     * @return string
+     */
+    public function getPossuiPesoVariavel()
+    {
+        return $this->possuiPesoVariavel;
+    }
+
+    /**
+     * @param string $possuiPesoVariavel
+     */
+    public function setPossuiPesoVariavel($possuiPesoVariavel)
+    {
+        $this->possuiPesoVariavel = $possuiPesoVariavel;
+    }
 
 }

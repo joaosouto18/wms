@@ -44,6 +44,11 @@ class Expedicao_CorteController  extends Action
                     $this->addFlashMessage('error', 'A Etiqueta código ' . $LeituraColetor->retiraDigitoIdentificador($codBarra) . ' não pertence a expedição ' . $idExpedicao);
                     $this->_redirect('/expedicao');
                 }
+                if ($etiquetaEntity->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
+                    $this->addFlashMessage('error',"Etiqueta já cortada!");
+                    $this->_redirect('/expedicao');
+                }
+
                 $EtiquetaRepo->cortar($etiquetaEntity);
 
                 if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {

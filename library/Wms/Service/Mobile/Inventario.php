@@ -340,6 +340,7 @@ class Inventario
                     $contagemEndEn->setQtdDivergencia($quantidadeContada-$quantidadeEstoque);
                     $contagemEndEn->setDivergencia(1);
                     $this->getEm()->persist($inventarioEndEn);
+                    $this->getEm()->persist($contagemEndEn);
                     $this->getEm()->flush();
                     return false;
                 }
@@ -349,6 +350,7 @@ class Inventario
                 $contagemEndEn->setQtdDivergencia($quantidadeContada);
                 $contagemEndEn->setDivergencia(1);
                 $this->getEm()->persist($inventarioEndEn);
+                $this->getEm()->persist($contagemEndEn);
                 $this->getEm()->flush();
                 return false;
             }
@@ -562,7 +564,7 @@ class Inventario
         if ($codProdutoVolume != null) {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoVolume' => $codProdutoVolume));
         } elseif($codProdutoEmbalagem != null) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => $codProdutoEmbalagem));
+            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => $codProdutoEmbalagem, 'codProduto' => $params['idProduto'], 'grade' => $params['grade']));
         }else {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
         }
@@ -651,15 +653,24 @@ class Inventario
         return false;
     }
 
-    public function removeEnderecoInventario($params)
+    public function removeEnderecoInventario($params,$removeProdutosParaEnderecoZerado = false)
     {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'numContagem' => null));
+        $contagemEndRepo         = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndEntities     = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'numContagem' => null));
+        if ($removeProdutosParaEnderecoZerado == true) {
+            $sql = $this->getEm()->createQueryBuilder()
+                ->select('ic')
+                ->from('wms:Inventario\ContagemEndereco', 'ic')
+                ->where("ic.inventarioEndereco = $params[idInventarioEnd] AND ic.codProduto IS NOT NULL AND ic.grade IS NOT NULL");
+
+            $contagemEndEntities = $sql->getQuery()->getResult();
+        }
+
         if (count($contagemEndEntities) > 0) {
             foreach($contagemEndEntities as $contagemEndEn) {
                 $this->_em->remove($contagemEndEn);
@@ -785,5 +796,4 @@ class Inventario
         return $result;
     }
 
-
-} 
+}

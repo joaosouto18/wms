@@ -274,7 +274,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setIsPadrao($isPadrao);
 						$embalagemEntity->setCBInterno($CBInterno);
 						$embalagemEntity->setImprimirCB($imprimirCB);
-						$embalagemEntity->setCodigoBarras($codigoBarras);
+						$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						$embalagemEntity->setEmbalado($embalado);
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
@@ -320,7 +320,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 						if ($CBInterno == 'S') {
 							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-							$embalagemEntity->setCodigoBarras($codigoBarras);
+							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						}
 
 						break;
@@ -348,7 +348,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						// verifica se o codigo de barras é automatico
 						if ($CBInterno == 'S') {
 							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($id);
-							$embalagemEntity->setCodigoBarras($codigoBarras);
+							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						}
 						$embalagemEntity->setEmbalado($embalado);
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
@@ -1182,6 +1182,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 		return $result;
 
+	}
+
+	public function getPesoProduto( $params )
+	{
+		$sql = "SELECT
+                 COD_PRODUTO,
+                 DSC_GRADE,
+                 NUM_PESO,
+                 NUM_CUBAGEM
+                FROM
+                 SUM_PESO_PRODUTO
+                WHERE
+                  COD_PRODUTO = '$params[COD_PRODUTO]'
+                  AND DSC_GRADE = '$params[DSC_GRADE]'
+           ";
+
+		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+		return $resultado;
 	}
 
 	public function getDadosProdutos($params)

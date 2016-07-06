@@ -215,7 +215,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -230,6 +230,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
+            $pesoTotal = trim ($pesoTotal);
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
@@ -245,14 +246,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
                     $itemWs['quantidade'] = trim($itemNf->quantidade);
-                    $itemWs['numPeso'] = trim($itemNf->peso);
+                    $itemWs['peso'] = trim($itemNf->peso);
+                    if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
+                        $itemWs['peso'] = trim($itemNf->quantidade);
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
             }
-            //END
 
-            if (count($itens) ==0) {
+            if (count($itens) == 0) {
                 throw new \Exception('A Nota fiscal deve ter ao menos um item');
             }
 
@@ -271,10 +273,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
 
                 //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
-                $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn);
+                $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em);
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
             }
 
             $em->commit();
@@ -296,9 +298,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
+     * * @param string $pesoTotal Peso Total da Nota Fiscal
      * @return boolean
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -311,7 +314,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao);
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao, $pesoTotal);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -457,9 +460,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
                         //VERIFICA SE A QUANTIDADE É A MESMA
                         if ($itemBD->getQuantidade() == trim($itemNf['quantidade'])) {
-                            //SE A QUANTIDADE DA NF FOR IGUAL A QUANTIDADE DO BD NÃO FAZ NADA
-                            $continueBD = true;
-                            break;
+                            //VERIFICA SE O PESO É O MESMO
+                            if ($itemBD->getNumPeso() == trim($itemNf['peso'])) {
+                                //SE TODOS OS DADOS FOREM IGUAIS, NAO FAZ NADA
+                                $continueBD = true;
+                                break;
+                            }
                         } else {
                             //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
                             $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
@@ -495,7 +501,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param $itemWs
      * @param $notaFiscalRepo
      */
-    private function compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn)
+    private function compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em)
     {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         if ($itens <= 0) {
@@ -507,11 +513,13 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         try {
             $itensNf = array();
+            $pesoTotal = 0;
             foreach ($itens as $itemNf) {
+                $pesoTotal = trim((float)$itemNf['peso']) + $pesoTotal;
                 $continueNF = false;
                 foreach ($notaItensBDEn as $itemBD) {
                     //VERIFICA SE PRODUTO DA NF JÁ EXISTE NO BD
-                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade']) && $itemBD->getNumPeso() == trim($itemNf['peso'])) {
                         $continueNF = true;
                         break;
                     }
@@ -521,10 +529,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['idProduto'] = trim($itemNf['idProduto']);
                     $itemWs['grade'] = trim($itemNf['grade']);
                     $itemWs['quantidade'] = trim($itemNf['quantidade']);
+                    $itemWs['peso'] = trim($itemNf['peso']);
+                    if (is_null(trim($itemNf['peso'])) || empty(trim($itemNf['peso'])) || trim($itemNf['peso']) == 0)
+                        $itemWs['peso'] = trim($itemNf['quantidade']);
+
                     $itensNf[] = $itemWs;
                 }
             }
             $notaFiscalRepo->salvarItens($itensNf, $notaFiscalEn);
+            $notaFiscalEn->setPesoTotal($pesoTotal);
+            $em->persist($notaFiscalEn);$em->flush($notaFiscalEn);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());

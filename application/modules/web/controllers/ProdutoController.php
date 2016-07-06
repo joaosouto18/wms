@@ -182,15 +182,14 @@ class Web_ProdutoController extends Crud {
                     $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
                 }
 
-                $tolerancia = strtoupper($params['produto']['pVariavel']);
-                if ($tolerancia != 'S') {
-                    $tolerancia = 'N';
+                if ($params['produto']['pVariavel'] == 'N') {
+                    $params['produto']['percTolerancia'] = null;
+                    $params['produto']['toleranciaNominal'] = null;
                 }
 
-                if ($tolerancia == 'S' && !empty($params['produto']['percTolerancia']) ) {
-                    $entity->setPercTolerancia($params['produto']['percTolerancia']);
-                    $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
-                }
+                $entity->setPossuiPesoVariavel($params['produto']['pVariavel']);
+                $entity->setPercTolerancia($params['produto']['percTolerancia']);
+                $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
 
                 $result = $this->repository->save($entity, $this->getRequest()->getParams(), true);
                 if (is_string($result)){
@@ -349,7 +348,7 @@ class Web_ProdutoController extends Crud {
 
             $dql = $em->createQueryBuilder()
                 ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
-                    u.id idUnitizador, u.descricao unitizador')
+                    u.id idUnitizador, u.descricao unitizador, e.id embalagem')
                 ->from('wms:Produto\Embalagem', 'e')
                 ->innerJoin('e.dadosLogisticos', 'dl')
                 ->innerJoin('dl.normaPaletizacao', 'np')
@@ -370,6 +369,7 @@ class Web_ProdutoController extends Crud {
                     'isPadrao' => ($row['isPadrao'] == 'S') ? 'Sim' : 'Não',
                     'idUnitizador' => $row['idUnitizador'],
                     'unitizador' => $row['unitizador'],
+                    'embalagem' => $row['embalagem']
                 );
             }
 
@@ -378,7 +378,7 @@ class Web_ProdutoController extends Crud {
             foreach ($normasPaletizacao as $key => $normaPaletizacao) {
 
                 $dadosLogisticos = $em->getRepository('wms:Produto\DadoLogistico')
-                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id']));
+                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id'], 'embalagem' => $normaPaletizacao['embalagem']));
 
                 foreach ($dadosLogisticos as $dadoLogistico) {
 

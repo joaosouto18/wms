@@ -24,6 +24,7 @@
                     <td>Grade</td>
                     <td>Unidade</td>
                     <td>Quantidade</td>
+                    <td>Peso</td>
                     <td>Data Validade</td>
                     <td>Qtde. Avaria</td>
                 </tr>
@@ -70,22 +71,29 @@
                             ));
                             ?>
                         </td>
+
+                        <td>
+                            <?php
+                            echo $this->formText("numPeso[{$produto['codigo']}][{$produto['grade']}]", 0, array(
+                                'size' => 8,
+                                'validators' => array('numeric'),
+                                'alt' => 'centesimal',
+                                'class' => 'numPeso',
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                            ));
+                            ?>
+                        </td>
+
                         <td>
                             <?php if ($produto['possui_validade'] == 'S') : ?>
                                 <?php
                                 echo $this->formHidden("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
                                     'class' => "qtdNF",
                                 ));
-                                /*
-                                echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
-                                    'class' => "dataValidade",
-                                ));
-                                */
                                 $inputName = "dataValidade[{$produto['codigo']}][{$produto['grade']}]";
                                 $id = "dataValidade-{$produto['codigo']}-{$produto['grade']}";
                                 $date = new DateTime('now');
 
-                                //$inputName='teste';
                                 $id='dataValidade';
 
                                 echo '<input type="text" name="'.$inputName.'" id="'. $id .'" value="' . $date->format('d/m/Y') . '" size="11" maxLength="10" alt="date" class="date " />'
@@ -109,7 +117,7 @@
                 <?php } ?>
                 <tr style="line-height: 50px;">
                     <td></td>
-                    <td colspan="2">
+                    <td colspan="4">
                         <label>Conferente: 
                             <?php
                             $conferentes[] = 'Selecione';
@@ -121,7 +129,7 @@
                             ?> 
                         </label>
                     </td>
-                    <td>
+                    <td colspan="2">
                         <?php
                         echo $this->formSubmit("submit", "Salvar e Finalizar", array('id' => 'btnCconferencia', 'class' => 'btn', 'style' => 'margin-top: 0;'));
                         ?> 
