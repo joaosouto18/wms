@@ -2,60 +2,57 @@
     $this->headScript()->appendFile('/jquery-ui-1.11.4/jquery-ui.js');
     $this->headLink()->appendStylesheet('/jquery-ui-1.11.4/jquery-ui.css');
     $this->headLink()->appendStylesheet('/css/progress-bar/progress-bar-style.css');
+    $this->headLink()->appendStylesheet('/css/default/importacao.css');
 
 $destinos = $this->destinos;
 $tL1 = 0;
 //echo $this->form;
 ?>
 <div align="center">
-    <!--<div>
-        <h3>Selectione entre os itens liberados o(s) objetivo(s) desta importação via XLS / CSV</h3>
-        <br>
-        <table  class="table" style="width: 740px;">
-            <tr>
-                <td align="center">
-                    <input type="checkbox" id="cbxProduto" value="produto">
-                    <label for="cbxProduto">Produto </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" value="embalagem" > Embalagem
-                    </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" value="fornecedor"> Fornecedor
-                    </label>
-                </td>
-            </tr>
-        </table>
+    <div>
+        <h3>Selectione entre os itens, o que busca importar via XLS / CSV</h3>
         <br>
         <table  class="table" style="width: 740px;">
             <tr>
                 <td align="center">
                     <label>
-                        <input type="checkbox" value="cliente"> Cliente
+                        <input type="checkbox" class="cbxImportacao" value="produto">Produto
+                    </label>
+                </td>
+                <td align="center" class="cbxImportacao">
+                    <label>
+                        <input type="checkbox" class="cbxImportacao"  value="embalagem" >Embalagem
                     </label>
                 </td>
                 <td align="center">
                     <label>
-                        <input type="checkbox" value="carga"> Carga/Expedição
+                        <input type="checkbox" class="cbxImportacao"  value="fornecedor">Fornecedor
                     </label>
                 </td>
                 <td align="center">
                     <label>
-                        <input type="checkbox" value="pedido"> Pedido
+                        <input type="checkbox" class="cbxImportacao"  value="cliente">Cliente
                     </label>
                 </td>
                 <td align="center">
                     <label>
-                        <input type="checkbox" value="pedidoProduto"> Itens do pedido
+                        <input type="checkbox" class="cbxImportacao"  value="carga">Carga/Expedição
+                    </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" class="cbxImportacao"  value="pedido">Pedido
+                    </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" class="cbxImportacao"  value="pedidoProduto">Itens do pedido
                     </label>
                 </td>
             </tr>
         </table>
     </div>
-    <br />-->
+    <br />
     <div>
         <h2><strong>Ultima importação - <?php echo $this->ultData; ?></strong></h2><br />
         <button type="button" id="startImport">Iniciar importação</button>
@@ -68,6 +65,7 @@ $tL1 = 0;
             </div>
         </div>
     </div>
+    <br>
     <div>
         <div class="progress-bar-div">
             <div id="pbLinha"></div>
@@ -101,12 +99,22 @@ $tL1 = 0;
     $("#pbArquivo").progressbar();
     $("#pbLinha").progressbar();
     $("#startImport").click(function () {
-        $("#excptRw").hide();
-        $("#tbError").hide();
-        $("#tbErrResult").children("tr").remove();
-        $("#excptMsg").children("h2").remove();
-        $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-ajax");
-
+        var files = '';
+        $('.cbxImportacao').each(function () {
+            if($(this).prop('checked')){
+                files += $(this).val() + '-';
+            }
+        });
+        if (files != '') {
+            files = files.substring(0,files.length-1);
+            $("#excptRw").hide();
+            $("#tbError").hide();
+            $("#tbErrResult").children("tr").remove();
+            $("#excptMsg").children("h2").remove();
+            $("#frameTeste").attr("src", URL_MODULO + "/index/iniciar-ajax?files=" + files);
+        } else {
+            alert("Ao menos um item deve ser selecionado.")
+        }
     });
     function Zend_ProgressBar_Update(data)
     {
