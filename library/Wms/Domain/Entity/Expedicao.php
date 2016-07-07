@@ -191,4 +191,20 @@ class Expedicao
         $this->tipoFechamento = $tipoFechamento;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCodStatus()
+    {
+        return $this->codStatus;
+    }
+
+    /**
+     * @param mixed $codStatus
+     */
+    public function setCodStatus($codStatus)
+    {
+        $this->codStatus = $codStatus;
+    }
+
 }
