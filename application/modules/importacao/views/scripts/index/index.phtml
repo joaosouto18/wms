@@ -3,14 +3,64 @@
     $this->headLink()->appendStylesheet('/jquery-ui-1.11.4/jquery-ui.css');
     $this->headLink()->appendStylesheet('/css/progress-bar/progress-bar-style.css');
 
+$destinos = $this->destinos;
+$tL1 = 0;
 //echo $this->form;
 ?>
 <div align="center">
-    <div class="row">
+    <!--<div>
+        <h3>Selectione entre os itens liberados o(s) objetivo(s) desta importação via XLS / CSV</h3>
+        <br>
+        <table  class="table" style="width: 740px;">
+            <tr>
+                <td align="center">
+                    <input type="checkbox" id="cbxProduto" value="produto">
+                    <label for="cbxProduto">Produto </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" value="embalagem" > Embalagem
+                    </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" value="fornecedor"> Fornecedor
+                    </label>
+                </td>
+            </tr>
+        </table>
+        <br>
+        <table  class="table" style="width: 740px;">
+            <tr>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" value="cliente"> Cliente
+                    </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" value="carga"> Carga/Expedição
+                    </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" value="pedido"> Pedido
+                    </label>
+                </td>
+                <td align="center">
+                    <label>
+                        <input type="checkbox" value="pedidoProduto"> Itens do pedido
+                    </label>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br />-->
+    <div>
         <h2><strong>Ultima importação - <?php echo $this->ultData; ?></strong></h2><br />
         <button type="button" id="startImport">Iniciar importação</button>
     </div><br />
-    <div class="row">
+    <div>
         <div class="progress-bar-div">
             <div id="pbArquivo"></div>
             <div align="center" class="progress-bar-text">
@@ -18,7 +68,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div>
         <div class="progress-bar-div">
             <div id="pbLinha"></div>
             <div align="center" class="progress-bar-text">
@@ -26,7 +76,7 @@
             </div>
         </div>
     </div>
-    <div class="row" id="tbError" style="display: none">
+    <div id="tbError" style="display: none">
         <p>Ocorrêcia(s) durante a importação:</p>
         <table class="table" style="width: 740px;">
             <thead>

@@ -38,6 +38,12 @@ class ProdutosConferidos extends Report
             ->setLabelHeight(6)
             ->setColHeight(7);
 
+        $nomeFilial = $recebimentoEntity->getFilial()->getPessoa()->getNome();
+
+        if(strlen($nomeFilial) > 25){
+            $nomeFilial = substr($nomeFilial,0,25)." ...";
+        }
+
         // header
         $pdf->addLabel(0, 30, 'Recebimento', 0, 0, 'L');
         $pdf->addLabel(0, 65, 'Filial', 0, 0, 'L');
@@ -47,7 +53,7 @@ class ProdutosConferidos extends Report
         $pdf->addLabel(0, 35, 'Data Inicial', 0, 0, 'L');
         $pdf->addLabel(0, 50, 'Data Final', 0, 1, 'L');
         $pdf->addLabel(0, 30, $recebimentoEntity->getId(), 0, 0, 'L');
-        $pdf->addLabel(0, 65, utf8_decode($recebimentoEntity->getFilial()->getPessoa()->getNome()), 0, 0, 'L');
+        $pdf->addLabel(0, 65, utf8_decode($nomeFilial), 0, 0, 'L');
         $pdf->addLabel(0, 55, utf8_decode($recebimentoEntity->getDeposito()->getDescricao()), 0, 0, 'L');
         $pdf->addLabel(0, 25, $recebimentoEntity->getBox()->getDescricao(), 0, 0, 'L');
         $pdf->addLabel(0, 25, $placaVeiculo, 0, 0, 'L');
