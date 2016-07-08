@@ -2696,29 +2696,6 @@ class ExpedicaoRepository extends EntityRepository
                 $this->removePedidoCortado($codPedido);
             }
         }
-
-        $pedidosCortadosExpedicao = $this->pedidosCortadosExpedicao($idExpedicao);
-        if (count($pedidosCortadosExpedicao) > 0) {
-            $expedicaoEntity = $this->find($idExpedicao);
-            $expedicaoEntity->setCodStatus(Expedicao::STATUS_FINALIZADO );
-            $expedicaoEntity->setDataFinalizacao(new \DateTime());
-            $this->_em->persist($expedicaoEntity);
-            $this->_em->flush();
-        }
-    }
-
-    private function pedidosCortadosExpedicao($idExpedicao)
-    {
-        $sql = "SELECT SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0))
-                    FROM EXPEDICAO E
-                    INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                    INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    WHERE E.COD_EXPEDICAO = $idExpedicao
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE
-                    HAVING SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) > 0";
-
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function removePedidoCortado($codPedido)
