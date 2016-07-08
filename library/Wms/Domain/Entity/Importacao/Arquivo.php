@@ -55,6 +55,12 @@ class Arquivo
     protected $ativo;
 
     /**
+     * @var string
+     * @Column(name="NOM_INPUT", type="string")
+     */
+    protected $nomeInput;
+
+    /**
      * @var \DateTime
      * @Column(name="ULTIMA_IMPORTACAO", type="date", nullable=false)
      */
@@ -186,6 +192,22 @@ class Arquivo
     public function setUltimaImportacao($ultimaImportacao)
     {
         $this->ultimaImportacao = $ultimaImportacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNomeInput()
+    {
+        return $this->nomeInput;
+    }
+
+    /**
+     * @param mixed $nomeInput
+     */
+    public function setNomeInput($nomeInput)
+    {
+        $this->nomeInput = $nomeInput;
     }
 
     public function toArray()
