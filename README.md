@@ -29,7 +29,7 @@ https://www.virtualbox.org/wiki/Downloads
 Configuração banco local
 ===========================
 
-DROP USER wms_dbevelop CASCADE;
+DROP USER wms_develop CASCADE;
 DROP TABLESPACE wms_develop;
 
 ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;
