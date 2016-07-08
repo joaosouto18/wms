@@ -271,12 +271,11 @@ class Expedicao_IndexController  extends Action
 
     public function apontamentoSeparacaoAction()
     {
-        $form = new \Wms\Module\Expedicao\Form\EquipeSeparacao();
-        $formMapaSeparacao = new \Wms\Module\Expedicao\Form\EquipeSeparacaoMapa();
+        $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
         /** @var \Wms\Domain\Entity\PessoaFisicaRepository $pessoaFisicaRepo */
         $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
 
-        $paramsMapaSeparacao = $formMapaSeparacao->getParams();
+        $paramsMapaSeparacao = null;
         $params = $form->getParams();
 
         if (!empty($paramsMapaSeparacao) && isset($paramsMapaSeparacao)) {
@@ -359,7 +358,6 @@ class Expedicao_IndexController  extends Action
         }
 
         $this->view->form = $form;
-        $this->view->formMapaSeparacao = $formMapaSeparacao;
     }
     
     public function equipeCarregamentoAction()
