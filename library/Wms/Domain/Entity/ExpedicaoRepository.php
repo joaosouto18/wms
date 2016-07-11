@@ -2052,13 +2052,7 @@ class ExpedicaoRepository extends EntityRepository
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE,
-                    (
-                        SELECT count(es1.cod_etiqueta_separacao) FROM ETIQUETA_SEPARACAO es1
-                        INNER JOIN PEDIDO ped ON ped.COD_PEDIDO = es1.COD_PEDIDO
-                        INNER JOIN CARGA c ON c.COD_CARGA = ped.COD_CARGA
-                        WHERE c.cod_expedicao = $idExpedicao
-                    ) QTD_CAIXA
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
                 INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                 INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
