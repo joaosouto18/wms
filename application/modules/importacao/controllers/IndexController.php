@@ -842,22 +842,21 @@ class Importacao_IndexController extends Action
 
     public function indexAction()
     {
-        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array(), array('sequencia' => 'ASC'));
+        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('ultimaImportacao' => 'DESC','sequencia' => 'ASC'));
 
-        $dtUltImp = null;
-        /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
-        foreach ($arquivos as $arquivo){
-            $dtCheck = $arquivo->getUltimaImportacao();
-            if (empty($dtUltImp)){
-                $dtUltImp = $dtCheck;
-            } else if ($dtUltImp < $dtCheck) {
-                $dtUltImp = $dtCheck;
-            }
+        $dtUltImp = $arquivos[0]->getUltimaImportacao();
+
+        function order($a, $b)
+        {
+            if ($a->getSequencia() == $b->getSequencia())
+                return 0;
+            return ($a->getSequencia() < $b->getSequencia()) ? -1 : 1;
         }
 
-        $form = new IndexForm();
+        usort($arquivos,'order');
+
+        $this->view->arquivos = $arquivos;
         $this->view->ultData = ($dtUltImp)?$dtUltImp->format('d/m/Y'):'S/ Registros';
-        $this->view->form = $form;
 
         /*$form = new IndexForm();
         $this->view->form = $form;
