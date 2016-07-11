@@ -14,7 +14,7 @@ class EquipeSeparacao extends Form
         $this->setAttribs(array('id' => 'equipe-separacao-form', 'class' => 'saveForm'));
 
         $this->addSubFormTab('Vincular Etiquetas', new EtiquetaSeparacao, 'etiquetas');
-        $this->addSubFormTab('Vincular Mapas', new MapaSeparacao(), 'mapas');
+        $this->addSubFormTab('Vincular Mapas', new MapaSeparacao, 'mapas');
     }
 
 }
