@@ -1247,15 +1247,15 @@ class ExpedicaoRepository extends EntityRepository
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
                          GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSC.QTD_CONFERIDA * MSC.QTD_EMBALAGEM) QTD_CONFERIDA, MS.COD_EXPEDICAO
                                FROM MAPA_SEPARACAO MS
                          INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                               GROUP BY MS.COD_EXPEDICAO) MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR) QTD_TOTAL, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) QTD_TOTAL, MS.COD_EXPEDICAO
                                FROM MAPA_SEPARACAO_PRODUTO MSP
                               INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                               GROUP BY MS.COD_EXPEDICAO) MSP ON MSP.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR) QTD_TOTAL_CONF_MANUAL, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) QTD_TOTAL_CONF_MANUAL, MS.COD_EXPEDICAO
                                FROM MAPA_SEPARACAO_PRODUTO MSP
                               INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                                LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSCONF ON MSCONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
@@ -1327,7 +1327,7 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-//        echo $sql;
+//        echo $sql; exit;
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
 //        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
