@@ -1186,7 +1186,7 @@ class ExpedicaoRepository extends EntityRepository
             $whereSubQuery=" C.COD_EXPEDICAO = ".$parametros['idExpedicao']."";
             $and=" and ";
             $andSub=" and ";
-            $WhereExpedicao .= " AND (C.COD_EXPEDICAO = ".$parametros['idExpedicao'].")";
+            $WhereExpedicao .= " AND (E.COD_EXPEDICAO = ".$parametros['idExpedicao'].") ";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
@@ -1211,7 +1211,7 @@ class ExpedicaoRepository extends EntityRepository
             $JoinCarga = " LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA ";
         }
 
-        $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
+        $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla ;
 
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
