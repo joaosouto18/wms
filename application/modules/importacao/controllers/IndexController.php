@@ -231,8 +231,7 @@ class Importacao_IndexController extends Action
                 case 'cliente':
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
                     if (strlen($cpf_cnpjFormatado) == 11) {
-                        $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $arrRegistro['tipoPessoa'] = "F";
                     } else if (strlen($cpf_cnpjFormatado) == 14) {
                         $arrRegistro['tipoPessoa'] = "J";
                     } else {
