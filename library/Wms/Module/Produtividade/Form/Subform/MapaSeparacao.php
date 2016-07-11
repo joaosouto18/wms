@@ -1,9 +1,9 @@
 <?php
-namespace Wms\Module\Expedicao\Form;
+namespace Wms\Module\Produtividade\Form\Subform;
 
-use Wms\Module\Web\Form;
+use Core\Form\SubForm;
 
-class EquipeSeparacaoMapa extends Form
+class MapaSeparacao extends SubForm
 {
 
     public function init()
@@ -14,7 +14,7 @@ class EquipeSeparacaoMapa extends Form
         ))
             ->addElement('text', 'pessoa', array(
                 'size' => 15,
-                'label' => utf8_encode('Matrícula Conferente'),
+                'label' => utf8_encode('CPF Conferente'),
             ))
             ->addElement('text', 'codMapaSeparacao', array(
                 'size' => 12,
