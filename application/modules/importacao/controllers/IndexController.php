@@ -628,10 +628,17 @@ class Importacao_IndexController extends Action
 
                     for ($linha = 1; $linha <= $tLinhas; $linha++) {
 
-                        if (ucfirst($cabecalho) == 'S') {
-                            if ($linha == 1) {
-                                continue;
+                        if (ucfirst($cabecalho) == 'S' && $linha == 1) {
+                            /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                            foreach ($camposArquivo as $campo){
+                                $coluna = $campo->getPosicaoTxt();
+                                if (!empty($coluna)){
+                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
+                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
+                                    }
+                                }
                             }
+                            continue;
                         }
 
                         $this->statusProgress["iLinha"] = $linha - 1;
@@ -804,6 +811,7 @@ class Importacao_IndexController extends Action
 
         } catch (\Exception $e) {
             $em->rollback();
+            $this->statusProgress['exception'] = array($e->getMessage());
             $this->progressBar->update(null, $this->statusProgress);
             $this->progressBar->finish();
             echo Zend_Json::encode(array('result' => 'Exception'));
