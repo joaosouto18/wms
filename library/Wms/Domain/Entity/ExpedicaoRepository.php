@@ -1826,36 +1826,6 @@ class ExpedicaoRepository extends EntityRepository
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-/*        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select("
-                    emb.codigoBarras codBarras,
-                    p.id codProduto,
-                    p.descricao produto,
-                    p.grade,
-                    cl2.nome cliente,
-                    NVL(est1.id, est2.id) codEstoque,
-                    CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END AS embalagem,
-                    conf.nome conferente,
-                    msc.dataConferencia dataConferencia,
-                    CONCAT(CONCAT(vp.descricao, ' '), vp.id) volumePatrimonio")
-            ->from('wms:Expedicao\MapaSeparacaoConferencia','msc')
-            ->innerJoin('msc.mapaSeparacao', 'ms')
-            ->innerJoin('msc.produto','p', 'WITH' , "p.id = msc.codProduto AND p.grade = msc.dscGrade")
-            ->leftJoin('msc.produtoVolume', 'vol', 'WITH' , "vol.id = msc.codProduto AND p.grade = msc.dscGrade")
-            ->leftJoin('msc.produtoEmbalagem', 'emb', 'WITH' , "emb.id = msc.codProduto AND p.grade = msc.dscGrade")
-            ->innerJoin('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp', 'WITH', 'evp.expedicao = ms.expedicao AND evp.volumePatrimonio = msc.volumePatrimonio')
-            ->leftJoin('wms:Pessoa\Papel\Cliente', 'cl', 'WITH' , 'cl.codClienteExterno = evp.tipoVolume')
-            ->innerJoin('cl.pessoa', 'cl2')
-            ->leftJoin('wms:Enderecamento\Estoque', 'est1', 'WITH', 'est1.produto = p AND est1.produtoEmbalagem = emb')
-            ->leftJoin('wms:Enderecamento\Estoque', 'est2', 'WITH', 'est2.produto = p AND est1.produtoVolume = vol')
-            ->innerJoin('wms:Pessoa', 'conf', 'WITH', 'evp.usuario = conf')
-            ->innerJoin('msc.volumePatrimonio', 'vp')
-            ->where("ms.expedicao = $idExpedicao")
-            ->andWhere("msc.volumePatrimonio = $idVolume")
-            ->andWhere('ms.codStatus IN (526,531,532)');
-
-        $result = $dql->getQuery()->getResult();*/
-
         return $result;
     }
 
@@ -2082,7 +2052,13 @@ class ExpedicaoRepository extends EntityRepository
     {
         $sql = "SELECT
                   DISTINCT
-                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE
+                    vp.COD_VOLUME_PATRIMONIO as VOLUME, vp.DSC_VOLUME_PATRIMONIO as DESCRICAO, i.DSC_ITINERARIO as ITINERARIO, pes.NOM_PESSOA as CLIENTE,
+                    (
+                        SELECT count(es1.cod_etiqueta_separacao) FROM ETIQUETA_SEPARACAO es1
+                        INNER JOIN PEDIDO ped ON ped.COD_PEDIDO = es1.COD_PEDIDO
+                        INNER JOIN CARGA c ON c.COD_CARGA = ped.COD_CARGA
+                        WHERE c.cod_expedicao = $idExpedicao
+                    ) QTD_CAIXA
                     FROM EXPEDICAO_VOLUME_PATRIMONIO evp
                 INNER JOIN VOLUME_PATRIMONIO vp ON vp.COD_VOLUME_PATRIMONIO = evp.COD_VOLUME_PATRIMONIO
                 INNER JOIN CARGA c ON c.COD_EXPEDICAO = evp.COD_EXPEDICAO
