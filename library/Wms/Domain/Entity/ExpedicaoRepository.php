@@ -1822,7 +1822,7 @@ class ExpedicaoRepository extends EntityRepository
                 LEFT JOIN ESTOQUE ES2 ON ES2.COD_PRODUTO = MSC.COD_PRODUTO AND ES2.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
                 INNER JOIN PESSOA CONF ON EVP.COD_USUARIO = CONF.COD_PESSOA
                 INNER JOIN VOLUME_PATRIMONIO VP ON MSC.COD_VOLUME_PATRIMONIO = VP.COD_VOLUME_PATRIMONIO
-                WHERE MSC.COD_VOLUME_PATRIMONIO = $idVolume AND MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (526,531,532)" ;
+                WHERE MSC.COD_VOLUME_PATRIMONIO = $idVolume AND MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (523,526,531,532)" ;
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
