@@ -47,7 +47,7 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
                 $enExpVolumePatrimonio->setVolumePatrimonio($entityVolumePatrimonio);
                 $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
                 $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
-                $enExpVolumePatrimonio->setSequencia($countVolumes);
+                $enExpVolumePatrimonio->setSequencia($nextSeq);
                 $enExpVolumePatrimonio->setUsuario($usuario);
                 $em->persist($enExpVolumePatrimonio);
             }
