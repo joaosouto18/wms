@@ -169,15 +169,15 @@ class GerarEtiqueta extends eFPDF
 
 
         $x        = 55;
-        $y        = 42;
-        $height   = 12;
+        $y        = 28;
+        $height   = 8;
         $angle    = 0;
         $type     = 'code128';
         $black    = '000000';
-        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.6,12);
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,10);
         $len = $this->GetStringWidth($data['hri']);
 
-        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 8,$codigo);
     }
 
 }
