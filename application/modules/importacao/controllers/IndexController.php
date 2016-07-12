@@ -688,10 +688,9 @@ class Importacao_IndexController extends Action
 
                         if (isset($arrErroRows['exception']) && !empty($arrErroRows['exception'])) {
                             $this->statusProgress['exception'] = $arrErroRows['exception'];
-                            $this->progressBar->update(null, $this->statusProgress);
+                            echo '<script type="text/javascript">parent.Zend_ProgressBar_Update({"current":0,"max":1,"percent":0,"timeTaken":2,"timeRemaining":null,"text": ' . Zend_Json::encode($this->statusProgress) .'});</script><br />';
                             $this->progressBar->finish();
                             $em->rollback();
-                            echo Zend_Json::encode(array('result' => 'Exception'));
                             exit;
                         }
 
@@ -812,9 +811,8 @@ class Importacao_IndexController extends Action
         } catch (\Exception $e) {
             $em->rollback();
             $this->statusProgress['exception'] = array($e->getMessage());
-            $this->progressBar->update(null, $this->statusProgress);
+            echo '<script type="text/javascript">parent.Zend_ProgressBar_Update({"current":0,"max":1,"percent":0,"timeTaken":2,"timeRemaining":null,"text": ' . Zend_Json::encode($this->statusProgress) .'});</script><br />';
             $this->progressBar->finish();
-            echo Zend_Json::encode(array('result' => 'Exception'));
             exit;
         }
     }

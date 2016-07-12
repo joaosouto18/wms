@@ -435,15 +435,15 @@ class Importacao
 
             $pedido['itinerario'] = $em->getRepository('wms:expedicao\Itinerario')->findOneBy(array('id'=> $pedido['itinerario']));
             if (empty($pedido['itinerario']))
-                throw new \Exception(utf8_decode("Itinerário de código: $pedido[itinerario] não foi encontrado"));
+                throw new \Exception("Itinerário de código: $pedido[itinerario] não foi encontrado");
 
             $pedido['carga'] = $em->getRepository("wms:expedicao\Carga")->findOneBy(array('codCargaExterno' => (int)$pedido['codCargaExterno']));
             if (empty($pedido['carga']))
-                throw new \Exception(utf8_decode("Carga: $pedido[codCargaExterno] não foi encontrada"));
+                throw new \Exception("Carga: $pedido[codCargaExterno] não foi encontrada");
 
             $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
             if (empty($pedido['pessoa']))
-                throw new \Exception(utf8_decode("Cliente: $pedido[codClienteExterno] não foi encontrado"));
+                throw new \Exception("Cliente: $pedido[codClienteExterno] não foi encontrado");
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
