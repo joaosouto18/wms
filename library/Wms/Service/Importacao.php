@@ -2,6 +2,7 @@
 
 namespace Wms\Service;
 
+use Core\Grid\Exception;
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
@@ -456,7 +457,15 @@ class Importacao
             /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
             $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
             $pedido['produto'] = $em->getRepository('wms:Produto')->findOneBy(array('id' => $pedido['codProduto'], 'grade' => $pedido['grade']));
+            if (empty($pedido['produto'])){
+                throw new \Exception("Produto: $pedido[codProduto] grade: $pedido[grade] não foi encontrado");
+            }
+
             $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
+            if (empty($pedido['pedido'])){
+                throw new \Exception("Pedido: $pedido[pedido] não foi encontrado");
+            }
+
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
             if (!$entityPedidoProduto)
                 $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
