@@ -169,7 +169,7 @@ class GerarEtiqueta extends eFPDF
 
 
         $x        = 55;
-        $y        = 28;
+        $y        = 42;
         $height   = 8;
         $angle    = 0;
         $type     = 'code128';
