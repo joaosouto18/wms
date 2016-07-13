@@ -315,13 +315,14 @@ class EtiquetaVolume extends eFPDF
                 $black = '000000';
                 $data = Barcode::fpdf($this, $black, $x, $y, $angle, $type, array('code' => $volume['volume']), 0.42, 10);
 
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(3, 63);
+                $this->MultiCell(70, 3.8, utf8_decode("PEDIDO: $volume[pedido]"), 0, 'L');
+
                 $dataEmissao = null;
                 if (isset($volume['dataInicio'])) {
                     $dataEmissao = $volume['dataInicio']->format('d/M/Y');
                 }
-                $this->SetFont('Arial', 'B', 10);
-                $this->SetXY(3, 63);
-                $this->MultiCell(70, 3.8, utf8_decode("PEDIDO: $volume[pedido]"), 0, 'L');
 
                 $this->SetFont('Arial', 'B', 10);
                 $this->SetXY(3, 69);
@@ -329,10 +330,14 @@ class EtiquetaVolume extends eFPDF
 
                 if (isset($volume['sequencia']) && !empty($volume['sequencia'])) {
                     /* Código de sequência */
-                    $this->SetFont('Arial', 'B', 13);
-                    $this->SetXY(55, 66);
+                    $this->SetFont('Arial', 'B', 10);
+                    $this->SetXY(55, 63);
                     $this->MultiCell(70, 3.8, "SEQ. " . $volume['sequencia'], 0, 'L');
                 }
+
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(55, 69);
+                $this->MultiCell(70, 3.8, utf8_decode("VOL: ". $volume['volume']), 0, 'L');
             }
         } else {
             $volume = $volumePatrimonio;
@@ -401,13 +406,14 @@ class EtiquetaVolume extends eFPDF
             $black = '000000';
             $data = Barcode::fpdf($this, $black, $x, $y, $angle, $type, array('code' => $volume['volume']), 0.42, 10);
 
+            $this->SetFont('Arial', 'B', 10);
+            $this->SetXY(3, 63);
+            $this->MultiCell(70, 3.8, utf8_decode("PEDIDO: $volume[pedido]"), 0, 'L');
+
             $dataEmissao = null;
             if (isset($volume['dataInicio'])) {
                 $dataEmissao = $volume['dataInicio']->format('d/M/Y');
             }
-            $this->SetFont('Arial', 'B', 10);
-            $this->SetXY(3, 63);
-            $this->MultiCell(70, 3.8, utf8_decode("PEDIDO: $volume[pedido]"), 0, 'L');
 
             $this->SetFont('Arial', 'B', 10);
             $this->SetXY(3, 69);
@@ -415,10 +421,14 @@ class EtiquetaVolume extends eFPDF
 
             if (isset($volume['sequencia']) && !empty($volume['sequencia'])) {
                 /* Código de sequência */
-                $this->SetFont('Arial', 'B', 13);
-                $this->SetXY(55, 66);
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(55, 63);
                 $this->MultiCell(70, 3.8, "SEQ. " . $volume['sequencia'], 0, 'L');
             }
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->SetXY(55, 69);
+            $this->MultiCell(70, 3.8, utf8_decode("VOL: ". $volume['volume']), 0, 'L');
         }
 
         $this->Output('Volume-Patrimonio.pdf','I');

@@ -231,8 +231,7 @@ class Importacao_IndexController extends Action
                 case 'cliente':
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
                     if (strlen($cpf_cnpjFormatado) == 11) {
-                        $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $arrRegistro['tipoPessoa'] = "F";
                     } else if (strlen($cpf_cnpjFormatado) == 14) {
                         $arrRegistro['tipoPessoa'] = "J";
                     } else {
@@ -629,10 +628,17 @@ class Importacao_IndexController extends Action
 
                     for ($linha = 1; $linha <= $tLinhas; $linha++) {
 
-                        if (ucfirst($cabecalho) == 'S') {
-                            if ($linha == 1) {
-                                continue;
+                        if (ucfirst($cabecalho) == 'S' && $linha == 1) {
+                            /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                            foreach ($camposArquivo as $campo){
+                                $coluna = $campo->getPosicaoTxt();
+                                if (!empty($coluna)){
+                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
+                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
+                                    }
+                                }
                             }
+                            continue;
                         }
 
                         $this->statusProgress["iLinha"] = $linha - 1;
@@ -682,10 +688,9 @@ class Importacao_IndexController extends Action
 
                         if (isset($arrErroRows['exception']) && !empty($arrErroRows['exception'])) {
                             $this->statusProgress['exception'] = $arrErroRows['exception'];
-                            $this->progressBar->update(null, $this->statusProgress);
+                            echo '<script type="text/javascript">parent.Zend_ProgressBar_Update({"current":0,"max":1,"percent":0,"timeTaken":2,"timeRemaining":null,"text": ' . Zend_Json::encode($this->statusProgress) .'});</script><br />';
                             $this->progressBar->finish();
                             $em->rollback();
-                            echo Zend_Json::encode(array('result' => 'Exception'));
                             exit;
                         }
 
@@ -805,9 +810,9 @@ class Importacao_IndexController extends Action
 
         } catch (\Exception $e) {
             $em->rollback();
-            $this->progressBar->update(null, $this->statusProgress);
+            $this->statusProgress['exception'] = array($e->getMessage());
+            echo '<script type="text/javascript">parent.Zend_ProgressBar_Update({"current":0,"max":1,"percent":0,"timeTaken":2,"timeRemaining":null,"text": ' . Zend_Json::encode($this->statusProgress) .'});</script><br />';
             $this->progressBar->finish();
-            echo Zend_Json::encode(array('result' => 'Exception'));
             exit;
         }
     }

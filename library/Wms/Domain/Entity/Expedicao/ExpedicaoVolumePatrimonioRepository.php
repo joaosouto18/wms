@@ -40,14 +40,19 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
 
             $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
-            $countVolumes = count($this->findBy(array('expedicao' => $idExpedicao))) + 1;
+            /** @var ExpedicaoVolumePatrimonio $ultimoVolume */
+            $ultimoVolume = end($this->findBy(array('expedicao' => $idExpedicao), array('sequencia' => "ASC")));
+            $nextSeq = 1;
+            if ($ultimoVolume)
+                $nextSeq += $ultimoVolume->getSequencia();
+
 
             if (count($arrayExpVolPatrimonioEn) ==0){
                 $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
                 $enExpVolumePatrimonio->setVolumePatrimonio($entityVolumePatrimonio);
                 $enExpVolumePatrimonio->setExpedicao($entityExpedicao);
                 $enExpVolumePatrimonio->setTipoVolume($idTipoVolume);
-                $enExpVolumePatrimonio->setSequencia($countVolumes);
+                $enExpVolumePatrimonio->setSequencia($nextSeq);
                 $enExpVolumePatrimonio->setUsuario($usuario);
                 $em->persist($enExpVolumePatrimonio);
             }

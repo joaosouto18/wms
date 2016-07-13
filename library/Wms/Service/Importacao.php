@@ -2,6 +2,7 @@
 
 namespace Wms\Service;
 
+use Core\Grid\Exception;
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
@@ -433,13 +434,21 @@ class Importacao
             $pedido['envioParaLoja'] = null;
 
             $pedido['itinerario'] = $em->getRepository('wms:expedicao\Itinerario')->findOneBy(array('id'=> $pedido['itinerario']));
+            if (empty($pedido['itinerario']))
+                throw new \Exception("Itinerário de código: $pedido[itinerario] não foi encontrado");
+
             $pedido['carga'] = $em->getRepository("wms:expedicao\Carga")->findOneBy(array('codCargaExterno' => (int)$pedido['codCargaExterno']));
+            if (empty($pedido['carga']))
+                throw new \Exception("Carga: $pedido[codCargaExterno] não foi encontrada");
+
             $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
+            if (empty($pedido['pessoa']))
+                throw new \Exception("Cliente: $pedido[codClienteExterno] não foi encontrado");
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
             $entityPedido = $pedidoRepo->findOneBy(array('id' => $pedido['codPedido']));
-            if (!$entityPedido) {
+            if (empty($entityPedido)) {
                 $entityPedido = $pedidoRepo->save($pedido);
             }
 
@@ -456,7 +465,15 @@ class Importacao
             /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
             $pedidoProdutoRepo = $em->getRepository('wms:Expedicao\PedidoProduto');
             $pedido['produto'] = $em->getRepository('wms:Produto')->findOneBy(array('id' => $pedido['codProduto'], 'grade' => $pedido['grade']));
+            if (empty($pedido['produto'])){
+                throw new \Exception("Produto: $pedido[codProduto] grade: $pedido[grade] não foi encontrado");
+            }
+
             $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
+            if (empty($pedido['pedido'])){
+                throw new \Exception("Pedido: $pedido[pedido] não foi encontrado");
+            }
+
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
             if (!$entityPedidoProduto)
                 $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);

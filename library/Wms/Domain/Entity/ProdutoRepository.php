@@ -1022,8 +1022,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			->from('wms:Produto', 'p')
 			->innerJoin('p.tipoComercializacao', 'tc')
 			->leftJoin('p.linhaSeparacao', 'ls')
-			->leftJoin('p.fabricante', 'fb')
-			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'')
+			->leftJoin('p.fabricante', 'fb');
+
+		if (isset($codProduto) && !empty($codProduto)) {
+			$dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade');
+		} else {
+			$dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
+		}
+
+		$dql
 			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
 			->where('p.id = :codProduto')
 			->andWhere("p.grade = :grade")
