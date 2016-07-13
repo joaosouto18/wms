@@ -524,13 +524,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
                 $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
-                $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) + $tolerancia;
-                $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) - $tolerancia;
+                if (isset($pesoProduto) && !empty($pesoProduto)) {
+                    $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) + $tolerancia;
+                    $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) - $tolerancia;
 
-                if (!((float)$sumPesoRecebimento['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimento['numPeso'] >= $pesoUnitarioMargemI)) {
-                    $this->view->pesoDivergente = true;
-                    break;
+                    if (!((float)$sumPesoRecebimento['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimento['numPeso'] >= $pesoUnitarioMargemI)) {
+                        $this->view->pesoDivergente = true;
+                        break;
+                    }
                 }
+
             }
 
             $this->view->ordemServicoEntity = $ordemServicoEntity;
@@ -1170,7 +1173,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(50, 30));
                 break;
         }
-        
+
         $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null ,$modelo);
     }
 
