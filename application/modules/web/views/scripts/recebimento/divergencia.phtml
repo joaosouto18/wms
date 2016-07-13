@@ -63,7 +63,12 @@
             <?php endforeach; ?>
             <tr style="line-height: 50px;">
                 <td colspan="2">
-                    Conferente: <strong><?php echo $this->ordemServicoEntity->getPessoa()->getNome(); ?></strong>
+                    Conferente:
+                    <strong>
+                        <?php if (isset($this->ordemServicoEntity) && !empty($this->ordemServicoEntity)) : ?>
+                            <?php echo $this->ordemServicoEntity->getPessoa()->getNome(); ?>
+                        <?php endif; ?>
+                    </strong>
                 </td>
                 <td colspan="3">
                     <?php
