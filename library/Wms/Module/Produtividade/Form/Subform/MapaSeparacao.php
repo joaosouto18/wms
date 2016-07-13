@@ -12,12 +12,12 @@ class MapaSeparacao extends SubForm
             'method' => 'get',
             'onkeydown' => 'nextInput(event);'
         ))
-            ->addElement('text', 'pessoa', array(
+            ->addElement('cpf', 'pessoa', array(
                 'size' => 15,
                 'label' => utf8_encode('CPF Conferente'),
             ))
             ->addElement('text', 'codMapaSeparacao', array(
-                'size' => 12,
+                'size' => 15,
                 'label' => utf8_encode('Mapa Separacao'),
             ))
             ->addElement('submit', 'salvarMapa', array(

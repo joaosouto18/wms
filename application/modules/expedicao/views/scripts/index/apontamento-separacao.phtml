@@ -1,8 +1,8 @@
 <script>
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetaInicial').value != "") {
-                codBarrasFinal   = document.getElementById('etiquetaFinal');
+            if (document.getElementById('etiquetas[etiquetaInicial]').value != "") {
+                codBarrasFinal   = document.getElementById('etiquetas[etiquetaFinal]');
                 if (codBarrasFinal) {
                     codBarrasFinal.focus();
                     if(event.preventDefault) {
@@ -15,13 +15,14 @@
         }
         return true;
     }
-    function gotoSubmit(event) {
+
+    function gotoPessoa(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetaFinal').value != "") {
-                senha   = document.getElementById('pessoa');
-                if (senha) {
-                    senha.focus();
-                    
+            if (document.getElementById('etiquetas[etiquetaFinal]').value != "") {
+                pessoa   = document.getElementById('pessoa');
+                if (pessoa) {
+                    pessoa.focus();
+
                     if(event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -32,9 +33,33 @@
         }
         return true;
     }
+
+    function gotoDadosPessoa(event) {
+
+        var etiquetaInicial = $('#etiquetas-etiquetaInicial').val();
+        var etiquetaFinal = $('#etiquetas-etiquetaFinal').val();
+        etiquetaInicial = etiquetaInicial.substring(0,etiquetaInicial.length-1);
+        etiquetaFinal = etiquetaFinal.substring(0,etiquetaFinal.length-1);
+
+        var qtdEtiquetas = 0;
+        if (etiquetaInicial != '' && etiquetaFinal != '') {
+            qtdEtiquetas = etiquetaFinal - etiquetaInicial;
+        }
+
+        $.ajax({
+            url: 'conferente-apontamento-separacao/cpf/'+$('#etiquetas-pessoa').val()+'/qtdEtiquetas/'+qtdEtiquetas,
+            success: function (data) {
+                $('#exibe-pessoa').html(data);
+            }
+        });
+
+    }
+
 </script>
 
 <?php
 echo $this->form;
 echo $this->formMapaSeparacao;
 ?>
+<div id="exibe-pessoa"></div>
+
