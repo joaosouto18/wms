@@ -105,7 +105,8 @@
             /** @var \Wms\Domain\Entity\CodigoFornecedor\Referencia $codigoFornecedor */
             foreach($codigosFornecedores as $codigoFornecedor) :
                 $embTxt = null;
-                if (!empty($codigoFornecedor->getEmbalagem()))
+                $embalagem = $codigoFornecedor->getEmbalagem();
+                if (!empty($embalagem) && isset($embalagem))
                     $embTxt = $codigoFornecedor->getEmbalagem()->getDescricao() . "(" . $codigoFornecedor->getEmbalagem()->getQuantidade() . ")" ;?>
                 <tr class="gTResultSet ">
                     <td style="text-align:left"><?php echo $codigoFornecedor->getFornecedor()->getPessoa()->getNome(); ?></td>

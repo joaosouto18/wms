@@ -890,12 +890,26 @@ class NotaFiscalRepository extends EntityRepository
                     $itemEntity->setGrade(trim($item['grade']));
                     $itemEntity->setNumPeso($pesoItem);
 
-                    if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
+                    if (!isset($item['qtdEmbalagem']) || empty($item['qtdEmbalagem'])) {
+                        $qtdEmbalagem = 1;
+                        $embalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')
+                            ->findOneBy(array('codProduto' => $idProduto, 'grade' => trim($item['grade']), 'isPadrao' => 'S'));
+
+                        if (isset($embalagemEn) && !empty($embalagemEn)) {
+                            $qtdEmbalagem = $embalagemEn->getQuantidade();
+                        }
+                        $qtd = $item['quantidade'] * $qtdEmbalagem;
+                    } elseif (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])) {
                         $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
-                        $itemEntity->setQuantidade($qtd);
-                    } else {
-                        $itemEntity->setQuantidade($item['quantidade']);
                     }
+                    $itemEntity->setQuantidade($qtd);
+
+//                    if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
+//                        $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
+//                        $itemEntity->setQuantidade($qtd);
+//                    } else {
+//                        $itemEntity->setQuantidade($item['quantidade']);
+//                    }
                     
                     $notaFiscalEntity->getItens()->add($itemEntity);
                 }
