@@ -164,6 +164,9 @@ class Mobile_ExpedicaoController extends Action
         $idVolume = $this->_getParam('idVolume');
 
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+
+        $params = "";
+
         try {
             $expVolumePatrimonioRepo->fecharCaixa($idExpedicao, $idVolume);
             $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'imprime-volume-patrimonio', 'idExpedicao' => $idExpedicao, 'volume' => $idVolume)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Clique aqui para Imprimir</a>';
@@ -171,9 +174,9 @@ class Mobile_ExpedicaoController extends Action
 
             $this->addFlashMessage('success', $mensagem );
         } catch (Exception $e) {
-            $params = "";
             $this->_helper->messenger('error', $e->getMessage());
         }
+
         $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . $params . "/idVolume/" );
     }
 
