@@ -293,7 +293,13 @@ class EtiquetaVolume extends eFPDF
                     $this->SetY($y);
                     $this->MultiCell(150, $y, $impressao, 0, 'L');
 
-                    $impressao = utf8_decode(substr($produtos['descricao'], 0, 60));
+                    if (isset($produtos['descricaoEmbalagem']) && !empty($produtos['descricaoEmbalagem'])) {
+                        $produtos['descricaoEmbalagem'] = '('.$produtos['descricaoEmbalagem'].')';
+                    } else {
+                        $produtos['descricaoEmbalagem'] = null;
+                    }
+
+                    $impressao = utf8_decode(substr($produtos['descricao'].$produtos['descricaoEmbalagem'], 0, 60));
                     $this->SetXY(19, $y);
                     $this->MultiCell(150, $y, $impressao, 0, 'L');
 
