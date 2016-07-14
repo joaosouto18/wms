@@ -746,21 +746,6 @@ class Importacao
     public function saveEndereco($em, $arrDados)
     {
         try {
-            if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica']))
-                $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
-
-            if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem']))
-                $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
-
-            if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco']))
-                $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
-
-            if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem']))
-                $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
-
-            if (isset($arrDados['deposito']) && !empty($arrDados['deposito']))
-                $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
-
             $endereco = explode(".", $arrDados['endereco']);
 
             $arrDados['rua'] = $endereco[0];
@@ -768,24 +753,63 @@ class Importacao
             $arrDados['nivel'] = $endereco[2];
             $arrDados['apartamento'] = $endereco[3];
 
-            $entity = $em->getRepository('wms:Deposito\Endereco')
-                ->findOneBy(array(
-                        'rua' => $endereco[0],
-                        'predio' => $endereco[1],
-                        'nivel' => $endereco[2],
-                        'apartamento' => $endereco[3])
-                );
-            $dscEndereco = array(
-                'RUA' => $endereco[0],
-                'PREDIO' => $endereco[1],
-                'NIVEL' => $endereco[2],
-                'APTO' => $endereco[3]);
+            $criterio = array(
+                'rua' => $endereco[0],
+                'predio' => $endereco[1],
+                'nivel' => $endereco[2],
+                'apartamento' => $endereco[3]
+            );
 
-            $dscEndereco = EnderecoUtil::formatar($dscEndereco);
+            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($criterio);
 
             if (!$entity) {
+            
+                if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica'])){
+                    $temp = $arrDados['caracteristica'];
+                    $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
+                    if (empty($arrDados['caracteristica']))
+                        throw new \Exception("A característica de endereço com o código $temp não foi encontrada.");
+                }
+    
+                if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem'])) {
+                    $temp = $arrDados['estruturaArmazenagem'];
+                    $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
+                    if (empty($arrDados['estruturaArmazenagem']))
+                        throw new \Exception("A estrutura de armazenagem com o código $temp não foi encontrada.");
+                }
+
+                if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco'])) {
+                    $temp = $arrDados['tipoEndereco'];
+                    $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
+                    if (empty($arrDados['tipoEndereco']))
+                        throw new \Exception("O tipo de endereço com o código $temp não foi encontrado.");
+                }
+
+                if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem'])) {
+                    $temp = $arrDados['areaArmazenagem'];
+                    $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
+                    if (empty($arrDados['areaArmazenagem']))
+                        throw new \Exception("A área de armazenagem com o código $temp não foi encontrada");
+                }
+
+                if (isset($arrDados['deposito']) && !empty($arrDados['deposito'])) {
+                    $temp = $arrDados['deposito'];
+                    $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
+                    if (empty($arrDados['deposito']))
+                        throw new \Exception("O depósito de código $temp não foi encontrado");
+                }
+                
                 $entity = new Endereco();
                 Configurator::configure($entity, $arrDados);
+                
+                $dscEndereco = array(
+                    'RUA' => $endereco[0],
+                    'PREDIO' => $endereco[1],
+                    'NIVEL' => $endereco[2],
+                    'APTO' => $endereco[3])
+                ;
+                $dscEndereco = EnderecoUtil::formatar($dscEndereco);
+                
                 $entity->setDescricao($dscEndereco);
                 $em->persist($entity);
                 $em->flush();
