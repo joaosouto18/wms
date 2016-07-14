@@ -59,7 +59,7 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
         $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
 
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $expedicaoRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
         $cargaRepo = $repositorios['cargaRepo'];
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
@@ -492,6 +492,8 @@ class Importacao_IndexController extends Action
                         } else {
                             $countFlush++;
                         }
+                    } else {
+                        $arrErroRows[$linha] = "Esta carga já foi cadastrada " . $registro;
                     }
                     break;
                 default:
