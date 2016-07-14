@@ -42,12 +42,12 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
             $arrayExpVolPatrimonioEn = $this->findBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao, 'tipoVolume'=>$idTipoVolume));
             /** @var ExpedicaoVolumePatrimonio $ultimoVolume */
             $arrExVol = $this->findBy(array('expedicao' => $idExpedicao), array('sequencia' => "ASC"));
-            $ultimoVolume = end($arrExVol);
             $nextSeq = 1;
-            if ($ultimoVolume)
+            if (!empty($arrExVol)) {
+                $ultimoVolume = end($arrExVol);
                 $nextSeq += $ultimoVolume->getSequencia();
-
-
+            }
+            
             if (count($arrayExpVolPatrimonioEn) ==0){
                 $enExpVolumePatrimonio = new ExpedicaoVolumePatrimonio();
                 $enExpVolumePatrimonio->setVolumePatrimonio($entityVolumePatrimonio);
