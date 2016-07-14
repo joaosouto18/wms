@@ -518,10 +518,25 @@ class Importacao
                     }
                 }
 
+                $temp = $produto['linhaSeparacao'];
                 $produto['linhaSeparacao'] = $em->getReference('wms:Armazenagem\LinhaSeparacao', $produto['linhaSeparacao']);
+                if (empty($produto['linhaSeparacao']))
+                    throw new \Exception("Código de linha de separação $temp não encontrado.");
+
+                $temp = $produto['tipoComercializacao'];
                 $produto['tipoComercializacao'] = $em->getReference('wms:Produto\TipoComercializacao', $produto['tipoComercializacao']);
+                if (empty($produto['tipoComercializacao']))
+                    throw new \Exception("Código de tipo de comercialização $temp não encontrado.");
+
+                $temp = $produto['classe'];
                 $produto['classe'] = $em->getReference('wms:Produto\Classe', (int)$produto['classe']);
+                if (empty($produto['classe']))
+                    throw new \Exception("Código de classe $temp não encontrado.");
+
+                $temp = $produto['fabricante'];
                 $produto['fabricante'] = $em->getReference('wms:Fabricante', $produto['fabricante']);
+                if (empty($produto['fabricante']))
+                    throw new \Exception("Código de fabricante $temp não encontrado.");
 
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
                 $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);
@@ -597,16 +612,22 @@ class Importacao
                             'apartamento' => $endereco[3])
                     );
 
+                if (empty($endereco))
+                    throw new \Exception("O endereço $registro[endereco] não foi encontrado");
+
                 $enderecoEn = $endereco;
             }
 
             /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
-            if ($embalagemEntity == null) {
+            if (empty($embalagemEntity)) {
                 /** @var \Wms\Domain\Entity\Produto $produto */
                 $produto = $produtoRepo->findOneBy(array(
                     'id' => $registro['codProduto'],
                     'grade' => $registro['grade'],
                 ));
+
+                if (empty($produto))
+                    throw new \Exception("O produto $registro[codProduto] de grade $registro[grade] não foi encontrado");
 
                 /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
                 $embalagemEntity = new Produto\Embalagem();
@@ -627,7 +648,7 @@ class Importacao
             }
             return true;
         }catch (\Exception $e) {
-            return "Endereço: " . $registro['endereco'] . " Código de barras: " . $registro['codigoBarras'] . ". Exception: " . $e->getMessage();
+            return $e->getMessage();
         }
     }
 
