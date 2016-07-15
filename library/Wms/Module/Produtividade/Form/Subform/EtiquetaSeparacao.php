@@ -29,17 +29,19 @@ class EtiquetaSeparacao extends SubForm
                 'size' => 15,
                 'label' => 'Etiqueta Final',
             ))
+            ->addElement('button', 'buscar', array(
+                'label' => 'Buscar',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper'),
+                'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
+            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Vincular',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','submit'), 'identificacao', array('legend' => utf8_encode('Vincular Etiqueta Separação')));
+            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar','submit'), 'identificacao', array('legend' => 'Vincular Etiqueta SeparaÃ§Ã£o'));
 
-        $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
-        $this->getElement('etiquetaFinal')->setAttrib('onblur','gotoPessoa(event)');
-
-        $this->getElement('pessoa')->setAttrib('onblur','gotoDadosPessoa(event)');
     }
 }
 

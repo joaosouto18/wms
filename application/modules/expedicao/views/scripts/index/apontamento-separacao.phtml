@@ -33,49 +33,88 @@
         }
         return true;
     }
+    $(function(){
 
-    function gotoDadosPessoa() {
+        $("#etiquetas-buscar").click(function () {
 
-        var etiquetaInicial = $('#etiquetas-etiquetaInicial').val();
-        var etiquetaFinal = $('#etiquetas-etiquetaFinal').val();
-        etiquetaInicial = etiquetaInicial.substring(0,etiquetaInicial.length-1);
-        etiquetaFinal = etiquetaFinal.substring(0,etiquetaFinal.length-1);
+            var eI = $('#etiquetas-etiquetaInicial').val();
+            var eF = $('#etiquetas-etiquetaFinal').val();
 
-        var qtdEtiquetas = 0;
-        if (etiquetaInicial != '' && etiquetaFinal != '') {
-            qtdEtiquetas = etiquetaFinal - etiquetaInicial;
-        }
+            var qtdEtiquetas = 0;
+            var intervalo = "N/D";
 
-        $.ajax({
-            url: 'conferente-apontamento-separacao/cpf/'+$('#etiquetas-pessoa').val()+'/qtdEtiquetas/'+qtdEtiquetas,
-            success: function (data) {
-                var tr = $('<tr>').addClass('gTResultSet');
-                tr.append($('<td>').css('text-align','left'));
-                tr.append($('<td>').css('text-align','left').text(data[0]['NOM_PESSOA']));
-                tr.append($('<td>').css('text-align','left').text(data[0]['NUM_CPF']));
-                tr.append($('<td>').css('text-align','left').text(data[0]['QUANTIDADE']));
-                $('#tbResult').append(tr);
+            if (eI != '' && eF != '') {
+
+                if (eI.length < 2 || eF.length < 2) {
+                    alert("Etiqueta fora do padrão");
+                    return false;
+                }
+
+                eI = parseInt(eI.substring(0, eI.length - 1));
+                eF = parseInt(eF.substring(0, eF.length - 1));
+
+                if (eI > eF) {
+                    alert("A etiqueta inicial não pode ser maior que a final.");
+                    return false;
+                } else if (eI == eF){
+                    qtdEtiquetas = 1;
+                    intervalo = eI + " / " + eF;
+                } else {
+                    qtdEtiquetas = eF - eI;
+                    intervalo = eI + " / " + eF;
+                }
+
+            } else if (eI != "" && eF == "") {
+                alert("Não é possível definir o intervalo sem a etiqueta final");
+                return false;
+            } else if (eI == "" && eF != "") {
+                alert("Não é possível definir o intervalo sem a etiqueta inicial");
+                return false;
             }
+
+            var cpf = $('#etiquetas-pessoa').val();
+
+            if (cpf == null || cpf == ""){
+                alert("Informe um CPF");
+                return false;
+            } else if (cpf.length != 14) {
+                alert("CPF incompleto ou inválido");
+                return false;
+            }
+
+            $.ajax({
+                url: 'conferente-apontamento-separacao/cpf/'+cpf,
+                success: function (data) {
+                    var tr = $('<tr>').addClass('gTResultSet');
+                    tr.append($('<td>').css('text-align','left'));
+                    tr.append($('<td>').css('text-align','left').text(data[0]['NOM_PESSOA']));
+                    tr.append($('<td>').css('text-align','left').text(cpf));
+                    tr.append($('<td>').css('text-align','left').text(intervalo));
+                    tr.append($('<td>').css('text-align','left').text(qtdEtiquetas));
+                    $('#tbResult').append(tr);
+                }
+            });
         });
-    }
+    });
 </script>
 
 <?php
 echo $this->form;
 echo $this->formMapaSeparacao;
 ?>
-    <div id="exibe-pessoa-grid" class="grid">
-        <table class="gTable ">
-            <caption>Conferentes</caption>
-            <tr class ="gTTitle">
-                <td></td>
-                <td>Nome</td>
-                <td>CPF</td>
-                <td>Qtd. Etiquetas</td>
-            </tr>
-            <tbody id="tbResult">
-            </tbody>
-        </table>
-    </div>
+<div id="exibe-pessoa-grid" class="grid">
+    <table class="gTable ">
+        <caption>Conferentes</caption>
+        <tr class ="gTTitle">
+            <td></td>
+            <td width="45%">Nome</td>
+            <td width="20%">CPF</td>
+            <td width="15%">Inicial/Final</td>
+            <td width="15%">Qtd. Etiquetas</td>
+        </tr>
+        <tbody id="tbResult">
+        </tbody>
+    </table>
+</div>
 
 

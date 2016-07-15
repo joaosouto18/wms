@@ -335,8 +335,8 @@ class Expedicao_IndexController extends Action
 
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
-        $grid = $usuarioRepo->getPessoaByCpf($cpf,$params['qtdEtiquetas']);
-        $this->_helper->json($grid);
+        $result = $usuarioRepo->getPessoaByCpf($cpf);
+        $this->_helper->json($result);
     }
     
     public function equipeCarregamentoAction()

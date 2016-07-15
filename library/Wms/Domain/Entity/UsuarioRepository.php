@@ -198,10 +198,10 @@ class UsuarioRepository extends AtorRepository {
         return $result['id'];
     }
 
-    public function getPessoaByCpf($cpf, $quantidade)
+    public function getPessoaByCpf($cpf)
     {
 
-        $sql = "SELECT P.NOM_PESSOA, PF.NUM_CPF, NVL($quantidade,0) QUANTIDADE
+        $sql = "SELECT P.NOM_PESSOA
                 FROM PESSOA P
                 INNER JOIN PESSOA_FISICA PF ON PF.COD_PESSOA = P.COD_PESSOA
                 WHERE PF.NUM_CPF = '$cpf'";
