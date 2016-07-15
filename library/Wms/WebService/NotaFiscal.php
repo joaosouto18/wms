@@ -215,7 +215,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -230,7 +230,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
-            $pesoTotal = trim ($pesoTotal);
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
@@ -276,7 +275,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em);
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,0);
             }
 
             $em->commit();
