@@ -17,6 +17,40 @@
         return true;
     }
 
+    function nextInputCodBarras(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codBarras').value != "") {
+                etiquetaProduto   = document.getElementById('etiqueta');
+                if (etiquetaProduto) {
+                    etiquetaProduto.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function nextInputEtiqueta(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiqueta').value != "") {
+                etiquetaProduto   = document.getElementById('qtd');
+                if (etiquetaProduto) {
+                    etiquetaProduto.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
 </script>
 
 <form id="conferir-produtos-form" enctype="application/x-www-form-urlencoded" class="saveForm" action="/mobile/reentrega/reconferir-produtos/id/<?php echo $this->id;?>" method="post">
@@ -26,10 +60,18 @@
         <table style="width: 100%">
         <tr>
             <td style="padding-bottom: 2pt; padding-top: 3pt">*Código de Barras</td>
+            <?php if ($this->modeloSeparacaoFracionado == 'E' || $this->modeloSeparacaoNaoFracionado == 'E') : ?>
+                <td style="padding-bottom: 2pt; padding-top: 3pt">*Etiqueta</td>
+            <?php endif; ?>
             <td style="padding-bottom: 2pt; padding-top: 3pt">*Qtde.</td>
         </tr>
         <tr style="padding-bottom: 5pt">
-            <td style="width: 70%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
+            <?php if ($this->modeloSeparacaoFracionado == 'E' || $this->modeloSeparacaoNaoFracionado == 'E') : ?>
+                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInputCodBarras(event)"></td>
+                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="etiqueta" id="etiqueta" value="" class="required etiqueta" onkeydown="nextInputEtiqueta(event)"></td>
+            <?php else : ?>
+                <td style="width: 70%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
+            <?php endif; ?>
             <td style="width: 20%; padding-bottom: 5pt; "><input type="text" style="width: 100%" name="qtd" id="qtd" value="" class=" required qtd"></td>
         </tr>
         </table>

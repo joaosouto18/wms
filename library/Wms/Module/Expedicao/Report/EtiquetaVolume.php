@@ -260,33 +260,28 @@ class EtiquetaVolume extends eFPDF
 
                 //monta o restante dos dados da etiqueta
                 $this->SetFont('Arial', 'B', 8.5);
-                $dataEmissao = null;
-                if (isset($volume['dataInicio'])) {
-                    $dataEmissao = $volume['dataInicio']->format('d/M/Y');
-                }
                 $impressao = utf8_decode("$volume[emissor]\n");
 
                 $impressao .= utf8_decode(substr("CLI.: $volume[quebra]\n", 0, 50));
                 if (isset($volume['localidade']) && $volume['estado']) {
                     $impressao .= utf8_decode("CIDADE: $volume[localidade] - $volume[estado]");
                 }
-                $impressao .= utf8_decode("   PEDIDO: $volume[pedido] - DATA: $dataEmissao\n");
                 $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
                 $this->SetFont('Arial', 'B', 7);
-                $impressao = utf8_decode("Código                          Produto                                                    Qtd.\n");
-                $this->SetX(5);
-                $this->SetY(14);
+                $impressao = utf8_decode("Código                          Produto                                                                                   Qtd.\n");
+                $this->SetXY(5,14);
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
 
                 //linha horizontal entre codigo produto quantidade e a descricao dos dados
                 $this->Line(0, 18, 150, 18);
+                //linha horizontal terminal da listagem de produtos
+                $this->Line(0, 60, 150, 60);
+
                 //linha vertical entre o codigo e a descrição do produto
-                $this->Line(19, 18, 19, 100);
+                $this->Line(19, 18, 19, 60);
                 //linha vertical entre a descrição do produto e a quantidade
-                $this->Line(73, 18, 73, 100);
-                //linha vertical entre a quantidade e o numero do pedido
-                $this->Line(82, 18, 82, 100);
+                $this->Line(96, 18, 96, 60);
 
                 $y = 14;
                 $this->SetFont('Arial', 'B', 7);
@@ -298,13 +293,19 @@ class EtiquetaVolume extends eFPDF
                     $this->SetY($y);
                     $this->MultiCell(150, $y, $impressao, 0, 'L');
 
-                    $impressao = utf8_decode(substr($produtos['descricao'], 0, 33));
+                    if (isset($produtos['descricaoEmbalagem']) && !empty($produtos['descricaoEmbalagem'])) {
+                        $produtos['descricaoEmbalagem'] = '('.$produtos['descricaoEmbalagem'].')';
+                    } else {
+                        $produtos['descricaoEmbalagem'] = null;
+                    }
+
+                    $impressao = utf8_decode(substr($produtos['descricao'].$produtos['descricaoEmbalagem'], 0, 60));
                     $this->SetXY(19, $y);
                     $this->MultiCell(150, $y, $impressao, 0, 'L');
 
                     $impressao = $produtos['quantidade'];
-                    $this->SetXY(75, $y);
-                    $this->Cell(75, $y, $impressao, 0, 'L');
+                    $this->SetXY(97, $y);
+                    $this->Cell(97, $y, $impressao, 0, 'L');
 
                     $y = $y + 2;
                 }
@@ -313,19 +314,36 @@ class EtiquetaVolume extends eFPDF
                 $lentxt = $this->GetStringWidth($dsc);
 
                 $angle = 0;
-                $x = 96;
-                $y = 31;
+                $x = 93;
+                $y = 67;
 
                 $type = 'code128';
                 $black = '000000';
                 $data = Barcode::fpdf($this, $black, $x, $y, $angle, $type, array('code' => $volume['volume']), 0.42, 10);
 
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(3, 63);
+                $this->MultiCell(70, 3.8, utf8_decode("PEDIDO: $volume[pedido]"), 0, 'L');
+
+                $dataEmissao = null;
+                if (isset($volume['dataInicio'])) {
+                    $dataEmissao = $volume['dataInicio']->format('d/M/Y');
+                }
+
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(3, 69);
+                $this->MultiCell(70, 3.8, utf8_decode("DATA: $dataEmissao"), 0, 'L');
+
                 if (isset($volume['sequencia']) && !empty($volume['sequencia'])) {
                     /* Código de sequência */
-                    $this->SetFont('Arial', 'B', 13);
-                    $this->SetXY(93, 42);
-                    $this->MultiCell(70, 3.8, $volume['sequencia'], 0, 'L');
+                    $this->SetFont('Arial', 'B', 10);
+                    $this->SetXY(55, 63);
+                    $this->MultiCell(70, 3.8, "SEQ. " . $volume['sequencia'], 0, 'L');
                 }
+
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(55, 69);
+                $this->MultiCell(70, 3.8, utf8_decode("VOL: ". $volume['volume']), 0, 'L');
             }
         } else {
             $volume = $volumePatrimonio;
@@ -339,33 +357,28 @@ class EtiquetaVolume extends eFPDF
 
             //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 8.5);
-            $dataEmissao = null;
-            if (isset($volume['dataInicio'])) {
-                $dataEmissao = $volume['dataInicio']->format('d/M/Y');
-            }
             $impressao = utf8_decode("$volume[emissor]\n");
 
             $impressao .= utf8_decode(substr("CLI.: $volume[quebra]\n", 0, 50));
             if (isset($volume['localidade']) && $volume['estado']) {
                 $impressao .= utf8_decode("CIDADE: $volume[localidade] - $volume[estado]");
             }
-            $impressao .= utf8_decode("   PEDIDO: $volume[pedido] - DATA: $dataEmissao\n");
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 7);
-            $impressao = utf8_decode("Código                          Produto                                                    Qtd.\n");
-            $this->SetX(5);
-            $this->SetY(14);
+            $impressao = utf8_decode("Código                          Produto                                                                                   Qtd.\n");
+            $this->SetXY(5,14);
             $this->MultiCell(100, 3.9, $impressao, 0, 'L');
 
             //linha horizontal entre codigo produto quantidade e a descricao dos dados
-            $this->Line(0,18,150,18);
+            $this->Line(0, 18, 150, 18);
+            //linha horizontal terminal da listagem de produtos
+            $this->Line(0, 60, 150, 60);
+
             //linha vertical entre o codigo e a descrição do produto
-            $this->Line(19,18,19,100);
+            $this->Line(19, 18, 19, 60);
             //linha vertical entre a descrição do produto e a quantidade
-            $this->Line(73,18,73,100);
-            //linha vertical entre a quantidade e o numero do pedido
-            $this->Line(82,18,82,100);
+            $this->Line(96, 18, 96, 60);
 
             $y = 14;
             $this->SetFont('Arial', 'B', 7);
@@ -377,34 +390,51 @@ class EtiquetaVolume extends eFPDF
                 $this->SetY($y);
                 $this->MultiCell(150, $y, $impressao, 0, 'L');
 
-                $impressao = utf8_decode(substr($produtos['descricao'], 0, 33));
-                $this->SetXY(19,$y);
+                $impressao = utf8_decode(substr($produtos['descricao'], 0, 60));
+                $this->SetXY(19, $y);
                 $this->MultiCell(150, $y, $impressao, 0, 'L');
 
                 $impressao = $produtos['quantidade'];
-                $this->SetXY(75,$y);
-                $this->Cell(75,$y, $impressao, 0, 'L');
+                $this->SetXY(97, $y);
+                $this->Cell(97, $y, $impressao, 0, 'L');
 
                 $y = $y + 2;
             }
 
-            $dsc = utf8_decode($volume['volume']) .' - '.utf8_decode($volume['descricao']);
+            $dsc = utf8_decode($volume['volume']) . ' - ' . utf8_decode($volume['descricao']);
             $lentxt = $this->GetStringWidth($dsc);
 
-            $angle    = 0;
-            $x        = 96;
-            $y        = 31;
+            $angle = 0;
+            $x = 93;
+            $y = 67;
 
-            $type     = 'code128';
-            $black    = '000000';
-            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$volume['volume']),0.42,10);
+            $type = 'code128';
+            $black = '000000';
+            $data = Barcode::fpdf($this, $black, $x, $y, $angle, $type, array('code' => $volume['volume']), 0.42, 10);
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->SetXY(3, 63);
+            $this->MultiCell(70, 3.8, utf8_decode("PEDIDO: $volume[pedido]"), 0, 'L');
+
+            $dataEmissao = null;
+            if (isset($volume['dataInicio'])) {
+                $dataEmissao = $volume['dataInicio']->format('d/M/Y');
+            }
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->SetXY(3, 69);
+            $this->MultiCell(70, 3.8, utf8_decode("DATA: $dataEmissao"), 0, 'L');
 
             if (isset($volume['sequencia']) && !empty($volume['sequencia'])) {
                 /* Código de sequência */
-                $this->SetFont('Arial', 'B', 13);
-                $this->SetXY(93, 42);
-                $this->MultiCell(70, 3.8, $volume['sequencia'], 0, 'L');
+                $this->SetFont('Arial', 'B', 10);
+                $this->SetXY(55, 63);
+                $this->MultiCell(70, 3.8, "SEQ. " . $volume['sequencia'], 0, 'L');
             }
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->SetXY(55, 69);
+            $this->MultiCell(70, 3.8, utf8_decode("VOL: ". $volume['volume']), 0, 'L');
         }
 
         $this->Output('Volume-Patrimonio.pdf','I');

@@ -1186,7 +1186,7 @@ class ExpedicaoRepository extends EntityRepository
             $whereSubQuery=" C.COD_EXPEDICAO = ".$parametros['idExpedicao']."";
             $and=" and ";
             $andSub=" and ";
-            $WhereExpedicao .= " AND (C.COD_EXPEDICAO = ".$parametros['idExpedicao'].")";
+            $WhereExpedicao .= " AND (E.COD_EXPEDICAO = ".$parametros['idExpedicao'].") ";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
@@ -1211,7 +1211,7 @@ class ExpedicaoRepository extends EntityRepository
             $JoinCarga = " LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA ";
         }
 
-        $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
+        $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla ;
 
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
@@ -1247,15 +1247,15 @@ class ExpedicaoRepository extends EntityRepository
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
                          GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSC.QTD_CONFERIDA * MSC.QTD_EMBALAGEM) QTD_CONFERIDA, MS.COD_EXPEDICAO
                                FROM MAPA_SEPARACAO MS
                          INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                               GROUP BY MS.COD_EXPEDICAO) MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR) QTD_TOTAL, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) QTD_TOTAL, MS.COD_EXPEDICAO
                                FROM MAPA_SEPARACAO_PRODUTO MSP
                               INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                               GROUP BY MS.COD_EXPEDICAO) MSP ON MSP.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR) QTD_TOTAL_CONF_MANUAL, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) QTD_TOTAL_CONF_MANUAL, MS.COD_EXPEDICAO
                                FROM MAPA_SEPARACAO_PRODUTO MSP
                               INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                                LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSCONF ON MSCONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
@@ -1327,7 +1327,7 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-//        echo $sql;
+//        echo $sql; exit;
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
 //        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
@@ -1822,39 +1822,9 @@ class ExpedicaoRepository extends EntityRepository
                 LEFT JOIN ESTOQUE ES2 ON ES2.COD_PRODUTO = MSC.COD_PRODUTO AND ES2.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
                 INNER JOIN PESSOA CONF ON EVP.COD_USUARIO = CONF.COD_PESSOA
                 INNER JOIN VOLUME_PATRIMONIO VP ON MSC.COD_VOLUME_PATRIMONIO = VP.COD_VOLUME_PATRIMONIO
-                WHERE MSC.COD_VOLUME_PATRIMONIO = $idVolume AND MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (526,531,532)" ;
+                WHERE MSC.COD_VOLUME_PATRIMONIO = $idVolume AND MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (523,526,531,532)" ;
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-/*        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select("
-                    emb.codigoBarras codBarras,
-                    p.id codProduto,
-                    p.descricao produto,
-                    p.grade,
-                    cl2.nome cliente,
-                    NVL(est1.id, est2.id) codEstoque,
-                    CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END AS embalagem,
-                    conf.nome conferente,
-                    msc.dataConferencia dataConferencia,
-                    CONCAT(CONCAT(vp.descricao, ' '), vp.id) volumePatrimonio")
-            ->from('wms:Expedicao\MapaSeparacaoConferencia','msc')
-            ->innerJoin('msc.mapaSeparacao', 'ms')
-            ->innerJoin('msc.produto','p', 'WITH' , "p.id = msc.codProduto AND p.grade = msc.dscGrade")
-            ->leftJoin('msc.produtoVolume', 'vol', 'WITH' , "vol.id = msc.codProduto AND p.grade = msc.dscGrade")
-            ->leftJoin('msc.produtoEmbalagem', 'emb', 'WITH' , "emb.id = msc.codProduto AND p.grade = msc.dscGrade")
-            ->innerJoin('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp', 'WITH', 'evp.expedicao = ms.expedicao AND evp.volumePatrimonio = msc.volumePatrimonio')
-            ->leftJoin('wms:Pessoa\Papel\Cliente', 'cl', 'WITH' , 'cl.codClienteExterno = evp.tipoVolume')
-            ->innerJoin('cl.pessoa', 'cl2')
-            ->leftJoin('wms:Enderecamento\Estoque', 'est1', 'WITH', 'est1.produto = p AND est1.produtoEmbalagem = emb')
-            ->leftJoin('wms:Enderecamento\Estoque', 'est2', 'WITH', 'est2.produto = p AND est1.produtoVolume = vol')
-            ->innerJoin('wms:Pessoa', 'conf', 'WITH', 'evp.usuario = conf')
-            ->innerJoin('msc.volumePatrimonio', 'vp')
-            ->where("ms.expedicao = $idExpedicao")
-            ->andWhere("msc.volumePatrimonio = $idVolume")
-            ->andWhere('ms.codStatus IN (526,531,532)');
-
-        $result = $dql->getQuery()->getResult();*/
 
         return $result;
     }
@@ -2696,29 +2666,6 @@ class ExpedicaoRepository extends EntityRepository
                 $this->removePedidoCortado($codPedido);
             }
         }
-
-        $pedidosCortadosExpedicao = $this->pedidosCortadosExpedicao($idExpedicao);
-        if (count($pedidosCortadosExpedicao) > 0) {
-            $expedicaoEntity = $this->find($idExpedicao);
-            $expedicaoEntity->setCodStatus(Expedicao::STATUS_FINALIZADO );
-            $expedicaoEntity->setDataFinalizacao(new \DateTime());
-            $this->_em->persist($expedicaoEntity);
-            $this->_em->flush();
-        }
-    }
-
-    private function pedidosCortadosExpedicao($idExpedicao)
-    {
-        $sql = "SELECT SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0))
-                    FROM EXPEDICAO E
-                    INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                    INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    WHERE E.COD_EXPEDICAO = $idExpedicao
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE
-                    HAVING SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) > 0";
-
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function removePedidoCortado($codPedido)
