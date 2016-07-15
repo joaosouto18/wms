@@ -93,11 +93,11 @@ class Wms_WebService_Cliente extends Wms_WebService
     /**
      * Lista todos os clientees cadastrados no sistema
      * 
-     * @return clientees
+     * @return boolean
      */
     public function listar()
     {
-        return array('clientees' => null);
+        return true;
     }
 
 }
