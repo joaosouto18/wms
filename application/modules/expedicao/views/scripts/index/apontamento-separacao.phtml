@@ -46,20 +46,50 @@
             qtdEtiquetas = etiquetaFinal - etiquetaInicial;
         }
 
+        var action = '';
+        var nome = '';
+        var cpf = '';
+        var quantidade = '';
+        var tr = $('<tr>').addClass('gTResultSet');
         $.ajax({
             url: 'conferente-apontamento-separacao/cpf/'+$('#etiquetas-pessoa').val()+'/qtdEtiquetas/'+qtdEtiquetas,
             success: function (data) {
-                $('#exibe-pessoa').html(data);
+                nome += data[0]['NOM_PESSOA'];
+                cpf += data[0]['NUM_CPF'];
+                quantidade += data[0]['QUANTIDADE'];
+
+                $('#tr').append(tr);
+                $('#action').append(action);
+                $('#nome').append(nome);
+                $('#cpf').append(cpf);
+                $('#quantidade').append(quantidade);
             }
         });
-
     }
-
 </script>
 
 <?php
 echo $this->form;
 echo $this->formMapaSeparacao;
 ?>
-<div id="exibe-pessoa"></div>
+    <div id="exibe-pessoa-grid" class="grid">
+        <table class="gTable ">
+            <caption>Conferentes</caption>
+            <tbody>
+            <tr class ="gTTitle">
+                <td></td>
+                <td>Nome</td>
+                <td>CPF</td>
+                <td>Qtd. Etiquetas</td>
+            </tr>
+            <tr id="tr">
+                <td id="action"></td>
+                <td id="nome"></td>
+                <td id="cpf"></td>
+                <td id="quantidade"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
 

@@ -331,8 +331,12 @@ class Expedicao_IndexController extends Action
     public function conferenteApontamentoSeparacaoAction()
     {
         $params = $this->_getAllParams();
-        $grid = new \Wms\Module\Produtividade\Grid\ApontamentoSeparacao();
-        $this->view->grid = $grid->init($params)->render();
+        $cpf = str_replace(array('.','-'),'',$params['cpf']);
+
+        /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
+        $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
+        $grid = $usuarioRepo->getPessoaByCpf($cpf,$params['qtdEtiquetas']);
+        $this->_helper->json($grid);
     }
     
     public function equipeCarregamentoAction()

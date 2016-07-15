@@ -1,3 +1,21 @@
-<?php
-echo $this->grid;
-?>
+<?php foreach ($this->grid as $pessoa) : ?>
+<?php $this->color = !($this->color); ?>
+    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+        <td>
+<!--            <a data-name="--><?php ////echo $endereco['DSC_DEPOSITO_ENDERECO'] ?><!--<!--" data-id="--><?php ////echo $endereco['COD_DEPOSITO_ENDERECO'] ?><!--<!--" class="selecionar btn reader button" href="--><?php ////echo "/enderecamento/endereco/enderecar/id/".$endereco['COD_DEPOSITO_ENDERECO']."/uma/".$this->uma?><!--<!--">Selecionar</a>-->
+        </td>
+        <td><?php echo $pessoa['NOM_PESSOA'] ?></td>
+        <td><?php echo $pessoa['NUM_CPF'] ?></td>
+        <td><?php echo $pessoa['QUANTIDADE'] ?></td>
+    </tr>
+<?php endforeach; ?>
+
+
+
+
+
+<div class="gPager">
+    <span>
+        <?php echo "Total de " . count($this->grid) . " registros encontrados"?>
+    </span>
+</div>
