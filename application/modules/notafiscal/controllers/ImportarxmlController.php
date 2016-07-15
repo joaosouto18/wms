@@ -78,7 +78,7 @@ class Notafiscal_ImportarxmlController extends Crud
                     $placa = trim($result['NotaFiscal']['DSC_PLACA_VEICULO']);
                     $bonificacao = 'N';
                     $itens = $result['NotaFiscalItem'];
-                    $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao);
+                    $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, null, 0);
                     $this->addFlashMessage("success","Nota Fiscal $numero / $serie importada com sucesso");
                 } else {
                     $this->addFlashMessage("error","Falhas importando nota fiscal");

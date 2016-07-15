@@ -875,6 +875,7 @@ class NotaFiscalRepository extends EntityRepository
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
+                    $pesoItem = null;
                     if (isset($item['peso'])) {
                         $pesoItem = trim($item['peso']);
                         if ($pesoItem == "") {
