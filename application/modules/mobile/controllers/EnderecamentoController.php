@@ -793,14 +793,20 @@ class Mobile_EnderecamentoController extends Action
     public function enderecoDestinoAction()
     {
         $this->view->codigoBarrasUMA = $this->_getParam('codigoBarrasUMA');
-        $this->view->etiquetaProduto = $this->_getParam('etiquetaProduto');
+        $this->view->etiquetaProduto = $codBarras = $this->_getParam('etiquetaProduto');
         $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
+        $enderecoParam = $this->_getParam('end');
+        $nivel = $this->_getParam('nivelAntigo');
+        $enderecoByParametro = $this->getEnderecoByParametro($enderecoParam);
+        $endereco = $this->getEnderecoNivel($enderecoByParametro[0]['DSC_DEPOSITO_ENDERECO'],$nivel);
 
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-        $estoqueEn = $estoqueRepo->findOneBy(array('id' => $idEstoque));
+        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
         $this->view->qtd = $qtd = $estoqueEn->getQtd();
     }
 
