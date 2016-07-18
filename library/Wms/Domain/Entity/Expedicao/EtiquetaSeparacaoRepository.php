@@ -750,9 +750,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                     $qtdEmbalagemPadraoRecebimento = 1;
                     foreach ($embalagensEn as $embalagem) {
+                        $enderecosPulmao = null;
                         $endereco = $embalagem->getEndereco();
                         if (isset($endereco) && !empty($endereco)){
                             $depositoEnderecoEn = $endereco;
+                            break;
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
@@ -774,7 +776,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $quantidadeAtender = $quantidadeRestantePedido;
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
-                            foreach ($enderecosPulmao as $key => $enderecoPulmao) {
+                            foreach ($enderecosPulmao as $enderecoPulmao) {
                                 if ($enderecoPulmao['quantidade'] > 0) {
                                     $quantidadeAtender = $enderecoPulmao['quantidade'];
                                     break;
