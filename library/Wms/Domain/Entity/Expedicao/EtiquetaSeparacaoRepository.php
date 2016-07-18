@@ -751,7 +751,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $qtdEmbalagemPadraoRecebimento = 1;
                     foreach ($embalagensEn as $embalagem) {
                         $endereco = $embalagem->getEndereco();
-                        if ($endereco != null){
+                        if (isset($endereco) && !empty($endereco)){
                             $depositoEnderecoEn = $endereco;
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
@@ -881,7 +881,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
                 $depositoEnderecoEn = $mapa->getCodDepositoEndereco();
 
-//                var_dump($pedidoProduto); exit;
                 $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
                 foreach ($mapaProdutosEn as $mapaProdutoRemover) {
                     $this->_em->remove($mapaProdutoRemover);
