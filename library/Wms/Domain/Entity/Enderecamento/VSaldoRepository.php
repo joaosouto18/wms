@@ -9,6 +9,8 @@ class VSaldoRepository extends EntityRepository
     public function saldo($params)
     {
         $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPickingRotativo = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING_ROTATIVO'))->getValor();
+
         $query = $this->getEntityManager()->createQueryBuilder()
         ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao')
         ->from("wms:Enderecamento\VSaldo","s")
@@ -34,11 +36,11 @@ class VSaldoRepository extends EntityRepository
         }
 		
         if (($params['pulmao'] == 1) && ($params['picking'] == 0)) {
-            $query->andWhere("e.idCaracteristica != '$tipoPicking'");
+            $query->andWhere("e.idCaracteristica NOT IN ($tipoPicking, $tipoPickingRotativo)");
         }
 		
         if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
-            $query->andWhere("e.idCaracteristica = '$tipoPicking'");
+            $query->andWhere("e.idCaracteristica IN ($tipoPicking, $tipoPickingRotativo)");
         }
 		
 		$result = $query->getQuery()->getResult();
