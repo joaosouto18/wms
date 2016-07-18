@@ -1230,7 +1230,16 @@ class ExpedicaoRepository extends EntityRepository
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                           ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MSCONF.QTD_TOTAL_CONF_MANUAL,0) ) * 100) / (NVL(MSP.QTD_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2))
                        END) AS "PercConferencia"
-                  FROM EXPEDICAO E
+                  FROM (SELECT C.COD_EXPEDICAO,
+                                    SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
+                                    SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
+                               FROM CARGA C
+                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
+                               LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                               WHERE 1 = 1  '.$FullWhere.$andWhere.'
+                              GROUP BY C.COD_EXPEDICAO) PESO
+                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = PESO.COD_EXPEDICAO
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
                                     (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS QTDETIQUETA,
@@ -1300,16 +1309,6 @@ class ExpedicaoRepository extends EntityRepository
                   LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
                   LEFT JOIN REENTREGA REE ON REE.COD_CARGA = CA.COD_CARGA
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
-                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
-                                    SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
-                               FROM CARGA C
-                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
-                               LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                               WHERE 1 = 1  '.$FullWhere.$andWhere.'
-                              GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 WHERE 1 = 1'. $FullWhere . '
                   GROUP BY E.COD_EXPEDICAO,
                           E.DSC_PLACA_EXPEDICAO,
                           E.DTH_INICIO,
@@ -1327,9 +1326,9 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-//        echo $sql;
+
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
-//        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
     }
 
 
