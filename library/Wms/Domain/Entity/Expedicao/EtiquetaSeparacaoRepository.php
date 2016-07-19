@@ -915,6 +915,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                   INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
                   INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
                   WHERE C.COD_EXPEDICAO = $idExpedicao
+                    AND ES.COD_PRODUTO = '$produtoId'
+                    AND ES.DSC_GRADE = '$grade'
                   GROUP BY ES.COD_DEPOSITO_ENDERECO) ES ON ES.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN (SELECT SUM(MSC.QTD_EMBALAGEM) QTD_EMBALAGEM, MSP.COD_DEPOSITO_ENDERECO
                   FROM MAPA_SEPARACAO_CONFERENCIA MSC
@@ -922,6 +924,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                   INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                   WHERE E.COD_EXPEDICAO = $idExpedicao
+                    AND MSP.COD_PRODUTO = '$produtoId'
+                    AND MSP.DSC_GRADE = '$grade'
                   GROUP BY MSP.COD_DEPOSITO_ENDERECO) MS ON MS.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 WHERE REE.COD_EXPEDICAO = $idExpedicao
                 AND REP.COD_PRODUTO = '$produtoId' AND REP.DSC_GRADE = '$grade'

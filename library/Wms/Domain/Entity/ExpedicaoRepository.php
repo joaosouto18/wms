@@ -1288,8 +1288,9 @@ class ExpedicaoRepository extends EntityRepository
                               GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     CASE WHEN ((SELECT COUNT(*) FROM DUAL
-                                                 WHERE EXISTS (SELECT COD_ETIQUETA_SEPARACAO FROM ETIQUETA_SEPARACAO ES_
-                                                                 LEFT JOIN PEDIDO P_  ON P_.COD_PEDIDO = ES_.COD_PEDIDO
+                                                 WHERE EXISTS (SELECT P_.COD_PEDIDO
+                                                                 FROM PEDIDO P_
+                                                                 LEFT JOIN ETIQUETA_SEPARACAO ES_ ON P_.COD_PEDIDO = ES_.COD_PEDIDO
                                                                  LEFT JOIN CARGA C_ ON C_.COD_CARGA = P_.COD_CARGA
                                                                  LEFT JOIN REENTREGA R_ ON R_.COD_CARGA = C_.COD_CARGA
                                                                 WHERE C_.COD_EXPEDICAO = E.COD_EXPEDICAO
