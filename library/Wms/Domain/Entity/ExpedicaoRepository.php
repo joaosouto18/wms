@@ -1290,11 +1290,9 @@ class ExpedicaoRepository extends EntityRepository
                                     CASE WHEN ((SELECT COUNT(*) FROM DUAL
                                                  WHERE EXISTS (SELECT P_.COD_PEDIDO
                                                                  FROM PEDIDO P_
-                                                                 LEFT JOIN ETIQUETA_SEPARACAO ES_ ON P_.COD_PEDIDO = ES_.COD_PEDIDO
                                                                  LEFT JOIN CARGA C_ ON C_.COD_CARGA = P_.COD_CARGA
-                                                                 LEFT JOIN REENTREGA R_ ON R_.COD_CARGA = C_.COD_CARGA
                                                                 WHERE C_.COD_EXPEDICAO = E.COD_EXPEDICAO
-                                                                  AND (ES_.COD_STATUS = 522 OR P_.IND_ETIQUETA_MAPA_GERADO = \'N\' OR R_.IND_ETIQUETA_MAPA_GERADO= \'N\'))) ) = 0
+                                                                  AND (P_.IND_ETIQUETA_MAPA_GERADO = \'N\'))) ) = 0
                                           AND ((SELECT COUNT(*) FROM DUAL
                                                  WHERE EXISTS (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO M_
                                                                 WHERE M_.COD_EXPEDICAO = E.COD_EXPEDICAO
