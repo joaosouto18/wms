@@ -38,10 +38,9 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('msp')
-            ->from('wms:Expedicao\MapaSeparacao', 'ms')
-            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
-            ->innerJoin('msp.codDepositoEndereco', 'de')
-            ->where("ms.id = $idMapa")
+            ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
+            ->leftJoin('msp.codDepositoEndereco', 'de')
+            ->where("msp.mapaSeparacao = $idMapa")
             ->orderBy('de.rua, de.predio, de.nivel, de.apartamento');
 
         return $sql->getQuery()->getResult();

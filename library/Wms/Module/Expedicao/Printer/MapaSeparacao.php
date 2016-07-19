@@ -279,7 +279,9 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 20, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
             //$this->SetY(-92);
-            $this->Image(@CodigoBarras::gerarNovo($mapa->getId()), 150, 280, 50);
+            $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
+            $this->Image($imgCodBarras, 150, 280, 50);
+            $this->Image($imgCodBarras, 154 , 18, 50);
 
         }
 
