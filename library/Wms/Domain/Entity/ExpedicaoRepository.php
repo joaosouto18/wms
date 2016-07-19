@@ -1230,7 +1230,16 @@ class ExpedicaoRepository extends EntityRepository
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                           ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MSCONF.QTD_TOTAL_CONF_MANUAL,0) ) * 100) / (NVL(MSP.QTD_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2))
                        END) AS "PercConferencia"
-                  FROM EXPEDICAO E
+                  FROM (SELECT C.COD_EXPEDICAO,
+                                    SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
+                                    SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
+                               FROM CARGA C
+                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
+                               LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                               WHERE 1 = 1  '.$FullWhere.$andWhere.'
+                              GROUP BY C.COD_EXPEDICAO) PESO
+                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = PESO.COD_EXPEDICAO
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
                                     (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS QTDETIQUETA,
@@ -1277,39 +1286,22 @@ class ExpedicaoRepository extends EntityRepository
                                       INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
                                       WHERE 1 = 1 '. $FullWhere .')
                               GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    CASE WHEN (SUM(CASE WHEN (P.IND_ETIQUETA_MAPA_GERADO = \'N\') OR ((R.IND_ETIQUETA_MAPA_GERADO = \'N\' AND PARAM.DSC_VALOR_PARAMETRO = \'S\')) THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\'
-                                         ELSE \'\' END AS IMPRIMIR
-                               FROM (SELECT DSC_VALOR_PARAMETRO FROM PARAMETRO WHERE DSC_PARAMETRO = \'CONFERE_EXPEDICAO_REENTREGA\') PARAM,
-                                    CARGA C
-                               LEFT JOIN REENTREGA R ON R.COD_CARGA = C.COD_CARGA
-                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA ' . $JoinExpedicao . $JoinSigla .'
-                               LEFT JOIN (SELECT C.COD_EXPEDICAO, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
-                                            FROM ETIQUETA_SEPARACAO ES
-                                            LEFT JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
-                                            LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA ' . $JoinExpedicao . $JoinSigla .'
-                                           WHERE ES.COD_STATUS = 522 ' . $FullWhere . '
-                                           GROUP BY C.COD_EXPEDICAO) PED ON PED.COD_EXPEDICAO = C.COD_EXPEDICAO
-                               LEFT JOIN (SELECT COD_EXPEDICAO,
-                                                 COUNT(COD_MAPA_SEPARACAO) as QTD
-                                            FROM MAPA_SEPARACAO
-                                           WHERE COD_STATUS = 522
-                                           GROUP BY COD_EXPEDICAO ) MAP ON MAP.COD_EXPEDICAO = C.COD_EXPEDICAO
-                                   WHERE 1 = 1 ' .  $FullWhere .'
-                              GROUP BY C.COD_EXPEDICAO, MAP.QTD, PED.QTD) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT COD_EXPEDICAO,
+                                    CASE WHEN ((SELECT COUNT(*) FROM DUAL
+                                                 WHERE EXISTS (SELECT COD_ETIQUETA_SEPARACAO FROM ETIQUETA_SEPARACAO ES_
+                                                                 LEFT JOIN PEDIDO P_  ON P_.COD_PEDIDO = ES_.COD_PEDIDO
+                                                                 LEFT JOIN CARGA C_ ON C_.COD_CARGA = P_.COD_CARGA
+                                                                 LEFT JOIN REENTREGA R_ ON R_.COD_CARGA = C_.COD_CARGA
+                                                                WHERE C_.COD_EXPEDICAO = E.COD_EXPEDICAO
+                                                                  AND (ES_.COD_STATUS = 522 OR P_.IND_ETIQUETA_MAPA_GERADO = \'N\' OR R_.IND_ETIQUETA_MAPA_GERADO= \'N\'))) ) = 0
+                                          AND ((SELECT COUNT(*) FROM DUAL
+                                                 WHERE EXISTS (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO M_
+                                                                WHERE M_.COD_EXPEDICAO = E.COD_EXPEDICAO
+                                                                  AND M_.COD_STATUS = 522))) = 0 THEN \'\' ELSE \'SIM\' END as IMPRIMIR
+                               FROM EXPEDICAO E) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
                   LEFT JOIN REENTREGA REE ON REE.COD_CARGA = CA.COD_CARGA
                   LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
-                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
-                                    SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
-                               FROM CARGA C
-                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
-                               LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                               WHERE 1 = 1  '.$FullWhere.$andWhere.'
-                              GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 WHERE 1 = 1'. $FullWhere . '
                   GROUP BY E.COD_EXPEDICAO,
                           E.DSC_PLACA_EXPEDICAO,
                           E.DTH_INICIO,
@@ -1327,9 +1319,9 @@ class ExpedicaoRepository extends EntityRepository
                           MSCONF.QTD_TOTAL_CONF_MANUAL
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-//        echo $sql;
+
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
-//        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
     }
 
 
