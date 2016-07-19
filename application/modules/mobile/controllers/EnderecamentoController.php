@@ -879,8 +879,11 @@ class Mobile_EnderecamentoController extends Action
                         }
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                             if (isset($embalagemEn)) {
-                                $embalagemEn->setEndereco($endereco);
-                                $this->getEntityManager()->persist($embalagemEn);
+                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                                foreach ($embalagens as $embalagemEn) {
+                                    $embalagemEn->setEndereco($endereco);
+                                    $this->getEntityManager()->persist($embalagemEn);
+                                }
                                 $this->getEntityManager()->flush();
                             } else if (isset($volumeEn)) {
                                 $volumeEn->setEndereco($endereco);
@@ -899,8 +902,11 @@ class Mobile_EnderecamentoController extends Action
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                             if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                                $embalagemEn->setEndereco($endereco);
-                                $this->getEntityManager()->persist($embalagemEn);
+                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                                foreach ($embalagens as $embalagemEn) {
+                                    $embalagemEn->setEndereco($endereco);
+                                    $this->getEntityManager()->persist($embalagemEn);
+                                }
                                 $this->getEntityManager()->flush();
                             } else if (isset($volumeEn) && is_null($volumeEn->getEndereco())) {
                                 $volumeEn->setEndereco($endereco);
@@ -951,8 +957,11 @@ class Mobile_EnderecamentoController extends Action
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            $embalagemEn->setEndereco($endereco);
-                            $this->getEntityManager()->persist($embalagemEn);
+                            $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                            foreach ($embalagens as $embalagemEn) {
+                                $embalagemEn->setEndereco($endereco);
+                                $this->getEntityManager()->persist($embalagemEn);
+                            }
                             $this->getEntityManager()->flush();
                         }
                     } else {
@@ -966,8 +975,11 @@ class Mobile_EnderecamentoController extends Action
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                             if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                                $embalagemEn->setEndereco($endereco);
-                                $this->getEntityManager()->persist($embalagemEn);
+                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                                foreach ($embalagens as $embalagemEn) {
+                                    $embalagemEn->setEndereco($endereco);
+                                    $this->getEntityManager()->persist($embalagemEn);
+                                }
                                 $this->getEntityManager()->flush();
                             }
                         }
