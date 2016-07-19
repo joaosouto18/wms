@@ -203,6 +203,10 @@ class Mobile_Enderecamento_ManualController extends Action
             $enderecoRepo    = $this->em->getRepository('wms:Deposito\Endereco');
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo    = $this->em->getRepository('wms:Produto');
+            /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
+            $dadoLogisticoRepo = $this->em->getRepository('wms:Produto\DadoLogistico');
+            /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaRepo */
+            $normaRepo = $this->em->getRepository('wms:Produto\NormaPaletizacao');
 
             /** @var \Wms\Domain\Entity\Produto $produtoEn */
             $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($produto);
@@ -218,6 +222,11 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
+                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
+                if (!isset($dadoLogisticoEn) || empty($dadoLogisticoEn)) {
+                    $normaRepo->gravarNormaPaletizacao($embalagemEn,$novaCapacidadePicking);
+                }
+
                 $endereco = null;
                 if (!is_null($embalagemEn->getEndereco()))
                     $endereco = $embalagemEn->getEndereco()->getId();
@@ -257,47 +266,6 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
             }
-
-
-            //VALIDA SE FOI BIPADO UM ENDEREÇO DE PICKING OU PICKING ROTATIVO
-//             if (($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking) || ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
-//                $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'id');
-//                $idPicking = null;
-//                //APENAS SE O PRODUTO NÃO TIVER PICKING DEFINIDO
-//                if ($pickings == null) {
-//                    switch ($enderecoEn->getIdCaracteristica()) {
-//                        case $idCaracteristicaPicking:
-//                            throw new \Exception("Foi selecionado um endereço de picking para um produto sem picking definido");
-//                            break;
-//                        case $idCaracteristicaPickingRotativo: //REGRA DO PICKING ROTATIVO
-//                            $idPicking = $enderecoEn->getId();
-//                            $embalagens = $produtoEn->getEmbalagens();
-//                            $volumes = $produtoEn->getVolumes();
-//
-//                            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
-//                            foreach ($embalagens as $embalagemEn) {
-//                                $embalagemEn->setCapacidadePicking($novaCapacidadePicking);
-//                                $embalagemEn->setEndereco($enderecoEn);
-//                                $this->getEntityManager()->persist($embalagemEn);
-//                            }
-//
-//                            /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
-//                            foreach ($volumes as $volumeEn) {
-//                                $volumeEn->setCapacidadePicking($novaCapacidadePicking);
-//                                $volumeEn->setEndereco($enderecoEn);
-//                                $this->getEntityManager()->persist($volumeEn);
-//                            }
-//                            break;
-//                    }
-//                } else{
-//                    $idPicking = $pickings[0];
-//                }
-//
-//                if ($idPicking != $enderecoEn->getId()) {
-//                    throw new \Exception("O produto informado já está cadastrado no Picking " . $enderecoEn->getDescricao());
-//                }
-//
-//            }
 
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
