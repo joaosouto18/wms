@@ -847,20 +847,38 @@ class Importacao_IndexController extends Action
         $this->view->grid = $grid->init()->render();
     }
 
+    public function editarCampoImportacaoAction()
+    {
+        if ($this->getRequest()->isPost()){
+            
+        } else {
+            $idCampo = $this->getRequest()->getParam('id');
+            $form = new \Wms\Module\Importacao\Form\EditarCamposImportacao();
+            $campo = $this->em->getRepository('wms:Importacao\Campos')->find($idCampo);
+            $this->view->form = $form;
+            $this->view->campo = $campo;
+        }
+    }
+
     public function indexAction()
     {
-        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('ultimaImportacao' => 'DESC','sequencia' => 'ASC'));
+        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('ultimaImportacao' => 'DESC'));
 
-        $dtUltImp = $arquivos[0]->getUltimaImportacao();
+        $dtUltImp = null;
 
-        function order($a, $b)
-        {
-            if ($a->getSequencia() == $b->getSequencia())
-                return 0;
-            return ($a->getSequencia() < $b->getSequencia()) ? -1 : 1;
+        if (!empty($arquivos)) {
+
+            $dtUltImp = reset($arquivos)->getUltimaImportacao();
+
+            function order($a, $b)
+            {
+                if ($a->getSequencia() == $b->getSequencia())
+                    return 0;
+                return ($a->getSequencia() < $b->getSequencia()) ? -1 : 1;
+            }
+
+            usort($arquivos, 'order');
         }
-
-        usort($arquivos,'order');
 
         $this->view->arquivos = $arquivos;
         $this->view->ultData = ($dtUltImp)?$dtUltImp->format('d/m/Y'):'S/ Registros';

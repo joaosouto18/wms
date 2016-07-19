@@ -50,6 +50,11 @@ class ListaCamposImportacao extends Grid
             ->addColumn(array(
                 'label' => 'Preenchimento obrigatório',
                 'index' => 'preenchObrigatorio',
+            ))
+            ->addAction(array(
+                'label' => 'Alterar este campo',
+                'actionName' => 'editar-campo-importacao',
+                'pkIndex' => array('id'),
             ));
 
         return $this;
