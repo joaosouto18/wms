@@ -2652,8 +2652,7 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function executaCortePedido($cortes, $motivo, $idExpedicao = null) {
-        //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
+    public function executaCortePedido($cortes, $motivo) {
         foreach ($cortes as $codPedido => $produtos) {
             foreach ($produtos as $codProduto => $grades) {
                 foreach ($grades as $grade => $quantidade) {
@@ -2661,29 +2660,7 @@ class ExpedicaoRepository extends EntityRepository
                     $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
                 }
             }
-            $pedidoProdutoCortado = $this->pedidoProdutoCortado($codPedido);
-            if (count($pedidoProdutoCortado) == 0) {
-                $this->removePedidoCortado($codPedido);
-            }
         }
-    }
-
-    private function removePedidoCortado($codPedido)
-    {
-        $pedidoEn = $this->getEntityManager()->getReference("wms:Expedicao\Pedido",$codPedido);
-        $this->getEntityManager()->remove($pedidoEn);
-        $this->getEntityManager()->flush();
-    }
-
-    private function pedidoProdutoCortado($codPedido)
-    {
-        $sql = "SELECT SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0))
-                    FROM PEDIDO P
-                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    WHERE P.COD_PEDIDO = $codPedido
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE
-                    HAVING SUM(NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) > 0";
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     private function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
