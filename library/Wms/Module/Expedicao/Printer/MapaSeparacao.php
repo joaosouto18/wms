@@ -73,8 +73,6 @@ class MapaSeparacao extends Pdf
                 }
             }
 
-            $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
-
             //Select Arial bold 8
             $this->SetFont('Arial','B',10);
             $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1,"C");
@@ -88,9 +86,6 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
-
-            //$this->Image($imgCodBarras, 155, 18, 50);
-
 
             $this->Cell(20, 4, "", 0, 1);
             $this->SetFont('Arial', 'B', 8);
@@ -131,6 +126,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
 
             //$this->SetY(-92);
+            $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
             $this->Image($imgCodBarras, 150, 280, 50);
 
         }
@@ -285,7 +281,7 @@ class MapaSeparacao extends Pdf
             //$this->SetY(-92);
             $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
             $this->Image($imgCodBarras, 150, 280, 50);
-            $this->Image($imgCodBarras, 154 , 18, 50);
+            //$this->Image($imgCodBarras, 154 , 18, 50);
 
         }
 
