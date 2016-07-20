@@ -342,9 +342,6 @@ class Expedicao_IndexController extends Action
 
                     $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
                 }
-
-//                $this->addFlashMessage('success', 'Todas as etiquetas foram salvas com sucesso!');
-//                $this->_redirect('expedicao/index/apontamento-separacao');
             }
 
         } catch (\Exception $e) {

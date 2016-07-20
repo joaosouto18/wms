@@ -198,4 +198,15 @@ class UsuarioRepository extends AtorRepository {
         return $result['id'];
     }
 
+    public function getPessoaByCpf($cpf)
+    {
+
+        $sql = "SELECT P.NOM_PESSOA
+                FROM PESSOA P
+                INNER JOIN PESSOA_FISICA PF ON PF.COD_PESSOA = P.COD_PESSOA
+                WHERE PF.NUM_CPF = '$cpf'";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
