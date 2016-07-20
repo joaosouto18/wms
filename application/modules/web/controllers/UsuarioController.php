@@ -83,8 +83,7 @@ class Web_UsuarioController extends Crud
                         'label' => 'Imprimir Código de Barras',
                         'actionName' => 'imprimir',
                         'pkIndex' => 'id',
-                        'cssClass' => 'edit confirm',
-                        'title' => 'Deseja mesmo resetar a senha deste usuário?'
+                        'title' => 'Imprime o codigo de barras deste usuário'
                     ));
 
             $grid->setHasOrdering(true);
