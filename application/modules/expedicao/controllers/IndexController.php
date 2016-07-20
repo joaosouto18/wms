@@ -6,6 +6,8 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\PesoCargas as PesoCargasGrid;
 
+use \Wms\Module\Web\Page;
+
 class Expedicao_IndexController extends Action
 {
 
@@ -271,56 +273,80 @@ class Expedicao_IndexController extends Action
 
     public function apontamentoSeparacaoAction()
     {
-        $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
-
-        $params = $form->getParams();
-        $LeituraColetor = new LeituraColetor();
-
+        //adding default buttons to the page
+         Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar',
+                    'cssClass' => 'btnBack',
+                    'onclick' => 'window.history.back()',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                ),
+                array(
+                    'label' => 'Salvar',
+                    'cssClass' => 'btn save',
+                    'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
+                )
+            )
+        ));
         $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
+        $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
 
         try {
-            if (isset($params['etiquetas']['submit']) && !empty($params['etiquetas']['submit'])) {
-                $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $params['etiquetas']['pessoa']));
-                $etiquetaInicial = $LeituraColetor->retiraDigitoIdentificador($params['etiquetas']['etiquetaInicial']);
-                $etiquetaFinal = $LeituraColetor->retiraDigitoIdentificador($params['etiquetas']['etiquetaFinal']);
+            if (isset($params) && !empty($params)) {
+                if ($params['tipo'] == 'Etiquetas') {
+                    //FORMATA OS DADOS RECEBIDOS
+                    $cpf = str_replace(array('.','-'),'',$params['cpf']);
+                    $etiquetas = explode('-',$params['etiquetas']);
+                    $etiquetaInicial = trim($etiquetas[0]);
+                    $etiquetaFinal = trim($etiquetas[1]);
 
-                if (is_null($etiquetaFinal))
-                    $etiquetaFinal = $etiquetaInicial;
+                    //ENCONTRA O USUARIO DIGITADO
+                    $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+                    //VERIFICA O USUARIO
+                    if (is_null($usuarioEn))
+                        throw new \Exception('Conferente não encontrado!');
+                    //VERIFICA AS ETIQUETAS
+                    if (is_null($etiquetaFinal))
+                        $etiquetaFinal = $etiquetaInicial;
 
-                if (is_null($etiquetaInicial))
-                    $etiquetaInicial = $etiquetaFinal;
+                    if (is_null($etiquetaInicial))
+                        $etiquetaInicial = $etiquetaFinal;
 
-                if (is_null($etiquetaInicial) && is_null($etiquetaFinal))
-                    throw new \Exception('Preencha corretamente as etiquetas conferidas!');
+                    //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+                    $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
 
-                if (is_null($usuarioEn))
-                    throw new \Exception('Conferente não encontrado!');
+                } elseif ($params['tipo'] == 'Mapas') {
+                    $cpf = str_replace(array('.','-'),'',$params['cpf']);
+                    //ENCONTRA O USUARIO DIGITADO
+                    $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+                    //VERIFICA O USUARIO
+                    if (is_null($usuarioEn))
+                        throw new \Exception('Conferente não encontrado!');
 
-                $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
+                    $codMapaSeparacao = $params['etiquetas'];
+                    $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
+                    if (is_null($mapaSeparacaoEn))
+                        throw new \Exception('Mapa de Separação não encontrado!');
 
-                $this->addFlashMessage("success","Conferente vinculado com sucesso as Etiquetas de Separação!");
-                $this->redirect('apontamento-separacao');
+                    $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
+                }
 
-            } elseif (isset($params['mapas']['salvarMapa']) && !empty($params['mapas']['salvarMapa'])) {
-                $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $params['mapas']['pessoa']));
-                $codMapaSeparacao = $LeituraColetor->retiraDigitoIdentificador($params['mapas']['codMapaSeparacao']);
-
-                if (is_null($usuarioEn))
-                    throw new \Exception('Conferente não encontrado!');
-
-                $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
-                if (is_null($mapaSeparacaoEn))
-                    throw new \Exception('Mapa de Separação não encontrado!');
-
-                $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
-
-                $this->addFlashMessage("success","Conferente vinculado com sucesso ao Mapa de Separação!");
-                $this->redirect('apontamento-separacao');
+//                $this->addFlashMessage('success', 'Todas as etiquetas foram salvas com sucesso!');
+//                $this->_redirect('expedicao/index/apontamento-separacao');
             }
+
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }

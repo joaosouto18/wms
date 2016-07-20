@@ -20,12 +20,13 @@ class MapaSeparacao extends SubForm
                 'size' => 15,
                 'label' => utf8_encode('Mapa Separacao'),
             ))
-            ->addElement('submit', 'salvarMapa', array(
-                'label' => 'Vincular',
+            ->addElement('button', 'salvarMapa', array(
+                'label' => 'Buscar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
+                'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
             ))
-            ->addDisplayGroup(array('pessoa','codMapaSeparacao','salvarMapa'), 'identificacao', array('legend' => utf8_encode('Vincular Mapa Separação'))
+            ->addDisplayGroup(array('codMapaSeparacao','pessoa','salvarMapa'), 'identificacao', array('legend' => utf8_encode('Vincular Mapa Separação'))
             );
     }
 

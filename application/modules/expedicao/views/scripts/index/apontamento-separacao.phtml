@@ -33,6 +33,37 @@
         }
         return true;
     }
+    $(function () {
+        $('#mapas-salvarMapa').click(function () {
+            var mapa = $('#mapas-codMapaSeparacao').val();
+            var cpf = $('#mapas-pessoa').val();
+
+            if (cpf == null || cpf == ""){
+                alert("Informe um CPF");
+                return false;
+            } else if (cpf.length != 14) {
+                alert("CPF incompleto ou inv·lido");
+                return false;
+            }
+
+            $.ajax({
+                url: 'conferente-apontamento-separacao/cpf/'+cpf,
+                success: function (data) {
+                    var tr = $('<tr>').addClass('gTResultSet');
+                    tr.append($('<td>').css('text-align','left'));
+                    tr.append($('<td>').css('text-align','left').text(data[0]['NOM_PESSOA']));
+                    tr.append($('<td class="identifica">').css('text-align','left').text(cpf));
+                    tr.append($('<td class="intervalo">').css('text-align','left').text(mapa));
+                    tr.append($('<td>').css('text-align','left').text(1));
+                    tr.append($('<td class="tipo">').css('text-align','left').text('Mapas'));
+                    $('#tbResult').append(tr);
+                }
+            });
+        });
+    });
+
+
+
     $(function(){
 
         $("#etiquetas-buscar").click(function () {
@@ -46,7 +77,7 @@
             if (eI != '' && eF != '') {
 
                 if (eI.length < 2 || eF.length < 2) {
-                    alert("Etiqueta fora do padr√£o");
+                    alert("Etiqueta fora do padr„o");
                     return false;
                 }
 
@@ -54,21 +85,21 @@
                 eF = parseInt(eF.substring(0, eF.length - 1));
 
                 if (eI > eF) {
-                    alert("A etiqueta inicial n√£o pode ser maior que a final.");
+                    alert("A etiqueta inicial n„o pode ser maior que a final.");
                     return false;
                 } else if (eI == eF){
                     qtdEtiquetas = 1;
-                    intervalo = eI + " / " + eF;
+                    intervalo = eI + " - " + eF;
                 } else {
                     qtdEtiquetas = eF - eI;
-                    intervalo = eI + " / " + eF;
+                    intervalo = eI + " - " + eF;
                 }
 
             } else if (eI != "" && eF == "") {
-                alert("N√£o √© poss√≠vel definir o intervalo sem a etiqueta final");
+                alert("N„o È possÌvel definir o intervalo sem a etiqueta final");
                 return false;
             } else if (eI == "" && eF != "") {
-                alert("N√£o √© poss√≠vel definir o intervalo sem a etiqueta inicial");
+                alert("N„o È possÌvel definir o intervalo sem a etiqueta inicial");
                 return false;
             }
 
@@ -78,7 +109,7 @@
                 alert("Informe um CPF");
                 return false;
             } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inv√°lido");
+                alert("CPF incompleto ou inv·lido");
                 return false;
             }
 
@@ -88,11 +119,33 @@
                     var tr = $('<tr>').addClass('gTResultSet');
                     tr.append($('<td>').css('text-align','left'));
                     tr.append($('<td>').css('text-align','left').text(data[0]['NOM_PESSOA']));
-                    tr.append($('<td>').css('text-align','left').text(cpf));
-                    tr.append($('<td>').css('text-align','left').text(intervalo));
+                    tr.append($('<td class="identifica">').css('text-align','left').text(cpf));
+                    tr.append($('<td class="intervalo">').css('text-align','left').text(intervalo));
                     tr.append($('<td>').css('text-align','left').text(qtdEtiquetas));
+                    tr.append($('<td class="tipo">').css('text-align','left').text('Etiquetas'));
                     $('#tbResult').append(tr);
                 }
+            });
+        });
+    });
+
+    $(function(){
+        $('.save').click(function () {
+            $.each($('.gTResultSet').find('td.identifica'), function (key, value) {
+                var etiquetas = $('.gTResultSet').find('td.intervalo')[key].innerText;
+                var cpf = value.innerText;
+                var tipo = $('.gTResultSet').find('td.tipo')[key].innerText;
+                $.ajax({
+                    url: 'apontamento-separacao/cpf/'+cpf+'/etiquetas/'+etiquetas+'/tipo/'+tipo,
+                    success: function (data) {
+                        alert('Todas as etiquetas foram salvas com sucesso!');
+                        window.location.href = 'apontamento-separacao';
+
+//                $this->addFlashMessage('success', 'Todas as etiquetas foram salvas com sucesso!');
+//                $this->_redirect('expedicao/index/apontamento-separacao');
+                    }
+
+                });
             });
         });
     });
@@ -100,17 +153,17 @@
 
 <?php
 echo $this->form;
-echo $this->formMapaSeparacao;
 ?>
 <div id="exibe-pessoa-grid" class="grid">
     <table class="gTable ">
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
             <td></td>
-            <td width="45%">Nome</td>
+            <td width="30%">Nome</td>
             <td width="20%">CPF</td>
             <td width="15%">Inicial/Final</td>
             <td width="15%">Qtd. Etiquetas</td>
+            <td width="15%">Tipo ConferÍncia</td>
         </tr>
         <tbody id="tbResult">
         </tbody>
