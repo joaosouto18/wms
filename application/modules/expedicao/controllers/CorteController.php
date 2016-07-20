@@ -57,7 +57,7 @@ class Expedicao_CorteController  extends Action
                     }
                 }
 
-                if ($encontrouEtiqueta == true) {
+                if ($encontrouEtiqueta == false) {
                     $this->addFlashMessage('error', 'A Etiqueta código ' . $LeituraColetor->retiraDigitoIdentificador($codBarra) . ' não pertence a expedição ' . $idExpedicao);
                     $this->_redirect('/expedicao');
                 }
