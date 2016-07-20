@@ -87,7 +87,6 @@ class MapaSeparacao extends Pdf
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
-
             $this->Cell(20, 4, "", 0, 1);
             $this->SetFont('Arial', 'B', 8);
             $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
@@ -127,7 +126,8 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
 
             //$this->SetY(-92);
-            $this->Image(@CodigoBarras::gerarNovo($this->idMapa), 150, 280, 50);
+            $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
+            $this->Image($imgCodBarras, 150, 280, 50);
 
         }
 
@@ -281,7 +281,7 @@ class MapaSeparacao extends Pdf
             //$this->SetY(-92);
             $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
             $this->Image($imgCodBarras, 150, 280, 50);
-            $this->Image($imgCodBarras, 154 , 18, 50);
+            //$this->Image($imgCodBarras, 154 , 18, 50);
 
         }
 

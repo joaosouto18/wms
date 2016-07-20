@@ -77,14 +77,13 @@ class Web_UsuarioController extends Crud
                         'actionName' => 'resetar-senha',
                         'pkIndex' => 'id',
                         'cssClass' => 'edit confirm',
-                        'title' => 'Deseja mesmo resetar a senha deste usuário?'
+                        'title' => 'Reseta a senha deste usuário.'
                     ))
                     ->addAction(array(
                         'label' => 'Imprimir Código de Barras',
                         'actionName' => 'imprimir',
                         'pkIndex' => 'id',
-                        'cssClass' => 'edit confirm',
-                        'title' => 'Deseja mesmo resetar a senha deste usuário?'
+                        'title' => 'Imprime o código de barras deste usuário.'
                     ));
 
             $grid->setHasOrdering(true);
