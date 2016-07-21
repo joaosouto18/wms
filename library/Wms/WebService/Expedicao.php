@@ -330,7 +330,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
             $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
-            throw new \Exception ("Consumindo Cancelar Carga numero: $idCargaExterno - $tipoCarga");
             return $cargaRepository->cancelar($idCargaExterno,$siglaTipoCarga);
         } catch (\Exception $e) {
             $logger->warn($e->getMessage());
@@ -384,8 +383,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $this->_em->flush();
                 }
             }
-
-            throw new \Exception ("Consumindo Cancelar Pedido numero: $idPedido");
 
             $this->_em->commit();
 
