@@ -35,7 +35,10 @@ class EtiquetaSeparacao extends SubForm
                 'decorators' => array('ViewHelper'),
                 'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
             ))
-            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar','submit'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
+            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar','submit'), 'identificacao', array('legend' => 'Vincular Etiqueta SeparaÃ§Ã£o'));
 
+        $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
+        $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
+        $this->getElement('pessoa')->setAttrib('onkeydown','gotoBuscar(event)');
     }
 }
