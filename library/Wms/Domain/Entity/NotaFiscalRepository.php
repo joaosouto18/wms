@@ -891,7 +891,7 @@ class NotaFiscalRepository extends EntityRepository
                         $qtd = $item['quantidade'];
                     }
 
-                    if (($produtoEntity->possuiPesoVariavel() == "S") && ($pesoItem == 0)){
+                    if ($pesoItem == 0){
                         $pesoItem = $qtd;
                     }
 
