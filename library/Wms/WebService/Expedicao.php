@@ -317,16 +317,26 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarCarga($idCargaExterno, $tipoCarga)
     {
-        $idCargaExterno = trim ($idCargaExterno);
-        if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
-        $tipoCarga = trim($tipoCarga);
+        try {
+            $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-cancelarCarga.log');
+            $logger = new Zend_Log($writer);
+            $logger->debug("Carga:$idCargaExterno  - $tipoCarga");
 
-        $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
+            $idCargaExterno = trim ($idCargaExterno);
+            if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
+            $tipoCarga = trim($tipoCarga);
 
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
-        $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
+            $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
 
-        return $cargaRepository->cancelar($idCargaExterno,$siglaTipoCarga);
+            /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+            $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
+            throw new \Exception ("Consumindo Cancelar Carga numero: $idCargaExterno - $tipoCarga");
+            return $cargaRepository->cancelar($idCargaExterno,$siglaTipoCarga);
+        } catch (\Exception $e) {
+            $logger->warn($e->getMessage());
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+
     }
 
     /**
@@ -341,6 +351,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         try {
             $this->_em->beginTransaction();
+
+            $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-cancelarPedido.log');
+            $logger = new Zend_Log($writer);
+            $logger->debug("Pedido: $idPedido");
 
             $idPedido = trim($idPedido);
 
@@ -371,10 +385,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
             }
 
+            throw new \Exception ("Consumindo Cancelar Pedido numero: $idPedido");
+
             $this->_em->commit();
 
         } catch (\Exception $e) {
             $this->_em->rollback();
+            $logger->warn($e->getMessage());
             throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
 
