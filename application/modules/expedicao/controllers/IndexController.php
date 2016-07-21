@@ -324,8 +324,10 @@ class Expedicao_IndexController extends Action
                     if (is_null($etiquetaInicial))
                         $etiquetaInicial = $etiquetaFinal;
 
+                    $equipeSeparacaoEn = $equipeSeparacaoRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(),'etiquetaInicial' => $etiquetaInicial, 'etiquetaFinal' => $etiquetaFinal));
                     //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
-                    $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
+                    if (!isset($equipeSeparacaoEn) || empty($equipeSeparacaoEn))
+                        $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
 
                 } elseif ($params['tipo'] == 'Mapas') {
                     $cpf = str_replace(array('.','-'),'',$params['cpf']);
@@ -340,7 +342,9 @@ class Expedicao_IndexController extends Action
                     if (is_null($mapaSeparacaoEn))
                         throw new \Exception('Mapa de Separação não encontrado!');
 
-                    $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
+                    $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
+                    if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
+                        $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
                 }
             }
 
