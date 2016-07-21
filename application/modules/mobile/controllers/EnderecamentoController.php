@@ -765,14 +765,6 @@ class Mobile_EnderecamentoController extends Action
             } else {
                 $idEstoque = $result[0]['id'];
 
-                /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-                $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-                $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $result[0]['idEndereco'], 'tipoReserva' => 'S', 'atendida' => 'N'));
-
-                if (count($verificaReservaSaida) > 0) {
-                    throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
-                }
-
                 if ($result[0]['uma']) {
                     $this->_redirect('/mobile/enderecamento/endereco-uma/cb/' . $idEstoque . '/end/' . $codigoBarras . '/nivelAntigo/' . $nivel);
                 } else {
@@ -844,6 +836,23 @@ class Mobile_EnderecamentoController extends Action
         $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+
+        $idEndereco = $endereco->getId();
+        $codProduto = $embalagemEn->getCodProduto();
+        $grade = $embalagemEn->getGrade();
+
+        $SQL = "SELECT RE.*
+                  FROM RESERVA_ESTOQUE RE
+                 INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                 WHERE RE.COD_DEPOSITO_ENDERECO = $idEndereco 
+                   AND REP.COD_PRODUTO = '$codProduto'
+                   AND REP.DSC_GRADE = '$grade'
+                   AND RE.TIPO_RESERVA = 'S'
+                   AND RE.IND_ATENDIDA = 'N'";
+        $verificaReservaSaida = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($verificaReservaSaida) > 0) {
+            throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
+        }
 
         /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
         $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
