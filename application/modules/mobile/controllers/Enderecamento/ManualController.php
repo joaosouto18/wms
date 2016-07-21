@@ -215,10 +215,11 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
             $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
-            $novaCapacidadePicking = 0;
 
-            if (isset($params['capacidadePicking']) && !empty($params['capacidadePicking']))
-                $novaCapacidadePicking = $params['capacidadePicking'];
+            if (!isset($params['capacidadePicking']) || empty($params['capacidadePicking']))
+                throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
+
+            $novaCapacidadePicking = $params['capacidadePicking'];
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
@@ -266,7 +267,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
             }
-
+            
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa);
