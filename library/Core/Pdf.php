@@ -5,7 +5,8 @@ namespace Core;
 use Core\Pdf\font\unifont\TTFontFile;
 
 /**
- * @author Renato Medina <medinadato@gmail.com> 
+ * @Documentation http://www.fpdf.org/en/doc/index.php
+ * @author Renato Medina <medinadato@gmail.com>
  * @version 1.0
  */
 class Pdf
