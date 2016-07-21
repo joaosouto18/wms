@@ -217,6 +217,7 @@ class Mobile_EnderecamentoController extends Action
 
         $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
 
+        var_dump('ok'); exit;
         $enderecoReservado = $paleteEn->getDepositoEndereco();
 
         if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
