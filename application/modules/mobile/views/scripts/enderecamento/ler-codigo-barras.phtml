@@ -16,6 +16,22 @@
         }
         return true;
     }
+    function nextInputCapacidade(event, id) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('nivel').value != "") {
+                endereco   = document.getElementById('capacidadePicking');
+                if (endereco) {
+                    endereco.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 
     function formSubmit(event)
     {
@@ -165,11 +181,15 @@
 
     <div>
         <label>NÍVEL:</label>
-        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel">
+        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel"  onkeydown="nextInputCapacidade(event)">
         <input type="hidden" value="" id="uma-nivel" name="uma">
         <input type="hidden" value="" id="rua-nivel" name="rua">
         <input type="hidden" value="" id="predio-nivel" name="predio">
         <input type="hidden" value="" id="apartamento-nivel" name="apartamento">
+    </div>
+    <div>
+        <label>CAPAC. PICKING:</label>
+        <input type="text" style="width: 40px" size="40" value="" id="capacidadePicking" name="capacidadePicking">
     </div>
 
     <input type="submit" name="submit" id="submit" value="Buscar" />

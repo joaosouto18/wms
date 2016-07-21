@@ -193,12 +193,13 @@ class Mobile_EnderecamentoController extends Action
         $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
         $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-        $idPalete    = $this->_getParam("uma");
-        $rua         = substr($this->_getParam("rua"), -$tamanhoRua, $tamanhoRua);
-        $predio      = substr($this->_getParam("predio"), -$tamanhoPredio, $tamanhoPredio);
-        $nivel       = substr($this->_getParam("nivel"), -$tamanhoNivel, $tamanhoNivel);
-        $apartamento = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
-        $codBarras   = $rua . $predio . $nivel . $apartamento;
+        $capacidadePicking  = $this->_getParam('capacidadePicking');
+        $idPalete           = $this->_getParam("uma");
+        $rua                = substr($this->_getParam("rua"), -$tamanhoRua, $tamanhoRua);
+        $predio             = substr($this->_getParam("predio"), -$tamanhoPredio, $tamanhoPredio);
+        $nivel              = substr($this->_getParam("nivel"), -$tamanhoNivel, $tamanhoNivel);
+        $apartamento        = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
+        $codBarras          = $rua . $predio . $nivel . $apartamento;
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -215,7 +216,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
+        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn, $capacidadePicking);
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
 
@@ -232,7 +233,7 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd, $enderecoEn = null)
+    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd, $enderecoEn = null, $capacidadePicking = 0)
     {
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
         $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
@@ -243,6 +244,10 @@ class Mobile_EnderecamentoController extends Action
 
         $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+
+        if ($capacidadePicking == 0) {
+            $this->createXml('error','Necessário informar a capacidade de Picking!');
+        }
 
         //Se for picking do produto entao o nivel poderá ser escolhido
         //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
@@ -269,6 +274,7 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
                     $embalagemEn->setEndereco($enderecoEn);
+                    $embalagemEn->setCapacidadePicking($capacidadePicking);
                     $this->getEntityManager()->persist($embalagemEn);
                 }
                 $this->getEntityManager()->flush();
