@@ -1171,6 +1171,16 @@ class Mobile_EnderecamentoController extends Action
 
     }
 
+    public function getCapacidadePickingAjaxAction()
+    {
+        $dscEndereco = $this->_getParam('endereco');
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco));
+
+        $this->_helper->json($enderecoEn->getIdCaracteristica());
+    }
+
 
 }
 

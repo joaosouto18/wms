@@ -1,5 +1,4 @@
 ﻿<script>
-
     function nextInput(event, id) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('uma').value != "") {
@@ -16,21 +15,24 @@
         }
         return true;
     }
-    function nextInputCapacidade(event, id) {
-        if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('nivel').value != "") {
-                endereco   = document.getElementById('capacidadePicking');
-                if (endereco) {
-                    endereco.focus();
-                    if(event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
+
+    function nextInputCapacidade() {
+
+        var rua         = document.getElementById('rua-nivel').value;
+        var predio      = document.getElementById('predio-nivel').value;
+        var apartamento = document.getElementById('apartamento-nivel').value;
+        var nivel       = document.getElementById('nivel').value;
+        var capacidadePicking = '';
+
+        $.ajax({
+            url: 'get-capacidade-picking-ajax/endereco/'+rua+'.'+predio+'.'+apartamento+'.'+nivel,
+            success: function (data) {
+                if (data == '39' || data == '37') {
+                    capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="" id="capacidadePicking" name="capacidadePicking"></div>';
                 }
             }
-        }
-        return true;
+        });
+        $('#capacidade').html(capacidadePicking);
     }
 
     function formSubmit(event)
@@ -181,17 +183,13 @@
 
     <div>
         <label>NÍVEL:</label>
-        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel"  onkeydown="nextInputCapacidade(event)">
+        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel" onkeydown="nextInputCapacidade() ">
         <input type="hidden" value="" id="uma-nivel" name="uma">
         <input type="hidden" value="" id="rua-nivel" name="rua">
         <input type="hidden" value="" id="predio-nivel" name="predio">
         <input type="hidden" value="" id="apartamento-nivel" name="apartamento">
     </div>
-    <div>
-        <label>CAPAC. PICKING:</label>
-        <input type="text" style="width: 40px" size="40" value="" id="capacidadePicking" name="capacidadePicking">
-    </div>
-
+    <div id="capacidade"></div>
     <input type="submit" name="submit" id="submit" value="Buscar" />
     <input type="button" name="voltar" id="voltar" value="Voltar" onclick="voltarUma()" />
 </form>
