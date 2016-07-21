@@ -267,7 +267,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
             }
-
+            
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa);

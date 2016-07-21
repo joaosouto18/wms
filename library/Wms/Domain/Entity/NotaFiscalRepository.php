@@ -884,19 +884,24 @@ class NotaFiscalRepository extends EntityRepository
                         }
                         $pesoTotal = $pesoTotal + $pesoItem;
                     }
+
+                    if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
+                        $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
+                    } else {
+                        $qtd = $item['quantidade'];
+                    }
+
+                    if ($pesoItem == 0){
+                        $pesoItem = $qtd;
+                    }
+
                     $itemEntity = new ItemNF;
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
                     $itemEntity->setProduto($produtoEntity);
                     $itemEntity->setGrade(trim($item['grade']));
                     $itemEntity->setNumPeso($pesoItem);
+                    $itemEntity->setQuantidade($qtd);
 
-                    if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
-                        $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
-                        $itemEntity->setQuantidade($qtd);
-                    } else {
-                        $itemEntity->setQuantidade($item['quantidade']);
-                    }
-                    
                     $notaFiscalEntity->getItens()->add($itemEntity);
                 }
             } else {
