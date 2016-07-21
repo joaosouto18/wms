@@ -245,9 +245,9 @@ class Mobile_EnderecamentoController extends Action
         $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
-        if (isset($capacidadePicking) && !empty($capacidadePicking)) {
-            $this->createXml('error','Necessário informar a capacidade de Picking!');
-        }
+//        if (isset($capacidadePicking) && !empty($capacidadePicking)) {
+//            $this->createXml('error','Necessário informar a capacidade de Picking!');
+//        }
 
         //Se for picking do produto entao o nivel poderá ser escolhido
         //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
