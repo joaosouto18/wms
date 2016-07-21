@@ -157,6 +157,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $produto) {
+
             $arrayFiltro = array();
             $arrayFiltro['mapaSeparacao'] = $produto['COD_MAPA_SEPARACAO'];
             $arrayFiltro['codProduto'] = $produto['COD_PRODUTO'];
@@ -169,13 +170,41 @@ class MapaSeparacaoRepository extends EntityRepository
                 $produtoEn->setIndConferido('S');
                 $this->getEntityManager()->persist($produtoEn);
 
-                $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
-                $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()) - $produtoEn->getQtdCortado());
+                $SQL = "SELECT MSP.COD_PEDIDO_PRODUTO
+                          FROM MAPA_SEPARACAO_PEDIDO MSP
+                          LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                         WHERE PP.COD_PRODUTO = '" . $produto['COD_PRODUTO'] . "'
+                           AND PP.DSC_GRADE = '" . $produto['DSC_GRADE'] . "'
+                           AND MSP.COD_MAPA_SEPARACAO = " . $produto['COD_MAPA_SEPARACAO'];
 
-                $this->getEntityManager()->persist($pedidoProdutoEn);
-                $this->getEntityManager()->flush();
+                $pedidosProdutos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+                $quantidadeRestante = ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()) - $produtoEn->getQtdCortado();
+                foreach ($pedidosProdutos as $pp){
+                    $pedidoProdutoEn = $pedidoProdutoRepo->find($pp['COD_PEDIDO_PRODUTO']);
+
+                    if ($quantidadeRestante >= ($pedidoProdutoEn->getQuantidade() - ($pedidoProdutoEn->getQtdAtendida() + $pedidoProdutoEn->getQtdCortada()))) {
+                        $quantidadeAtender = $pedidoProdutoEn->getQuantidade();
+                    } else {
+                        $quantidadeAtender = $quantidadeRestante;
+                    }
+
+                    $quantidadeRestante = $quantidadeRestante - $quantidadeAtender;
+
+                    $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + $quantidadeRestante);
+                    $this->getEntityManager()->persist($pedidoProdutoEn);
+                }
+
+                if (count($pedidosProdutos) == 0) {
+                    $pedidoProdutoEn = $pedidoProdutoRepo->find($produtoEn->getCodPedidoProduto());
+                    $pedidoProdutoEn->setQtdAtendida($pedidoProdutoEn->getQtdAtendida() + ($produtoEn->getQtdEmbalagem() * $produtoEn->getQtdSeparar()) - $produtoEn->getQtdCortado());
+
+                    $this->getEntityManager()->persist($pedidoProdutoEn);
+                }
             }
         }
+
+        $this->getEntityManager()->flush();
 
         $conferido = true;
         $mapas = $this->findBy(array('expedicao'=>$idExpedicao));

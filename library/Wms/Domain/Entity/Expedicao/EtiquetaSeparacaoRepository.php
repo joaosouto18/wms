@@ -1284,6 +1284,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity, $produtoEntity, $quantidadePedido, $volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco) {
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
             $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoVolume'=>$volumeEntity));
@@ -1292,6 +1294,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quantidadeEmbalagem = $embalagemEntity->getQuantidade();
             $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
         }
+
+        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
+        if ($mapaPedidoEn == null) {
+            $mapaPedidoEn = new MapaSeparacaoPedido();
+            $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
+            $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
+            $mapaPedidoEn->setPedidoProduto($pedidoProduto);
+            $this->getEntityManager()->persist($mapaPedidoEn);
+        }
+
         if ($mapaProduto == null) {
             $mapaProduto = new MapaSeparacaoProduto();
             $mapaProduto->setCodProduto($produtoEntity->getId());
