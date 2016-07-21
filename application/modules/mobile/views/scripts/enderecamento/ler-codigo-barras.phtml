@@ -27,8 +27,8 @@
         $.ajax({
             url: 'get-capacidade-picking-ajax/endereco/'+rua+'.'+predio+'.'+apartamento+'.'+nivel,
             success: function (data) {
-                if (data == '39' || data == '37') {
-                    capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="" id="capacidadePicking" name="capacidadePicking"></div>';
+                if (data['caracteristicaEndereco'] == '39' || data['caracteristicaEndereco'] == '37') {
+                    capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="'+data['capacidadePicking']+'" id="capacidadePicking" name="capacidadePicking"></div>';
                 }
             }
         });
