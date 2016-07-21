@@ -207,7 +207,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                         }
                     }
 
-
                     $endPicking = null;
                     if ($embalagemCadastrada->getEndereco() != null ) {
                         $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
@@ -244,6 +243,9 @@ class Wms_WebService_Produto extends Wms_WebService {
                     }
 
                     if ($encontrouEmbalagem == false) {
+
+                        $this->verificaCodigoBarrasDuplicado($embalagemWs->codBarras,$idProduto,$grade);
+
                         $embalagemArray = array (
                             'acao' => 'incluir',
                             'descricao' => $embalagemWs->descricao,
@@ -274,6 +276,24 @@ class Wms_WebService_Produto extends Wms_WebService {
         } catch (\Exception $e) {
             $em->rollback();
             throw new \Exception($e->getMessage());
+        }
+        return true;
+    }
+
+    private function verificaCodigoBarrasDuplicado($codBarras, $idProduto, $grade) {
+        $SQL = "SELECT P.COD_PRODUTO, P.DSC_PRODUTO
+                  FROM PRODUTO P
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                 WHERE NVL(PE.COD_BARRAS, PV.COD_BARRAS) = '$codBarras'
+                   AND P.COD_PRODUTO <> '$idProduto'
+                   AND P.DSC_GRADE <> '$grade'";
+
+        $em = $this->__getDoctrineContainer()->getEntityManager();
+        $produtos =  $em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($produtos) >0) {
+            $prod = $produtos[0];
+            throw new \Exception("A Embalagem " . $codBarras ." se encontra em uso no sistema para o produto " . $prod['COD_PRODUTO'] . "/" . $prod['DSC_PRODUTO']);
         }
         return true;
     }
