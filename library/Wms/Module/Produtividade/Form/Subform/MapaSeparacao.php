@@ -32,8 +32,11 @@ class MapaSeparacao extends SubForm
                 'decorators' => array('ViewHelper'),
                 'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
             ))
-            ->addDisplayGroup(array('codMapaSeparacao','pessoa','salvarMapa'), 'identificacao', array('legend' => utf8_encode('Vincular Mapa Separação'))
-            );
+            ->addDisplayGroup(array('codMapaSeparacao','pessoa','salvarMapa'), 'identificacao', array('legend' => utf8_encode('Vincular Mapa Separação')));
+
+        $this->getElement('codMapaSeparacao')->setAttrib('onkeydown','gotoPessoaMapa(event)');
+        $this->getElement('pessoa')->setAttrib('onkeydown','gotoSalvarMapa(event)');
+
     }
 
 }
