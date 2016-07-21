@@ -215,7 +215,7 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica());
+        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
 
         $enderecoReservado = $paleteEn->getDepositoEndereco();
 
@@ -234,32 +234,60 @@ class Mobile_EnderecamentoController extends Action
      */
     public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd, $enderecoEn = null)
     {
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+        $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+
+        $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
         //Se for picking do produto entao o nivel poderá ser escolhido
-        if ($caracteristicaEnd == '37' || $caracteristicaEnd == '39') {
+        //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
+        //Se sim, o sistema deverá exibir o endereço e só permitir armazenar no endereço cadastrado e permitir alterar a capacidade do picking (apenas para picking Dinâmico);
+        //Se o produto não possuir endereço de Picking Dinâmico cadastrado, o sistema deverá solicitar a quantidade a ser endereçada e a capacidade do picking.
 
-            //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
-            //Se sim, o sistema deverá exibir o endereço e só permitir armazenar no endereço cadastrado e permitir alterar a capacidade do picking (apenas para picking Dinâmico);
-            //Se o produto não possuir endereço de Picking Dinâmico cadastrado, o sistema deverá solicitar a quantidade a ser endereçada e a capacidade do picking.
-
-            $produtosEn = $paleteEn->getProdutos();
-            $produto = $produtosEn[0];
-            $codProduto = $produto->getCodProduto();
-            $grade      = $produto->getGrade();
-
-            /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
-            $ProdutoRepository   = $this->em->getRepository('wms:Produto');
-            $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-            $endPicking = $ProdutoRepository->getEnderecoPicking($ProdutoEntity);
-            if ($endPicking) {
-                $endPicking = (int) str_replace('.','',$endPicking[0]);
-                $endereco = (int) $endereco;
-                if ($endPicking != $endereco) {
-                    $this->createXml('error','Endereço de picking não correspondente informado:' . $endereco . ", cadastro " . $endPicking);
+        if ($caracteristicaEnd == $idCaracteristicaPickingRotativo || $caracteristicaEnd == $idCaracteristicaPicking) {
+            $produtosEn = $paleteProdutoRepo->getProdutoByUma($paleteEn->getId());
+            foreach ($produtosEn as $produto) {
+                $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
+                if (isset($estoqueEn) && !empty($estoqueEn)) {
+                    if ($enderecoEn->getId() != $estoqueEn->getDepositoEndereco()->getId()) {
+                        $this->createXml('error','Existe estoque para o Produto '.$estoqueEn->getCodProduto().' grade '.$estoqueEn->getGrade().' no endereco '.$estoqueEn->getDepositoEndereco()->getDescricao());
+                    }
                 }
-            } else {
-                $this->createXml('error','O produto não possui endereço de picking');
+
+                $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
+                foreach ($embalagens as $embalagemEn) {
+                    $caracteristicaEndAntigo = $embalagemEn->getEndereco()->getCaracteristica()->getId();
+                    if ($caracteristicaEndAntigo == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                        $this->createXml('error','Produto Ja cadastrado no Picking '.$embalagemEn->getEndereco()->getDescricao());
+                    }
+                    $embalagemEn->setEndereco($enderecoEn);
+                    $this->getEntityManager()->persist($embalagemEn);
+                }
+                $this->getEntityManager()->flush();
             }
+//            $produtosEn = $paleteEn->getProdutos();
+//            $produto = $produtosEn[0];
+//            $codProduto = $produto->getCodProduto();
+//            $grade      = $produto->getGrade();
+//
+//            /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
+//            $ProdutoRepository   = $this->em->getRepository('wms:Produto');
+//            $ProdutoEntity = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+//            $endPicking = $ProdutoRepository->getEnderecoPicking($ProdutoEntity);
+//            if ($endPicking) {
+//                $endPicking = (int) str_replace('.','',$endPicking[0]);
+//                $endereco = (int) $endereco;
+//                if ($endPicking != $endereco) {
+//                    $this->createXml('error','Endereço de picking não correspondente informado:' . $endereco . ", cadastro " . $endPicking);
+//                }
+//            } else {
+//                $this->createXml('error','O produto não possui endereço de picking');
+//            }
 
             return true;
         }
