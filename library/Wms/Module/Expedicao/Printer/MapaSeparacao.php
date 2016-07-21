@@ -12,6 +12,7 @@ class MapaSeparacao extends Pdf
     private $idMapa;
     private $idExpedicao;
     private $quebrasEtiqueta;
+    private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total;
     protected $chaveCargas;
     protected $cargasSelecionadas;
 
@@ -96,6 +97,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
             $this->Cell(20, 1, "", 0, 1);
 
+            $count = 0;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial',  null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
@@ -114,6 +116,10 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                 $this->Cell(20, 1, "", 0, 1);
+                $count += 1;
+                if ($count > 38){
+                    $this->AddPage();
+                }
             }
 
             $this->SetFont('Arial',null,10);
@@ -235,9 +241,7 @@ class MapaSeparacao extends Pdf
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
-
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
-
+                
                 $endereco = $produto->getCodDepositoEndereco();
                 $dscEndereco = "";
                 if ($endereco != null) {
@@ -247,9 +251,11 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
                 $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
                 $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
+
+                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal = $pesoTotal + $pesoProduto->getPeso();
-                    $cubagemTotal = $cubagemTotal + $pesoProduto->getCubagem();
+                    $pesoTotal += ($pesoProduto->getPeso() * $produto->getQtdSeparar());
+                    $cubagemTotal += $pesoProduto->getCubagem();
                 }
                 $codigoBarras = '';
                 if (isset($embalagemEn) && !empty($embalagemEn))
@@ -268,29 +274,12 @@ class MapaSeparacao extends Pdf
             //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 4, utf8_decode("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - TOTAL À SEPARAR ==> $total"), 0, 1);
-            $this->SetFont('Arial','B',9);
 
-            $this->Cell(4, 5, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 1);
-            $this->Cell(4, 5, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 1);
-            $this->Cell(4, 5, utf8_decode("MAPA DE SEPARAÇÃO " . $mapa->getId()), 0, 1);
-            $this->SetFont('Arial','B',7);
-            //Go to 1.5 cm from bottom
-            $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
-
-            $this->SetFont('Arial','B',10);
-            $this->SetY(265);
-            $this->Cell(20, 2, utf8_decode("QUEBRAS: "), 0, 0);
-            $this->SetFont('Arial',null,10);
-            $this->Cell(20, 2, utf8_decode($this->quebrasEtiqueta), 0, 1);
-
-            $this->Image($imgCodBarras, 150, 280, 50);
-
-            //$this->SetY(-92);
-            $this->SetFont('Arial',null,10);
-            $this->SetXY(80,275);
-            $this->Cell(50, null, utf8_decode("TOTAL À SEPARAR : $total"), 0, 1);
-
-
+            $this->total = $total;
+            $this->imgCodBarras = $imgCodBarras;
+            $this->cubagemTotal = $cubagemTotal;
+            $this->pesoTotal = $pesoTotal;
+            $this->mapa = $mapa;
 
         }
 
@@ -331,5 +320,25 @@ class MapaSeparacao extends Pdf
 
     public function Footer()
     {
+
+        $wPage = $this->_getpagesize('A4')[0]/12;
+
+        $this->SetY(-23);
+        $this->SetFont('Arial','B',10);
+        $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+        $this->SetFont('Arial',null,10);
+        $this->Cell(130, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+        $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+
+        $this->SetFont('Arial','B',9);
+        $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->mapa->getId()), 0, 0);
+        $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1);
+        $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
+        $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+
+        $this->Image($this->imgCodBarras, 150, 280, 50);
+
+        //$this->SetY(-92);
+
     }
 }
