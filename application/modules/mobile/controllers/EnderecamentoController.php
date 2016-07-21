@@ -1193,7 +1193,5 @@ class Mobile_EnderecamentoController extends Action
 
         $this->_helper->json(array('caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
     }
-
-
 }
 
