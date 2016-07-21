@@ -261,9 +261,12 @@ class Mobile_EnderecamentoController extends Action
 
                 $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
                 foreach ($embalagens as $embalagemEn) {
-                    $caracteristicaEndAntigo = $embalagemEn->getEndereco()->getCaracteristica()->getId();
-                    if ($caracteristicaEndAntigo == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
-                        $this->createXml('error','Produto Ja cadastrado no Picking '.$embalagemEn->getEndereco()->getDescricao());
+                    $enderecoEmbalagem = $embalagemEn->getEndereco();
+                    if (isset($enderecoEmbalagem) && !empty($enderecoEmbalagem)) {
+                        $caracteristicaEndAntigo = $embalagemEn->getEndereco()->getCaracteristica()->getId();
+                        if ($caracteristicaEndAntigo == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                            $this->createXml('error','Produto Ja cadastrado no Picking '.$embalagemEn->getEndereco()->getDescricao());
+                        }
                     }
                     $embalagemEn->setEndereco($enderecoEn);
                     $this->getEntityManager()->persist($embalagemEn);
