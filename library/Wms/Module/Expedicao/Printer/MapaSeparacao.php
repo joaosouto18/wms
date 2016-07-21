@@ -231,7 +231,7 @@ class MapaSeparacao extends Pdf
 //            $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);
             $this->Cell(12, 5, utf8_decode("Quant.") ,1, 1);
             $this->Cell(20, 1, "", 0, 1);
-
+            $total = 0;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
@@ -260,13 +260,14 @@ class MapaSeparacao extends Pdf
                 $this->Cell(15, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
 //                $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
                 $this->Cell(15, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
+                $total += $produto->getQtdSeparar();
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                 $this->Cell(20, 1, "", 0, 1);
             }
 
             //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
             $this->SetFont('Arial',null,10);
-            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+            $this->Cell(20, 4, utf8_decode("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - TOTAL À SEPARAR ==> $total"), 0, 1);
             $this->SetFont('Arial','B',9);
 
             $this->Cell(4, 10, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 1);
@@ -282,9 +283,14 @@ class MapaSeparacao extends Pdf
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 20, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
-            //$this->SetY(-92);
-
             $this->Image($imgCodBarras, 150, 280, 50);
+
+            //$this->SetY(-92);
+            $this->SetFont('Arial',null,10);
+            $this->SetXY(80,275);
+            $this->MultiCell(50, null, utf8_decode("TOTAL À SEPARAR : $total"), 0, 1);
+
+
 
         }
 
