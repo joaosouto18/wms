@@ -1,8 +1,8 @@
 <script>
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetas[etiquetaInicial]').value != "") {
-                codBarrasFinal   = document.getElementById('etiquetas[etiquetaFinal]');
+            if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
+                codBarrasFinal   = document.getElementById('etiquetas-etiquetaFinal');
                 if (codBarrasFinal) {
                     codBarrasFinal.focus();
                     if(event.preventDefault) {
@@ -18,8 +18,8 @@
 
     function gotoPessoa(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetas[etiquetaFinal]').value != "") {
-                pessoa   = document.getElementById('pessoa');
+            if (document.getElementById('etiquetas-etiquetaFinal').value != "") {
+                pessoa   = document.getElementById('etiquetas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
 
@@ -33,6 +33,61 @@
         }
         return true;
     }
+
+    function gotoBuscar(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetas-pessoa').value != "") {
+                buscar   = document.getElementById('etiquetas-buscar');
+                if (buscar) {
+                    buscar.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function gotoPessoaMapa(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('mapas-codMapaSeparacao').value != "") {
+                pessoa   = document.getElementById('mapas-pessoa');
+                if (pessoa) {
+                    pessoa.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function gotoSalvarMapa(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('mapas-pessoa').value != "") {
+                buscar   = document.getElementById('mapas-salvarMapa');
+                if (buscar) {
+                    buscar.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     $(function () {
         $('#mapas-salvarMapa').click(function () {
             var mapa = $('#mapas-codMapaSeparacao').val();
