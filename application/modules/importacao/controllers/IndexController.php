@@ -561,7 +561,7 @@ class Importacao_IndexController extends Action
 
             $files = explode('-', $this->getRequest()->getParam('files'));
 
-            $arquivos = $impArquivoRepo->findBy(array('tabelaDestino' => $files), array('sequencia' => 'ASC'));
+            $arquivos = $impArquivoRepo->findBy(array('tabelaDestino' => $files, 'ativo' => 'S'), array('sequencia' => 'ASC'));
 
             $dtUltImp = null;
             /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
