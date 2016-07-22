@@ -24,6 +24,7 @@
         var nivel       = document.getElementById('nivel').value;
         var capacidadePicking = '';
         var countNivel = nivel.length;
+
         if (countNivel < 2) {
             nivel = '0'+nivel;
         }
@@ -190,7 +191,7 @@
 
     <div>
         <label>NÍVEL:</label>
-        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel" onkeydown="nextInputCapacidade() ">
+        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel" onkeyup="nextInputCapacidade() ">
         <input type="hidden" value="" id="uma-nivel" name="uma">
         <input type="hidden" value="" id="rua-nivel" name="rua">
         <input type="hidden" value="" id="predio-nivel" name="predio">
