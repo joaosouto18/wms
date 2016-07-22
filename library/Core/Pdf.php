@@ -67,7 +67,7 @@ class Pdf
     private $AutoPageBreak;      // automatic page breaking
     private $PageBreakTrigger;   // threshold used to trigger page breaks
     private $InHeader;           // flag set when processing header
-    private $InFooter;           // flag set when processing footer
+    protected $InFooter;           // flag set when processing footer
     private $ZoomMode;           // zoom display mode
     private $LayoutMode;         // layout display mode
     private $title;              // title

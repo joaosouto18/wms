@@ -97,7 +97,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
             $this->Cell(20, 1, "", 0, 1);
 
-            $count = 0;
+
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial',  null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
@@ -116,10 +116,7 @@ class MapaSeparacao extends Pdf
                 $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                 $this->Cell(20, 1, "", 0, 1);
-                $count += 1;
-                if ($count > 38){
-                    $this->AddPage();
-                }
+
             }
 
             $this->SetFont('Arial',null,10);
@@ -238,6 +235,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(12, 5, utf8_decode("Quant.") ,1, 1);
             $this->Cell(20, 1, "", 0, 1);
             $total = 0;
+            
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
@@ -280,6 +278,25 @@ class MapaSeparacao extends Pdf
             $this->cubagemTotal = $cubagemTotal;
             $this->pesoTotal = $pesoTotal;
             $this->mapa = $mapa;
+            
+            $this->InFooter = true;
+            $wPage = $this->_getpagesize('A4')[0]/12;
+
+            $this->SetY(-23);
+            $this->SetFont('Arial','B',10);
+            $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial',null,10);
+            $this->Cell(130, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+            $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+
+            $this->SetFont('Arial','B',9);
+            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+
+            $this->Image($this->imgCodBarras, 150, 280, 50);
+            $this->InFooter = false;
 
         }
 
@@ -320,25 +337,5 @@ class MapaSeparacao extends Pdf
 
     public function Footer()
     {
-
-        $wPage = $this->_getpagesize('A4')[0]/12;
-
-        $this->SetY(-23);
-        $this->SetFont('Arial','B',10);
-        $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
-        $this->SetFont('Arial',null,10);
-        $this->Cell(130, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
-        $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
-
-        $this->SetFont('Arial','B',9);
-        $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->mapa->getId()), 0, 0);
-        $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1);
-        $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
-        $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
-
-        $this->Image($this->imgCodBarras, 150, 280, 50);
-
-        //$this->SetY(-92);
-
     }
 }
