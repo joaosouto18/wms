@@ -1187,9 +1187,8 @@ class Mobile_EnderecamentoController extends Action
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $$embalagemRepo */
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $dscEndereco = $this->getEnderecoByParametro($this->_getParam('endereco'));
 
-        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco[0]['DSC_DEPOSITO_ENDERECO']));
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco));
         $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
 
         $this->_helper->json(array('caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
