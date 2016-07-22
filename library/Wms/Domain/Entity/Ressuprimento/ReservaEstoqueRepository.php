@@ -303,7 +303,7 @@ class ReservaEstoqueRepository extends EntityRepository
         $paleteEn = $paleteRepo->findOneBy(array('id'=>$idUMA));
         if ($paleteEn == NULL) {throw new \Exception("UMA $idUMA não encontrada"); }
 
-        $reservaEstoqueUma = $reservaEstoqueUmaRepo->findOneBy(array('palete' => $idUMA));
+        $reservaEstoqueUma = $reservaEstoqueUmaRepo->findOneBy(array('palete' => $paleteEn));
         if ($reservaEstoqueUma != NULL) {throw new \Exception("UMA $idUMA já possui uma reserva de entrada");}
 
         $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,$tipoReserva,$usuarioReserva,$observacoes);
