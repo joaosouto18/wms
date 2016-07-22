@@ -41,7 +41,7 @@ class MapaSeparacao extends Pdf
 
 
         foreach ($mapaSeparacao as $mapa) {
-            $produtos = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
+            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
             $quebras = $mapa->getDscQuebra();
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
@@ -160,7 +160,7 @@ class MapaSeparacao extends Pdf
 
 
         foreach ($mapaSeparacao as $mapa) {
-            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
+            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
             $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
             $pedidoProduto = $produtos[0]->getPedidoProduto();
             $carga = '';
@@ -278,7 +278,9 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 20, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
             //$this->SetY(-92);
-            $this->Image(@CodigoBarras::gerarNovo($mapa->getId()), 150, 280, 50);
+            $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
+            $this->Image($imgCodBarras, 150, 280, 50);
+            $this->Image($imgCodBarras, 154 , 18, 50);
 
         }
 

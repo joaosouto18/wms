@@ -9,6 +9,9 @@ defined('PHPEXCEL_PATH')
 defined('DATA_PATH')
 || define('DATA_PATH', realpath(dirname(__FILE__) . '/../data'));
 
+defined('CACHE_PATH')
+|| define('CACHE_PATH', realpath(dirname(__FILE__) . '/../cache'));
+
 // Define application environment
 defined('APPLICATION_ENV')
 || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));

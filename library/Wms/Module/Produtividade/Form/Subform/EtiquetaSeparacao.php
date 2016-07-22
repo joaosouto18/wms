@@ -35,11 +35,6 @@ class EtiquetaSeparacao extends SubForm
                 'decorators' => array('ViewHelper'),
                 'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
             ))
-            ->addElement('submit', 'submit', array(
-                'label' => 'Vincular',
-                'class' => 'btn',
-                'decorators' => array('ViewHelper'),
-            ))
             ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar','submit'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
 
     }

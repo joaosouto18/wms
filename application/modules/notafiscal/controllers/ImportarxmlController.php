@@ -261,11 +261,22 @@ class Notafiscal_ImportarxmlController extends Crud
                         )
                    ";
 
+                $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
+                list($arrayReferencia, $arrayCodFornecedores) = $this->getCodigoFornecedorEReferencia($codigoProdutoNF);
+
                 $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
                 if ( !empty($array[0]['COD_PRODUTO']) ){
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                } elseif ( !empty($arrayReferencia[0]['COD_PRODUTO'])){
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $arrayReferencia[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $arrayReferencia[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $arrayReferencia[0]['QTD_EMBALAGEM'];
+                } elseif (!empty($arrayCodFornecedores[0]['COD_PRODUTO'])) {
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $arrayCodFornecedores[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $arrayCodFornecedores[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $arrayCodFornecedores[0]['QTD_EMBALAGEM'];
                 } else {
                     $this->isValid=false;
                     $ean = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cEAN'];
@@ -309,26 +320,12 @@ class Notafiscal_ImportarxmlController extends Crud
             else if ($filiaLInterna == false) {
 
                 $codigoProdutoNF = $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['cProd'];
-                $sql = "
-                SELECT P.COD_PRODUTO, P.DSC_GRADE, PE.QTD_EMBALAGEM
-                    FROM PRODUTO P
-                    LEFT JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
-                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = FR.COD_PRODUTO_EMBALAGEM
-                    WHERE P.DSC_REFERENCIA = '$codigoProdutoNF'
-                ";
-                $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                list($arrayReferencia, $arrayCodFornecedores) = $this->getCodigoFornecedorEReferencia($codigoProdutoNF);
 
-                $sql2 = "SELECT P.COD_PRODUTO, P.DSC_GRADE, PE.QTD_EMBALAGEM
-                        FROM PRODUTO P INNER JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
-                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = FR.COD_PRODUTO_EMBALAGEM
-                        WHERE FR.DSC_REFERENCIA = '$codigoProdutoNF' ";
-
-                $arrayCodFornecedores =$this->em->getConnection()->query($sql2)->fetchAll(\PDO::FETCH_ASSOC);
-
-                if ( !empty($array[0]['COD_PRODUTO'])){
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $array[0]['COD_PRODUTO'];
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $array[0]['DSC_GRADE'];
-                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $array[0]['QTD_EMBALAGEM'];
+                if ( !empty($arrayReferencia[0]['COD_PRODUTO'])){
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $arrayReferencia[0]['COD_PRODUTO'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $arrayReferencia[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $arrayReferencia[0]['QTD_EMBALAGEM'];
                 } elseif (!empty($arrayCodFornecedores[0]['COD_PRODUTO'])) {
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $arrayCodFornecedores[0]['COD_PRODUTO'];
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $arrayCodFornecedores[0]['DSC_GRADE'];
@@ -389,6 +386,32 @@ class Notafiscal_ImportarxmlController extends Crud
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param $codigoProdutoNF
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function getCodigoFornecedorEReferencia($codigoProdutoNF)
+    {
+        $sql = "
+                SELECT P.COD_PRODUTO, P.DSC_GRADE, PE.QTD_EMBALAGEM
+                    FROM PRODUTO P
+                    LEFT JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
+                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = FR.COD_PRODUTO_EMBALAGEM
+                    WHERE P.DSC_REFERENCIA = '$codigoProdutoNF'
+                ";
+        $arrayReferencia = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $sql2 = "SELECT P.COD_PRODUTO, P.DSC_GRADE, PE.QTD_EMBALAGEM
+                        FROM PRODUTO P INNER JOIN FORNECEDOR_REFERENCIA FR ON FR.ID_PRODUTO = P.ID_PRODUTO
+                        LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = FR.COD_PRODUTO_EMBALAGEM
+                        WHERE FR.DSC_REFERENCIA = '$codigoProdutoNF' ";
+
+        $arrayCodFornecedores = $this->em->getConnection()->query($sql2)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return array($arrayReferencia, $arrayCodFornecedores);
     }
 
 }
