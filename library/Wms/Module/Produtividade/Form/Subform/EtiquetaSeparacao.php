@@ -19,7 +19,8 @@ class EtiquetaSeparacao extends SubForm
         ))
             ->addElement('cpf', 'pessoa', array(
                 'size' => 15,
-                'label' => utf8_encode('CPF Conferente'),
+                'label' => 'CPF Conferente',
+                'style' => 'width:185px;'
             ))
             ->addElement('text', 'etiquetaInicial', array(
                 'size' => 15,
@@ -35,7 +36,7 @@ class EtiquetaSeparacao extends SubForm
                 'decorators' => array('ViewHelper'),
                 'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
             ))
-            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar','submit'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
+            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
 
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
