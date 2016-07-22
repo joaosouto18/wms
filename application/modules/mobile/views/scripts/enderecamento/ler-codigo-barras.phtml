@@ -23,8 +23,9 @@
         var apartamento = document.getElementById('apartamento-nivel').value;
         var nivel       = document.getElementById('nivel').value;
         var capacidadePicking = '';
-        if (nivel == '0' || nivel == '') {
-            nivel = '00';
+        var countNivel = nivel.length;
+        if (countNivel < 2) {
+            nivel = '0'+nivel;
         }
 
         $.ajax({
