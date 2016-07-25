@@ -1,3 +1,6 @@
+/* Rode primeiro essa linha, caso de problema de unique key, significa que esse arquivo .sql já foi executado anteriormente */
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '3.8.1', 'embalagemPadraoFornecedor.sql');
+
 ALTER TABLE FORNECEDOR_REFERENCIA ADD COD_PRODUTO_EMBALAGEM NUMBER(8,0);
 
 ALTER TABLE FORNECEDOR_REFERENCIA
@@ -11,4 +14,3 @@ REFERENCES PRODUTO_EMBALAGEM
   )
 ENABLE;
 
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '3.8.1', 'embalagemPadraoFornecedor.sql');

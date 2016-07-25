@@ -37,8 +37,9 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
                 $codProduto = $codigoBarras;
             }
 
+            $preco = $this->getPrecoView($codProduto);
             $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'codProduto' => $codProduto));
-            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS);
+            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
             $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
@@ -49,7 +50,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setOs($os['osEntity']);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
+            $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
         }
 
@@ -69,7 +70,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 
             if (count($result) == 0)
             {
-                $this->addFlashMessage('error', 'Nenhum produto encontrado para este picking');
+                $this->addFlashMessage('error', 'Nenhum produto encontrado para este endereço');
                 $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
             }
 
@@ -78,6 +79,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 
             $codProduto = $result[0]['codProduto'];
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
+            $preco = $this->getPrecoView($codProduto);
 
             $enderecoEn = $enderecoRepo->find($idEndereco);
             $os = $this->getOs($codOS);
@@ -89,7 +91,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setQtd($qtd);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso');
+            $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
         }
 
@@ -119,13 +121,13 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         );
     }
 
-    protected function somaConferenciaRepetida($reabastEnt, $qtd, $codOS)
+    protected function somaConferenciaRepetida($reabastEnt, $qtd, $codOS, $preco)
     {
         if ($reabastEnt && $qtd && $codOS) {
             $reabastEnt->setQtd($qtd + $reabastEnt->getQtd());
             $this->em->persist($reabastEnt);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:'.$codOS);
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:'.$codOS.' Preço:'.$preco);
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
     }
@@ -141,6 +143,26 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/');
         }
 
+    }
+
+    /**
+     * @param $codProduto
+     * @return string
+     */
+    private function getPrecoView($codProduto)
+    {
+        $config = \Zend_Registry::get('config');
+        $viewErp = $config->database->viewErp->habilitado;
+        $preco = 'Não disponível';
+        if ($viewErp) {
+            $conexao = EntityRepository::conexaoViewERP();
+            $query = "select PRECO from FN_GET_PROD_IMPERIUM where CODPROD = $codProduto";
+            $precoResult = EntityRepository::nativeQuery($query, 'all', $conexao);
+            if (!empty($precoResult)) {
+                $preco = $precoResult[0]['PRECO'];
+            }
+        }
+        return $preco;
     }
 
 }

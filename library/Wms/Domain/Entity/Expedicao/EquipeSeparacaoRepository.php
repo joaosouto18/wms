@@ -20,5 +20,5 @@ class EquipeSeparacaoRepository extends EntityRepository
         $this->getEntityManager()->persist($equipeSeparacao);
         $this->getEntityManager()->flush();
     }
-    
+
 }

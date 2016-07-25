@@ -246,6 +246,17 @@ class Expedicao_IndexController extends Action
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
         $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
 
+        foreach ($result as $key => $resultado) {
+            if ($key + 1 == count($result)) {
+                $result[$key + 1]['VOLUME'] = null;
+                $result[$key + 1]['DESCRIÇÃO'] = null;
+                $result[$key + 1]['ITINERÁRIO'] = null;
+                $result[$key + 1]['CLIENTE'] = 'TOTAL DE CAIXAS FECHADAS';
+                $result[$key + 1]['QTD_CAIXA'] = $result[$key]['QTD_CAIXA'];
+            }
+            $result[$key]['QTD_CAIXA'] = null;
+        }
+
         $this->exportPDF($result,'volume-patrimonio','Relatório de Volumes Patrimônio da Expedição '.$idExpedicao,'L');
     }
 
@@ -313,8 +324,10 @@ class Expedicao_IndexController extends Action
                     if (is_null($etiquetaInicial))
                         $etiquetaInicial = $etiquetaFinal;
 
+                    $equipeSeparacaoEn = $equipeSeparacaoRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(),'etiquetaInicial' => $etiquetaInicial, 'etiquetaFinal' => $etiquetaFinal));
                     //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
-                    $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
+                    if (!isset($equipeSeparacaoEn) || empty($equipeSeparacaoEn))
+                        $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
 
                 } elseif ($params['tipo'] == 'Mapas') {
                     $cpf = str_replace(array('.','-'),'',$params['cpf']);
@@ -329,9 +342,10 @@ class Expedicao_IndexController extends Action
                     if (is_null($mapaSeparacaoEn))
                         throw new \Exception('Mapa de Separação não encontrado!');
 
-                    $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
+                    $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
+                    if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
+                        $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
                 }
-
             }
 
         } catch (\Exception $e) {
