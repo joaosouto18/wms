@@ -379,7 +379,14 @@ class Expedicao_IndexController extends Action
 
     public function relatorioCodigoBarrasProdutosAction()
     {
-        var_dump('ok');
+        $idExpedicao     = $this->_getParam('id',0);
+        $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\EtiquetaCodigoBarras();
+        $result = $gerarEtiqueta->init($idExpedicao);
+
+
+//        $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
+//        $mapa->codigoBarrasProdutosByExpedicao($idExpedicao);
+
     }
 
     public function acertarReservaEstoqueAjaxAction()

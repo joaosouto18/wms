@@ -6,6 +6,7 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
+use Wms\Util\Barcode\Barcode;
 
 class MapaSeparacao extends Pdf
 {
