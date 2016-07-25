@@ -158,8 +158,6 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $conexao = \Wms\Domain\EntityRepository::conexaoViewERP();
             $query = "select PRECO from FN_GET_PROD_IMPERIUM where CODPROD = $codProduto";
             $precoResult = \Wms\Domain\EntityRepository::nativeQuery($query, 'all', $conexao);
-            var_dump($precoResult);
-            exit;
             if (!empty($precoResult)) {
                 $preco = $precoResult[0]['PRECO'];
             }
