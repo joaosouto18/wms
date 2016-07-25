@@ -17,7 +17,7 @@
 
     </tr>
 </table>
-<table class="gTable ">
+<table class="gTable" style="<?php echo ($this->pedidoCompleto == 'S') ? 'visibility:hidden' : '' ?>">
     <tbody>
 
     <?php
@@ -83,7 +83,8 @@
                             $idPedido = $pedido['COD_PEDIDO'];
                             $idProduto = $item['COD_PRODUTO'];
                             $grade = $item['DSC_GRADE'];
-                            echo "<input type=\"text\" name=\"qtdCorte[" . $idPedido . "][".$idProduto."][" . $grade ."]\" id=\"qtdConferida-" . $idPedido ."-" .$idProduto . "-" . $grade . "\" value=\"0\" size=\"8\" validators=\"numeric\" alt=\"number\" class=\"qtdCorte valid\" title=\"[".$idPedido ."][" . $idProduto . "][" . $grade . "]\">";
+                            $qtdCorte = ($this->pedidoCompleto == 'S') ? $item['QTD_PEDIDO'] : '';
+                            echo "<input type=\"text\" name=\"qtdCorte[" . $idPedido . "][".$idProduto."][" . $grade ."]\" id=\"qtdConferida-" . $idPedido ."-" .$idProduto . "-" . $grade . "\" value=\"$qtdCorte\" size=\"8\" validators=\"numeric\" alt=\"number\" class=\"qtdCorte valid\" title=\"[".$idPedido ."][" . $idProduto . "][" . $grade . "]\">";
                         ?></td>
                     </tr>
                 <?php } ?>
