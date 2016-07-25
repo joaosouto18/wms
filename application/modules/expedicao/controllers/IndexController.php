@@ -246,17 +246,6 @@ class Expedicao_IndexController extends Action
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
         $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
 
-        /*foreach ($result as $key => $resultado) {
-            if ($key + 1 == count($result)) {
-                $result[$key + 1]['VOLUME'] = null;
-                $result[$key + 1]['DESCRICAO'] = null;
-                $result[$key + 1]['ITINERARIO'] = null;
-                $result[$key + 1]['CLIENTE'] = 'TOTAL DE CAIXAS FECHADAS';
-                $result[$key + 1]['QTD_CAIXA'] = $result[$key]['QTD_CAIXA'];
-            }
-            $result[$key]['QTD_CAIXA'] = null;
-        }*/
-
         $this->exportPDF($result,'volume-patrimonio','Relatório de Volumes Patrimônio da Expedição '.$idExpedicao,'L');
     }
 
@@ -343,8 +332,6 @@ class Expedicao_IndexController extends Action
                     $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
                 }
 
-//                $this->addFlashMessage('success', 'Todas as etiquetas foram salvas com sucesso!');
-//                $this->_redirect('expedicao/index/apontamento-separacao');
             }
 
         } catch (\Exception $e) {
@@ -374,6 +361,11 @@ class Expedicao_IndexController extends Action
         $grid = new \Wms\Module\Expedicao\Grid\EquipeCarregamento();
         $this->view->grid = $grid->init($params)
             ->render();
+    }
+
+    public function relatorioCodigoBarrasProdutosAction()
+    {
+        var_dump('ok');
     }
 
     public function acertarReservaEstoqueAjaxAction()
