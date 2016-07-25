@@ -155,7 +155,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         $viewErp = $config->database->viewErp->habilitado;
         $preco = 'Não disponível';
         if ($viewErp) {
-            $conexao = EntityRepository::conexaoViewERP();
+            $conexao = \Wms\Domain\EntityRepository::conexaoViewERP();
             $query = "select PRECO from FN_GET_PROD_IMPERIUM where CODPROD = $codProduto";
             $precoResult = \Wms\Domain\EntityRepository::nativeQuery($query, 'all', $conexao);
             if (!empty($precoResult)) {
