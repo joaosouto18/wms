@@ -154,8 +154,6 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         $config = \Zend_Registry::get('config');
         $viewErp = $config->database->viewErp->habilitado;
         $preco = 'Não disponível';
-        var_dump($viewErp);
-        exit;
         if ($viewErp) {
             $conexao = EntityRepository::conexaoViewERP();
             $query = "select PRECO from FN_GET_PROD_IMPERIUM where CODPROD = $codProduto";
