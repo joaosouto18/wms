@@ -303,7 +303,7 @@ class ReservaEstoqueRepository extends EntityRepository
         $paleteEn = $paleteRepo->findOneBy(array('id'=>$idUMA));
         if ($paleteEn == NULL) {throw new \Exception("UMA $idUMA não encontrada"); }
 
-        $reservaEstoqueUma = $reservaEstoqueUmaRepo->findOneBy(array('palete' => $idUMA));
+        $reservaEstoqueUma = $reservaEstoqueUmaRepo->findOneBy(array('palete' => $paleteEn));
         if ($reservaEstoqueUma != NULL) {throw new \Exception("UMA $idUMA já possui uma reserva de entrada");}
 
         $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,$tipoReserva,$usuarioReserva,$observacoes);
@@ -388,7 +388,8 @@ class ReservaEstoqueRepository extends EntityRepository
                             ELSE 'SAÍDA'
                        END AS TIPO,
                        REP.QTD_RESERVADA,
-                       REEXP.COD_PEDIDO
+                       REEXP.COD_PEDIDO,
+                       DE.DSC_DEPOSITO_ENDERECO
                   FROM RESERVA_ESTOQUE RE
                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN RESERVA_ESTOQUE_ENDERECAMENTO REEND ON REEND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
@@ -396,12 +397,12 @@ class ReservaEstoqueRepository extends EntityRepository
                   LEFT JOIN RESERVA_ESTOQUE_ONDA_RESSUP REOND ON REOND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
 				  LEFT JOIN ONDA_RESSUPRIMENTO_OS OOS ON OOS.COD_ONDA_RESSuPRIMENTO_OS = REOND.COD_ONDA_RESSUPRIMENTO_OS
                   LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REEXP ON REEXP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                  WHERE RE.IND_ATENDIDA = 'N'";
 
         $idVolume = $params['idVolume'];
         $idProduto = $params['idProduto'];
         $grade = $params['grade'];
-        $idEndereco = $params['idEndereco'];
 
         if ($idVolume == "0") {
             $SQL .= " AND REP.COD_PRODUTO = '" . $idProduto. "' ";
@@ -409,7 +410,9 @@ class ReservaEstoqueRepository extends EntityRepository
         }else {
             $SQL .= " AND REP.COD_PRODUTO_VOLUME = '" . $idVolume. "' ";
         }
-        $SQL .= " AND RE.COD_DEPOSITO_ENDERECO = '" . $idEndereco. "' ";
+        if (isset($params['idEndereco']) && !empty($params['idEndereco'])) {
+            $SQL .= " AND RE.COD_DEPOSITO_ENDERECO = '" . $params['idEndereco']. "' ";
+        }
         $result = $this->getEntityManager()->getConnection()->query($SQL . " ORDER BY RE.DTH_RESERVA ")->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
 

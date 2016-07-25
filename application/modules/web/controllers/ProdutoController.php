@@ -203,7 +203,7 @@ class Web_ProdutoController extends Crud {
                 $andamentoRepo->save($params['id'], $params['grade'], false, 'Produto alterado com sucesso.');
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
-                $this->_redirect('/produto/edit/id/'.$params['id'].'/grade/'.$params['grade']);
+                $this->_redirect('/produto');
 
             }
             $form->setDefaultsFromEntity($entity); // pass values to form

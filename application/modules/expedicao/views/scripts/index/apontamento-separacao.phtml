@@ -1,8 +1,8 @@
 <script>
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetas[etiquetaInicial]').value != "") {
-                codBarrasFinal   = document.getElementById('etiquetas[etiquetaFinal]');
+            if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
+                codBarrasFinal   = document.getElementById('etiquetas-etiquetaFinal');
                 if (codBarrasFinal) {
                     codBarrasFinal.focus();
                     if(event.preventDefault) {
@@ -18,8 +18,8 @@
 
     function gotoPessoa(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetas[etiquetaFinal]').value != "") {
-                pessoa   = document.getElementById('pessoa');
+            if (document.getElementById('etiquetas-etiquetaFinal').value != "") {
+                pessoa   = document.getElementById('etiquetas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
 
@@ -33,6 +33,61 @@
         }
         return true;
     }
+
+    function gotoBuscar(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetas-pessoa').value != "") {
+                buscar   = document.getElementById('etiquetas-buscar');
+                if (buscar) {
+                    buscar.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function gotoPessoaMapa(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('mapas-codMapaSeparacao').value != "") {
+                pessoa   = document.getElementById('mapas-pessoa');
+                if (pessoa) {
+                    pessoa.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function gotoSalvarMapa(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('mapas-pessoa').value != "") {
+                buscar   = document.getElementById('mapas-salvarMapa');
+                if (buscar) {
+                    buscar.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     $(function () {
         $('#mapas-salvarMapa').click(function () {
             var mapa = $('#mapas-codMapaSeparacao').val();
@@ -42,7 +97,7 @@
                 alert("Informe um CPF");
                 return false;
             } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inválido");
+                alert("CPF incompleto ou invï¿½lido");
                 return false;
             }
 
@@ -77,7 +132,7 @@
             if (eI != '' && eF != '') {
 
                 if (eI.length < 2 || eF.length < 2) {
-                    alert("Etiqueta fora do padrão");
+                    alert("Etiqueta fora do padrï¿½o");
                     return false;
                 }
 
@@ -85,7 +140,7 @@
                 eF = parseInt(eF.substring(0, eF.length - 1));
 
                 if (eI > eF) {
-                    alert("A etiqueta inicial não pode ser maior que a final.");
+                    alert("A etiqueta inicial nï¿½o pode ser maior que a final.");
                     return false;
                 } else if (eI == eF){
                     qtdEtiquetas = 1;
@@ -96,10 +151,10 @@
                 }
 
             } else if (eI != "" && eF == "") {
-                alert("Não é possível definir o intervalo sem a etiqueta final");
+                alert("Nï¿½o ï¿½ possï¿½vel definir o intervalo sem a etiqueta final");
                 return false;
             } else if (eI == "" && eF != "") {
-                alert("Não é possível definir o intervalo sem a etiqueta inicial");
+                alert("Nï¿½o ï¿½ possï¿½vel definir o intervalo sem a etiqueta inicial");
                 return false;
             }
 
@@ -109,7 +164,7 @@
                 alert("Informe um CPF");
                 return false;
             } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inválido");
+                alert("CPF incompleto ou invï¿½lido");
                 return false;
             }
 
@@ -140,9 +195,6 @@
                     success: function (data) {
                         alert('Todas as etiquetas foram salvas com sucesso!');
                         window.location.href = 'apontamento-separacao';
-
-//                $this->addFlashMessage('success', 'Todas as etiquetas foram salvas com sucesso!');
-//                $this->_redirect('expedicao/index/apontamento-separacao');
                     }
 
                 });
@@ -163,7 +215,7 @@ echo $this->form;
             <td width="20%">CPF</td>
             <td width="15%">Inicial/Final</td>
             <td width="15%">Qtd. Etiquetas</td>
-            <td width="15%">Tipo Conferência</td>
+            <td width="15%">Tipo Conferï¿½ncia</td>
         </tr>
         <tbody id="tbResult">
         </tbody>

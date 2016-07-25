@@ -15,47 +15,37 @@ class PaleteRepository extends EntityRepository
     {
         extract($params);
 
-        $query = "SELECT QTD.QTD QTD_TOTAL, NFI.COD_PRODUTO, NFI.DSC_GRADE, PRQ.QTD_ENDERECAMENTO, R.COD_RECEBIMENTO,
-                    TO_CHAR(R.DTH_INICIO_RECEB,'DD/MM/YYYY') as DTH_INICIO_RECEB,
-                    TO_CHAR(R.DTH_FINAL_RECEB, 'DD/MM/YYYY') as DTH_FINAL_RECEB,
-                    S.DSC_SIGLA, MAX(NF.COD_FORNECEDOR) COD_FORNECEDOR, MAX(FORNECEDOR.NOM_PESSOA) FORNECEDOR,
-                    NVL(PRQ.QTD_ENDERECAMENTO,0) as QTD_ENDERECAMENTO, NVL(PRE.QTD_ENDERECADO,0) as QTD_ENDERECADO,
-                    NVL(PRQ.QTD_ENDERECAMENTO,0) - NVL(QTD.QTD,0) as QTD_RECEBIMENTO
-                    FROM RECEBIMENTO R
-                    LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-                    LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
-                    LEFT JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
-                    LEFT JOIN (
-                      SELECT PJ.COD_PESSOA, P.NOM_PESSOA
-                      FROM PESSOA_JURIDICA PJ
-                      INNER JOIN PESSOA P ON PJ.COD_PESSOA = P.COD_PESSOA) FORNECEDOR ON F.COD_FORNECEDOR = FORNECEDOR.COD_PESSOA
-                    RIGHT JOIN (
-                      SELECT VR.QTD QTD, VR.COD_RECEBIMENTO, NFI.COD_PRODUTO, NFI.DSC_GRADE
-                      FROM RECEBIMENTO R
-                      RIGHT JOIN NOTA_FISCAL NF ON NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-                      RIGHT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
-                      RIGHT JOIN V_QTD_RECEBIMENTO VR ON VR.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND VR.COD_PRODUTO = NFI.COD_PRODUTO AND VR.DSC_GRADE = NFI.DSC_GRADE
-
-                      GROUP BY VR.COD_RECEBIMENTO, NFI.COD_PRODUTO, NFI.DSC_GRADE, VR.QTD
-                      ) QTD ON QTD.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD.COD_PRODUTO = NFI.COD_PRODUTO AND QTD.DSC_GRADE = NFI.DSC_GRADE
-                    LEFT JOIN (
-                      SELECT SUM(QTD) as QTD_ENDERECAMENTO, PP.COD_PRODUTO, PP.DSC_GRADE
-                      FROM PALETE_PRODUTO PP
-                      INNER JOIN PALETE P ON P.UMA = PP.UMA
-                      LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
-                      WHERE P.COD_STATUS = 536
-                      GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PRQ ON PRQ.COD_PRODUTO = NFI.COD_PRODUTO AND PRQ.DSC_GRADE = NFI.DSC_GRADE
-                    LEFT JOIN (
-                      SELECT SUM(QTD) as QTD_ENDERECADO, PP.COD_PRODUTO, PP.DSC_GRADE
-                      FROM PALETE_PRODUTO PP
-                      INNER JOIN PALETE P ON P.UMA = PP.UMA
-                      LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
-                      WHERE P.COD_STATUS = 536
-                      GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PRE ON PRE.COD_PRODUTO = NFI.COD_PRODUTO AND PRE.DSC_GRADE = NFI.DSC_GRADE
-                    LEFT JOIN SIGLA S ON R.COD_STATUS = S.COD_SIGLA
-                    LEFT JOIN PALETE PA ON R.COD_RECEBIMENTO = PA.COD_RECEBIMENTO
-
-        ";
+        $query = "
+        SELECT R.COD_RECEBIMENTO,
+               R.DTH_INICIO_RECEB,
+               R.DTH_FINAL_RECEB,
+               F.FORNECEDORES,
+               CASE WHEN R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
+               S.DSC_SIGLA END as STATUS,
+               QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
+               NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
+               ROUND(NVL(QTD_END.QTD,0)/QTD_TOTAL.QTD_TOTAL * 100,2) as PERCENTUAL
+          FROM RECEBIMENTO R
+          LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
+          LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
+                       FROM (SELECT MIN (QTD) as QTD, COD_RECEBIMENTO
+                               FROM V_QTD_RECEBIMENTO
+                              GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
+                      GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+          LEFT JOIN (SELECT SUM(PP.QTD) as QTD, P.COD_RECEBIMENTO
+                       FROM (SELECT MIN(QTD) as QTD, COD_PRODUTO, DSC_GRADE, UMA 
+                               FROM (SELECT SUM(PP.QTD) as QTD, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM), PP.UMA
+                                       FROM PALETE_PRODUTO PP
+                                      GROUP BY PP.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM))
+                              GROUP BY COD_PRODUTO, DSC_GRADE, UMA) PP
+                      LEFT JOIN PALETE P ON P.UMA = PP.UMA
+                     WHERE P.COD_STATUS = 536
+                     GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+          LEFT JOIN (SELECT NF.COD_RECEBIMENTO,
+                            LISTAGG(P.NOM_PESSOA, ', ')  WITHIN GROUP (ORDER BY P.NOM_PESSOA) FORNECEDORES
+                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_FORNECEDOR FROM NOTA_FISCAL) NF
+                       LEFT JOIN PESSOA P ON NF.COD_FORNECEDOR = P.COD_PESSOA
+                      GROUP BY NF.COD_RECEBIMENTO) F ON F.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
 
         $queryWhere = " WHERE ";
         $filter = false;
@@ -98,40 +88,14 @@ class PaleteRepository extends EntityRepository
 
         if (isset($uma) && (!empty($uma))) {
             if ($filter == true) {$queryWhere = $queryWhere . " AND ";}
-            $queryWhere = $queryWhere . " PA.UMA = $uma";
+            $queryWhere = $queryWhere . " R.COD_RECEBIMENTO IN (SELECT COD_RECEBIMENTO FROM PALETE WHERE UMA = $uma)";
             $filter = true;
         }
 
-        if ($filter == true) {$query = $query . $queryWhere . " GROUP BY QTD.QTD, NFI.COD_PRODUTO, NFI.DSC_GRADE,
-                    PRQ.QTD_ENDERECAMENTO, R.COD_RECEBIMENTO, R.DTH_INICIO_RECEB,
-                    R.DTH_FINAL_RECEB, S.DSC_SIGLA, PRQ.QTD_ENDERECAMENTO, PRE.QTD_ENDERECADO
-                    ORDER BY R.COD_RECEBIMENTO ASC";}
+        if ($filter == true) {$query = $query . $queryWhere;}
 
         $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-        $resultadoFinal = array();
-
-        foreach ($array as $recebimento) {
-            if (!array_key_exists($recebimento['COD_RECEBIMENTO'], $resultadoFinal)) {
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']] = array();
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['COD_RECEBIMENTO'] = $recebimento['COD_RECEBIMENTO'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DTH_INICIO_RECEB'] = $recebimento['DTH_INICIO_RECEB'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DTH_FINAL_RECEB'] = $recebimento['DTH_FINAL_RECEB'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['DSC_SIGLA'] = $recebimento['DSC_SIGLA'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['COD_FORNECEDOR'] = $recebimento['COD_FORNECEDOR'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['FORNECEDOR'] = $recebimento['FORNECEDOR'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] = $recebimento['QTD_TOTAL'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] = $recebimento['QTD_ENDERECAMENTO'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] = $recebimento['QTD_ENDERECADO'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] = $recebimento['QTD_RECEBIMENTO'];
-            } else {
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_TOTAL'] + $recebimento['QTD_TOTAL'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECAMENTO'] + $recebimento['QTD_ENDERECAMENTO'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_ENDERECADO'] + $recebimento['QTD_ENDERECADO'];
-                $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] = $resultadoFinal[$recebimento['COD_RECEBIMENTO']]['QTD_RECEBIMENTO'] + $recebimento['QTD_RECEBIMENTO'];
-            }
-        }
-
-        return $resultadoFinal;
+        return $array;
 
     }
 

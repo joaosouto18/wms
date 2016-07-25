@@ -29,9 +29,13 @@ class Listagem extends Grid
                 ->setId('enderecamento-index-grid')
                 ->setAttrib('class', 'grid-enderecamento-listagem')
                 ->addColumn(array(
-                    'label' => 'Código do Recebimento',
+                    'label' => 'Recebimento',
                     'index' => 'COD_RECEBIMENTO',
                 ))
+            ->addColumn(array(
+                'label' => 'Fornecedor',
+                'index' => 'FORNECEDORES',
+            ))
                 ->addColumn(array(
                     'label' => 'Data Inicial',
                     'index' => 'DTH_INICIO_RECEB',
@@ -42,24 +46,21 @@ class Listagem extends Grid
                 ))
                 ->addColumn(array(
                     'label' => 'Status',
-                    'index' => 'DSC_SIGLA',
-                ))
-                ->addColumn(array(
-                    'label' => 'Qtd.Recebimento',
-                    'index' => 'QTD_RECEBIMENTO'
-                ))
-                ->addColumn(array(
-                    'label' => 'Qtd.Endereçamento',
-                    'index' => 'QTD_ENDERECAMENTO',
+                    'index' => 'STATUS',
                 ))
                 ->addColumn(array(
                     'label' => 'Qtd.Total',
-                    'index' => 'QTD_TOTAL',
+                    'index' => 'QTD_RECEBIDA',
                 ))
-               ->addColumn(array(
-                   'label' => 'Fornecedor',
-                    'index' => 'FORNECEDOR',
-               ))
+                ->addColumn(array(
+                    'label' => 'Qtd.Endereçada',
+                    'index' => 'QTD_ENDERECADA',
+                ))
+                ->addColumn(array(
+                    'label' => '% Endereçamento',
+                    'index' => 'PERCENTUAL'
+                ))
+
                 ->addAction(array(
                     'label' => 'Endereçamento',
                     'moduleName' => 'enderecamento',

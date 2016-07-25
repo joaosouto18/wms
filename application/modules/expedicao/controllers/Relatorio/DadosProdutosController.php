@@ -7,6 +7,8 @@ class Expedicao_Relatorio_DadosProdutosController extends \Wms\Controller\Action
         $form = new \Wms\Module\Expedicao\Form\DadosProdutos();
         $params = $form->getParams();
         if ($params) {
+            ini_set('memory_limit','-1');
+
             /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
             $ProdutoRepository   = $this->getEntityManager()->getRepository('wms:Produto');
             $produtos = $ProdutoRepository->getDadosProdutos($params);

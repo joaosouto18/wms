@@ -1142,8 +1142,14 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		$dscProduto = $produtoEntity->getDescricao();
 		$result = array();
 
+		$encontrouEmbalagemPadrao = false;
+		if (count($embalagens) >0) {
+			$ultimaEmbalagem = end($embalagens);
+			$ultimaEmbalagem = $ultimaEmbalagem[0];
+		}
 		foreach ($embalagens as $embalagem) {
-			if ($embalagem->getIsPadrao()=="S") {
+			if ($embalagem->getIsPadrao()=="S" OR (($encontrouEmbalagemPadrao == false) AND ($embalagem == $ultimaEmbalagem))) {
+				$encontrouEmbalagemPadrao = true;
 				$dadosLogisticos = $embalagem->getDadosLogisticos();
 				$unidadePadrao = $embalagem->getDescricao();
 				if (count($dadosLogisticos) >0){
