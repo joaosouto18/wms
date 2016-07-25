@@ -377,6 +377,11 @@ class Expedicao_IndexController extends Action
             ->render();
     }
 
+    public function relatorioCodigoBarrasProdutosAction()
+    {
+        var_dump('ok');
+    }
+
     public function acertarReservaEstoqueAjaxAction()
     {
         set_time_limit(0);

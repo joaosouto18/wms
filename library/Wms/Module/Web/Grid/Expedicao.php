@@ -245,6 +245,15 @@ class Expedicao extends Grid
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
+            ->addAction(array(
+                'label' => 'Relatório Código Barras de Produtos',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'relatorio-codigo-barras-produtos',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
             ->setShowExport(true)
             ->setShowMassActions($params);
 
