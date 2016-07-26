@@ -2749,17 +2749,4 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function graficoExpedicao()
-    {
-        $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('COUNT(e.id), s.sigla')
-            ->from('wms:Expedicao', 'e')
-            ->innerJoin('wms:Util\Sigla', 's', 'WITH', 's.id = e.status')
-            ->where("e.dataInicio >= $dataInicio AND e.dataInicio <= $dataFim")
-            ->groupBy('s.id, s.sigla');
-
-        return $sql->getQuery()->getResult();
-
-    }
-
 }

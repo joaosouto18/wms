@@ -160,6 +160,24 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
                 array_push($data, $row['qtty']);
             }
 
+            $sql = $this->em->createQueryBuilder()
+                ->select('s.sigla status')
+                ->addSelect('(SELECT COUNT(e) FROM wms:Expedicao e WHERE e.status = s.id) qtty')
+                ->from('wms:Util\Sigla', 's')
+                ->where('s.id IN (462,463,466,464,465)')
+                ->orderBy('s.referencia', 'ASC');
+
+            $statusExpedicao = array();
+            $dados = array();
+            foreach ($sql->getQuery()->getResult() as $value) {
+                array_push($statusExpedicao, $value['status']);
+                array_push($dados, $value['qtty']);
+            }
+
+            $this->view->expedicaoStatus = json_encode($statusExpedicao,JSON_NUMERIC_CHECK);
+            $this->view->expedicaoData = json_encode($dados, JSON_NUMERIC_CHECK);
+
+
             $this->view->recebimentoStatus = json_encode($status, JSON_NUMERIC_CHECK);
             $this->view->recebimentoData = json_encode($data, JSON_NUMERIC_CHECK);
 
@@ -170,29 +188,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $produtosSemDadosLogisticos = $qtdProdutosGroupDadosLogisticos['NAO'];
             $this->view->produtosSemDadosLogisticos = (int) $produtosSemDadosLogisticos;
 
-//            $query = $this->conn->query("
-//                SELECT data, SUM(qtty) AS qtty, COUNT(*) AS qttyNF
-//                FROM (
-//                    SELECT to_char(nf.dat_emissao, 'YYYY-MM') AS data,
-//                        (
-//                            SELECT COUNT(*) 
-//                            FROM nota_fiscal_item i
-//                            WHERE i.cod_nota_fiscal = nf.cod_nota_fiscal
-//                        ) qtty
-//                    FROM nota_fiscal nf
-//                    WHERE nf.dat_emissao >= ADD_MONTHS(SYSDATE, -3)
-//                ) t
-//                GROUP BY data
-//                ORDER BY data ASC");
-//
-//            $data = array();
-//            array_push($data, array('Mes', 'Notas Fiscais', 'Produtos'));
-//
-//            foreach ($query->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-//                array_push($data, array($row['DATA'], $row['QTTYNF'], $row['QTTY']));
-//            }
-//
-//            $this->view->produtosPorMes = json_encode($data, JSON_NUMERIC_CHECK);
         } catch (\Exception $e) {
             echo $e->getMessage();
             die;
