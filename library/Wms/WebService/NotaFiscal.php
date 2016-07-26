@@ -230,6 +230,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
+
+            if ($bonificacao == "E") {
+                //NOTA DE ENTRADA NORMAL
+            }
+            if ($bonificacao == "D") {
+                //NOTA DE DEVOLUÇÃO
+            }
+            $bonificacao = "N";
             $pesoTotal = trim ($pesoTotal);
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
