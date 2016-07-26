@@ -2760,7 +2760,6 @@ class ExpedicaoRepository extends EntityRepository
 
         return $sql->getQuery()->getResult();
 
-
     }
 
 }
