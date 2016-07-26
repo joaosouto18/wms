@@ -1,20 +1,20 @@
 <script type="text/javascript">
-     
+
     $(window).load(function() {
         $(document).ready(function(){
-            
+
             graficoRecebimento();
             graficoDadosLogisticos();
             graficoExpedicao();
 
         });
-        
+
         function graficoRecebimento(){
             var s1 = <?php echo $this->recebimentoData ?>;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
             var ticks = <?php echo $this->recebimentoStatus ?>;
-     
+
             var plot1 = $.jqplot('chart_recebimento', [s1], {
                 // The "seriesDefaults" option is an options object that will
                 // be applied to all series in the chart.
@@ -56,7 +56,7 @@
             var s1 = <?php echo $this->expedicaoData ?>;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
-            var ticks = <?php echo $this->expedicacoStatus ?>;
+            var ticks = <?php echo $this->expedicaoStatus ?>;
 
             var plot1 = $.jqplot('chart_expedicao', [s1], {
                 // The "seriesDefaults" option is an options object that will
@@ -100,26 +100,26 @@
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
             var sem = <?php echo $this->produtosSemDadosLogisticos ?>;
-     
+
             var data = [
                 ['Com Dados Logísticos', com],['Sem Dados Logísticos', sem]
             ];
-            var plot2 = jQuery.jqplot ('chart_produtosDadosLogisticos', [data], 
-            { 
+            var plot2 = jQuery.jqplot ('chart_produtosDadosLogisticos', [data],
+            {
                 seriesDefaults: {
                     // Make this a pie chart.
-                    renderer: jQuery.jqplot.PieRenderer, 
+                    renderer: jQuery.jqplot.PieRenderer,
                     rendererOptions: {
                         // Put data labels on the pie slices.
                         // By default, labels show the percentage of the slice.
                         showDataLabels: true
                     }
-                }, 
+                },
                 legend: { show:true, location: 'e' }
             }
         );
         }
-        
+
     });
 
 </script>
@@ -176,6 +176,7 @@
     <label class="chartTitle">Produtos Dados Logísticos</label>
     <div class="charts" id="chart_produtosDadosLogisticos" style="height: 230px; width: 400px;" ></div>
 </div>
+
 <div class="chartExpedicao">
     <div class="charts" id="chart_expedicao" style="height: 250px; width: 500px;" ></div>
 </div>
