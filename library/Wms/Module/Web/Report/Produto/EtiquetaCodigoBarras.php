@@ -21,7 +21,7 @@ class EtiquetaCodigoBarras extends eFPDF
         $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
 
         $this->AddPage();
-        $x = 150;
+        $x = 170;
         $y = 25;
         foreach ($produtos as $produto)
         {
@@ -35,6 +35,7 @@ class EtiquetaCodigoBarras extends eFPDF
             $this->SetFont('Arial','',10);
             $this->Cell(15, 10, $produto['id'], 0, 0);
             $this->Cell(90, 10, substr($produto['descricao'],0,40), 0, 0);
+            $this->Cell(90, 10, $produto['unidadeMedida'], 0, 0);
             $this->Cell(20, 10, '', 0, 1);
             $this->Cell(20, 10, '', 0, 1,'C');
 
