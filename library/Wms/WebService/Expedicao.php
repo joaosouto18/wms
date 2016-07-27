@@ -421,6 +421,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function consultarEtiquetas($idCargaExterno, $tipoCarga)
     {
+        throw new \Exception("Chegou aqui");
         $idCargaExterno = trim ($idCargaExterno);
         if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
         $tipoCarga = trim($tipoCarga);
