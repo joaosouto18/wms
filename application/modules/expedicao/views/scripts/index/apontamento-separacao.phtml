@@ -1,3 +1,8 @@
+<style>
+    .alterRow{
+        background: #eaeaea;
+    }
+</style>
 <script>
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
@@ -97,7 +102,7 @@
                 alert("Informe um CPF");
                 return false;
             } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inv�lido");
+                alert("CPF incompleto ou inválido");
                 return false;
             }
 
@@ -115,11 +120,6 @@
                 }
             });
         });
-    });
-
-
-
-    $(function(){
 
         $("#etiquetas-buscar").click(function () {
 
@@ -132,7 +132,7 @@
             if (eI != '' && eF != '') {
 
                 if (eI.length < 2 || eF.length < 2) {
-                    alert("Etiqueta fora do padr�o");
+                    alert("Etiqueta fora do padrão");
                     return false;
                 }
 
@@ -140,7 +140,7 @@
                 eF = parseInt(eF.substring(0, eF.length - 1));
 
                 if (eI > eF) {
-                    alert("A etiqueta inicial n�o pode ser maior que a final.");
+                    alert("A etiqueta inicial não pode ser maior que a final.");
                     return false;
                 } else if (eI == eF){
                     qtdEtiquetas = 1;
@@ -151,10 +151,10 @@
                 }
 
             } else if (eI != "" && eF == "") {
-                alert("N�o � poss�vel definir o intervalo sem a etiqueta final");
+                alert("Não é possível definir o intervalo sem a etiqueta final");
                 return false;
             } else if (eI == "" && eF != "") {
-                alert("N�o � poss�vel definir o intervalo sem a etiqueta inicial");
+                alert("Não é possível definir o intervalo sem a etiqueta inicial");
                 return false;
             }
 
@@ -164,41 +164,71 @@
                 alert("Informe um CPF");
                 return false;
             } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inv�lido");
+                alert("CPF incompleto ou inválido");
                 return false;
             }
 
             $.ajax({
                 url: 'conferente-apontamento-separacao/cpf/'+cpf,
                 success: function (data) {
+
+                    var tbody = $('#tbResult');
                     var tr = $('<tr>').addClass('gTResultSet');
-                    tr.append($('<td>').css('text-align','left'));
-                    tr.append($('<td>').css('text-align','left').text(data[0]['NOM_PESSOA']));
-                    tr.append($('<td class="identifica">').css('text-align','left').text(cpf));
-                    tr.append($('<td class="intervalo">').css('text-align','left').text(intervalo));
-                    tr.append($('<td>').css('text-align','left').text(qtdEtiquetas));
-                    tr.append($('<td class="tipo">').css('text-align','left').text('Etiquetas'));
-                    $('#tbResult').append(tr);
+
+                    tr.append($('<td>'));
+                    tr.append($('<td>').text(data[0]['NOM_PESSOA']));
+                    tr.append($('<td class="identifica">').text(cpf));
+                    tr.append($('<td class="intervalo">').text(intervalo));
+                    tr.append($('<td>').text(qtdEtiquetas));
+                    tr.append($('<td class="tipo">').text('Etiquetas'));
+                    tr.append(
+                        $('<td>')
+                            .css('text-align','center')
+                            .append(
+                            $('<a>')
+                                .addClass('removeRow')
+                                .prop('href', 'javascript://')
+                                /*.attr('onclick','removeRow(this)')*/
+                                .append(
+                                    $('<img>').prop('src', basePath + "/img/icons/delete.png"))));
+                    tbody.append(tr).trigger('tbChange');
                 }
             });
         });
-    });
 
-    $(function(){
+        $('#tbResult').bind('tbChange', function(){
+            var anterior = null;
+            $(this).children().each(function () {
+                if (anterior !== null && !anterior.hasClass('alterRow')){
+                    $(this).addClass('alterRow');
+                } else if (anterior !== null && anterior.hasClass('alterRow')){
+                    $(this).removeClass('alterRow');
+                }
+                anterior = $(this);
+            })
+        });
+
         $('.save').click(function () {
-            $.each($('.gTResultSet').find('td.identifica'), function (key, value) {
-                var etiquetas = $('.gTResultSet').find('td.intervalo')[key].innerText;
-                var cpf = value.innerText;
-                var tipo = $('.gTResultSet').find('td.tipo')[key].innerText;
-                $.ajax({
-                    url: 'apontamento-separacao/cpf/'+cpf+'/etiquetas/'+etiquetas+'/tipo/'+tipo,
-                    success: function (data) {
-                        alert('Todas as etiquetas foram salvas com sucesso!');
-                        window.location.href = 'apontamento-separacao';
-                    }
-
-                });
+            var data = [];
+            $.each($('#tbResult').children(), function () {
+                var etiquetas = $(this).children(".intervalo").text();
+                var cpf = $(this).children(".identifica").text();
+                var tipo = $(this).children(".tipo").text();
+                data.push({etiquetas:etiquetas, cpf:cpf, tipo:tipo});
             });
+            $.post("apontamento-separacao", {data:data}).success(function (data) {
+                if (data.result === 'Ok') {
+                    alert('Todas as etiquetas foram salvas com sucesso!');
+                    window.location.href = 'apontamento-separacao';
+                }
+            });
+        });
+
+        $(".removeRow").live('click', function () {
+            if (confirm('Deseja realmente remover esse apontamento?')) {
+                $(this).parent().parent().remove();
+                $("#tbResult").trigger('tbChange');
+            }
         });
     });
 </script>
@@ -211,11 +241,12 @@ echo $this->form;
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
             <td></td>
-            <td width="30%">Nome</td>
-            <td width="20%">CPF</td>
-            <td width="15%">Inicial/Final</td>
-            <td width="15%">Qtd. Etiquetas</td>
-            <td width="15%">Tipo Confer�ncia</td>
+            <td width="32%">Nome</td>
+            <td width="19%">CPF</td>
+            <td width="14%">Inicial/Final</td>
+            <td width="12%">Qtd. Etiquetas</td>
+            <td width="12%">Tipo Conferência</td>
+            <td width="7%" style="text-align: center">Remover</td>
         </tr>
         <tbody id="tbResult">
         </tbody>
