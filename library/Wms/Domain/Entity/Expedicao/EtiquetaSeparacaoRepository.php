@@ -1527,7 +1527,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $resultSet = $dql->getQuery()->getResult();
-        
+
+        throw new \Exception("Chegou aqui2");
+
         $etqArray = array();
         foreach ($resultSet as $row) {
             $idEtiquetaSeparacao = $row['codEtiqueta'];
