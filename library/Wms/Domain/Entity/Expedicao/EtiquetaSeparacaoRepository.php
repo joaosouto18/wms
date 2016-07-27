@@ -1506,7 +1506,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' c.codCargaExterno as idCarga, tc.sigla as tipoCarga, tp.sigla as tipoPedido, es.codEntrega as codPedido, es.codBarras as codEtiqueta, es.codProduto, es.grade,
-                   es.tipoComercializacao as dscVolume, es.dthConferencia, es.codStatus, s.sigla as status, es.reimpressao, es.codBarrasProduto
+                   es.tipoComercializacao as dscVolume, es.dthConferencia, es.codStatus, s.sigla as status, es.reimpressao
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Util\Sigla', 'tc', 'WITH', 'es.codTipoCarga = tc.id')
