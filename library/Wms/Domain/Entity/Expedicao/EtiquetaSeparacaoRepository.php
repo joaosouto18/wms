@@ -1526,9 +1526,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->setParameter('statusEtiqueta', $statusEtiqueta);
         }
 
+        throw new \Exception("Chegou aqui2");
+
         $resultSet = $dql->getQuery()->getResult();
 
-        throw new \Exception("Chegou aqui2");
 
         $etqArray = array();
         foreach ($resultSet as $row) {
