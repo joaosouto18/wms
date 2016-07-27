@@ -1504,6 +1504,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function getEtiquetasByCargaExterno($idCargaExterno, $idTipoCarga, $statusEtiqueta = null)
     {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' c.codCargaExterno as idCarga, tc.sigla as tipoCarga, tp.sigla as tipoPedido, es.codEntrega as codPedido, es.codBarras as codEtiqueta, es.codProduto, es.grade,
                    es.tipoComercializacao as dscVolume, es.dthConferencia, es.codStatus, s.sigla as status, es.reimpressao, es.codBarrasProduto
@@ -1538,7 +1540,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($embalagemEn == null) {
                 $codBarrasArray[] = $row['codBarrasProduto'];
             } else {
-                $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
                 $embalagensEn = $embalagemRepo->findBy(array(
                     'codProduto'=>$embalagemEn->getCodProduto(),
                     'grade'=>$embalagemEn->getGrade(),
