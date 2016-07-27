@@ -1527,9 +1527,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
 
-        throw new \Exception("Chegou aqui2");
 
         $resultSet = $dql->getQuery()->getResult();
+        throw new \Exception("Chegou aqui2");
 
 
         $etqArray = array();
