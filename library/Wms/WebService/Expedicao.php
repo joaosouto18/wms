@@ -421,7 +421,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function consultarEtiquetas($idCargaExterno, $tipoCarga)
     {
-        throw new \Exception("Chegou aqui");
         $idCargaExterno = trim ($idCargaExterno);
         if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
         $tipoCarga = trim($tipoCarga);
@@ -429,6 +428,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo     = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        throw new \Exception("Chegou aqui2");
+
         $etiquetas = $etiquetaRepo->getEtiquetasByCargaExterno($idCargaExterno, $siglaTipoCarga->getID());
         if ($etiquetas == null) {
             throw new \Exception('Etiquetas não encontradas para a carga especificada');
