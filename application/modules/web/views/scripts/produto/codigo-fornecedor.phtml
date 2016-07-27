@@ -15,7 +15,7 @@
                         '<td style="text-align:left">' + inptTxtForn.val() + '</td>' +
                         '<td style="text-align:left">' + inptCodForn.val() + '</td>' +
                         '<td style="text-align:left">' + inptEmbalagem.children('option:selected').text() + '</td>' +
-                        '<td style="text-align:left"> <a href="javascript://" class="excluir-cod-fornecedor" data-id="' + tempIdForn.val() + '" title="Clique para Excluir"> <img src="http://wms.local/img/icons/delete.png"> </a> </td>' +
+                        '<td style="text-align:left"> <a href="javascript://" class="excluir-cod-fornecedor" data-id="' + tempIdForn.val() + '" title="Clique para Excluir"> <img src="'+ basePath +'/img/icons/delete.png"> </a> </td>' +
                         '</tr>');
                     gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][id]" value="' + tempIdForn.val() + '" />');
                     gridFornecedor.append('<input type="hidden" name="fornecedor[' + tempIdForn.val() + '][cod]" value="' + inptCodForn.val() + '" />');
