@@ -1542,12 +1542,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $embalagensEn = $embalagemRepo->findBy(array(
                     'codProduto'=>$embalagemEn->getCodProduto(),
                     'grade'=>$embalagemEn->getGrade(),
-                    'quantidade'=>$embalagemEn->getQuantidade));
+                    'quantidade'=>$embalagemEn->getQuantidade()));
+
                 foreach ($embalagensEn as $emb){
                     $codBarrasArray[] = $emb->getCodigoBarras();
                 }
             }
-
             $value = array(
                 'idCarga'=>$row['idCarga'],
                 'tipoCarga'=>$row['tipoCarga'],
