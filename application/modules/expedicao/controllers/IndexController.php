@@ -430,13 +430,15 @@ class Expedicao_IndexController extends Action
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
         $embalagemEn = $produtoRepo->findAll();
 
+        $count = 0;
         foreach ($embalagemEn as $embalagem) {
             $produtoId = $embalagem->getId();
             $grade = $embalagem->getGrade();
-            $embalagensProduto = $embalagemRepo->findBy(array('codProduto' => $produtoId, 'grade' => $grade), array('capacidadePicking' => 'DESC'));
+            $embalagensProduto = $embalagemRepo->findBy(array('codProduto' => $produtoId, 'grade' => $grade), array('pontoReposicao' => 'DESC'));
             foreach ($embalagensProduto as $key => $embalagemProduto) {
-                if ($embalagensProduto[0]->getCapacidadePicking() > $embalagemProduto->getCapacidadePicking()) {
-                    $embalagemProduto->setCapacidadePicking($embalagensProduto[0]->getCapacidadePicking());
+                if ($embalagensProduto[0]->getPontoReposicao() > $embalagemProduto->getPontoReposicao()) {
+                    $count += $count;
+                    $embalagemProduto->setPontoReposicao($embalagensProduto[0]->getPontoReposicao());
                     $this->getEntityManager()->persist($embalagemProduto);
                     $this->getEntityManager()->flush($embalagemProduto);
                 }
@@ -446,7 +448,7 @@ class Expedicao_IndexController extends Action
 
         }
 
-        var_dump('success!'); exit;
+        var_dump($count.' Produtos Inseridos!'); exit;
 
 
     }
