@@ -34,13 +34,38 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
             $this->addFlashMessage("info","Existe(m) produto(s) no pulmão sem picking cadastrado " . $link);
         }
+
         try {
+
+            $datas = $this->_getAllParams();
+            if (empty($datas['dataInicial1']) && empty($datas['dataInicial2'])) {
+                $dataI1 = new \DateTime;
+                $dataI2 = new \DateTime;
+
+                $datas = array(
+                    'dataInicial1' => '01/'.$dataI1->format('m/Y'),
+                    'dataInicial2' => $dataI2->format('d/m/Y')
+                );
+            }
+            $this->view->datas = $datas;
+
+            $dataInicial1 = str_replace("/", "-", $datas['dataInicial1']);
+            $dataI1 = new \DateTime($dataInicial1);
+
+            $dataInicial2 = str_replace("/", "-", $datas['dataInicial2']);
+            $dataI2 = new \DateTime($dataInicial2);
+
             $dql = $this->em->createQueryBuilder()
                 ->select('s.sigla status')
-                ->addSelect('(SELECT COUNT(r) FROM wms:Recebimento r WHERE r.status = s.id) qtty
+                ->addSelect('(SELECT COUNT(r) FROM wms:Recebimento r2 WHERE r2.status = s.id) qtty
                         ')
-                ->from('wms:Util\Sigla', 's')
+                ->from('wms:Recebimento', 'r')
+                ->innerJoin('r.status','s')
                 ->where('s.id IN (454, 456, 457, 459)')
+                ->andWhere("((TRUNC(r.dataInicial) >= ?1 AND TRUNC(r.dataInicial) <= ?2) OR r.dataInicial IS NULL)")
+                ->setParameter(1, $dataI1)
+                ->setParameter(2, $dataI2)
+                ->groupBy('s')
                 ->orderBy('s.referencia', 'ASC');
 
             $status = array();
@@ -50,12 +75,24 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
                 array_push($status, $row['status']);
                 array_push($data, $row['qtty']);
             }
+            if (empty($status) && empty($data)) {
+                $status = false;
+                $data = false;
+            }
+
+            $this->view->recebimentoStatus = json_encode($status, JSON_NUMERIC_CHECK);
+            $this->view->recebimentoData = json_encode($data, JSON_NUMERIC_CHECK);
 
             $sql = $this->em->createQueryBuilder()
                 ->select('s.sigla status')
                 ->addSelect('(SELECT COUNT(e) FROM wms:Expedicao e WHERE e.status = s.id) qtty')
-                ->from('wms:Util\Sigla', 's')
+                ->from('wms:Expedicao', 'e2')
+                ->innerJoin('e2.status','s')
                 ->where('s.id IN (462,463,466,464,465)')
+                ->andWhere("((TRUNC(e2.dataInicio) >= ?1 AND TRUNC(e2.dataInicio) <= ?2) OR e2.dataInicio IS NULL)")
+                ->setParameter(1, $dataI1)
+                ->setParameter(2, $dataI2)
+                ->groupBy('s')
                 ->orderBy('s.referencia', 'ASC');
 
             $statusExpedicao = array();
@@ -65,12 +102,13 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
                 array_push($dados, $value['qtty']);
             }
 
+            if (empty($statusExpedicao) && empty($dados)) {
+                $statusExpedicao = false;
+                $dados = false;
+            }
+
             $this->view->expedicaoStatus = json_encode($statusExpedicao,JSON_NUMERIC_CHECK);
             $this->view->expedicaoData = json_encode($dados, JSON_NUMERIC_CHECK);
-
-
-            $this->view->recebimentoStatus = json_encode($status, JSON_NUMERIC_CHECK);
-            $this->view->recebimentoData = json_encode($data, JSON_NUMERIC_CHECK);
 
             $qtdProdutosGroupDadosLogisticos = $this->em->getRepository('wms:Produto')->buscarQtdProdutosDadosLogisticos();
             $produtosComDadosLogisticos = $qtdProdutosGroupDadosLogisticos['SIM'];

@@ -304,48 +304,53 @@ class Expedicao_IndexController extends Action
         unset($params['action']);
 
         try {
-            if (isset($params) && !empty($params)) {
-                if ($params['tipo'] == 'Etiquetas') {
-                    //FORMATA OS DADOS RECEBIDOS
-                    $cpf = str_replace(array('.','-'),'',$params['cpf']);
-                    $etiquetas = explode('-',$params['etiquetas']);
-                    $etiquetaInicial = trim($etiquetas[0]);
-                    $etiquetaFinal = trim($etiquetas[1]);
+            if (isset($params['data']) && !empty($params['data'])) {
+                $data = $params['data'];
+                foreach($data as $params) {
+                    if ($params['tipo'] == 'Etiquetas') {
+                        //FORMATA OS DADOS RECEBIDOS
+                        $cpf = str_replace(array('.', '-'), '', $params['cpf']);
+                        $etiquetas = explode('-', $params['etiquetas']);
+                        $etiquetaInicial = trim($etiquetas[0]);
+                        $etiquetaFinal = trim($etiquetas[1]);
 
-                    //ENCONTRA O USUARIO DIGITADO
-                    $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
-                    //VERIFICA O USUARIO
-                    if (is_null($usuarioEn))
-                        throw new \Exception('Conferente não encontrado!');
-                    //VERIFICA AS ETIQUETAS
-                    if (is_null($etiquetaFinal))
-                        $etiquetaFinal = $etiquetaInicial;
+                        //ENCONTRA O USUARIO DIGITADO
+                        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+                        //VERIFICA O USUARIO
+                        if (is_null($usuarioEn))
+                            throw new \Exception('Conferente não encontrado!');
+                        //VERIFICA AS ETIQUETAS
+                        if (is_null($etiquetaFinal))
+                            $etiquetaFinal = $etiquetaInicial;
 
-                    if (is_null($etiquetaInicial))
-                        $etiquetaInicial = $etiquetaFinal;
+                        if (is_null($etiquetaInicial))
+                            $etiquetaInicial = $etiquetaFinal;
 
-                    $equipeSeparacaoEn = $equipeSeparacaoRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(),'etiquetaInicial' => $etiquetaInicial, 'etiquetaFinal' => $etiquetaFinal));
-                    //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
-                    if (!isset($equipeSeparacaoEn) || empty($equipeSeparacaoEn))
-                        $equipeSeparacaoRepo->save($etiquetaInicial,$etiquetaFinal,$usuarioEn);
+                        $equipeSeparacaoEn = $equipeSeparacaoRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'etiquetaInicial' => $etiquetaInicial, 'etiquetaFinal' => $etiquetaFinal));
+                        //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+                        if (!isset($equipeSeparacaoEn) || empty($equipeSeparacaoEn))
+                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn);
 
-                } elseif ($params['tipo'] == 'Mapas') {
-                    $cpf = str_replace(array('.','-'),'',$params['cpf']);
-                    //ENCONTRA O USUARIO DIGITADO
-                    $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
-                    //VERIFICA O USUARIO
-                    if (is_null($usuarioEn))
-                        throw new \Exception('Conferente não encontrado!');
+                    } elseif ($params['tipo'] == 'Mapas') {
+                        $cpf = str_replace(array('.', '-'), '', $params['cpf']);
+                        //ENCONTRA O USUARIO DIGITADO
+                        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+                        //VERIFICA O USUARIO
+                        if (is_null($usuarioEn))
+                            throw new \Exception('Conferente não encontrado!');
 
-                    $codMapaSeparacao = $params['etiquetas'];
-                    $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
-                    if (is_null($mapaSeparacaoEn))
-                        throw new \Exception('Mapa de Separação não encontrado!');
+                        $codMapaSeparacao = $params['etiquetas'];
+                        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
+                        if (is_null($mapaSeparacaoEn))
+                            throw new \Exception('Mapa de Separação não encontrado!');
 
-                    $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
-                    if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
-                        $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
+                        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
+                        if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
+                            $apontamentoMapaRepo->save($mapaSeparacaoEn, $usuarioEn->getId());
+                    }
                 }
+                echo Zend_Json::encode(array('result' => 'Ok'));
+                exit;
             }
 
         } catch (\Exception $e) {
