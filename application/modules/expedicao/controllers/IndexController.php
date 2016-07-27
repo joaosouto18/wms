@@ -427,16 +427,17 @@ class Expedicao_IndexController extends Action
     public function correcaoAjaxAction()
     {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $embalagemEn = $embalagemRepo->findBy(array('codProduto' => '139641'));
+        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+        $embalagemEn = $produtoRepo->findBy(array('id' => '139641'));
 
         foreach ($embalagemEn as $embalagem) {
-            $produtoId = $embalagem->getCodProduto();
+            $produtoId = $embalagem->getId();
             $grade = $embalagem->getGrade();
             $embalagensProduto = $embalagemRepo->findBy(array('codProduto' => $produtoId, 'grade' => $grade), array('capacidadePicking' => 'DESC'));
             foreach ($embalagensProduto as $key => $embalagemProduto) {
                 if ($embalagensProduto[0]->getCapacidadePicking() > $embalagemProduto->getCapacidadePicking()) {
                     $embalagemProduto->setCapacidadePicking($embalagensProduto[0]->getCapacidadePicking());
-                    $this->getEntityManager()->commit($embalagemProduto);
+                    $this->getEntityManager()->persist($embalagemProduto);
                     $this->getEntityManager()->flush($embalagemProduto);
                 }
 
