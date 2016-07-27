@@ -419,5 +419,31 @@ class Expedicao_IndexController extends Action
         var_dump('sucesso!');exit;
     }
 
+    public function correcaoAjaxAction()
+    {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $embalagemEn = $embalagemRepo->findBy(array('codProduto' => '139641'));
+
+        foreach ($embalagemEn as $embalagem) {
+            $produtoId = $embalagem->getCodProduto();
+            $grade = $embalagem->getGrade();
+            $embalagensProduto = $embalagemRepo->findBy(array('codProduto' => $produtoId, 'grade' => $grade), array('capacidadePicking' => 'DESC'));
+            foreach ($embalagensProduto as $key => $embalagemProduto) {
+                if ($embalagensProduto[0]->getCapacidadePicking() > $embalagemProduto->getCapacidadePicking()) {
+                    $embalagemProduto->setCapacidadePicking($embalagensProduto[0]->getCapacidadePicking());
+                    $this->getEntityManager()->commit($embalagemProduto);
+                    $this->getEntityManager()->flush($embalagemProduto);
+                }
+
+            }
+
+
+        }
+
+        var_dump('success!'); exit;
+
+
+    }
+
 
 }
