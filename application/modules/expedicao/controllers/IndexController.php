@@ -386,11 +386,7 @@ class Expedicao_IndexController extends Action
     {
         $idExpedicao     = $this->_getParam('id',0);
         $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\EtiquetaCodigoBarras();
-        $result = $gerarEtiqueta->init($idExpedicao);
-
-
-//        $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-//        $mapa->codigoBarrasProdutosByExpedicao($idExpedicao);
+        $gerarEtiqueta->init($idExpedicao);
 
     }
 

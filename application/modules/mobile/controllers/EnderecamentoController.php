@@ -841,6 +841,16 @@ class Mobile_EnderecamentoController extends Action
         $codProduto = $embalagemEn->getCodProduto();
         $grade = $embalagemEn->getGrade();
 
+        if (isset($embalagemEn) && empty($embalagemEn)) {
+            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
+        } else {
+            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco));
+
+        }
+        $this->view->qtd = $qtd = $estoqueEn->getQtd();
+
         $SQL = "SELECT RE.*
                   FROM RESERVA_ESTOQUE RE
                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
@@ -853,10 +863,6 @@ class Mobile_EnderecamentoController extends Action
         if (count($verificaReservaSaida) > 0) {
             throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
         }
-
-        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
-        $this->view->qtd = $qtd = $estoqueEn->getQtd();
     }
 
     public function confirmaEnderecamentoAction()

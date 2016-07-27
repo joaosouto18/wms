@@ -1070,7 +1070,7 @@ class PaleteRepository extends EntityRepository
             ->innerJoin("pp.produto", "prod")
             ->innerJoin("pa.recebimento", "r")
             ->where("r.id = $idRecebimento")
-            ->andWhere("prod.id = $idProduto")
+            ->andWhere("prod.id = '$idProduto'")
             ->andWhere("prod.grade = '$grade'");
 
         $array = $query->getQuery()->getArrayResult();
