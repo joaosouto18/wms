@@ -428,7 +428,7 @@ class Expedicao_IndexController extends Action
     {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-        $embalagemEn = $produtoRepo->findBy(array('id' => '139641'));
+        $embalagemEn = $produtoRepo->findAll();
 
         foreach ($embalagemEn as $embalagem) {
             $produtoId = $embalagem->getId();
