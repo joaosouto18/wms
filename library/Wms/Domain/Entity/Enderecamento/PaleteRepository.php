@@ -565,7 +565,7 @@ class PaleteRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
         $nfRepo    = $this->getEntityManager()->getRepository('wms:NotaFiscal');
 
-        $pesoLimiteTotal = $nfRepo->getPesoByProduto($codRecebimento,$codProduto,$grade);
+        $pesoLimiteTotal = $nfRepo->getPesoByProdutoAndRecebimento($codRecebimento,$codProduto,$grade);
         if ($tipo == "V") {
             $pesoLimite = array();
             foreach ($qtdRecebida as $recebido) {
