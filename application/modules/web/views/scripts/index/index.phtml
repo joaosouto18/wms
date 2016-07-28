@@ -3,9 +3,14 @@
     $(window).load(function() {
         $(document).ready(function(){
 
-            graficoRecebimento();
+            <?php if ($this->recebimentoData != "false" ) : ?>
+                graficoRecebimento();
+            <?php endif; ?>
             graficoDadosLogisticos();
-            graficoExpedicao();
+            <?php if ($this->expedicaoData != "false" ) : ?>
+                graficoExpedicao();
+            <?php endif; ?>
+
 
         });
 
@@ -168,6 +173,32 @@
         text-align: center;
     }
 </style>
+
+
+<form action="" class="filtro" method="get">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Filtros</legend>
+            <table style="width:auto">
+                <tbody>
+                    <tr>
+                        <td>Data</td>
+                        <td rowspan="4">
+                            &nbsp;<input type="submit" class="btn" value="Buscar" id="submit" name="submit">
+                        </td>
+                    </tr>
+                <tr>
+                    <td>
+                        <input type="text" class="date  hasDatepicker" alt="date" size="11" value="<?php echo $this->datas['dataInicial1'] ?>" id="dataInicial1" name="dataInicial1"> a
+                        <input type="text" class="date  hasDatepicker" alt="date" size="11" value="<?php echo $this->datas['dataInicial2'] ?>" id="dataInicial2" name="dataInicial2">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+</form>
+
 <!--Div that will hold the pie chart-->
 <div class="chartRecebimento">
     <div class="charts" id="chart_recebimento" style="height: 250px; width: 500px;" ></div>
