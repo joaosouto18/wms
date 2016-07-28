@@ -435,6 +435,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     //    alert('Remova as embalagens de expedição para poder editar esta embalagem de recebimento.');
                     //    return false;
                     //}
+                    if ( (qtdEmbalagensRecebimento >= 1) && ($('#embalagem-isPadrao').val() == 'S')) {
+                        alert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
+                        return false;
+                    }
                     break;
 
             }
