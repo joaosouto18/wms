@@ -71,8 +71,13 @@ class Mobile_Enderecamento_ManualController extends Action
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
                 $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
-//                if ($qtdRecebimentoEn->getQtd() < trim($params['qtd']) + $paleteProdutoEn[0]['QTD'])
-//                    throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
+//                var_dump($qtdRecebimentoEn->getQtd());
+//                var_dump(trim($params['qtd']));
+//                var_dump($paleteProdutoEn[0]['qtd']);
+//                var_dump(trim($params['qtd']) + $paleteProdutoEn[0]['qtd']);
+//                exit;
+                if ($qtdRecebimentoEn->getQtd() < trim($params['qtd']) + $paleteProdutoEn[0]['qtd'])
+                    throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
 
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
 
