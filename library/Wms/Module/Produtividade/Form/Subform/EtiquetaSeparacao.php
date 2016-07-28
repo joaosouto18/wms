@@ -20,21 +20,23 @@ class EtiquetaSeparacao extends SubForm
             ->addElement('cpf', 'pessoa', array(
                 'size' => 15,
                 'label' => 'CPF Conferente',
-                'style' => 'width:185px;'
+                'style' => 'width:190px;',
+                'class' => 'inptText',
             ))
             ->addElement('text', 'etiquetaInicial', array(
                 'size' => 15,
                 'label' => 'Etiqueta Inicial',
+                'class' => 'inptText',
             ))
             ->addElement('text', 'etiquetaFinal', array(
                 'size' => 15,
                 'label' => 'Etiqueta Final',
+                'class' => 'inptText',
             ))
             ->addElement('button', 'buscar', array(
                 'label' => 'Buscar',
-                'class' => 'btn',
+                'class' => 'btn btnSearch',
                 'decorators' => array('ViewHelper'),
-                'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
             ))
             ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
 

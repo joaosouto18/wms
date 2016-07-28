@@ -1,7 +1,37 @@
 <style>
+
+    label[for='etiquetas-pessoa'],
+    label[for='etiquetas-etiquetaFinal'],
+    label[for='mapas-codMapaSeparacao'],
+    label[for='mapas-pessoa'],
+    label[for='etiquetas-etiquetaInicial']{
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+    }
+
     .alterRow{
         background: #eaeaea;
     }
+
+    .inptText{
+        display: block;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 25px !important;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: #9d9d9d;
+    }
+    
+    .btnSearch{
+        height: 40px;
+        width: 150px;
+        font-size: 20px !important;
+        margin-top: 19px;
+        margin-right: 10px;
+    }
+
 </style>
 <script>
     function gotoFinal(event) {
@@ -94,6 +124,7 @@
     }
 
     $(function () {
+        $('.btnSearch').prepend($('<img>').prop('src',basePath + "/img/icons/magnifier.png"));
         $('#mapas-salvarMapa').click(function () {
             var mapa = $('#mapas-codMapaSeparacao').val();
             var cpf = $('#mapas-pessoa').val();

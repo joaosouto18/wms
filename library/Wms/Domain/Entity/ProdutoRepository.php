@@ -162,7 +162,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
 			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
 
-            if (isset($dados['fornecedor']) && !empty($dados['fornecedor']))
+            if (isset($values['fornecedor']) && !empty($values['fornecedor']))
 			    $this->saveFornecedorReferencia($em, $values, $produtoEntity);
 
 			$em->persist($produtoEntity);
