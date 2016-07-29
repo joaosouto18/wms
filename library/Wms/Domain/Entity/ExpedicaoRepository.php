@@ -749,13 +749,14 @@ class ExpedicaoRepository extends EntityRepository
     public function liberarVolumePatrimonioByExpedicao($idExpedicao)
     {
         $volumes = $this->getVolumesPatrimonioByExpedicao($idExpedicao);
+        $volumeRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
 
         foreach ($volumes as $key => $volume){
-            $volumeRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
             $volumeEn = $volumeRepo->findOneBy(array('id'=> $key));
             if ($volumeEn) {
                 $volumeEn->setOcupado('N');
                 $this->getEntityManager()->persist($volumeEn);
+                $this->getEntityManager()->flush();
             }
         }
     }
