@@ -29,11 +29,12 @@ class CodigoFornecedor extends SubForm
                     'label' => 'Embalagem padrão',
                     'multiOptions' => array(),
                 ))
-                ->addElement('submit', 'btnAdicionar', array(
+                ->addElement('button', 'btnAdicionar', array(
                     'label' => 'Adicionar',
                     'attribs' => array(
                         'id' => 'btn-salvar-codigo-fornecedor',
                         'class' => 'btn',
+                        'style' => 'margin-top: 15px'
                     ),
                     'decorators' => array('ViewHelper'),
                 ))
