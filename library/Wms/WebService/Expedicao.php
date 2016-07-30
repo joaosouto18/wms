@@ -428,6 +428,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo     = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
         $etiquetas = $etiquetaRepo->getEtiquetasByCargaExterno($idCargaExterno, $siglaTipoCarga->getID());
         if ($etiquetas == null) {
             throw new \Exception('Etiquetas não encontradas para a carga especificada');
