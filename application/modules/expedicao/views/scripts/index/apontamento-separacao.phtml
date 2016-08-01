@@ -135,6 +135,11 @@
             var mapa = $('#mapas-codMapaSeparacao').val();
             var cpf = $('#mapas-pessoa').val();
 
+            if (mapa == null || mapa == ""){
+                alert("Informe o mapa a ser vinculado");
+                return false;
+            }
+
             if (cpf == null || cpf == ""){
                 alert("Informe um CPF");
                 return false;
@@ -148,27 +153,37 @@
             $.ajax({
                 url: 'conferente-apontamento-separacao/cpf/'+cpf,
                 success: function (data) {
-                    result.pessoa = data[0];
-                    addRow(result);
+                    if (data.result === "Ok") {
+                        result.pessoa = data.pessoa;
+                        addRow(result);
+                    } else if (data.result = 'Error'){
+                        alert(data.msg);
+                    }
                 }
             });
         });
 
         $("#etiquetas-buscar").click(function () {
 
-            var total = $('#txtIntervalo').val();
+            var total = parseInt($('#txtIntervalo').val());
             var eI = $('#etiquetas-etiquetaInicial').val();
             var eF = $('#etiquetas-etiquetaFinal').val();
 
-            if (total == null || total == "") {
+            if (isNaN(total)) {
                 if (eI != "" && eF == "") {
                     alert("Não é possível definir o intervalo sem a etiqueta final");
                     return false;
                 } else if (eI == "" && eF != "") {
                     alert("Não é possível definir o intervalo sem a etiqueta inicial");
                     return false;
+                } else {
+                    alert("Defina um intervalo de etiquetas antes de buscar");
+                    return false;
                 }
             }
+
+            eI = parseInt(eI.substring(0, eI.length - 1));
+            eF = parseInt(eF.substring(0, eF.length - 1));
 
             var intervalo = eI + " - " + eF;
 
@@ -187,8 +202,12 @@
             $.ajax({
                 url: 'conferente-apontamento-separacao/cpf/'+cpf,
                 success: function (data) {
-                    result.pessoa = data[0];
-                    addRow(result);
+                    if (data.result === "Ok") {
+                        result.pessoa = data.pessoa;
+                        addRow(result);
+                    } else if (data.result = 'Error'){
+                        alert(data.msg);
+                    }
                 }
             });
         });
@@ -219,7 +238,7 @@
             var tr = $('<tr>').addClass('gTResultSet');
 
             tr.append($('<td>'));
-            tr.append($('<td>').text(pessoa['NOM_PESSOA']));
+            tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
             tr.append($('<td class="mapa">').text(mapa));
             tr.append($('<td class="intervalo">').text(intervalo));
@@ -280,12 +299,20 @@
                 var tipo = $(this).children(".tipo").text();
                 data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo});
             });
-            $.post("apontamento-separacao", {data:data}).success(function (data) {
-                if (data.result === 'Ok') {
-                    alert('Todas as etiquetas foram salvas com sucesso!');
-                    window.location.href = 'apontamento-separacao';
-                }
-            });
+
+            if (data.length > 0) {
+                $.post("apontamento-separacao", {data: data}).success(function (data) {
+                    if (data.result === 'Ok') {
+                        alert('Todas os apontamentos foram salvos com sucesso!');
+                        window.location.href = 'apontamento-separacao';
+                    } else if (data.result === 'Error'){
+                        alert(data.msg);
+                    }
+                });
+            } else {
+                alert("Sem apontamentos à serem salvos");
+                return false;
+            }
         });
 
         $(".removeRow").live('click', function () {
@@ -305,13 +332,13 @@ echo $this->form;
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
             <td></td>
-            <td width="35%">Nome</td>
-            <td width="12%">CPF</td>
+            <td width="30%">Nome</td>
+            <td width="13%">CPF</td>
             <td width="14%">Mapa</td>
-            <td width="20%">Etiqueta Inicial - Final</td>
+            <td width="19%">Etiqueta Inicial - Final</td>
             <td width="6%">Intervalo</td>
             <td width="10%">Tipo Conferência</td>
-            <td width="5%" style="text-align: center">X</td>
+            <td width="4%" style="text-align: center">X</td>
         </tr>
         <tbody id="tbResult" class="tbFont">
         </tbody>

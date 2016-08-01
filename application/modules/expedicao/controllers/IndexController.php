@@ -354,7 +354,7 @@ class Expedicao_IndexController extends Action
             }
 
         } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            echo Zend_Json::encode(array('result' => 'Error', 'msg' => $e->getMessage()));
         }
 
         $this->view->form = $form;
@@ -368,7 +368,14 @@ class Expedicao_IndexController extends Action
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
         $result = $usuarioRepo->getPessoaByCpf($cpf);
-        $this->_helper->json($result);
+        
+        if (!empty($result)){
+            $response = array('result' => 'Ok', 'pessoa' => $result[0]['NOM_PESSOA']);
+        } else {
+            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+        }
+            
+        $this->_helper->json($response);
     }
     
     public function equipeCarregamentoAction()
