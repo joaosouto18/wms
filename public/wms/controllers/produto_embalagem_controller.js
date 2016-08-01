@@ -436,8 +436,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     //    return false;
                     //}
                     if ( (qtdEmbalagensRecebimento >= 1) && ($('#embalagem-isPadrao').val() == 'S')) {
-                        alert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
-                        return false;
+                        if ($('#embalagem-id').val() != $('.embalagem-id').val()) {
+                            alert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
+                            return false;
+                        }
                     }
                     break;
 

@@ -404,7 +404,7 @@ public function informaQtdMapaAction()
         if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
             $this->redirect('carregamento', 'expedicao','mobile', array('idExpedicao' => $idExpedicao));
         } else {
-            $this->_redirect('mobile');
+            $this->_redirect('mobile/expedicao/index/idCentral/'.$central);
         }
 
     }

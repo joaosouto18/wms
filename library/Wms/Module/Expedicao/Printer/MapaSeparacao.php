@@ -43,7 +43,7 @@ class MapaSeparacao extends Pdf
 
 
         foreach ($mapaSeparacao as $mapa) {
-            $produtos = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('mapaSeparacao'=>$mapa->getId()));
+            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
             $quebras = $mapa->getDscQuebra();
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
@@ -164,8 +164,7 @@ class MapaSeparacao extends Pdf
 
 
         foreach ($mapaSeparacao as $mapa) {
-            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')
-                ->getMapaProduto($mapa->getId());
+            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
             $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
             $pedidoProduto = $produtos[0]->getPedidoProduto();
             $carga = '';
