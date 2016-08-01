@@ -2,6 +2,7 @@
 
     label[for='etiquetas-pessoa'],
     label[for='etiquetas-etiquetaFinal'],
+    label[for='txtIntervalo'],
     label[for='mapas-codMapaSeparacao'],
     label[for='mapas-pessoa'],
     label[for='etiquetas-etiquetaInicial']{
@@ -26,10 +27,14 @@
     
     .btnSearch{
         height: 40px;
-        width: 150px;
+        width: 110px;
         font-size: 20px !important;
         margin-top: 19px;
         margin-right: 10px;
+    }
+
+    .tbFont tr td{
+        font-size: 15px !important;
     }
 
 </style>
@@ -125,6 +130,7 @@
 
     $(function () {
         $('.btnSearch').prepend($('<img>').prop('src',basePath + "/img/icons/magnifier.png"));
+
         $('#mapas-salvarMapa').click(function () {
             var mapa = $('#mapas-codMapaSeparacao').val();
             var cpf = $('#mapas-pessoa').val();
@@ -137,29 +143,101 @@
                 return false;
             }
 
+            var result = {mapa:mapa, cpf:cpf, pessoa:null};
+
             $.ajax({
                 url: 'conferente-apontamento-separacao/cpf/'+cpf,
                 success: function (data) {
-                    var tr = $('<tr>').addClass('gTResultSet');
-                    tr.append($('<td>').css('text-align','left'));
-                    tr.append($('<td>').css('text-align','left').text(data[0]['NOM_PESSOA']));
-                    tr.append($('<td class="identifica">').css('text-align','left').text(cpf));
-                    tr.append($('<td class="intervalo">').css('text-align','left').text(mapa));
-                    tr.append($('<td>').css('text-align','left').text(1));
-                    tr.append($('<td class="tipo">').css('text-align','left').text('Mapas'));
-                    $('#tbResult').append(tr);
+                    result.pessoa = data[0];
+                    addRow(result);
                 }
             });
         });
 
         $("#etiquetas-buscar").click(function () {
 
+            var total = $('#txtIntervalo').val();
             var eI = $('#etiquetas-etiquetaInicial').val();
             var eF = $('#etiquetas-etiquetaFinal').val();
 
-            var qtdEtiquetas = 0;
-            var intervalo = "N/D";
+            if (total == null || total == "") {
+                if (eI != "" && eF == "") {
+                    alert("Não é possível definir o intervalo sem a etiqueta final");
+                    return false;
+                } else if (eI == "" && eF != "") {
+                    alert("Não é possível definir o intervalo sem a etiqueta inicial");
+                    return false;
+                }
+            }
 
+            var intervalo = eI + " - " + eF;
+
+            var cpf = $('#etiquetas-pessoa').val();
+
+            if (cpf == null || cpf == ""){
+                alert("Informe um CPF");
+                return false;
+            } else if (cpf.length != 14) {
+                alert("CPF incompleto ou inválido");
+                return false;
+            }
+
+            var result = {intervalo:intervalo, total:total, cpf:cpf, pessoa:null};
+
+            $.ajax({
+                url: 'conferente-apontamento-separacao/cpf/'+cpf,
+                success: function (data) {
+                    result.pessoa = data[0];
+                    addRow(result);
+                }
+            });
+        });
+
+        function addRow (data){
+
+            var intervalo = null;
+            var total = null;
+            var mapa = null;
+            var tipo = null;
+
+            if (data.hasOwnProperty('mapa')){
+                mapa = data.mapa;
+                intervalo = "N/D";
+                total = "N/D";
+                tipo = "Mapa";
+            } else {
+                intervalo = data.intervalo;
+                total = data.total;
+                mapa = "N/D";
+                tipo = "Etiquetas";
+            }
+
+            var cpf = data.cpf;
+            var pessoa = data.pessoa;
+
+            var tbody = $('#tbResult');
+            var tr = $('<tr>').addClass('gTResultSet');
+
+            tr.append($('<td>'));
+            tr.append($('<td>').text(pessoa['NOM_PESSOA']));
+            tr.append($('<td class="identifica">').text(cpf));
+            tr.append($('<td class="mapa">').text(mapa));
+            tr.append($('<td class="intervalo">').text(intervalo));
+            tr.append($('<td>').text(total));
+            tr.append($('<td class="tipo">').text(tipo));
+            tr.append(
+                $('<td>').css('text-align','center').append(
+                    $('<a>').addClass('removeRow').prop('href', 'javascript://').append(
+                        $('<img>').prop('src', basePath + "/img/icons/delete.png")
+                    )
+                )
+            );
+            tbody.append(tr).trigger('tbChange');
+        }
+
+        $(".inptEtiqueta").blur(function () {
+            var eI = $('#etiquetas-etiquetaInicial').val();
+            var eF = $('#etiquetas-etiquetaFinal').val();
             if (eI != '' && eF != '') {
 
                 if (eI.length < 2 || eF.length < 2) {
@@ -173,58 +251,12 @@
                 if (eI > eF) {
                     alert("A etiqueta inicial não pode ser maior que a final.");
                     return false;
-                } else if (eI == eF){
-                    qtdEtiquetas = 1;
-                    intervalo = eI + " - " + eF;
                 } else {
-                    qtdEtiquetas = eF - eI;
-                    intervalo = eI + " - " + eF;
+                    $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira:eI,ultima:eF}, function (data) {
+                        $("#txtIntervalo").val(data.result);
+                    });
                 }
-
-            } else if (eI != "" && eF == "") {
-                alert("Não é possível definir o intervalo sem a etiqueta final");
-                return false;
-            } else if (eI == "" && eF != "") {
-                alert("Não é possível definir o intervalo sem a etiqueta inicial");
-                return false;
             }
-
-            var cpf = $('#etiquetas-pessoa').val();
-
-            if (cpf == null || cpf == ""){
-                alert("Informe um CPF");
-                return false;
-            } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inválido");
-                return false;
-            }
-
-            $.ajax({
-                url: 'conferente-apontamento-separacao/cpf/'+cpf,
-                success: function (data) {
-
-                    var tbody = $('#tbResult');
-                    var tr = $('<tr>').addClass('gTResultSet');
-
-                    tr.append($('<td>'));
-                    tr.append($('<td>').text(data[0]['NOM_PESSOA']));
-                    tr.append($('<td class="identifica">').text(cpf));
-                    tr.append($('<td class="intervalo">').text(intervalo));
-                    tr.append($('<td>').text(qtdEtiquetas));
-                    tr.append($('<td class="tipo">').text('Etiquetas'));
-                    tr.append(
-                        $('<td>')
-                            .css('text-align','center')
-                            .append(
-                            $('<a>')
-                                .addClass('removeRow')
-                                .prop('href', 'javascript://')
-                                /*.attr('onclick','removeRow(this)')*/
-                                .append(
-                                    $('<img>').prop('src', basePath + "/img/icons/delete.png"))));
-                    tbody.append(tr).trigger('tbChange');
-                }
-            });
         });
 
         $('#tbResult').bind('tbChange', function(){
@@ -242,10 +274,11 @@
         $('.save').click(function () {
             var data = [];
             $.each($('#tbResult').children(), function () {
+                var mapa = $(this).children(".intervalo").text();
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
-                data.push({etiquetas:etiquetas, cpf:cpf, tipo:tipo});
+                data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo});
             });
             $.post("apontamento-separacao", {data:data}).success(function (data) {
                 if (data.result === 'Ok') {
@@ -272,16 +305,15 @@ echo $this->form;
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
             <td></td>
-            <td width="32%">Nome</td>
-            <td width="19%">CPF</td>
-            <td width="14%">Inicial/Final</td>
-            <td width="12%">Qtd. Etiquetas</td>
-            <td width="12%">Tipo Conferência</td>
-            <td width="7%" style="text-align: center">Remover</td>
+            <td width="35%">Nome</td>
+            <td width="12%">CPF</td>
+            <td width="14%">Mapa</td>
+            <td width="20%">Etiqueta Inicial - Final</td>
+            <td width="6%">Intervalo</td>
+            <td width="10%">Tipo Conferência</td>
+            <td width="5%" style="text-align: center">X</td>
         </tr>
-        <tbody id="tbResult">
+        <tbody id="tbResult" class="tbFont">
         </tbody>
     </table>
 </div>
-
-

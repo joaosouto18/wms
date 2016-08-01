@@ -24,21 +24,29 @@ class EtiquetaSeparacao extends SubForm
                 'class' => 'inptText',
             ))
             ->addElement('text', 'etiquetaInicial', array(
-                'size' => 15,
+                'size' => 12,
                 'label' => 'Etiqueta Inicial',
-                'class' => 'inptText',
+                'class' => 'inptText inptEtiqueta',
             ))
             ->addElement('text', 'etiquetaFinal', array(
-                'size' => 15,
+                'size' => 12,
                 'label' => 'Etiqueta Final',
+                'class' => 'inptText inptEtiqueta',
+            ))
+            ->addElement('text','showIntervalo', array(
+                'label' => 'Intervalo',
                 'class' => 'inptText',
+                'id' => 'txtIntervalo',
+                'size' => 3,
+                'readonly' => true,
+                'disabled' => true,
             ))
             ->addElement('button', 'buscar', array(
                 'label' => 'Buscar',
                 'class' => 'btn btnSearch',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','pessoa','buscar'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
+            ->addDisplayGroup(array('etiquetaInicial','etiquetaFinal','showIntervalo','pessoa','buscar'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'));
 
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');

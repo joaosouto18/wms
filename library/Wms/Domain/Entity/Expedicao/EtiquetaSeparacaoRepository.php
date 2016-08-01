@@ -1388,11 +1388,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function getEtiquetasByFaixa($codBarrasInicial,$codBarrasFinal) {
+    public function getEtiquetasByFaixa($codBarrasInicial,$codBarrasFinal, $apontamento = false) {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select("es")
             ->from("wms:Expedicao\EtiquetaSeparacao","es")
             ->where("es.id >= $codBarrasInicial AND es.id <= $codBarrasFinal");
+
+        if ($apontamento)
+            $dql->andWhere("es.status <> 525");
+        
         return $dql->getQuery()->getResult();
     }
 

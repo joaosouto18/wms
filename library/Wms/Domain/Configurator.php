@@ -54,28 +54,47 @@ class Configurator {
 
     public static function configureToArray($element, $tryCall=false)
     {
-        if ( !is_object($element) )
-        {
-            throw new \Exception('Element should be an object');
-        }
+        if(!is_array($element) && is_object($element)) {
 
-        $tryCall = (bool) $tryCall && method_exists($element, '__call');
-        $return = array();
+            $tryCall = (bool)$tryCall && method_exists($element, '__call');
+            $result = array();
 
-        foreach (get_class_methods($element) as $method)
-        {
-            $pos = strpos($method,'get');
-            if ($pos === 0) {
-                $attribute = lcfirst(str_replace('get','',$method));
-                if ($tryCall || method_exists($element, $method)) {
-                    $value = call_user_func(array($element, $method));
-                    $return[$attribute] = $value;
+            foreach (get_class_methods($element) as $method) {
+                $pos = strpos($method, 'get');
+                if ($pos === 0) {
+                    $attribute = lcfirst(str_replace('get', '', $method));
+                    if ($tryCall || method_exists($element, $method)) {
+                        $value = call_user_func(array($element, $method));
+                        $result[$attribute] = $value;
+                    }
                 }
             }
-        }
 
-        return $return;
+            return $result;
+        } else if (is_array($element)){
+            $result =  array();
+
+            foreach ($element as $obj){
+                $tryCall = (bool)$tryCall && method_exists($obj, '__call');
+                $arr = array();
+
+                foreach (get_class_methods($obj) as $method) {
+                    $pos = strpos($method, 'get');
+                    if ($pos === 0) {
+                        $attribute = lcfirst(str_replace('get', '', $method));
+                        if ($tryCall || method_exists($obj, $method)) {
+                            $value = call_user_func(array($obj, $method));
+                            $arr[$attribute] = $value;
+                        }
+                    }
+                }
+                array_push($result,$arr);
+            }
+            return $result;
+        } else {
+
+           throw new \Exception('Element should be an object');
+        }
     }
- 
 }
  

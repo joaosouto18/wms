@@ -331,7 +331,7 @@ class Expedicao_IndexController extends Action
                         if (!isset($equipeSeparacaoEn) || empty($equipeSeparacaoEn))
                             $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn);
 
-                    } elseif ($params['tipo'] == 'Mapas') {
+                    } elseif ($params['tipo'] == 'Mapa') {
                         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
                         //ENCONTRA O USUARIO DIGITADO
                         $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
@@ -339,7 +339,7 @@ class Expedicao_IndexController extends Action
                         if (is_null($usuarioEn))
                             throw new \Exception('Conferente não encontrado!');
 
-                        $codMapaSeparacao = $params['etiquetas'];
+                        $codMapaSeparacao = $params['mapa'];
                         $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
                         if (is_null($mapaSeparacaoEn))
                             throw new \Exception('Mapa de Separação não encontrado!');
