@@ -245,10 +245,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = trim($itemNf->quantidade);
+                    $itemWs['quantidade'] = trim((int)$itemNf->quantidade);
                     $itemWs['peso'] = trim($itemNf->peso);
                     if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
-                        $itemWs['peso'] = trim($itemNf->quantidade);
+                        $itemWs['peso'] = trim((int)$itemNf->quantidade);
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
