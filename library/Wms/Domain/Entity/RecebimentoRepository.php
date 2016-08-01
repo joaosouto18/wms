@@ -354,6 +354,7 @@ class RecebimentoRepository extends EntityRepository
 
                     $qtdConferida = $qtdConferida * $quantidade;
 
+                    /*
                     if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                         //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
                         $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
@@ -366,6 +367,7 @@ class RecebimentoRepository extends EntityRepository
                                 'concluido' => false);
                         }
                     }
+                    */
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
@@ -389,6 +391,7 @@ class RecebimentoRepository extends EntityRepository
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
                     }
 
+                    /*
                     if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                         //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
                         $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
@@ -401,6 +404,7 @@ class RecebimentoRepository extends EntityRepository
                                 'concluido' => false);
                         }
                     }
+                    */
                     
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
