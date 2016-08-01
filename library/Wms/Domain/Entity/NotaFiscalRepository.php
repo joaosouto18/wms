@@ -886,13 +886,13 @@ class NotaFiscalRepository extends EntityRepository
                     }
 
                     if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
-                        $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
+                        $qtd = (int)$item['quantidade'] * $item['qtdEmbalagem'];
                     } else {
-                        $qtd = $item['quantidade'];
+                        $qtd = (int)$item['quantidade'];
                     }
 
                     if ($pesoItem == 0){
-                        $pesoItem = $qtd;
+                        $pesoItem = str_replace(',','.',$qtd);
                     }
 
                     $itemEntity = new ItemNF;
