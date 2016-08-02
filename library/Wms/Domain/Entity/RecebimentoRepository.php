@@ -637,6 +637,8 @@ class RecebimentoRepository extends EntityRepository
         }
 
         $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
+        if ($divergenciaPesoVariavel == 'S')
+            $qtdDivergencia = 0;
 
         $conferenciaEntity = new ConferenciaEntity;
         $conferenciaEntity->setRecebimento($recebimentoEntity);

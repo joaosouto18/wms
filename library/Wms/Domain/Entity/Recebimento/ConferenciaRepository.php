@@ -206,7 +206,7 @@ class ConferenciaRepository extends EntityRepository
 
             if ($qtdDivergencia == 0) {
                 $qtdConferida = $pesoRecebimento . " Kg";
-                if ($pesoRecebimento > $pesoNf -$toleranciaNominal) {
+                if ($pesoRecebimento > $pesoNf - $toleranciaNominal) {
                     $qtdDivergencia = $pesoRecebimento - $pesoNf - $toleranciaNominal;
                 } else {
                     $qtdDivergencia = $pesoRecebimento - $pesoNf + $toleranciaNominal;
