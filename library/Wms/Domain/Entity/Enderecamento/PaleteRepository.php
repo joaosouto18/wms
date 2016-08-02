@@ -555,7 +555,7 @@ class PaleteRepository extends EntityRepository
             $pesoLimite = $this->getPesoLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento);
+        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento,$pesoLimite,$pesoTotalConferido);
 
         $this->_em->flush();
         $this->_em->clear();
@@ -613,7 +613,6 @@ class PaleteRepository extends EntityRepository
 
     public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento = 'A', $pesoLimite = null, $pesoTotalConferido = null)
     {
-
         //QUANTIDADE DA NOTA
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
         $nfRepo    = $this->getEntityManager()->getRepository('wms:NotaFiscal');
