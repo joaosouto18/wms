@@ -1358,7 +1358,7 @@ class RecebimentoRepository extends EntityRepository
                        VPES.PESO as \"PESO TOTAL\",
                        VPES.CUBAGEM as \"CUBAGEM\",
                        UMA.UMA as \"UMA\",
-                       UMA.QTD as \"QTD NA UMA\",
+                       PP.QTD as \"QTD NA UMA\",
                        NP.NUM_LASTRO as \"LASTRO\",
                        NP.NUM_CAMADAS as \"CAMADAS\",
                        U.DSC_UNITIZADOR as \"UNITIZADOR\",
@@ -1386,9 +1386,10 @@ class RecebimentoRepository extends EntityRepository
                                                           AND VPES.COD_PRODUTO = PROD.COD_PRODUTO
                                                           AND VPES.DSC_GRADE = PROD.DSC_GRADE
                   LEFT JOIN PALETE                   UMA   ON REC.COD_RECEBIMENTO = UMA.COD_RECEBIMENTO
-                                                          AND VQTD.COD_PRODUTO = UMA.COD_PRODUTO
-                                                          AND VQTD.DSC_GRADE = UMA.DSC_GRADE
-                  LEFT JOIN NORMA_PALETIZACAO        NP    ON NP.COD_NORMA_PALETIZACAO = UMA.COD_NORMA_PALETIZACAO
+                  LEFT JOIN PALETE_PRODUTO           PP    ON UMA.UMA = PP.UMA
+                                                          AND VQTD.COD_PRODUTO = PP.COD_PRODUTO
+                                                          AND VQTD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN NORMA_PALETIZACAO        NP    ON NP.COD_NORMA_PALETIZACAO = PP.COD_NORMA_PALETIZACAO
                   LEFT JOIN UNITIZADOR               U     ON UMA.COD_UNITIZADOR = U.COD_UNITIZADOR
                   LEFT JOIN ORDEM_SERVICO            OSUMA ON UMA.UMA = OSUMA.COD_ENDERECAMENTO
                   LEFT JOIN PESSOA                   OPEMP ON OSUMA.COD_PESSOA = OPEMP.COD_PESSOA
@@ -1403,7 +1404,7 @@ class RecebimentoRepository extends EntityRepository
                            OSREC.COD_OS,
                            NFI.COD_PRODUTO,
                            NFI.DSC_GRADE,
-                           UMA.COD_NORMA_PALETIZACAO,
+                           PP.COD_NORMA_PALETIZACAO,
                            UMA.COD_STATUS,
                            UMA.UMA";
 
