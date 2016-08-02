@@ -685,7 +685,8 @@ class PaleteRepository extends EntityRepository
                 }
 
                 $pesoTotalPaletes = 0;
-                $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
+                if ($qtdPaletes > 0)
+                    $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
                     $pesoTotal += $pesoPorPalete;
                     $pesoTotalPaletes += $pesoPorPalete;
