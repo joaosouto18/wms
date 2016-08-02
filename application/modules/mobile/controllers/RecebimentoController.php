@@ -298,6 +298,7 @@ class Mobile_RecebimentoController extends Action
                     $params['numPeso'] = str_replace(",",".",$params['numPeso']);
                     $parametros['COD_PRODUTO'] = $produtoEn->getId();
                     $parametros['DSC_GRADE'] = $produtoEn->getGrade();
+                    $qtdConferida = str_replace(",",".",$params['numPeso']);
 //                    $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
 
 //                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto($parametros);

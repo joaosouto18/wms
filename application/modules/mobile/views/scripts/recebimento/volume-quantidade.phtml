@@ -23,7 +23,9 @@
 
         <tr class="title">
             <td><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
-            <td><label class="field required" for="qtdConferida">Quantidade</label></td>
+            <?php if ($this->pesoVariavel == 'N') : ?>
+                <td><label class="field required" for="qtdConferida">Quantidade</label></td>
+            <?php endif; ?>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
                 <td><label class="field required" for="dataValidade">Data Validade</label></td>
             <?php endif; ?>
@@ -39,13 +41,15 @@
                     <?php endforeach; ?>
                 </select>
             </td>
-            <td><input type="text" maxlength="15" size="10" class="required focus" id="qtdConferida" name="qtdConferida" value="" /></td>
+            <?php if ($this->pesoVariavel == 'N') : ?>
+                <td><input type="text" maxlength="15" size="10" class="required focus" id="qtdConferida" name="qtdConferida" value="" /></td>
+            <?php endif; ?>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
                 <td><input type="text" maxlength="10" size="10" class="required focus date" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>" /></td>
             <?php endif; ?>
             <?php if ( $this->pesoVariavel == 'S' ) : ?>
                 <td>
-                    <input type="text" maxlength="15" value="" size="10" class=" required" id="numPeso" name="numPeso" value="" />
+                    <input type="text" maxlength="15" value="" size="10" class="required focus" id="numPeso" name="numPeso" value="" />
                 </td>
             <?php endif; ?>
         </tr>
