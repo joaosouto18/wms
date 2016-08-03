@@ -71,11 +71,11 @@ class Enderecamento_PaleteController extends Action
             //SE O PRODUTO TIVER PESO VARIAVEL CONSIDERA O PESO DO PALETE
             if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                 $dadosPalete['qtd'] = str_replace('.',',',$paleteEn->getPeso(). ' kg');
+                $paleteEn = $paleteEn->getProdutos();
             } else {
                 $paleteEn = $paleteEn->getProdutos();
                 $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
             }
-            $paleteEn = $paleteEn->getProdutos();
 
             if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
                 $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));

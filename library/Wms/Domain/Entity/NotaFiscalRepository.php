@@ -875,15 +875,6 @@ class NotaFiscalRepository extends EntityRepository
                     $grade = trim($item['grade']);
                     $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
-                    if (isset($item['peso'])) {
-                        $pesoItem = trim($item['peso']);
-                        if ($pesoItem == "") {
-                            $pesoItem = 0;
-                        } else {
-                            $pesoItem = (float)$pesoItem;
-                        }
-                        $pesoTotal = $pesoTotal + $pesoItem;
-                    }
 
                     if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
                         $qtd = (int)$item['quantidade'] * $item['qtdEmbalagem'];
@@ -891,9 +882,15 @@ class NotaFiscalRepository extends EntityRepository
                         $qtd = (int)$item['quantidade'];
                     }
 
-                    if ($pesoItem == 0){
-                        $pesoItem = str_replace(',','.',$qtd);
+                    if (!isset($item['peso']) || empty($item['peso'])) {
+                        if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
+                            $item['peso'] = (float)$item['quantidade'] * $item['qtdEmbalagem'];
+                        } else {
+                            $item['peso'] = (float)$item['quantidade'];
+                        }
                     }
+                    $pesoItem = str_replace(',','.',trim($item['peso']));
+                    $pesoTotal = $pesoTotal + $pesoItem;
 
                     $itemEntity = new ItemNF;
                     $itemEntity->setNotaFiscal($notaFiscalEntity);
