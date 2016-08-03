@@ -28,7 +28,7 @@ class PaleteRepository extends EntityRepository
           FROM RECEBIMENTO R
           LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
           LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
-                       FROM (SELECT MIN (QTD) as QTD, COD_RECEBIMENTO
+                       FROM (SELECT MAX (QTD) as QTD, COD_RECEBIMENTO
                                FROM V_QTD_RECEBIMENTO
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO
