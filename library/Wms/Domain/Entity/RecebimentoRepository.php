@@ -655,6 +655,9 @@ class RecebimentoRepository extends EntityRepository
         $em->persist($conferenciaEntity);
         $em->flush();
 
+        if ($divergenciaPesoVariavel == 'S' && $produtoEntity->getPossuiPesoVariavel() == 'S')
+            $qtdDivergencia = 1;
+        
         return $qtdDivergencia;
     }
 
