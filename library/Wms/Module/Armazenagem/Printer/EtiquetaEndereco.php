@@ -293,8 +293,6 @@ class EtiquetaEndereco extends Pdf
             }
             $this->Cell(0,25,$dscProduto,0,0);
         }
-        var_dump("Aqui dentro 4");exit;
-
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 45 , 90);
     }
 
