@@ -34,6 +34,10 @@ class Web_ImprimirController extends Action
         $params = $this->_getAllParams();
         $enderecos = $params['enderecos'];
 
+        if (($enderecos == null) || (count($enderecos)==0)) {
+            throw new \Exception("Nenhum endereço foi selecionado");
+        }
+
         $codEndereco = implode(",", $enderecos);
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
