@@ -80,7 +80,19 @@ class Expedicao_CorteController  extends Action
         $pedidos = $pedidoRepo->getPedidoByExpedicao($id);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
-        $this->view->grid = $grid->init($pedidos, $id);
+        $this->view->grid = $grid->init($pedidos);
+
+    }
+
+    public function corteAntecipadoByMapaAction(){
+        $id = $this->_getParam('COD_MAPA_SEPARACAO');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($id);
+
+        $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
+        $this->view->grid = $grid->init($pedidos);
 
     }
 
