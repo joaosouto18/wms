@@ -71,10 +71,7 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo6($codBarras);
                     break;
                 case 7:
-
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
-                    var_dump("Aqui dentro 3");exit;
-
                     $this->layoutModelo7($produto,$codBarras);
                     break;
                 default:
@@ -296,6 +293,7 @@ class EtiquetaEndereco extends Pdf
             }
             $this->Cell(0,25,$dscProduto,0,0);
         }
+        var_dump("Aqui dentro 4");exit;
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 45 , 90);
     }
