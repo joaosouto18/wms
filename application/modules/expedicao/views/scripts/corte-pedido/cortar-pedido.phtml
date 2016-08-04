@@ -1,0 +1,8 @@
+<form action="/expedicao/corte-pedido/cortar-pedido">
+    <b>Motivo do Corte:</b>
+    <input type="text" name="motivoCorte" id="motivoCorte" value="" size="40%" title="motivoCorte" style="margin-right: 15px">
+    <input type="hidden" name="id" id="id" value="<?php echo $this->pedido; ?>">
+    <b>Senha:</b>
+    <input type="password" name="senha" id="senha" value="" size="0%" title="senha" style="margin-right: 25px">
+    <input type="submit" name="submit" id="btnCortar" value="Confirmar Cortes" class="btn" style="margin-top: 10px; margin-bottom: 15px">
+</form>

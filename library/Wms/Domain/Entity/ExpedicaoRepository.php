@@ -2624,7 +2624,7 @@ class ExpedicaoRepository extends EntityRepository
         }
     }
 
-    private function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
+    public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
 
         $entidadePedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')->findOneBy(array('codPedido'=>$codPedido,
             'codProduto'=>$codProduto,
@@ -2646,8 +2646,6 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
-//            if ($reservaEstoqueExpedicao->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO)
-//                throw new \Exception('Não é possível cortar pedido/produto com a expedição já finalizada!');
 
             $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
             $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
@@ -2693,18 +2691,20 @@ class ExpedicaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function getProdutosExpedicaoCorte ($idExpedicao){
+    public function getProdutosExpedicaoCorte($idPedido)
+    {
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
                        SUM(PP.QUANTIDADE) as QTD,
-                       SUM(PP.QTD_CORTADA) as QTD_CORTADA
+                       SUM(PP.QTD_CORTADA) as QTD_CORTADA,
+                       PP.COD_PEDIDO
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                 WHERE C.COD_EXPEDICAO = $idExpedicao
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO
+                 WHERE PP.COD_PEDIDO = $idPedido
+                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

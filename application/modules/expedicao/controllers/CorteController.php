@@ -75,12 +75,61 @@ class Expedicao_CorteController  extends Action
     public function corteAntecipadoAjaxAction(){
         $id = $this->_getParam('id');
 
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+        $pedidos = $pedidoRepo->getPedidoByExpedicao($id);
+
+        $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
+        $this->view->grid = $grid->init($pedidos, $id);
+
+    }
+
+    public function listAction()
+    {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($id);
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($this->_getParam('id',0));
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
-        $this->view->grid = $grid->init($produtos, $id);
+        $this->view->grid = $grid->init($produtos,$this->_getParam('id',0));
+    }
+
+    public function cortarItemAction()
+    {
+        $this->view->pedido  = $pedido  = $this->_getParam('id',0);
+        $this->view->produto = $produto = $this->_getParam('COD_PRODUTO',0);
+        $this->view->grade   = $grade  = $this->_getParam('DSC_GRADE',0);
+        $quantidade = $this->_getParam('quantidade');
+
+        $senha    = $this->_getParam('senha');
+
+        if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade)) {
+
+            try {
+                $this->getEntityManager()->beginTransaction();
+
+                if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA'))
+                    throw new \Exception("Senha Informada Inválida");
+
+                /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+                $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+                $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
+                    ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
+
+                if (!isset($pedidoProduto) || empty($pedidoProduto))
+                    throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
+
+                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $this->_getParam('motivoCorte',null));
+
+                $this->getEntityManager()->commit();
+                $this->addFlashMessage('success','Produto ' .$produto. ' grade ' .$grade. ' pedido '.$pedido.' cortado com Sucesso');
+                $this->_redirect('/expedicao');
+            } catch (\Exception $e) {
+                $this->getEntityManager()->rollback();
+                return $e->getMessage();
+            }
+        }
+
     }
 
 }
