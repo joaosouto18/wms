@@ -71,6 +71,8 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo6($codBarras);
                     break;
                 case 7:
+                    var_dump("Aqui dentro 2");exit;
+
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo7($produto,$codBarras);
                     break;
@@ -80,7 +82,6 @@ class EtiquetaEndereco extends Pdf
                     break;
             }
         }
-        var_dump("Aqui dentro 2");exit;
 
         $this->Output('Etiquetas-endereco.pdf','D');
         exit;
