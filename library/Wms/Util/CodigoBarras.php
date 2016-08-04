@@ -566,7 +566,6 @@ class CodigoBarras
     }
 
     public static function gerarNovo($code) {
-        var_dump("Aqui dentro 5");exit;
 
         // Nome arquivo
         $nomeArquivo = $code . ".png";
@@ -597,6 +596,8 @@ class CodigoBarras
             $bars.=$Rencode[$code[$x]];
         }
         $bars.=$ends;
+        var_dump("Aqui dentro 5");exit;
+
         /* Generate the Barcode Image */
         $img = ImageCreate($lw*95+30,$hi+30);
         $fg = ImageColorAllocate($img, 0, 0, 0);
