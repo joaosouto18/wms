@@ -37,13 +37,13 @@ class Web_ImprimirController extends Action
         if (($enderecos == null) || (count($enderecos)==0)) {
             throw new \Exception("Nenhum endereço foi selecionado");
         }
-        var_dump("Aqui");exit;
 
         $codEndereco = implode(",", $enderecos);
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
         $EnderecoRepository   = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         $endereco = $EnderecoRepository->getImprimirEndereco($codEndereco);
+        var_dump("Aqui");exit;
 
         $modelo =  $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
             if (($modelo == 4) || ($modelo == 6)) {
