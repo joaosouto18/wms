@@ -31,6 +31,7 @@ class Web_ImprimirController extends Action
 
     public function imprimirAction()
     {
+        throw new \Exception("Aqui");
         $params = $this->_getAllParams();
         $enderecos = $params['enderecos'];
 
