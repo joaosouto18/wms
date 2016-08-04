@@ -52,8 +52,9 @@ class Web_ImprimirController extends Action
             } else {
                 $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
             }
-        $etiqueta->imprimir($endereco, $modelo);
         var_dump("Aqui final");exit;
+
+        $etiqueta->imprimir($endereco, $modelo);
 
     }
 }
