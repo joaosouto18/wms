@@ -43,7 +43,6 @@ class Web_ImprimirController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
         $EnderecoRepository   = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         $endereco = $EnderecoRepository->getImprimirEndereco($codEndereco);
-        var_dump("Aqui");exit;
 
         $modelo =  $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
             if (($modelo == 4) || ($modelo == 6)) {
@@ -54,5 +53,7 @@ class Web_ImprimirController extends Action
                 $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
             }
         $etiqueta->imprimir($endereco, $modelo);
+        var_dump("Aqui final");exit;
+
     }
 }
