@@ -33,7 +33,6 @@ class EtiquetaEndereco extends Pdf
         $count = 0;
         $this->y=0;
         $this->count = 0;
-        var_dump("Aqui dentro");exit;
 
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
@@ -81,6 +80,8 @@ class EtiquetaEndereco extends Pdf
                     break;
             }
         }
+        var_dump("Aqui dentro 2");exit;
+
         $this->Output('Etiquetas-endereco.pdf','D');
         exit;
     }
