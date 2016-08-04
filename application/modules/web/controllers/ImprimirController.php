@@ -31,13 +31,13 @@ class Web_ImprimirController extends Action
 
     public function imprimirAction()
     {
-        throw new \Exception("Aqui");
         $params = $this->_getAllParams();
         $enderecos = $params['enderecos'];
 
         if (($enderecos == null) || (count($enderecos)==0)) {
             throw new \Exception("Nenhum endereço foi selecionado");
         }
+        var_dump("Aqui");exit;
 
         $codEndereco = implode(",", $enderecos);
 
