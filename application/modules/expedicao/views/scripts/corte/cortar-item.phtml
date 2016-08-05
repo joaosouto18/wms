@@ -1,13 +1,13 @@
 <form action="/expedicao/corte/cortar-item">
     <b>Motivo do Corte:</b>
-    <input type="text" name="motivoCorte" id="motivoCorte" value="" size="40%" title="motivoCorte" style="margin-right: 15px">
+    <input type="text" name="motivoCorte" id="motivoCorte" value="" size="35" title="motivoCorte" style="margin-right: 15px">
     <input type="hidden" name="id" id="id" value="<?php echo $this->pedido; ?>">
     <input type="hidden" name="COD_PRODUTO" id="COD_PRODUTO" value="<?php echo $this->produto; ?>">
     <input type="hidden" name="DSC_GRADE" id="DSC_GRADE" value="<?php echo $this->grade; ?>">
     <input type="hidden" name="expedicao" id="expedicao" value="<?php echo $this->expedicao; ?>">
     <b>Senha:</b>
-    <input type="password" name="senha" id="senha" value="" size="0%" title="senha" style="margin-right: 25px">
+    <input type="password" name="senha" id="senha" value="" size="11" title="senha" style="margin-right: 25px">
     <b>Quantidade:</b>
-    <input type="text" name="quantidade" id="quantidade" value="" size="0%" title="quantidade" style="margin-right: 25px">
+    <input type="text" name="quantidade" id="quantidade" value="" size="4" title="quantidade" style="margin-right: 25px">
     <input type="submit" name="submit" id="btnCortar" value="Confirmar Cortes" class="btn" style="margin-top: 10px; margin-bottom: 15px">
 </form>
