@@ -63,6 +63,7 @@ class Expedicao_CortePedidoController  extends Action
     public function cortarPedidoAction()
     {
         $this->view->pedido = $pedido = $this->_getParam('id',0);
+        $this->view->expedicao = $idExpedicao = $this->_getParam('expedicao');
 
         $senha    = $this->_getParam('senha');
         $motivo   = $this->_getParam('motivoCorte');
@@ -77,6 +78,8 @@ class Expedicao_CortePedidoController  extends Action
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+                $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
                 $pedidoProdutos = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
                     ->findBy(array('codPedido' => $pedido));
 
@@ -86,6 +89,8 @@ class Expedicao_CortePedidoController  extends Action
                 foreach ($pedidoProdutos as $produto) {
                     $expedicaoRepo->cortaPedido($pedido, $produto->getCodProduto(), $produto->getGrade(), $produto->getQuantidade(), $this->_getParam('motivoCorte',null));
                 }
+
+                $andamentoRepo->save("Pedido $pedido cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
 
                 $this->getEntityManager()->commit();
                 $this->addFlashMessage('success','Pedido '.$pedido.' Cortado com Sucesso');

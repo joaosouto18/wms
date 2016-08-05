@@ -17,7 +17,7 @@ class CortePedido extends Grid
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($pedidos)
+    public function init($pedidos,$idExpedicao)
     {
         $this->showPager = false;
         $this->showExport = false;
@@ -35,6 +35,7 @@ class CortePedido extends Grid
                     'controllerName' => 'corte',
                     'actionName' => 'list',
                     'cssClass' => 'inside-modal',
+                    'params' => array('expedicao' => $idExpedicao),
                     'pkIndex' => 'id'
                 ))
                 ->addAction(array(
@@ -43,6 +44,7 @@ class CortePedido extends Grid
                     'controllerName' => 'corte-pedido',
                     'actionName' => 'cortar-pedido',
                     'cssClass' => 'inside-modal',
+                    'params' => array('expedicao' => $idExpedicao),
                     'pkIndex' => 'id'
                 ));
         $this->setShowPager(true);

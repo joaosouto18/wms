@@ -80,42 +80,47 @@ class Expedicao_CorteController  extends Action
         $pedidos = $pedidoRepo->getPedidoByExpedicao($id);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
-        $this->view->grid = $grid->init($pedidos);
+        $this->view->grid = $grid->init($pedidos,$id);
 
     }
 
     public function corteAntecipadoByMapaAction(){
         $id = $this->_getParam('COD_MAPA_SEPARACAO');
+        $idExpedicao = $this->_getParam('id');
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($id);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
-        $this->view->grid = $grid->init($pedidos);
+        $this->view->grid = $grid->init($pedidos,$idExpedicao);
 
     }
 
     public function listAction()
     {
+        $idExpedicao = $this->_getParam('expedicao');
+
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($this->_getParam('id',0));
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
-        $this->view->grid = $grid->init($produtos,$this->_getParam('id',0));
+        $this->view->grid = $grid->init($produtos,$this->_getParam('id',0),$idExpedicao);
     }
 
     public function cortarItemAction()
     {
-        $this->view->pedido  = $pedido  = $this->_getParam('id',0);
-        $this->view->produto = $produto = $this->_getParam('COD_PRODUTO',0);
-        $this->view->grade   = $grade  = $this->_getParam('DSC_GRADE',0);
-        $quantidade = $this->_getParam('quantidade');
+        $this->view->pedido    = $pedido    = $this->_getParam('id',0);
+        $this->view->produto   = $produto   = $this->_getParam('COD_PRODUTO',0);
+        $this->view->grade     = $grade     = $this->_getParam('DSC_GRADE',0);
+        $this->view->expedicao = $expedicao = $this->_getParam('expedicao');
+        $quantidade            = $this->_getParam('quantidade');
+        $motivo                = $this->_getParam('motivoCorte');
 
         $senha    = $this->_getParam('senha');
 
-        if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade)) {
+        if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade) && isset($motivo) && !empty($motivo)) {
 
             try {
                 $this->getEntityManager()->beginTransaction();
@@ -125,6 +130,8 @@ class Expedicao_CorteController  extends Action
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
+                $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
                     ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
 
@@ -132,6 +139,8 @@ class Expedicao_CorteController  extends Action
                     throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
                 $expedicaoRepo->cortaPedido($pedido, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $this->_getParam('motivoCorte',null));
+                $observacao = 'Produto '.$pedidoProduto->getCodProduto().' Grade '.$pedidoProduto->getGrade().' referente ao pedido '.$pedido.' cortado - motivo: '.$motivo;
+                $expedicaoAndamentoRepo->save($observacao, $expedicao);
 
                 $this->getEntityManager()->commit();
                 $this->addFlashMessage('success','Produto ' .$produto. ' grade ' .$grade. ' pedido '.$pedido.' cortado com Sucesso');

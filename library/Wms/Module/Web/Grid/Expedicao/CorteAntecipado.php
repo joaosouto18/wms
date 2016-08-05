@@ -18,7 +18,7 @@ class CorteAntecipado extends Grid
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($produtos,$idPedido)
+    public function init($produtos,$idPedido,$idExpedicao)
     {
         $this->showPager = false;
         $this->showExport = false;
@@ -52,6 +52,7 @@ class CorteAntecipado extends Grid
                     'controllerName' => 'corte',
                     'actionName' => 'cortar-item',
                     'cssClass' => 'inside-modal',
+                    'params' => array('expedicao' => $idExpedicao),
                     'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO')
                 ));
         $this->setShowPager(true);

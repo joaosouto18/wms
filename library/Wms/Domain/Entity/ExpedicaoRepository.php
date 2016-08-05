@@ -1909,7 +1909,6 @@ class ExpedicaoRepository extends EntityRepository
                  AND (E.DTH_INICIO <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
                 ORDER BY E.DTH_INICIO";
 
-        echo $sql; exit;
         $resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
         return $resultado;
     }
