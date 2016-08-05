@@ -1016,4 +1016,16 @@ class EstoqueRepository extends EntityRepository
         return $produtosDivergentes;
     }
 
+    public function getReservaAndEstoqueByEndereco($endereco)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('de.id')
+            ->from('wms:Deposito\Endereco', 'de')
+            ->leftJoin('wms:Ressuprimento\ReservaEstoque', 're', 'WITH', "re.endereco = de.id AND re.tipoReserva = 'E' AND re.atendida = 'N'")
+            ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'e.depositoEndereco = de.id')
+            ->where("de.id = $endereco");
+
+        return $sql->getQuery()->getResult();
+    }
+
 }

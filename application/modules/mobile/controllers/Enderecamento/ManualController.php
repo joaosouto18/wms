@@ -32,13 +32,13 @@ class Mobile_Enderecamento_ManualController extends Action
                 unset($params['action']);
                 unset($params['submit']);
 
-                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-                $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['produto']));
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
+                $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto']));
 
-                /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
-                $volumeRepo = $em->getRepository('wms:Produto\Volume');
-                $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['produto']));
+                /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
+                $produtoVolumeRepo = $em->getRepository('wms:Produto\Volume');
+                $volumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $params['produto']));
 
                 if (!$embalagemEn && !$volumeEn)
                     throw new \Exception("O código de barras informado não existe!");
@@ -53,13 +53,13 @@ class Mobile_Enderecamento_ManualController extends Action
                     $this->view->capacidadePicking = $volumeEn->getCapacidadePicking();
                 }
 
-                /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
-                $recebimentoEmbalagem = $embalagemRepo->getEmbalagemByRecebimento($params['id'], $codProduto, $grade);
+                /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $recebimentoEmbalagemRepo */
+                $recebimentoEmbalagemRepo = $em->getRepository('wms:Recebimento\Embalagem');
+                $recebimentoEmbalagem = $recebimentoEmbalagemRepo->getEmbalagemByRecebimento($params['id'], $codProduto, $grade);
 
-                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $volumeRepo */
-                $volumeRepo = $em->getRepository('wms:Recebimento\Volume');
-                $recebimentoVolume = $volumeRepo->getVolumeByRecebimento($params['id'], $codProduto, $grade);
+                /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $recebimentoVolumeRepo */
+                $recebimentoVolumeRepo = $em->getRepository('wms:Recebimento\Volume');
+                $recebimentoVolume = $recebimentoVolumeRepo->getVolumeByRecebimento($params['id'], $codProduto, $grade);
 
                 if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
@@ -193,7 +193,6 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $this->getEntityManager()->beginTransaction();
 
-            $LeituraColetor = new LeituraColetor();
             $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -221,6 +220,11 @@ class Mobile_Enderecamento_ManualController extends Action
                 throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
 
             $novaCapacidadePicking = $params['capacidadePicking'];
+
+            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if (count($estoqueRepo->getReservaAndEstoqueByEndereco($enderecoEn->getId())) > 0)
+                    throw new \Exception('Já existe estoque ou reserva de estoque para o endereço '.$enderecoEn->getDescricao());
+            }
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
@@ -268,7 +272,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
             }
-            
+
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa);
