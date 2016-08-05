@@ -45,6 +45,7 @@ class Mobile_ConsultaProdutoController extends Action
             $this->view->norma = $info[0]['numNorma'];
             $this->view->peso = $info[0]['numPeso'];
             $this->view->picking = $info[0]['picking'];
+            $this->view->diasVidaUtil = $info[0]['diasVidaUtil'];
 
             if ($info[0]['idEmbalagem'] != NULL) {
                 $dscEmbalagem = $info[0]['descricaoEmbalagem'] . " (" . $info[0]['quantidadeEmbalagem'] . ")";
