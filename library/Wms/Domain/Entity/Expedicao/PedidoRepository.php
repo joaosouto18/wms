@@ -416,8 +416,10 @@ class PedidoRepository extends EntityRepository
     public function getPedidoByExpedicao($idExpedicao)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id')
+            ->select('p.id, pe.nome cliente, i.descricao itinerario')
             ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('wms:Pessoa','pe', 'WITH', 'pe.id = p.pessoa')
+            ->innerJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
             ->where("e.id = $idExpedicao")

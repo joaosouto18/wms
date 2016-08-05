@@ -29,6 +29,14 @@ class CortePedido extends Grid
                     'label' => 'Cod.',
                     'index' => 'id',
                 ))
+                ->addColumn(array(
+                    'label' => 'Cliente.',
+                    'index' => 'cliente',
+                ))
+                ->addColumn(array(
+                    'label' => 'Itinerario.',
+                    'index' => 'itinerario',
+                ))
                 ->addAction(array(
                     'label' => 'Cortar Itens',
                     'moduleName' => 'expedicao',
