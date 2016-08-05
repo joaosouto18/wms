@@ -811,18 +811,46 @@ class Mobile_EnderecamentoController extends Action
 
     public function enderecoDestinoAction()
     {
-        $this->view->codigoBarrasUMA = $this->_getParam('codigoBarrasUMA');
+        $this->view->codigoBarrasUMA = $codBarrasUma = $this->_getParam('codigoBarrasUMA');
         $this->view->etiquetaProduto = $codBarras = $this->_getParam('etiquetaProduto');
         $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
         $enderecoParam = $this->_getParam('end');
         $nivel = $this->_getParam('nivelAntigo');
         $enderecoByParametro = $this->getEnderecoByParametro($enderecoParam);
+
+        /** @var \Wms\Domain\Entity\Deposito\Endereco $endereco */
         $endereco = $this->getEnderecoNivel($enderecoByParametro[0]['DSC_DEPOSITO_ENDERECO'],$nivel);
 
+        $embalagemEn = null;
+
+        if (!empty($codBarrasUma)){
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+            $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
+
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $paleteProduto */
+            $paleteProduto = $paleteProdutoRepo->findOneBy(array('uma'=>$codBarrasUma));
+            if (empty($paleteProduto))
+                throw new Exception("UMA $codBarrasUma não encontrada!");
+
+            $embalagemEn = $paleteProduto->getEmbalagemEn();
+
+        } else if (!empty($codBarras)){
+            $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+            $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+            if (empty($embalagemEn))
+                throw new Exception("Não foi encontrada a embalagem $codBarras");
+        }
+
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $estoqueRepo = $this->em->getRepository('wms:Enderecamento\Estoque');
+
+        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
+        if (empty($estoqueEn))
+            throw new Exception("Não foi encontrado o estoque com endereco " . $endereco->getDescricao() . " produto " . $embalagemEn->getCodProduto() . " grade " . $embalagemEn->getGrade());
+
+        $this->view->qtd = $qtd = $estoqueEn->getQtd();
 
         $idEndereco = $endereco->getId();
         $codProduto = $embalagemEn->getCodProduto();
@@ -840,10 +868,6 @@ class Mobile_EnderecamentoController extends Action
         if (count($verificaReservaSaida) > 0) {
             throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
         }
-
-        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-        $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
-        $this->view->qtd = $qtd = $estoqueEn->getQtd();
     }
 
     public function confirmaEnderecamentoAction()
