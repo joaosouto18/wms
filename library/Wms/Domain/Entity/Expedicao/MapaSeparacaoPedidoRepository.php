@@ -19,7 +19,7 @@ class MapaSeparacaoPedidoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->setParameter('mapa',$idMapa)
             ->where('mps.mapaSeparacao = :mapa')
-            ->groupBy('p.id');
+            ->groupBy('p.id, pe.nome, i.descricao');
         
         return $sql->getQuery()->getResult();
     }
