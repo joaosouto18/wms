@@ -382,8 +382,10 @@ class Mobile_RecebimentoController extends Action
             } else {
                 $idRecebimento = $params['idRecebimento'];
                 $idOrdemServico = $params['idOrdemServico'];
-                $idProdutoVolume = $params['idProdutoVolume'];
-                $idProdutoEmbalagem = $params['idProdutoEmbalagem'];
+                if (isset($params['idProdutoVolume']) && !empty($params['idProdutoVolume']))
+                    $idProdutoVolume = $params['idProdutoVolume'];
+                if (isset($params['idProdutoEmbalagem']) && !empty($params['idProdutoEmbalagem']))
+                    $idProdutoEmbalagem = $params['idProdutoEmbalagem'];
                 $qtdConferida = $params['qtdConferida'];
                 $idNormaPaletizacao = $params['idNormaPaletizacao'];
                 $params['dataValidade'] = new Zend_Date($params['dataValidade']);

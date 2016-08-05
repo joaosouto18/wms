@@ -596,6 +596,7 @@ class CodigoBarras
             $bars.=$Rencode[$code[$x]];
         }
         $bars.=$ends;
+
         /* Generate the Barcode Image */
         $img = ImageCreate($lw*95+30,$hi+30);
         $fg = ImageColorAllocate($img, 0, 0, 0);

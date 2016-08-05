@@ -33,6 +33,7 @@ class EtiquetaEndereco extends Pdf
         $count = 0;
         $this->y=0;
         $this->count = 0;
+
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
 
@@ -79,6 +80,7 @@ class EtiquetaEndereco extends Pdf
                     break;
             }
         }
+
         $this->Output('Etiquetas-endereco.pdf','D');
         exit;
     }
@@ -291,7 +293,6 @@ class EtiquetaEndereco extends Pdf
             }
             $this->Cell(0,25,$dscProduto,0,0);
         }
-
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 45 , 90);
     }
 
