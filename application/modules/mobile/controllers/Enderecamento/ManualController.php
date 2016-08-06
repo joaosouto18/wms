@@ -221,10 +221,10 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $novaCapacidadePicking = $params['capacidadePicking'];
 
-            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                if (count($estoqueRepo->getReservaAndEstoqueByEndereco($enderecoEn->getId())) > 0)
-                    throw new \Exception('Já existe estoque ou reserva de estoque para o endereço '.$enderecoEn->getDescricao());
-            }
+//            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+//                if (count($estoqueRepo->getReservaAndEstoqueByEndereco($enderecoEn->getId())) > 0)
+//                    throw new \Exception('Já existe estoque ou reserva de estoque para o endereço '.$enderecoEn->getDescricao());
+//            }
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
