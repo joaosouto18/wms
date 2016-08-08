@@ -517,12 +517,10 @@ class RecebimentoRepository extends EntityRepository
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId());
+                    $em->flush();
                 }
-
-                $em->commit();
-
                 $em->flush();
-
+                $em->commit();
                 return array('exception' => null);
 
             } catch (\Exception $e) {

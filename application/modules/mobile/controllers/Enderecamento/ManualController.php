@@ -309,7 +309,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
 
         if (count($volumes) == 0) {
-            throw new \Exception('Produto não possui embalagens cadastradas');
+            throw new \Exception('Produto não possui volumes ou embalagem padrão definidas');
         }
 
         $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento")->find($idRecebimento);
