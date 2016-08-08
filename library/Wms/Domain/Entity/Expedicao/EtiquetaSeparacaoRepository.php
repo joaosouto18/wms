@@ -1573,9 +1573,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function getEtiquetasByCargaExterno($idCargaExterno, $idTipoCarga, $statusEtiqueta = null)
     {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' c.codCargaExterno as idCarga, tc.sigla as tipoCarga, tp.sigla as tipoPedido, es.codEntrega as codPedido, es.codBarras as codEtiqueta, es.codProduto, es.grade,
-                   es.tipoComercializacao as dscVolume, es.dthConferencia, es.codStatus, s.sigla as status, es.reimpressao
+                   es.tipoComercializacao as dscVolume, es.dthConferencia, es.codStatus, s.sigla as status, es.reimpressao, es.codBarrasProduto
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Util\Sigla', 'tc', 'WITH', 'es.codTipoCarga = tc.id')
@@ -1595,7 +1597,46 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->setParameter('statusEtiqueta', $statusEtiqueta);
         }
 
-        return $dql->getQuery()->getResult();
+        $resultSet = $dql->getQuery()->getResult();
+
+        $etqArray = array();
+        foreach ($resultSet as $row) {
+            $idEtiquetaSeparacao = $row['codEtiqueta'];
+            $etqSeparacaoEn = $this->find($idEtiquetaSeparacao);
+            $embalagemEn = $etqSeparacaoEn->getProdutoEmbalagem();
+
+            $codBarrasArray = array();
+            if ($embalagemEn == null) {
+                $codBarrasArray[] = $row['codBarrasProduto'];
+            } else {
+                $embalagensEn = $embalagemRepo->findBy(array(
+                    'codProduto'=>$embalagemEn->getCodProduto(),
+                    'grade'=>$embalagemEn->getGrade(),
+                    'quantidade'=>$embalagemEn->getQuantidade()));
+
+                foreach ($embalagensEn as $emb){
+                    $codBarrasArray[] = $emb->getCodigoBarras();
+                }
+            }
+            $value = array(
+                'idCarga'=>$row['idCarga'],
+                'tipoCarga'=>$row['tipoCarga'],
+                'tipoPedido'=>$row['tipoPedido'],
+                'codPedido'=>$row['codPedido'],
+                'codEtiqueta'=>$row['codEtiqueta'],
+                'codProduto'=>$row['codProduto'],
+                'grade'=>$row['grade'],
+                'dscVolume'=>$row['dscVolume'],
+                'dthConferencia'=>$row['dthConferencia'],
+                'codStatus'=>$row['codStatus'],
+                'status'=>$row['status'],
+                'reimpressao'=>$row['reimpressao'],
+                'codBarrasProduto'=>$codBarrasArray
+            );
+            $etqArray[] = $value;
+        }
+
+        return $etqArray;
     }
 
     public function getEtiquetasByExpedicaoAndVolumePatrimonio($idExpedicao, $volumePatrimonio)

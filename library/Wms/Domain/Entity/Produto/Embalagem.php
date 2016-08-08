@@ -339,6 +339,7 @@ class Embalagem
     }
 
     /**
+<<<<<<< HEAD
      * @return datetime
      */
     public function getDataInativacao()
@@ -385,5 +386,5 @@ class Embalagem
     {
         $this->codProduto = $codProduto;
     }
-
+    
 }
