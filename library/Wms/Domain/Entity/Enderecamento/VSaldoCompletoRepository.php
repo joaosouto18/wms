@@ -16,7 +16,7 @@ class VSaldoCompletoRepository extends EntityRepository
         ->leftJoin('p.tipoComercializacao','tp')
         ->leftJoin("s.depositoEndereco", "e")
         ->leftJoin("wms:Armazenagem\Unitizador","u","WITH","u.id=s.codUnitizador")
-        ->orderBy("e.rua, lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
+            ->orderBy("e.rua, e.predio, lado, e.nivel, e.apartamento, s.codProduto, s.grade, s.volume");
 
         $query->andWhere('e.ativo <> \'N\' ');
 
