@@ -4,9 +4,9 @@
     $this->headLink()->appendStylesheet('/css/progress-bar/progress-bar-style.css');
     $this->headLink()->appendStylesheet('/css/default/importacao.css');
 
-$destinos = $this->destinos;
+$arquivos = $this->arquivos;
 $tL1 = 0;
-//echo $this->form;
+
 ?>
 <div align="center">
     <div>
@@ -14,41 +14,15 @@ $tL1 = 0;
         <br>
         <table  class="table" style="width: 740px;">
             <tr>
+                <?php
+                /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
+                foreach ($arquivos as $arquivo){?>
                 <td align="center">
                     <label>
-                        <input type="checkbox" class="cbxImportacao" value="produto">Produto
+                        <input type="checkbox" class="cbxImportacao" value="<?php echo $arquivo->getTabelaDestino()?>"><?php echo $arquivo->getNomeInput()?>
                     </label>
                 </td>
-                <td align="center" class="cbxImportacao">
-                    <label>
-                        <input type="checkbox" class="cbxImportacao"  value="embalagem" >Embalagem
-                    </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" class="cbxImportacao"  value="fornecedor">Fornecedor
-                    </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" class="cbxImportacao"  value="cliente">Cliente
-                    </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" class="cbxImportacao"  value="carga">Carga/Expedição
-                    </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" class="cbxImportacao"  value="pedido">Pedido
-                    </label>
-                </td>
-                <td align="center">
-                    <label>
-                        <input type="checkbox" class="cbxImportacao"  value="pedidoProduto">Itens do pedido
-                    </label>
-                </td>
+                <?php } ?>
             </tr>
         </table>
     </div>
@@ -139,7 +113,7 @@ $tL1 = 0;
                 $("#tbError").show();
             }
             if (status.exception != null){
-                $("<h2>").text("Linha: "+status.iLinha+ "  -  " +status.exception).appendTo("#excptMsg");
+                $("<h2>").text("Linha: "+status.iLinha+ "  -  " + status.exception ).appendTo("#excptMsg");
                 $("#excptRw").show();
             }
         }

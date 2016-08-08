@@ -1,0 +1,35 @@
+<?php
+/** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+$campo = $this->campo;
+
+/** @var \Wms\Module\Importacao\Form\EditarCamposImportacao $form */
+$form = $this->form;
+?>
+<div id="editar-campo">
+    <dd id="identification-element">
+        <fieldset id="fieldset-editar-campo">
+            <legend>Editar campos para importação</legend>
+            <table style="width: 100%">
+                <tr>
+                    <td>
+                        <div class="field">
+                            <?php echo $form->getElement('posicao')->setValue($campo->getPosicaoTxt());?>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="field">
+                            <?php echo $form->getElement('tInicio')->setValue($campo->getTamanhoInicio()) ?>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="field">
+                            <?php echo $form->getElement('tFim')->setValue($campo->getTamanhoFim()) ?>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </dd>
+</div>

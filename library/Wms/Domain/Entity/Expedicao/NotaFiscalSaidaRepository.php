@@ -37,7 +37,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
 
     public function getQtdProdutoDivergentesByNota($data)
     {
-        $idRecebimentoReentrega = $data[id];
+        $idRecebimentoReentrega = $data['id'];
 
         $SQL = "
             SELECT DISTINCT

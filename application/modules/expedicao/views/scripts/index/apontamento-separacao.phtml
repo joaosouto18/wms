@@ -1,8 +1,48 @@
+<style>
+
+    label[for='etiquetas-pessoa'],
+    label[for='etiquetas-etiquetaFinal'],
+    label[for='txtIntervalo'],
+    label[for='mapas-codMapaSeparacao'],
+    label[for='mapas-pessoa'],
+    label[for='etiquetas-etiquetaInicial']{
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .alterRow{
+        background: #eaeaea;
+    }
+
+    .inptText{
+        display: block;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 25px !important;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: #9d9d9d;
+    }
+    
+    .btnSearch{
+        height: 40px;
+        width: 110px;
+        font-size: 20px !important;
+        margin-top: 19px;
+        margin-right: 10px;
+    }
+
+    .tbFont tr td{
+        font-size: 15px !important;
+    }
+
+</style>
 <script>
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetaInicial').value != "") {
-                codBarrasFinal   = document.getElementById('etiquetaFinal');
+            if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
+                codBarrasFinal   = document.getElementById('etiquetas-etiquetaFinal');
                 if (codBarrasFinal) {
                     codBarrasFinal.focus();
                     if(event.preventDefault) {
@@ -15,13 +55,14 @@
         }
         return true;
     }
-    function gotoSubmit(event) {
+
+    function gotoPessoa(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetaFinal').value != "") {
-                senha   = document.getElementById('pessoa');
-                if (senha) {
-                    senha.focus();
-                    
+            if (document.getElementById('etiquetas-etiquetaFinal').value != "") {
+                pessoa   = document.getElementById('etiquetas-pessoa');
+                if (pessoa) {
+                    pessoa.focus();
+
                     if(event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -32,9 +73,274 @@
         }
         return true;
     }
+
+    function gotoBuscar(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('etiquetas-pessoa').value != "") {
+                buscar   = document.getElementById('etiquetas-buscar');
+                if (buscar) {
+                    buscar.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function gotoPessoaMapa(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('mapas-codMapaSeparacao').value != "") {
+                pessoa   = document.getElementById('mapas-pessoa');
+                if (pessoa) {
+                    pessoa.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function gotoSalvarMapa(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('mapas-pessoa').value != "") {
+                buscar   = document.getElementById('mapas-salvarMapa');
+                if (buscar) {
+                    buscar.focus();
+
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    $(function () {
+        $('.btnSearch').prepend($('<img>').prop('src',basePath + "/img/icons/magnifier.png"));
+
+        $('#mapas-salvarMapa').click(function () {
+            var mapa = $('#mapas-codMapaSeparacao').val();
+            var cpf = $('#mapas-pessoa').val();
+
+            if (mapa == null || mapa == ""){
+                alert("Informe o mapa a ser vinculado");
+                return false;
+            }
+
+            if (cpf == null || cpf == ""){
+                alert("Informe um CPF");
+                return false;
+            } else if (cpf.length != 14) {
+                alert("CPF incompleto ou inválido");
+                return false;
+            }
+
+            var result = {mapa:mapa, cpf:cpf, pessoa:null};
+
+            $.ajax({
+                url: 'conferente-apontamento-separacao/cpf/'+cpf,
+                success: function (data) {
+                    if (data.result === "Ok") {
+                        result.pessoa = data.pessoa;
+                        addRow(result);
+                    } else if (data.result = 'Error'){
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+        $("#etiquetas-buscar").click(function () {
+
+            var total = parseInt($('#txtIntervalo').val());
+            var eI = $('#etiquetas-etiquetaInicial').val();
+            var eF = $('#etiquetas-etiquetaFinal').val();
+
+            if (isNaN(total)) {
+                if (eI != "" && eF == "") {
+                    alert("Não é possível definir o intervalo sem a etiqueta final");
+                    return false;
+                } else if (eI == "" && eF != "") {
+                    alert("Não é possível definir o intervalo sem a etiqueta inicial");
+                    return false;
+                } else {
+                    alert("Defina um intervalo de etiquetas antes de buscar");
+                    return false;
+                }
+            }
+
+            eI = parseInt(eI.substring(0, eI.length - 1));
+            eF = parseInt(eF.substring(0, eF.length - 1));
+
+            var intervalo = eI + " - " + eF;
+
+            var cpf = $('#etiquetas-pessoa').val();
+
+            if (cpf == null || cpf == ""){
+                alert("Informe um CPF");
+                return false;
+            } else if (cpf.length != 14) {
+                alert("CPF incompleto ou inválido");
+                return false;
+            }
+
+            var result = {intervalo:intervalo, total:total, cpf:cpf, pessoa:null};
+
+            $.ajax({
+                url: 'conferente-apontamento-separacao/cpf/'+cpf,
+                success: function (data) {
+                    if (data.result === "Ok") {
+                        result.pessoa = data.pessoa;
+                        addRow(result);
+                    } else if (data.result = 'Error'){
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+        function addRow (data){
+
+            var intervalo = null;
+            var total = null;
+            var mapa = null;
+            var tipo = null;
+
+            if (data.hasOwnProperty('mapa')){
+                mapa = data.mapa;
+                intervalo = "N/D";
+                total = "N/D";
+                tipo = "Mapa";
+            } else {
+                intervalo = data.intervalo;
+                total = data.total;
+                mapa = "N/D";
+                tipo = "Etiquetas";
+            }
+
+            var cpf = data.cpf;
+            var pessoa = data.pessoa;
+
+            var tbody = $('#tbResult');
+            var tr = $('<tr>').addClass('gTResultSet');
+
+            tr.append($('<td>'));
+            tr.append($('<td>').text(pessoa));
+            tr.append($('<td class="identifica">').text(cpf));
+            tr.append($('<td class="mapa">').text(mapa));
+            tr.append($('<td class="intervalo">').text(intervalo));
+            tr.append($('<td>').text(total));
+            tr.append($('<td class="tipo">').text(tipo));
+            tr.append(
+                $('<td>').css('text-align','center').append(
+                    $('<a>').addClass('removeRow').prop('href', 'javascript://').append(
+                        $('<img>').prop('src', basePath + "/img/icons/delete.png")
+                    )
+                )
+            );
+            tbody.append(tr).trigger('tbChange');
+        }
+
+        $(".inptEtiqueta").blur(function () {
+            var eI = $('#etiquetas-etiquetaInicial').val();
+            var eF = $('#etiquetas-etiquetaFinal').val();
+            if (eI != '' && eF != '') {
+
+                if (eI.length < 2 || eF.length < 2) {
+                    alert("Etiqueta fora do padrão");
+                    return false;
+                }
+
+                eI = parseInt(eI.substring(0, eI.length - 1));
+                eF = parseInt(eF.substring(0, eF.length - 1));
+
+                if (eI > eF) {
+                    alert("A etiqueta inicial não pode ser maior que a final.");
+                    return false;
+                } else {
+                    $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira:eI,ultima:eF}, function (data) {
+                        $("#txtIntervalo").val(data.result);
+                    });
+                }
+            }
+        });
+
+        $('#tbResult').bind('tbChange', function(){
+            var anterior = null;
+            $(this).children().each(function () {
+                if (anterior !== null && !anterior.hasClass('alterRow')){
+                    $(this).addClass('alterRow');
+                } else if (anterior !== null && anterior.hasClass('alterRow')){
+                    $(this).removeClass('alterRow');
+                }
+                anterior = $(this);
+            })
+        });
+
+        $('.save').click(function () {
+            var data = [];
+            $.each($('#tbResult').children(), function () {
+                var mapa = $(this).children(".intervalo").text();
+                var etiquetas = $(this).children(".intervalo").text();
+                var cpf = $(this).children(".identifica").text();
+                var tipo = $(this).children(".tipo").text();
+                data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo});
+            });
+
+            if (data.length > 0) {
+                $.post("apontamento-separacao", {data: data}).success(function (data) {
+                    if (data.result === 'Ok') {
+                        alert('Todas os apontamentos foram salvos com sucesso!');
+                        window.location.href = 'apontamento-separacao';
+                    } else if (data.result === 'Error'){
+                        alert(data.msg);
+                    }
+                });
+            } else {
+                alert("Sem apontamentos à serem salvos");
+                return false;
+            }
+        });
+
+        $(".removeRow").live('click', function () {
+            if (confirm('Deseja realmente remover esse apontamento?')) {
+                $(this).parent().parent().remove();
+                $("#tbResult").trigger('tbChange');
+            }
+        });
+    });
 </script>
 
 <?php
 echo $this->form;
-echo $this->formMapaSeparacao;
 ?>
+<div id="exibe-pessoa-grid" class="grid">
+    <table class="gTable ">
+        <caption>Conferentes</caption>
+        <tr class ="gTTitle">
+            <td></td>
+            <td width="30%">Nome</td>
+            <td width="13%">CPF</td>
+            <td width="14%">Mapa</td>
+            <td width="19%">Etiqueta Inicial - Final</td>
+            <td width="6%">Intervalo</td>
+            <td width="10%">Tipo Conferência</td>
+            <td width="4%" style="text-align: center">X</td>
+        </tr>
+        <tbody id="tbResult" class="tbFont">
+        </tbody>
+    </table>
+</div>

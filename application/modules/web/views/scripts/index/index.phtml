@@ -1,19 +1,25 @@
 <script type="text/javascript">
-     
+
     $(window).load(function() {
         $(document).ready(function(){
-            
-            graficoRecebimento();
+
+            <?php if ($this->recebimentoData != "false" ) : ?>
+                graficoRecebimento();
+            <?php endif; ?>
             graficoDadosLogisticos();
-            
+            <?php if ($this->expedicaoData != "false" ) : ?>
+                graficoExpedicao();
+            <?php endif; ?>
+
+
         });
-        
+
         function graficoRecebimento(){
             var s1 = <?php echo $this->recebimentoData ?>;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
             var ticks = <?php echo $this->recebimentoStatus ?>;
-     
+
             var plot1 = $.jqplot('chart_recebimento', [s1], {
                 // The "seriesDefaults" option is an options object that will
                 // be applied to all series in the chart.
@@ -50,32 +56,75 @@
                 }
             });
         }
-        
+
+        function graficoExpedicao(){
+            var s1 = <?php echo $this->expedicaoData ?>;
+            // Can specify a custom tick Array.
+            // Ticks should match up one for each y value (category) in the series.
+            var ticks = <?php echo $this->expedicaoStatus ?>;
+
+            var plot1 = $.jqplot('chart_expedicao', [s1], {
+                // The "seriesDefaults" option is an options object that will
+                // be applied to all series in the chart.
+                seriesDefaults:{
+                    renderer:$.jqplot.BarRenderer,
+                    pointLabels: { show: true }
+                },
+                // Custom labels for the series are specified with the "label"
+                // option on the series option.  Here a series option object
+                // is specified for each series.
+                series:[
+                    {label:'Expedições'}
+                ],
+                // Show the legend and put it outside the grid, but inside the
+                // plot container, shrinking the grid to accomodate the legend.
+                // A value of "outside" would not shrink the grid and allow
+                // the legend to overflow the container.
+                legend: {
+                    show: true,
+                    location: 'n',
+                    placement: 'outsideGrid'
+                },
+                axes: {
+                    // Use a category axis on the x axis and use our custom ticks.
+                    xaxis: {
+                        renderer: $.jqplot.CategoryAxisRenderer,
+                        ticks: ticks
+                    },
+                    // Pad the y axis just a little so bars can get close to, but
+                    // not touch, the grid boundaries.  1.2 is the default padding.
+                    yaxis: {
+                        tickOptions: {formatString: '%d'}
+                    }
+                }
+            });
+        }
+
         function graficoDadosLogisticos(){
             var com = <?php echo $this->produtosComDadosLogisticos ?>;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
             var sem = <?php echo $this->produtosSemDadosLogisticos ?>;
-     
+
             var data = [
                 ['Com Dados Logísticos', com],['Sem Dados Logísticos', sem]
             ];
-            var plot2 = jQuery.jqplot ('chart_produtosDadosLogisticos', [data], 
-            { 
+            var plot2 = jQuery.jqplot ('chart_produtosDadosLogisticos', [data],
+            {
                 seriesDefaults: {
                     // Make this a pie chart.
-                    renderer: jQuery.jqplot.PieRenderer, 
+                    renderer: jQuery.jqplot.PieRenderer,
                     rendererOptions: {
                         // Put data labels on the pie slices.
                         // By default, labels show the percentage of the slice.
                         showDataLabels: true
                     }
-                }, 
+                },
                 legend: { show:true, location: 'e' }
             }
         );
         }
-        
+
     });
 
 </script>
@@ -124,6 +173,32 @@
         text-align: center;
     }
 </style>
+
+
+<form action="" class="filtro" method="get">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Filtros</legend>
+            <table style="width:auto">
+                <tbody>
+                    <tr>
+                        <td>Data</td>
+                        <td rowspan="4">
+                            &nbsp;<input type="submit" class="btn" value="Buscar" id="submit" name="submit">
+                        </td>
+                    </tr>
+                <tr>
+                    <td>
+                        <input type="text" class="date  hasDatepicker" alt="date" size="11" value="<?php echo $this->datas['dataInicial1'] ?>" id="dataInicial1" name="dataInicial1"> a
+                        <input type="text" class="date  hasDatepicker" alt="date" size="11" value="<?php echo $this->datas['dataInicial2'] ?>" id="dataInicial2" name="dataInicial2">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+</form>
+
 <!--Div that will hold the pie chart-->
 <div class="chartRecebimento">
     <div class="charts" id="chart_recebimento" style="height: 250px; width: 500px;" ></div>
@@ -131,4 +206,8 @@
 <div class="chartProdutosDadosLogisticos">
     <label class="chartTitle">Produtos Dados Logísticos</label>
     <div class="charts" id="chart_produtosDadosLogisticos" style="height: 230px; width: 400px;" ></div>
+</div>
+
+<div class="chartExpedicao">
+    <div class="charts" id="chart_expedicao" style="height: 250px; width: 500px;" ></div>
 </div>

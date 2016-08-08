@@ -380,4 +380,14 @@ class Expedicao_EtiquetaController  extends Action
         $this->view->expedicoes = $result;
     }
 
+    public function getIntervaloAjaxAction()
+    {
+        $primeira = $this->_getParam('primeira');
+        $ultima = $this->_getParam('ultima');
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
+        $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $result = $etiquetaSeparacaoRepo->getEtiquetasByFaixa($primeira, $ultima, true);
+        $this->_helper->json(array('result'=>count($result)));
+    }
 }

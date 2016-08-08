@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Service\Coletor;
+use Wms\Service\Recebimento as LeituraColetor;
 
 class ConferenciaRecebimentoReentregaRepository extends EntityRepository
 {
@@ -13,6 +14,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
     {
         $serviceColetor = new Coletor();
         $codBarras = $serviceColetor->adequaCodigoBarras($data['codBarras']);
+        $leituraColetor = new LeituraColetor();
 
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
@@ -22,14 +24,21 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $produtoEmbalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+        $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
         $this->getEntityManager()->beginTransaction();
         try {
+            $idVolume    = null;
+            $idEmbalagem = null;
             if (isset($produtoVolumeEn)) {
                 $produtoId = $produtoVolumeEn->getProduto();
                 $grade = $produtoVolumeEn->getGrade();
+                $idVolume = $produtoVolumeEn->getId();
             } else if (isset($produtoEmbalagemEn)) {
                 $produtoId = $produtoEmbalagemEn->getProduto();
                 $grade = $produtoEmbalagemEn->getGrade();
+                $idEmbalagem = $produtoEmbalagemEn->getId();
             } else {
                 throw new \Exception(utf8_encode('Código do Produto não cadastrado!'));
             }
@@ -45,6 +54,16 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
             $ordemServicoEn = $ordemServicoRepo->findOneBy(array('recebimentoReentrega' => $recebimentoReentregaEn));
+
+            if ($data['modeloSeparacaoFracionado'] == 'E' || $data['modeloSeparacaoNaoFracionado'] == 'E') {
+                if (isset($data['etiqueta']) && !empty($data['etiqueta'])) {
+                    $etiqueta = $leituraColetor->retiraDigitoIdentificador($data['etiqueta']);
+                    $etiquetaEn = $etiquetaRepo ->findOneBy(array('id' => $etiqueta, 'produtoEmbalagem' => $idEmbalagem, 'produtoVolume' => $idVolume));
+                    if (!isset($etiquetaEn) || empty($etiquetaEn)) {
+                        throw new \Exception(utf8_encode('Código da Etiqueta não confere com Código de Barras do Produto!'));
+                    }
+                }
+            }
 
             //verifica se o produto existe no recebimento selecionado
             $getProdutosByRecebimento = $recebimentoReentregaRepo->getProdutosByRecebimento($data['id'], $produtoId, $grade);

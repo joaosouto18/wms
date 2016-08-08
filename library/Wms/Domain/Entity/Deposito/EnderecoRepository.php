@@ -253,7 +253,7 @@ class EnderecoRepository extends EntityRepository
                 ->from("wms:Produto\Volume", "pv")
                 ->innerJoin("pv.endereco", "e")
                 ->innerJoin("pv.produto", "p")
-                ->where("p.id = $idProduto")
+                ->where("p.id = '$idProduto''")
                 ->andWhere("p.grade = '$grade'")
                 ->groupBy("e.descricao, e.id");
         } else {
@@ -262,7 +262,7 @@ class EnderecoRepository extends EntityRepository
                 ->from("wms:Produto\Embalagem", "pe")
                 ->innerJoin("pe.endereco", "e")
                 ->innerJoin("pe.produto", "p")
-                ->where("p.id = $idProduto")
+                ->where("p.id = '$idProduto'")
                 ->andWhere("p.grade = '$grade'")
                 ->groupBy("e.descricao, e.id");
         }

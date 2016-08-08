@@ -1,4 +1,69 @@
-﻿<?php echo $this->form; ?>
+﻿<style>
+    * Grid - Table */
+    .gTable {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    .gTable tr.gRowColor td {
+        background: #EDEDED;
+    }
+    .gTable tr:hover {
+        background: #c7d5e2;
+    }
+    .gTable td {
+        border-left: 1px solid #EDFFF9;
+        border-right: 1px solid #EDFFF9;
+        border-bottom: 1px solid #EDFFF9;
+        padding: 0 2px;
+    }
+    .gTTitle {
+        height: 25px;
+    }
+    .gTTitle td {
+        background: repeat-x center center url(../../img/admin/sort_row_bg.gif);
+    }
+    .gTTitle td a {
+        color: #333;
+        font-weight: bold;
+    }
+    .gTTitle td a span {
+        display: block;
+        line-height: 20px;
+        margin: 0 5px;
+    }
+    .gTTitle a.sort {
+        display: block;
+        background: repeat-x top left url(../../img/admin/sort_off_bg.png);
+    }
+    .gTTitle a.sort span {
+        background: no-repeat right center url(../../img/admin/grid_sort_both.png);
+    }
+    .gTTitle a.sortArrowAsc, .gTTitle a.sortArrowDesc {
+        background: repeat-x top left url(../../img/admin/sort_on_bg.gif);
+    }
+    .gTTitle a.sortArrowAsc span {
+        background: no-repeat right center url(../../img/admin/grid_sort_asc.gif);
+    }
+    .gTTitle a.sortArrowDesc span {
+        background: no-repeat right center url(../../img/admin/grid_sort_desc.gif);
+    }
+    .gTFilter {
+        background: #D6E8F5;
+        height: 30px;
+    }
+    .gTResultSet input[type=checkbox] {
+        border: 0;
+    }
+    .gTResultSet .gRowCheck {
+        text-align: center;
+        width: 22px;
+    }
+    .gTResultSet td {
+        line-height:20px;
+    }
+</style>
+
+<?php echo $this->form; ?>
 <?php if ($this->exibe == true): ?>
 <table style="margin-left: 2%; width: 90%; margin-right: 2%; margin-top: 2%; margin-bottom: 5%">
     <div style="margin-left: 2%; margin-top: 2%; margin-right: 2%">
@@ -23,7 +88,11 @@
         </tr>
 
         <tr>
-            <td colspan="2"><b>Linha:</b> <?php echo $this->linhaSeparacao;?></td>
+            <td colspan="2"><b>Linha Separação:</b> <?php echo $this->linhaSeparacao;?></td>
+        </tr>
+
+        <tr>
+            <td colspan="2"><b>Dias p/ vencimento:</b> <?php echo $this->diasVidaUtil;?></td>
         </tr>
 
         <tr>
@@ -37,4 +106,69 @@
 
     </tbody>
 </table>
+
+<?php if(isset($this->pulmoes) && count($this->pulmoes) >0 ) : ?>
+        <h2>Estoque do produto em pulmão:</h2>
+        <table class="gTable ">
+        <tbody>
+        <tr class ="gTTitle">
+            <td><b>Endereço</b></td>
+            <td><b>U.M.A</b></td>
+            <td><b>Qtd.Estoque</b></td>
+        </tr>
+        <?php foreach($this->pulmoes as $pulmao) : ?>
+        <tr>
+            <td><?php echo $pulmao['ENDERECO'] ?></td>
+            <td><?php echo $pulmao['UMA'] ?></td>
+            <td><?php echo $pulmao['QTD'] ?></td>
+        </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php endif; ?>
+
+    <?php if(isset($this->reservas) && count($this->reservas) >0 ) : ?>
+        <h2>Reservas do produto:</h2>
+        <table class="gTable ">
+            <tbody>
+            <tr class ="gTTitle">
+                <td><b>Endereço</b></td>
+                <td><b>Origem</b></td>
+                <td><b>Data Reserva</b></td>
+                <td><b>Tipo</b></td>
+                <td><b>Qtd Reservada</b></td>
+            </tr>
+
+            <?php
+            $qtdEntrada = 0;
+            $qtdSaida = 0;
+
+            foreach($this->reservas as $reserva) {?>
+                <tr>
+                    <td><?php echo $reserva['DSC_DEPOSITO_ENDERECO']?></td>
+                    <td><?php echo $reserva['ORIGEM']?></td>
+                    <td><?php echo $reserva['DTH_RESERVA']?></td>
+                    <td><?php echo $reserva['TIPO']?></td>
+                    <td><?php echo $reserva['QTD_RESERVADA']?></td>
+                </tr>
+                <?php
+                if ($reserva['QTD_RESERVADA'] > 0) {
+                    $qtdEntrada = $qtdEntrada +$reserva['QTD_RESERVADA'];
+                } else {
+                    $qtdSaida = $qtdSaida +$reserva['QTD_RESERVADA'];
+                }
+            } ?>
+
+            <tr class="bottom">
+                <td colspan="2" style="padding-top: 20px"></td>
+                <td style="padding-top: 20px"><b>Total Entradas</b></td>
+                <td style="padding-top: 20px"><b><?php echo $qtdEntrada?></b></td>
+            </tr>
+            <tr>
+                <td colspan="2"></td>
+                <td><b>Total Saídas</b></td>
+                <td><b><?php echo $qtdSaida?></b></td>
+            </tr>
+        </table>
+    <?php endif;?>
 <?php endif; ?>

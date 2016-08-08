@@ -53,7 +53,8 @@ class EntityRepository extends EntityRepositoryDoctrine
         if ($conexao == null) {
             $conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
                 $config->resources->doctrine->dbal->connections->default->parameters->password,
-                $config->resources->doctrine->dbal->connections->default->parameters->dbname);
+                $config->resources->doctrine->dbal->connections->default->parameters->dbname,
+                $config->resources->doctrine->dbal->connections->default->parameters->charset);
         }
 
         if (!$conexao) {

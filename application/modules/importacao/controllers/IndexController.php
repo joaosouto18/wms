@@ -59,7 +59,7 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
         $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
 
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $expedicaoRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
         $cargaRepo = $repositorios['cargaRepo'];
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
@@ -231,8 +231,7 @@ class Importacao_IndexController extends Action
                 case 'cliente':
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
                     if (strlen($cpf_cnpjFormatado) == 11) {
-                        $arrErroRows[$linha] = "Não é permitido importar Fornecedor pelo CPF " . $arrRegistro['cpf_cnpj'];
-                        break;
+                        $arrRegistro['tipoPessoa'] = "F";
                     } else if (strlen($cpf_cnpjFormatado) == 14) {
                         $arrRegistro['tipoPessoa'] = "J";
                     } else {
@@ -493,6 +492,8 @@ class Importacao_IndexController extends Action
                         } else {
                             $countFlush++;
                         }
+                    } else {
+                        $arrErroRows[$linha] = "Esta carga já foi cadastrada " . $registro;
                     }
                     break;
                 default:
@@ -560,7 +561,7 @@ class Importacao_IndexController extends Action
 
             $files = explode('-', $this->getRequest()->getParam('files'));
 
-            $arquivos = $impArquivoRepo->findBy(array('tabelaDestino' => $files), array('sequencia' => 'ASC'));
+            $arquivos = $impArquivoRepo->findBy(array('tabelaDestino' => $files, 'ativo' => 'S'), array('sequencia' => 'ASC'));
 
             $dtUltImp = null;
             /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
@@ -629,10 +630,17 @@ class Importacao_IndexController extends Action
 
                     for ($linha = 1; $linha <= $tLinhas; $linha++) {
 
-                        if (ucfirst($cabecalho) == 'S') {
-                            if ($linha == 1) {
-                                continue;
+                        if (ucfirst($cabecalho) == 'S' && $linha == 1) {
+                            /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
+                            foreach ($camposArquivo as $campo){
+                                $coluna = $campo->getPosicaoTxt();
+                                if (!empty($coluna)){
+                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
+                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
+                                    }
+                                }
                             }
+                            continue;
                         }
 
                         $this->statusProgress["iLinha"] = $linha - 1;
@@ -682,10 +690,9 @@ class Importacao_IndexController extends Action
 
                         if (isset($arrErroRows['exception']) && !empty($arrErroRows['exception'])) {
                             $this->statusProgress['exception'] = $arrErroRows['exception'];
-                            $this->progressBar->update(null, $this->statusProgress);
+                            echo '<script type="text/javascript">parent.Zend_ProgressBar_Update({"current":0,"max":1,"percent":0,"timeTaken":2,"timeRemaining":null,"text": ' . Zend_Json::encode($this->statusProgress) .'});</script><br />';
                             $this->progressBar->finish();
                             $em->rollback();
-                            echo Zend_Json::encode(array('result' => 'Exception'));
                             exit;
                         }
 
@@ -805,9 +812,9 @@ class Importacao_IndexController extends Action
 
         } catch (\Exception $e) {
             $em->rollback();
-            $this->progressBar->update(null, $this->statusProgress);
+            $this->statusProgress['exception'] = array($e->getMessage());
+            echo '<script type="text/javascript">parent.Zend_ProgressBar_Update({"current":0,"max":1,"percent":0,"timeTaken":2,"timeRemaining":null,"text": ' . Zend_Json::encode($this->statusProgress) .'});</script><br />';
             $this->progressBar->finish();
-            echo Zend_Json::encode(array('result' => 'Exception'));
             exit;
         }
     }
@@ -840,24 +847,41 @@ class Importacao_IndexController extends Action
         $this->view->grid = $grid->init()->render();
     }
 
+    public function editarCampoImportacaoAction()
+    {
+        if ($this->getRequest()->isPost()){
+            
+        } else {
+            $idCampo = $this->getRequest()->getParam('id');
+            $form = new \Wms\Module\Importacao\Form\EditarCamposImportacao();
+            $campo = $this->em->getRepository('wms:Importacao\Campos')->find($idCampo);
+            $this->view->form = $form;
+            $this->view->campo = $campo;
+        }
+    }
+
     public function indexAction()
     {
-        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array(), array('sequencia' => 'ASC'));
+        $arquivos = $this->getEntityManager()->getRepository('wms:Importacao\Arquivo')->findBy(array('ativo' => 'S'), array('ultimaImportacao' => 'DESC'));
 
         $dtUltImp = null;
-        /** @var \Wms\Domain\Entity\Importacao\Arquivo $arquivo */
-        foreach ($arquivos as $arquivo){
-            $dtCheck = $arquivo->getUltimaImportacao();
-            if (empty($dtUltImp)){
-                $dtUltImp = $dtCheck;
-            } else if ($dtUltImp < $dtCheck) {
-                $dtUltImp = $dtCheck;
+
+        if (!empty($arquivos)) {
+
+            $dtUltImp = reset($arquivos)->getUltimaImportacao();
+
+            function order($a, $b)
+            {
+                if ($a->getSequencia() == $b->getSequencia())
+                    return 0;
+                return ($a->getSequencia() < $b->getSequencia()) ? -1 : 1;
             }
+
+            usort($arquivos, 'order');
         }
 
-        $form = new IndexForm();
+        $this->view->arquivos = $arquivos;
         $this->view->ultData = ($dtUltImp)?$dtUltImp->format('d/m/Y'):'S/ Registros';
-        $this->view->form = $form;
 
         /*$form = new IndexForm();
         $this->view->form = $form;

@@ -26,10 +26,20 @@ https://www.virtualbox.org/wiki/Downloads
 
 8) Acesse http://localhost:8080/
 
+
+Usando WAMP
+===========
+Após instalação do wamp, caso ocorra erro 500
+no menu do wamp acesse Apache -> httpd.conf e remova a # do elemento 
+"LoadModule rewrite_module modules/mod_rewrite.so"
+caso não encontre no arquivo enclua abaixo dos outros "loadModule"
+
+Habilite a extensão php do php_oci8 em PHP -> PHP extensions
+
 Configuração banco local
 ===========================
 
-DROP USER wms_dbevelop CASCADE;
+DROP USER wms_develop CASCADE;
 DROP TABLESPACE wms_develop;
 
 ALTER SYSTEM SET DB_16K_CACHE_SIZE=16M SCOPE=BOTH;

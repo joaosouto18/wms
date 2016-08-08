@@ -9,7 +9,7 @@ use Wms\Domain\Entity\Deposito\Endereco;
 /**
  * Description of Embalagem
  * @Table(name="PRODUTO_EMBALAGEM")
- * @Entity
+ * @Entity(repositoryClass="Wms\Domain\Entity\Produto\EmbalagemRepository")
  * @author daniel
  */
 class Embalagem

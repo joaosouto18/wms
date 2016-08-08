@@ -203,7 +203,7 @@ class Web_ProdutoController extends Crud {
                 $andamentoRepo->save($params['id'], $params['grade'], false, 'Produto alterado com sucesso.');
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
-                $this->_redirect('/produto/edit/id/'.$params['id'].'/grade/'.$params['grade']);
+                $this->_redirect('/produto');
 
             }
             $form->setDefaultsFromEntity($entity); // pass values to form
@@ -416,10 +416,17 @@ class Web_ProdutoController extends Crud {
         $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
-        if ($this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO") == 1) {
-            $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-        } else {
-            $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+
+        switch($modelo) {
+            case 1:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+            break;
+            case 2:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+            break;
+            case 3:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(50, 30));
+            break;
         }
         $result = $gerarEtiqueta->init(null,array(
             'codProduto' => $codProduto,

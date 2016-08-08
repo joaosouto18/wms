@@ -210,12 +210,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param array $itens
+     * @param itens $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -230,6 +230,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
+
+            if ($bonificacao == "E") {
+                //NOTA DE ENTRADA NORMAL
+            }
+            if ($bonificacao == "D") {
+                //NOTA DE DEVOLUÇÃO
+            }
+            $bonificacao = "N";
+            $pesoTotal = trim ($pesoTotal);
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
@@ -275,7 +284,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em);
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,0);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
             }
 
             $em->commit();
@@ -529,8 +538,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['grade'] = trim($itemNf['grade']);
                     $itemWs['quantidade'] = trim($itemNf['quantidade']);
                     $itemWs['peso'] = trim($itemNf['peso']);
-                    if (is_null(trim($itemNf['peso'])) || empty(trim($itemNf['peso'])) || trim($itemNf['peso']) == 0)
+                    if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
                         $itemWs['peso'] = trim($itemNf['quantidade']);
+                    }
 
                     $itensNf[] = $itemWs;
                 }

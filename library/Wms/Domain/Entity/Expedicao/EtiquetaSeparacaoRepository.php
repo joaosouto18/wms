@@ -750,9 +750,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                     $qtdEmbalagemPadraoRecebimento = 1;
                     foreach ($embalagensEn as $embalagem) {
+                        $enderecosPulmao = null;
                         $endereco = $embalagem->getEndereco();
-                        if ($endereco != null){
+                        if (isset($endereco) && !empty($endereco)){
                             $depositoEnderecoEn = $endereco;
+                            break;
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
@@ -774,7 +776,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $quantidadeAtender = $quantidadeRestantePedido;
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
-                            foreach ($enderecosPulmao as $key => $enderecoPulmao) {
+                            foreach ($enderecosPulmao as $enderecoPulmao) {
                                 if ($enderecoPulmao['quantidade'] > 0) {
                                     $quantidadeAtender = $enderecoPulmao['quantidade'];
                                     break;
@@ -881,7 +883,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
                 $depositoEnderecoEn = $mapa->getCodDepositoEndereco();
 
-//                var_dump($pedidoProduto); exit;
                 $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
                 foreach ($mapaProdutosEn as $mapaProdutoRemover) {
                     $this->_em->remove($mapaProdutoRemover);
@@ -914,6 +915,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                   INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
                   INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
                   WHERE C.COD_EXPEDICAO = $idExpedicao
+                    AND ES.COD_PRODUTO = '$produtoId'
+                    AND ES.DSC_GRADE = '$grade'
                   GROUP BY ES.COD_DEPOSITO_ENDERECO) ES ON ES.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN (SELECT SUM(MSC.QTD_EMBALAGEM) QTD_EMBALAGEM, MSP.COD_DEPOSITO_ENDERECO
                   FROM MAPA_SEPARACAO_CONFERENCIA MSC
@@ -921,6 +924,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                   INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                   WHERE E.COD_EXPEDICAO = $idExpedicao
+                    AND MSP.COD_PRODUTO = '$produtoId'
+                    AND MSP.DSC_GRADE = '$grade'
                   GROUP BY MSP.COD_DEPOSITO_ENDERECO) MS ON MS.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 WHERE REE.COD_EXPEDICAO = $idExpedicao
                 AND REP.COD_PRODUTO = '$produtoId' AND REP.DSC_GRADE = '$grade'
@@ -1279,6 +1284,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity, $produtoEntity, $quantidadePedido, $volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco) {
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
             $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoVolume'=>$volumeEntity));
@@ -1287,6 +1294,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quantidadeEmbalagem = $embalagemEntity->getQuantidade();
             $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
         }
+
+        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
+        if ($mapaPedidoEn == null) {
+            $mapaPedidoEn = new MapaSeparacaoPedido();
+            $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
+            $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
+            $mapaPedidoEn->setPedidoProduto($pedidoProduto);
+            $this->getEntityManager()->persist($mapaPedidoEn);
+        }
+
         if ($mapaProduto == null) {
             $mapaProduto = new MapaSeparacaoProduto();
             $mapaProduto->setCodProduto($produtoEntity->getId());
@@ -1371,11 +1388,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function getEtiquetasByFaixa($codBarrasInicial,$codBarrasFinal) {
+    public function getEtiquetasByFaixa($codBarrasInicial,$codBarrasFinal, $apontamento = false) {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select("es")
             ->from("wms:Expedicao\EtiquetaSeparacao","es")
             ->where("es.id >= $codBarrasInicial AND es.id <= $codBarrasFinal");
+
+        if ($apontamento)
+            $dql->andWhere("es.status <> 525");
+        
         return $dql->getQuery()->getResult();
     }
 

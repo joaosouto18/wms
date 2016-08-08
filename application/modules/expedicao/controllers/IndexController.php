@@ -6,7 +6,9 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\PesoCargas as PesoCargasGrid;
 
-class Expedicao_IndexController  extends Action
+use \Wms\Module\Web\Page;
+
+class Expedicao_IndexController extends Action
 {
 
     public function indexAction()
@@ -271,95 +273,109 @@ class Expedicao_IndexController  extends Action
 
     public function apontamentoSeparacaoAction()
     {
-        $form = new \Wms\Module\Expedicao\Form\EquipeSeparacao();
-        $formMapaSeparacao = new \Wms\Module\Expedicao\Form\EquipeSeparacaoMapa();
-        /** @var \Wms\Domain\Entity\PessoaFisicaRepository $pessoaFisicaRepo */
+        //adding default buttons to the page
+         Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Voltar',
+                    'cssClass' => 'btnBack',
+                    'onclick' => 'window.history.back()',
+                    'urlParams' => array(
+                        'action' => 'index',
+                        'id' => null
+                    ),
+                ),
+                array(
+                    'label' => 'Salvar',
+                    'cssClass' => 'btn save',
+                    'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
+                )
+            )
+        ));
         $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+        /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
+        $params = $this->_getAllParams();
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
 
-        $paramsMapaSeparacao = $formMapaSeparacao->getParams();
-        $params = $form->getParams();
+        try {
+            if (isset($params['data']) && !empty($params['data'])) {
+                $data = $params['data'];
+                foreach($data as $params) {
+                    if ($params['tipo'] == 'Etiquetas') {
+                        //FORMATA OS DADOS RECEBIDOS
+                        $cpf = str_replace(array('.', '-'), '', $params['cpf']);
+                        $etiquetas = explode('-', $params['etiquetas']);
+                        $etiquetaInicial = trim($etiquetas[0]);
+                        $etiquetaFinal = trim($etiquetas[1]);
 
-        if (!empty($paramsMapaSeparacao) && isset($paramsMapaSeparacao)) {
-            $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($paramsMapaSeparacao['codMapaSeparacao']);
-            $usuarioEn = $pessoaFisicaRepo->findOneBy(array('matriculaEmprego' => $paramsMapaSeparacao['pessoa']));
+                        //ENCONTRA O USUARIO DIGITADO
+                        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+                        //VERIFICA O USUARIO
+                        if (is_null($usuarioEn))
+                            throw new \Exception('Conferente não encontrado!');
+                        //VERIFICA AS ETIQUETAS
+                        if (is_null($etiquetaFinal))
+                            $etiquetaFinal = $etiquetaInicial;
 
-            if (empty($mapaSeparacaoEn) || !isset($mapaSeparacaoEn)) {
-                $this->addFlashMessage("error","Mapa de Separação não informado ou inválido");
-                $this->redirect('apontamento-separacao');
+                        if (is_null($etiquetaInicial))
+                            $etiquetaInicial = $etiquetaFinal;
+
+                        $equipeSeparacaoEn = $equipeSeparacaoRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'etiquetaInicial' => $etiquetaInicial, 'etiquetaFinal' => $etiquetaFinal));
+                        //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+                        if (!isset($equipeSeparacaoEn) || empty($equipeSeparacaoEn))
+                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn);
+
+                    } elseif ($params['tipo'] == 'Mapa') {
+                        $cpf = str_replace(array('.', '-'), '', $params['cpf']);
+                        //ENCONTRA O USUARIO DIGITADO
+                        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+                        //VERIFICA O USUARIO
+                        if (is_null($usuarioEn))
+                            throw new \Exception('Conferente não encontrado!');
+
+                        $codMapaSeparacao = $params['mapa'];
+                        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
+                        if (is_null($mapaSeparacaoEn))
+                            throw new \Exception('Mapa de Separação não encontrado!');
+
+                        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
+                        if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
+                            $apontamentoMapaRepo->save($mapaSeparacaoEn, $usuarioEn->getId());
+                    }
+                }
+                echo Zend_Json::encode(array('result' => 'Ok'));
+                exit;
             }
 
-            if (is_null($usuarioEn)) {
-                $this->addFlashMessage("error","Conferente não encontrado");
-                $this->redirect('apontamento-separacao');
-            }
-
-            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
-            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-            $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacaoEn));
-            if (isset($apontamentoMapaEn) && !empty($apontamentoMapaEn)) {
-                $this->addFlashMessage("error","Mapa de Separação ja vinculado a usuário!");
-                $this->redirect('apontamento-separacao');
-            }
-            $apontamentoMapaRepo->save($mapaSeparacaoEn,$usuarioEn->getId());
-
-            $this->addFlashMessage("success","Conferente vinculado com sucesso ao Mapa de Separação!");
-            $this->redirect('apontamento-separacao');
-
-        }
-
-        if ( !empty($params) ) {
-            $idEtiqueta1 = $params['etiquetaInicial'];
-            $idEtiqueta2 = $params['etiquetaFinal'];
-            $usuarioEn = $pessoaFisicaRepo->findOneBy(array('matriculaEmprego' => $paramsMapaSeparacao['pessoa']));
-
-            $LeituraColetor = new LeituraColetor();
-            $etiquetaInicial = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta1);;
-            $etiquetaFinal = $LeituraColetor->retiraDigitoIdentificador($idEtiqueta2);;
-
-            $idEtiqueta1 = $etiquetaInicial;
-            $idEtiqueta2 = $etiquetaFinal;
-
-            if (is_null($idEtiqueta2) or ($idEtiqueta2=="")) {
-                $idEtiqueta2 = $idEtiqueta1;
-            }
-
-            if (is_null($idEtiqueta1) or ($idEtiqueta1=="")) {
-                $idEtiqueta1 = $idEtiqueta2;
-            }
-
-            $etiquetaInicial = $idEtiqueta1;
-            $etiquetaFinal = $idEtiqueta2;
-            if ($idEtiqueta1 > $idEtiqueta2){
-                $etiquetaFinal = $idEtiqueta1;
-                $etiquetaInicial = $idEtiqueta2;
-            }
-
-            $erro = false;
-            if (is_null($idEtiqueta1) or ($idEtiqueta1=="")) {
-                $this->addFlashMessage("error","Informe ao menos uma etiqueta");
-                $erro = true;
-            }
-            
-            if (is_null($usuarioEn)) {
-                $this->addFlashMessage("error","Conferente não encontrado");
-                $erro = true;
-            }
-            
-            if ($erro == false) {
-                $equipeSeparacao = new Expedicao\EquipeSeparacao();
-                $equipeSeparacao->setCodUsuario($usuarioEn->getId());
-                $equipeSeparacao->setDataVinculo(new \DateTime());
-                $equipeSeparacao->setEtiquetaInicial($etiquetaInicial);
-                $equipeSeparacao->setEtiquetaFinal($etiquetaFinal);
-                $this->getEntityManager()->persist($equipeSeparacao);
-                $this->getEntityManager()->flush();
-                $this->addFlashMessage("success","Equipe de Separação vinculada com sucesso");
-                $this->redirect('apontamento-separacao');
-            }
+        } catch (\Exception $e) {
+            echo Zend_Json::encode(array('result' => 'Error', 'msg' => $e->getMessage()));
         }
 
         $this->view->form = $form;
-        $this->view->formMapaSeparacao = $formMapaSeparacao;
+    }
+
+    public function conferenteApontamentoSeparacaoAction()
+    {
+        $params = $this->_getAllParams();
+        $cpf = str_replace(array('.','-'),'',$params['cpf']);
+
+        /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
+        $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
+        $result = $usuarioRepo->getPessoaByCpf($cpf);
+        
+        if (!empty($result)){
+            $response = array('result' => 'Ok', 'pessoa' => $result[0]['NOM_PESSOA']);
+        } else {
+            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+        }
+            
+        $this->_helper->json($response);
     }
     
     public function equipeCarregamentoAction()
@@ -371,6 +387,14 @@ class Expedicao_IndexController  extends Action
         $grid = new \Wms\Module\Expedicao\Grid\EquipeCarregamento();
         $this->view->grid = $grid->init($params)
             ->render();
+    }
+
+    public function relatorioCodigoBarrasProdutosAction()
+    {
+        $idExpedicao     = $this->_getParam('id',0);
+        $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\EtiquetaCodigoBarras();
+        $gerarEtiqueta->init($idExpedicao);
+
     }
 
     public function acertarReservaEstoqueAjaxAction()
@@ -405,6 +429,35 @@ class Expedicao_IndexController  extends Action
             $this->_em->flush();
         }
         var_dump('sucesso!');exit;
+    }
+
+    public function correcaoAjaxAction()
+    {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+        $embalagemEn = $produtoRepo->findAll();
+
+        $count = 0;
+        foreach ($embalagemEn as $embalagem) {
+            $produtoId = $embalagem->getId();
+            $grade = $embalagem->getGrade();
+            $embalagensProduto = $embalagemRepo->findBy(array('codProduto' => $produtoId, 'grade' => $grade), array('pontoReposicao' => 'DESC'));
+            foreach ($embalagensProduto as $key => $embalagemProduto) {
+                if ($embalagensProduto[0]->getPontoReposicao() > $embalagemProduto->getPontoReposicao()) {
+                    $count += $count;
+                    $embalagemProduto->setPontoReposicao($embalagensProduto[0]->getPontoReposicao());
+                    $this->getEntityManager()->persist($embalagemProduto);
+                    $this->getEntityManager()->flush($embalagemProduto);
+                }
+
+            }
+
+
+        }
+
+        var_dump($count.' Produtos Inseridos!'); exit;
+
+
     }
 
 

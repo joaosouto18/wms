@@ -33,6 +33,7 @@ class EtiquetaEndereco extends Pdf
         $count = 0;
         $this->y=0;
         $this->count = 0;
+
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
 
@@ -69,12 +70,17 @@ class EtiquetaEndereco extends Pdf
                 case 6:
                     $this->layoutModelo6($codBarras);
                     break;
+                case 7:
+                    $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $this->layoutModelo7($produto,$codBarras);
+                    break;
                 default:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo1($produto,$codBarras);
                     break;
             }
         }
+
         $this->Output('Etiquetas-endereco.pdf','D');
         exit;
     }
@@ -263,10 +269,31 @@ class EtiquetaEndereco extends Pdf
         }
         $this->Cell(95,10," ",0,1);
 
-
-
     }
 
+    public function layoutModelo7($produto, $codBarras)
+    {
+        $this->SetFont('Arial', 'B', 12);
+        $this->Cell(5,13,"",0,0);
+        $this->Cell(24,13,utf8_decode("RUA"),0,0);
+        $this->Cell(28,13,utf8_decode("PREDIO"),0,0);
+        $this->Cell(20,13,utf8_decode("NIVEL"),0,0);
+        $this->Cell(19,13,utf8_decode("APTO"),0,1);
 
+        $this->SetFont('Arial', 'B', 45);
+        //$this->Cell(5,8,"",0,0);
+        $this->Cell(95,8,$codBarras,0,1);
+
+        if (isset($produto[0]) && !empty($produto[0])) {
+            $dscProduto = utf8_decode($produto[0]['descricao']);
+            if (strlen($dscProduto) >=26) {
+                $this->SetFont('Arial', 'B', 10);
+            } else {
+                $this->SetFont('Arial', 'B', 18);
+            }
+            $this->Cell(0,25,$dscProduto,0,0);
+        }
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 45 , 90);
+    }
 
 }

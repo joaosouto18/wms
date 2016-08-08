@@ -13,6 +13,7 @@ class OsProdutosFiltro extends Form
         $this->addElement('select', 'volumes', array(
                 'label' => 'Volume Patrimonio',
                 'multiOptions' => $volumes,
+                'required' => true,
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',

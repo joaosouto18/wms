@@ -162,7 +162,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
 			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
 
-			$this->saveFornecedorReferencia($em, $values, $produtoEntity);
+            if (isset($values['fornecedor']) && !empty($values['fornecedor']))
+			    $this->saveFornecedorReferencia($em, $values, $produtoEntity);
 
 			$em->persist($produtoEntity);
 
@@ -256,6 +257,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			/** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
 			$andamentoRepo = $em->getRepository('wms:Produto\Andamento');
 
+			/** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+			$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+			
+			/** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+			$embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+
 			//embalagens do produto
 			if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
 				return false;
@@ -283,7 +290,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						//valida o endereco informado
 						if (!empty($endereco)) {
 							$endereco = EnderecoUtil::separar($endereco);
-							$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
 							$enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
 
 							if (!$enderecoEntity) {
@@ -313,6 +319,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 						$em->persist($embalagemEntity);
 						$em->flush();
+
+						if ($embalagemEntity->getIsPadrao() === 'S') {
+							$result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
+							if (!is_bool($result))
+								throw $result;
+						}
 
 						$produtoEntity->addEmbalagem($embalagemEntity);
 
@@ -377,6 +389,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						}
 
 						$em->persist($embalagemEntity);
+
+                        if ($embalagemEntity->getIsPadrao() === 'S') {
+                            $result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
+                            if (!is_bool($result))
+                                throw $result;
+                        }
+                        
 						break;
 					case 'excluir':
 
@@ -1022,8 +1041,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			->from('wms:Produto', 'p')
 			->innerJoin('p.tipoComercializacao', 'tc')
 			->leftJoin('p.linhaSeparacao', 'ls')
-			->leftJoin('p.fabricante', 'fb')
-			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'')
+			->leftJoin('p.fabricante', 'fb');
+
+		if (isset($codProduto) && !empty($codProduto)) {
+			$dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade');
+		} else {
+			$dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
+		}
+
+		$dql
 			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
 			->where('p.id = :codProduto')
 			->andWhere("p.grade = :grade")
@@ -1135,8 +1161,14 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		$dscProduto = $produtoEntity->getDescricao();
 		$result = array();
 
+		$encontrouEmbalagemPadrao = false;
+		if (count($embalagens) >0) {
+			$ultimaEmbalagem = end($embalagens);
+			$ultimaEmbalagem = $ultimaEmbalagem[0];
+		}
 		foreach ($embalagens as $embalagem) {
-			if ($embalagem->getIsPadrao()=="S") {
+			if ($embalagem->getIsPadrao()=="S" OR (($encontrouEmbalagemPadrao == false) AND ($embalagem == $ultimaEmbalagem))) {
+				$encontrouEmbalagemPadrao = true;
 				$dadosLogisticos = $embalagem->getDadosLogisticos();
 				$unidadePadrao = $embalagem->getDescricao();
 				if (count($dadosLogisticos) >0){
@@ -1324,7 +1356,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
                         NVL(pv.descricao, \'\') descricaoVolume,
                         NVL(de1.descricao, de2.descricao) picking,
-                        NVL(pv.codigoSequencial, \'\') sequenciaVolume')
+                        NVL(pv.codigoSequencial, \'\') sequenciaVolume,
+                        NVL(p.diasVidaUtil,\'0\') diasVidaUtil')
 			->from('wms:Produto', 'p')
 			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
 			->leftJoin('p.linhaSeparacao', 'ls')
