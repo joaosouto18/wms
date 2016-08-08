@@ -175,11 +175,13 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         $this->view->volumesPatrimonio = $volumePatrimonio;
         $this->idExpedicao = $idExpedicao;
         
+        /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
 
         foreach ($volumePatrimonio as $key => $volume) {
             $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio[$key]['volume']);
             $volumePatrimonio[$key]['produtos'] = $produtos;
+            $volumePatrimonio[$key]['sequencia'] = $produtos[0]['sequencia'];
         }
 
         if (isset($params['btnImprimir'])) {

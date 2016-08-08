@@ -386,5 +386,5 @@ class Embalagem
     {
         $this->codProduto = $codProduto;
     }
-    
+
 }
