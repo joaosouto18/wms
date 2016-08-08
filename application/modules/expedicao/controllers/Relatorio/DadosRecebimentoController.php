@@ -4,6 +4,7 @@ class Expedicao_Relatorio_DadosRecebimentoController extends \Wms\Controller\Act
 {
     public function indexAction() 
     {
+        ini_set('memory_limit', '-1');
         $form = new \Wms\Module\Expedicao\Form\DadosRecebimento();
         $params = $form->getParams();
         if ($params) {

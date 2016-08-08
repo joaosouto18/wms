@@ -3,7 +3,6 @@
 namespace Wms\Module\Web\Grid\Expedicao;
           
 
-use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento;
 
@@ -12,51 +11,52 @@ use Wms\Module\Web\Grid,
  *
  * @author Lucas Chinelate <lucaschinelate@hotmail.com>
  */
-class CorteAntecipado extends Grid
+class CortePedido extends Grid
 {
     /**
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($produtos,$idPedido,$idExpedicao)
+    public function init($pedidos,$idExpedicao)
     {
         $this->showPager = false;
         $this->showExport = false;
-        $this->setSource(new \Core\Grid\Source\ArraySource($produtos))
+        $this->setSource(new \Core\Grid\Source\ArraySource($pedidos))
                 ->setId('expedicao-mapas-grid')
                 ->setAttrib('class', 'grid-expedicao-pendencias')
-                ->setAttrib('caption', 'Produtos para Corte')
+                ->setAttrib('caption', 'Pedidos para Corte')
                 ->addColumn(array(
                     'label' => 'Cod.',
-                    'index' => 'COD_PRODUTO',
+                    'index' => 'id',
                 ))
                 ->addColumn(array(
-                    'label' => 'Grade',
-                    'index' => 'DSC_GRADE',
+                    'label' => 'Cliente.',
+                    'index' => 'cliente',
                 ))
                 ->addColumn(array(
-                    'label' => 'Produto',
-                    'index' => 'DSC_PRODUTO',
-                ))                
-                ->addColumn(array(
-                    'label' => 'Qtd. Pedido',
-                    'index' => 'QTD',
-                ))
-                ->addColumn(array(
-                    'label' => 'Qtd. Corte',
-                    'index' => 'QTD_CORTADA',
+                    'label' => 'Itinerario.',
+                    'index' => 'itinerario',
                 ))
                 ->addAction(array(
-                    'label' => 'Cortar Item',
+                    'label' => 'Cortar Itens',
                     'moduleName' => 'expedicao',
                     'controllerName' => 'corte',
-                    'actionName' => 'cortar-item',
+                    'actionName' => 'list',
                     'cssClass' => 'inside-modal',
                     'params' => array('expedicao' => $idExpedicao),
-                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO')
+                    'pkIndex' => 'id'
+                ))
+                ->addAction(array(
+                    'label' => 'Cortar Pedido',
+                    'moduleName' => 'expedicao',
+                    'controllerName' => 'corte-pedido',
+                    'actionName' => 'cortar-pedido',
+                    'cssClass' => 'inside-modal',
+                    'params' => array('expedicao' => $idExpedicao),
+                    'pkIndex' => 'id'
                 ));
         $this->setShowPager(true);
-        $pager = new \Core\Grid\Pager(count($produtos),1,2000);
+        $pager = new \Core\Grid\Pager(count($pedidos),1,2000);
         $this->setpager($pager);
         $this->setShowPager(false);
 

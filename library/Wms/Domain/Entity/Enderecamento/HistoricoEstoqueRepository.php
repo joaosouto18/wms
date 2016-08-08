@@ -93,7 +93,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                           TO_CHAR(HIST.DTH_MOVIMENTACAO,'DD/MM/YYYY HH24:MI:SS')as \"DTH.MOVIMENTACAO\",
                           PES.NOM_PESSOA as \"PESSOA\",
                           HIST.OBSERVACAO as \"OBSERVACAO\",
-                          P.UMA as \"PALETE\",
+                          PA.UMA as \"PALETE\",
                           U.DSC_UNITIZADOR as \"UNITIZADOR\",
                           max(N.NUM_NORMA) AS \"NORMA\",
                           HIST.COD_OS as \"OS\",
@@ -103,9 +103,10 @@ class HistoricoEstoqueRepository extends EntityRepository
                INNER JOIN DEPOSITO_ENDERECO DEP ON HIST.COD_DEPOSITO_ENDERECO = DEP.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PESSOA PES ON HIST.COD_PESSOA = PES.COD_PESSOA
                 LEFT JOIN ORDEM_SERVICO OS ON HIST.COD_OS = OS.COD_OS
-                LEFT JOIN PALETE P ON OS.COD_ENDERECAMENTO = P.UMA
-                LEFT JOIN NORMA_PALETIZACAO N ON N.COD_NORMA_PALETIZACAO = P.COD_NORMA_PALETIZACAO
-                LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = P.COD_UNITIZADOR
+                LEFT JOIN PALETE PA ON OS.COD_ENDERECAMENTO = PA.UMA
+                LEFT JOIN PALETE_PRODUTO PPROD on PPROD.UMA = PA.UMA
+                LEFT JOIN NORMA_PALETIZACAO N ON N.COD_NORMA_PALETIZACAO = PPROD.COD_NORMA_PALETIZACAO
+                LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = PA.COD_UNITIZADOR
                     WHERE ((HIST.DTH_MOVIMENTACAO >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
                        AND (HIST.DTH_MOVIMENTACAO <= TO_DATE('$dataFim 00:00', 'DD-MM-YYYY HH24:MI')))
                  GROUP BY
@@ -118,7 +119,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                           HIST.DTH_MOVIMENTACAO,
                           PES.NOM_PESSOA ,
                           HIST.OBSERVACAO ,
-                          P.UMA ,
+                          PA.UMA ,
                           U.DSC_UNITIZADOR ,
                          N.NUM_NORMA,
                           HIST.COD_OS ,

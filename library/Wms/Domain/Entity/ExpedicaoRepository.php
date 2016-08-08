@@ -1924,20 +1924,19 @@ class ExpedicaoRepository extends EntityRepository
                          LEFT JOIN FABRICANTE F ON F.COD_FABRICANTE = PROD.COD_FABRICANTE
                          LEFT JOIN LINHA_SEPARACAO LS ON PROD.COD_LINHA_SEPARACAO = LS.COD_LINHA_SEPARACAO
                          LEFT JOIN ETIQUETA_SEPARACAO ES ON PP.COD_PEDIDO = ES.COD_PEDIDO AND PP.COD_PRODUTO = ES.COD_PRODUTO
+                         LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                         LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                         LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
                          LEFT JOIN SIGLA SES ON SES.COD_SIGLA = ES.COD_STATUS
                          LEFT JOIN PRODUTO_VOLUME PV ON ES.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
                          LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
                  LEFT JOIN DEPOSITO_ENDERECO DE1 ON DE1.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                  LEFT JOIN DEPOSITO_ENDERECO DE2 ON DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
                          LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
-                         LEFT JOIN ORDEM_SERVICO OS ON ES.COD_OS = OS.COD_OS
+                         LEFT JOIN ORDEM_SERVICO OS ON ES.COD_OS = OS.COD_OS OR MSC.COD_OS = OS.COD_OS
                          LEFT JOIN ORDEM_SERVICO OS2 ON ES.COD_OS_TRANSBORDO = OS2.COD_OS
-                         LEFT JOIN (SELECT CONF.COD_CONFERENTE, PE.NOM_PESSOA
-                                      FROM CONFERENTE CONF
-                                     INNER JOIN PESSOA PE ON CONF.COD_CONFERENTE = PE.COD_PESSOA) CONFERENTE ON OS.COD_PESSOA = CONFERENTE.COD_CONFERENTE
-                        LEFT JOIN (SELECT CONF2.COD_CONFERENTE, PE2.NOM_PESSOA
-                                     FROM CONFERENTE CONF2
-                                    INNER JOIN PESSOA PE2 ON CONF2.COD_CONFERENTE = PE2.COD_PESSOA) CONFERENTE_TRANSBORDO ON OS2.COD_PESSOA = CONFERENTE_TRANSBORDO.COD_CONFERENTE
+                         LEFT JOIN PESSOA CONFERENTE ON CONFERENTE.COD_PESSOA = OS.COD_PESSOA
+                         LEFT JOIN PESSOA CONFERENTE_TRANSBORDO ON CONFERENTE_TRANSBORDO.COD_PESSOA = OS.COD_PESSOA
                         LEFT JOIN PEDIDO_ENDERECO ENDERECO ON ENDERECO.COD_PEDIDO = P.COD_PEDIDO
                         LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
                         LEFT JOIN (SELECT CL.COD_PESSOA,
@@ -2664,7 +2663,7 @@ class ExpedicaoRepository extends EntityRepository
         }
     }
 
-    private function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
+    public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
 
         $entidadePedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')->findOneBy(array('codPedido'=>$codPedido,
             'codProduto'=>$codProduto,
@@ -2686,8 +2685,6 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
-//            if ($reservaEstoqueExpedicao->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO)
-//                throw new \Exception('Não é possível cortar pedido/produto com a expedição já finalizada!');
 
             $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
             $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
@@ -2733,18 +2730,20 @@ class ExpedicaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function getProdutosExpedicaoCorte ($idExpedicao){
+    public function getProdutosExpedicaoCorte($idPedido)
+    {
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
                        SUM(PP.QUANTIDADE) as QTD,
-                       SUM(PP.QTD_CORTADA) as QTD_CORTADA
+                       SUM(PP.QTD_CORTADA) as QTD_CORTADA,
+                       PP.COD_PEDIDO
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                 WHERE C.COD_EXPEDICAO = $idExpedicao
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO
+                 WHERE PP.COD_PEDIDO = $idPedido
+                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

@@ -24,11 +24,11 @@ class PaleteRepository extends EntityRepository
                S.DSC_SIGLA END as STATUS,
                QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
                NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
-               ROUND(NVL(QTD_END.QTD,0)/QTD_TOTAL.QTD_TOTAL * 100,2) as PERCENTUAL
+               ROUND(NVL(QTD_END.QTD,0)/NVL(QTD_TOTAL.QTD_TOTAL,1) * 100,2) as PERCENTUAL
           FROM RECEBIMENTO R
           LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
           LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
-                       FROM (SELECT MIN (QTD) as QTD, COD_RECEBIMENTO
+                       FROM (SELECT MAX (QTD) as QTD, COD_RECEBIMENTO
                                FROM V_QTD_RECEBIMENTO
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO
@@ -555,7 +555,7 @@ class PaleteRepository extends EntityRepository
             $pesoLimite = $this->getPesoLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento);
+        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento,$pesoLimite,$pesoTotalConferido);
 
         $this->_em->flush();
         $this->_em->clear();
@@ -613,7 +613,6 @@ class PaleteRepository extends EntityRepository
 
     public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento = 'A', $pesoLimite = null, $pesoTotalConferido = null)
     {
-
         //QUANTIDADE DA NOTA
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
         $nfRepo    = $this->getEntityManager()->getRepository('wms:NotaFiscal');
@@ -645,6 +644,11 @@ class PaleteRepository extends EntityRepository
                     $dataValidade = null;
                 }
 
+                $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
+                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($recebimentoEn->getId(), $idProduto, $grade);
+                $qtd = $qtd - (int)$paleteProdutoEn[0]['qtd'];
+
+
                 //TRAVA PARA GERAR NO MAXIMO A QUANTIDADE TOTAL DA NOTA ENQUANTO O RECEBIMENTO NÃO TIVER SIDO FINALIZADO
                 if ($recebimentoFinalizado == false) {
                     if ($tipo == "V"){
@@ -657,10 +661,11 @@ class PaleteRepository extends EntityRepository
                             $peso = (float) $peso + $pesoLimite[$idNorma];
                         }
                     } else {
-                        $qtdLimite = $qtdLimite - $qtd;
-                        if ($qtdLimite < 0) {
-                            $qtd = $qtd + $qtdLimite;
-                        }
+//                        $qtdLimite = $qtdLimite - $qtd;
+
+//                        if ($qtdLimite < 0) {
+//                            $qtd = $qtd + $qtdLimite;
+//                        }
                         $pesoLimite = $pesoLimite - $peso;
                         if ($pesoLimite < 0) {
                             $peso = (float) $peso + $pesoLimite;
@@ -680,7 +685,8 @@ class PaleteRepository extends EntityRepository
                 }
 
                 $pesoTotalPaletes = 0;
-                $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
+                if ($qtdPaletes > 0)
+                    $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
                     $pesoTotal += $pesoPorPalete;
                     $pesoTotalPaletes += $pesoPorPalete;

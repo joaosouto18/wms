@@ -46,6 +46,7 @@ class Enderecamento_PaleteController extends Action
     {
         $embalagemRepo = $this->_em->getRepository("wms:Produto\Embalagem");
         $volumeRepo = $this->_em->getRepository("wms:Produto\Volume");
+        $produtoRepo = $this->_em->getRepository('wms:Produto');
 
         $params = $this->_getAllParams();
         $paletes = $params['palete'];
@@ -65,9 +66,17 @@ class Enderecamento_PaleteController extends Action
                 $dadosPalete['endereco'] = "";
             }
 
-            $paleteEn = $paleteEn->getProdutos();
+            $produtoEn = $produtoRepo->findOneBy(array('id' => $params['codigo'], 'grade' => $params['grade']));
 
-            $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+            //SE O PRODUTO TIVER PESO VARIAVEL CONSIDERA O PESO DO PALETE
+            if ($produtoEn->getPossuiPesoVariavel() == 'S') {
+                $dadosPalete['qtd'] = str_replace('.',',',$paleteEn->getPeso(). ' kg');
+                $paleteEn = $paleteEn->getProdutos();
+            } else {
+                $paleteEn = $paleteEn->getProdutos();
+                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+            }
+
             if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
                 $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
             } else {
@@ -83,7 +92,7 @@ class Enderecamento_PaleteController extends Action
         $param['idRecebimento'] = $params['id'];
         $param['codProduto']    = $params['codigo'];
         $param['grade']         = $params['grade'];
-        $param['paletes']        = $paletesArray;
+        $param['paletes']       = $paletesArray;
 
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');

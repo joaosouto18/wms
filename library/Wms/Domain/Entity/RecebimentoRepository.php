@@ -354,6 +354,7 @@ class RecebimentoRepository extends EntityRepository
 
                     $qtdConferida = $qtdConferida * $quantidade;
 
+                    /*
                     if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                         //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
                         $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
@@ -366,6 +367,7 @@ class RecebimentoRepository extends EntityRepository
                                 'concluido' => false);
                         }
                     }
+                    */
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
@@ -389,6 +391,7 @@ class RecebimentoRepository extends EntityRepository
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
                     }
 
+                    /*
                     if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                         //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
                         $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
@@ -401,6 +404,7 @@ class RecebimentoRepository extends EntityRepository
                                 'concluido' => false);
                         }
                     }
+                    */
                     
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
@@ -513,12 +517,10 @@ class RecebimentoRepository extends EntityRepository
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId());
+                    $em->flush();
                 }
-
-                $em->commit();
-
                 $em->flush();
-
+                $em->commit();
                 return array('exception' => null);
 
             } catch (\Exception $e) {
@@ -633,6 +635,8 @@ class RecebimentoRepository extends EntityRepository
         }
 
         $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
+        if ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S')
+            $qtdDivergencia = 0;
 
         $conferenciaEntity = new ConferenciaEntity;
         $conferenciaEntity->setRecebimento($recebimentoEntity);
@@ -648,6 +652,9 @@ class RecebimentoRepository extends EntityRepository
 
         $em->persist($conferenciaEntity);
         $em->flush();
+
+        if ($divergenciaPesoVariavel == 'S' && $produtoEntity->getPossuiPesoVariavel() == 'S')
+            $qtdDivergencia = 1;
 
         return $qtdDivergencia;
     }
@@ -1354,7 +1361,7 @@ class RecebimentoRepository extends EntityRepository
                        VPES.PESO as \"PESO TOTAL\",
                        VPES.CUBAGEM as \"CUBAGEM\",
                        UMA.UMA as \"UMA\",
-                       UMA.QTD as \"QTD NA UMA\",
+                       PP.QTD as \"QTD NA UMA\",
                        NP.NUM_LASTRO as \"LASTRO\",
                        NP.NUM_CAMADAS as \"CAMADAS\",
                        U.DSC_UNITIZADOR as \"UNITIZADOR\",
@@ -1382,9 +1389,10 @@ class RecebimentoRepository extends EntityRepository
                                                           AND VPES.COD_PRODUTO = PROD.COD_PRODUTO
                                                           AND VPES.DSC_GRADE = PROD.DSC_GRADE
                   LEFT JOIN PALETE                   UMA   ON REC.COD_RECEBIMENTO = UMA.COD_RECEBIMENTO
-                                                          AND VQTD.COD_PRODUTO = UMA.COD_PRODUTO
-                                                          AND VQTD.DSC_GRADE = UMA.DSC_GRADE
-                  LEFT JOIN NORMA_PALETIZACAO        NP    ON NP.COD_NORMA_PALETIZACAO = UMA.COD_NORMA_PALETIZACAO
+                  LEFT JOIN PALETE_PRODUTO           PP    ON UMA.UMA = PP.UMA
+                                                          AND VQTD.COD_PRODUTO = PP.COD_PRODUTO
+                                                          AND VQTD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN NORMA_PALETIZACAO        NP    ON NP.COD_NORMA_PALETIZACAO = PP.COD_NORMA_PALETIZACAO
                   LEFT JOIN UNITIZADOR               U     ON UMA.COD_UNITIZADOR = U.COD_UNITIZADOR
                   LEFT JOIN ORDEM_SERVICO            OSUMA ON UMA.UMA = OSUMA.COD_ENDERECAMENTO
                   LEFT JOIN PESSOA                   OPEMP ON OSUMA.COD_PESSOA = OPEMP.COD_PESSOA
@@ -1399,7 +1407,7 @@ class RecebimentoRepository extends EntityRepository
                            OSREC.COD_OS,
                            NFI.COD_PRODUTO,
                            NFI.DSC_GRADE,
-                           UMA.COD_NORMA_PALETIZACAO,
+                           PP.COD_NORMA_PALETIZACAO,
                            UMA.COD_STATUS,
                            UMA.UMA";
 

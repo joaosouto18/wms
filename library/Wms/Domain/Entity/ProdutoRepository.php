@@ -1140,6 +1140,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE AND PE.IND_PADRAO = 'S'
             WHERE P.COD_PRODUTO = '$codProduto'
             AND P.DSC_GRADE = '$grade'
+            AND NOT (PV.COD_PRODUTO_VOLUME IS NULL AND PE.COD_PRODUTO_EMBALAGEM IS NULL)
             ";
 
 		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
@@ -1357,7 +1358,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(pv.descricao, \'\') descricaoVolume,
                         NVL(de1.descricao, de2.descricao) picking,
                         NVL(pv.codigoSequencial, \'\') sequenciaVolume,
-                        NVL(p.diasVidaUtil,\'0\') diasVidaUtil')
+                        NVL(p.diasVidaUtil, \'0\') diasVidaUtil'
+				)
 			->from('wms:Produto', 'p')
 			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
 			->leftJoin('p.linhaSeparacao', 'ls')
