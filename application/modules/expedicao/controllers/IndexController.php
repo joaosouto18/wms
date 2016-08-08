@@ -360,7 +360,7 @@ class Expedicao_IndexController extends Action
         $this->view->form = $form;
     }
 
-    public function conferenteApontamentoSeparacaoAction()
+    public function conferenteApontamentoSeparacaoAjaxAction()
     {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.','-'),'',$params['cpf']);
