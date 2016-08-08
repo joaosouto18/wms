@@ -194,14 +194,14 @@ class PaleteRepository extends EntityRepository
         $SQL = "
         SELECT DISTINCT
                NULL as COD_PRODUTO_VOLUME,
-               RE.COD_PRODUTO_EMBALAGEM
+               MAX(RE.COD_PRODUTO_EMBALAGEM) COD_PRODUTO_EMBALAGEM
           FROM RECEBIMENTO_EMBALAGEM RE
          INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
           WHERE RE.COD_RECEBIMENTO = '$codRecebimento'
-            AND RE.COD_OS = '$codOs'
-            AND RE.COD_NORMA_PALETIZACAO = '$normaPaletizacao'
-            AND PE.COD_PRODUTO = '$codProduto'
-            AND PE.DSC_GRADE = '$grade'";
+        AND RE.COD_OS = '$codOs'
+        AND RE.COD_NORMA_PALETIZACAO = '$normaPaletizacao'
+        AND PE.COD_PRODUTO = '$codProduto'
+        AND PE.DSC_GRADE = '$grade'";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -661,11 +661,6 @@ class PaleteRepository extends EntityRepository
                             $peso = (float) $peso + $pesoLimite[$idNorma];
                         }
                     } else {
-//                        $qtdLimite = $qtdLimite - $qtd;
-
-//                        if ($qtdLimite < 0) {
-//                            $qtd = $qtd + $qtdLimite;
-//                        }
                         $pesoLimite = $pesoLimite - $peso;
                         if ($pesoLimite < 0) {
                             $peso = (float) $peso + $pesoLimite;
