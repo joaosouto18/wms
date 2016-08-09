@@ -399,7 +399,7 @@ class PaleteRepository extends EntityRepository
                 $quantidadePalete = $produtos[0]->getQtd();
 
                 if ($pickingEn == Null) {
-                    throw new \Exception("Não existe endereço de picking para o produto " . $embalagem[0]->getCodProduto() . " / " . $embalagem[0]->getGrade());
+                    throw new \Exception("Não existe endereço de picking para o produto " . $embalagem->getCodProduto() . " / " . $embalagem->getGrade());
                 }
 
                 $idVolume = null;
