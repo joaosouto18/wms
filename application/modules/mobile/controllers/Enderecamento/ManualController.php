@@ -64,12 +64,12 @@ class Mobile_Enderecamento_ManualController extends Action
                 if (count($recebimentoEmbalagem) <= 0 && count($recebimentoVolume) <= 0)
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
 
+                /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository $qtdRecebimentoRepo */
                 $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
-                $qtdRecebimentoEn = $qtdRecebimentoRepo->findBy(array('codRecebimento' => $params['id'], 'codProduto' => $codProduto, 'grade' => $grade));
-                $sumQtdRecebimento = 0;
-                foreach ($qtdRecebimentoEn as $qtdRecebimento) {
-                    $sumQtdRecebimento = $qtdRecebimento->getQtd() + $sumQtdRecebimento;
-                }
+                $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'],$codProduto,$grade);
+                $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
+
+                var_dump($sumQtdRecebimento); exit;
 
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
