@@ -644,11 +644,6 @@ class PaleteRepository extends EntityRepository
                     $dataValidade = null;
                 }
 
-                $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
-                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($recebimentoEn->getId(), $idProduto, $grade);
-                $qtd = $qtd - (int)$paleteProdutoEn[0]['qtd'];
-
-
                 //TRAVA PARA GERAR NO MAXIMO A QUANTIDADE TOTAL DA NOTA ENQUANTO O RECEBIMENTO NÃO TIVER SIDO FINALIZADO
                 if ($recebimentoFinalizado == false) {
                     if ($tipo == "V"){
