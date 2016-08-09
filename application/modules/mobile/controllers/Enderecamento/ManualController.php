@@ -65,17 +65,17 @@ class Mobile_Enderecamento_ManualController extends Action
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
 
                 /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository $qtdRecebimentoRepo */
-//                $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
-//                $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'],$codProduto,$grade);
-//                $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
+                $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
+                $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'],$codProduto,$grade);
+                $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
-//                $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
-//                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
+                $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
+                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
-//                if ($sumQtdRecebimento < trim((int)$params['qtd']) + (int)$paleteProdutoEn[0]['qtd']) {
-//                    throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
-//                }
+                if ($sumQtdRecebimento < trim((int)$params['qtd']) + (int)$paleteProdutoEn[0]['qtd']) {
+                    throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
+                }
 
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
 
@@ -222,11 +222,6 @@ class Mobile_Enderecamento_ManualController extends Action
                 throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
 
             $novaCapacidadePicking = $params['capacidadePicking'];
-
-//            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-//                if (count($estoqueRepo->getReservaAndEstoqueByEndereco($enderecoEn->getId())) > 0)
-//                    throw new \Exception('Já existe estoque ou reserva de estoque para o endereço '.$enderecoEn->getDescricao());
-//            }
 
             $embalagens = $produtoEn->getEmbalagens();
             foreach ($embalagens as $embalagemEn) {
