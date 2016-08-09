@@ -67,7 +67,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository $qtdRecebimentoRepo */
 //                $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
 //                $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'],$codProduto,$grade);
-                $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
+//                $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
 //                $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
