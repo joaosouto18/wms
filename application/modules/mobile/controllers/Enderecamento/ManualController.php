@@ -65,13 +65,17 @@ class Mobile_Enderecamento_ManualController extends Action
                     throw new \Exception("O Produto Informado não pertence ao recebimento");
 
                 $qtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
-                $qtdRecebimentoEn = $qtdRecebimentoRepo->findOneBy(array('codRecebimento' => $params['id'], 'codProduto' => $codProduto, 'grade' => $grade));
+                $qtdRecebimentoEn = $qtdRecebimentoRepo->findBy(array('codRecebimento' => $params['id'], 'codProduto' => $codProduto, 'grade' => $grade));
+                $sumQtdRecebimento = 0;
+                foreach ($qtdRecebimentoEn as $qtdRecebimento) {
+                    $sumQtdRecebimento = $qtdRecebimento->getQtd() + $sumQtdRecebimento;
+                }
 
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
                 $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
-                if ($qtdRecebimentoEn->getQtd() < trim((int)$params['qtd']) + (int)$paleteProdutoEn[0]['qtd']) {
+                if ($sumQtdRecebimento < trim((int)$params['qtd']) + (int)$paleteProdutoEn[0]['qtd']) {
                     throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
                 }
 
