@@ -69,8 +69,6 @@ class Mobile_Enderecamento_ManualController extends Action
                 $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'],$codProduto,$grade);
                 $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
-                var_dump($sumQtdRecebimento); exit;
-
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
                 $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
