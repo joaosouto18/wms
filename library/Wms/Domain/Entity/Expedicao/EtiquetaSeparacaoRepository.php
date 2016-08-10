@@ -818,7 +818,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             }   else {
-                                $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
+                                    $mapaSeparacao = $this->getMapaSeparacaoPC($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                } else {
+                                    $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                }
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto,$depositoEnderecoEn);
                             }
                         } else {
@@ -827,7 +831,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             }   else {
-                                $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasFracionado,$statusEntity, $expedicaoEntity);
+                                if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
+                                    $mapaSeparacao = $this->getMapaSeparacaoPC($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
+                                } else {
+                                    $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
+                                }
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn);
                             }
                         }
@@ -1085,6 +1093,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->getEntityManager()->flush();
         }
         return $etiquetaMae;
+    }
+
+    public function getMapaSeparacaoPC($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity){
+
     }
 
     public function getMapaSeparacao($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity){
