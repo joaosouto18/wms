@@ -1,0 +1,1 @@
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, 'v4.0.0', 'carrinhoSeparacao.sql');
