@@ -35,6 +35,9 @@ class ModeloSeparacao extends Form
         ))->addElement('select', 'tipoQuebraVolume', array(
             'label' => 'Tipo de Quebra no Volume',
             'multiOptions' => array('C' => 'Por Cliente', 'A' => 'Por Carga'),
+        ))->addElement('select', 'separacaoPc', array(
+            'label' => 'Separação com carrinho',
+            'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
         ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
             'multiOptions' => array('P' => 'Por Produto', 'F' => 'Todos os fracionados'),
@@ -85,6 +88,7 @@ class ModeloSeparacao extends Form
             'imprimeEtiquetaPatrimonio',
             'quebraPulmaDoca',
             'tipoQuebraVolume',
+            'separacaoPc',
             'tipoDefaultEmbalado',
             'tipoConferenciaEmbalado',
             'tipoConferenciaNaoEmbalado',
