@@ -203,10 +203,10 @@ class RecebimentoRepository extends EntityRepository
         // buscar todos os itens das nfs do recebimento
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
 
-        if (count($itens) == 0)
-            return array('message' => null,
-                'exception' => new \Exception('Nenhum item encontrado para o recebimento'),
-                'concluido' => false);
+//        if (count($itens) == 0)
+//            return array('message' => null,
+//                'exception' => new \Exception('Nenhum item encontrado para o recebimento'),
+//                'concluido' => false);
 
         foreach ($itens as $item) {
             // checando qtdes nf
