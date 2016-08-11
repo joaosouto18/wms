@@ -642,7 +642,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
 
             if (!isset($cubagemPedido[$pedidoId]))
-                $cubagemPedido[$pedidoId] = 0;
+                $cubagemPedido[$pedidoId]['cubagem'] = 0;
 
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
@@ -689,13 +689,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
                 if ($embalado === true) {
-                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
+                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
-                        $cubagemPedido[$pedidoId] += $dadoLogisticoEn->getCubagem();
+                        $cubagemPedido[$pedidoId]['cubagem'] += $dadoLogisticoEn->getCubagem();
+                        $cubagemPedido[$pedidoId]['produto'][]  = $codProduto;
+                        $cubagemPedido[$pedidoId]['grade'][]    = $grade;
                     }
                 }
             }
         }
+        var_dump($codProduto);
+        var_dump($cubagemPedido); exit;
         return $cubagemPedido;
     }
 
@@ -731,9 +735,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
                 $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
-                foreach ($cubagemPedidos as $pedido => $cubagem) {
-                    $numeroCaixas[$pedido] = ceil($cubagem / $cubagemCaixa);
-                }
             }
 
             foreach($pedidosProdutos as $key => $pedidoProduto) {
@@ -906,10 +907,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             }   else {
+                                foreach ($cubagemPedidos as $pedido => $cubagem) {
+                                    if ($pedido == $pedidoEntity->getId()) {
+                                        $numeroCaixas[$pedido] = ceil($cubagem / $cubagemCaixa);
+
+                                    }
+
+
+                                }
+
+
                                 //[124578] = 1,20m³
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()])) {
-
-
                                     $mapaSeparacao = $this->getMapaSeparacaoPC($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                                 } else {
                                     $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
