@@ -37,7 +37,7 @@ class ModeloSeparacao extends Form
             'multiOptions' => array('C' => 'Por Cliente', 'A' => 'Por Carga'),
         ))->addElement('select', 'separacaoPc', array(
             'label' => 'Separação com carrinho',
-            'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
+            'multiOptions' => array('S' => 'Sim', 'N' => 'Não'),
         ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
             'multiOptions' => array('P' => 'Por Produto', 'F' => 'Todos os fracionados'),
