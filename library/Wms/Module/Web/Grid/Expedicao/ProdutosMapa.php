@@ -70,7 +70,7 @@ class ProdutosMapa extends Grid
                 'cssClass' => 'inside-modal',
                 'pkIndex' => array('COD_PRODUTO','DSC_GRADE','NUM_CONFERENCIA')
             ))
-            ->addAction(array(
+/*            ->addAction(array(
                 'label' => 'Cortar Item',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte-pedido',
@@ -87,7 +87,7 @@ class ProdutosMapa extends Grid
                 'cssClass' => 'inside-modal',
                 'params'=>array('pedidoCompleto'=>'S','COD_EXPEDICAO'=>$idExpedicao),
                 'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
-            ))
+            ))*/
 
         ;
         return $this;
