@@ -627,64 +627,36 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
 
 
-    public function getCubagemPedidos(array $pedidosProdutos,$idExpedicao,$idModeloSeparacao,$status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO)
+    public function getCubagemPedidos(array $pedidosProdutos, $modeloSeparacaoEn)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
-        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
-        $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-        $filialRepository = $this->getEntityManager()->getRepository('wms:Filial');
+        /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
+        $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
-        $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
-        $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
-        $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
-
+        $cubagemPedido = array();
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
-            $expedicaoEntity    = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
-            $pedidoEntity       = $pedidoProduto->getPedido();
-            $produtoEntity      = $pedidoProduto->getProduto();
+            $pedidoId           = $pedidoProduto->getPedido()->getId();
             $quantidade         = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
 
+            if (!isset($cubagemPedido[$pedidoId]))
+                $cubagemPedido[$pedidoId] = 0;
+
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
-//            foreach ($embalagensEn as $embalagem) {
-//                $enderecosPulmao = null;
-//                $endereco        = $embalagem->getEndereco();
-//                if (isset($endereco) && !empty($endereco)){
-//                    $depositoEnderecoEn = $endereco;
-//                    break;
-//                } else {
-//                    $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
-//                    if ($filial == null) {
-//                        throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
-//                    }
-//                    if ($filial->getIndUtilizaRessuprimento() == "S") {
-//                        $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
-//                    }
-//                }
-//                if ($embalagem->getIsPadrao() == "S") {
-//                    $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
-//                    break;
-//                }
-//            }
+            foreach ($embalagensEn as $embalagem) {
+                if ($embalagem->getIsPadrao() == "S") {
+                    $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
+                    break;
+                }
+            }
             $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
             while ($quantidadeRestantePedido > 0) {
                 $embalagemAtual = null;
                 $quantidadeAtender = $quantidadeRestantePedido;
-
-//                if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
-//                    foreach ($enderecosPulmao as $enderecoPulmao) {
-//                        if ($enderecoPulmao['quantidade'] > 0) {
-//                            $quantidadeAtender = $enderecoPulmao['quantidade'];
-//                            break;
-//                        }
-//                    }
-//                }
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
@@ -706,49 +678,26 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
 
-//                if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
-//                    $enderecoPulmao['QUANTIDADE'] = $enderecoPulmao['QUANTIDADE'] - $embalagemAtual->getQuantidade();
-//                    $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
-//                    $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
-//                }
-
-                if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
-//                    if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
-//                        if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
-//                            $quebrasNaoFracionado = array();
-//                        }
-//                        $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
-//                        $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
-//                    }   else {
-                        $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
-                        $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto,$depositoEnderecoEn);
-//                    }
+                $embalado = false;
+                if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == 'P') {
+                    if ($embalagemAtual->getEmbalado() == 'S') {
+                        $embalado = true;
+                    }
                 } else {
-//                    if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == "E") {
-//                        if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
-//                        $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasFracionado);
-//                        $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
-//                    }   else {
-                        $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasFracionado,$statusEntity, $expedicaoEntity);
-                        $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn);
-//                    }
+                    if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
+                        $embalado = true;
+                    }
+                }
+                if ($embalado === true) {
+                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
+                    if (!empty($dadoLogisticoEn)) {
+                        $cubagemPedido[$pedidoId] += $dadoLogisticoEn->getCubagem();
+                    }
                 }
             }
         }
+        return $cubagemPedido;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * @param array $pedidosProdutos
@@ -777,6 +726,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
+            $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
 
             foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
