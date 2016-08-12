@@ -44,7 +44,12 @@ class MapaSeparacao extends Pdf
 
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
-            $quebras = $mapa->getDscQuebra();
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa));
+            $quebras         = $mapa->getDscQuebra();
+            $tipoQebra       = null;
+            if (isset($mapaQuebra) && !empty($mapaQuebra))
+                $tipoQebra   = $mapaQuebra->getTipoQuebra();
+
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
 
@@ -88,40 +93,61 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
-
             $this->Cell(20, 4, "", 0, 1);
-            $this->SetFont('Arial', 'B', 8);
-            $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
-            $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-            $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
-            $this->Cell(35, 5, utf8_decode("Embalagem") ,1, 0);
-            $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
-            $this->Cell(20, 1, "", 0, 1);
 
+            $this->SetFont('Arial', 'B', 8);
+            if ($tipoQebra == 'PC') {
+                $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
+                $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
+                $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
+                $this->Cell(30, 5, utf8_decode("Embalagem") ,1, 0);
+                $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 0);
+                $this->Cell(15, 5, utf8_decode("Caixas") ,1, 1);
+                $this->Cell(20, 1, "", 0, 1);
+            }else {
+                $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
+                $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
+                $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
+                $this->Cell(35, 5, utf8_decode("Embalagem") ,1, 0);
+                $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
+                $this->Cell(20, 1, "", 0, 1);
+            }
 
             foreach ($produtos as $produto) {
-                $this->SetFont('Arial',  null, 8);
-                //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
-
-                $endereco = $produto->getCodDepositoEndereco();
                 $dscEndereco = "";
-                if ($endereco != null) {
+                $embalagem   = $produto->getProdutoEmbalagem();
+                $codProduto  = $produto->getCodProduto();
+                $descricao   = utf8_decode($produto->getProduto()->getDescricao());
+                $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                $quantidade  = $produto->getQtdSeparar();
+                $caixas      = $produto->getNumCaixaInicio().' - '.$produto->getNumCaixaFim();
+                $endereco    = $produto->getCodDepositoEndereco();
+                if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
-                }
-                $embalagem = $produto->getProdutoEmbalagem();
-                $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
-                $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
-//                $this->Cell(20, 4, utf8_decode($produto->getDscGrade()) ,0, 0);
-                $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,54) ,0, 0);
-                $this->Cell(35, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
-                $this->Cell(20, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
-                $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-                $this->Cell(20, 1, "", 0, 1);
 
+                $this->SetFont('Arial',  null, 8);
+                if ($tipoQebra == 'PC') {
+                    $this->Cell(20, 4, $dscEndereco ,0, 0);
+                    $this->Cell(20, 4, $codProduto ,0, 0);
+                    $this->Cell(90, 4,substr($descricao,0,54) ,0, 0);
+                    $this->Cell(30, 4, $embalagem ,0, 0);
+                    $this->Cell(20, 4, $quantidade ,0, 0);
+                    $this->Cell(15, 4, $caixas ,0, 1, 'C');
+                    $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                } else {
+                    $this->Cell(20, 4, $dscEndereco ,0, 0);
+                    $this->Cell(20, 4, $codProduto ,0, 0);
+                    $this->Cell(100, 4,substr($descricao,0,54) ,0, 0);
+                    $this->Cell(35, 4, $embalagem ,0, 0);
+                    $this->Cell(20, 4, $quantidade ,0, 1, 'C');
+                    $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                }
             }
 
             $this->SetFont('Arial',null,10);
-            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
             $this->SetFont('Arial','B',9);
 
             $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
@@ -166,18 +192,18 @@ class MapaSeparacao extends Pdf
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
             $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
-            $pedidoProduto = $produtos[0]->getPedidoProduto();
-            $carga = '';
-            if (isset($pedidoProduto) && !empty($pedidoProduto))
-                $carga = $produtos[0]->getPedidoProduto()->getPedido()->getCarga()->getCodCargaExterno();
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa));
+            $tipoQebra = null;
+            if (isset($mapaQuebra) && !empty($mapaQuebra))
+                $tipoQebra = $mapaQuebra->getTipoQuebra();
 
             $quebras = $mapa->getDscQuebra();
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
 
-            $this->idMapa = $mapa->getId();
+            $this->idMapa          = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
-            $this->idExpedicao = $idExpedicao;
+            $this->idExpedicao     = $idExpedicao;
             $pesoTotal = 0;
             $cubagemTotal = 0;
 
@@ -221,50 +247,68 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial',null,10);
             $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
-
             $this->Image($imgCodBarras, 150 , 3, 50);
-
             $this->Cell(20, 4, "", 0, 1);
             $this->SetFont('Arial', 'B', 8);
-            $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
-            $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-            $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
-            $this->Cell(30, 5, utf8_decode("Cod. Barras") ,1, 0);
-            $this->Cell(15, 5, utf8_decode("Refer.") ,1, 0);
-//            $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);
-            $this->Cell(12, 5, utf8_decode("Quant.") ,1, 1);
+
+            if ($tipoQebra == 'PC') {
+                $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
+                $this->Cell(17, 5, utf8_decode("Cod.Prod.") ,1, 0);
+                $this->Cell(85, 5, utf8_decode("Produto") ,1, 0);
+                $this->Cell(30, 5, utf8_decode("Cod. Barras") ,1, 0);
+                $this->Cell(15, 5, utf8_decode("Refer.") ,1, 0);
+                $this->Cell(12, 5, utf8_decode("Qtd.") ,1, 0);
+                $this->Cell(17, 5, utf8_decode("Caixas") ,1, 1);
+            } else {
+                $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
+                $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
+                $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
+                $this->Cell(30, 5, utf8_decode("Cod. Barras") ,1, 0);
+                $this->Cell(15, 5, utf8_decode("Refer.") ,1, 0);
+                $this->Cell(12, 5, utf8_decode("Quant.") ,1, 1);
+            }
             $this->Cell(20, 1, "", 0, 1);
+
             $total = 0;
-            
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
-                //$endereco = $produto->getProdutoEmbalagem()->getEndereco();
-                
-                $endereco = $produto->getCodDepositoEndereco();
-                $dscEndereco = "";
-                if ($endereco != null) {
-                    $dscEndereco = $endereco->getDescricao();
-                }
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
-                $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
-                $this->Cell(20, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
-                $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
-
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
+
+                $endereco     = $produto->getCodDepositoEndereco();
+                $codProduto   = $produto->getCodProduto();
+                $descricao    = utf8_decode($produto->getProduto()->getDescricao());
+                $referencia   = $produto->getProduto()->getReferencia();
+                $quantidade   = $produto->getQtdSeparar();
+                $caixas       = $produto->getNumCaixaInicio().' - '.$produto->getNumCaixaFim();
+                $dscEndereco  = "";
+                $codigoBarras = '';
+                if ($endereco != null)
+                    $dscEndereco  = $endereco->getDescricao();
+                if (isset($embalagemEn) && !empty($embalagemEn))
+                    $codigoBarras = $embalagemEn->getCodigoBarras();
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += ($pesoProduto->getPeso() * $produto->getQtdSeparar());
                     $cubagemTotal += $pesoProduto->getCubagem();
                 }
-                $codigoBarras = '';
-                if (isset($embalagemEn) && !empty($embalagemEn))
-                    $codigoBarras = $embalagemEn->getCodigoBarras();
 
-
-                $this->Cell(30, 4, $codigoBarras, 0, 0);
-                $this->Cell(15, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
-//                $this->Cell(20, 4, utf8_decode($embalagem->getDescricao() . " (". $embalagem->getQuantidade() . ")") ,0, 0);
-                $this->Cell(15, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
-                $total += $produto->getQtdSeparar();
+                if ($tipoQebra == 'PC') {
+                    $this->Cell(20, 4, $dscEndereco ,0, 0);
+                    $this->Cell(17, 4, $codProduto ,0, 0);
+                    $this->Cell(85, 4, substr($descricao,0,45) ,0, 0);
+                    $this->Cell(30, 4, $codigoBarras, 0, 0);
+                    $this->Cell(15, 4, $referencia ,0, 0);
+                    $this->Cell(15, 4, $quantidade ,0, 0);
+                    $this->Cell(15, 4, $caixas ,0, 1, 'C');
+                } else {
+                    $this->Cell(20, 4, $dscEndereco ,0, 0);
+                    $this->Cell(20, 4, $codProduto ,0, 0);
+                    $this->Cell(100, 4, substr($descricao,0,57) ,0, 0);
+                    $this->Cell(30, 4, $codigoBarras, 0, 0);
+                    $this->Cell(15, 4, $referencia ,0, 0);
+                    $this->Cell(15, 4, $quantidade ,0, 1, 'C');
+                }
+                $total += $quantidade;
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                 $this->Cell(20, 1, "", 0, 1);
             }
