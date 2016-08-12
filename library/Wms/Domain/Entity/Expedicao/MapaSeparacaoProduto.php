@@ -98,7 +98,7 @@ class MapaSeparacaoProduto
     protected $numCaixaInicio;
 
     /**
-     * @Column(name="NUM_CAIXA_PC_FIM", type=integer, nullable=true)
+     * @Column(name="NUM_CAIXA_PC_FIM", type="integer", nullable=true)
      */
     protected $numCaixaFim;
 
