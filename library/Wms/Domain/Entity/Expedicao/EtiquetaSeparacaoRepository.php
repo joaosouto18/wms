@@ -718,9 +718,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
-        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $etiquetaConferenciaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaConferencia");
-        $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
         $cubagemCaixa = $this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
@@ -743,7 +741,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $getNumCaixaMapaProduto = 0;
             $produtoCarrinho = null;
-            $cubagemOcupada = 0;
             foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
@@ -914,17 +911,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
-//                                $getNumCaixaMapaProduto = 0;
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
                                 $quebrasNaoFracionado = array();
-                                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
-                                $cubagemOcupada += $dadoLogisticoEn->getCubagem();
-
 
                                 foreach ($cubagemPedidos as $pedido => $cubagem) {
                                     if ($pedido == $pedidoEntity->getId() && $cubagem > 0 && $produtoCarrinho != $codProduto) {
-                                        if ($cubagemOcupada < )
                                         $numeroCaixas = ceil($cubagem / $cubagemCaixa);
                                         $numCaixaInicio = $getNumCaixaMapaProduto + 1;
                                         $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
@@ -942,7 +934,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
-//                                $getNumCaixaMapaProduto = 0;
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
                                 $quebrasFracionado = array();
