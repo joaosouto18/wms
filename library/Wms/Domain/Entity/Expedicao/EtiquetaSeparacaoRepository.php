@@ -720,6 +720,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $etiquetaConferenciaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaConferencia");
+        $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
+
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
         $cubagemCaixa = $this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
 
@@ -730,8 +732,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
 
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
-            $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
+            $modeloSeparacaoEn    = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            $quebrasFracionado    = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
 
             $cubagemPedidos = 0;
@@ -739,6 +741,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
             }
 
+            $getNumCaixaMapaProduto = 0;
+            $produtoCarrinho = null;
+            $cubagemOcupada = 0;
             foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
@@ -909,17 +914,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
-                                $getNumCaixaMapaProduto = 0;
+//                                $getNumCaixaMapaProduto = 0;
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
                                 $quebrasNaoFracionado = array();
+                                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
+                                $cubagemOcupada += $dadoLogisticoEn->getCubagem();
+
+
                                 foreach ($cubagemPedidos as $pedido => $cubagem) {
-                                    if ($pedido == $pedidoEntity->getId() && $cubagem > 0) {
+                                    if ($pedido == $pedidoEntity->getId() && $cubagem > 0 && $produtoCarrinho != $codProduto) {
+                                        if ($cubagemOcupada < )
                                         $numeroCaixas = ceil($cubagem / $cubagemCaixa);
                                         $numCaixaInicio = $getNumCaixaMapaProduto + 1;
                                         $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
                                         $getNumCaixaMapaProduto = $numCaixaFim;
                                         $quebrasNaoFracionado[]['tipoQuebra'] = 'PC';
+                                        $produtoCarrinho = $codProduto;
                                     }
                                 }
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
@@ -930,18 +941,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
-                            }   else {
-                                $getNumCaixaMapaProduto = 0;
+                            } else {
+//                                $getNumCaixaMapaProduto = 0;
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
                                 $quebrasFracionado = array();
                                 foreach ($cubagemPedidos as $pedido => $cubagem) {
-                                    if ($pedido == $pedidoEntity->getId() && $cubagem > 0) {
-                                        $numeroCaixas = ceil($cubagem / $cubagemCaixa);
+                                    if ($pedido == $pedidoEntity->getId() && $cubagem > 0 && $produtoCarrinho != $codProduto) {
+                                        $numeroCaixas   = ceil($cubagem / $cubagemCaixa);
                                         $numCaixaInicio = $getNumCaixaMapaProduto + 1;
-                                        $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
+                                        $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
                                         $getNumCaixaMapaProduto = $numCaixaFim;
                                         $quebrasFracionado[]['tipoQuebra'] = 'PC';
+                                        $produtoCarrinho = $codProduto;
                                     }
                                 }
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
