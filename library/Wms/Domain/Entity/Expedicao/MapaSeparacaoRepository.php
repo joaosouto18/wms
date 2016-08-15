@@ -234,7 +234,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $sqlVolume = "AND M.COD_PRODUTO_VOLUME = " .$volumeEn->getId();
         }
 
-        $SQL = "SELECT SUM(M.QTD_EMBALAGEM * M.QTD_SEPARAR) as QTD
+        $SQL = "SELECT SUM(M.QTD_EMBALAGEM * M.QTD_SEPARAR) as QTD, M.QTD_CORTADO
                   FROM MAPA_SEPARACAO_PRODUTO M
                  WHERE M.COD_PRODUTO = '$idProduto'
                    AND M.DSC_GRADE = '$grade'
@@ -243,9 +243,9 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($result) > 0) {
-            return $result[0]['QTD'];
+            return $result;
         } else {
-            return 0;
+            return null;
         }
     }
 
@@ -302,9 +302,15 @@ class MapaSeparacaoRepository extends EntityRepository
         $numConferencia = 1;
         $qtdConferida = 0;
         $qtdCortada = 0;
+        $qtdMapa = 0;
 
         $ultConferencia = $this->getQtdConferenciaAberta($embalagemEn,$volumeEn,$mapaEn);
-        $qtdMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn);
+        $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn);
+
+        if (!empty($qtdProdutoMapa)){
+            $qtdMapa = $qtdProdutoMapa[0]['QTD'];
+            $qtdCortada = $qtdProdutoMapa[0]['QTD_CORTADO'];
+        }
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
