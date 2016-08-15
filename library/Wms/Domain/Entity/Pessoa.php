@@ -155,7 +155,7 @@ class Pessoa implements Ator
 
     /**
      * Retorna lista de endedeços da pessoa
-     * @return type 
+     * @return array 
      */
     public function getEnderecos()
     {
