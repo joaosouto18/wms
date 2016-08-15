@@ -239,7 +239,9 @@ class MapaSeparacaoRepository extends EntityRepository
                  WHERE M.COD_PRODUTO = '$idProduto'
                    AND M.DSC_GRADE = '$grade'
                    $sqlVolume
-                   AND M.COD_MAPA_SEPARACAO = $idMapa";
+                   AND M.COD_MAPA_SEPARACAO = $idMapa
+                   GROUP BY M.QTD_CORTADO
+                   ";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($result) > 0) {
