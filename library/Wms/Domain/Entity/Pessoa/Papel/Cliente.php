@@ -68,6 +68,9 @@ class Cliente implements Ator {
         $this->pessoa = $pessoa;
     }
 
+    /**
+     * @return Pessoa
+     */
     public function getPessoa()
     {
         return $this->pessoa;
