@@ -9,7 +9,7 @@ class Item {
     public $idProduto;
     /** @var string */
     public $grade;
-    /** @var integer */
+    /** @var double */
     public $quantidade;
     /** @var double */
     public $peso;
