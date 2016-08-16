@@ -923,14 +923,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                         $cubagemProduto += $dadoLogisticoEn->getCubagem();
                                 }
 
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0 && $produtoCarrinho != $codProduto) {
+                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
                                     foreach ($cubagemPedidos as $pedido => $cubagem) {
                                         if ($pedido != $pedidoEntity->getId()) {
                                             continue;
                                         } else {
                                             $numeroCaixas = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
                                             if ($cubagemProduto <= $cubagemCaixa && $getNumCaixaMapaProduto > 0) {
-//                                                $numeroCaixas = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
                                                 $numCaixaInicio = $getNumCaixaMapaProduto;
                                                 $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
                                                 $getNumCaixaMapaProduto = $numCaixaInicio;
@@ -938,7 +937,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                 $produtoCarrinho = $codProduto;
                                                 break;
                                             } else {
-//                                                $numeroCaixas = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
                                                 $numCaixaInicio = $getNumCaixaMapaProduto + 1;
                                                 $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
                                                 $getNumCaixaMapaProduto = $numCaixaFim;
@@ -946,13 +944,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                 $produtoCarrinho = $codProduto;
                                                 break;
                                             }
-//                                            $numeroCaixas = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
-//                                            $numCaixaInicio = $getNumCaixaMapaProduto + 1;
-//                                            $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
-//                                            $getNumCaixaMapaProduto = $numCaixaFim;
-//                                            $quebrasNaoFracionado[]['tipoQuebra'] = 'PC';
-//                                            $produtoCarrinho = $codProduto;
-//                                            break;
                                         }
                                     }
                                 } else {
@@ -977,14 +968,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     if (isset($dadoLogisticoEn) && !empty($dadoLogisticoEn))
                                         $cubagemProduto += $dadoLogisticoEn->getCubagem();
                                 }
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0 && $produtoCarrinho != $codProduto) {
+                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
                                     foreach ($cubagemPedidos as $pedido => $cubagem) {
                                         if ($pedido != $pedidoEntity->getId()) {
                                             continue;
                                         } else {
                                             $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
                                             if ($cubagemProduto <= $cubagemCaixa && $getNumCaixaMapaProduto > 0) {
-//                                                $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
                                                 $numCaixaInicio = $getNumCaixaMapaProduto;
                                                 $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
                                                 $getNumCaixaMapaProduto = $numCaixaInicio;
@@ -992,7 +982,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                 $produtoCarrinho = $codProduto;
                                                 break;
                                             } else {
-//                                                $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
                                                 $numCaixaInicio = $getNumCaixaMapaProduto + 1;
                                                 $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
                                                 $getNumCaixaMapaProduto = $numCaixaFim;
@@ -1000,16 +989,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                 $produtoCarrinho = $codProduto;
                                                 break;
                                             }
-
-
-
-//                                            $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
-//                                            $numCaixaInicio = $getNumCaixaMapaProduto + 1;
-//                                            $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
-//                                            $getNumCaixaMapaProduto = $numCaixaFim;
-//                                            $quebrasFracionado[]['tipoQuebra'] = 'PC';
-//                                            $produtoCarrinho = $codProduto;
-//                                            break;
                                         }
                                     }
                                 } else {
