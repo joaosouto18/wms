@@ -906,6 +906,9 @@ class Mobile_EnderecamentoController extends Action
         $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
         try {
+
+            $this->getEntityManager()->beginTransaction();
+
             if ($enderecoNovo) {
                 $LeituraColetor = new LeituraColetor();
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
@@ -1074,6 +1077,9 @@ class Mobile_EnderecamentoController extends Action
                         $params['validade'] = $validade->format('d/m/Y');
                     }
 
+                    $enderecoDestino = $params['endereco'];
+
+                    $params['observacoes'] = "Transferencia de Estoque - Origem:".$enderecoAntigo->getDescricao()." Destino:".$enderecoDestino->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
@@ -1150,10 +1156,12 @@ class Mobile_EnderecamentoController extends Action
                 }
             }
 
+            $this->getEntityManager()->commit();
             $this->addFlashMessage('success', 'Endereço alterado com sucesso!');
             $this->_redirect('/mobile/enderecamento/movimentacao');
 
         }  catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
             throw new \Exception ($e->getMessage());
         }
     }

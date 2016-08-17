@@ -1,7 +1,6 @@
 <?php
 
-use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
-    Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
+use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity;
 
 
 class Item {
@@ -9,7 +8,7 @@ class Item {
     public $idProduto;
     /** @var string */
     public $grade;
-    /** @var integer */
+    /** @var double */
     public $quantidade;
     /** @var double */
     public $peso;
@@ -215,7 +214,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -238,7 +237,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 //NOTA DE DEVOLUÇÃO
             }
             $bonificacao = "N";
-            $pesoTotal = trim ($pesoTotal);
+            $pesoTotal = 0;
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
@@ -306,7 +305,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
-     * * @param string $pesoTotal Peso Total da Nota Fiscal
+     * @param string $pesoTotal Peso Total da Nota Fiscal
      * @return boolean
      */
     public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null){
