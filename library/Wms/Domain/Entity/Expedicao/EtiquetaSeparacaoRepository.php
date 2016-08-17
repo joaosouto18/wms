@@ -924,17 +924,31 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $numCaixaFim            = null;
                                 $quebrasNaoFracionado   = array();
 
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
+//                                if ($cubagemPedidos[$pedidoEntity->getId()]['cubagemTotal'] > 0) {
+//                                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
+//                                    if (isset($dadoLogisticoEn) && !empty($dadoLogisticoEn))
+//                                        $cubagemProduto += $dadoLogisticoEn->getCubagem();
+//                                }
+                                if ($cubagemPedidos[$pedidoEntity->getId()]['cubagemTotal'] > 0) {
+
                                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
                                     if (isset($dadoLogisticoEn) && !empty($dadoLogisticoEn))
                                         $cubagemProduto += $dadoLogisticoEn->getCubagem();
-                                }
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
+
                                     foreach ($cubagemPedidos as $pedido => $cubagem) {
+                                        if ($pedido == $pedidoEntity->getId()) {
+                                            $numeroCaixas   = ceil($cubagem['cubagemTotal'] / $cubagemCaixa);
+                                            if ($cubagemProduto <= $cubagemCaixa && $getNumCaixaMapaProduto > 0) {
+
+                                            }
+
+
+                                        }
+
                                         if ($pedido != $pedidoEntity->getId()) {
                                             continue;
                                         } else {
-                                            $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
+                                            $numeroCaixas   = ceil($cubagem['cubagemTotal'] / $cubagemCaixa);
                                             if ($cubagemProduto <= $cubagemCaixa && $getNumCaixaMapaProduto > 0) {
                                                 $numCaixaInicio = $getNumCaixaMapaProduto;
                                                 $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
@@ -967,7 +981,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $numCaixaFim            = null;
                                 $quebrasFracionado      = array();
 
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
+                                if ($cubagemPedidos[$pedidoEntity->getId()]['cubagemTotal'] > 0) {
                                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
                                     if (isset($dadoLogisticoEn) && !empty($dadoLogisticoEn))
                                         $cubagemProduto += $dadoLogisticoEn->getCubagem();
@@ -977,7 +991,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                         if ($pedido != $pedidoEntity->getId()) {
                                             continue;
                                         } else {
-                                            $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
+                                            $numeroCaixas   = ceil($cubagem['cubagemTotal'] / $cubagemCaixa);
                                             if ($cubagemProduto <= $cubagemCaixa && $getNumCaixaMapaProduto > 0) {
                                                 $numCaixaInicio = $getNumCaixaMapaProduto;
                                                 $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
