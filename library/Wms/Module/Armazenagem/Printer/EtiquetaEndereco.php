@@ -149,6 +149,11 @@ class EtiquetaEndereco extends Pdf
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(148.5,14,$dscProduto,0,1);
 
+        if($dscProduto == "") {
+            $this->SetFont('Arial', 'B', 18);
+            $this->Cell(148.5,14," Rua      Prédio     Nível    Apto.",0,1);
+        }
+
         $posY = $this->GetY() - 3;
 
         $this->SetFont('Arial', 'B', $fontSizeCodBarras);
