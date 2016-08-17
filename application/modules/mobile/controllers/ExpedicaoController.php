@@ -1271,5 +1271,14 @@ public function informaQtdMapaAction()
 
     }
 
+    public function testeAjaxAction()
+    {
+        $sql = "Select * from sum_peso_produto";
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        var_dump($resultado); exit;
+
+
+    }
+
 }
 
