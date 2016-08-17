@@ -34,6 +34,7 @@ class EtiquetaEndereco extends Pdf
         $this->y=0;
         $this->count = 0;
 
+        $count = 0;
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
 
@@ -50,7 +51,12 @@ class EtiquetaEndereco extends Pdf
                 case 2:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     foreach ($produtos as $produto){
-                        $this->layoutModelo2($produto,$codBarras);
+                        if ($count > 6) {
+                            $this->AddPage();
+                            $this->layoutModelo2($produto,$codBarras);
+                            $count = 0;
+                        }
+                        $count += $count;
                     }
                     if (count($produtos) <= 0){
                         $this->layoutModelo2(null,$codBarras);
@@ -143,8 +149,8 @@ class EtiquetaEndereco extends Pdf
         $fontSizeEndereco  = 28;
         $dscEndereco = $idProduto;
 
-//        $this->SetFont('Arial', 'B', 69);
-//        $this->Cell(0,0," ",0,1);
+        $this->SetFont('Arial', 'B', 69);
+        $this->Cell(0,0," ",0,1);
 
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(148.5,14,$dscProduto,0,1);
