@@ -51,7 +51,7 @@ class EtiquetaEndereco extends Pdf
                 case 2:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     foreach ($produtos as $produto){
-                        if ($count > 6) {
+                        if ($count >= 6) {
                             $this->AddPage();
                             $this->layoutModelo2($produto,$codBarras);
                             $count = 0;
