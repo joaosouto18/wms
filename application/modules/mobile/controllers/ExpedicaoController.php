@@ -244,7 +244,7 @@ class Mobile_ExpedicaoController extends Action
             $fields['quebra'] = $codPessoa;
             $fields['pedido'] = $idPedido;
             $fields['produtos'] = $produtos;
-            if (!empty($expVolumePatrimonioEn->getSequencia()))
+            if (isset($expVolumePatrimonioEn) && !empty($expVolumePatrimonioEn))
                 $fields['sequencia'] = $expVolumePatrimonioEn->getSequencia();
 
 
