@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Web\Report\Produto;
 
+
 use Wms\Util\Barcode\eFPDF,
     Wms\Util\Barcode\Barcode;
 
@@ -22,25 +23,33 @@ class EtiquetaCodigoBarras extends eFPDF
 
         $this->AddPage();
         $x = 170;
-        $y = 25;
+        $y = 30;
+        $count = 1;
         foreach ($produtos as $produto)
         {
             $height   = 8;
             $angle    = 0;
             $type     = 'code128';
             $black    = '000000';
-            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
-            $len = $this->GetStringWidth($data['hri']);
+
+            if($count > 12){
+                $this->AddPage();
+                $count = 1;
+                $y = 30;
+            }
 
             $this->SetFont('Arial','',10);
-            $this->Cell(15, 10, $produto['id'], 0, 0);
-            $this->Cell(90, 10, substr($produto['descricao'],0,40), 0, 0);
-            $this->Cell(90, 10, $produto['unidadeMedida'], 0, 0);
-            $this->Cell(20, 10, '', 0, 1);
-            $this->Cell(20, 10, '', 0, 1,'C');
+            $this->Cell(15, 20, $produto['id'], 0, 0);
+            $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
+            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
+            //$this->Cell(20, 20, '', 0, 1);
+            //$this->Cell(20, 10, '', 0, 1,'C');
 
-            $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 8,$produto['codigoBarras']);
+            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
+            $len = $this->GetStringWidth($data['hri']);
+            $this->Text(($x-$height) + (($height - $len)/2) + 3, $y + 8,$produto['codigoBarras']);
             $y = $y + 20;
+            $count++;
         }
 
         $this->Output('Código de Barras Expedicao '.$idExpedicao.'.pdf','D');
