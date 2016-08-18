@@ -355,7 +355,8 @@ class Mobile_RecebimentoController extends Action
         $params = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-
+        $params['dataValidade'] = '20/08/16';
+        var_dump('abc');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
             $this->view->qtdNFs = $params['qtdNFs'];
@@ -393,8 +394,10 @@ class Mobile_RecebimentoController extends Action
                 $idProduto = $params['idProduto'];
                 $grade = $params['grade'];
             }
+            var_dump('def');
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
+                    var_dump('ghi');
                     if ($params['conferenciaCega'] == true) {
                         $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 
@@ -410,12 +413,15 @@ class Mobile_RecebimentoController extends Action
                             $this->redirect('divergencia','recebimento','web',array('id' => $idOrdemServico));
                         }
                     }
+                    var_dump('jkl');
                     // gravo conferencia do item
                     if (isset($idProdutoVolume)) {
                         $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
                         $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     } elseif (isset($idProdutoEmbalagem)) {
+                        var_dump('mno'); exit;
                         $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
+//                        var_dump('pqr'); exit;
                         $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     }
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
