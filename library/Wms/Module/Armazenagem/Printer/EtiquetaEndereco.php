@@ -352,7 +352,7 @@ class EtiquetaEndereco extends Pdf
         $this->SetFont('Arial', 'B', $fontSizeEndereco);
         $this->Cell($lenEndereco,8,'      '.$dscEndereco,0,1);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 135, $posY , 60, 15);
 
         $posYSeta = $posY - 8;
         if ($nivel == 0) {
