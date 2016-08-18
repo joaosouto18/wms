@@ -394,7 +394,7 @@ class Mobile_RecebimentoController extends Action
                 $idProduto = $params['idProduto'];
                 $grade = $params['grade'];
             }
-            if ($submit == 'semConferencia') {
+            if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     var_dump('ghi');
                     if ($params['conferenciaCega'] == true) {
