@@ -355,7 +355,7 @@ class Mobile_RecebimentoController extends Action
         $params = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-//        $params['dataValidade'] = '20/08/16';
+        $params['dataValidade'] = '20/08/16';
         var_dump('abc');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
@@ -371,6 +371,7 @@ class Mobile_RecebimentoController extends Action
             $senhaDigitada = $params['senhaConfirmacao'];
             $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
             $submit = $params['btnFinalizar'];
+            var_dump($submit); exit;
 
             if ($params['conferenciaCega'] == true) {
                 $idOrdemServico = unserialize($params['idOrdemServico']);
