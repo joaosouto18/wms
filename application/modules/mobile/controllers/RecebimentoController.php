@@ -356,7 +356,8 @@ class Mobile_RecebimentoController extends Action
         $params = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-
+        $params['dataValidade'] = '20/08/16';
+        var_dump('abc');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
             $this->view->qtdNFs = $params['qtdNFs'];
@@ -394,8 +395,9 @@ class Mobile_RecebimentoController extends Action
                 $idProduto = $params['idProduto'];
                 $grade = $params['grade'];
             }
-            if ($submit == 'semConferencia') {
+            if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
+                    var_dump('ghi');
                     if ($params['conferenciaCega'] == true) {
                         $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 
