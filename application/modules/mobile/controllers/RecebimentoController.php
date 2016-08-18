@@ -371,7 +371,6 @@ class Mobile_RecebimentoController extends Action
             $senhaDigitada = $params['senhaConfirmacao'];
             $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
             $submit = $params['btnFinalizar'];
-            var_dump($submit); exit;
 
             if ($params['conferenciaCega'] == true) {
                 $idOrdemServico = unserialize($params['idOrdemServico']);
@@ -395,8 +394,7 @@ class Mobile_RecebimentoController extends Action
                 $idProduto = $params['idProduto'];
                 $grade = $params['grade'];
             }
-            var_dump('def');
-            if ($submit == 'semConferencia') {
+            if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     var_dump('ghi');
                     if ($params['conferenciaCega'] == true) {
@@ -414,15 +412,12 @@ class Mobile_RecebimentoController extends Action
                             $this->redirect('divergencia','recebimento','web',array('id' => $idOrdemServico));
                         }
                     }
-                    var_dump('jkl');
                     // gravo conferencia do item
                     if (isset($idProdutoVolume)) {
                         $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
                         $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     } elseif (isset($idProdutoEmbalagem)) {
-                        var_dump('mno');
                         $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
-//                        var_dump('pqr'); exit;
                         $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     }
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
@@ -435,7 +430,6 @@ class Mobile_RecebimentoController extends Action
                     }
                 }
             }
-            var_dump('ghhh');
         }
     }
 
