@@ -51,12 +51,7 @@ class EtiquetaEndereco extends Pdf
                 case 2:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     foreach ($produtos as $produto){
-                        if ($count >= 6) {
-                            $this->AddPage();
-                            $this->layoutModelo2($produto,$codBarras);
-                            $count = 0;
-                        }
-                        $count += $count;
+                        $this->layoutModelo2($produto,$codBarras);
                     }
                     if (count($produtos) <= 0){
                         $this->layoutModelo2(null,$codBarras);
@@ -79,6 +74,15 @@ class EtiquetaEndereco extends Pdf
                 case 7:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo7($produto,$codBarras);
+                    break;
+                case 8:
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    foreach ($produtos as $produto){
+                        $this->layoutModelo8($produto,$codBarras);
+                    }
+                    if (count($produtos) <= 0){
+                        $this->layoutModelo8(null,$codBarras);
+                    }
                     break;
                 default:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
@@ -275,7 +279,7 @@ class EtiquetaEndereco extends Pdf
         if ($nivel == 0) {
             $this->Image(APPLICATION_PATH . '/../data/seta1.png', 88, $this->GetY()-22 , 13,20);
         } else {
-//            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 88, $this->GetY()-23 , 13,20);
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 88, $this->GetY()-23 , 13,20);
         }
         $this->Cell(95,10," ",0,1);
 
@@ -304,6 +308,61 @@ class EtiquetaEndereco extends Pdf
             $this->Cell(0,25,$dscProduto,0,0);
         }
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 45 , 90);
+    }
+
+    public function layoutModelo8 ($produto, $codBarras){
+
+        if (count($produto) <= 0) {
+            $dscProduto = "";
+            $dscGrade = "";
+            $idProduto = "";
+        } else {
+            $idProduto = $produto['codProduto'];
+            $dscProduto = utf8_decode($produto['descricao']);
+            $dscGrade  = utf8_decode($produto['grade']);
+        }
+
+        $enderecos = explode(".",$codBarras);
+        $rua = substr($enderecos[0],0);
+        $predio = substr($enderecos[1],1);
+        $nivel = substr($enderecos[2],1);
+        $apartamento = substr($enderecos[3],0);
+
+        $lenCodBarras      = 95;
+        $lenEndereco       = 112.5;
+        $fontSizeCodBarras = 44;
+        $fontSizeEndereco  = 28;
+        $dscEndereco       = $idProduto;
+
+        $this->SetFont('Arial', 'B', 69);
+        $this->Cell(0,0," ",0,1);
+
+        $this->SetFont('Arial', 'B', 18);
+        if($dscProduto == "") {
+            $this->Cell(148.5,14,"               Rua      Prédio     Nível    Apto.",0,1);
+        } else {
+            $this->Cell(148.5,14,'     '.$dscProduto,0,1);
+        }
+
+        $posY = $this->GetY() - 3;
+
+        $this->SetFont('Arial', 'B', $fontSizeCodBarras);
+        $this->Cell($lenCodBarras,4,'      '.$codBarras,0,0);
+
+        $this->SetFont('Arial', 'B', $fontSizeEndereco);
+        $this->Cell($lenEndereco,8,'      '.$dscEndereco,0,1);
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
+
+        $posYSeta = $posY - 8;
+        if ($nivel == 0) {
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 0, $posYSeta, 13, 20);
+        } else if ($nivel == 1) {
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 0, $posYSeta, 13, 20);
+        }
+
+        $this->Cell(5,5," ",0,1);
+        $this->Line(0,$this->GetY(),297,$this->GetY());
     }
 
 }
