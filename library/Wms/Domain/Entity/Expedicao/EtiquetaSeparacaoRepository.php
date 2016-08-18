@@ -641,9 +641,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $grade              = $pedidoProduto->getProduto()->getGrade();
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
 
-            if (!isset($cubagemPedido[$pedidoId]))
-                $cubagemPedido[$pedidoId] = 0;
-//                $cubagemPedido[$pedidoId]['cubagemTotal'] = 0;
+//            if (!isset($cubagemPedido[$pedidoId]))
+//                $cubagemPedido[$pedidoId]['cubagemTotal'][] = 0;
+//                $cubagemPedido[$pedidoId] = 0;
 
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
@@ -694,10 +694,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
                         $cubagemProduto                           = str_replace(',','.',$dadoLogisticoEn->getCubagem());
-                        $cubagemPedido[$pedidoId] += (float)$cubagemProduto;
-//                        $cubagemPedido[$pedidoId]['cubagemTotal'] += (float)$cubagemProduto;
-//                        $cubagemPedido[$pedidoId]['produto'][]    = $codProduto;
-//                        $cubagemPedido[$pedidoId]['grade'][]      = $grade;
+//                        $cubagemPedido[$pedidoId] += (float)$cubagemProduto;
+                        $cubagemPedido[$pedidoId]['cubagem'][] = (float)$cubagemProduto;
+                        $cubagemPedido[$pedidoId]['produto'][]      = $codProduto;
+                        $cubagemPedido[$pedidoId]['grade'][]        = $grade;
                     }
                 }
             }
@@ -917,6 +917,32 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $numCaixaFim            = null;
                                 $quebrasNaoFracionado   = array();
 
+
+                                if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()])) {
+                                    foreach ($cubagemPedidos[$pedidoEntity->getId()] as $chave => $arrayProdutos) {
+                                        foreach ($arrayProdutos as $produtos) {
+                                            var_dump($produtos);
+
+                                        }
+                                        exit;
+
+
+                                        var_dump($chave);
+                                        var_dump($arrayProdutos);
+                                        exit;
+
+
+                                        var_dump($arrayProdutos['cubagem']); exit;
+
+
+
+                                        var_dump($arrayProdutos); exit;
+
+
+                                    }
+                                }
+
+                                var_dump($cubagemPedidos); exit;
                                 if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
                                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
                                     if (isset($dadoLogisticoEn) && !empty($dadoLogisticoEn))
