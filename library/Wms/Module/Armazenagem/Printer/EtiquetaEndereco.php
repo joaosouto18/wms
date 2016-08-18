@@ -356,9 +356,9 @@ class EtiquetaEndereco extends Pdf
 
         $posYSeta = $posY - 8;
         if ($nivel == 0) {
-            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 0, $posYSeta, 13, 20);
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 5, $posYSeta, 13, 20);
         } else if ($nivel == 1) {
-            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 0, $posYSeta, 13, 20);
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 5, $posYSeta, 13, 20);
         }
 
         $this->Cell(5,5," ",0,1);
