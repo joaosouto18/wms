@@ -544,16 +544,15 @@ class ExpedicaoRepository extends EntityRepository
         Try {
             $this->getEntityManager()->beginTransaction();
             if ($validaStatusEtiqueta == true) {
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
-                if (is_string($result)) {
-                    return $result;
-                }
                 $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
                     return $result;
                 }
-
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
+                if (is_string($result)) {
+                    return $result;
+                }
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
                 if (is_string($result)) {
                     return $result;
                 }
