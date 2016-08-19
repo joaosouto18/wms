@@ -202,7 +202,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             foreach ($pedidoWs->produtos as $produtoWs) {
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = $produtoWs->grade;
-                $produto['quantidade'] = $produtoWs->quantidade;
+                $produto['quantidade'] = round($produtoWs->quantidade);
                 $produtos[] = $produto;
             }
 
