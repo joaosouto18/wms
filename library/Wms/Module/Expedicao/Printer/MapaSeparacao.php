@@ -280,8 +280,7 @@ class MapaSeparacao extends Pdf
             $this->mapa = $mapa;
             
             $this->InFooter = true;
-            $pdf = new Pdf();
-            $wPage = $pdf->_getpagesize('A4')[0]/12;
+            $wPage = $this->_getpagesize('A4')[0]/12;
 
             $this->SetY(-23);
             $this->SetFont('Arial','B',10);
