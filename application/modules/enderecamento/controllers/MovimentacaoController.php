@@ -30,6 +30,7 @@ class Enderecamento_MovimentacaoController extends Action
                 $idProduto = trim($data['idProduto']);
                 $data['produto'] = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                 $data['embalagem'] = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+                /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
                 $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
 
                 /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -42,6 +43,11 @@ class Enderecamento_MovimentacaoController extends Action
                 if (count($verificaReservaSaida) > 0) {
                     throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
                 }
+
+                $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
+                if ($indPickMultiProduto == 'N')
+                    $enderecoRepo->checkEnderecoPicking($enderecoEn->getDescricao());
+                
 
                 if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
