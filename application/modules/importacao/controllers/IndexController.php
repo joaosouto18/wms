@@ -597,6 +597,9 @@ class Importacao_IndexController extends Action
 
                 $file = $arquivo->getNomeArquivo();
                 $archive = $dir . DIRECTORY_SEPARATOR . $file;
+                echo $dir;
+                echo $file;
+                echo $archive;
                 $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
                 $cabecalho = $arquivo->getCabecalho();
                 $tabelaDestino = $arquivo->getTabelaDestino();
