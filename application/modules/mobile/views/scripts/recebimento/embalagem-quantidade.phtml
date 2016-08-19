@@ -54,15 +54,26 @@
 
                                     var key = event.keyCode;
                                     if (key != 8) {
-                                    if (v.match(/^\d{2}$/) !== null) {
-                                        this.value = v + '/';
-                                    }
-                                    else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
-                                        this.value = v + '/';
+                                        if (v.match(/^\d{2}$/) !== null) {
+                                            this.value = v + '/';
+                                        }
+                                        else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
+                                            this.value = v + '/';
+                                        }
                                     }
 
-
-                                    }"/></td>
+                                    if (v != '' && v.length == 8) {
+                                        quantidade = document.getElementById('qtdConferida');
+                                        if (quantidade) {
+                                            quantidade.focus();
+                                            if(event.preventDefault) {
+                                                event.preventDefault();
+                                            } else {
+                                                event.returnValue = false;
+                                            }
+                                        }
+                                    }
+                                    "/></td>
             <?php endif; ?>
             <?php if ($this->pesoVariavel == 'N') : ?>
                 <td><input type="text" maxlength="15" value="" size="10" class=" required

@@ -167,16 +167,6 @@ class Mobile_RecebimentoController extends Action
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
 
-//            if ($produtoVolumeEn == null) {
-//                $idProduto = $produtoEmbEn->getProduto()->getId();
-//                $grade = $produtoEmbEn->getProduto()->getGrade();
-//                $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
-//            } else {
-//                $idProduto = $produtoVolumeEn->getCodProduto();
-//                $grade = $produtoVolumeEn->getGrade();
-//                $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
-//            }
-
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
                 $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
@@ -195,11 +185,6 @@ class Mobile_RecebimentoController extends Action
 
         $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getUnitizadoresByProduto($itemNF['idProduto'],$itemNF['grade']);
         $this->view->normasPaletizacao = $normasPaletizacao;
-
-//        if ( !empty($pesoVariavel) )
-//            $pesoVariavel = "S";
-//        else
-//            $pesoVariavel = "N";
 
         $this->view->pesoVariavel = $pesoVariavel;
         $this->view->recebimento = $recebimentoEntity;
@@ -356,8 +341,6 @@ class Mobile_RecebimentoController extends Action
         $params = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-        $params['dataValidade'] = '20/08/16';
-        var_dump('abc');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
             $this->view->qtdNFs = $params['qtdNFs'];
