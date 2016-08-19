@@ -635,7 +635,8 @@ class Importacao_IndexController extends Action
                             foreach ($camposArquivo as $campo){
                                 $coluna = $campo->getPosicaoTxt();
                                 if (!empty($coluna)){
-                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
+                                    $checkCabecalho = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+                                    if (empty($checkCabecalho)){
                                         throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
                                     }
                                 }
