@@ -278,9 +278,10 @@ class MapaSeparacao extends Pdf
             $this->cubagemTotal = $cubagemTotal;
             $this->pesoTotal = $pesoTotal;
             $this->mapa = $mapa;
-            
+
             $this->InFooter = true;
-            $wPage = 17.50012962963/12;
+            $pageSizeA4 = $this->_getpagesize('A4');
+            $wPage = $pageSizeA4[0]/12;
 
             $this->SetY(-23);
             $this->SetFont('Arial','B',10);

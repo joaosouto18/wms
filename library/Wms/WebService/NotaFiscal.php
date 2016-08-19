@@ -1,6 +1,7 @@
 <?php
 
-use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity;
+use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+    Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
 
 
 class Item {
@@ -8,7 +9,7 @@ class Item {
     public $idProduto;
     /** @var string */
     public $grade;
-    /** @var double */
+    /** @var integer */
     public $quantidade;
     /** @var double */
     public $peso;
