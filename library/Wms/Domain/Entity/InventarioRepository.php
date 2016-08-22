@@ -564,9 +564,9 @@ class InventarioRepository extends EntityRepository
 
         $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'N');
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(),'N');
         }
-        $this->_em->flush();
+//        $this->_em->flush();
     }
 
     public function impressaoInventarioByEndereco($params, $idInventario)
