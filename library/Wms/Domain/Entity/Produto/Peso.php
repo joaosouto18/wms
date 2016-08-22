@@ -2,7 +2,7 @@
 namespace Wms\Domain\Entity\Produto;
 
 /**
- * @Table(name="SUM_PESO_PRODUTO")
+ * @Table(name="PRODUTO_PESO")
  * @Entity(repositoryClass="Wms\Domain\Entity\Produto\PesoRepository")
  */
 class Peso

@@ -162,18 +162,19 @@ class MapaSeparacao extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
+        $pesoProdutoRepo          = $em->getRepository('wms:Produto\Peso');
+        $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $expedicaoRepo            = $em->getRepository('wms:Expedicao');
 
         foreach ($mapaSeparacao as $mapa) {
-            $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
-            $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
-            $pedidoProduto = $produtos[0]->getPedidoProduto();
-            $carga = '';
-            if (isset($pedidoProduto) && !empty($pedidoProduto))
-                $carga = $produtos[0]->getPedidoProduto()->getPedido()->getCarga()->getCodCargaExterno();
+            $produtos        = $mapaSeparacaoProdutoRepo->getMapaProduto($mapa->getId());
 
             $quebras = $mapa->getDscQuebra();
-            $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
-            $em->persist($mapa);
+
+            if ($mapa->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
+                $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+                $em->persist($mapa);
+            }
 
             $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
@@ -184,7 +185,6 @@ class MapaSeparacao extends Pdf
             $this->AddPage();
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-            $expedicaoRepo = $em->getRepository('wms:Expedicao');
             $cargasSelecionadas = $this->getCargasSelecionadas();
             if (empty($cargasSelecionadas)) {
                 $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
@@ -300,14 +300,13 @@ class MapaSeparacao extends Pdf
             $this->InFooter = false;
 
         }
-
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
-        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-        $ExpedicaoEntity->setStatus($statusEntity);
-        $em->persist($ExpedicaoEntity);
+        $ExpedicaoEntity    = $expedicaoRepo->find($idExpedicao);
+        if ($ExpedicaoEntity->getCodStatus() == EXPEDICAO::STATUS_INTEGRADO) {
+            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+            $ExpedicaoEntity->setStatus($statusEntity);
+            $em->persist($ExpedicaoEntity);
+        }
 
         $this->Output('Mapa Separação-'.$idExpedicao.'.pdf','D');
 
