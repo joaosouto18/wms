@@ -515,7 +515,6 @@ class Inventario
         $this->getEm()->persist($inventarioEndEn);
 
         foreach($contagemEndEntities as $contagemEndEn) {
-            $contagemEndEn->setContagemInventariada(1);
             $this->getEm()->persist($contagemEndEn);
         }
 
