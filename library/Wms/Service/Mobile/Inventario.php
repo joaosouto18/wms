@@ -511,6 +511,7 @@ class Inventario
 
         $inventarioEndEn->setInventariado(1);
         $inventarioEndEn->setDivergencia(null);
+        $inventarioEndEn->setAtualizaEstoque(1);
         $this->getEm()->persist($inventarioEndEn);
 
         foreach($contagemEndEntities as $contagemEndEn) {
