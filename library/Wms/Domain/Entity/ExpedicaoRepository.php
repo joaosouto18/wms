@@ -1225,7 +1225,7 @@ class ExpedicaoRepository extends EntityRepository
                        P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
-                       0 as "reentrega",
+                       NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0 
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MS.QTD_CONF_MANUAL,0) ) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia" 
@@ -1301,6 +1301,12 @@ class ExpedicaoRepository extends EntityRepository
                                            GROUP BY COD_EXPEDICAO ) MAP ON MAP.COD_EXPEDICAO = C.COD_EXPEDICAO
                                    WHERE 1 = 1 ' .  $FullWhere .'
                               GROUP BY C.COD_EXPEDICAO, MAP.QTD, PED.QTD) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT E.COD_EXPEDICAO, COUNT(REE.COD_REENTREGA) as QTD
+                               FROM REENTREGA REE
+                               LEFT JOIN CARGA C ON REE.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                              WHERE REE.IND_ETIQUETA_MAPA_GERADO = \'N\' '. $WhereExpedicao.'
+                              GROUP BY E.COD_EXPEDICAO) REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
                                     SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
