@@ -392,6 +392,8 @@ class EnderecoRepository extends EntityRepository
             if ($picking == true) {
                 $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
             }
+//            $dql->orderBy("e.rua, e.predio, e.apartamento","ASC");
+//            $dql->orderBy("e.nivel","DESC");
 
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
@@ -926,12 +928,13 @@ class EnderecoRepository extends EntityRepository
     public function getImprimirEndereco($enderecos)
     {
         $query = "
-           SELECT DISTINCT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
+           SELECT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
            FROM DEPOSITO_ENDERECO DEP
            LEFT JOIN PRODUTO_EMBALAGEM PE ON DEP.COD_DEPOSITO_ENDERECO =  PE.COD_DEPOSITO_ENDERECO
            LEFT JOIN PRODUTO_VOLUME PV ON DEP.COD_DEPOSITO_ENDERECO =  PV.COD_DEPOSITO_ENDERECO
            LEFT JOIN PRODUTO P ON PE.COD_PRODUTO = P.COD_PRODUTO OR PV.COD_PRODUTO = P.COD_PRODUTO
-           WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos) ORDER BY DEP.DSC_DEPOSITO_ENDERECO";
+           WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos)
+            ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL DESC ";
 
         $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
