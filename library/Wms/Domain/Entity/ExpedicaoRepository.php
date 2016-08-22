@@ -544,16 +544,15 @@ class ExpedicaoRepository extends EntityRepository
         Try {
             $this->getEntityManager()->beginTransaction();
             if ($validaStatusEtiqueta == true) {
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
-                if (is_string($result)) {
-                    return $result;
-                }
                 $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
                     return $result;
                 }
-
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
+                if (is_string($result)) {
+                    return $result;
+                }
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
                 if (is_string($result)) {
                     return $result;
                 }
@@ -2665,16 +2664,15 @@ class ExpedicaoRepository extends EntityRepository
 
     public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
 
-        $entidadePedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')->findOneBy(array('codPedido'=>$codPedido,
+        $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+        $pedidoProdutoRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+        $mapaSeparacaoPedidoRepo   = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        $mapaSeparacaoProdutoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaConferenciaRepo       = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
+        $entidadePedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido'=>$codPedido,
             'codProduto'=>$codProduto,
             'grade'=>$grade));
-        $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId(),
-            'codProduto'=>$codProduto,
-            'dscGrade'=>$grade));
-        $entidadeReservasEstoqueExpedicao = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao')->findBy(array('pedido'=>$codPedido));
-        $repositoryReservaEstoqueProduto = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
-        $repositoryReservaEstoque = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-        $repositoryMapaConferencia = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
 
         $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
         $qtdPedido   = $entidadePedidoProduto->getQuantidade();
@@ -2684,13 +2682,17 @@ class ExpedicaoRepository extends EntityRepository
             $qtdCortar = ($qtdPedido - $qtdCortada);
         }
 
-        foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
+        $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
+                  FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                  LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                 WHERE REE.COD_PEDIDO = '$codPedido'
+                   AND REP.COD_PRODUTO = '$codProduto'
+                   AND REP.DSC_GRADE = '$grade'";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-            $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
-            $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
-            $entityReservaEstoque->setAtendida('C');
-            $entityReservaEstoque->setDataAtendimento(new \DateTime());
-            $this->getEntityManager()->persist($entityReservaEstoque);
+        if (count($result) >0) {
+            $idReservaEstoque = $result[0]['COD_RESERVA_ESTOQUE'];
+            $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $idReservaEstoque));
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 $qtdReservada = $reservaEstoqueProduto->getQtd();
                 if ($qtdCortar + $qtdReservada == 0) {
@@ -2706,6 +2708,11 @@ class ExpedicaoRepository extends EntityRepository
         $this->getEntityManager()->persist($entidadePedidoProduto);
 
         $qtdMapa = 0;
+        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId()));
+
+        $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapaSeparacaoPedido->getMapaSeparacao(),
+            'codProduto'=>$codProduto,
+            'dscGrade'=>$grade));
 
         foreach ($entidadeMapaProduto as $mapa) {
             $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
@@ -2716,7 +2723,7 @@ class ExpedicaoRepository extends EntityRepository
             }
 
             if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
-                $mapaConferenciaEn = $repositoryMapaConferencia->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
                 foreach ($mapaConferenciaEn as $conferencia) {
                     $this->getEntityManager()->remove($conferencia);
                 }
