@@ -394,7 +394,8 @@ class InventarioRepository extends EntityRepository
                 $qtdContagem = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
                 if ($estoqueEn && $invEnderecoEn->getAtualizaEstoque() == 1) {
                     //mesmo produto?
-                    if ($serviceInventario->compareProduto($estoqueEn,$contagemEndEn) == true) {
+                    $result = $serviceInventario->compareProduto($estoqueEn,$contagemEndEn);
+                    if ($result == true) {
                         $qtd = $qtdContagem - $estoqueEn->getQtd();
                         if ($qtd != 0) {
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtd, $osEn, $usuarioEn, $estoqueRepo);
