@@ -327,8 +327,16 @@ class EnderecoRepository extends EntityRepository
         return $produto;
     }
 
-    public function checkEnderecoPicking($endereco, $produtoId = null)
+    public function checkTipoEnderecoPicking($endereco, $produtoId, $embalagemId)
     {
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        /*$enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+        $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
+        if ($indPickMultiProduto == 'N')
+            $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());*/
+
+
         $result = $this->getProdutoByEndereco($endereco, false, true);
 
         if (!empty($result)){
@@ -337,10 +345,13 @@ class EnderecoRepository extends EntityRepository
             if ($tipoPicking == 'P'){
                 foreach ($result as $item){
                     if ($item['codProduto'] != $produtoId)
-                        throw new \Exception("Não é possível adicionar outro produto neste picking.");
+                        throw new \Exception("Não é possível adicionar outro produto neste endereço de picking.");
                 }
             } else if ($tipoPicking == 'E') {
-                throw new \Exception("Não é possível adicionar outra embalagem neste picking.");
+                foreach ($result as $item){
+                    if ($item['codEmbalagem'] != $embalagemId)
+                        throw new \Exception("Não é possível adicionar outra embalagem neste endereço de picking.");
+                }
             }
         }
         

@@ -231,20 +231,32 @@ class Mobile_ExpedicaoController extends Action
 
         $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
+        $dataInicio = (!empty($expedicaoEn))?$expedicaoEn->getDataInicio():null;
+        $emissor = (!empty($pessoaEmpresa))?$pessoaEmpresa->getNome():null;
+
+        $localidade = null;
+        $estado = null;
+        if (!empty($endereco)) {
+            $localidade = $endereco->getLocalidade();
+            $estado = $endereco->getUf()->getReferencia();
+        }
+
+        $sequencia = $expVolumePatrimonioEn->getSequencia();
+
         if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
 
             $fields = array();
             $fields['expedicao'] = $idExpedicao;
             $fields['volume'] = $volume;
-            $fields['dataInicio'] = $expedicaoEn->getDataInicio();
-            $fields['emissor'] = $pessoaEmpresa->getNome();
-            $fields['localidade'] = $endereco->getLocalidade();
-            $fields['estado'] = $endereco->getUf()->getReferencia();
+            $fields['dataInicio'] = $dataInicio;
+            $fields['emissor'] = $emissor;
+            $fields['localidade'] = $localidade;
+            $fields['estado'] = $estado;
             $fields['descricao'] = $dscVolume;
             $fields['quebra'] = $codPessoa;
             $fields['pedido'] = $idPedido;
             $fields['produtos'] = $produtos;
-            if (!empty($expVolumePatrimonioEn->getSequencia()))
+            if (!empty($sequencia))
                 $fields['sequencia'] = $expVolumePatrimonioEn->getSequencia();
 
 
