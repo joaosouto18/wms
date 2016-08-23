@@ -327,6 +327,37 @@ class EnderecoRepository extends EntityRepository
         return $produto;
     }
 
+    public function checkTipoEnderecoPicking($endereco, $produtoId, $embalagemId)
+    {
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        /*$enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+        $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
+        if ($indPickMultiProduto == 'N')
+            $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());*/
+
+
+        $result = $this->getProdutoByEndereco($endereco, false, true);
+
+        if (!empty($result)){
+            $tipoPicking = $this->getSystemParameterValue('IND_TIPO_PICKING');
+
+            if ($tipoPicking == 'P'){
+                foreach ($result as $item){
+                    if ($item['codProduto'] != $produtoId)
+                        throw new \Exception("Não é possível adicionar outro produto neste endereço de picking.");
+                }
+            } else if ($tipoPicking == 'E') {
+                foreach ($result as $item){
+                    if ($item['codEmbalagem'] != $embalagemId)
+                        throw new \Exception("Não é possível adicionar outra embalagem neste endereço de picking.");
+                }
+            }
+        }
+        
+        return true;
+    }
+
     /**
      * @param $dscEndereco
      * @param bool $unico
@@ -360,8 +391,8 @@ class EnderecoRepository extends EntityRepository
             ->select('p.id as codProduto, p.grade, p.descricao' )
             ->distinct(true)
             ->from("wms:Produto\Volume", "pv")
-            ->InnerJoin("pv.endereco", "e")
-            ->InnerJoin("pv.produto", "p")
+            ->innerJoin("pv.endereco", "e")
+            ->innerJoin("pv.produto", "p")
             ->where("e.rua = $rua")
             ->andWhere("e.predio = $predio")
             ->andWhere("e.nivel = $nivel")
@@ -379,7 +410,7 @@ class EnderecoRepository extends EntityRepository
 
         if (count($produto) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select('p.id as codProduto, p.grade, p.descricao')
+                ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao')
                 ->distinct(true)
                 ->from("wms:Produto\Embalagem", "pe")
                 ->leftJoin("pe.endereco", "e")

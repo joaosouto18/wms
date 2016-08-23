@@ -221,7 +221,7 @@ class Importacao
                 if (isset($cliente['cidade']))
                     $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
                 if (isset($cliente['numero']))
-                    $cliente['enderecos'][0]['numero'] = $cliente['numeor'];
+                    $cliente['enderecos'][0]['numero'] = $cliente['numero'];
                 if (isset($cliente['cep']))
                     $cliente['enderecos'][0]['cep'] = $cliente['cep'];
                 if (isset($entitySigla))
@@ -443,7 +443,7 @@ class Importacao
 
             $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
             if (empty($pedido['pessoa']))
-                throw new \Exception("Cliente: $pedido[codClienteExterno] não foi encontrado");
+                throw new \Exception("Cliente: $pedido[codCliente] não foi encontrado");
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
@@ -471,7 +471,7 @@ class Importacao
 
             $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
             if (empty($pedido['pedido'])){
-                throw new \Exception("Pedido: $pedido[pedido] não foi encontrado");
+                throw new \Exception("Pedido: $pedido[codPedido] não foi encontrado");
             }
 
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));
