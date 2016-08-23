@@ -344,7 +344,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param integer $idCargaExterno
      * @param string $tipoCarga
      * @param string $tipoPedido
-     * @param integer $idPedido
+     * @param string $idPedido
      * @return boolean
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
