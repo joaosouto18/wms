@@ -9,7 +9,7 @@ class Item {
     public $idProduto;
     /** @var string */
     public $grade;
-    /** @var integer */
+    /** @var double */
     public $quantidade;
     /** @var double */
     public $peso;
@@ -253,8 +253,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = trim((int)$itemNf->quantidade);
-                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
+                    $itemWs['quantidade'] = trim($itemNf->quantidade);
+                    $itemWs['peso'] = trim($itemNf->peso);
                     if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
                         $itemWs['peso'] = trim($itemNf->quantidade);
                     $itensNf[] = $itemWs;
@@ -306,7 +306,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
-     * @param string $pesoTotal Peso Total da Nota Fiscal
+     * * @param string $pesoTotal Peso Total da Nota Fiscal
      * @return boolean
      */
     public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null){
@@ -536,11 +536,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 if ($continueNF == false) {
                     $itemWs['idProduto'] = trim($itemNf['idProduto']);
                     $itemWs['grade'] = trim($itemNf['grade']);
-                    $itemWs['quantidade'] = trim((int)$itemNf['quantidade']);
-                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf['peso']));
-                    if (is_null(trim($itemNf['peso'])) || empty(trim($itemNf['peso'])) || trim($itemNf['peso']) == 0 || $itemNf['peso'] == '')
-                        $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
-
+                    $itemWs['quantidade'] = trim($itemNf['quantidade']);
+                    $itemWs['peso'] = trim($itemNf['peso']);
+                    if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
+                        $itemWs['peso'] = trim($itemNf['quantidade']);
+                    }
 
                     $itensNf[] = $itemWs;
                 }
