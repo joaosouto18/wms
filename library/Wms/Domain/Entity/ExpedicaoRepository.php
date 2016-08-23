@@ -1124,10 +1124,12 @@ class ExpedicaoRepository extends EntityRepository
         $andSub="";
         $cond="";
 
+        $WhereFinalCarga = "";
         $WhereSigla = "";
         $WherePedido = "";
         $WhereCarga = "";
         $WhereExpedicao = "";
+        $FullWhereFinal = "";
 
         if (isset($idDepositoLogado)) {
             $andWhere = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
@@ -1196,7 +1198,6 @@ class ExpedicaoRepository extends EntityRepository
             $andSub=" and ";
             $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."))";
             $WhereCarga .= " AND  (COD_CARGA_EXTERNO = ".$parametros['codCargaExterno'].")";
-
         }
 
         $JoinExpedicao = "";
