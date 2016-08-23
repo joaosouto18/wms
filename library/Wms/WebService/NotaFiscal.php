@@ -255,8 +255,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['grade'] = trim($itemNf->grade);
                     $itemWs['quantidade'] = trim($itemNf->quantidade);
                     $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
-                    if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
+                    if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {
                         $itemWs['peso'] = trim($itemNf->quantidade);
+                    }
+
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
@@ -538,8 +540,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['grade'] = trim($itemNf['grade']);
                     $itemWs['quantidade'] = trim($itemNf['quantidade']);
                     $itemWs['peso'] = trim(str_replace(',','.',$itemNf['peso']));
-                    if (is_null(trim($itemNf['peso'])) || empty(trim($itemNf['peso'])) || trim($itemNf['peso']) == 0 || $itemNf['peso'] == '')
+                    if (is_null(trim($itemNf['peso'])) || empty(trim($itemNf['peso'])) || trim($itemNf['peso']) == 0 || $itemNf['peso'] == '') {
                         $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
+                    }
 
 
                     $itensNf[] = $itemWs;
