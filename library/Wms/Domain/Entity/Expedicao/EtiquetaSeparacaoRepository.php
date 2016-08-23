@@ -921,16 +921,29 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $quebrasNaoFracionado = $quebras;
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()]) && $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count] > 0) {
 
-                                    if ($codProduto != $produtoEmbalado) {
-                                        $count += $count;
+
+
+//                                    if ($pedidoEntity->getId() != 361861)
+//                                    {
+//                                        continue;
+//                                    }
+
+//                                    var_dump($cubagemPedidos[$pedidoEntity->getId()]); exit;
+                                    foreach ($cubagemPedidos[$pedidoEntity->getId()] as $chave => $produtos) {
+                                        if ($chave == 'produto') {
+                                            foreach ($produtos as $key => $produto) {
+                                                if ($codProduto == $produto) {
+                                                    $count = $key;
+                                                    break;
+                                                }
+                                            }
+                                            break;
+                                        }
                                     }
 
-                                    var_dump($codProduto);
-                                    var_dump($produtoEmbalado);
                                     $produtoEmbalado = $cubagemPedidos[$pedidoEntity->getId()]['produto'][$count];
                                     $gradeEmbalado = $cubagemPedidos[$pedidoEntity->getId()]['grade'][$count];
 
-                                    var_dump($produtoEmbalado);
                                     if($produtoEmbalado == $codProduto && $gradeEmbalado == $grade) {
                                         $quebrasNaoFracionado = null;
                                         $cubagem = $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count];
