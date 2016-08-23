@@ -215,7 +215,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -238,7 +238,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 //NOTA DE DEVOLUÇÃO
             }
             $bonificacao = "N";
-            $pesoTotal = 0;
+            $pesoTotal = trim ($pesoTotal);
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
