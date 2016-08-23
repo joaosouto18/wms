@@ -731,8 +731,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn    = $modeloSeparacaoRepo->find($idModeloSeparacao);
-            $quebrasFracionado    = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
-            $quebrasNaoFracionado = $quebras =  $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
+            $quebrasFracionado    = $quebrasFR = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
+            $quebrasNaoFracionado = $quebras   =  $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
 
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
@@ -917,18 +917,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
-
                                 $quebrasNaoFracionado = $quebras;
+                                
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()]) && $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count] > 0) {
-
-
-
-//                                    if ($pedidoEntity->getId() != 361861)
-//                                    {
-//                                        continue;
-//                                    }
-
-//                                    var_dump($cubagemPedidos[$pedidoEntity->getId()]); exit;
                                     foreach ($cubagemPedidos[$pedidoEntity->getId()] as $chave => $produtos) {
                                         if ($chave == 'produto') {
                                             foreach ($produtos as $key => $produto) {
@@ -967,39 +958,36 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
-                                $quebrasFracionado      = array();
+                                $quebrasFracionado = $quebrasFR;
 
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
-                                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual));
-                                    if (isset($dadoLogisticoEn) && !empty($dadoLogisticoEn))
-                                        $cubagemProduto += $dadoLogisticoEn->getCubagem();
-                                }
-                                if ($cubagemPedidos[$pedidoEntity->getId()] > 0) {
-                                    foreach ($cubagemPedidos as $pedido => $cubagem) {
-                                        if ($pedido != $pedidoEntity->getId()) {
-                                            continue;
-                                        } else {
-                                            $numeroCaixas   = ceil($cubagemPedidos[$pedidoEntity->getId()] / $cubagemCaixa);
-                                            if ($cubagemProduto <= $cubagemCaixa && $getNumCaixaMapaProduto > 0) {
-                                                $numCaixaInicio = $getNumCaixaMapaProduto;
-                                                $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
-                                                $getNumCaixaMapaProduto = $numCaixaInicio;
-                                                $quebrasFracionado[]['tipoQuebra'] = 'PC';
-                                                $produtoCarrinho = $codProduto;
-                                                break;
-                                            } else {
-                                                $numCaixaInicio = $getNumCaixaMapaProduto + 1;
-                                                $numCaixaFim    = $numeroCaixas + ($numCaixaInicio - 1);
-                                                $getNumCaixaMapaProduto = $numCaixaFim;
-                                                $quebrasFracionado[]['tipoQuebra'] = 'PC';
-                                                $produtoCarrinho = $codProduto;
-                                                break;
+                                if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()]) && $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count] > 0) {
+                                    foreach ($cubagemPedidos[$pedidoEntity->getId()] as $chave => $produtos) {
+                                        if ($chave == 'produto') {
+                                            foreach ($produtos as $key => $produto) {
+                                                if ($codProduto == $produto) {
+                                                    $count = $key;
+                                                    break;
+                                                }
                                             }
+                                            break;
                                         }
                                     }
-                                } else {
-                                    $quebrasFracionado    = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
+
+                                    $produtoEmbalado = $cubagemPedidos[$pedidoEntity->getId()]['produto'][$count];
+                                    $gradeEmbalado = $cubagemPedidos[$pedidoEntity->getId()]['grade'][$count];
+
+                                    if($produtoEmbalado == $codProduto && $gradeEmbalado == $grade) {
+                                        $quebrasFracionado = null;
+                                        $cubagem = $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count];
+                                        $cubagemTotalProduto = $cubagem + $cubagemTotalProduto;
+
+                                        $numeroCaixas = ceil($cubagemTotalProduto / $cubagemCaixa);
+                                        $numCaixaInicio = $getNumCaixaMapaProduto + 1;
+                                        $numCaixaFim = $numeroCaixas + ($numCaixaInicio - 1);
+                                        $quebrasFracionado[]['tipoQuebra'] = 'PC';
+                                    }
                                 }
+
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn,$numCaixaInicio,$numCaixaFim);
                             }
@@ -1012,7 +1000,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     throw new \Exception($mensagem);
                 }
             }
-//            exit;
 
 //            $this->atualizaMapaSeparacaoProduto($idExpedicao);
 
