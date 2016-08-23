@@ -918,7 +918,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $numCaixaInicio         = null;
                                 $numCaixaFim            = null;
                                 $quebrasNaoFracionado = $quebras;
-                                
+
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()]) && $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count] > 0) {
                                     foreach ($cubagemPedidos[$pedidoEntity->getId()] as $chave => $produtos) {
                                         if ($chave == 'produto') {
