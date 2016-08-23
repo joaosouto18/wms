@@ -349,8 +349,11 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = "Pedido repetido: " . $registro;
                         break;
                     }
-
-                    $result = $importacaoService->savePedido($em, $arrRegistro);
+                    $arrRepo = array(
+                        'pJuridicaRepo' => $pJuridicaRepo,
+                        'pFisicaRepo' => $pFisicaRepo
+                    );
+                    $result = $importacaoService->savePedido($em, $arrRegistro, $arrRepo);
                     if (is_string($result)) {
                         $arrErroRows['exception'] = $result;
                     } else {
