@@ -203,7 +203,10 @@ class Mobile_ExpedicaoController extends Action
 
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         /** @var Expedicao\ExpedicaoVolumePatrimonio $expVolumePatrimonioEn */
-        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findOneBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao));
+        $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findOneBy(array('volumePatrimonio' => $volume, 'expedicao' => $expVolumePatrimonioEn));
+
+        if (empty($expVolumePatrimonioEn))
+            throw new Exception("Não foi encontrado o volume $volume na expedição $expVolumePatrimonioEn");
 
         $codCliente = $expVolumePatrimonioEn->getTipoVolume();
         $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');

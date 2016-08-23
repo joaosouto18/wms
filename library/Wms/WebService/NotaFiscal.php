@@ -1,6 +1,7 @@
 <?php
 
-use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity;
+use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+    Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
 
 
 class Item {

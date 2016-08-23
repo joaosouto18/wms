@@ -67,6 +67,12 @@ class GerarEtiqueta extends eFPDF
 
                         $this->layout2($produto, $tipo);
                         break;
+                    case 3:
+                        $this->SetMargins(2, 2);
+                        $this->SetFont('Arial', 'B', 8);
+
+                        $this->layout3($produto, $tipo);
+                        break;
                     default:
                         $this->SetMargins(7, 5, 0);
                         $this->SetFont('Arial', 'B', 8);
@@ -82,7 +88,6 @@ class GerarEtiqueta extends eFPDF
 
     public function layout1($produto, $tipo)
     {
-
         $codigo = $produto['codigoBarras'];
 
         if ($tipo == "NF") {
@@ -179,5 +184,54 @@ class GerarEtiqueta extends eFPDF
 
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
     }
+
+    public function layout3($produto, $tipo)
+    {
+        $codigo = $produto['codigoBarras'];
+
+        if ($tipo == "NF") {
+            $fornecedor = ' - Fornecedor: ' . utf8_decode(substr($produto['fornecedor'], 0, 25) . '...');
+        } else if ($tipo == "Produto") {
+            $fornecedor = "";
+        }
+
+        $this->AddPage();
+        $this->MultiCell(100,2.7,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
+        //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
+        $this->Ln(1.5);
+        $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
+        $this->Ln(3);
+        $this->Cell(100, 0, 'Fabricante: ' . utf8_decode($produto['fabricante']) . $fornecedor, 0, 0);
+
+        if ($produto['idEmbalagem'] != null) {
+            $this->Ln(3);
+            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+        }
+
+        if ($produto['idVolume'] != null) {
+            $this->Ln(3);
+            $this->Cell(100, 0, 'Volume: ' . utf8_decode($produto['dscVolume']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+        }
+        if ($produto['dataValidade'] != null) {
+            $this->Ln(3);
+            $dataValidade = new \DateTime($produto['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+        }
+
+        $x        = 40;
+        $y        = 28;
+        $height   = 8;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,10);
+        $len = $this->GetStringWidth($data['hri']);
+
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 8,$codigo);
+
+    }
+
+
 
 }
