@@ -539,7 +539,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idPedido
+     * @param string $idPedido
      * @return pedido Informações sobre o pedido
      */
     public function consultarPedido($idPedido)
@@ -548,8 +548,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-
-        /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
         $pedidoEn = $pedidoRepo->find($idPedido);
 
         if ($pedidoEn == null) {
