@@ -1167,8 +1167,8 @@ class ExpedicaoRepository extends EntityRepository
             $where.=$and."E.DTH_FINALIZACAO >= TO_DATE('".$parametros['dataFinal1']." 00:00', 'DD-MM-YYYY HH24:MI')";
             $and=" AND ";
             $WhereExpedicao .= " AND (E.DTH_FINALIZACAO >= TO_DATE('".$parametros['dataFinal1']." 00:00', 'DD-MM-YYYY HH24:MI'))";
-
         }
+
         if (isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
             $where.=$and."E.DTH_FINALIZACAO <= TO_DATE('".$parametros['dataFinal2']." 23:59', 'DD-MM-YYYY HH24:MI')";
             $and=" AND ";
@@ -1194,7 +1194,9 @@ class ExpedicaoRepository extends EntityRepository
             $whereSubQuery=" C.COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."";
             $and=" and ";
             $andSub=" and ";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."))";
             $WhereCarga .= " AND  (COD_CARGA_EXTERNO = ".$parametros['codCargaExterno'].")";
+
         }
 
         $JoinExpedicao = "";
@@ -1212,7 +1214,7 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla ;
-
+        $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla ;;
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
 
@@ -1316,7 +1318,7 @@ class ExpedicaoRepository extends EntityRepository
                                LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  '.$FullWhere.$andWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 WHERE 1 = 1'. $FullWhere . '
+                 WHERE 1 = 1'. $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 //        echo $sql; exit;
