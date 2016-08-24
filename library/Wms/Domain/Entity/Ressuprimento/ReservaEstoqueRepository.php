@@ -172,6 +172,8 @@ class ReservaEstoqueRepository extends EntityRepository
         if ($idOs != NULL) {
             $osEn = $this->getEntityManager()->getRepository("wms:OrdemServico")->find($idOs);
         }
+
+        $unitizadorEn = null;
         if ($unitizador != NULL) {
             $unitizadorEn = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador")->find($unitizador);
         }

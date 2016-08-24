@@ -19,19 +19,25 @@ class Enderecamento_MovimentacaoController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
+        $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
+
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             try {
                 $this->getEntityManager()->beginTransaction();
                 $grade = trim($data['grade']);
-                if ($data['grade'] == '')
-                    $data['grade'] = "UNICA";
+                if ($grade == '')
+                    $grade = $data['grade'] = "UNICA";
 
                 $idProduto = trim($data['idProduto']);
                 $data['produto'] = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                 $data['embalagem'] = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+
                 /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
                 $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+
+                /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+                $enderecoDestinoEn = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
 
                 /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
                 $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
@@ -44,13 +50,15 @@ class Enderecamento_MovimentacaoController extends Action
                     throw new \Exception ("Existe Reserva de Saída para esse endereço que ainda não foi atendida!");
                 }
 
-                $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
-                if ($indPickMultiProduto == 'N')
-                    $enderecoRepo->checkEnderecoPicking($enderecoEn->getDescricao());
-                
 
                 if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+                    if (empty($estoqueEn))
+                        throw new Exception('Não existe estoque deste produto neste endereço');
+                    
+                    if ($indPickMultiProduto == 'N')
+                        $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());
+
                     $validade = $estoqueEn->getValidade();
                     if (isset($validade) && !is_null($validade)) {
                         $data['validade'] = $validade->format('d/m/Y');
@@ -174,6 +182,11 @@ class Enderecamento_MovimentacaoController extends Action
                             throw new Exception("Este produto não possui nenhuma embalagem cadastrada.");
                         }
                         $params['embalagem'] = $embalagensEn[0];
+                        
+                        if ($indPickMultiProduto == 'N')
+                            $enderecoRepo->checkTipoEnderecoPicking($enderecoEn->getDescricao(),$idProduto, $params['embalagem']->getId());
+
+
                         $EstoqueRepository->movimentaEstoque($params, true, true);
                     } else {
                         if (isset($data['volumes']) && ($data['volumes'] != "")) {

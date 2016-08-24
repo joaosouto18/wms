@@ -1218,9 +1218,12 @@ class Mobile_EnderecamentoController extends Action
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
 
         $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco));
-        $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
-
-        $this->_helper->json(array('caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
+        if (!empty($enderecoEn)) {
+            $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
+            $this->_helper->json(array('status' => 'Ok', 'caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
+        } else {
+            $this->_helper->json(array('status' => 'Error', 'Msg' => 'Endereço não encontrado'));
+        }
     }
 }
 

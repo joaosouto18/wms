@@ -455,12 +455,28 @@ class Importacao
 
                 if ($tipoCliente == 'J') {
                     $pJuridicaRepo = $arrRepo['pJuridicaRepo'];
+                    /** @var Juridica $entityPessoa */
                     $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
                     if ($entityPessoa) {
-                        $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
+
+                        /** @var Pessoa\Papel\ClienteRepository $clienteRepo */
+                        $clienteRepo = $arrRepo['clienteRepo'];
+
+                        /** @var Cliente $result */
+                        $result = $clienteRepo->findOneBy(array('codPessoa' => $entityPessoa->getId()));
+
+                        if (empty($result)){
+                            $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
+                        } else {
+                            $result->setCodClienteExterno($pedido['codCliente']);
+                            $em->persist($result);
+                            $em->flush($result);
+                        }
+
                         if (is_string($result)) {
                             throw new \Exception($result);
                         }
+
                         $pedido['pessoa'] = $result;
                     } else {
                         $nCliente = array(
@@ -481,10 +497,25 @@ class Importacao
                     $pFisicaRepo = $arrRepo['pFisicaRepo'];
                     $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
                     if ($entityPessoa) {
-                        $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
+
+                        /** @var Pessoa\Papel\ClienteRepository $clienteRepo */
+                        $clienteRepo = $arrRepo['clienteRepo'];
+
+                        /** @var Cliente $result */
+                        $result = $clienteRepo->findOneBy(array('codPessoa' => $entityPessoa->getId()));
+
+                        if (empty($result)) {
+                            $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
+                        } else {
+                            $result->setCodClienteExterno($pedido['codCliente']);
+                            $em->persist($result);
+                            $em->flush($result);
+                        }
+
                         if (is_string($result)) {
                             throw new \Exception($result);
                         }
+
                         $pedido['pessoa'] = $result;
                     } else {
                         $nCliente = array(

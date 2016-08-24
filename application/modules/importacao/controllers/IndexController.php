@@ -351,7 +351,8 @@ class Importacao_IndexController extends Action
                     }
                     $arrRepo = array(
                         'pJuridicaRepo' => $pJuridicaRepo,
-                        'pFisicaRepo' => $pFisicaRepo
+                        'pFisicaRepo' => $pFisicaRepo,
+                        'clienteRepo' => $clienteRepo
                     );
                     $result = $importacaoService->savePedido($em, $arrRegistro, $arrRepo);
                     if (is_string($result)) {
