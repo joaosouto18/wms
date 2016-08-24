@@ -656,6 +656,11 @@ class PaleteRepository extends EntityRepository
                             $peso = (float) $peso + $pesoLimite[$idNorma];
                         }
                     } else {
+                        $qtdLimite = $qtdLimite - $qtd;
+                        if ($qtdLimite < 0) {
+                            $qtd = $qtd + $qtdLimite;
+                        }
+
                         $pesoLimite = $pesoLimite - $peso;
                         if ($pesoLimite < 0) {
                             $peso = (float) $peso + $pesoLimite;

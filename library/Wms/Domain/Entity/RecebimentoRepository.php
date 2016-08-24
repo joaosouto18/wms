@@ -447,6 +447,43 @@ class RecebimentoRepository extends EntityRepository
         }
     }
 
+    public function getDivergenciaPesoVariavelByOs($idOS, $idRecebimento, $produtoEn, $repositorios) {
+
+        $notaFiscalRepo = $repositorios['notaFiscalRepo'];
+
+        $qtdDivergencia = 0;
+        
+        $codProduto = $produtoEn->getId();
+        $grade = $produtoEn->getGrade();
+        
+        $pesoNf = $notaFiscalRepo->getPesoByProdutoAndRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade());
+    
+        $SQL = "SELECT NVL(SUM(NUM_PESO),0) as PESO
+                  FROM RECEBIMENTO_EMBALAGEM RE
+             LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                 WHERE RE.COD_OS = $idOS
+                   AND PE.COD_PRODUTO = '$codProduto'
+                   AND PE.DSC_GRADE = '$grade'
+                   AND RE.COD_RECEBIMENTO = $idRecebimento";
+    
+        $pesoRecebimento = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $toleranciaNominal = $produtoEn->getToleranciaNominal();
+        $pesoRecebimento = $pesoRecebimento[0]['PESO'];
+        if (($pesoRecebimento > ($pesoNf+$toleranciaNominal)) || ($pesoRecebimento < ($pesoNf- $toleranciaNominal))) {
+            if ($pesoRecebimento > $pesoNf - $toleranciaNominal) {
+                $qtdDivergencia = $pesoRecebimento - $pesoNf - $toleranciaNominal;
+            } else {
+                $qtdDivergencia = $pesoRecebimento - $pesoNf + $toleranciaNominal;
+            }
+        }
+
+        return array(
+            'pesoConferido' => $pesoRecebimento . ' Kg',
+            'pesoDivergencia' => $qtdDivergencia . ' Kg',
+            'pesoNf' => $pesoNf . ' Kg'
+        );
+    }
+
     public function getDivergenciaPesoVariavel ($idRecebimento, $produtoEn, $repositorios){
 
         $notaFiscalRepo = $repositorios['notaFiscalRepo'];
