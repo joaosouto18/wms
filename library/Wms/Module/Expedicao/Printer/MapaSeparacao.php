@@ -44,11 +44,11 @@ class MapaSeparacao extends Pdf
 
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'PC'));
             $quebras         = $mapa->getDscQuebra();
-            $tipoQebra       = null;
+            $tipoQebra       = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
-                $tipoQebra   = $mapaQuebra->getTipoQuebra();
+                $tipoQebra   = true;
 
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
             $em->persist($mapa);
@@ -96,7 +96,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 4, "", 0, 1);
 
             $this->SetFont('Arial', 'B', 8);
-            if ($tipoQebra == 'PC') {
+            if ($tipoQebra == true) {
                 $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
                 $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
                 $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
@@ -126,7 +126,7 @@ class MapaSeparacao extends Pdf
                     $dscEndereco = $endereco->getDescricao();
 
                 $this->SetFont('Arial',  null, 8);
-                if ($tipoQebra == 'PC') {
+                if ($tipoQebra == true) {
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
                     $this->Cell(90, 4,substr($descricao,0,54) ,0, 0);
@@ -192,10 +192,10 @@ class MapaSeparacao extends Pdf
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
             $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa));
-            $tipoQebra = null;
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'PC'));
+            $tipoQebra = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
-                $tipoQebra = $mapaQuebra->getTipoQuebra();
+                $tipoQebra = true;
 
             $quebras = $mapa->getDscQuebra();
             $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
@@ -251,7 +251,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 4, "", 0, 1);
             $this->SetFont('Arial', 'B', 8);
 
-            if ($tipoQebra == 'PC') {
+            if ($tipoQebra == true) {
                 $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
                 $this->Cell(17, 5, utf8_decode("Cod.Prod.") ,1, 0);
                 $this->Cell(85, 5, utf8_decode("Produto") ,1, 0);
@@ -292,7 +292,7 @@ class MapaSeparacao extends Pdf
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
                 }
 
-                if ($tipoQebra == 'PC') {
+                if ($tipoQebra == true) {
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(17, 4, $codProduto ,0, 0);
                     $this->Cell(85, 4, substr($descricao,0,45) ,0, 0);
