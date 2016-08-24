@@ -259,7 +259,9 @@ class PaleteRepository extends EntityRepository
         $SQL = " SELECT DISTINCT
                         P.UMA,
                         U.DSC_UNITIZADOR as UNITIZADOR,
-                        QTD.QTD,
+                        CASE WHEN PRODUTO.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO || ' Kg'  
+                             ELSE TO_CHAR(QTD.QTD)
+                        END as QTD,
                         S.DSC_SIGLA as STATUS,
                         DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                         P.IND_IMPRESSO,
