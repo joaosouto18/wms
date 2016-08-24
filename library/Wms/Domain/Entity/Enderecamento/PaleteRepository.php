@@ -672,16 +672,10 @@ class PaleteRepository extends EntityRepository
                 $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 
-                if ( !empty($pesoTotalConferido) && $pesoTotalConferido != 0 ){
-                    $peso = (float) ( $peso - $pesoTotalConferido );
-                    if ( $peso<0 ){
-                        $peso *= -1;
-                    }
-                }
-
                 $pesoTotalPaletes = 0;
                 if ($qtdPaletes > 0)
                     $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
+
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
                     $pesoTotal += $pesoPorPalete;
                     $pesoTotalPaletes += $pesoPorPalete;
