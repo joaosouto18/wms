@@ -35,7 +35,7 @@ class Expedicao_MapaController  extends Action
         $idMapa = $this->_getParam('id');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idMapa);
+        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferirByMapa($idMapa);
 
         $this->exportPDF($result, 'Produtos_Sem_conferencia_Mapa', 'Produtos nao conferidos do Mapa ' . $idMapa, 'L');
     }
@@ -46,7 +46,7 @@ class Expedicao_MapaController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferir($idExpedicao);
+        $result = $mapaSeparacaoConferenciaRepo->getProdutosConferirByExpedicao($idExpedicao);
 
         $RelatorioPendencias = new \Wms\Module\Expedicao\Report\MapasSemConferencia("L", "mm", "A4");
         $RelatorioPendencias->imprimir($idExpedicao, $result);
