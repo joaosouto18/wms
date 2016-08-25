@@ -679,7 +679,7 @@ class NotaFiscalRepository extends EntityRepository
                     WHERE os.recebimento = nf.recebimento
                         AND rc.produto = nfi.produto
                         AND rc.grade = nfi.grade
-                        AND rc.qtdDivergencia = 0
+                        AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = \'N\')
                 )')
             ->setParameter('idRecebimento', $idRecebimento)
             ->groupBy('p.id, nfi.grade, p.descricao, tc.id');
