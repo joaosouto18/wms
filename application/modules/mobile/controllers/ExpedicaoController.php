@@ -116,8 +116,11 @@ class Mobile_ExpedicaoController extends Action
                 if ($tipoProvavelCodBarras === 'volume') {
                     $idVolume = $codBarras;
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-                    if (empty($volumePatrimonioEn))
-                        throw new Exception("Nenhumo volume patrimonio foi encontrado com o código $idVolume");
+                    if (empty($volumePatrimonioEn)) {
+                        $this->addFlashMessage('error',"Nenhum volume-patrimônio foi encontrado com o código $idVolume");
+                        $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao");
+                    }
+
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
                     /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
                     $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
