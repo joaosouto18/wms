@@ -41,7 +41,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
             ->leftJoin('msp.codDepositoEndereco', 'de')
             ->where("msp.mapaSeparacao = $idMapa")
-            ->orderBy('msp.numCaixaInicio, msp.numCaixaFim, de.rua, de.predio, de.nivel, de.apartamento');
+            ->orderBy('de.rua, de.predio, de.nivel, de.apartamento, msp.numCaixaInicio, msp.numCaixaFim');
 
         return $sql->getQuery()->getResult();
     }
