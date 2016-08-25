@@ -418,8 +418,7 @@ class NotaFiscalRepository extends EntityRepository
 
         $sql .= ' AND r.cod_status = ' . RecebimentoEntity::STATUS_FINALIZADO;
         $sql .= ' ORDER BY r.cod_recebimento DESC';
-        echo $sql;
-        exit;
+        
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
