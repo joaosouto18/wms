@@ -1016,4 +1016,31 @@ class EstoqueRepository extends EntityRepository
         return $produtosDivergentes;
     }
 
+    public function getEstoqueByProduto ($produtos = null) {
+        $SQL = "SELECT P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       NVL(E.QTD_ESTOQUE,0) as QTD_ESTOQUE_TOTAL,
+                       NVL(E.QTD_ESTOQUE,0) + NVL(R.QTD_RESERVADA,0) as QTD_ESTOQUE_DISPONIVEL
+                  FROM PRODUTO P
+                  LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD_ESTOQUE
+                               FROM ESTOQUE E
+                              GROUP BY COD_PRODUTO, DSC_GRADE) E
+                    ON E.COD_PRODUTO = P.COD_PRODUTO AND E.DSC_GRADE = P.DSC_GRADE
+                  LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD_RESERVADA) as QTD_RESERVADA
+                               FROM (SELECT DISTINCT REP.COD_PRODUTO, REP.DSC_GRADE, REP.COD_RESERVA_ESTOQUE, REP.QTD_RESERVADA
+                                       FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                                      INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                                       LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                      WHERE RE.IND_ATENDIDA = 'N')
+                              GROUP BY COD_PRODUTO, DSC_GRADE) R
+                   ON R.COD_PRODUTO = P.COD_PRODUTO AND R.DSC_GRADE = P.DSC_GRADE";
+
+        if ($produtos != null) {
+            $SQL = $SQL . " WHERE P.COD_PRODUTO IN (". $produtos . ")";            
+        }
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);        
+        return $result;
+    }
+
 }
