@@ -15,10 +15,10 @@ class Mobile_EnderecamentoController extends Action
         $form = new PickingLeitura();
         $form->init();
         $this->view->form = $form;
-        $codigoBarras = $this->_getParam('codigoBarras');
-        if ($codigoBarras) {
+        $codigoBarrasEndereco = $this->_getParam('codigoBarras');
+        if ($codigoBarrasEndereco) {
             $LeituraColetor = new \Wms\Service\Coletor();
-            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -88,6 +88,7 @@ class Mobile_EnderecamentoController extends Action
                 $this->em->flush();
             }
 
+            $this->addFlashMessage('success', "O endereço ". substr($codigoBarrasEndereco,0,-1) ." foi adicionado");
         }
     }
 
@@ -101,8 +102,12 @@ class Mobile_EnderecamentoController extends Action
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
             $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $removerId));
             $relatorioEn = $relatorioRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
-            $this->getEntityManager()->remove($relatorioEn);
-            $this->getEntityManager()->flush();
+            if (!empty($relatorioEn)) {
+                $this->getEntityManager()->remove($relatorioEn);
+                $this->getEntityManager()->flush();
+                $this->addFlashMessage('info', "O endereço $removerId foi removido.");
+            }
+            $this->_redirect('/mobile/enderecamento/listar-picking');
         }
 
         $enderecosSelecionados = $relatorioRepo->getSelecionados();
