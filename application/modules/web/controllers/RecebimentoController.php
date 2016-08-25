@@ -799,7 +799,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             //busco produtos da nota
             $dql = $this->em->createQueryBuilder()
-                    ->select('p.id, nfi.grade, nfi.quantidade, p.descricao')
+                    ->select('p.id, nfi.grade, nfi.quantidade, p.descricao, p.possuiPesoVariavel, nfi.numPeso as peso')
                     ->from('wms:NotaFiscal\Item', 'nfi')
                     ->innerJoin('nfi.produto', 'p')
                     ->andWhere('p.grade = nfi.grade')
@@ -940,7 +940,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
         if ($notaFiscalEntity)
             $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
-
+        
         // grid da conferencia
         $grid = new ConferenciaGrid;
         $this->view->grid = $grid->init(array('idOrdemServico' => $id))

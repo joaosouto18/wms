@@ -259,7 +259,9 @@ class PaleteRepository extends EntityRepository
         $SQL = " SELECT DISTINCT
                         P.UMA,
                         U.DSC_UNITIZADOR as UNITIZADOR,
-                        QTD.QTD,
+                        CASE WHEN PRODUTO.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO || ' Kg'  
+                             ELSE TO_CHAR(QTD.QTD)
+                        END as QTD,
                         S.DSC_SIGLA as STATUS,
                         DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                         P.IND_IMPRESSO,
@@ -656,6 +658,11 @@ class PaleteRepository extends EntityRepository
                             $peso = (float) $peso + $pesoLimite[$idNorma];
                         }
                     } else {
+                        $qtdLimite = $qtdLimite - $qtd;
+                        if ($qtdLimite < 0) {
+                            $qtd = $qtd + $qtdLimite;
+                        }
+
                         $pesoLimite = $pesoLimite - $peso;
                         if ($pesoLimite < 0) {
                             $peso = (float) $peso + $pesoLimite;
@@ -667,16 +674,10 @@ class PaleteRepository extends EntityRepository
                 $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 
-                if ( !empty($pesoTotalConferido) && $pesoTotalConferido != 0 ){
-                    $peso = (float) ( $peso - $pesoTotalConferido );
-                    if ( $peso<0 ){
-                        $peso *= -1;
-                    }
-                }
-
                 $pesoTotalPaletes = 0;
                 if ($qtdPaletes > 0)
                     $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
+
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
                     $pesoTotal += $pesoPorPalete;
                     $pesoTotalPaletes += $pesoPorPalete;

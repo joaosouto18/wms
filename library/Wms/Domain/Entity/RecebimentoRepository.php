@@ -447,6 +447,43 @@ class RecebimentoRepository extends EntityRepository
         }
     }
 
+    public function getDivergenciaPesoVariavelByOs($idOS, $idRecebimento, $produtoEn, $repositorios) {
+
+        $notaFiscalRepo = $repositorios['notaFiscalRepo'];
+
+        $qtdDivergencia = 0;
+        
+        $codProduto = $produtoEn->getId();
+        $grade = $produtoEn->getGrade();
+        
+        $pesoNf = $notaFiscalRepo->getPesoByProdutoAndRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade());
+    
+        $SQL = "SELECT NVL(SUM(NUM_PESO),0) as PESO
+                  FROM RECEBIMENTO_EMBALAGEM RE
+             LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                 WHERE RE.COD_OS = $idOS
+                   AND PE.COD_PRODUTO = '$codProduto'
+                   AND PE.DSC_GRADE = '$grade'
+                   AND RE.COD_RECEBIMENTO = $idRecebimento";
+    
+        $pesoRecebimento = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $toleranciaNominal = $produtoEn->getToleranciaNominal();
+        $pesoRecebimento = $pesoRecebimento[0]['PESO'];
+        if (($pesoRecebimento > ($pesoNf+$toleranciaNominal)) || ($pesoRecebimento < ($pesoNf- $toleranciaNominal))) {
+            if ($pesoRecebimento > $pesoNf - $toleranciaNominal) {
+                $qtdDivergencia = $pesoRecebimento - $pesoNf - $toleranciaNominal;
+            } else {
+                $qtdDivergencia = $pesoRecebimento - $pesoNf + $toleranciaNominal;
+            }
+        }
+
+        return array(
+            'pesoConferido' => $pesoRecebimento . ' Kg',
+            'pesoDivergencia' => $qtdDivergencia . ' Kg',
+            'pesoNf' => $pesoNf . ' Kg'
+        );
+    }
+
     public function getDivergenciaPesoVariavel ($idRecebimento, $produtoEn, $repositorios){
 
         $notaFiscalRepo = $repositorios['notaFiscalRepo'];
@@ -887,12 +924,13 @@ class RecebimentoRepository extends EntityRepository
         $SQL = "SELECT V.COD_PRODUTO,
                        V.DSC_GRADE,
                        P.DSC_PRODUTO,
-                       NVL(NOTAFISCAL.QTD,0) as QTD_NOTA_FISCAL,
-                       NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0) as qtd_Recebimento,
-                       NVL(RECEBIDO.QTD,0) as qtd_Recebida,
-                       NVL(ENDERECADO.QTD,0) as qtd_Enderecada, 
-                       NVL(ENDERECAMENTO.QTD,0) as qtd_Enderecamento,
-                       (NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) + NVL(RECEBIDO.QTD,0) + NVL(ENDERECADO.QTD,0) + NVL(ENDERECAMENTO.QTD,0) as qtd_Total
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(NOTAFISCAL.QTD,0)) ELSE NVL(NOTAFISCAL.QTD,0) || ' Kg' END as QTD_NOTA_FISCAL,
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) ELSE NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0) || ' Kg' END as qtd_Recebimento,
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(RECEBIDO.QTD,0)) ELSE NVL(RECEBIDO.QTD,0) || ' Kg' END as qtd_Recebida,
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(ENDERECADO.QTD,0)) ELSE NVL(ENDERECADO.QTD,0) || ' Kg' END as qtd_Enderecada, 
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(ENDERECAMENTO.QTD,0)) ELSE NVL(ENDERECAMENTO.QTD,0) || ' Kg' END as qtd_Enderecamento,
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR((NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) + NVL(RECEBIDO.QTD,0) + NVL(ENDERECADO.QTD,0) + NVL(ENDERECAMENTO.QTD,0))
+                                                                ELSE ((NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) + NVL(RECEBIDO.QTD,0) + NVL(ENDERECADO.QTD,0) + NVL(ENDERECAMENTO.QTD,0)) || ' Kg' END as qtd_Total
                   FROM (SELECT COD_PRODUTO, DSC_GRADE
                           FROM V_QTD_RECEBIMENTO
                          WHERE COD_RECEBIMENTO = $idRecebimento
@@ -902,20 +940,31 @@ class RecebimentoRepository extends EntityRepository
                           FROM NOTA_FISCAL_ITEM NFI 
                          INNER JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
                          WHERE NF.COD_RECEBIMENTO = $idRecebimento) V
-                  LEFT JOIN (SELECT SUM(QTD) QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE
-                               FROM V_QTD_RECEBIMENTO R 
+                  LEFT JOIN (SELECT CASE WHEN P.IND_POSSUI_PESO_VARIAVEL = 'S' THEN SUM(NVL(R.NUM_PESO,0))
+                                         ELSE SUM(QTD) 
+                                    END as QTD,
+                                    R.COD_PRODUTO,
+                                    R.DSC_GRADE
+                               FROM V_QTD_RECEBIMENTO R
+                               LEFT JOIN PRODUTO P ON P.COD_PRODUTO = R.COD_PRODUTO AND P.DSC_GRADE = R.DSC_GRADE 
                               WHERE R.COD_RECEBIMENTO = $idRecebimento
-                              GROUP BY COD_PRODUTO, DSC_GRADE) CONFERIDO
+                              GROUP BY R.COD_PRODUTO, R.DSC_GRADE, P.IND_POSSUI_PESO_VARIAVEL) CONFERIDO
                     ON CONFERIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND CONFERIDO.DSC_GRADE = V.DSC_GRADE
                   LEFT JOIN (SELECT SUM(QTD) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
-                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                               FROM (SELECT DISTINCT P.UMA, 
+                                                     CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
+                                                          ELSE PP.QTD 
+                                                     END AS QTD, 
+                                                     PP.COD_PRODUTO, 
+                                                     PP.DSC_GRADE, 
+                                                     P.COD_RECEBIMENTO, 
+                                                     P.COD_STATUS
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                       LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
                                         AND P.COD_STATUS = 534)
                                       GROUP BY COD_PRODUTO, DSC_GRADE) RECEBIDO
@@ -924,9 +973,17 @@ class RecebimentoRepository extends EntityRepository
                   LEFT JOIN (SELECT SUM(QTD) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
-                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                               FROM (SELECT DISTINCT P.UMA, 
+                                                     CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
+                                                          ELSE PP.QTD 
+                                                     END AS QTD, 
+                                                     PP.COD_PRODUTO, 
+                                                     PP.DSC_GRADE, 
+                                                     P.COD_RECEBIMENTO, 
+                                                     P.COD_STATUS
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                       LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
                                         AND P.COD_STATUS = 536)
                                       GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECADO
@@ -935,9 +992,17 @@ class RecebimentoRepository extends EntityRepository
                   LEFT JOIN (SELECT SUM(QTD) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
-                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                               FROM (SELECT DISTINCT P.UMA, 
+                                                     CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
+                                                          ELSE PP.QTD 
+                                                     END AS QTD, 
+                                                     PP.COD_PRODUTO, 
+                                                     PP.DSC_GRADE, 
+                                                     P.COD_RECEBIMENTO, 
+                                                     P.COD_STATUS
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                       LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
                                         AND P.COD_STATUS = 535)
                                       GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECAMENTO
@@ -946,21 +1011,32 @@ class RecebimentoRepository extends EntityRepository
                   LEFT JOIN (SELECT SUM(QTD) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
-                               FROM (SELECT DISTINCT P.UMA, QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO, COD_STATUS
+                               FROM (SELECT DISTINCT P.UMA, 
+                                                     CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
+                                                          ELSE PP.QTD 
+                                                     END AS QTD, 
+                                                     PP.COD_PRODUTO, 
+                                                     PP.DSC_GRADE, 
+                                                     P.COD_RECEBIMENTO, 
+                                                     P.COD_STATUS
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                       LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
                                         AND P.COD_STATUS <> 537)
                                       GROUP BY COD_PRODUTO, DSC_GRADE) GERADO
                     ON GERADO.COD_PRODUTO = V.COD_PRODUTO
                    AND GERADO.DSC_GRADE = V.DSC_GRADE   
-                  LEFT JOIN (SELECT SUM(NFI.QTD_ITEM) as QTD,
+                  LEFT JOIN (SELECT CASE WHEN P.IND_POSSUI_PESO_VARIAVEL = 'S' THEN SUM(NVL(NFI.NUM_PESO,0))
+                                         ELSE SUM(NFI.QTD_ITEM) 
+                                    END as QTD,
                                     NFI.COD_PRODUTO,
                                     NFI.DSC_GRADE
                                FROM NOTA_FISCAL NF
                               INNER JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                               LEFT JOIN PRODUTO P ON P.COD_PRODUTO = NFI.COD_PRODUTO AND P.DSC_GRADE = NFI.DSC_GRADE
                               WHERE NF.COD_RECEBIMENTO = $idRecebimento
-                              GROUP BY COD_PRODUTO, DSC_GRADE) NOTAFISCAL
+                              GROUP BY NFI.COD_PRODUTO, NFI.DSC_GRADE,P.IND_POSSUI_PESO_VARIAVEL) NOTAFISCAL
                     ON NOTAFISCAL.COD_PRODUTO = V.COD_PRODUTO
                    AND NOTAFISCAL.DSC_GRADE = V.DSC_GRADE
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE";
