@@ -201,7 +201,7 @@ class Web_PerfilUsuarioController extends Crud
                 'P' AS \"TYPE\",
                 RA2.COD_RECURSO_ACAO AS \"KEY\",
                 (MI.COD_MENU_ITEM * -1) AS \"COD_PAI\", 
-                A.NOM_ACAO AS \"DESCRICAO\", 
+                RA2.DSC_RECURSO_ACAO AS \"DESCRICAO\", 
                 A.NOM_ACAO,
                 (
                     SELECT 1

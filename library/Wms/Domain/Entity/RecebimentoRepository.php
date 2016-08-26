@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Produto as ProdutoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Domain\Entity\Enderecamento\Palete as PaleteEntity;
+use Wms\Domain\Entity\Enderecamento\Palete;
 
 /**
  * Deposito
@@ -1555,7 +1556,8 @@ class RecebimentoRepository extends EntityRepository
                   LEFT JOIN (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO 
                                FROM (SELECT DISTINCT P.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, P.COD_RECEBIMENTO
                                        FROM PALETE P
-                                       LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA) P
+                                       LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                                      WHERE (P.IND_IMPRESSO = 'S' OR P.COD_STATUS <> '".Palete::STATUS_EM_RECEBIMENTO."')) P
                               GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO) P
                          ON P.COD_PRODUTO = V.COD_PRODUTO
                         AND P.DSC_GRADE = V.DSC_GRADE

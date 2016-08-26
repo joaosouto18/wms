@@ -13,7 +13,10 @@ class PaleteProdutoRepository extends EntityRepository
             ->select('SUM(pp.qtd) qtd')
             ->from('wms:Enderecamento\Palete', 'p')
             ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = p.id')
-            ->where("p.recebimento = $idRecebimento AND pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+            ->where("p.recebimento = $idRecebimento 
+                 AND pp.codProduto = '$codProduto' 
+                 AND pp.grade = '$grade'
+                 AND (p.codStatus <> ". Palete::STATUS_EM_RECEBIMENTO . " OR p.impresso = 'S')");
 
         return $sql->getQuery()->getResult();
     }
