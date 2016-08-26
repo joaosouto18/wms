@@ -13,6 +13,20 @@ class Expedicao_IndexController extends Action
 
     public function indexAction()
     {
+        $estoques = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque')->findAll();
+        foreach ($estoques as $estoque) {
+            $produto = $estoque->getCodProduto();
+            $endereco = $estoque->getDepositoEndereco();
+
+            $produtoEmb = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto' => $produto));
+            foreach ($produtoEmb as $produtos) {
+                $produtos->setEndereco($endereco);
+                $this->getEntityManager()->persist($produtos);
+            }
+        }
+        $this->getEntityManager()->flush();
+        var_dump('ok'); exit;
+
         $form = new FiltroExpedicaoMercadoria();
         $this->view->form = $form;
         $params = $this->_getAllParams();
