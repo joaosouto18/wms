@@ -935,28 +935,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                     $qtdProduto += 1;
                                                 }
                                             }
+                                        } else {
+                                            continue;
                                         }
+                                        if ($qtdProduto <= 0)
+                                            break;
 
                                         $cubagemProduto = $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count];
                                         $cubagemTotalProduto = $qtdProduto * $cubagemProduto;
                                         $cubagemCaixa = (float)str_replace(',','.',$cubagemCaixa);
                                         $qtdCaixas = ceil($cubagemTotalProduto / $cubagemCaixa);
-                                        $quebrasNaoFracionado[]['tipoQuebra'] = 'PC';
                                         $caixas = $mapaProdutoRepo->getCaixasByExpedicao($expedicaoEntity);
 
-                                        if (count($caixas) <= 0) {
-                                            $numCaixaInicio = 1;
-                                            $numCaixaFim = $qtdCaixas;
-                                        } elseif ($cubagemTotalProduto <= $cubagemCaixa - $cubagemPedido && count($caixas) > 0) {
-                                            $numCaixaInicio = $caixas[0]['numCaixaInicio'];
-                                            $numCaixaFim = $caixas[0]['numCaixaFim'];
-                                        } elseif ($cubagemTotalProduto > $cubagemCaixa - $cubagemPedido && count($caixas) > 0) {
-                                            $numCaixaInicio = $caixas[0]['numCaixaFim'] + 1;
-                                            $numCaixaFim = $numCaixaInicio + ($qtdCaixas - 1);
+                                        if ($qtdProduto > 0) {
+                                            $quebrasNaoFracionado[]['tipoQuebra'] = 'PC';
+                                            if (count($caixas) <= 0) {
+                                                $numCaixaInicio = 1;
+                                                $numCaixaFim = $qtdCaixas;
+                                            } elseif ($cubagemTotalProduto <= $cubagemCaixa - $cubagemPedido && count($caixas) > 0) {
+                                                $numCaixaInicio = $caixas[0]['numCaixaInicio'];
+                                                $numCaixaFim = $caixas[0]['numCaixaFim'];
+                                            } elseif ($cubagemTotalProduto > $cubagemCaixa - $cubagemPedido && count($caixas) > 0) {
+                                                $numCaixaInicio = $caixas[0]['numCaixaFim'] + 1;
+                                                $numCaixaFim = $numCaixaInicio + ($qtdCaixas - 1);
+                                            }
                                         }
 
                                         $cubagemPedido = $cubagemPedido + $cubagemTotalProduto;
-//                                        break;
                                     }
                                 }
 
@@ -985,13 +990,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                     $qtdProduto += 1;
                                                 }
                                             }
-                                            $cubagemProduto = $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count];
-                                            $cubagemTotalProduto = $qtdProduto * $cubagemProduto;
-                                            $cubagemCaixa = (float)str_replace(',','.',$cubagemCaixa);
-                                            $qtdCaixas = ceil($cubagemTotalProduto / $cubagemCaixa);
-                                            $quebrasFracionado[]['tipoQuebra'] = 'PC';
-                                            $caixas = $mapaProdutoRepo->getCaixasByExpedicao($expedicaoEntity);
+                                        } else {
+                                            continue;
+                                        }
+                                        if ($qtdProduto <= 0)
+                                            break;
 
+                                        $cubagemProduto = $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count];
+                                        $cubagemTotalProduto = $qtdProduto * $cubagemProduto;
+                                        $cubagemCaixa = (float)str_replace(',','.',$cubagemCaixa);
+                                        $qtdCaixas = ceil($cubagemTotalProduto / $cubagemCaixa);
+                                        $caixas = $mapaProdutoRepo->getCaixasByExpedicao($expedicaoEntity);
+
+                                        if ($qtdProduto > 0) {
+                                            $quebrasFracionado[]['tipoQuebra'] = 'PC';
                                             if (count($caixas) <= 0) {
                                                 $numCaixaInicio = 1;
                                                 $numCaixaFim = $qtdCaixas;
@@ -1002,10 +1014,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                                 $numCaixaInicio = $caixas[0]['numCaixaFim'] + 1;
                                                 $numCaixaFim = $numCaixaInicio + ($qtdCaixas - 1);
                                             }
-
-                                            $cubagemPedido = $cubagemPedido + $cubagemTotalProduto;
                                         }
-                                        break;
+
+                                        $cubagemPedido = $cubagemPedido + $cubagemTotalProduto;
                                     }
                                 }
 
