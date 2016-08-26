@@ -112,7 +112,8 @@ class Inventario_IndexController  extends Action
             /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
             $inventarioRepo = $this->em->getRepository("wms:Inventario");
             $movimentacoes = $inventarioRepo->getMovimentacaoEstoqueByInventario($id);
-            $this->exportPDF($movimentacoes, "movimentacoes-invenario","Movimentações de Estoque por Inventário","P");
+            $this->exportCSV($movimentacoes,'movimentacao');
+//            $this->exportPDF($movimentacoes, "movimentacoes-invenario","Movimentações de Estoque por Inventário","P");
         }
         //return $this->redirect('index');
     }

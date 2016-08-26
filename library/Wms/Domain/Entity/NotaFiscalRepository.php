@@ -37,8 +37,8 @@ class NotaFiscalRepository extends EntityRepository
                         AS qtdProduto
                     ")
             ->from('wms:NotaFiscal', 'nf')
-            ->innerJoin('nf.fornecedor', 'f')
-            ->innerJoin('f.pessoa', 'p')
+            ->leftJoin('nf.fornecedor', 'f')
+            ->leftJoin('f.pessoa', 'p')
             ->where('nf.recebimento IS NULL')
             ->andWhere('nf.status = ?1')
             ->setParameter(1, NotaFiscalEntity::STATUS_INTEGRADA)
@@ -66,7 +66,6 @@ class NotaFiscalRepository extends EntityRepository
             $dql->andWhere("TRUNC(nf.dataEntrada) <= ?3")
                 ->setParameter(3, $dataEntradaFinal);
         }
-
         return $dql->getQuery()->getResult();
     }
 

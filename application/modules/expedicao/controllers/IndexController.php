@@ -13,6 +13,7 @@ class Expedicao_IndexController extends Action
 
     public function indexAction()
     {
+
         $form = new FiltroExpedicaoMercadoria();
         $this->view->form = $form;
         $params = $this->_getAllParams();
