@@ -266,9 +266,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			//embalagens do produto
 			if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
 				return false;
+
+
 			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
 				extract($itemEmbalagem);
-
 				switch ($itemEmbalagem['acao']) {
 					case 'incluir':
 
@@ -366,6 +367,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
 
+
 						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
 							if ($webservice == true) {
 								$embalagemEntity->setDataInativacao(null);
@@ -377,10 +379,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
 							}
 						} else {
-							if (!is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+							if ($webservice == true) {
+								if (is_null($embalagemEntity->getDataInativacao())) {
+									$embalagemEntity->setDataInativacao(new \DateTime());
+									$embalagemEntity->setUsuarioInativacao(null);
+									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+								}
+							} else {
+								if (!is_null($embalagemEntity->getDataInativacao())) {
+									$embalagemEntity->setDataInativacao(null);
+									$embalagemEntity->setUsuarioInativacao(null);
+									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+								}
 							}
 						}
 
