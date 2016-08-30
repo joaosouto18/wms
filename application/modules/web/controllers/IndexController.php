@@ -56,9 +56,7 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $dataI2 = new \DateTime($dataInicial2);
 
             $dql = $this->em->createQueryBuilder()
-                ->select('s.sigla status')
-                ->addSelect('(SELECT COUNT(r) FROM wms:Recebimento r2 WHERE r2.status = s.id) qtty
-                        ')
+                ->select('s.sigla status, count(r) qtty')
                 ->from('wms:Recebimento', 'r')
                 ->innerJoin('r.status','s')
                 ->where('s.id IN (454, 456, 457, 459)')
@@ -84,8 +82,7 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $this->view->recebimentoData = json_encode($data, JSON_NUMERIC_CHECK);
 
             $sql = $this->em->createQueryBuilder()
-                ->select('s.sigla status')
-                ->addSelect('(SELECT COUNT(e) FROM wms:Expedicao e WHERE e.status = s.id) qtty')
+                ->select('s.sigla status, count(e2) qtty')
                 ->from('wms:Expedicao', 'e2')
                 ->innerJoin('e2.status','s')
                 ->where('s.id IN (462,463,466,464,465)')
