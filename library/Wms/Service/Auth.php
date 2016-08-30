@@ -16,9 +16,9 @@ class Auth {
 
     /**
      *
-     * @return Doctrine\ORM\EntityManager
+     * @return \Doctrine\ORM\EntityManager
      */
-    private function getEm()
+    private static function getEm()
     {
         return \Zend_Registry::get('doctrine')->getEntityManager();
     }

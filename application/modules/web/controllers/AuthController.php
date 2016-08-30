@@ -29,33 +29,38 @@ class Web_AuthController extends \Wms\Controller\Action
 
     public function loginAction()
     {
-	$form = new Form;
-	$this->view->form = $form;
+		$form = new Form;
+		$this->view->form = $form;
 
-	// data has been sent
-	if ($this->getRequest()->isPost()) {
-	    $data = $this->getRequest()->getPost();
-	    // failed validation, redisplay form
-	    if ($form->isValid($data)) {
-		$params = $this->getRequest()->getParams();
+		// data has been sent
+		if ($this->getRequest()->isPost()) {
+			$data = $this->getRequest()->getPost();
+			// failed validation, redisplay form
+			if ($form->isValid($data)) {
 
-		try {
-		    \Wms\Service\Auth::login($params['username'], $params['password']);
-		    // redirect to protected controller
-                    $userAgent = new \Zend_Http_UserAgent();
-                    
-                    $module = ($userAgent->getDevice()->hasFeature('is_mobile')) ? 'mobile' : 'web';
-		    return $this->redirect('index', 'index', $module);
-		} catch (Exception $e) {
-		    // invalid data
-		    $this->_helper->messenger('error', $e->getMessage());
-		    $this->_helper->redirector('login');
+				/*$session = new Zend_Session_Namespace(Zend_Auth::getInstance()->getStorage()->getNamespace());
+				Zend_Session::rememberMe(60 * 60 * 10);
+				$session->setExpirationSeconds(60 * 60 * 10);
+				$session->setExpirationHops(60 * 60 * 10);*/
+
+				$params = $this->getRequest()->getParams();
+
+				try {
+					\Wms\Service\Auth::login($params['username'], $params['password']);
+					// redirect to protected controller
+					$userAgent = new \Zend_Http_UserAgent();
+					$module = ($userAgent->getDevice()->hasFeature('is_mobile')) ? 'mobile' : 'web';
+					$this->redirect('index', 'index', $module);
+				} catch (Exception $e) {
+					// invalid data
+					$this->_helper->messenger('error', $e->getMessage());
+					$this->_helper->redirector('login');
+				}
+			} else {
+				// form filled incorrectly
+				$form->populate($data);
+			}
 		}
-	    } else {
-		// form filled incorrectly
-		$form->populate($data);
-	    }
-	}
     }
 
     public function logoutAction()
