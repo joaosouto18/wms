@@ -607,6 +607,7 @@ class NotaFiscalRepository extends EntityRepository
             ->leftJoin('np_volume.unitizador', 'unitizador_volume')
             ->where('nf.recebimento = ?1')
             ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+            ->andWhere('(pe.dataInativacao IS NULL OR pv.dataInativacao IS NULL)')
             ->andWhere('NOT EXISTS(
                     SELECT \'x\'
                     FROM wms:OrdemServico os
