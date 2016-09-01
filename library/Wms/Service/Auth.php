@@ -2,6 +2,7 @@
 
 namespace Wms\Service;
 
+use Wms\Controller\Action;
 use Wms\Domain\Entity\Usuario;
 
 /**
@@ -69,10 +70,21 @@ class Auth {
         //seto o RoleId para o zf
         $usuario->setRoleId($perfil);
 
+        /** @var \Zend_Auth_Storage_Session $storage */
         $storage = $auth->getStorage();
         $storage->clear();
         $storage->write($usuario);
-
+        
+        /* Tempo permitido de inatividade na sessão */
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'TEMPO_INATIVIDADE'));
+        $tempo = $parametro->getValor();
+        $session = new \Zend_Session_Namespace($storage->getNamespace());
+        if (empty($tempo)) $tempo = 60; //Se não encontrar o tempo no registro vai se adotar como padrão 60 min
+        \Zend_Session::rememberMe(60 * $tempo);
+        $session->setExpirationSeconds(60 * $tempo);
+        $session->setExpirationHops(60 * $tempo);
+        
         return true;
     }
 

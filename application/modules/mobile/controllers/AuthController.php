@@ -37,18 +37,13 @@ class Mobile_AuthController extends \Wms\Controller\Action
             $data = $this->getRequest()->getPost();
             // failed validation, redisplay form
             if ($form->isValid($data)) {
-
-                $session = new Zend_Session_Namespace(Zend_Auth::getInstance()->getStorage()->getNamespace());
-                Zend_Session::rememberMe(60 * 60 * 24 * 7 * 4);
-                $session->setExpirationSeconds(60 * 60 * 24 * 7 * 4);
-                $session->setExpirationHops(60 * 60 * 24 * 7 * 4);
-
+                
                 $params = $this->getRequest()->getParams();
 
                 try {
                     \Wms\Service\Auth::login($params['username'], $params['password']);
                     // redirect to protected controller
-                    return $this->redirect('index','index');
+                    $this->redirect('index','index');
                 } catch (Exception $e) {
                     // invalid data
                     $this->_helper->messenger('error', $e->getMessage());

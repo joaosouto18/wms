@@ -38,11 +38,6 @@ class Web_AuthController extends \Wms\Controller\Action
 			// failed validation, redisplay form
 			if ($form->isValid($data)) {
 
-				/*$session = new Zend_Session_Namespace(Zend_Auth::getInstance()->getStorage()->getNamespace());
-				Zend_Session::rememberMe(60 * 60 * 10);
-				$session->setExpirationSeconds(60 * 60 * 10);
-				$session->setExpirationHops(60 * 60 * 10);*/
-
 				$params = $this->getRequest()->getParams();
 
 				try {
