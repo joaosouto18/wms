@@ -34,11 +34,11 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
                 $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-                $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto']));
+                $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
 
                 /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
                 $produtoVolumeRepo = $em->getRepository('wms:Produto\Volume');
-                $volumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $params['produto']));
+                $volumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
 
                 if (!$embalagemEn && !$volumeEn)
                     throw new \Exception("O código de barras informado não existe!");
