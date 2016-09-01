@@ -205,9 +205,9 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
-
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
+
                     foreach ($embalagens as $embalagemWs) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
@@ -220,7 +220,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                             continue;
                         }
                     }
-
                     $endPicking = null;
                     if ($embalagemCadastrada->getEndereco() != null ) {
                         $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
@@ -230,6 +229,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                         'acao'=> 'alterar',
                         'id' =>$embalagemCadastrada->getId(),
                         'endereco' => $endPicking,
+                        'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
                         'CBInterno' => $embalagemCadastrada->getCBInterno(),
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
@@ -238,12 +238,16 @@ class Wms_WebService_Produto extends Wms_WebService {
                     );
 
                     if ($encontrouEmbalagem == false) {
+                        $embalagemArray['ativarDesativar'] = false;
+                    } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
 
                     $embalagensArray[] = $embalagemArray;
 
                 }
+
+                //throw new \Exception(count($embalagemArray));
 
                 //DEPOIS INCLUO AS NOVAS EMBALAGENS
                 foreach ($embalagens as $embalagemWs) {
@@ -275,7 +279,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                         );
                         $embalagensArray[] = $embalagemArray;
                     }
-
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);

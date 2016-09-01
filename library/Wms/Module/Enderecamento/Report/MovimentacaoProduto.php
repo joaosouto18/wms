@@ -62,9 +62,6 @@ class MovimentacaoProduto extends Pdf
         /** @var \Wms\Domain\Entity\Enderecamento\HistoricoEstoqueRepository $HistEstoqueRepo */
         $HistEstoqueRepo = $em->getRepository("wms:Enderecamento\HistoricoEstoque");
 
-        /* @var \Wms\Domain\Entity\Enderecamento\HistoricoEstoqueRepository $HistEstoqueRepo */
-        $HistEstoqueRepo = $em->getRepository("wms:Enderecamento\HistoricoEstoque");
-
         $historicoReport = $HistEstoqueRepo->getMovimentacaoProduto($params);
 
         $this->SetFont('Arial', 'B', 8);

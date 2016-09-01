@@ -552,7 +552,7 @@ class ExpedicaoRepository extends EntityRepository
                 if (is_string($result)) {
                     return $result;
                 }
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn->getId());
                 if (is_string($result)) {
                     return $result;
                 }

@@ -1,24 +1,34 @@
 <script type="text/javascript">
-
+    var arrRecebimenoValues = null;
+    var arrRecebimenoColumns = null;
+    var arrRecebimentoTotal = null;
+    var arrExpedicaoValues = null;
+    var arrExpedicaoColumns = null;
+    var arrExpedicaoTotal = null;
     $(window).load(function() {
         $(document).ready(function(){
 
             <?php if ($this->recebimentoData != "false" ) : ?>
-                graficoRecebimento();
+            arrRecebimenoValues = <?php echo $this->recebimentoData ?>;
+            arrRecebimenoColumns = <?php echo $this->recebimentoStatus ?>;
+            arrRecebimentoTotal = parseInt(<?php echo $this->recebimentoTotal ?>);
+            graficoRecebimento();
             <?php endif; ?>
             graficoDadosLogisticos();
             <?php if ($this->expedicaoData != "false" ) : ?>
-                graficoExpedicao();
+            arrExpedicaoValues = <?php echo $this->expedicaoData ?>;
+            arrExpedicaoColumns = <?php echo $this->expedicaoStatus ?>;
+            arrExpedicaoTotal = parseInt(<?php echo $this->expedicaoTotal ?>);
+            graficoExpedicao();
             <?php endif; ?>
-
 
         });
 
         function graficoRecebimento(){
-            var s1 = <?php echo $this->recebimentoData ?>;
+            var s1 = arrRecebimenoValues;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
-            var ticks = <?php echo $this->recebimentoStatus ?>;
+            var ticks = arrRecebimenoColumns;
 
             var plot1 = $.jqplot('chart_recebimento', [s1], {
                 // The "seriesDefaults" option is an options object that will
@@ -58,10 +68,10 @@
         }
 
         function graficoExpedicao(){
-            var s1 = <?php echo $this->expedicaoData ?>;
+            var s1 = arrExpedicaoValues;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
-            var ticks = <?php echo $this->expedicaoStatus ?>;
+            var ticks = arrExpedicaoColumns;
 
             var plot1 = $.jqplot('chart_expedicao', [s1], {
                 // The "seriesDefaults" option is an options object that will
@@ -209,5 +219,35 @@
 </div>
 
 <div class="chartExpedicao">
-    <div class="charts" id="chart_expedicao" style="height: 250px; width: 500px;" ></div>
+    <div class="charts" id="chart_expedicao" title="" style="height: 250px; width: 500px;" ></div>
 </div>
+
+<script>
+    $(function() {
+        $('#chart_expedicao').bind('jqplotDataHighlight',
+            function (ev,seriesIndex, pointIndex) {
+                var x = ((arrExpedicaoValues[pointIndex]/arrExpedicaoTotal) * 100).toFixed(2);
+                var status = arrExpedicaoColumns[pointIndex];
+                var title = "Expedições com status " + status + " correspondem à " + x.replace('.',',') + "% do total deste periodo";
+                $(this).prop('title', title);
+            }
+        ).bind('jqplotDataUnhighlight',
+            function (ev) {
+                $(this).removeAttr('title');
+            }
+        );
+
+        $('#chart_recebimento').bind('jqplotDataHighlight',
+            function (ev,seriesIndex, pointIndex) {
+                var x = ((arrRecebimenoValues[pointIndex] / arrRecebimentoTotal) * 100).toFixed(2);
+                var status = arrRecebimenoColumns[pointIndex];
+                var title = "Recebimentos com status " + status + " correspondem à " + x.replace('.',',') + "% do total deste periodo";
+                $(this).prop('title', title);
+            }
+        ).bind('jqplotDataUnhighlight',
+            function (ev) {
+                $(this).removeAttr('title');
+            }
+        );
+    })
+</script>
