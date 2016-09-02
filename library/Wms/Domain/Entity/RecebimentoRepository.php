@@ -925,19 +925,19 @@ class RecebimentoRepository extends EntityRepository
         $SQL = "SELECT V.COD_PRODUTO,
                        V.DSC_GRADE,
                        P.DSC_PRODUTO,
-                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(V.QTD,0)) ELSE NVL(V.QTD,0) || ' Kg' END as QTD_NOTA_FISCAL,
+                       CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(NOTAFISCAL.QTD,0)) ELSE NVL(NOTAFISCAL.QTD,0) || ' Kg' END as QTD_NOTA_FISCAL,
                        CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) ELSE NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0) || ' Kg' END as qtd_Recebimento,
                        CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(RECEBIDO.QTD,0)) ELSE NVL(RECEBIDO.QTD,0) || ' Kg' END as qtd_Recebida,
                        CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(ENDERECADO.QTD,0)) ELSE NVL(ENDERECADO.QTD,0) || ' Kg' END as qtd_Enderecada, 
                        CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR(NVL(ENDERECAMENTO.QTD,0)) ELSE NVL(ENDERECAMENTO.QTD,0) || ' Kg' END as qtd_Enderecamento,
                        CASE WHEN IND_POSSUI_PESO_VARIAVEL = 'N' THEN TO_CHAR((NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) + NVL(RECEBIDO.QTD,0) + NVL(ENDERECADO.QTD,0) + NVL(ENDERECAMENTO.QTD,0))
                                                                 ELSE ((NVL(CONFERIDO.QTD,0) - NVL(GERADO.QTD,0)) + NVL(RECEBIDO.QTD,0) + NVL(ENDERECADO.QTD,0) + NVL(ENDERECAMENTO.QTD,0)) || ' Kg' END as qtd_Total
-                  FROM (SELECT COD_PRODUTO, DSC_GRADE, QTD
+                  FROM (SELECT COD_PRODUTO, DSC_GRADE
                           FROM V_QTD_RECEBIMENTO
                          WHERE COD_RECEBIMENTO = $idRecebimento
                            AND COD_PRODUTO IS NOT NULL
                          UNION 
-                        SELECT COD_PRODUTO, DSC_GRADE, QTD_ITEM AS QTD
+                        SELECT COD_PRODUTO, DSC_GRADE
                           FROM NOTA_FISCAL_ITEM NFI 
                          INNER JOIN NOTA_FISCAL NF ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
                          WHERE NF.COD_RECEBIMENTO = $idRecebimento) V
@@ -1028,7 +1028,18 @@ class RecebimentoRepository extends EntityRepository
                                       GROUP BY COD_PRODUTO, DSC_GRADE) GERADO
                     ON GERADO.COD_PRODUTO = V.COD_PRODUTO
                    AND GERADO.DSC_GRADE = V.DSC_GRADE   
-                  
+                  LEFT JOIN (SELECT CASE WHEN P.IND_POSSUI_PESO_VARIAVEL = 'S' THEN SUM(NVL(NFI.NUM_PESO,0))
+                                         ELSE SUM(NFI.QTD_ITEM)
+                                    END as QTD,
+                                    NFI.COD_PRODUTO,
+                                    NFI.DSC_GRADE
+                               FROM NOTA_FISCAL NF
+                              INNER JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL
+                               LEFT JOIN PRODUTO P ON P.COD_PRODUTO = NFI.COD_PRODUTO AND P.DSC_GRADE = NFI.DSC_GRADE
+                              WHERE NF.COD_RECEBIMENTO = $idRecebimento
+                              GROUP BY NFI.COD_PRODUTO, NFI.DSC_GRADE,P.IND_POSSUI_PESO_VARIAVEL) NOTAFISCAL
+                    ON NOTAFISCAL.COD_PRODUTO = V.COD_PRODUTO
+                   AND NOTAFISCAL.DSC_GRADE = V.DSC_GRADE
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE";
         $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
