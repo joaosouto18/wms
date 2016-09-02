@@ -1029,7 +1029,7 @@ class RecebimentoRepository extends EntityRepository
                     ON GERADO.COD_PRODUTO = V.COD_PRODUTO
                    AND GERADO.DSC_GRADE = V.DSC_GRADE   
                   LEFT JOIN (SELECT CASE WHEN P.IND_POSSUI_PESO_VARIAVEL = 'S' THEN SUM(NVL(NFI.NUM_PESO,0))
-                                         ELSE SUM(NFI.QTD_ITEM) 
+                                         ELSE SUM(NFI.QTD_ITEM)
                                     END as QTD,
                                     NFI.COD_PRODUTO,
                                     NFI.DSC_GRADE
