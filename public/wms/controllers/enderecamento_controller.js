@@ -143,7 +143,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     return false;
                 }
 
-                Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
+                //Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
                 return false;
             });
 
@@ -177,7 +177,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
                         alert("Preencha o endereço e a quantidade");
                     } else {
-                        var alerta = Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
+                        //var alerta = Wms.Models.Enderecamento.movimentaEstoque($('#cadastro-movimentacao').serialize());
                     }
                 }
             });
