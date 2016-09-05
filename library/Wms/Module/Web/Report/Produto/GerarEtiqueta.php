@@ -39,11 +39,12 @@ class GerarEtiqueta extends eFPDF
 
 
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
 
         if ($tipo == "NF") {
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
             $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
-        } else if ($tipo = "Produto") {
+        } else if ($tipo == "Produto") {
             $produtoRepo = $em->getRepository('wms:Produto');
             $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
         }
@@ -56,7 +57,6 @@ class GerarEtiqueta extends eFPDF
         foreach ($produtosEn as $produto) {
             for ($i = 0; $i < $produto['qtdItem']; $i++) {
 
-                $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
                 $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
                 $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
 

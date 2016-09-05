@@ -1335,8 +1335,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		$sql = "SELECT NVL(PE.COD_PRODUTO_EMBALAGEM,0) as EMBALAGEM,
                        NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
                   FROM PRODUTO P
-                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE)
-                  LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE)
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE) AND (PE.DTH_INATIVACAO IS NULL)
+                  LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE) AND (PV.DTH_INATIVACAO IS NULL)
                  WHERE PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras'";
 		$result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 		$embalagenEn = null;
@@ -1371,13 +1371,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(p.diasVidaUtil, \'0\') diasVidaUtil'
 				)
 			->from('wms:Produto', 'p')
-			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
+			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
 			->leftJoin('p.linhaSeparacao', 'ls')
 			->leftJoin('pe.dadosLogisticos', 'dl')
 			->leftJoin('pe.endereco', 'de1')
 			->leftJoin('dl.normaPaletizacao', 'np_embalagem')
 			->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
 			->leftJoin('pv.endereco', 'de2')
 			->leftJoin('pv.normaPaletizacao', 'np_volume')
 			->leftJoin('np_volume.unitizador', 'unitizador_volume')
