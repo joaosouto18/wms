@@ -18,10 +18,10 @@ class Enderecamento_MovimentacaoController extends Action
 
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
-            $this->redirect('transferir', 'movimentacao', 'enderecamento', array('produto' => $data['produto'], 'grade' => $data['grade'],
+            $this->redirect('transferir', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
                 'embalagem' => $data['embalagem'], 'volumes' => $data['volumes'], 'rua' => $data['rua'], 'predio' => $data['predio'],
                 'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
-                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'qtd' => $data['qtd']));
+                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $data['quantidade']));
         }
 
         if (isset($data['return'])) {
@@ -71,9 +71,6 @@ class Enderecamento_MovimentacaoController extends Action
             //é uma entrada de estoque? Saída não precisa informar o unitizador
             $entradaEstoque = ($data['quantidade'] > 0);
 
-//            var_dump($entradaEstoque);
-//            var_dump($data['idNormaPaletizacao']);
-//            var_dump($estoqueEn->getUnitizador()); exit;
             $unitizadorEn = null;
             $unitizadorEstoque = null;
             if ($estoqueEn != null) {
