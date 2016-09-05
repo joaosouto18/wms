@@ -34,6 +34,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
                 $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
                 $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
 
                 /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
@@ -47,6 +48,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     $codProduto = $embalagemEn->getCodProduto();
                     $grade = $embalagemEn->getGrade();
                     $this->view->capacidadePicking = $embalagemEn->getCapacidadePicking();
+                    $params['qtd'] = $params['qtd'] * $embalagemEn->getQuantidade();
                 } else {
                     $codProduto = $volumeEn->getCodProduto();
                     $grade = $volumeEn->getGrade();
