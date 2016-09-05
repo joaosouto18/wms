@@ -40,7 +40,7 @@ class Enderecamento_MovimentacaoController extends Action
             if ($request->isPost() && empty($transferir)) {
                 $this->redirect('movimentar', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
                     'embalagem' => $data['embalagem'], 'volumes' => $data['volumes'], 'rua' => $data['rua'], 'predio' => $data['predio'],
-                    'nivel' => $data['nivel'], 'apto' => $data['apto'], 'validade' => $data['validade'], 'quantidade' => $data['quantidade']));
+                    'nivel' => $data['nivel'], 'apto' => $data['apto'], 'validade' => $data['validade'], 'quantidade' => $data['quantidade'], 'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
         $this->view->form = $form;
@@ -71,6 +71,9 @@ class Enderecamento_MovimentacaoController extends Action
             //é uma entrada de estoque? Saída não precisa informar o unitizador
             $entradaEstoque = ($data['quantidade'] > 0);
 
+//            var_dump($entradaEstoque);
+//            var_dump($data['idNormaPaletizacao']);
+//            var_dump($estoqueEn->getUnitizador()); exit;
             $unitizadorEn = null;
             $unitizadorEstoque = null;
             if ($estoqueEn != null) {
