@@ -188,9 +188,13 @@ class Enderecamento_MovimentacaoController extends Action
 
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+            if (empty($enderecoEn))
+                throw new \Exception("Endereço $data[rua].$data[predio].$data[nivel].$data[apto] de origem não foi encontrado");
 
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoDestinoEn = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
+            if (empty($enderecoDestinoEn))
+                throw new \Exception("Endereço $data[ruaDestino].$data[predioDestino].$data[nivelDestino].$data[aptoDestino] de destino não foi encontrado");
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
@@ -223,9 +227,11 @@ class Enderecamento_MovimentacaoController extends Action
                 }
                 $data['endereco'] = $enderecoEn;
                 $data['qtd'] = $data['quantidade'] * -1;
+                $data['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoDestinoEn->getDescricao();
                 $estoqueRepo->movimentaEstoque($data);
                 $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
                 $data['qtd'] = $data['quantidade'];
+                $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();
                 $estoqueRepo->movimentaEstoque($data);
             } else if (isset($data['volumes']) && ($data['volumes'] != "")) {
                 $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
@@ -246,9 +252,11 @@ class Enderecamento_MovimentacaoController extends Action
                     $data['endereco'] = $enderecoEn;
                     $data['qtd'] = $data['quantidade'] * -1;
                     $data['volume'] = $volume;
+                    $data['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoDestinoEn->getDescricao();
                     $estoqueRepo->movimentaEstoque($data);
                     $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
                     $data['qtd'] = $data['quantidade'];
+                    $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();
                     $estoqueRepo->movimentaEstoque($data);
                 }
             }
@@ -259,6 +267,7 @@ class Enderecamento_MovimentacaoController extends Action
         } catch(Exception $e) {
             $this->getEntityManager()->rollback();
             $this->addFlashMessage('error', $e->getMessage());
+            $this->_redirect('/enderecamento/movimentacao');
         }
     }
 
