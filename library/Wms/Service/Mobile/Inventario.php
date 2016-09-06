@@ -521,7 +521,7 @@ class Inventario
         return $this->getEm()->flush();
     }
 
-    public function deveAtualizarEstoque($params)
+    public function deveAtualizarEstoque($params, $atualiza)
     {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
@@ -530,7 +530,7 @@ class Inventario
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEndRepo */
         $invEndRepo         = $this->getEm()->getRepository("wms:Inventario\Endereco");
         $inventarioEndEn    = $invEndRepo->find($params['idInventarioEnd']);
-        $inventarioEndEn->setAtualizaEstoque(1);
+        $inventarioEndEn->setAtualizaEstoque($atualiza);
         $this->getEm()->persist($inventarioEndEn);
         $this->getEm()->flush();
     }
@@ -727,9 +727,10 @@ class Inventario
                 if ((true == $estoqueValidado || true == $regraContagem) && (false == $contagemEndComDivergencia)) {
                     //Estoque validado, endereço considerado inventariado
                     $this->inventariarEndereco($params, $contagemEndEntities);
+                    $this->deveAtualizarEstoque($params, true);
                     $result = true;
                 } else {
-                    $this->deveAtualizarEstoque($params);
+                    $this->deveAtualizarEstoque($params, false);
                     $result = false;
                 }
             }
