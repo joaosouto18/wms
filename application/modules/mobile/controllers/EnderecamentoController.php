@@ -1007,10 +1007,12 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
                     $params['qtd'] = $qtd * -1;
+                    $params['observacoes'] = "Transferencia de Estoque - Destino: ".$endereco->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                 }
             } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
@@ -1082,11 +1084,10 @@ class Mobile_EnderecamentoController extends Action
                         $params['validade'] = $validade->format('d/m/Y');
                     }
 
-                    $enderecoDestino = $params['endereco'];
-
-                    $params['observacoes'] = "Transferencia de Estoque - Origem:".$enderecoAntigo->getDescricao()." Destino:".$enderecoDestino->getDescricao();
+                    $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
+                    $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                     $params['endereco'] = $enderecoAntigo;
                     $params['qtd'] = $qtd * -1;
                     $estoqueRepo->movimentaEstoque($params);
@@ -1150,9 +1151,11 @@ class Mobile_EnderecamentoController extends Action
                             $params['validade'] = $validade->format('d/m/Y');
                         }
 
+                        $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                         $estoqueRepo->movimentaEstoque($params);
 
                         //RETIRA ESTOQUE
+                        $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                         $params['endereco'] = $enderecoAntigo;
                         $params['qtd'] = $qtd * -1;
                         $estoqueRepo->movimentaEstoque($params);

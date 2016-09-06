@@ -45,13 +45,13 @@ class Mobile_Enderecamento_ManualController extends Action
                     throw new \Exception("O código de barras informado não existe!");
 
                 if ($embalagemEn) {
-                    $codProduto = $embalagemEn->getCodProduto();
-                    $grade = $embalagemEn->getGrade();
+                    $params['codProduto'] = $codProduto = $embalagemEn->getCodProduto();
+                    $params['grade'] = $grade = $embalagemEn->getGrade();
                     $this->view->capacidadePicking = $embalagemEn->getCapacidadePicking();
-                    $params['qtd'] = $params['qtd'] * $embalagemEn->getQuantidade();
+                    $params['qtdEmbalagem'] = $embalagemEn->getQuantidade();
                 } else {
-                    $codProduto = $volumeEn->getCodProduto();
-                    $grade = $volumeEn->getGrade();
+                    $params['codProduto'] = $codProduto = $volumeEn->getCodProduto();
+                    $params['grade'] = $grade = $volumeEn->getGrade();
                     $this->view->capacidadePicking = $volumeEn->getCapacidadePicking();
                 }
 
@@ -75,7 +75,8 @@ class Mobile_Enderecamento_ManualController extends Action
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
                 $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
-                if ($sumQtdRecebimento < ((int)$params['qtd'] + (int)$paleteProdutoEn[0]['qtd'])) {
+                if ($sumQtdRecebimento < ((((int)$params['qtd']) * $params['qtdEmbalagem']) + (int)$paleteProdutoEn[0]['qtd'])) {
+                    if (isset($params['paleteGerado'])) unset($params['paleteGerado']);
                     throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
                 }
 
@@ -86,6 +87,7 @@ class Mobile_Enderecamento_ManualController extends Action
             }
         } catch (\Exception $ex) {
             $this->addFlashMessage('error', $ex->getMessage());
+            $this->redirect('ler-codigo-barras','enderecamento_manual','mobile', array('id'=>$params['id']));
         }
     }
 
@@ -190,17 +192,31 @@ class Mobile_Enderecamento_ManualController extends Action
     public function enderecarManualAction(){
         $params = $this->_getAllParams();
         try {
+            $this->getEntityManager()->beginTransaction();
             $produto = $params['produto'];
+            $codProduto = $params['codProduto'];
+            $grade = $params['grade'];
             $idEndereco = $params['endereco'];
             $idRecebimento = $params['id'];
-            $qtd = $params['qtd'];
+            $qtd = $params['qtd'] * $params['qtdEmbalagem'];
 
-            $this->getEntityManager()->beginTransaction();
+            /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository $qtdRecebimentoRepo */
+            $qtdRecebimentoRepo = $this->em->getRepository('wms:Recebimento\VQtdRecebimento');
+            $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'],$codProduto,$grade);
+            $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
+
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+            $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
+            $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
+
+            if ($sumQtdRecebimento < ((((int)$params['qtd']) * $params['qtdEmbalagem']) + (int)$paleteProdutoEn[0]['qtd'])) {
+                throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
+            }
 
             $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-            $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+            $estoqueRepo = $this->em->getRepository('wms:Enderecamento\Estoque');
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $ederecoRepo */
