@@ -46,6 +46,7 @@ class Action extends \Core\Controller\Action
                 $redirector->gotoUrl ( $this->_request->getModuleName(). "/auth/login" );
             } else {
                 $tempo = self::getSystemParameterValue('TEMPO_INATIVIDADE');
+                $tempo = (!empty($tempo)) ? $tempo : 60;//Se não encontrar o tempo no registro vai se adotar como padrão 60 min
                 $authNamespace->timeout = time() + (60 * $tempo);
             }
         }
