@@ -18,12 +18,12 @@ class ContagemEndereco
     protected $id;
 
     /**
-     * @Column(name="QTD_AVARIA")
+     * @Column(name="QTD_AVARIA", type="decimal")
      */
     protected $qtdAvaria;
 
     /**
-     * @Column(name="QTD_CONTADA")
+     * @Column(name="QTD_CONTADA", type="decimal")
      */
     protected $qtdContada;
 
@@ -59,7 +59,7 @@ class ContagemEndereco
     protected $produto;
 
     /**
-     * @Column(name="QTD_DIVERGENCIA")
+     * @Column(name="QTD_DIVERGENCIA", type="decimal")
      */
     protected $qtdDivergencia;
 

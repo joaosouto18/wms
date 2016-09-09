@@ -53,7 +53,7 @@ class Item
     /**
      * Quantidade de itens na notaFiscal
      * 
-     * @Column(name="QTD_ITEM", type="integer", length=8, nullable=false)
+     * @Column(name="QTD_ITEM", type="decimal", length=8, nullable=false)
      * @var integer
      */
     protected $quantidade;

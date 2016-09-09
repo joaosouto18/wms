@@ -50,7 +50,7 @@ class Estoque
     protected $depositoEndereco;
 
     /**
-     * @Column(name="QTD", type="integer", nullable=false)
+     * @Column(name="QTD", type="decimal", nullable=false)
      */
     protected $qtd;
 
