@@ -2705,28 +2705,30 @@ class ExpedicaoRepository extends EntityRepository
         $qtdMapa = 0;
         $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId()));
 
-        $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapaSeparacaoPedido->getMapaSeparacao(),
-            'codProduto'=>$codProduto,
-            'dscGrade'=>$grade));
+        if (isset($mapaSeparacaoPedido) && !empty($mapaSeparacaoPedido)) {
+            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapaSeparacaoPedido->getMapaSeparacao(),
+                'codProduto'=>$codProduto,
+                'dscGrade'=>$grade));
 
-        foreach ($entidadeMapaProduto as $mapa) {
-            $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
-            $qtdCortadoMapa = $mapa->getQtdCortado();
-            $qtdCortarMapa = $qtdCortar;
-            if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
-                $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
-            }
-
-            if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
-                $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
-                foreach ($mapaConferenciaEn as $conferencia) {
-                    $this->getEntityManager()->remove($conferencia);
+            foreach ($entidadeMapaProduto as $mapa) {
+                $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
+                $qtdCortadoMapa = $mapa->getQtdCortado();
+                $qtdCortarMapa = $qtdCortar;
+                if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
+                    $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
                 }
-            }
 
-            $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
-            $this->getEntityManager()->persist($mapa);
-            $qtdCortar = $qtdCortar - $qtdCortarMapa;
+                if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
+                    $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                    foreach ($mapaConferenciaEn as $conferencia) {
+                        $this->getEntityManager()->remove($conferencia);
+                    }
+                }
+
+                $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
+                $this->getEntityManager()->persist($mapa);
+                $qtdCortar = $qtdCortar - $qtdCortarMapa;
+            }
         }
 
         $this->getEntityManager()->flush();

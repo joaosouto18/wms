@@ -490,7 +490,7 @@ class RecebimentoRepository extends EntityRepository
         $notaFiscalRepo = $repositorios['notaFiscalRepo'];
         $vQtdRecebimentoRepo = $repositorios['vQtdRecebimentoRepo'];
 
-        if (($produtoEn->getPercTolerancia() != null) && ($produtoEn->getPercTolerancia() > 0)) {
+        if (($produtoEn->getPossuiPesoVariavel() == 'S')) {
             $pesoNota = $notaFiscalRepo->getPesoByProdutoAndRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade());
             $vRecebimentoEn = $vQtdRecebimentoRepo->findOneBy(array('codRecebimento' => $idRecebimento,
                 'codProduto' => $produtoEn->getId(),
