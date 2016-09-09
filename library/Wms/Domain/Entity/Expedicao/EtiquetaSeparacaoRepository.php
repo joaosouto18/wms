@@ -694,9 +694,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
                         $cubagemProduto = str_replace(',','.',$dadoLogisticoEn->getCubagem());
-                        $cubagemPedido[$pedidoId]['cubagem'][] = (float)$cubagemProduto;
-                        $cubagemPedido[$pedidoId]['produto'][] = $codProduto;
-                        $cubagemPedido[$pedidoId]['grade'][] = $grade;
+                        $cubagemPedido[$pedidoId][$codProduto][$grade] = (float)$cubagemProduto;
+//                        $cubagemPedido[$pedidoId]['produto'][] = $codProduto;
+//                        $cubagemPedido[$pedidoId]['grade'][] = $grade;
                     }
                 }
             }
@@ -740,6 +740,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
                 $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
+//                var_dump($cubagemPedidos); exit;
             }
 
             $getNumCaixaMapaProduto = 0;
@@ -921,23 +922,27 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
 //                                $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
-                                $pedidosDiferente     = false;
+//                                $pedidosDiferente     = false;
+//
+//                                if ($pedidoAnterior != $pedidoEntity->getId())
+//                                    $pedidosDiferente = true;
 
-                                if ($pedidoAnterior != $pedidoEntity->getId())
-                                    $pedidosDiferente = true;
-
-                                if ($produtoAnterior != $codProduto || $gradeAnterior != $grade) {
-                                    $caixas = $this->caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente);
-                                    if (isset($caixas) && !empty($caixas)) {
-                                        $quebrasNaoFracionado[]['tipoQuebra'] = $caixas['quebras'];
-                                    }
+//                                if ($produtoAnterior != $codProduto || $gradeAnterior != $grade) {
+//                                    $caixas = $this->caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente);
+//                                    if (isset($caixas) && !empty($caixas)) {
+//                                        $quebrasNaoFracionado[]['tipoQuebra'] = $caixas['quebras'];
+//                                    }
+//                                }
+                                $cubagem = null;
+                                if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
+                                    $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                 }
 
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
-                                $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto,$depositoEnderecoEn,$caixas['inicio'],$caixas['fim']);
-                                $produtoAnterior = $codProduto;
-                                $gradeAnterior   = $grade;
-                                $pedidoAnterior  = $pedidoEntity->getId();
+                                $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity);
+//                                $produtoAnterior = $codProduto;
+//                                $gradeAnterior   = $grade;
+//                                $pedidoAnterior  = $pedidoEntity->getId();
 
                             }
                         } else {
@@ -947,23 +952,27 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
 //                                $quebrasFracionado= $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
-                                $pedidosDiferente = false;
+//                                $pedidosDiferente = false;
 
-                                if ($pedidoAnterior != $pedidoEntity->getId())
-                                    $pedidosDiferente = true;
+//                                if ($pedidoAnterior != $pedidoEntity->getId())
+//                                    $pedidosDiferente = true;
 
-                                if ($produtoAnterior != $codProduto || $gradeAnterior != $grade) {
-                                    $caixas = $this->caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente);
-                                    if (isset($caixas) && !empty($caixas)) {
-                                        $quebrasFracionado[]['tipoQuebra'] = $caixas['quebras'];
-                                    }
+                                $cubagem = null;
+                                if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
+                                    $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                 }
+//                                if ($produtoAnterior != $codProduto || $gradeAnterior != $grade) {
+//                                    $caixas = $this->caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente);
+//                                    if (isset($caixas) && !empty($caixas)) {
+//                                        $quebrasFracionado[]['tipoQuebra'] = $caixas['quebras'];
+//                                    }
+//                                }
 
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
-                                $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn,$caixas['inicio'],$caixas['fim']);
-                                $produtoAnterior = $codProduto;
-                                $gradeAnterior   = $grade;
-                                $pedidoAnterior  = $pedidoEntity->getId();
+                                $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity);
+//                                $produtoAnterior = $codProduto;
+//                                $gradeAnterior   = $grade;
+//                                $pedidoAnterior  = $pedidoEntity->getId();
                             }
                         }
 
@@ -987,58 +996,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
-        }
-    }
-
-    private function caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente = false)
-    {
-        $numCaixaInicio = null;
-        $numCaixaFim    = null;
-        $numCaixa       = array();
-
-        if (isset($cubagemPedidos[$pedidoEntity->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()])) {
-            $cubagemPedido = 0;
-            $qtdProduto = 0;
-            foreach ($cubagemPedidos[$pedidoEntity->getId()] as $chave => $produtos) {
-                if ($chave == 'produto') {
-                    foreach ($produtos as $key => $produto) {
-                        if ($produtoEntity->getId() == $produto) {
-                            $count = $key;
-                            $qtdProduto += 1;
-                        }
-                    }
-                } else {
-                    continue;
-                }
-                if ($qtdProduto <= 0)
-                    break;
-
-                $cubagemProduto = $cubagemPedidos[$pedidoEntity->getId()]['cubagem'][$count];
-                $cubagemTotalProduto = $quantidade * $cubagemProduto;
-                $cubagemCaixa = (float)str_replace(',','.',$cubagemCaixa);
-                $qtdCaixas = ceil($cubagemTotalProduto / $cubagemCaixa);
-                $caixas = $mapaProdutoRepo->getCaixasByExpedicao($expedicaoEntity);
-
-                $numCaixa['quebras'] = 'PC';
-                if (count($caixas) <= 0) {
-                    $numCaixa['inicio'] = $numCaixaInicio = 1;
-                    $numCaixa['fim'] = $numCaixaFim = $qtdCaixas;
-                } elseif ($cubagemTotalProduto <= $cubagemCaixa - $cubagemPedido && count($caixas) > 0 && $pedidosDiferente == false) {
-                    $numCaixa['inicio'] = $numCaixaInicio = $caixas[0]['numCaixaInicio'];
-                    $numCaixa['fim'] = $numCaixaFim = $caixas[0]['numCaixaFim'];
-                } elseif ($cubagemTotalProduto > $cubagemCaixa - $cubagemPedido && count($caixas) > 0 && $pedidosDiferente == false) {
-                    $numCaixa['inicio'] = $numCaixaInicio = $caixas[0]['numCaixaFim'] + 1;
-                    $numCaixa['fim'] = $numCaixaFim = $numCaixaInicio + ($qtdCaixas - 1);
-                } elseif ($pedidosDiferente == true) {
-                    $numCaixa['inicio'] = $numCaixaInicio = $caixas[0]['numCaixaFim'] + 1;
-                    $numCaixa['fim'] = $numCaixaFim = $numCaixaInicio + ($qtdCaixas - 1);
-                }
-
-                $cubagemPedido = $cubagemPedido + $cubagemTotalProduto;
-            }
-            return $numCaixa;
-        } else {
-            return null;
         }
     }
 
@@ -1486,9 +1443,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $codEtiqueta;
     }
 
-    public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco,$numCaixaInicio=null,$numCaixaFim=null) {
+    public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco,$cubagem = null,$pedidoEntity = null) {
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        $cubagemCaixa = $this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
 
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
@@ -1523,11 +1482,47 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setCodDepositoEndereco($depositoEndereco);
             $mapaProduto->setPedidoProduto($pedidoProduto);
+            $mapaProduto->setCubagem($cubagem);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
+            $mapaProduto->setCubagem($mapaProduto->getCubagem() + $cubagem);
+//            $cubagem = $mapaProduto->getCubagem() + $cubagem;
         }
-        $mapaProduto->setNumCaixaInicio($numCaixaInicio);
-        $mapaProduto->setNumCaixaFim($numCaixaFim);
+
+        $mapaProduto->setNumCaixaInicio(null);
+        $mapaProduto->setNumCaixaFim(null);
+        $mapaProduto->setCubagem(null);
+        $qtdCaixas = ceil($cubagem / $cubagemCaixa);
+        $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity);
+        if (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
+            if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa * ($caixasUsadas[0]['numCaixaFim'] - $caixasUsadas[0]['numCaixaInicio'] + 1)) {
+                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
+                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+            } else {
+                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + 1 + $qtdCaixas);
+            }
+        } else {
+            $mapaProduto->setNumCaixaInicio(1);
+            $mapaProduto->setNumCaixaFim($qtdCaixas);
+        }
+
+
+
+//        $mapaProduto->setNumCaixaInicio(1);
+//        $mapaProduto->setNumCaixaFim($qtdCaixas);
+//        if ($qtdCaixas <= 0) {
+//            $mapaProduto->setNumCaixaInicio(null);
+//            $mapaProduto->setNumCaixaFim(null);
+//            $mapaProduto->setCubagem(null);
+//        }
+
+
+
+
+
+
+
 
         $this->_em->persist($mapaProduto);
         $this->_em->flush($mapaProduto);

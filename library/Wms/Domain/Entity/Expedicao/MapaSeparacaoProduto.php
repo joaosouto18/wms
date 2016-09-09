@@ -103,6 +103,11 @@ class MapaSeparacaoProduto
     protected $numCaixaFim;
 
     /**
+     * @Column(name="CUBAGEM_TOTAL", nullable=true)
+     */
+    protected $cubagem;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -356,6 +361,22 @@ class MapaSeparacaoProduto
     public function setNumCaixaFim($numCaixaFim)
     {
         $this->numCaixaFim = $numCaixaFim;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCubagem()
+    {
+        return $this->cubagem;
+    }
+
+    /**
+     * @param mixed $cubagem
+     */
+    public function setCubagem($cubagem)
+    {
+        $this->cubagem = $cubagem;
     }
 
 }

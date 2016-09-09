@@ -61,13 +61,16 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
-    public function getCaixasByExpedicao($expedicaoEntity)
+    public function getCaixasByExpedicao($expedicaoEntity,$pedidoEntity)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('msp.numCaixaInicio, msp.numCaixaFim')
+            ->select('NVL(MAX(msp.numCaixaInicio),0) AS numCaixaInicio, NVL(MAX(msp.numCaixaFim),0) AS numCaixaFim, SUM(msp.cubagem) AS cubagem')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'msp.codPedidoProduto = pp.id')
+            ->innerJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.id = pp.codPedido')
             ->where("ms.expedicao = ".$expedicaoEntity->getId())
+            ->andWhere("p.id = ".$pedidoEntity->getId())
             ->andWhere("msp.numCaixaInicio is not null and msp.numCaixaFim is not null")
             ->orderBy('msp.numCaixaInicio, msp.numCaixaFim', 'DESC');
 
