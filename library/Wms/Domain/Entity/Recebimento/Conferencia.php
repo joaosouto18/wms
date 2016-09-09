@@ -32,7 +32,7 @@ class Conferencia
     /**
      * Código qtdConferida conferida
      *  
-     * @Column(name="QTD_CONFERIDA", type="integer", nullable=true)
+     * @Column(name="QTD_CONFERIDA", type="decimal", nullable=true)
      * @var integer $qtdConferida
      */
     protected $qtdConferida;
@@ -68,16 +68,14 @@ class Conferencia
     /**
      * Quantidade total - qtdConferida conferida
      *  
-     * @Column(name="QTD_DIVERGENCIA", type="integer", nullable=false)
-     * @var integer
+     * @Column(name="QTD_DIVERGENCIA", type="decimal", nullable=false)
      */
     protected $qtdDivergencia;
 
     /**
      * Quantidade avaria
      *  
-     * @Column(name="QTD_AVARIA", type="integer", nullable=false)
-     * @var integer
+     * @Column(name="QTD_AVARIA", type="decimal", nullable=false)
      */
     protected $qtdAvaria;
 
