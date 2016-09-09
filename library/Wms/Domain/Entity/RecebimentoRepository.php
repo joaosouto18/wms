@@ -802,7 +802,7 @@ class RecebimentoRepository extends EntityRepository
      * @param int $idRecebimento
      * @return boolean Caso ja esteja em
      */
-    public function checarConferenciaComDivergencia($idRecebimento)
+    public function checarConferenciaComDivergencia($idRecebimento, $returBool = true)
     {
         $em = $this->getEntityManager();
 
@@ -819,8 +819,10 @@ class RecebimentoRepository extends EntityRepository
             ->setParameter(1, $idRecebimento);
 
         $ordensServico = $dql->getQuery()->getOneOrNullResult();
-
-        return ($ordensServico && ((int)$ordensServico['qtdConferencia'] > 0));
+        if ($returBool)
+            return ($ordensServico && ((int)$ordensServico['qtdConferencia'] > 0));
+        else
+            return $ordensServico;
     }
 
     /**
@@ -849,7 +851,7 @@ class RecebimentoRepository extends EntityRepository
         if ($ordensServico) {
 
             if ($this->checarConferenciaComDivergencia($idRecebimento))
-                throw new \Exception('Recebimento No. ' . $idRecebimento . ' já está em processo de finalização na mesa de Operação.');
+                throw new \Exception('Recebimento Nº. ' . $idRecebimento . ' já está em processo de finalização na mesa de Operação.');
 
             return array(
                 'criado' => false,

@@ -81,9 +81,7 @@ class Auth {
         $tempo = $parametro->getValor();
         $session = new \Zend_Session_Namespace($storage->getNamespace());
         if (empty($tempo)) $tempo = 60; //Se não encontrar o tempo no registro vai se adotar como padrão 60 min
-        \Zend_Session::rememberMe(60 * $tempo);
-        $session->setExpirationSeconds(60 * $tempo);
-        $session->setExpirationHops(60 * $tempo);
+        $session->timeout = time() + (60 * $tempo);
         
         return true;
     }
