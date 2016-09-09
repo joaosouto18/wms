@@ -22,7 +22,7 @@ class Enderecamento_PaleteController extends Action
         $ProdutoRepository   = $this->em->getRepository('wms:Produto');
         $this->view->endPicking = $picking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
-        $this->view->qtdTotal = $xxx = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
+        $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
         try {
             $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,true,$tipoEnderecamento = 'M');

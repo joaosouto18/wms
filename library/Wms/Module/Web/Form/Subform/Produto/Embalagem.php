@@ -30,7 +30,7 @@ class Embalagem extends SubForm
                     'size' => 45,
                     'maxlength' => 60,
                 ))
-                ->addElement('numeric', 'quantidade', array(
+                ->addElement('text', 'quantidade', array(
                     'label' => 'Quantidade de itens',
                     'size' => 10
                 ))

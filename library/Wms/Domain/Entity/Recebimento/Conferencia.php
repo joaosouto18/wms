@@ -33,7 +33,6 @@ class Conferencia
      * Código qtdConferida conferida
      *  
      * @Column(name="QTD_CONFERIDA", type="decimal", nullable=true)
-     * @var integer $qtdConferida
      */
     protected $qtdConferida;
 
@@ -130,15 +129,20 @@ class Conferencia
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getQtdConferida()
     {
         return $this->qtdConferida;
     }
 
+    /**
+     * @param mixed $qtdConferida
+     */
     public function setQtdConferida($qtdConferida)
     {
-        $this->qtdConferida = (int) $qtdConferida;
-        return $this;
+        $this->qtdConferida = $qtdConferida;
     }
 
     public function getProduto()

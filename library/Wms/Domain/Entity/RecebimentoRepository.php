@@ -317,8 +317,8 @@ class RecebimentoRepository extends EntityRepository
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
                 $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto, 'grade'=>$grade));
-                $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $idProduto, 'grade' => $grade));
+//                $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
+//                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $idProduto, 'grade' => $grade));
 
                 $params['COD_PRODUTO'] = $idProduto;
                 $params['DSC_GRADE'] = $grade;
@@ -345,30 +345,15 @@ class RecebimentoRepository extends EntityRepository
                         $dataValidade['dataValidade'] = null;
                     }
 
-                    $qtdNF = (int)$qtdNFs[$idProduto][$grade];
-                    $qtdConferida = (int)$qtdConferida;
-                    $qtdAvaria = (int)$qtdAvarias[$idProduto][$grade];
+                    $qtdNF = (float)$qtdNFs[$idProduto][$grade];
+                    $qtdConferida = (float)$qtdConferida;
+                    $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade];
 
                     if ($gravaRecebimentoVolumeEmbalagem == true) {
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
                     }
 
                     $qtdConferida = $qtdConferida * $quantidade;
-
-                    /*
-                    if ($produtoEn->getPossuiPesoVariavel() == 'S') {
-                        //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
-                        $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
-                        $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
-                        $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
-
-                        if (!((float)$sumPesoRecebimentoProduto[0]['numPeso']  <= $pesoUnitarioMargemS && (float)$sumPesoRecebimentoProduto[0]['numPeso'] >= $pesoUnitarioMargemI)) {
-                            return array('message' => "O peso do produto $idProduto - grade $grade não confere com a tolerância permitida",
-                                'exception' => null,
-                                'concluido' => false);
-                        }
-                    }
-                    */
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
@@ -377,9 +362,9 @@ class RecebimentoRepository extends EntityRepository
                     }
                 } else {
 
-                    $qtdNF = (int)$qtdNFs[$idProduto][$grade];
-                    $qtdConferida = (int)$qtdConferida;
-                    $qtdAvaria = (int)$qtdAvarias[$idProduto][$grade];
+                    $qtdNF = (float)$qtdNFs[$idProduto][$grade];
+                    $qtdConferida = (float)$qtdConferida;
+                    $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade];
 
                     if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
                         $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
@@ -392,21 +377,6 @@ class RecebimentoRepository extends EntityRepository
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
                     }
 
-                    /*
-                    if ($produtoEn->getPossuiPesoVariavel() == 'S') {
-                        //CALCULA O PESO DOS PRODUTOS E NAO PERMITE FINALIZAR O RECEBIMENTO CASO O PESO ESTEJA FORA DA TOLERANCIA
-                        $sumPesoRecebimentoProduto = $conferenciaRepo->getSumPesoTotalRecebimentoProduto($idRecebimento, $idProduto, $grade, $ordemServicoEntity);
-                        $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) + $tolerancia;
-                        $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimentoProduto[0]['qtdConferida']) - $tolerancia;
-
-                        if (!((float)$sumPesoRecebimentoProduto[0]['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimentoProduto[0]['numPeso'] >= $pesoUnitarioMargemI)) {
-                            return array('message' => "O peso do produto $idProduto - grade $grade não confere com a tolerância permitida",
-                                'exception' => null,
-                                'concluido' => false);
-                        }
-                    }
-                    */
-                    
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
                     if ($qtdDivergencia != 0) {
@@ -680,7 +650,7 @@ class RecebimentoRepository extends EntityRepository
         $conferenciaEntity->setRecebimento($recebimentoEntity);
         $conferenciaEntity->setOrdemServico($ordemServicoEntity);
         $conferenciaEntity->setDataConferencia(new \DateTime);
-        $conferenciaEntity->setQtdConferida($qtdConferida);
+        $conferenciaEntity->setQtdConferida(str_replace(',','.',$qtdConferida));
         $conferenciaEntity->setProduto($produtoEntity);
         $conferenciaEntity->setGrade($grade);
         $conferenciaEntity->setQtdAvaria($qtdAvaria);
