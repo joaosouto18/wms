@@ -64,7 +64,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     public function getCaixasByExpedicao($expedicaoEntity,$pedidoEntity)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('NVL(MAX(msp.numCaixaInicio),0) AS numCaixaInicio, NVL(MAX(msp.numCaixaFim),0) AS numCaixaFim, SUM(msp.cubagem) AS cubagem')
+            ->select('MAX(msp.numCaixaInicio) AS numCaixaInicio, MAX(msp.numCaixaFim) AS numCaixaFim, SUM(msp.cubagem) AS cubagem')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
             ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'msp.codPedidoProduto = pp.id')

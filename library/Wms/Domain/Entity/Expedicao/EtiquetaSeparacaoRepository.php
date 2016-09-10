@@ -921,29 +921,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasNaoFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
-//                                $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
-//                                $pedidosDiferente     = false;
-//
-//                                if ($pedidoAnterior != $pedidoEntity->getId())
-//                                    $pedidosDiferente = true;
-
-//                                if ($produtoAnterior != $codProduto || $gradeAnterior != $grade) {
-//                                    $caixas = $this->caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente);
-//                                    if (isset($caixas) && !empty($caixas)) {
-//                                        $quebrasNaoFracionado[]['tipoQuebra'] = $caixas['quebras'];
-//                                    }
-//                                }
                                 $cubagem = null;
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                 }
-
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity);
-//                                $produtoAnterior = $codProduto;
-//                                $gradeAnterior   = $grade;
-//                                $pedidoAnterior  = $pedidoEntity->getId();
-
                             }
                         } else {
                             if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == "E") {
@@ -951,34 +934,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto,$quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null, $etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
-//                                $quebrasFracionado= $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
-//                                $pedidosDiferente = false;
-
-//                                if ($pedidoAnterior != $pedidoEntity->getId())
-//                                    $pedidosDiferente = true;
-
                                 $cubagem = null;
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                 }
-//                                if ($produtoAnterior != $codProduto || $gradeAnterior != $grade) {
-//                                    $caixas = $this->caixasByPedidos($cubagemPedidos, $pedidoEntity, $produtoEntity, $cubagemCaixa, $mapaProdutoRepo, $expedicaoEntity, $quantidade, $pedidosDiferente);
-//                                    if (isset($caixas) && !empty($caixas)) {
-//                                        $quebrasFracionado[]['tipoQuebra'] = $caixas['quebras'];
-//                                    }
-//                                }
-
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity);
-//                                $produtoAnterior = $codProduto;
-//                                $gradeAnterior   = $grade;
-//                                $pedidoAnterior  = $pedidoEntity->getId();
                             }
                         }
-
-
-
-
                     }
                 } else {
                     $view = \Zend_layout::getMvcInstance()->getView();
@@ -1489,18 +1452,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 //            $cubagem = $mapaProduto->getCubagem() + $cubagem;
         }
 
-        $mapaProduto->setNumCaixaInicio(null);
-        $mapaProduto->setNumCaixaFim(null);
-        $mapaProduto->setCubagem(null);
         $qtdCaixas = ceil($cubagem / $cubagemCaixa);
         $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity);
-        if (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
+        if ($qtdCaixas == 0) {
+            $mapaProduto->setNumCaixaInicio(null);
+            $mapaProduto->setNumCaixaFim(null);
+            $mapaProduto->setCubagem(null);
+        } else if (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
             if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa * ($caixasUsadas[0]['numCaixaFim'] - $caixasUsadas[0]['numCaixaInicio'] + 1)) {
                 $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
                 $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
             } else {
                 $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + 1 + $qtdCaixas);
+                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
             }
         } else {
             $mapaProduto->setNumCaixaInicio(1);
@@ -1516,7 +1480,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 //            $mapaProduto->setNumCaixaFim(null);
 //            $mapaProduto->setCubagem(null);
 //        }
-
 
 
 
