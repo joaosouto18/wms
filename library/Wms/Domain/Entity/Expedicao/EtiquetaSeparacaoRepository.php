@@ -1449,11 +1449,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
             $mapaProduto->setCubagem($mapaProduto->getCubagem() + $cubagem);
-//            $cubagem = $mapaProduto->getCubagem() + $cubagem;
         }
 
         $qtdCaixas = ceil($cubagem / $cubagemCaixa);
-        $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity);
+        $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
         if ($qtdCaixas == 0) {
             $mapaProduto->setNumCaixaInicio(null);
             $mapaProduto->setNumCaixaFim(null);
@@ -1467,25 +1466,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
             }
         } else {
-            $mapaProduto->setNumCaixaInicio(1);
-            $mapaProduto->setNumCaixaFim($qtdCaixas);
+            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
         }
-
-
-
-//        $mapaProduto->setNumCaixaInicio(1);
-//        $mapaProduto->setNumCaixaFim($qtdCaixas);
-//        if ($qtdCaixas <= 0) {
-//            $mapaProduto->setNumCaixaInicio(null);
-//            $mapaProduto->setNumCaixaFim(null);
-//            $mapaProduto->setCubagem(null);
-//        }
-
-
-
-
-
-
 
         $this->_em->persist($mapaProduto);
         $this->_em->flush($mapaProduto);
