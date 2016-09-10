@@ -178,15 +178,20 @@ class Conferencia
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getQtdDivergencia()
     {
         return $this->qtdDivergencia;
     }
 
+    /**
+     * @param mixed $qtdDivergencia
+     */
     public function setQtdDivergencia($qtdDivergencia)
     {
-        $this->qtdDivergencia = (int) $qtdDivergencia;
-        return $this;
+        $this->qtdDivergencia = $qtdDivergencia;
     }
 
     public function getQtdAvaria()
