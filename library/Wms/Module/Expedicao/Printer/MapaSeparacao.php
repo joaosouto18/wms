@@ -281,16 +281,7 @@ class MapaSeparacao extends Pdf
             $total = 0;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
-                $endereco = $produto->getCodDepositoEndereco();
-                $dscEndereco = "";
-                if ($endereco != null) {
-                    $dscEndereco = $endereco->getDescricao();
-                }
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
-//                $this->Cell(20, 4, utf8_decode($dscEndereco) ,0, 0);
-//                $this->Cell(12, 4, utf8_decode($produto->getCodProduto()) ,0, 0);
-//                $this->Cell(100, 4, substr(utf8_decode($produto->getProduto()->getDescricao()),0,57) ,0, 0);
-
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $endereco     = $produto->getCodDepositoEndereco();
@@ -332,14 +323,6 @@ class MapaSeparacao extends Pdf
                 $total += $quantidade;
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
 
-//                $this->Cell(30, 4, $codigoBarras, 0, 0);
-//                $this->Cell(14, 4, utf8_decode($produto->getProduto()->getReferencia()) ,0, 0);
-//                $this->SetFont('Arial', "B", 10);
-//                $this->Cell(15, 4, utf8_decode($produto->getQtdSeparar()) ,0, 1, 'C');
-//                $this->SetFont('Arial', null, 8);
-//                $total += $produto->getQtdSeparar();
-//                $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-//                $this->Cell(20, 1, "", 0, 1);
             }
 
             //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA

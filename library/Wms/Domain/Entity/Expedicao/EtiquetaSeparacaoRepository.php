@@ -718,10 +718,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
         $etiquetaConferenciaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaConferencia");
-        $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
-
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
-        $cubagemCaixa = $this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
 
         try {
             if ( empty($status) ){
@@ -731,24 +728,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn    = $modeloSeparacaoRepo->find($idModeloSeparacao);
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
-            $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-
             $quebrasFracionado    = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
 
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
                 $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
-//                var_dump($cubagemPedidos); exit;
             }
 
-            $getNumCaixaMapaProduto = 0;
             $produtoCarrinho = null;
             $pedidoAnterior = null;
-            $cubagemTotalProduto = 0;
             $produtoEmbalado = null;
-            $count = 0;
             $produtoAnterior = null;
             $gradeAnterior = null;
             foreach($pedidosProdutos as $key => $pedidoProduto) {
