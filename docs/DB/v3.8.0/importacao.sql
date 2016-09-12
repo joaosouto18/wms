@@ -1,13 +1,3 @@
-INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES (
-  SQ_RECURSO_01.NEXTVAL, 'Importação', null, 'importacao');
-
-INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES (
-  SQ_RECURSO_01.NEXTVAL, 'Importação de Arquivos TXT, XML e CSV', (
-  select COD_RECURSO from recurso where NOM_RECURSO like 'importacao'), 'importacao:index');
-
-INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (
-  SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),
-  (select COD_ACAO from acao where NOM_ACAO like 'index'), 'Index Importação');
 
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
     SQ_ACAO_01.NEXTVAL, 'Alterar Status do Arquivo de Importação', 'alterar-status');
@@ -17,6 +7,13 @@ INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
 
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
   SQ_ACAO_01.NEXTVAL, 'Configurar Importação', 'configuracao-importacao');
+
+INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES (
+  SQ_RECURSO_01.NEXTVAL, 'Importação', null, 'importacao');
+
+INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES (
+  SQ_RECURSO_01.NEXTVAL, 'Importação de Arquivos TXT, XML e CSV', (
+  select COD_RECURSO from recurso where NOM_RECURSO like 'importacao'), 'importacao:index');
 
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO) VALUES (
   SQ_RECURSO_ACAO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO like 'importacao:index'),

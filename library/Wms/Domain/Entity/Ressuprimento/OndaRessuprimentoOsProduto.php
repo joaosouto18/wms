@@ -32,7 +32,7 @@ class OndaRessuprimentoOsProduto
     protected $produto;
 
     /**
-     * @Column(name="QTD", type="integer", nullable=false)
+     * @Column(name="QTD", type="decimal", nullable=false)
      */
     protected $qtd;
 

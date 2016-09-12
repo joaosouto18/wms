@@ -14,6 +14,8 @@ class Recebimento
      */
     public function analisarCodigoBarras($codigoBarras)
     {
+        $codigoBarras = trim($codigoBarras); 
+
         if(substr($codigoBarras, 0, 4) == '(01)') {
             return substr($codigoBarras, 4, 18);
         }

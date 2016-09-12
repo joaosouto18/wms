@@ -37,8 +37,8 @@ class NotaFiscalRepository extends EntityRepository
                         AS qtdProduto
                     ")
             ->from('wms:NotaFiscal', 'nf')
-            ->innerJoin('nf.fornecedor', 'f')
-            ->innerJoin('f.pessoa', 'p')
+            ->leftJoin('nf.fornecedor', 'f')
+            ->leftJoin('f.pessoa', 'p')
             ->where('nf.recebimento IS NULL')
             ->andWhere('nf.status = ?1')
             ->setParameter(1, NotaFiscalEntity::STATUS_INTEGRADA)
@@ -66,7 +66,6 @@ class NotaFiscalRepository extends EntityRepository
             $dql->andWhere("TRUNC(nf.dataEntrada) <= ?3")
                 ->setParameter(3, $dataEntradaFinal);
         }
-
         return $dql->getQuery()->getResult();
     }
 
@@ -368,12 +367,18 @@ class NotaFiscalRepository extends EntityRepository
         extract($criteria);
 
         $sql = "SELECT R.COD_RECEBIMENTO, R.DTH_FINAL_RECEB, NF.NUM_NOTA_FISCAL, NF.COD_SERIE_NOTA_FISCAL, 
-                       NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, RC2.QTD_DIVERGENCIA,
+                       NFI.COD_PRODUTO, NFI.DSC_GRADE, RPE.DSC_EMBALAGEM, NFI.QTD_ITEM, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC2.QTD_DIVERGENCIA, 0) QTD_DIVERGENCIA,
                        PROD.DSC_PRODUTO
                   FROM NOTA_FISCAL NF
             INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
             INNER JOIN NOTA_FISCAL_ITEM NFI ON (NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL)
             INNER JOIN PRODUTO PROD on (PROD.COD_PRODUTO = NFI.COD_PRODUTO AND PROD.DSC_GRADE = NFI.DSC_GRADE)
+            LEFT JOIN (
+              SELECT RE.COD_RECEBIMENTO, PE.DSC_EMBALAGEM, PE.COD_PRODUTO, PE.DSC_GRADE
+              FROM RECEBIMENTO_EMBALAGEM RE
+              INNER JOIN PRODUTO_EMBALAGEM PE ON RE.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+              GROUP BY RE.COD_RECEBIMENTO, PE.DSC_EMBALAGEM, PE.COD_PRODUTO, PE.DSC_GRADE
+              ) RPE ON RPE.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND RPE.COD_PRODUTO = PROD.COD_PRODUTO AND RPE.DSC_GRADE = PROD.DSC_GRADE
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
             INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS AND RC.COD_PRODUTO = NFI.COD_PRODUTO AND RC.DSC_GRADE = NFI.DSC_GRADE)
             LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS AND RC2.COD_PRODUTO = NFI.COD_PRODUTO AND RC2.DSC_GRADE = NFI.DSC_GRADE AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL)
@@ -412,7 +417,7 @@ class NotaFiscalRepository extends EntityRepository
 
         $sql .= ' AND r.cod_status = ' . RecebimentoEntity::STATUS_FINALIZADO;
         $sql .= ' ORDER BY r.cod_recebimento DESC';
-
+        
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -602,6 +607,7 @@ class NotaFiscalRepository extends EntityRepository
             ->leftJoin('np_volume.unitizador', 'unitizador_volume')
             ->where('nf.recebimento = ?1')
             ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+            ->andWhere('(pe.dataInativacao IS NULL OR pv.dataInativacao IS NULL)')
             ->andWhere('NOT EXISTS(
                     SELECT \'x\'
                     FROM wms:OrdemServico os
@@ -679,7 +685,7 @@ class NotaFiscalRepository extends EntityRepository
                     WHERE os.recebimento = nf.recebimento
                         AND rc.produto = nfi.produto
                         AND rc.grade = nfi.grade
-                        AND rc.qtdDivergencia = 0
+                        AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = \'N\')
                 )')
             ->setParameter('idRecebimento', $idRecebimento)
             ->groupBy('p.id, nfi.grade, p.descricao, tc.id');

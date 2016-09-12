@@ -37,29 +37,42 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var date = $(el).parent('div').find('.dataInativacao');
             var div = $(el).parent('div').parent('td');
 
-            if (check.is(":checked") == true) {
-                if (date.text() == "EMB. ATIVA") {
-                    var today = new Date();
-                    var dd = today.getDate();
-                    var mm = today.getMonth()+1;
-                    var yyyy = today.getFullYear();
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data == 'N') {
+                        check.checked = !check.is(":checked");
+                        check.prop("checked",!check.is(":checked"));
+                        alert("Não é permitido ativar/inativar embalagens no WMS");
+                        return;
+                    } else {
+                        if (check.is(":checked") == true) {
+                            if (date.text() == "EMB. ATIVA") {
+                                var today = new Date();
+                                var dd = today.getDate();
+                                var mm = today.getMonth()+1;
+                                var yyyy = today.getFullYear();
 
-                    if(dd<10){
-                        dd='0'+dd
-                    }
-                    if(mm<10){
-                        mm='0'+mm
-                    }
-                    var today = dd+'/'+mm+'/'+yyyy;
+                                if(dd<10){
+                                    dd='0'+dd
+                                }
+                                if(mm<10){
+                                    mm='0'+mm
+                                }
+                                var today = dd+'/'+mm+'/'+yyyy;
 
-                    date.text(today);
+                                date.text(today);
+                            }
+                            div.css("color","red");
+                        } else {
+                            date.text("EMB. ATIVA");
+                            div.css("color","green");
+                        }
+                    }
                 }
-                div.css("color","red");
-            } else {
-                date.text("EMB. ATIVA");
-                div.css("color","green");
-
-            }
+            });
         },
 
         /**
@@ -107,8 +120,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 dataType: 'json',
                 success: function (data) {
                     if (data == 'N') {
-                        alert("Não é possível adicionar nova embalagem com parametro de código de barras desativado");
-                        return false;
+                        if (inputAcao == "incluir") {
+                            alert("Não é possível incluir embalagens no WMS");
+                            return false;
+                        } else {
+                            este.verificarCodigoBarras();
+                        }
                     } else {
                         este.verificarCodigoBarras();
                     }
@@ -126,9 +143,17 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             valores.lblCBInterno = $('#fieldset-embalagem #embalagem-CBInterno option:selected').text();
             valores.lblImprimirCB = $('#fieldset-embalagem #embalagem-imprimirCB option:selected').text();
             valores.lblEmbalado = $('#fieldset-embalagem #embalagem-embalado option:selected').text();
-            valores.dataInativacao = 'EMB. ATIVA';
 
-            if (id != '') {
+            if(valores.acao == 'incluir') {
+                valores.dataInativacao = 'EMB. ATIVA';
+            } else {
+                valores.dataInativacao = $('#fieldset-embalagem #embalagem-dataInativacao').val();
+                if (valores.dataInativacao != 'EMB. ATIVA') {
+                    valores.ativarDesativar = ' checked ';
+                }
+            }
+
+           if (id != '') {
                 valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
 
                 this.show(new Wms.Models.ProdutoEmbalagem(valores));
@@ -210,6 +235,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             $('#fieldset-embalagem #embalagem-embalado').val(produto_embalagem.embalado);
             $('#fieldset-embalagem #embalagem-capacidadePicking').val(produto_embalagem.capacidadePicking);
             $('#fieldset-embalagem #embalagem-pontoReposicao').val(produto_embalagem.pontoReposicao);
+            $('#fieldset-embalagem #embalagem-dataInativacao').val(produto_embalagem.dataInativacao);
 
             // checa opcoes de Codigo de Barras Interno
             this.checarCBInterno();
@@ -298,7 +324,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 dataType: 'json',
                                 success: function (data) {
                                     if (data == 'N') {
-                                        alert("Não é possível excluir embalagem com parametro de código de barras desativado");
+                                        alert("Não é possível excluir embalagens no WMS");
                                         return false;
                                     } else {
                                         //remove a div do endereco

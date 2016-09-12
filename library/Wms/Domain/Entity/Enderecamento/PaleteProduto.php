@@ -41,12 +41,12 @@ class PaleteProduto
     protected $codNormaPaletizacao;
 
     /**
-     * @Column(name="QTD", type="integer", nullable=false)
+     * @Column(name="QTD", type="decimal", nullable=false)
      */
     protected $qtd;
 
     /**
-     * @Column(name="QTD_ENDERECADA", type="integer", nullable=false)
+     * @Column(name="QTD_ENDERECADA", type="decimal", nullable=false)
      */
     protected $qtdEnderecada;
 

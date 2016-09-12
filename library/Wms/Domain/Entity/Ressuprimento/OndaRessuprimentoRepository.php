@@ -27,7 +27,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                 ->distinct(true);
 
             if ($codProduto != null) {
-                $query->andWhere("prod.id = $codProduto AND prod.grade ='$grade'");
+                $query->andWhere("prod.id = '$codProduto' AND prod.grade ='$grade'");
             }
         $result = $query->getQuery()->getArrayResult();
         return $result;
@@ -85,7 +85,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         }
 
         if (!empty($idProduto)) {
-            $SqlWhere .= " AND P.COD_PRODUTO = $idProduto";
+            $SqlWhere .= " AND P.COD_PRODUTO = '$idProduto'";
         }
 
         if (!empty($idExpedicao)) {
@@ -356,48 +356,50 @@ class OndaRessuprimentoRepository extends EntityRepository
         $produtosEntrada = array();
         $produtosSaida   = array();
 
-        foreach ($volumes as $volume) {
-            $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-            $ondaRessuprimentoOsProduto->setQtd($qtdOnda);
-            $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
-            $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
-            $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);
-            $ondaRessuprimentoOsProduto->setProduto($produtoEn);
-            $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
+        if (!empty($volumes))
+            foreach ($volumes as $volume) {
+                $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
+                $ondaRessuprimentoOsProduto->setQtd($qtdOnda);
+                $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
+                $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
+                $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);
+                $ondaRessuprimentoOsProduto->setProduto($produtoEn);
+                $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
 
-            $produtoArray = array();
-                $produtoArray['codProduto'] = $produtoEn->getId();
-                $produtoArray['grade'] = $produtoEn->getGrade();
-                $produtoArray['codProdutoVolume'] = $volume;
-                $produtoArray['codProdutoEmbalagem'] = null;
-                $produtoArray['qtd'] = $qtdOnda;
-            $produtosEntrada[] = $produtoArray;
+                $produtoArray = array();
+                    $produtoArray['codProduto'] = $produtoEn->getId();
+                    $produtoArray['grade'] = $produtoEn->getGrade();
+                    $produtoArray['codProdutoVolume'] = $volume;
+                    $produtoArray['codProdutoEmbalagem'] = null;
+                    $produtoArray['qtd'] = $qtdOnda;
+                $produtosEntrada[] = $produtoArray;
 
-            $produtoArray['qtd'] = $qtdOnda * -1;
-            $produtosSaida[] = $produtoArray;
+                $produtoArray['qtd'] = $qtdOnda * -1;
+                $produtosSaida[] = $produtoArray;
 
-        }
+            }
 
-        foreach ($embalagens as $embalagem) {
-            $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-            $ondaRessuprimentoOsProduto->setQtd($qtdOnda);
-            $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
-            $ondaRessuprimentoOsProduto->setCodProdutoVolume(null);
-            $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem($embalagem);
-            $ondaRessuprimentoOsProduto->setProduto($produtoEn);
-            $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
+        if (!empty($embalagens))
+            foreach ($embalagens as $embalagem) {
+                $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
+                $ondaRessuprimentoOsProduto->setQtd($qtdOnda);
+                $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
+                $ondaRessuprimentoOsProduto->setCodProdutoVolume(null);
+                $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem($embalagem);
+                $ondaRessuprimentoOsProduto->setProduto($produtoEn);
+                $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
 
-            $produtoArray = array();
-                $produtoArray['codProduto'] = $produtoEn->getId();
-                $produtoArray['grade'] = $produtoEn->getGrade();
-                $produtoArray['codProdutoVolume'] = null;
-                $produtoArray['codProdutoEmbalagem'] = $embalagem;
-                $produtoArray['qtd'] = $qtdOnda;
-            $produtosEntrada[] = $produtoArray;
+                $produtoArray = array();
+                    $produtoArray['codProduto'] = $produtoEn->getId();
+                    $produtoArray['grade'] = $produtoEn->getGrade();
+                    $produtoArray['codProdutoVolume'] = null;
+                    $produtoArray['codProdutoEmbalagem'] = $embalagem;
+                    $produtoArray['qtd'] = $qtdOnda;
+                $produtosEntrada[] = $produtoArray;
 
-            $produtoArray['qtd'] = $qtdOnda * -1;
-            $produtosSaida[] = $produtoArray;
-        }
+                $produtoArray['qtd'] = $qtdOnda * -1;
+                $produtosSaida[] = $produtoArray;
+            }
 
         //$this->getEntityManager()->flush();
 

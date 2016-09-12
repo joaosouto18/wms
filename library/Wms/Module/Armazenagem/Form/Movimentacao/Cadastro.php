@@ -82,7 +82,7 @@ class Cadastro extends Form
             ->addElement('submit', 'submit', array(
                 'label' => 'Movimentar',
                 'class' => 'btn',
-                'decorators' => array('ViewHelper'),
+                'decorators' => array('ViewHelper')
             ))
 
             ->addElement('text', 'endereco_origem', array(

@@ -52,17 +52,17 @@ class PedidoProduto
     protected $grade;
 
     /**
-     * @Column(name="QUANTIDADE", type="integer", nullable=false)
+     * @Column(name="QUANTIDADE", type="decimal", nullable=false)
      */
     protected $quantidade;
 
     /**
-     * @Column(name="QTD_ATENDIDA", type="integer", nullable=false)
+     * @Column(name="QTD_ATENDIDA", type="decimal", nullable=false)
      */
     protected $qtdAtendida;
 
     /**
-     * @Column(name="QTD_CORTADA", type="integer", nullable=false)
+     * @Column(name="QTD_CORTADA", type="decimal", nullable=false)
      */
     protected $qtdCortada;
 

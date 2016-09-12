@@ -880,10 +880,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             foreach ($enderecosPulmao as $enderecoPulmao) {
-                                if ($enderecoPulmao['quantidade'] > 0) {
-                                    $quantidadeAtender = $enderecoPulmao['quantidade'];
-                                    break;
-                                }
+                                if (isset($enderecoPulmao['quantidade']))
+                                    if ($enderecoPulmao['quantidade'] > 0) {
+                                        $quantidadeAtender = $enderecoPulmao['quantidade'];
+                                        break;
+                                    }
                             }
                         }
 

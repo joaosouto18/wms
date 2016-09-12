@@ -15,10 +15,10 @@ class Mobile_EnderecamentoController extends Action
         $form = new PickingLeitura();
         $form->init();
         $this->view->form = $form;
-        $codigoBarras = $this->_getParam('codigoBarras');
-        if ($codigoBarras) {
+        $codigoBarrasEndereco = $this->_getParam('codigoBarras');
+        if ($codigoBarrasEndereco) {
             $LeituraColetor = new \Wms\Service\Coletor();
-            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -88,6 +88,7 @@ class Mobile_EnderecamentoController extends Action
                 $this->em->flush();
             }
 
+            $this->addFlashMessage('success', "O endereço ". substr($codigoBarrasEndereco,0,-1) ." foi adicionado");
         }
     }
 
@@ -101,8 +102,12 @@ class Mobile_EnderecamentoController extends Action
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
             $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $removerId));
             $relatorioEn = $relatorioRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
-            $this->getEntityManager()->remove($relatorioEn);
-            $this->getEntityManager()->flush();
+            if (!empty($relatorioEn)) {
+                $this->getEntityManager()->remove($relatorioEn);
+                $this->getEntityManager()->flush();
+                $this->addFlashMessage('info', "O endereço $removerId foi removido.");
+            }
+            $this->_redirect('/mobile/enderecamento/listar-picking');
         }
 
         $enderecosSelecionados = $relatorioRepo->getSelecionados();
@@ -906,6 +911,9 @@ class Mobile_EnderecamentoController extends Action
         $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
         try {
+
+            $this->getEntityManager()->beginTransaction();
+
             if ($enderecoNovo) {
                 $LeituraColetor = new LeituraColetor();
                 $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
@@ -999,10 +1007,12 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
                     $params['qtd'] = $qtd * -1;
+                    $params['observacoes'] = "Transferencia de Estoque - Destino: ".$endereco->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                 }
             } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
@@ -1074,8 +1084,10 @@ class Mobile_EnderecamentoController extends Action
                         $params['validade'] = $validade->format('d/m/Y');
                     }
 
+                    $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
+                    $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                     $params['endereco'] = $enderecoAntigo;
                     $params['qtd'] = $qtd * -1;
                     $estoqueRepo->movimentaEstoque($params);
@@ -1139,9 +1151,11 @@ class Mobile_EnderecamentoController extends Action
                             $params['validade'] = $validade->format('d/m/Y');
                         }
 
+                        $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                         $estoqueRepo->movimentaEstoque($params);
 
                         //RETIRA ESTOQUE
+                        $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                         $params['endereco'] = $enderecoAntigo;
                         $params['qtd'] = $qtd * -1;
                         $estoqueRepo->movimentaEstoque($params);
@@ -1150,10 +1164,12 @@ class Mobile_EnderecamentoController extends Action
                 }
             }
 
+            $this->getEntityManager()->commit();
             $this->addFlashMessage('success', 'Endereço alterado com sucesso!');
             $this->_redirect('/mobile/enderecamento/movimentacao');
 
         }  catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
             throw new \Exception ($e->getMessage());
         }
     }
@@ -1210,9 +1226,12 @@ class Mobile_EnderecamentoController extends Action
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
 
         $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco));
-        $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
-
-        $this->_helper->json(array('caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
+        if (!empty($enderecoEn)) {
+            $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
+            $this->_helper->json(array('status' => 'Ok', 'caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
+        } else {
+            $this->_helper->json(array('status' => 'Error', 'Msg' => 'Endereço não encontrado'));
+        }
     }
 }
 

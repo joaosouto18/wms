@@ -32,7 +32,7 @@ class ReservaEstoqueProduto
 
     /**
      * Qtd Reservada (Positivo para Reserva de Entrada, Negativo para Reserva de Saida)
-     * @Column(name="QTD_RESERVADA", type="integer", nullable=false)
+     * @Column(name="QTD_RESERVADA", type="decimal", nullable=false)
      */
     protected $qtd;
 
