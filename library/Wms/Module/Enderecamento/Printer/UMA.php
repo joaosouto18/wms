@@ -85,16 +85,11 @@ class UMA extends Pdf
 
         $this->SetMargins(7, 7, 0);
         $ProdutoRepository    = $em->getRepository('wms:Produto');
-        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
-        $notaFiscalItemRepository = $em->getRepository('wms:NotaFiscal\Item');
 
         $codProduto     = $params['codProduto'];
         $grade          = $params['grade'];
         $idRecebimento  = $params['idRecebimento'];
 
-//        $notaFiscalEn = $notaFiscalItemRepository->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'notaFiscal' => array('recebimento' => 3932)));
-//        $notaFiscalEn = $notaFiscalItemRepository->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'notaFiscal' => array('id' => 16630, 'recebimento' => null)));
-//        var_dump($notaFiscalEn); exit;
         $produtoEn  = $ProdutoRepository->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
 
         if ($produtoEn == null) {
@@ -192,7 +187,7 @@ class UMA extends Pdf
         $this->Cell(25,95,"Qtd",0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(75,95,$palete['qtd'],0,1);
+        $this->Cell(75,95,$palete['qtd'].' - '.$palete['unMedida'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55,-35,utf8_decode("Endereço "),0,0);

@@ -81,6 +81,7 @@ class Enderecamento_PaleteController extends Action
                 $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
             } else {
                 $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
+                $dadosPalete['unMedida'] = $embalagemEn->getDescricao();
             }
             if ($embalagemEn->getEndereco() != null) {
                 $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
