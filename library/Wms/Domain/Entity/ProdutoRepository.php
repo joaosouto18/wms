@@ -1548,37 +1548,39 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	public function getProdutoByParametroVencimento($params)
 	{
-		$sql = $this->getEntityManager()->createQueryBuilder()
-			->select('prod.id codProduto, prod.grade, prod.descricao AS produto, pes.nome AS fornecedor, de.descricao AS endereco, e.validade, SUM(e.qtd) AS qtd')
-			->from('wms:Recebimento', 'r')
-			->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
-			->innerJoin('wms:NotaFiscal\Item', 'nfi', 'WITH', 'nfi.notaFiscal = nf.id')
-			->innerJoin('wms:Produto', 'prod', 'WITH', 'prod.id = nfi.codProduto AND prod.grade = nfi.grade')
-			->innerJoin('wms:Pessoa\Papel\Fornecedor', 'f', 'WITH', 'f.id = nf.fornecedor')
-			->innerJoin('wms:Pessoa', 'pes', 'WITH', 'pes.id = f.pessoa')
-			->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'p.recebimento = r.id')
-			->innerJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'e.uma = p.id')
-			->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de.id = e.depositoEndereco')
-			->groupBy('prod.id, prod.grade, prod.descricao, pes.nome, de.descricao, e.validade')
-		;
-
+        $dtFrmt = date_format(new \DateTime($params['dataReferencia']),'Y-m-d');
+		$where = " WHERE e3_.DTH_VALIDADE <= '$dtFrmt' ";
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
-			$sql->andWhere("prod.id = $params[codProduto]");
+			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";
 		}
 		if (isset($params['descricao']) && !empty($params['descricao'])) {
-			$sql->andWhere("prod.descricao like $params[descricao]");
+			$where .= "AND LOWER(p0_.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
 		}
 		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
-			$sql->andWhere("pes.nome like '$params[fornecedor]'");
-		}
-		if (isset($params['dataReferencia']) && !empty($params['dataReferencia'])) {
-			$data = new \Zend_Date($params['dataReferencia']);
-			$data = $data->toString('Y-MM-dd');
-			$sql->andWhere("e.validade <= '$data'");
+			$where .= "AND LOWER(p1_.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
 		}
 
-		return $sql->getQuery()->getResult();
+		$query = "SELECT 
+  					p0_.COD_PRODUTO AS codProduto, 
+  					p0_.DSC_GRADE AS grade, 
+				  	p0_.DSC_PRODUTO AS produto, 
+				  	p1_.NOM_PESSOA AS fornecedor, 
+				  	d2_.DSC_DEPOSITO_ENDERECO AS endereco, 
+				  	TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY') AS validade,
+				  	SUM(e3_.QTD) AS qtd 
+				  FROM RECEBIMENTO r4_ 
+				  INNER JOIN NOTA_FISCAL n5_ ON (n5_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
+				  INNER JOIN NOTA_FISCAL_ITEM n6_ ON (n6_.COD_NOTA_FISCAL = n5_.COD_NOTA_FISCAL) 
+				  INNER JOIN PRODUTO p0_ ON (p0_.COD_PRODUTO = n6_.COD_PRODUTO AND p0_.DSC_GRADE = n6_.DSC_GRADE) 
+				  INNER JOIN FORNECEDOR f7_ ON (f7_.COD_FORNECEDOR = n5_.COD_FORNECEDOR) 
+				  INNER JOIN PESSOA p1_ 
+				  LEFT JOIN PESSOA_JURIDICA p9_ ON p1_.COD_PESSOA = p9_.COD_PESSOA ON (p1_.COD_PESSOA = f7_.COD_FORNECEDOR) 
+				  INNER JOIN PALETE p10_ ON (p10_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
+				  INNER JOIN ESTOQUE e3_ ON (e3_.UMA = p10_.UMA) 
+				  INNER JOIN DEPOSITO_ENDERECO d2_ ON (d2_.COD_DEPOSITO_ENDERECO = e3_.COD_DEPOSITO_ENDERECO)
+				  $where
+				  GROUP BY p0_.COD_PRODUTO, p0_.DSC_GRADE, p0_.DSC_PRODUTO, p1_.NOM_PESSOA, d2_.DSC_DEPOSITO_ENDERECO, TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY')";
 
+		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
-
 }

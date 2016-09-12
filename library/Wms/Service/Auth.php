@@ -78,12 +78,9 @@ class Auth {
         /* Tempo permitido de inatividade na sessão */
         $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'TEMPO_INATIVIDADE'));
-        $tempo = $parametro->getValor();
+        $tempo = (!empty($parametro)) ? $parametro->getValor() : 60;//Se não encontrar o tempo no registro vai se adotar como padrão 60 min
         $session = new \Zend_Session_Namespace($storage->getNamespace());
-        if (empty($tempo)) $tempo = 60; //Se não encontrar o tempo no registro vai se adotar como padrão 60 min
-        \Zend_Session::rememberMe(60 * $tempo);
-        $session->setExpirationSeconds(60 * $tempo);
-        $session->setExpirationHops(60 * $tempo);
+        $session->timeout = time() + (60 * $tempo);
         
         return true;
     }
