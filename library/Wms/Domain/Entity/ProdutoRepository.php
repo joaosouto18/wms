@@ -269,6 +269,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 
 			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+				$itemEmbalagem['quantidade'] = str_replace(',','.',$itemEmbalagem['quantidade']);
 				extract($itemEmbalagem);
 				switch ($itemEmbalagem['acao']) {
 					case 'incluir':
@@ -278,7 +279,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setProduto($produtoEntity);
 						$embalagemEntity->setGrade($produtoEntity->getGrade());
 						$embalagemEntity->setDescricao($descricao);
-						$embalagemEntity->setQuantidade($quantidade);
+						$embalagemEntity->setQuantidade(str_replace(',','.',$quantidade));
 						$embalagemEntity->setIsPadrao($isPadrao);
 						$embalagemEntity->setCBInterno($CBInterno);
 						$embalagemEntity->setImprimirCB($imprimirCB);
