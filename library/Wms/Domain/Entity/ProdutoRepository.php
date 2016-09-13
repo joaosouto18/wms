@@ -279,7 +279,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setProduto($produtoEntity);
 						$embalagemEntity->setGrade($produtoEntity->getGrade());
 						$embalagemEntity->setDescricao($descricao);
-						$embalagemEntity->setQuantidade(str_replace(',','.',$quantidade));
+						$embalagemEntity->setQuantidade($quantidade);
 						$embalagemEntity->setIsPadrao($isPadrao);
 						$embalagemEntity->setCBInterno($CBInterno);
 						$embalagemEntity->setImprimirCB($imprimirCB);
