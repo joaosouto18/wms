@@ -847,7 +847,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $endereco = $embalagem->getEndereco();
                         if (isset($endereco) && !empty($endereco)){
                             $depositoEnderecoEn = $endereco;
-                            break;
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
