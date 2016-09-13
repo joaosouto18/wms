@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 
 /**
  * @Table(name="PEDIDO")
@@ -115,6 +116,9 @@ class Pedido
         $this->carga = $carga;
     }
 
+    /**
+     * @return Carga
+     */
     public function getCarga()
     {
         return $this->carga;
@@ -135,6 +139,9 @@ class Pedido
         $this->itinerario = $itinerario;
     }
 
+    /**
+     * @return Itinerario
+     */
     public function getItinerario()
     {
         return $this->itinerario;
@@ -145,11 +152,17 @@ class Pedido
         $this->linhaEntrega = $linhaEntrega;
     }
 
+    /**
+     * @return string
+     */
     public function getLinhaEntrega()
     {
         return $this->linhaEntrega;
     }
 
+    /**
+     * @return Cliente
+     */
     public function getPessoa()
     {
         return $this->pessoa;

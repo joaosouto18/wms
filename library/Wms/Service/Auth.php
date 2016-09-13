@@ -2,6 +2,7 @@
 
 namespace Wms\Service;
 
+use Wms\Controller\Action;
 use Wms\Domain\Entity\Usuario;
 
 /**
@@ -16,9 +17,9 @@ class Auth {
 
     /**
      *
-     * @return Doctrine\ORM\EntityManager
+     * @return \Doctrine\ORM\EntityManager
      */
-    private function getEm()
+    private static function getEm()
     {
         return \Zend_Registry::get('doctrine')->getEntityManager();
     }
@@ -69,10 +70,18 @@ class Auth {
         //seto o RoleId para o zf
         $usuario->setRoleId($perfil);
 
+        /** @var \Zend_Auth_Storage_Session $storage */
         $storage = $auth->getStorage();
         $storage->clear();
         $storage->write($usuario);
-
+        
+        /* Tempo permitido de inatividade na sessão */
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'TEMPO_INATIVIDADE'));
+        $tempo = (!empty($parametro)) ? $parametro->getValor() : 60;//Se não encontrar o tempo no registro vai se adotar como padrão 60 min
+        $session = new \Zend_Session_Namespace($storage->getNamespace());
+        $session->timeout = time() + (60 * $tempo);
+        
         return true;
     }
 

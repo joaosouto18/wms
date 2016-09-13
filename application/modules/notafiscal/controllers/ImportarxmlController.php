@@ -249,7 +249,7 @@ class Notafiscal_ImportarxmlController extends Crud
 
                 //pega o produto pelo código de barras
                 $sql = "
-                SELECT prd.COD_PRODUTO,prd.DSC_GRADE
+                SELECT prd.COD_PRODUTO,prd.DSC_GRADE, NVL(prde.qtd_embalagem,1) QTD_EMBALAGEM
                     FROM produto prd
                     LEFT JOIN produto_embalagem prde ON (prd.COD_PRODUTO = prde.COD_PRODUTO AND prd.DSC_GRADE = prde.DSC_GRADE)
                     LEFT JOIN produto_volume prdv ON (prd.COD_PRODUTO = prdv.COD_PRODUTO AND prd.DSC_GRADE = prdv.DSC_GRADE)
@@ -269,6 +269,7 @@ class Notafiscal_ImportarxmlController extends Crud
                 if ( !empty($array[0]['COD_PRODUTO']) ){
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto']=$array[0]['COD_PRODUTO'];
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade']=$array[0]['DSC_GRADE'];
+                    $arrayRetorno['NotaFiscalItem'][$qtdProduto]['qtdEmbalagem'] = $array[0]['QTD_EMBALAGEM'];
                 } elseif ( !empty($arrayReferencia[0]['COD_PRODUTO'])){
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['idProduto'] = $arrayReferencia[0]['COD_PRODUTO'];
                     $arrayRetorno['NotaFiscalItem'][$qtdProduto]['grade'] = $arrayReferencia[0]['DSC_GRADE'];

@@ -50,7 +50,7 @@ class Estoque
     protected $depositoEndereco;
 
     /**
-     * @Column(name="QTD", type="integer", nullable=false)
+     * @Column(name="QTD", type="decimal", nullable=false)
      */
     protected $qtd;
 
@@ -165,19 +165,19 @@ class Estoque
     }
 
     /**
-     * @param mixed $qtd
-     */
-    public function setQtd($qtd)
-    {
-        $this->qtd = $qtd;
-    }
-
-    /**
      * @return mixed
      */
     public function getQtd()
     {
         return $this->qtd;
+    }
+
+    /**
+     * @param mixed $qtd
+     */
+    public function setQtd($qtd)
+    {
+        $this->qtd = $qtd;
     }
 
     /**

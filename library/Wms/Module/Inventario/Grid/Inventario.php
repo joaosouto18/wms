@@ -200,7 +200,7 @@ class Inventario extends Grid
                     return $row['status'] == "LIBERADO";
                 },
             ))
-            ->addAction(array(
+            /*->addAction(array(
                 'label' => 'Digitação Inventário Manual',
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
@@ -209,7 +209,7 @@ class Inventario extends Grid
                 'condition' => function ($row) {
                     return $row['status'] == "LIBERADO";
                 },
-            ))
+            ))*/
             ->setHasOrdering(true);
 
         return $this;

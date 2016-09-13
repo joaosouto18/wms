@@ -130,8 +130,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             //Recupera o id do recebimento
             $idRecebimento = $params['id'];
 
-            if ($idRecebimento == null)
-                throw new \Exception('Id must be provided for the edit action');
+            if (empty($idRecebimento))
+                throw new \Exception('O recebimento não foi informado.');
 
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
@@ -569,24 +569,34 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->beginTransaction();
 
                         try {
-                            $ordemServicoEntity->setDataFinal(new \DateTime());
+                            /*$ordemServicoEntity->setDataFinal(new \DateTime());
                             $this->em->persist($ordemServicoEntity);
+                            $this->em->commit();
+                            $this->em->flush();
+                            $this->em->beginTransaction();*/
+                            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+                            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+                            $checkOs = $recebimentoRepo->checarConferenciaComDivergencia($idRecebimento,false);
 
-                            // gerar nova ordem servico
-                            $ordemServicoRepo->save(new OrdemServicoEntity, array(
-                                'identificacao' => array(
-                                    'idRecebimento' => $ordemServicoEntity->getRecebimento()->getId(),
-                                    'idAtividade' => $ordemServicoEntity->getAtividade()->getId(),
-                                    'formaConferencia' => $ordemServicoEntity->getFormaConferencia(),
-                                    'idPessoa' => $ordemServicoEntity->getPessoa()->getId(),
-                                )
-                            ));
-
-                            $recebimentoEntity->addAndamento(false, false, 'Recontagem solicitada para o Recebimento.');
-                            $this->em->persist($recebimentoEntity);
-
+                            if ($checkOs['qtdConferencia'] > 0) {
+                                $ordemServicoEntity->setDataFinal(new \DateTime());
+                                $this->em->persist($ordemServicoEntity);
+                                $ordemServicoRepo->save(new OrdemServicoEntity, array(
+                                    'identificacao' => array(
+                                        'idRecebimento' => $ordemServicoEntity->getRecebimento()->getId(),
+                                        'idAtividade' => $ordemServicoEntity->getAtividade()->getId(),
+                                        'formaConferencia' => $ordemServicoEntity->getFormaConferencia(),
+                                        'idPessoa' => $ordemServicoEntity->getPessoa()->getId(),
+                                    )
+                                ));
+                                $mensagem = 'Ordem de Serviço para Recontagem gerada com sucesso para o Recebimento Nº. ' . $idRecebimento . '. ';
+                                $recebimentoEntity->addAndamento(false, false, 'Recontagem solicitada para o Recebimento.');
+                                $this->em->persist($recebimentoEntity);
+                            } else {
+                                $mensagem = 'A Ordem de Serviço Nº ' . $checkOs['id'] . ' já está aberta para este recebimento';
+                            }
+                            
                             $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'conferencia-cega-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Conferência Cega</a>';
-                            $mensagem = 'Ordem de Serviço para Recontagem gerada com sucesso para o Recebimento Nº. ' . $idRecebimento . '. ';
 
                             if ($ordemServicoEntity->getFormaConferencia() == OrdemServicoEntity::MANUAL)
                                 $mensagem .= 'Clique para visualizar o ' . $link;
@@ -799,7 +809,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             //busco produtos da nota
             $dql = $this->em->createQueryBuilder()
-                    ->select('p.id, nfi.grade, nfi.quantidade, p.descricao')
+                    ->select('p.id, nfi.grade, nfi.quantidade, p.descricao, p.possuiPesoVariavel, nfi.numPeso as peso')
                     ->from('wms:NotaFiscal\Item', 'nfi')
                     ->innerJoin('nfi.produto', 'p')
                     ->andWhere('p.grade = nfi.grade')
@@ -940,7 +950,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
         if ($notaFiscalEntity)
             $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
-
+        
         // grid da conferencia
         $grid = new ConferenciaGrid;
         $this->view->grid = $grid->init(array('idOrdemServico' => $id))

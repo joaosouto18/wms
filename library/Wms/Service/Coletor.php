@@ -10,6 +10,9 @@ class Coletor
      */
     public function adequaCodigoBarras($codigoBarras, $exception = false)
     {
+
+        $codigoBarras = trim($codigoBarras);
+        
         if(substr($codigoBarras, 0, 4) == '(01)') {
             return substr($codigoBarras, 4, 18);
         }

@@ -159,6 +159,7 @@ class Expedicao_CorteController  extends Action
                 $observacao = 'Produto '.$pedidoProduto->getCodProduto().' Grade '.$pedidoProduto->getGrade().' referente ao pedido '.$pedido.' cortado - motivo: '.$motivo;
                 $expedicaoAndamentoRepo->save($observacao, $expedicao);
 
+                $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
                 $this->addFlashMessage('success','Produto ' .$produto. ' grade ' .$grade. ' pedido '.$pedido.' cortado com Sucesso');
                 $this->_redirect('/expedicao');

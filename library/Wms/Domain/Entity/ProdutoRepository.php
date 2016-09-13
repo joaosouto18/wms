@@ -266,9 +266,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			//embalagens do produto
 			if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
 				return false;
-			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
-				extract($itemEmbalagem);
 
+
+			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+				$itemEmbalagem['quantidade'] = str_replace(',','.',$itemEmbalagem['quantidade']);
+				extract($itemEmbalagem);
 				switch ($itemEmbalagem['acao']) {
 					case 'incluir':
 
@@ -366,6 +368,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
 
+
 						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
 							if ($webservice == true) {
 								$embalagemEntity->setDataInativacao(null);
@@ -377,10 +380,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
 							}
 						} else {
-							if (!is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+							if ($webservice == true) {
+								if (is_null($embalagemEntity->getDataInativacao())) {
+									$embalagemEntity->setDataInativacao(new \DateTime());
+									$embalagemEntity->setUsuarioInativacao(null);
+									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+								}
+							} else {
+								if (!is_null($embalagemEntity->getDataInativacao())) {
+									$embalagemEntity->setDataInativacao(null);
+									$embalagemEntity->setUsuarioInativacao(null);
+									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',true,$webservice);
+								}
 							}
 						}
 
@@ -1263,12 +1274,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                  NVL(NP1.NUM_NORMA, NP2.NUM_NORMA) as \"NORMA DE PALETIZACAO\",
                  NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) as \"CAPACIDADE DE PICKING\",
                  NVL(PE.PONTO_REPOSICAO, PV.PONTO_REPOSICAO) as \"PONTO REPOSICAO\",
+                 PE.IND_EMBALADO as \"EMBALADO\",
                  CASE WHEN (PV.COD_NORMA_PALETIZACAO IS NULL AND PDL.COD_NORMA_PALETIZACAO IS NULL) THEN 'SEM NORMA DE PALETIZACAO CADASTRADA'
                       WHEN (PE.COD_BARRAS IS NULL AND PV.COD_BARRAS IS NULL) THEN 'SEM CODIGO DE BARRAS'
                       WHEN (NP1.NUM_NORMA = 0 OR NP2.NUM_NORMA = 0) THEN 'SEM LASTRO OU CAMADAS DEFINIDOS'
                       WHEN (DEE.COD_DEPOSITO_ENDERECO IS NULL AND DEV.COD_DEPOSITO_ENDERECO IS NULL) THEN 'SEM ENDERECO DE PICKING'
                       ELSE 'CADASTRO CORRETO'
-                 END AS \"PROBLEMA CADASTRAL\"
+                 END AS \"PROBLEMA CADASTRAL\",
+                 PE.COD_PRODUTO_EMBALAGEM,
+                 PE.IND_PADRAO
                  FROM PRODUTO P
            LEFT JOIN LINHA_SEPARACAO L ON P.COD_LINHA_SEPARACAO = L.COD_LINHA_SEPARACAO
            INNER JOIN FABRICANTE F ON P.COD_FABRICANTE = F.COD_FABRICANTE
@@ -1325,8 +1339,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		$sql = "SELECT NVL(PE.COD_PRODUTO_EMBALAGEM,0) as EMBALAGEM,
                        NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
                   FROM PRODUTO P
-                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE)
-                  LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE)
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE) AND (PE.DTH_INATIVACAO IS NULL)
+                  LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE) AND (PV.DTH_INATIVACAO IS NULL)
                  WHERE PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras'";
 		$result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 		$embalagenEn = null;
@@ -1361,13 +1375,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(p.diasVidaUtil, \'0\') diasVidaUtil'
 				)
 			->from('wms:Produto', 'p')
-			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
+			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
 			->leftJoin('p.linhaSeparacao', 'ls')
 			->leftJoin('pe.dadosLogisticos', 'dl')
 			->leftJoin('pe.endereco', 'de1')
 			->leftJoin('dl.normaPaletizacao', 'np_embalagem')
 			->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
 			->leftJoin('pv.endereco', 'de2')
 			->leftJoin('pv.normaPaletizacao', 'np_volume')
 			->leftJoin('np_volume.unitizador', 'unitizador_volume')
@@ -1537,37 +1551,39 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	public function getProdutoByParametroVencimento($params)
 	{
-		$sql = $this->getEntityManager()->createQueryBuilder()
-			->select('prod.id codProduto, prod.grade, prod.descricao AS produto, pes.nome AS fornecedor, de.descricao AS endereco, e.validade, SUM(e.qtd) AS qtd')
-			->from('wms:Recebimento', 'r')
-			->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
-			->innerJoin('wms:NotaFiscal\Item', 'nfi', 'WITH', 'nfi.notaFiscal = nf.id')
-			->innerJoin('wms:Produto', 'prod', 'WITH', 'prod.id = nfi.codProduto AND prod.grade = nfi.grade')
-			->innerJoin('wms:Pessoa\Papel\Fornecedor', 'f', 'WITH', 'f.id = nf.fornecedor')
-			->innerJoin('wms:Pessoa', 'pes', 'WITH', 'pes.id = f.pessoa')
-			->innerJoin('wms:Enderecamento\Palete', 'p', 'WITH', 'p.recebimento = r.id')
-			->innerJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'e.uma = p.id')
-			->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de.id = e.depositoEndereco')
-			->groupBy('prod.id, prod.grade, prod.descricao, pes.nome, de.descricao, e.validade')
-		;
-
+        $dtFrmt = date_format(new \DateTime($params['dataReferencia']),'Y-m-d');
+		$where = " WHERE e3_.DTH_VALIDADE <= '$dtFrmt' ";
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
-			$sql->andWhere("prod.id = $params[codProduto]");
+			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";
 		}
 		if (isset($params['descricao']) && !empty($params['descricao'])) {
-			$sql->andWhere("prod.descricao like $params[descricao]");
+			$where .= "AND LOWER(p0_.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
 		}
 		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
-			$sql->andWhere("pes.nome like '$params[fornecedor]'");
-		}
-		if (isset($params['dataReferencia']) && !empty($params['dataReferencia'])) {
-			$data = new \Zend_Date($params['dataReferencia']);
-			$data = $data->toString('Y-MM-dd');
-			$sql->andWhere("e.validade <= '$data'");
+			$where .= "AND LOWER(p1_.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
 		}
 
-		return $sql->getQuery()->getResult();
+		$query = "SELECT 
+  					p0_.COD_PRODUTO AS codProduto, 
+  					p0_.DSC_GRADE AS grade, 
+				  	p0_.DSC_PRODUTO AS produto, 
+				  	p1_.NOM_PESSOA AS fornecedor, 
+				  	d2_.DSC_DEPOSITO_ENDERECO AS endereco, 
+				  	TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY') AS validade,
+				  	SUM(e3_.QTD) AS qtd 
+				  FROM RECEBIMENTO r4_ 
+				  INNER JOIN NOTA_FISCAL n5_ ON (n5_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
+				  INNER JOIN NOTA_FISCAL_ITEM n6_ ON (n6_.COD_NOTA_FISCAL = n5_.COD_NOTA_FISCAL) 
+				  INNER JOIN PRODUTO p0_ ON (p0_.COD_PRODUTO = n6_.COD_PRODUTO AND p0_.DSC_GRADE = n6_.DSC_GRADE) 
+				  INNER JOIN FORNECEDOR f7_ ON (f7_.COD_FORNECEDOR = n5_.COD_FORNECEDOR) 
+				  INNER JOIN PESSOA p1_ 
+				  LEFT JOIN PESSOA_JURIDICA p9_ ON p1_.COD_PESSOA = p9_.COD_PESSOA ON (p1_.COD_PESSOA = f7_.COD_FORNECEDOR) 
+				  INNER JOIN PALETE p10_ ON (p10_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
+				  INNER JOIN ESTOQUE e3_ ON (e3_.UMA = p10_.UMA) 
+				  INNER JOIN DEPOSITO_ENDERECO d2_ ON (d2_.COD_DEPOSITO_ENDERECO = e3_.COD_DEPOSITO_ENDERECO)
+				  $where
+				  GROUP BY p0_.COD_PRODUTO, p0_.DSC_GRADE, p0_.DSC_PRODUTO, p1_.NOM_PESSOA, d2_.DSC_DEPOSITO_ENDERECO, TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY')";
 
+		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
-
 }

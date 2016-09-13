@@ -544,16 +544,15 @@ class ExpedicaoRepository extends EntityRepository
         Try {
             $this->getEntityManager()->beginTransaction();
             if ($validaStatusEtiqueta == true) {
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao ($expedicaoEn->getId());
-                if (is_string($result)) {
-                    return $result;
-                }
                 $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
                     return $result;
                 }
-
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
+                if (is_string($result)) {
+                    return $result;
+                }
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn->getId());
                 if (is_string($result)) {
                     return $result;
                 }
@@ -1125,10 +1124,12 @@ class ExpedicaoRepository extends EntityRepository
         $andSub="";
         $cond="";
 
+        $WhereFinalCarga = "";
         $WhereSigla = "";
         $WherePedido = "";
         $WhereCarga = "";
         $WhereExpedicao = "";
+        $FullWhereFinal = "";
 
         if (isset($idDepositoLogado)) {
             $andWhere = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
@@ -1168,8 +1169,8 @@ class ExpedicaoRepository extends EntityRepository
             $where.=$and."E.DTH_FINALIZACAO >= TO_DATE('".$parametros['dataFinal1']." 00:00', 'DD-MM-YYYY HH24:MI')";
             $and=" AND ";
             $WhereExpedicao .= " AND (E.DTH_FINALIZACAO >= TO_DATE('".$parametros['dataFinal1']." 00:00', 'DD-MM-YYYY HH24:MI'))";
-
         }
+
         if (isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
             $where.=$and."E.DTH_FINALIZACAO <= TO_DATE('".$parametros['dataFinal2']." 23:59', 'DD-MM-YYYY HH24:MI')";
             $and=" AND ";
@@ -1195,6 +1196,7 @@ class ExpedicaoRepository extends EntityRepository
             $whereSubQuery=" C.COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."";
             $and=" and ";
             $andSub=" and ";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."))";
             $WhereCarga .= " AND  (COD_CARGA_EXTERNO = ".$parametros['codCargaExterno'].")";
         }
 
@@ -1213,7 +1215,7 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla ;
-
+        $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla ;;
         if ( $whereSubQuery!="" )
             $cond=" WHERE ";
 
@@ -1226,11 +1228,10 @@ class ExpedicaoRepository extends EntityRepository
                        P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
                        PESO.NUM_CUBAGEM as "cubagem",
-                       NVL(COUNT(REE.COD_REENTREGA),0) as "reentrega",
+                       NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
-                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
-                          ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MSCONF.QTD_TOTAL_CONF_MANUAL,0) ) * 100) / (NVL(MSP.QTD_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2))
-                       END) AS "PercConferencia"
+                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0 
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MS.QTD_CONF_MANUAL,0) ) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia" 
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -1248,21 +1249,26 @@ class ExpedicaoRepository extends EntityRepository
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
                          GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSC.QTD_CONFERIDA * MSC.QTD_EMBALAGEM) QTD_CONFERIDA, MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT MS.COD_EXPEDICAO, 
+                                    NVL(SUM(QTD_CONF.QTD),0) as QTD_CONFERIDA, 
+                                    NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL, 
+                                    NVL(SUM(QTD_SEP.QTD),0) as QTD_MAPA_TOTAL
                                FROM MAPA_SEPARACAO MS
-                         INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                               LEFT JOIN (SELECT SUM(QTD_CONFERIDA * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO 
+                                            FROM MAPA_SEPARACAO_CONFERENCIA
+                                           GROUP BY COD_MAPA_SEPARACAO) QTD_CONF ON QTD_CONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                               LEFT JOIN (SELECT SUM(QTD_SEPARAR * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO
+                                            FROM MAPA_SEPARACAO_PRODUTO
+                                           GROUP BY COD_MAPA_SEPARACAO) QTD_SEP ON QTD_SEP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                               LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) as QTD, MSP.COD_MAPA_SEPARACAO
+                                            FROM MAPA_SEPARACAO_PRODUTO MSP
+                                            LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                                           WHERE MSP.IND_CONFERIDO = \'N\' AND MSC.COD_MAPA_SEPARACAO_CONFERENCIA IS NULL
+                                           GROUP BY MSP.COD_MAPA_SEPARACAO) QTD_CONF_M ON QTD_CONF_M.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                               LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = MS.COD_EXPEDICAO
+                              WHERE 1 = 1
+                                '.$WhereExpedicao.'
                               GROUP BY MS.COD_EXPEDICAO) MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) QTD_TOTAL, MS.COD_EXPEDICAO
-                               FROM MAPA_SEPARACAO_PRODUTO MSP
-                              INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                              GROUP BY MS.COD_EXPEDICAO) MSP ON MSP.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) QTD_TOTAL_CONF_MANUAL, MS.COD_EXPEDICAO
-                               FROM MAPA_SEPARACAO_PRODUTO MSP
-                              INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                               LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSCONF ON MSCONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                              WHERE MSP.IND_CONFERIDO = \'S\'
-                                AND MSCONF.COD_MAPA_SEPARACAO_CONFERENCIA IS NULL
-                              GROUP BY MS.COD_EXPEDICAO) MSCONF ON MSCONF.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C '. $JoinExpedicao . $JoinSigla . '
@@ -1298,34 +1304,22 @@ class ExpedicaoRepository extends EntityRepository
                                            GROUP BY COD_EXPEDICAO ) MAP ON MAP.COD_EXPEDICAO = C.COD_EXPEDICAO
                                    WHERE 1 = 1 ' .  $FullWhere .'
                               GROUP BY C.COD_EXPEDICAO, MAP.QTD, PED.QTD) P ON P.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN CARGA CA ON CA.COD_EXPEDICAO=E.COD_EXPEDICAO
-                  LEFT JOIN REENTREGA REE ON REE.COD_CARGA = CA.COD_CARGA
-                  LEFT JOIN PEDIDO PED ON CA.COD_CARGA=PED.COD_CARGA
+                  LEFT JOIN (SELECT E.COD_EXPEDICAO, COUNT(REE.COD_REENTREGA) as QTD
+                               FROM REENTREGA REE
+                               LEFT JOIN CARGA C ON REE.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                              WHERE REE.IND_ETIQUETA_MAPA_GERADO = \'N\' '. $WhereExpedicao.'
+                              GROUP BY E.COD_EXPEDICAO) REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO,
                                     SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE) as NUM_CUBAGEM
                                FROM CARGA C
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
-                               LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                               LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  '.$FullWhere.$andWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 WHERE 1 = 1'. $FullWhere . '
-                  GROUP BY E.COD_EXPEDICAO,
-                          E.DSC_PLACA_EXPEDICAO,
-                          E.DTH_INICIO,
-                          E.DTH_FINALIZACAO,
-                          C.CARGAS,
-                          S.DSC_SIGLA,
-                          P.IMPRIMIR,
-                          PESO.NUM_PESO,
-                          C.CONFERIDA,
-                          PESO.NUM_CUBAGEM,
-                          I.ITINERARIOS,
-                          MS.QTD_CONFERIDA,
-                          MSP.QTD_TOTAL,
-                          C.QTDETIQUETA,
-                          MSCONF.QTD_TOTAL_CONF_MANUAL
+                 WHERE 1 = 1'. $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 //        echo $sql; exit;
@@ -2665,16 +2659,15 @@ class ExpedicaoRepository extends EntityRepository
 
     public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
 
-        $entidadePedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')->findOneBy(array('codPedido'=>$codPedido,
+        $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+        $pedidoProdutoRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+        $mapaSeparacaoPedidoRepo   = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        $mapaSeparacaoProdutoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaConferenciaRepo       = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
+        $entidadePedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido'=>$codPedido,
             'codProduto'=>$codProduto,
             'grade'=>$grade));
-        $entidadeMapaProduto = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto')->findBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId(),
-            'codProduto'=>$codProduto,
-            'dscGrade'=>$grade));
-        $entidadeReservasEstoqueExpedicao = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao')->findBy(array('pedido'=>$codPedido));
-        $repositoryReservaEstoqueProduto = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
-        $repositoryReservaEstoque = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-        $repositoryMapaConferencia = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
 
         $qtdCortada  = $entidadePedidoProduto->getQtdCortada();
         $qtdPedido   = $entidadePedidoProduto->getQuantidade();
@@ -2684,13 +2677,17 @@ class ExpedicaoRepository extends EntityRepository
             $qtdCortar = ($qtdPedido - $qtdCortada);
         }
 
-        foreach ($entidadeReservasEstoqueExpedicao as $reservaEstoqueExpedicao) {
+        $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
+                  FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                  LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                 WHERE REE.COD_PEDIDO = '$codPedido'
+                   AND REP.COD_PRODUTO = '$codProduto'
+                   AND REP.DSC_GRADE = '$grade'";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-            $entityReservaEstoqueProduto = $repositoryReservaEstoqueProduto->findBy(array('reservaEstoque' => $reservaEstoqueExpedicao->getReservaEstoque()));
-            $entityReservaEstoque = $repositoryReservaEstoque->find($reservaEstoqueExpedicao->getReservaEstoque()->getId());
-            $entityReservaEstoque->setAtendida('C');
-            $entityReservaEstoque->setDataAtendimento(new \DateTime());
-            $this->getEntityManager()->persist($entityReservaEstoque);
+        if (count($result) >0) {
+            $idReservaEstoque = $result[0]['COD_RESERVA_ESTOQUE'];
+            $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $idReservaEstoque));
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 $qtdReservada = $reservaEstoqueProduto->getQtd();
                 if ($qtdCortar + $qtdReservada == 0) {
@@ -2706,25 +2703,32 @@ class ExpedicaoRepository extends EntityRepository
         $this->getEntityManager()->persist($entidadePedidoProduto);
 
         $qtdMapa = 0;
+        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId()));
 
-        foreach ($entidadeMapaProduto as $mapa) {
-            $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
-            $qtdCortadoMapa = $mapa->getQtdCortado();
-            $qtdCortarMapa = $qtdCortar;
-            if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
-                $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
-            }
+        if (isset($mapaSeparacaoPedido) && !empty($mapaSeparacaoPedido)) {
+            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapaSeparacaoPedido->getMapaSeparacao(),
+                'codProduto'=>$codProduto,
+                'dscGrade'=>$grade));
 
-            if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
-                $mapaConferenciaEn = $repositoryMapaConferencia->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
-                foreach ($mapaConferenciaEn as $conferencia) {
-                    $this->getEntityManager()->remove($conferencia);
+            foreach ($entidadeMapaProduto as $mapa) {
+                $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
+                $qtdCortadoMapa = $mapa->getQtdCortado();
+                $qtdCortarMapa = $qtdCortar;
+                if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
+                    $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
                 }
-            }
 
-            $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
-            $this->getEntityManager()->persist($mapa);
-            $qtdCortar = $qtdCortar - $qtdCortarMapa;
+                if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
+                    $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                    foreach ($mapaConferenciaEn as $conferencia) {
+                        $this->getEntityManager()->remove($conferencia);
+                    }
+                }
+
+                $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
+                $this->getEntityManager()->persist($mapa);
+                $qtdCortar = $qtdCortar - $qtdCortarMapa;
+            }
         }
 
         $this->getEntityManager()->flush();

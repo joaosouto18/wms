@@ -26,7 +26,30 @@ class Action extends \Core\Controller\Action
     public function preDispatch()
     {
         parent::preDispatch();
+        self::checkUserSession();
         $this->_startTime = (float) array_sum(explode(' ',microtime()));
+    }
+
+    protected function checkUserSession() {
+
+        $auth = \Zend_Auth::getInstance();
+        $nameSpace = $auth->getStorage()->getNamespace();
+
+        $authNamespace = new \Zend_Session_Namespace($auth->getStorage()->getNamespace());
+        $userOn = (isset($authNamespace->storage) and !empty($authNamespace->storage));
+        if ($userOn) {
+            if (isset ($authNamespace->timeout) && time() > $authNamespace->timeout) {
+                $auth->setStorage(new \Zend_Auth_Storage_Session($nameSpace));
+                $auth->clearIdentity();
+                $this->_helper->messenger('error', "Sessão finalizada por tempo de inatividade.");
+                $redirector = \Zend_Controller_Action_HelperBroker::getStaticHelper ( 'redirector' );
+                $redirector->gotoUrl ( $this->_request->getModuleName(). "/auth/login" );
+            } else {
+                $tempo = self::getSystemParameterValue('TEMPO_INATIVIDADE');
+                $tempo = (!empty($tempo)) ? $tempo : 60;//Se não encontrar o tempo no registro vai se adotar como padrão 60 min
+                $authNamespace->timeout = time() + (60 * $tempo);
+            }
+        }
     }
 
     public function postDispatch()

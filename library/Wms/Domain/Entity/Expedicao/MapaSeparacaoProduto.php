@@ -56,17 +56,17 @@ class MapaSeparacaoProduto
     protected $produtoVolume;
 
     /**
-     * @Column(name="QTD_EMBALAGEM", type="integer", nullable=false)
+     * @Column(name="QTD_EMBALAGEM", type="decimal", nullable=false)
      */
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="QTD_SEPARAR", type="integer", nullable=false)
+     * @Column(name="QTD_SEPARAR", type="decimal", nullable=false)
      */
     protected $qtdSeparar;
 
     /**
-     * @Column(name="QTD_CORTADO", type="integer", nullable=false)
+     * @Column(name="QTD_CORTADO", type="decimal", nullable=false)
      */
     protected $qtdCortado;
 
@@ -101,6 +101,11 @@ class MapaSeparacaoProduto
      * @Column(name="NUM_CAIXA_PC_FIM", type="integer", nullable=true)
      */
     protected $numCaixaFim;
+
+    /**
+     * @Column(name="CUBAGEM_TOTAL", nullable=true)
+     */
+    protected $cubagem;
 
     /**
      * @param mixed $codProduto
@@ -356,6 +361,22 @@ class MapaSeparacaoProduto
     public function setNumCaixaFim($numCaixaFim)
     {
         $this->numCaixaFim = $numCaixaFim;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCubagem()
+    {
+        return $this->cubagem;
+    }
+
+    /**
+     * @param mixed $cubagem
+     */
+    public function setCubagem($cubagem)
+    {
+        $this->cubagem = $cubagem;
     }
 
 }

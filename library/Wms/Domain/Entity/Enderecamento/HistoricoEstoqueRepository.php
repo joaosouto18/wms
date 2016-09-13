@@ -40,7 +40,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                         un.descricao");
 
          if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
-             $query->andWhere("hist.codProduto = " . $parametros['idProduto']);
+             $query->andWhere("hist.codProduto = '$parametros[idProduto]'");
          }
          if (isset($parametros['grade']) && !empty($parametros['grade'])) {
              $query->andWhere("hist.grade = '$parametros[grade]'");

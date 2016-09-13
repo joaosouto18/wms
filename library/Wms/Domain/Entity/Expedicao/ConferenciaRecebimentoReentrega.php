@@ -59,13 +59,13 @@ class ConferenciaRecebimentoReentrega
     protected $grade;
 
     /**
-     * @Column(name="QTD_CONFERIDA", type="integer")
+     * @Column(name="QTD_CONFERIDA", type="decimal")
      * @var int
      */
     protected $quantidadeConferida;
 
     /**
-     * @Column(name="QTD_EMBALAGEM_CONFERIDA", type="integer")
+     * @Column(name="QTD_EMBALAGEM_CONFERIDA", type="decimal")
      * @var int
      */
     protected $qtdEmbalagemConferida;

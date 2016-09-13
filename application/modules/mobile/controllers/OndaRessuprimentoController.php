@@ -61,28 +61,28 @@ class Mobile_OndaRessuprimentoController extends Action
         if ($codigoBarras != NULL) {
 
             //VERIFICA SE FOI DIGITADO O CÓDIGO DE UM PRODUTO
-                $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codigoBarras));
-                if ($produtoEn != null) {
-                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
-                }
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            $produtoEn = $produtoRepo->findOneBy(array('id'=>$codigoBarras));
+            if ($produtoEn != null) {
+                $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
+            }
 
             //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM PRODUTO
-                $recebimentoService = new \Wms\Service\Recebimento;
-                $codBarrasProduto = $recebimentoService->analisarCodigoBarras($codigoBarras);
-                $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-                $info = $produtoRepo->getProdutoByCodBarras($codBarrasProduto);
-                if ($info!= null) {
-                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$info[0]['idProduto'], 'grade'=>$info[0]['grade']));
-                }
+            $recebimentoService = new \Wms\Service\Recebimento;
+            $codBarrasProduto = $recebimentoService->analisarCodigoBarras($codigoBarras);
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            $info = $produtoRepo->getProdutoByCodBarras($codBarrasProduto);
+            if ($info!= null) {
+                $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$info[0]['idProduto'], 'grade'=>$info[0]['grade']));
+            }
 
             //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM ENDEREÇO DE PICKING
-                $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-                $codBarrasEndereco = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
-                $result = $enderecoRepo->getProdutoByEndereco($codBarrasEndereco,false);
-                if (count($result) > 0){
-                    $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$result[0]['codProduto'], 'grade'=>$result[0]['grade']));
-                }
+            $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+            $codBarrasEndereco = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            $result = $enderecoRepo->getProdutoByEndereco($codBarrasEndereco,false);
+            if (count($result) > 0){
+                $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$result[0]['codProduto'], 'grade'=>$result[0]['grade']));
+            }
 
             $this->addFlashMessage("error","Nenhum Produto ou Endereço encontrado no código de barras");
             $this->_redirect('/mobile/onda-ressuprimento/filtrar');
@@ -140,6 +140,12 @@ class Mobile_OndaRessuprimentoController extends Action
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         $enderecoEn = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
+        
+        if (empty($enderecoEn)){
+            $this->addFlashMessage("error","Endereço selecionado não encontrado");
+            $this->_redirect('/mobile/onda-ressuprimento/selecionar-endereco/idOnda/'.$idOnda);
+        }
+        
         $result = $estoqueRepo->getProdutoByNivel($enderecoEn[0]['DSC_DEPOSITO_ENDERECO'], $nivel);
 
         if ($result == NULL)

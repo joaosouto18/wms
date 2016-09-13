@@ -50,7 +50,11 @@
                     ?>
                     <tr>
                         <td></td>
-                        <td><?php echo $item['quantidade'] ?></td>
+                        <td><?php if ($item['possuiPesoVariavel'] == 'S') {
+                                echo $item['peso'] . " Kg";
+                            } else {
+                                echo $item['quantidade'];
+                            }  ?></td>
                         <td><?php echo $item['id'] ?></td>
                         <td><?php echo $item['grade'] ?></td>
                         <td><?php echo $item['descricao'] ?></td>

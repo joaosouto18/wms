@@ -182,7 +182,7 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action
 
         //busco produtos da nota
         $dql = $this->em->createQueryBuilder()
-                ->select('p.id, nfi.grade, nfi.quantidade, p.descricao')
+                ->select('p.id, nfi.grade, nfi.quantidade, p.descricao, p.possuiPesoVariavel,nfi.numPeso as peso')
                 ->from('wms:NotaFiscal\Item', 'nfi')
                 ->innerJoin('nfi.produto', 'p')
                 ->andWhere('p.grade = nfi.grade')

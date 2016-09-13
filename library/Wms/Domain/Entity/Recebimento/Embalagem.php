@@ -31,8 +31,7 @@ class Embalagem
     /**
      * Código qtdConferida conferida
      *  
-     * @Column(name="QTD_CONFERIDA", type="integer", nullable=true)
-     * @var integer $qtdConferida
+     * @Column(name="QTD_CONFERIDA", type="decimal", nullable=true)
      */
     protected $qtdConferida;
 

@@ -56,6 +56,8 @@ class pedido {
     public $itinerario;
     /** @var cliente */
     public $cliente;
+    /** @var string */
+    public $situacao;
     /** @var produto[] */
     public $produtos = array();
 }
@@ -202,7 +204,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             foreach ($pedidoWs->produtos as $produtoWs) {
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = $produtoWs->grade;
-                $produto['quantidade'] = $produtoWs->quantidade;
+                $produto['quantidade'] = round($produtoWs->quantidade);
                 $produtos[] = $produto;
             }
 
@@ -342,7 +344,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param integer $idCargaExterno
      * @param string $tipoCarga
      * @param string $tipoPedido
-     * @param integer $idPedido
+     * @param string $idPedido
      * @return boolean
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
@@ -534,6 +536,77 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         return $carga;
+    }
+
+    /**
+     * @param string $idPedido
+     * @return pedido Informações sobre o pedido
+     */
+    public function consultarPedido($idPedido)
+    {
+        $idPedido = trim($idPedido);
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+        $pedidoEn = $pedidoRepo->find($idPedido);
+
+        if ($pedidoEn == null) {
+            throw new \Exception("Pedido $idPedido não encontrado");
+        }
+
+        $itinerario = new itinerario();
+        if ($pedidoEn->getItinerario() == null) {
+            $itinerario->idItinerario = "";
+            $itinerario->nomeItinerario = "";
+        } else {
+            $itinerario->idItinerario = $pedidoEn->getItinerario()->getId();
+            $itinerario->nomeItinerario = $pedidoEn->getItinerario()->getDescricao();
+        }
+
+        $cliente = new cliente();
+        $cliente->codCliente = $pedidoEn->getPessoa()->getCodClienteExterno();
+        $cliente->nome = $pedidoEn->getPessoa()->getPessoa()->getNome();
+        if (get_class($pedidoEn->getPessoa()->getPessoa()) == "Wms\Domain\Entity\Pessoa\Fisica"){
+            $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCpf();
+            $cliente->tipoPessoa = "F";
+        } else {
+            $cliente->cpf_cnpj = $pedidoEn->getPessoa()->getPessoa()->getCnpj();
+            $cliente->tipoPessoa = "J";
+        }
+
+        $enderecos = $pedidoEn->getPessoa()->getPessoa()->getEnderecos();
+        if (count($enderecos) >0) {
+            $cliente->logradouro = $enderecos[0]->getDescricao();
+            $cliente->numero = $enderecos[0]->getNumero();
+            $cliente->bairro = $enderecos[0]->getBairro();
+            $cliente->complemento = $enderecos[0]->getComplemento();
+            $cliente->cidade = $enderecos[0]->getLocalidade();
+            $cliente->referencia = $enderecos[0]->getPontoReferencia();
+            $cliente->uf = $enderecos[0]->getUf()->getReferencia();
+
+        }
+
+        $result = new pedido();
+        $result->codPedido = $idPedido;
+        $result->cliente = $cliente;
+        $result->itinerario = $itinerario;
+        $result->linhaEntrega = $pedidoEn->getLinhaEntrega();
+        $result->situacao = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getSigla();
+        $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+        foreach ($produtos as $item) {
+            $produto = new produto();
+            $produto->codProduto = $item['COD_PRODUTO'];
+            $produto->grade = $item['DSC_GRADE'];
+            $produto->quantidade = $item['QTD_PEDIDO'];
+            if (is_null($item['QTD_ATENDIDA'])) {
+                $produto->quantidadeAtendida = 0;
+            } else {
+                $produto->quantidadeAtendida = $item['QTD_ATENDIDA'];
+            }
+            $result->produtos[] = $produto;
+        }
+
+        return $result;
     }
 
     protected function saveCarga($repositorios, $carga)
