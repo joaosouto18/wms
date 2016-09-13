@@ -1281,7 +1281,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       WHEN (DEE.COD_DEPOSITO_ENDERECO IS NULL AND DEV.COD_DEPOSITO_ENDERECO IS NULL) THEN 'SEM ENDERECO DE PICKING'
                       ELSE 'CADASTRO CORRETO'
                  END AS \"PROBLEMA CADASTRAL\",
-                 PE.COD_PRODUTO_EMBALAGEM
+                 PE.COD_PRODUTO_EMBALAGEM,
+                 PE.IND_PADRAO
                  FROM PRODUTO P
            LEFT JOIN LINHA_SEPARACAO L ON P.COD_LINHA_SEPARACAO = L.COD_LINHA_SEPARACAO
            INNER JOIN FABRICANTE F ON P.COD_FABRICANTE = F.COD_FABRICANTE
