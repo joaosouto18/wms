@@ -225,6 +225,8 @@ class Inventario
 
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEm()->getRepository("wms:Produto\Volume");
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
+        $produtoEmbalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
         if (empty($qtdConferida)) {
@@ -233,6 +235,7 @@ class Inventario
 
         if ($codProdutoEmbalagem != null) {
             $codProdutoVolume = null;
+            $embalagemEntity = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
         }
 
         $embConferidos = array();
@@ -270,6 +273,10 @@ class Inventario
             $idVolume = null;
             if (isset($embalagem['idEmbalagem'])) $idEmbalagem = $embalagem['idEmbalagem'];
             if (isset($embalagem['idVolume'])) $idVolume = $embalagem['idVolume'];
+
+            if (isset($embalagemEntity) && !empty($embalagemEntity)) {
+                $qtdConferida = $qtdConferida * $embalagemEntity->getQuantidade();
+            }
 
             $contagemEndEn = $contagemEndRepo->findOneBy(array(
                 'contagemOs' =>$idContagemOs,
