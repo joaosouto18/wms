@@ -64,8 +64,8 @@ class EtiquetaEndereco extends Pdf
                     if ($enderecoEn != NULL) $this->layoutModelo3($enderecoEn);
                     break;
                 case 4:
+                    if($key > 0) $this->AddPage();
                     $this->layoutModelo4($codBarras);
-                    //if((count($enderecos) -1 ) === $key);
                     break;
                 case 5:
                     $this->layoutModelo5($codBarras);
