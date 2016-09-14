@@ -120,8 +120,8 @@ class Enderecamento_MovimentacaoController extends Action
                 }
                 $params['embalagem'] = $embalagensEn[0];
 
-                if ($indPickMultiProduto == 'N')
-                    $enderecoRepo->checkTipoEnderecoPicking($enderecoEn->getDescricao(),$idProduto, $params['embalagem']->getId());
+                /*if ($indPickMultiProduto == 'N')
+                    $enderecoRepo->checkTipoEnderecoPicking($enderecoEn->getDescricao(),$idProduto, $params['embalagem']->getId());*/
 
 
                 $EstoqueRepository->movimentaEstoque($params, true, true);
@@ -216,8 +216,8 @@ class Enderecamento_MovimentacaoController extends Action
                     $this->_redirect('/enderecamento/movimentacao');
                 }
 
-                if ($indPickMultiProduto == 'N')
-                    $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());
+                /*if ($indPickMultiProduto == 'N')
+                    $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());*/
 
                 $validade = $estoqueEn->getValidade();
                 if (isset($validade) && !is_null($validade)) {
