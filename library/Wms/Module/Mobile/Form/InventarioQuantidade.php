@@ -25,10 +25,13 @@ class InventarioQuantidade extends \Core\Form
                 ->addElement('hidden', 'numContagem');
 
                 $text = new \Zend_Form_Element_Text('descricaoProduto');
+                $dscEmbalagem = new \Zend_Form_Element_Text('dscEmbalagem');
+
                 $text->helper = 'formNote';
+                $dscEmbalagem->helper = 'formNote';
 
                 $this->addElement($text)
-
+                     ->addElement($dscEmbalagem)
 
             ->addElement('text', 'qtdConferida', array(
                     'required' => true,

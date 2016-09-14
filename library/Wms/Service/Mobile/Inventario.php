@@ -163,7 +163,9 @@ class Inventario
         $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
         $idEndereco = $params['idEndereco'];
         $enderecoRepo = $this->getEm()->getRepository('wms:Deposito\Endereco');
+        $embalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
         $enderecoEn = $enderecoRepo->find($idEndereco);
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
 
         $idPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         $idPickingDinamico = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
@@ -190,6 +192,7 @@ class Inventario
         $populateForm['idEndereco']         = $params['idEndereco'];
         $populateForm['dscEndereco']        = $enderecoEn->getDescricao();
         $populateForm['descricaoProduto']   = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
+        $populateForm['dscEmbalagem']       = '<b>Embalagem ' . $embalagemEn->getDescricao().' - Fator '.number_format($embalagemEn->getQuantidade(),2,',','') . '</b>';
         if ($dscVolume != null) {
             $populateForm['codProdutoVolume'] = $idVolume;
         } else {
