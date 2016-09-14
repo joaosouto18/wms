@@ -128,7 +128,7 @@ class Mobile_ExpedicaoController extends Action
                     $codQuebra = 0;
                     if ($modeloSeparacaoEn->getTipoQuebraVolume() == 'C') {
                         $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-                        $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => 'C'));
+                        $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => 'C '));
                         if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
                             $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
                     }
