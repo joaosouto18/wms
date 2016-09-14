@@ -44,7 +44,7 @@ class MapaSeparacao extends Pdf
 
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'PC'));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'T'));
             $quebras         = $mapa->getDscQuebra();
             $tipoQebra       = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
@@ -194,7 +194,7 @@ class MapaSeparacao extends Pdf
 
         foreach ($mapaSeparacao as $mapa) {
 
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'PC'));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'T'));
             $tipoQebra = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
                 $tipoQebra = true;

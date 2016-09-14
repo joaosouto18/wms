@@ -918,7 +918,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                     $quebrasNaoFracionado = array();
-                                    $quebrasNaoFracionado[]['tipoQuebra'] = 'PC';
+                                    $quebrasNaoFracionado[]['tipoQuebra'] = 'T';
                                 }
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual,$pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity);
@@ -934,7 +934,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                     $quebrasFracionado = array();
-                                    $quebrasFracionado[]['tipoQuebra'] = 'PC';
+                                    $quebrasFracionado[]['tipoQuebra'] = 'T';
                                 }
                                 $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity);
@@ -1221,8 +1221,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             //UTILIZA CARRINHO
-            if ($quebra == 'PC') {
-                $SQL_Quebras = $SQL_Quebras . "Q.IND_TIPO_QUEBRA = 'PC'";
+            if ($quebra == 'T') {
+                $SQL_Quebras = $SQL_Quebras . "Q.IND_TIPO_QUEBRA = 'T'";
                 $qtdQuebras = $qtdQuebras + 1;
             }
 
@@ -1347,7 +1347,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $codQuebra = "";
                 }
 
-                if ($quebra == "PC") {
+                if ($quebra == "T") {
                     $dscQuebra = $dscQuebra . "MAPA DE SEPARAÇÃO CONSOLIDADA";
                     $codQuebra = 0;
                 }
