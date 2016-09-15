@@ -17,7 +17,48 @@
                     $('#validade').val(v + '/');
                 }
             }
+
+            if (v != '' && v.length == 8) {
+                avaria = document.getElementById('qtdAvaria');
+                if (avaria) {
+                    avaria.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
         });
+
+        $('#qtdConferida').keyup(function (e) {
+            if (e.which == 13) {
+                if (document.getElementById('qtdConferida').value != "") {
+                    validade   = document.getElementById('validade');
+                    if (validade) {
+                        validade.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+                if (document.getElementById('endereco').value != "") {
+                    qtd        = document.getElementById('qtd');
+                    if (qtd) {
+                        qtd.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+        })
+
+
     });
 </script>
 
