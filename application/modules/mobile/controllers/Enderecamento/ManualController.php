@@ -113,7 +113,8 @@ class Mobile_Enderecamento_ManualController extends Action
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->find($idEndereco);
 
-            if ($enderecoEn->getNivel() == '0') {
+            if ($enderecoEn->getIdCaracteristica() == $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING')
+                || $enderecoEn->getIdCaracteristica() == $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO')) {
                 $params['urlOrigem'] = $urlOrigem;
                 $params['urlDestino'] = $urlDestino;
                 $this->redirect('selecionar-nivel','enderecamento_manual','mobile', $params);

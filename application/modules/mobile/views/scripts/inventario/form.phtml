@@ -9,7 +9,7 @@
         $('#validade').keyup(function (e) {
             var v = $('#validade').val();
             var key = e.which;
-            console.log(v.match(/^\d{2}$/));
+            alert(key);
             if (key != 8) {
                 if (v.match(/^\d{2}$/) !== null) {
                     $('#validade').val(v + '/');
