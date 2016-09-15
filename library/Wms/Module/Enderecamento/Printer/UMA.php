@@ -159,8 +159,8 @@ class UMA extends Pdf
 
         $codigoProduto = $produtoEn->getId();
         $descricaoProduto = $produtoEn->getDescricao();
-        $referencia = null;
-        if (!empty($produtoEn->getReferencia()) && null !== $produtoEn->getReferencia()) {
+        $referencia = $produtoEn->getReferencia();
+        if (!empty($referencia) && null !== $referencia) {
             $referencia = ' / '.$produtoEn->getReferencia();
         }
 
