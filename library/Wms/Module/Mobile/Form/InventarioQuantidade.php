@@ -44,7 +44,7 @@ class InventarioQuantidade extends \Core\Form
                     'label' => 'Validade',
                     'size' => 10,
                     'maxlength' => 8,
-                    'placeholder' => 'dd/mm/yy'
+                    'placeholder' => 'dd/mm/yy',
                 ))
                 ->addElement('text', 'qtdAvaria', array(
                     'required' => true,

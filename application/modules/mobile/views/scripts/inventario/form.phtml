@@ -1,4 +1,31 @@
-﻿<?php if ($this->produtosEndPicking) : ?>
+﻿<script type="text/javascript">
+    $(document).ready(function(){
+        var validade = $('#validade');
+        validade.hide();
+        if ($('#parametroValidade').val() == 'S' && $('#validadeProduto').val() == 'S') {
+            validade.show();
+        }
+
+        $('#validade').keyup(function (e) {
+            var v = $('#validade').val();
+            var key = e.which;
+            console.log(v.match(/^\d{2}$/));
+            if (key != 8) {
+                if (v.match(/^\d{2}$/) !== null) {
+                    $('#validade').val(v + '/');
+                }
+                else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
+                    $('#validade').val(v + '/');
+                }
+            }
+        });
+    });
+</script>
+
+<input type="hidden" id="codigoBarras" value="<?php echo $this->codigoBarras?>">
+<input type="hidden" id="parametroValidade" value="<?php echo $this->parametroValidade?>">
+<input type="hidden" id="validadeProduto" value="<?php echo $this->validadeProduto?>">
+<?php if ($this->produtosEndPicking) : ?>
 
     <table class="info">
         <caption>Endereço <?php echo $this->enderecoBipado ?> é picking dos produtos: </caption>

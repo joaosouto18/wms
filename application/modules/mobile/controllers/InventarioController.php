@@ -129,6 +129,8 @@ class Mobile_InventarioController extends Action
             $coletorService = new \Wms\Service\Coletor();
             $codigoBarras = $coletorService->adequaCodigoBarras($codigoBarras);
             $params['codigoBarras'] = $codigoBarras;
+            $this->view->parametroValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
+            $this->view->validadeProduto = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $codigoBarras))->getProduto()->getValidade();
 
             if ($codigoBarras == 0 && is_integer($codigoBarras)) {
                 $params = $this->_getAllParams();
