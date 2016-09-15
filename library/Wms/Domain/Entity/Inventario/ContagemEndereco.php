@@ -95,6 +95,12 @@ class ContagemEndereco
     protected $contagemInventariada;
 
     /**
+     * @Column(name="DTH_VALIDADE", nullable=true, type="string")
+     * @var string
+     */
+    protected $validade;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -333,5 +339,23 @@ class ContagemEndereco
     {
         $this->contagemInventariada = $contagemInventariada;
     }
+
+    /**
+     * @return string
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param string $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
+    }
+
+
 
 }

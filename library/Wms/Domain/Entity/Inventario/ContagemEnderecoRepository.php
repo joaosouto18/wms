@@ -47,6 +47,7 @@ class ContagemEnderecoRepository extends EntityRepository
             $contagemEndEn->setQtdAvaria($params['qtdAvaria']);
             $contagemEndEn->setCodProduto($params['codProduto']);
             $contagemEndEn->setGrade($params['grade']);
+            $contagemEndEn->setValidade($params['validade']);
 
             $contagemOsEn = $em->getReference('wms:Inventario\ContagemOs',$params['idContagemOs']);
             $contagemEndEn->setContagemOs($contagemOsEn);

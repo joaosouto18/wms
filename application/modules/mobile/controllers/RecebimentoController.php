@@ -380,7 +380,6 @@ class Mobile_RecebimentoController extends Action
             }
             if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
-                    var_dump('ghi');
                     if ($params['conferenciaCega'] == true) {
                         $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 

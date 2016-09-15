@@ -641,10 +641,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $grade              = $pedidoProduto->getProduto()->getGrade();
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
 
-//            if (!isset($cubagemPedido[$pedidoId]))
-//                $cubagemPedido[$pedidoId]['cubagemTotal'][] = 0;
-//                $cubagemPedido[$pedidoId] = 0;
-
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
             foreach ($embalagensEn as $embalagem) {
@@ -695,8 +691,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     if (!empty($dadoLogisticoEn)) {
                         $cubagemProduto = str_replace(',','.',$dadoLogisticoEn->getCubagem());
                         $cubagemPedido[$pedidoId][$codProduto][$grade] = (float)$cubagemProduto;
-//                        $cubagemPedido[$pedidoId]['produto'][] = $codProduto;
-//                        $cubagemPedido[$pedidoId]['grade'][] = $grade;
                     }
                 }
             }
@@ -736,11 +730,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
             }
 
-            $produtoCarrinho = null;
-            $pedidoAnterior = null;
-            $produtoEmbalado = null;
-            $produtoAnterior = null;
-            $gradeAnterior = null;
             foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 

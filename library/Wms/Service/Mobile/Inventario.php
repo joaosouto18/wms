@@ -3,6 +3,7 @@
 namespace Wms\Service\Mobile;
 
 
+use Core\Grid\Column\Filter\Render\Date;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 
@@ -217,6 +218,35 @@ class Inventario
         $contagemEndId          = $params['contagemEndId'];
         $numContagem            = $params['numContagem'];
 
+
+        $dataValida = true;
+        if (isset($params['validade'])) {
+            if (strlen($params['validade']) < 8) {
+                $dataValida = false;
+            } else {
+                $dia = substr($params['validade'],0,2);
+                if ($dia == false) $dataValida = false;
+                $mes = substr($params['validade'],3,2);
+                if ($mes == false) $dataValida = false;
+                $ano = substr($params['validade'],6,2);
+                if ($mes == false) $dataValida = false;
+
+                if ($dataValida == true) {
+                    $data = $dia . "/" . $mes . "/20" . $ano;
+                    if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
+                }
+            }
+            if ($dataValida == false) {
+                return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => 'mobile');
+            } else {
+                $validade = new \Zend_Date($data);
+                $validade = $validade->toString('Y-MM-dd');
+
+            }
+        } else {
+            $validade = null;
+        }
+
         $divergencia = null;
         if (isset($params['divergencia'])) {
             $divergencia            = $params['divergencia'];
@@ -292,6 +322,7 @@ class Inventario
             if ($contagemEndEn != null) {
                 $contagemEndEn->setQtdContada($qtdConferida);
                 $contagemEndEn->setQtdAvaria($qtdAvaria);
+                $contagemEndEn->setValidade($validade);
                 $this->_em->persist($contagemEndEn);
                 $contagemEndId = $contagemEndEn->getId();
             } else {
@@ -304,7 +335,8 @@ class Inventario
                     'grade' => $grade,
                     'codProdutoEmbalagem' => $idEmbalagem,
                     'codProdutoVolume' => $idVolume,
-                    'numContagem' => $numContagem
+                    'numContagem' => $numContagem,
+                    'validade' => $validade
                 ));
                 $contagemEndId = $contagemEndEn->getId();
             }
