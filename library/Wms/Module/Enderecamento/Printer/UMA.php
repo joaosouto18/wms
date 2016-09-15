@@ -159,7 +159,10 @@ class UMA extends Pdf
 
         $codigoProduto = $produtoEn->getId();
         $descricaoProduto = $produtoEn->getDescricao();
-        $referencia = $produtoEn->getReferencia();
+        $referencia = null;
+        if (!empty($produtoEn->getReferencia()) && null !== $produtoEn->getReferencia()) {
+            $referencia = ' / '.$produtoEn->getReferencia();
+        }
 
         if (strlen($descricaoProduto) >= 42) {
             $font_size = 36;
@@ -174,7 +177,7 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
 
-        if (isset($params['dataValidade'])) {
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->SetFont('Arial', 'B', 40);
@@ -199,7 +202,7 @@ class UMA extends Pdf
         $this->Cell(55,90,utf8_decode("Prod/Ref.:"),0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(105,90,$codigoProduto . " / " .  $referencia,0,1);
+        $this->Cell(105,90,$codigoProduto .$referencia,0,1);
 
     }
 
@@ -223,7 +226,7 @@ class UMA extends Pdf
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(30,35);
-        if (isset($params['dataValidade'])) {
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
@@ -305,7 +308,7 @@ class UMA extends Pdf
 
         $this->SetFont('Arial', 'B', 32);
 
-        if (isset($params['dataValidade'])) {
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
