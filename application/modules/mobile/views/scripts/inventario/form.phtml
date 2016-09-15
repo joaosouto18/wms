@@ -22,10 +22,10 @@
                 avaria = document.getElementById('qtdAvaria');
                 if (avaria) {
                     avaria.focus();
-                    if(event.preventDefault) {
-                        event.preventDefault();
+                    if(e.preventDefault) {
+                        e.preventDefault();
                     } else {
-                        event.returnValue = false;
+                        e.returnValue = false;
                     }
                 }
             }
@@ -37,21 +37,10 @@
                     validade   = document.getElementById('validade');
                     if (validade) {
                         validade.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
+                        if(e.preventDefault) {
+                            e.preventDefault();
                         } else {
-                            event.returnValue = false;
-                        }
-                    }
-                }
-                if (document.getElementById('endereco').value != "") {
-                    qtd        = document.getElementById('qtd');
-                    if (qtd) {
-                        qtd.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
+                            e.returnValue = false;
                         }
                     }
                 }

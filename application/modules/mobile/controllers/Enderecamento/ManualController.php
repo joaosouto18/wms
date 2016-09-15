@@ -237,7 +237,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
             $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
-            if (!isset($params['capacidadePicking']) || empty($params['capacidadePicking']))
+            if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
                 throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
 
             $novaCapacidadePicking = $params['capacidadePicking'];
