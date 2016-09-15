@@ -243,7 +243,7 @@ class Inventario
                 $validade = $validade->toString('Y-MM-dd');
 
             }
-        } else {
+        } elseif (!isset($params['validade']) || empty($params['validade'])) {
             $validade = null;
         }
 
