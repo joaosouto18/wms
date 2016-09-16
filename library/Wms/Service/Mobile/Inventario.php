@@ -218,9 +218,12 @@ class Inventario
         $contagemEndId          = $params['contagemEndId'];
         $numContagem            = $params['numContagem'];
 
+        $possuiValidade = $this->getEm()->getRepository('wms:Produto')->findOneBy(array('id'=> $params['idProduto'], 'grade' => $params['grade']))->getValidade();
+        $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
 
         $dataValida = true;
-        if (isset($params['validade'])) {
+        $validade = null;
+        if ($possuiValidade == 'S' && $controleValidade == 'S') {
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
             } else {
@@ -243,8 +246,6 @@ class Inventario
                 $validade = $validade->toString('Y-MM-dd');
 
             }
-        } else {
-            $validade = null;
         }
 
         $divergencia = null;

@@ -1228,10 +1228,11 @@ class Mobile_EnderecamentoController extends Action
         $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco));
         if (!empty($enderecoEn)) {
             $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
-            $this->_helper->json(array('status' => 'Ok', 'caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
-        } else {
-            $this->_helper->json(array('status' => 'Error', 'Msg' => 'Endereço não encontrado'));
+            if (!empty($embalagemEn)) {
+                $this->_helper->json(array('status' => 'Ok', 'caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
+            }
         }
+        $this->_helper->json(array('status' => 'Error', 'Msg' => 'Endereço não encontrado'));
     }
 }
 
