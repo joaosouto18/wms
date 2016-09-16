@@ -321,8 +321,8 @@ class Inventario
                 'codProdutoVolume'=>$idVolume,
                 'numContagem'=>$numContagem));
             if ($contagemEndEn != null) {
-                $contagemEndEn->setQtdContada($qtdConferida);
-                $contagemEndEn->setQtdAvaria($qtdAvaria);
+                $contagemEndEn->setQtdContada($contagemEndEn->getQtdContada() + $qtdConferida);
+                $contagemEndEn->setQtdAvaria($contagemEndEn->getQtdAvaria() + $qtdAvaria);
                 $contagemEndEn->setValidade($validade);
                 $this->_em->persist($contagemEndEn);
                 $contagemEndId = $contagemEndEn->getId();
