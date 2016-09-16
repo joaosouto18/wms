@@ -4,6 +4,12 @@ namespace Wms\Module\Mobile\Form;
 
 class InventarioQuantidade extends \Core\Form
 {
+    private $dataValidade;
+    public function __construct($dataValidade = false)
+    {
+        $this->dataValidade = $dataValidade;
+        parent::__construct();
+    }
 
     public function init()
     {
@@ -39,14 +45,14 @@ class InventarioQuantidade extends \Core\Form
                     'size' => 10,
                     'maxlength' => 15,
                     'class' => 'focus',
-                ))
-                ->addElement('text', 'validade', array(
+                ));
+                if ($this->dataValidade)
+                    $this->addElement('text', 'validade', array(
                     'label' => 'Validade',
                     'size' => 10,
                     'maxlength' => 8,
-                    'placeholder' => 'dd/mm/yy'
-                ))
-                ->addElement('text', 'qtdAvaria', array(
+                    'placeholder' => 'dd/mm/yy'));
+                $this->addElement('text', 'qtdAvaria', array(
                     'required' => true,
                     'label' => 'Qtd Avaria',
                     'size' => 10,
