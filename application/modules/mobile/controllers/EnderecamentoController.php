@@ -16,6 +16,9 @@ class Mobile_EnderecamentoController extends Action
         $form->init();
         $this->view->form = $form;
         $codigoBarrasEndereco = $this->_getParam('codigoBarras');
+        $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+
         if ($codigoBarrasEndereco) {
             $LeituraColetor = new \Wms\Service\Coletor();
             $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
@@ -29,9 +32,9 @@ class Mobile_EnderecamentoController extends Action
                 $this->_redirect('/mobile/enderecamento/leitura-picking');
             }
 
-            $nivelEndereco =  $Endereco[0]['NUM_NIVEL'];
+            $caracteristicaEndereco =  $Endereco[0]['COD_CARACTERISTICA_ENDERECO'];
 
-            if ($nivelEndereco > 0 )
+            if ($caracteristicaEndereco != $idCaracteristicaPicking && $caracteristicaEndereco != $idCaracteristicaPickingRotativo)
             {
                 $this->addFlashMessage('error','Código bipado não é um endereço de picking');
                 $this->_redirect('/mobile/enderecamento/leitura-picking');
