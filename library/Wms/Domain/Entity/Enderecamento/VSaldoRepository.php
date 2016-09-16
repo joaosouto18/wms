@@ -42,7 +42,7 @@ class VSaldoRepository extends EntityRepository
         if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
             $query->andWhere("e.idCaracteristica IN ($tipoPicking, $tipoPickingRotativo)");
         }
-		
+
 		$result = $query->getQuery()->getResult();
 		return $result;
     }
