@@ -124,7 +124,7 @@ class Mobile_InventarioController extends Action
 
         if (isset($codigoBarras) & $codigoBarras != "") {
 
-            $form = null;
+            $form =  new \Wms\Module\Mobile\Form\InventarioQuantidade();
 
             $coletorService = new \Wms\Service\Coletor();
             $codigoBarras = $coletorService->adequaCodigoBarras($codigoBarras);
@@ -164,14 +164,9 @@ class Mobile_InventarioController extends Action
                     $this->addFlashMessage('warning','Este produto não possuí o endereço ' . $endereço . " como picking");
                 }
 
-                //O construtor está esperando um booleano se tem ou não data de validade
-                $checkData = (isset($result['populateForm']['dataValidade']) and !empty($result['populateForm']['dataValidade']));
-                $form = new \Wms\Module\Mobile\Form\InventarioQuantidade($checkData);
-                
                 $form->populate($result['populateForm']);
             }
             
-            if (empty($form)) new \Wms\Module\Mobile\Form\InventarioQuantidade();
             $this->view->form = $form;
 
         } else {
