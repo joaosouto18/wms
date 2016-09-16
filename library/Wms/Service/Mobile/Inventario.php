@@ -218,10 +218,11 @@ class Inventario
         $contagemEndId          = $params['contagemEndId'];
         $numContagem            = $params['numContagem'];
 
+        $possuiValidade = $this->getEm()->getRepository('wms:Produto')->findOneBy(array('id'=> $params['idProduto'], 'grade' => $params['grade']))->getValidade();
 
         $dataValida = true;
         $validade = null;
-        if (isset($params['validade']) && !empty($params['validade'])) {
+        if ($possuiValidade == 'S') {
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
             } else {
