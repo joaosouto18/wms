@@ -1549,7 +1549,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	public function getProdutoByParametroVencimento($params)
 	{
-        $dtFrmt = date_format(new \DateTime($params['dataReferencia']),'Y-m-d');
+        $dtFrmt = date_format(date_create_from_format('d/m/Y',$params['dataReferencia']),'Y-m-d');
 		$where = " WHERE e3_.DTH_VALIDADE <= '$dtFrmt' ";
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
 			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";

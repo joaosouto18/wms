@@ -67,7 +67,7 @@ class VolumePatrimonio extends Grid
                 'condition' => function ($row) {
                         return $row['ocupado'] == "S";
                  },
-                'pkIndex' => array('id','expedicao'),
+                'pkIndex' => 'id',
             ));
         }
 

@@ -272,7 +272,7 @@ class Mobile_ExpedicaoController extends Action
             switch ($parametroEtiquetaVolume) {
                 case 1:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-                    $gerarEtiqueta->imprimirExpedicaoModelo1($fields);
+                    $gerarEtiqueta->imprimirExpedicaoModelo1($fields, false);
                     break;
                 case 2:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
