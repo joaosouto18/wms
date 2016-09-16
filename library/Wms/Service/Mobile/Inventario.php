@@ -219,10 +219,11 @@ class Inventario
         $numContagem            = $params['numContagem'];
 
         $possuiValidade = $this->getEm()->getRepository('wms:Produto')->findOneBy(array('id'=> $params['idProduto'], 'grade' => $params['grade']))->getValidade();
+        $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
 
         $dataValida = true;
         $validade = null;
-        if ($possuiValidade == 'S') {
+        if ($possuiValidade == 'S' && $controleValidade == 'S') {
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
             } else {
