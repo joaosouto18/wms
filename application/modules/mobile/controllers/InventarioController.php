@@ -130,7 +130,12 @@ class Mobile_InventarioController extends Action
             $codigoBarras = $coletorService->adequaCodigoBarras($codigoBarras);
             $params['codigoBarras'] = $codigoBarras;
             $this->view->parametroValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
-            $this->view->validadeProduto = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $codigoBarras))->getProduto()->getValidade();
+            $embalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $codigoBarras));
+            $validadeProduto = null;
+            if (isset($embalagemEn) && !empty($embalagemEn)) {
+                $validadeProduto = $embalagemEn->getProduto()->getValidade();
+            }
+            $this->view->validadeProduto = $validadeProduto;
 
             if ($codigoBarras == 0 && is_integer($codigoBarras)) {
                 $params = $this->_getAllParams();
