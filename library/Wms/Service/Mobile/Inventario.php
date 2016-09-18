@@ -207,16 +207,26 @@ class Inventario
 
     public function contagemEndereco($params)
     {
-        $qtdConferida           = $params['qtdConferida'];
-        $idContagemOs           = $params['idContagemOs'];
-        $qtdAvaria              = $params['qtdAvaria'];
-        $idInventarioEnd        = $params['idInventarioEnd'];
-        $idProduto              = $params['idProduto'];
-        $grade                  = $params['grade'];
-        $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
-        $codProdutoVolume       = $params['codProdutoVolume'];
-        $contagemEndId          = $params['contagemEndId'];
-        $numContagem            = $params['numContagem'];
+        if (isset($params['qtdConferida']))
+            $qtdConferida           = $params['qtdConferida'];
+        if (isset($params['idContagemOs']))
+            $idContagemOs           = $params['idContagemOs'];
+        if (isset($params['qtdAvaria']))
+            $qtdAvaria              = $params['qtdAvaria'];
+        if (isset($params['idInventarioEnd']))
+            $idInventarioEnd        = $params['idInventarioEnd'];
+        if (isset($params['idProduto']))
+            $idProduto              = $params['idProduto'];
+        if (isset($params['grade']))
+            $grade                  = $params['grade'];
+        if (isset($params['codProdutoEmbalagem']))
+            $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
+        if (isset($params['codProdutoVolume']))
+            $codProdutoVolume       = $params['codProdutoVolume'];
+        if (isset($params['contagemEndId']))
+            $contagemEndId          = $params['contagemEndId'];
+        if (isset($params['numContagem']))
+            $numContagem            = $params['numContagem'];
 
         $possuiValidade = $this->getEm()->getRepository('wms:Produto')->findOneBy(array('id'=> $params['idProduto'], 'grade' => $params['grade']))->getValidade();
         $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
