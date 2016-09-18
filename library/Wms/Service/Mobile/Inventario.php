@@ -207,28 +207,43 @@ class Inventario
 
     public function contagemEndereco($params)
     {
+        $qtdConferida = null;
         if (isset($params['qtdConferida']))
             $qtdConferida           = $params['qtdConferida'];
+        $idContagemOs = null;
         if (isset($params['idContagemOs']))
             $idContagemOs           = $params['idContagemOs'];
+        $qtdAvaria = null;
         if (isset($params['qtdAvaria']))
             $qtdAvaria              = $params['qtdAvaria'];
+        $idInventarioEnd = null;
         if (isset($params['idInventarioEnd']))
             $idInventarioEnd        = $params['idInventarioEnd'];
+        $idProduto = null;
         if (isset($params['idProduto']))
             $idProduto              = $params['idProduto'];
+        $grade = null;
         if (isset($params['grade']))
             $grade                  = $params['grade'];
+        $codProdutoEmbalagem = null;
         if (isset($params['codProdutoEmbalagem']))
             $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
+        $codProdutoVolume = null;
         if (isset($params['codProdutoVolume']))
             $codProdutoVolume       = $params['codProdutoVolume'];
+        $contagemEndId = null;
         if (isset($params['contagemEndId']))
             $contagemEndId          = $params['contagemEndId'];
+        $numContagem = null;
         if (isset($params['numContagem']))
             $numContagem            = $params['numContagem'];
 
-        $possuiValidade = $this->getEm()->getRepository('wms:Produto')->findOneBy(array('id'=> $params['idProduto'], 'grade' => $params['grade']))->getValidade();
+        $produtoEn = $this->getEm()->getRepository('wms:Produto')
+            ->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
+
+        if (isset($produtoEn) && !empty($produtoEn))
+            $possuiValidade = $produtoEn->getValidade();
+
         $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
 
         $dataValida = true;
