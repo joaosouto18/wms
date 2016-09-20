@@ -16,8 +16,16 @@ class Web_ErrorController extends \Wms\Module\Web\Controller\Action
     public function forbiddenAction()
     {
 	//TODO: fazer rotina para cadastrar tentativa de acesso
-	$this->view->message = 'Você não está autorizado a ver esta página.';
+
+	$message = "Você não está autorizado a ver esta página.";
+	$message .= "<br /> <br />";
+	$message .= "Module: " . $this->getRequest()->getParam('forbiddenModule') . "<br />";
+	$message .= "Controller: " . $this->getRequest()->getParam('forbiddenController') . "<br />";
+	$message .= "Action: " . $this->getRequest()->getParam('forbiddenAction') . "<br />";
+
+	$this->view->message = $message;
 	$this->render('message');
+
     }
 
     public function errorAction()

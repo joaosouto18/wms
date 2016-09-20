@@ -38,23 +38,25 @@ class EtiquetaEndereco extends Pdf
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
 
-            switch ($modelo) {
+            switch ((int)$modelo) {
                 case 1:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
-                    foreach ($produtos as $produto){
-                        $this->layoutModelo1($produto,$codBarras);
-                    }
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
+                    } else {
+                        foreach ($produtos as $produto){
+                            $this->layoutModelo1($produto,$codBarras);
+                        }
                     }
                     break;
                 case 2:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
-                    foreach ($produtos as $produto){
-                        $this->layoutModelo2($produto,$codBarras);
-                    }
                     if (count($produtos) <= 0){
                         $this->layoutModelo2(null,$codBarras);
+                    } else {
+                        foreach ($produtos as $produto){
+                            $this->layoutModelo2($produto,$codBarras);
+                        }
                     }
                     break;
                 case 3:
@@ -62,8 +64,8 @@ class EtiquetaEndereco extends Pdf
                     if ($enderecoEn != NULL) $this->layoutModelo3($enderecoEn);
                     break;
                 case 4:
+                    if($key > 0) $this->AddPage();
                     $this->layoutModelo4($codBarras);
-                    if(end($enderecos) != $endereco)$this->AddPage();
                     break;
                 case 5:
                     $this->layoutModelo5($codBarras);
@@ -158,7 +160,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         if($dscProduto == "") {
-            $this->Cell(148.5,14," Rua      Prédio     Nível    Apto.",0,1);
+            $this->Cell(148.5,14," Rua      Prï¿½dio     Nï¿½vel    Apto.",0,1);
         } else {
             $this->Cell(148.5,14,$dscProduto,0,1);
         }
@@ -339,7 +341,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         if($dscProduto == "") {
-            $this->Cell(148.5,14,"               Rua      Prédio     Nível    Apto.",0,1);
+            $this->Cell(148.5,14,"               Rua      Prï¿½dio     Nï¿½vel    Apto.",0,1);
         } else {
             $this->Cell(148.5,14,'     '.$dscProduto,0,1);
         }

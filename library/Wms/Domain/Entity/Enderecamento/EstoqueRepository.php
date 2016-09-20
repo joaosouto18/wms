@@ -301,24 +301,24 @@ class EstoqueRepository extends EntityRepository
                        E.UMA,
                        E.UNITIZADOR,
                        E.DTH_VALIDADE
-                  FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),E.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
-                               NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),E.COD_PRODUTO) as COD_PRODUTO,
-                               NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),E.DSC_GRADE) as DSC_GRADE,
-                               CASE WHEN (E.VOLUME = '0' OR RE.VOLUME = '0' OR RS.VOLUME = '0') THEN 'PRODUTO UNITÁRIO'
+                  FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),ESTQ.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
+                               NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),ESTQ.COD_PRODUTO) as COD_PRODUTO,
+                               NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),ESTQ.DSC_GRADE) as DSC_GRADE,
+                               CASE WHEN (ESTQ.VOLUME = '0' OR RE.VOLUME = '0' OR RS.VOLUME = '0') THEN 'PRODUTO UNITÁRIO'
                                     ELSE PV.DSC_VOLUME
                                END as VOLUME,
-                               NVL(NVL(RS.VOLUME, RE.VOLUME),E.VOLUME) as COD_VOLUME,
+                               NVL(NVL(RS.VOLUME, RE.VOLUME),ESTQ.VOLUME) as COD_VOLUME,
                                NVL(RE.QTD_RESERVADA,0) as RESERVA_ENTRADA,
                                NVL(RS.QTD_RESERVADA,0) as RESERVA_SAIDA,
-                               NVL(E.QTD,0) as QTD,
+                               NVL(ESTQ.QTD,0) as QTD,
                                NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
-                               E.DTH_PRIMEIRA_MOVIMENTACAO,
-                               E.UMA,
+                               ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
+                               ESTQ.UMA,
                                UN.DSC_UNITIZADOR AS UNITIZADOR,
-                               E.DTH_VALIDADE
-                          FROM (SELECT E.DTH_PRIMEIRA_MOVIMENTACAO, E.QTD, E.UMA, E.COD_UNITIZADOR, DTH_VALIDADE,
-                                       E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE E) E
-                          LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = E.COD_UNITIZADOR
+                               ESTQ.DTH_VALIDADE
+                          FROM (SELECT DTH_PRIMEIRA_MOVIMENTACAO, QTD, UMA, COD_UNITIZADOR, DTH_VALIDADE,
+                                       COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE) ESTQ
+                          LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = ESTQ.COD_UNITIZADOR
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
                                              FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                                      FROM RESERVA_ESTOQUE RE
@@ -326,10 +326,10 @@ class EstoqueRepository extends EntityRepository
                                                     WHERE IND_ATENDIDA = 'N'
                                                       AND TIPO_RESERVA = 'E') R
                                             GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME) RE
-                                  ON E.COD_PRODUTO = RE.COD_PRODUTO
-                                 AND E.DSC_GRADE = RE.DSC_GRADE
-                                 AND E.VOLUME = RE.VOLUME
-                                 AND E.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+                                  ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
+                                 AND ESTQ.DSC_GRADE = RE.DSC_GRADE
+                                 AND ESTQ.VOLUME = RE.VOLUME
+                                 AND ESTQ.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
                                              FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                                      FROM RESERVA_ESTOQUE RE
@@ -337,11 +337,11 @@ class EstoqueRepository extends EntityRepository
                                                     WHERE IND_ATENDIDA = 'N'
                                                       AND TIPO_RESERVA = 'S') R
                                             GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME) RS
-                                  ON E.COD_PRODUTO = RS.COD_PRODUTO
-                                 AND E.DSC_GRADE = RS.DSC_GRADE
-                                 AND E.VOLUME = RS.VOLUME
-                                 AND E.COD_DEPOSITO_ENDERECO = RS.COD_DEPOSITO_ENDERECO
-                          LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = E.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RE.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RS.VOLUME)) E
+                                  ON ESTQ.COD_PRODUTO = RS.COD_PRODUTO
+                                 AND ESTQ.DSC_GRADE = RS.DSC_GRADE
+                                 AND ESTQ.VOLUME = RS.VOLUME
+                                 AND ESTQ.COD_DEPOSITO_ENDERECO = RS.COD_DEPOSITO_ENDERECO
+                          LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = ESTQ.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RE.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RS.VOLUME)) E
                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   LEFT JOIN CARACTERISTICA_ENDERECO C ON C.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE";
