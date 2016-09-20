@@ -198,16 +198,13 @@ class RecebimentoRepository extends EntityRepository
 
     public function conferenciaColetor($idRecebimento, $idOrdemServico)
     {
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
 
         // buscar todos os itens das nfs do recebimento
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
 
-//        if (count($itens) == 0)
-//            return array('message' => null,
-//                'exception' => new \Exception('Nenhum item encontrado para o recebimento'),
-//                'concluido' => false);
 
         foreach ($itens as $item) {
             // checando qtdes nf
@@ -317,8 +314,6 @@ class RecebimentoRepository extends EntityRepository
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
                 $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto, 'grade'=>$grade));
-//                $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
-//                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $idProduto, 'grade' => $grade));
 
                 $params['COD_PRODUTO'] = $idProduto;
                 $params['DSC_GRADE'] = $grade;
@@ -373,6 +368,7 @@ class RecebimentoRepository extends EntityRepository
                     } else {
                         $dataValidade['dataValidade'] = null;
                     }
+
                     if ($gravaRecebimentoVolumeEmbalagem == true) {
                         $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
                     }
@@ -521,10 +517,16 @@ class RecebimentoRepository extends EntityRepository
 
                 /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
                 $paletes = $em->getRepository("wms:Enderecamento\Palete")->findBy(array('recebimento' => $recebimentoEntity->getId(), 'codStatus' => PaleteEntity::STATUS_ENDERECADO));
+                /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+                $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
+
                 foreach ($paletes as $key => $palete) {
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
-                    $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId());
+                    //checando Validade
+                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $palete->getProdutosArray()[0]['codProduto'], $palete->getProdutosArray()[0]['grade']);
+
+                    $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                     $em->flush();
                 }
                 $em->flush();
