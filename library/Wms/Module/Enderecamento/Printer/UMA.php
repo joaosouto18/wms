@@ -267,7 +267,7 @@ class UMA extends Pdf
         $this->Cell(25,30,"Qtd",0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(25,30,$palete['qtd'],0,1);
+        $this->Cell(25,30,$palete['qtd']/$palete['qtdEmbalagem'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(15,110);
