@@ -21,6 +21,10 @@ class Validade extends Grid
                 'index' => 'PRODUTO',
             ))
             ->addColumn(array(
+                'label' => 'Linha de separação',
+                'index' => 'LINHASEPARACAO',
+            ))
+            ->addColumn(array(
                 'label' => 'Fornecedor',
                 'index' => 'FORNECEDOR',
             ))
@@ -36,12 +40,6 @@ class Validade extends Grid
                 'label' => 'Qtd',
                 'index' => 'QTD',
             ))
-//            ->addAction(array(
-//                'label' => 'exportar para pdf',
-//                'actionName' => 'export-pdf',
-//                'cssClass' => 'inside-modal',
-//                'pkIndex' => 'codProduto'
-//            ))
         ;
 
         return $this;

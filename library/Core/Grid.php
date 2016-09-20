@@ -145,6 +145,17 @@ class Grid
     protected $hiddenId;
 
     /**
+     * @var string
+     * Valor condicional a ser comparado ao gerar cada linha
+     */
+    protected $conditionalValue;
+
+    /**
+     * @var string
+     */
+    protected $conditionalKey;
+
+    /**
      * Constructor of the class
      * @param Core\Grid\Source\ISource $source
      * @param array $options 

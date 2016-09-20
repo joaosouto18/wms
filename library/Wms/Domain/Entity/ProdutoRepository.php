@@ -1554,6 +1554,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
 			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";
 		}
+		if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
+			$where .= "AND p0_.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
+		}
 		if (isset($params['descricao']) && !empty($params['descricao'])) {
 			$where .= "AND LOWER(p0_.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
 		}
@@ -1565,6 +1568,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
   					p0_.COD_PRODUTO AS codProduto, 
   					p0_.DSC_GRADE AS grade, 
 				  	p0_.DSC_PRODUTO AS produto, 
+				  	NVL(l8_.DSC_LINHA_SEPARACAO,'PADRAO') AS linhaSeparacao, 
 				  	p1_.NOM_PESSOA AS fornecedor, 
 				  	d2_.DSC_DEPOSITO_ENDERECO AS endereco, 
 				  	TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY') AS validade,
@@ -1576,11 +1580,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				  INNER JOIN FORNECEDOR f7_ ON (f7_.COD_FORNECEDOR = n5_.COD_FORNECEDOR) 
 				  INNER JOIN PESSOA p1_ 
 				  LEFT JOIN PESSOA_JURIDICA p9_ ON p1_.COD_PESSOA = p9_.COD_PESSOA ON (p1_.COD_PESSOA = f7_.COD_FORNECEDOR) 
+				  LEFT JOIN LINHA_SEPARACAO l8_ ON (l8_.COD_LINHA_SEPARACAO = p0_.COD_LINHA_SEPARACAO)
 				  INNER JOIN PALETE p10_ ON (p10_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
 				  INNER JOIN ESTOQUE e3_ ON (e3_.UMA = p10_.UMA) 
 				  INNER JOIN DEPOSITO_ENDERECO d2_ ON (d2_.COD_DEPOSITO_ENDERECO = e3_.COD_DEPOSITO_ENDERECO)
 				  $where
-				  GROUP BY p0_.COD_PRODUTO, p0_.DSC_GRADE, p0_.DSC_PRODUTO, p1_.NOM_PESSOA, d2_.DSC_DEPOSITO_ENDERECO, TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY')";
+				  GROUP BY p0_.COD_PRODUTO, p0_.DSC_GRADE, p0_.DSC_PRODUTO, l8_.DSC_LINHA_SEPARACAO, p1_.NOM_PESSOA, d2_.DSC_DEPOSITO_ENDERECO, TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY')
+				  ORDER BY VALIDADE";
 
 		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
