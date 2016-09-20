@@ -75,6 +75,10 @@ class Auth extends \Zend_Controller_Plugin_Abstract {
                 $action = $this->forbiddenRoute['action'];
                 $module = $this->forbiddenRoute['module'];
                 $module = $this->notLoggedRoute['module'];
+
+                $request->setParam('forbiddenModule',$request->getModuleName());
+                $request->setParam('forbiddenController',$request->getControllerName());
+                $request->setParam('forbiddenAction',$request->getActionName());
             }
             
         } catch (\Zend_Acl_Role_Registry_Exception $e) {

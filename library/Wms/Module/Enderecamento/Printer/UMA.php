@@ -122,6 +122,8 @@ class UMA extends Pdf
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 2) {
                 $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking,$params);
+            } else if ($modelo == 4) {
+                $this->layout04($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else {
                 $this->layout03($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             }
@@ -346,5 +348,42 @@ class UMA extends Pdf
         }
         return $enderecoPicking;
     }
+
+    public function layout04($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
+        $this->AddPage();
+
+        $descricaoProduto = $produtoEn->getId().'-'.$produtoEn->getDescricao();
+
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 56;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 66;
+        }
+
+        $this->SetFont('Arial', 'B', $font_size);
+
+        $this->MultiCell($line_width, 20, $descricaoProduto, 0, 'C');
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(35,40,"",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(165,40,$produtoEn->getGrade(),0,0);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(25,40,"Qtd",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(75,40,$palete['qtd'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+
+        $this->Cell(150,20,utf8_decode("Picking $enderecoPicking"),0,0);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(1,20,utf8_decode("Endereço 01.001.00.01"),0,1);
+
+    }
+
 
 }
