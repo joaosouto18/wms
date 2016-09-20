@@ -39,6 +39,9 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 
             $preco = $this->getPrecoView($codProduto);
             $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'codProduto' => $codProduto));
+
+            $os = $this->getOs($codOS);
+            $codOS = $os['codOS'];
             $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
             $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
@@ -46,10 +49,10 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setProduto($produtoEn);
             $contagem->setCodProduto($codProduto);
             $contagem->setQtd($qtd);
-            $os = $this->getOs($codOS);
             $contagem->setOs($os['osEntity']);
             $this->em->persist($contagem);
             $this->em->flush();
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
             $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
         }
@@ -79,11 +82,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $codProduto = $result[0]['codProduto'];
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
             $preco = $this->getPrecoView($codProduto);
+
+            $os = $this->getOs($codOS);
+            $codOS = $os['codOS'];
             $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
             $enderecoEn = $enderecoRepo->find($idEndereco);
-            $os = $this->getOs($codOS);
-            $codOS = $os['osEntity']->getId();
             $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
             $contagem->setProduto($produtoEn);
             $contagem->setCodProduto($codProduto);
@@ -119,7 +123,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         }
         return array(
             'osEntity' => $osEntity,
-            'codOs' => $codOS
+            'codOS' => $codOS
         );
     }
 
