@@ -92,9 +92,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setQtd($qtd);
             $this->em->persist($contagem);
             $this->em->flush();
-            if (!empty($preco)) {
-                $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
-            }
+            $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
             $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
         }
@@ -137,9 +135,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $reabastEnt->setQtd($qtd + $reabastEnt->getQtd());
             $this->em->persist($reabastEnt);
             $this->em->flush();
-            if (!empty($preco)) {
-                $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
-            }
+            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
             $codProduto = $reabastEnt->getCodProduto();
             $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
