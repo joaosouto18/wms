@@ -75,11 +75,11 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             }
 
             $reabastEnt = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $idEndereco));
-            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS);
 
             $codProduto = $result[0]['codProduto'];
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
             $preco = $this->getPrecoView($codProduto);
+            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
             $enderecoEn = $enderecoRepo->find($idEndereco);
             $os = $this->getOs($codOS);
