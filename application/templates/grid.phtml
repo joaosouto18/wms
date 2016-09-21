@@ -15,16 +15,26 @@ $attribs = $grid->getAttribs();
                 select.focus();
                 return false;
             }
-            
-            $('#formGrid')
-                .attr('action', '?')
+
+            var formGrid = $('#formGrid');
+
+            var forms = $("form");
+            forms.splice( $.inArray(formGrid, forms),1 );
+
+            var params = "";
+            forms.each(function () {
+                params += $.param($(this).serializeArray());
+            });
+
+            formGrid
+                .attr('action', '?' + params)
                 .attr('target', '_blank')
                 .submit();
 
             select.val('');
             
             return false;
-        })
+        });
         
         // button apply filter
         $('#btnAddFilter').click(function() {

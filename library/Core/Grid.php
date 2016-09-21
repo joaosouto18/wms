@@ -1286,7 +1286,7 @@ class Grid
         if (isset($params['grid']['export']) && !empty($params['grid']['export'])) {
 
             $title = $this->getAttrib('title');
-            if (isset($title) || (!is_null($title)) | (!empty($title))) {
+            if (empty($title)) {
                 $title = 'Grid';
             }
             switch ($params['grid']['export']) {
