@@ -54,7 +54,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $this->em->flush();
             $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
             $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
-            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
+            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
         $codigoBarrasEndereco = $coletorService->retiraDigitoIdentificador($codigoBarras);
@@ -98,7 +98,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $this->em->flush();
             $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
             $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
-            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
+            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
     }
@@ -156,7 +156,8 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $this->addFlashMessage('success', 'Ordem de serviço: '.$codOS.' finalizada');
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/');
         }
-
+        $this->addFlashMessage('error', 'Não foi identicada a OS');
+        $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/');
     }
 
     /**

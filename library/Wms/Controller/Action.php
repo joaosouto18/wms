@@ -15,8 +15,8 @@ class Action extends \Core\Controller\Action
 
     /**
      * Adds a flash message to the messages stack
-     * @param type $type error, success, warning
-     * @param type $message
+     * @param string $type error, success, warning
+     * @param string $message
      */
     public function addFlashMessage($type, $message)
     {
