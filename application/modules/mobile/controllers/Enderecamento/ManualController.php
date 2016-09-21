@@ -333,10 +333,20 @@ class Mobile_Enderecamento_ManualController extends Action
             throw new \Exception('Recebimento não encontrado');
         }
 
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+        $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+        $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
+
+        if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
+            $dataValidade = $getDataValidadeUltimoProduto['dataValidade'];
+        } else {
+            $dataValidade = null;
+        }
+
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
 
-        $paleteEn = $paleteRepo->salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes, $idNorma, $qtd,null,'M');
+        $paleteEn = $paleteRepo->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtd, $dataValidade, 'M');
 
         $idPalete = $paleteEn->getId();
         $this->_em->flush();
