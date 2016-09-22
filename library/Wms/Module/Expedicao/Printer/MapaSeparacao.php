@@ -305,7 +305,7 @@ class MapaSeparacao extends Pdf
         }
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity    = $expedicaoRepo->find($idExpedicao);
-        if ($ExpedicaoEntity->getCodStatus() == EXPEDICAO::STATUS_INTEGRADO) {
+        if ($ExpedicaoEntity->getCodStatus() == Expedicao::STATUS_INTEGRADO) {
             $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
             $ExpedicaoEntity->setStatus($statusEntity);
             $em->persist($ExpedicaoEntity);

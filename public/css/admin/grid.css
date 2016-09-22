@@ -76,7 +76,7 @@ div.gFilter {
     font-weight: bold;
 }
 .gTable tr.gRowFeatured {
-    background: darkturquoise;
+    background: #fcc29e;
 }
 .gTable td {
     border-left: 1px solid #EDFFF9;

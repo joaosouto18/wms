@@ -14,15 +14,15 @@ class Validade extends Grid
         $this->setShowExport(false);
         $this->addColumn(array(
                 'label' => 'Cód. Produto',
-                'index' => 'CODPRODUTO'
+                'index' => 'COD_PRODUTO'
             ))
             ->addColumn(array(
                 'label' => 'Descrição',
-                'index' => 'PRODUTO',
+                'index' => 'DESCRICAO',
             ))
             ->addColumn(array(
                 'label' => 'Linha de separação',
-                'index' => 'LINHASEPARACAO',
+                'index' => 'LINHA_SEPARACAO',
             ))
             ->addColumn(array(
                 'label' => 'Fornecedor',

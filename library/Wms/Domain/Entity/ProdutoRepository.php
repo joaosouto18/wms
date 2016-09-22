@@ -1565,10 +1565,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		}
 
 		$query = "SELECT 
-  					p0_.COD_PRODUTO AS codProduto, 
+  					p0_.COD_PRODUTO AS cod_produto, 
   					p0_.DSC_GRADE AS grade, 
-				  	p0_.DSC_PRODUTO AS produto, 
-				  	NVL(l8_.DSC_LINHA_SEPARACAO,'PADRAO') AS linhaSeparacao, 
+				  	p0_.DSC_PRODUTO AS descricao, 
+				  	NVL(l8_.DSC_LINHA_SEPARACAO,'PADRAO') AS linha_separacao, 
 				  	p1_.NOM_PESSOA AS fornecedor, 
 				  	d2_.DSC_DEPOSITO_ENDERECO AS endereco, 
 				  	TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY') AS validade,

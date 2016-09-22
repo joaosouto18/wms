@@ -1212,6 +1212,34 @@ class Pdf
      *                                                                              *
      * ***************************************************************************** */
 
+    public function GetPageWidth()
+    {
+        return $this->w;
+    }
+
+    public function GetPageHeight()
+    {
+        return $this->h;
+    }
+
+    public function setStringByMaxWidth($string, $w)
+    {
+        $strW = self::GetStringWidth($string);
+        if ($strW > $w){
+            $newStr = "";
+            $endStr = "...";
+            foreach (str_split($string) as $kw){
+                if (self::GetStringWidth($newStr.$kw.$endStr) < ($w - 0.88265)){
+                    $newStr .= $kw;
+                } else {
+                    $newStr .= $endStr;
+                    return $newStr;
+                }
+            }
+        }
+        return $string;
+    }
+
     public function _dochecks()
     {
         // Check availability of %F

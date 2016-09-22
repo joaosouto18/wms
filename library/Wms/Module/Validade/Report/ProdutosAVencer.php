@@ -2,273 +2,108 @@
 
 namespace Wms\Module\Validade\Report;
 
-use Core\Pdf,
-    Wms\Domain\Entity\Expedicao\VRelProdutosRepository;
+use Core\Pdf;
 
 class ProdutosAVencer extends Pdf
 {
-    protected $idExpedicao;
-    protected $placaExpedicao;
-    protected $dataInicio;
-    protected $cargas;
-    protected $title;
-
-    /** @var \Doctrine\ORM\EntityManager $em */
-    protected $_em;
-
-    public function Header()
+    private $pageW = 210;
+    private $marginLeft = 7;
+    private $prodListY = 20;
+    private $lineH = 7;
+    private $body;
+    
+    private function startPage($dataReferencia)
     {
-        $this->SetFont('Arial','B',10);
-        $this->Cell(20, 10, utf8_decode($this->title . $this->idExpedicao . " PLACA:" . $this->placaExpedicao. " DATA:". $this->dataInicio . $this->cargas), 0, 1);
+        $this->SetMargins($this->marginLeft,5);
+        $this->AddPage();
+        $this->SetFont('Arial', 'B', 15);
+        $this->Cell($this->body, 10, utf8_decode("Produtos vencidos ou à vencer até $dataReferencia"),0,0,"C");
+    }
+
+    private function addProdutoRow($produto, $i)
+    { 
+        $lineH = $this->lineH;
+
+        // LINHA 1
+
+        $this->SetFont('Arial', 'B', 10);
+        $this->SetY($this->prodListY + ($i * (5 + (3 * $lineH))));
+        $this->SetFillColor(170);
+        $this->Cell(40, $lineH, utf8_decode("Produto: $produto[COD_PRODUTO]") ,1 ,0 ,'' , true);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(220);
+        $cellWidth = 126;
+        $str = self::setStringByMaxWidth(utf8_decode("Descrição: $produto[DESCRICAO]"),$cellWidth);
+        $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(190);
+        $this->Cell(30, $lineH, utf8_decode("Grade: $produto[GRADE]") ,1 ,1 ,'' , true);
+
+        // LINHA 2
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(220);
+        $cellWidth = 106;
+        $str = self::setStringByMaxWidth(utf8_decode("Linha de separação: $produto[LINHA_SEPARACAO]"), $cellWidth);
+        $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(220);
+        $this->Cell(40, $lineH, utf8_decode("Endereço: $produto[ENDERECO]") ,1 ,0 ,'C' , true);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(220);
+        $this->Cell(50, $lineH, utf8_decode("Data de validade: $produto[VALIDADE]") ,1 ,1 ,'C' , true);
+
+        //LINHA 3
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(220);
+        $cellWidth = 120;
+        $str = self::setStringByMaxWidth(utf8_decode("Fornecedor: $produto[FORNECEDOR]"), $cellWidth);
+        $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(220);
+        $this->Cell(40, $lineH, utf8_decode("Qtd em estoque: $produto[QTD]") ,1 ,0 ,'' , true);
+
+        $this->SetFont('Arial', 'B', 9);
+        $this->SetFillColor(175);
+        $status = ($produto['VALIDADE'] <= date('d/m/Y'))? "VENCIDO" : "À VENCER";
+        $this->Cell(36, $lineH, utf8_decode("STATUS: $status") ,1 ,0 ,'C' , true);
     }
 
     public function Footer()
     {
-        // font
-        $this->SetFont('Arial','B',7);
 
-        //Go to 1.5 cm from bottom
+        $this->SetFont('Arial','',9);
         $this->SetY(-20);
-
-        $this->Cell(270, 10, utf8_decode("Relatório gerado em ".date('d/m/Y')." às ".date('H:i:s')), 0, 0, "L");
-        // font
-        $this->SetFont('Arial','',8);
-        $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
+        $this->Cell(176, 15, utf8_decode("Relatório gerado em ".date('d/m/Y')." às ".date('H:i:s')), 0, 0, "L");
+        $this->Cell(20, 15, utf8_decode('Página ').$this->PageNo(), 0, 1, 'R');
     }
 
-    public function setHeader ($idExpedicao, $cargas) {
-        $this->_em = \Zend_Registry::get('doctrine')->getEntityManager();
-
-        if (strrpos($idExpedicao,",") == false) {
-            $repoExpedicao = $this->_em->getRepository("wms:Expedicao");
-
-            /** @var \Wms\Domain\Entity\Expedicao $enExpedicao */
-            $enExpedicao = $repoExpedicao->find($idExpedicao);
-            $this->idExpedicao = $enExpedicao->getId();
-            $this->placaExpedicao = $enExpedicao->getPlacaExpedicao();
-            $this->dataInicio = $enExpedicao->getDataInicio()->format("d/m/Y");
-        } else{
-            $this->idExpedicao = $idExpedicao;
-            $this->placaExpedicao = "";
-            $this->dataInicio = "";
-        }
-
-
-        if (is_null($cargas)) {
-            $this->cargas = null;
-        } else {
-            $this->cargas = " CARGAS: " . implode(',', $cargas);
-        }
-    }
-
-    public function imprimirSemDados ($idExpedicao, $produtos, $central, $cargas = null, $modelo = 1)
-    {
-        $this->title = 'RELATÓRIO DE PRODUTOS SEM ETIQUETAS DA EXPEDIÇÃO ';
-        $this->setHeader($idExpedicao, $cargas);
-        $this->layout($modelo);
-        $this->formataProduto($produtos,$modelo);
-        $this->Output('Produtos-SemEtiquetas-Exp-'.$idExpedicao.'-'.$central.'.pdf','D');
-    }
-
-    public function layout($modelo)
+    public function generatePDF($produtos, $dataReferencia)
     {
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        $this->SetMargins(7, 5, 0);
-        $this->SetFont('Arial', 'B', 8);
-        $this->AddPage();
+        $this->body = $this->pageW - (2 * $this->marginLeft);
 
-        switch($modelo){
-            case 2:
-                $this->Cell(20, 5, "Produto", 1);
-                $this->Cell(87, 5, utf8_decode("Descrição"), 1);
-                $this->Cell(30, 5, "Mapa", 1);
-                $this->Cell(5, 5, "X", 1);
-                $this->Cell(12, 5, "Quant.", 1);
-                $this->Cell(23, 5, "Fabricante", 1);
-                $this->Cell(15, 5, "Peso", 1);
-                $this->Cell(28, 5, "Larg x Alt x Comp", 1);
-                $this->Cell(65, 5, utf8_decode("Descrição/Anotação"), 1);
-                $this->Ln();
-                break;
-            default:
-                $this->Cell(20, 5, "Produto", 1);
-                $this->Cell(75, 5, utf8_decode("Descrição"), 1);
-                $this->Cell(22, 5, "Mapa", 1);
-                $this->Cell(20, 5, "Grade", 1);
-                $this->Cell(5, 5, "X", 1);
-                $this->Cell(12, 5, "Quant.", 1);
-                $this->Cell(23, 5, "Fabricante", 1);
-                $this->Cell(15, 5, "Peso", 1);
-                $this->Cell(28, 5, "Larg x Alt x Comp", 1);
-                $this->Cell(65, 5, utf8_decode("Descrição/Anotação"), 1);
-                $this->Ln();
-                break;
-        }
-    }
+        self::startPage($dataReferencia);
+        $i = 0;
 
-
-
-    /**
-     * @param $idExpedicao
-     * @param $central
-     */
-    public function imprimir($idExpedicao, $central, $cargas, $linhaSeparacao = Null, $modelo)
-    {
-        $this->title = 'RELATÓRIO DE PRODUTOS DA EXPEDIÇÃO ';
-        $this->setHeader($idExpedicao, $cargas);
-
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpRepo */
-        $ExpRepo   = $this->_em->getRepository('wms:Expedicao');
-        $produtos = $ExpRepo->getProdutos($idExpedicao, $central, $cargas, $linhaSeparacao);
-
-        $this->layout($modelo);
-        $this->formataProduto($produtos,$modelo);
-
-        $this->Output('Produtos-Expedicao.pdf','D');
-    }
-
-
-    public function getQuantidade($produtos) {
-        $gradeAnterior = null;
-        $prodAnterior = null;
-        $embalagemAnterior = null;
-        $arrayCargas = array();
-        $arrayQtd = array();
-        $mapaAnterior = null;
-
-        $qtdgradeAnterior = null;
-        $qtdprodAnterior = null;
-        $qtdArrayProduto = null;
-        $addQuantidade = null;
-        $qtdEmbalagemAnterior = null;
-        $qtdIndPadrao = null;
-
-        foreach ($produtos as $key => $produtoEn) {
-            $produto = $produtoEn[0];
-            $carga = 'Carga: ' . $produto->getCodCargaExterno() . ' / ' . $produto->getDscLinhaEntrega() . ' - ' . $produto->getDscItinerario() . ' - ' . $produto->getCodItinerario();
-
-            if (($prodAnterior != $produto->getCodProduto()) OR ($gradeAnterior != $produto->getGrade())) {
-                $arrayCargas = array();
-                $arrayQtd = array();
-                if (!isset($qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()])) {
-                    $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()] = null;
-                }
+        foreach($produtos as $produto){
+            if ($i > 9) {
+                self::startPage($dataReferencia);
+                $i = 0;
             }
-
-            if (!in_array($carga, $arrayCargas)) {
-                $arrayCargas[] = $carga;
-                $arrayQtd[] = $produto->getQuantidade();
-            }
-
-            if (($produtoEn == end($produtos)) || ($produtos[$key + 1][0]->getCodProduto() != $produto->getCodProduto()) || ($produtos[$key + 1][0]->getGrade() != $produto->getGrade())  ) {
-                foreach ($arrayCargas as $keyCarga => $tmpCarga) {
-                    $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()] = $arrayQtd[$keyCarga] + $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()];
-                }
-            };
-
-            $prodAnterior = $produto->getCodProduto();
-            $gradeAnterior = $produto->getGrade();
+            self::addProdutoRow($produto, $i);
+            $i++;
         }
 
-        return $qtdArrayProduto;
-
-    }
-
-    /**
-     * @param $produtos
-     */
-    public function formataProduto($produtos, $modelo)
-    {
-        $gradeAnterior = null;
-        $prodAnterior = null;
-        $embalagemAnterior = null;
-        $reentregaAnterior = null;
-        $arrayCargas = array();
-        $arrayQtd = array();
-        $seqQuebra = null;
-
-        $qtdArrayProduto = $this->getQuantidade($produtos);
-
-        unset($produto);
-
-        foreach ($produtos as $key => $produtoArr) {
-            $produto = $produtoArr[0];
-            if (is_numeric($produto->getCodItinerario())) {
-                $codItinerario = "";
-            } else {
-                $codItinerario = " - " . $produto->getCodItinerario();
-            }
-
-            $carga = 'Carga: ' . $produto->getCodCargaExterno() . ' / ' . $produto->getDscLinhaEntrega() . ' - ' . $produto->getDscItinerario() . $codItinerario;
-            $indPadrao = $produto->getIndPadrao();
-
-            if (isset($seqQuebra) AND $seqQuebra <> $produto->getSeqQuebra()) {
-                $this->AddPage();
-            }
-
-            if (($prodAnterior != $produto->getCodProduto()) OR ($gradeAnterior != $produto->getGrade())) {
-                $embalagemAnterior = null;
-                $arrayCargas = array();
-                $arrayQtd = array();
-
-                switch($modelo) {
-                    case 2:
-                        $this->Cell(20, 5, $produto->getCodProduto(), 1);
-                        $this->Cell(87, 5, utf8_decode(substr($produto->getDescricao(), 0, 40)), 1);
-                        $this->Cell(30, 5, utf8_decode($produto->getLinhaSeparacao()), 1);
-                        $this->Cell(5, 5, " ", 1);
-                        $this->Cell(12, 5, $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()], 1);
-                        $this->Cell(23, 5, utf8_decode($produto->getFabricante()), 1);
-                        $this->Cell(108, 5, "", 1);
-                        $this->Ln();
-                        break;
-                    default:
-                        $this->Cell(20, 5, $produto->getCodProduto(), 1);
-                        $this->Cell(75, 5, utf8_decode(substr($produto->getDescricao(), 0, 40)), 1);
-                        $this->Cell(22, 5, utf8_decode($produto->getLinhaSeparacao()), 1);
-                        $this->Cell(20, 5, utf8_decode($produto->getGrade()), 1);
-                        $this->Cell(5, 5, " ", 1);
-                        $this->Cell(12, 5, $qtdArrayProduto[$produto->getCodProduto()][$produto->getGrade()], 1);
-                        $this->Cell(23, 5, utf8_decode($produto->getFabricante()), 1);
-                        $this->Cell(108, 5, "", 1);
-                        $this->Ln();
-                        break;
-                }
-            }
-
-            if (!in_array($carga, $arrayCargas)) {
-                $arrayCargas[] = $carga;
-                $arrayQtd[] = $produto->getQuantidade();
-            }
-
-            if ($indPadrao == 'S' || (!$embalagemAnterior && $indPadrao == 'N')) {
-                if ($embalagemAnterior != $produto->getVolume()) {
-
-                    $this->Cell(172, 5, "", 0);
-                    $this->Cell(15, 5, $produto->getPeso(), "TB");
-                    $this->Cell(28, 5, $produto->getLargura() . " x " . $produto->getAltura() . " x " . $produto->getProfundidade(), "TB");
-                    $this->Cell(65, 5, $produto->getVolume(), "TB");
-                    $this->Ln();
-                }
-                $embalagemAnterior = $produto->getVolume();
-            }
-
-            if (($produtoArr == end($produtos)) || !(($produtos[$key + 1][0]->getCodProduto() == $produto->getCodProduto()) && ($produtos[$key + 1][0]->getGrade() == $produto->getGrade()))  ) {
-                foreach ($arrayCargas as $keyCarga => $tmpCarga) {
-                    $this->Cell(132, 5, "", 0);
-                    $this->Cell(128, 5, $tmpCarga, "TB");
-                    $this->Cell(20, 5, 'Qntde: ' . $arrayQtd[$keyCarga], "TB");
-                    $this->Ln();
-                }
-            };
-
-            $prodAnterior = $produto->getCodProduto();
-//            $reentregaAnterior = $produto['codReentrega'];
-            $gradeAnterior = $produto->getGrade();
-            $seqQuebra = $produto->getSeqQuebra();
-        }
+        self::Output('Produtos vencidos ou à vencer até '.$dataReferencia.'.pdf','D');
     }
 
 }

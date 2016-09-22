@@ -23,8 +23,8 @@ class Validade_ConsultaController extends Action
         $this->view->grid = $grid->init($result);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
-            $dataFormatada = str_replace('/','-',$params['dataReferencia']);
-            $this->exportPDF($result,'Produtos vencidos ou à vencer '.$dataFormatada.'.pdf', 'Produtos vencidos ou a vencer até '.$params['dataReferencia'] , 'L');
+            $pdfReport = new \Wms\Module\Validade\Report\ProdutosAVencer();
+            $pdfReport->generatePDF($result, $params['dataReferencia']);
         }
     }
 }
