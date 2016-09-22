@@ -66,11 +66,17 @@ div.gFilter {
     width: 100%;
     margin-bottom: 5px;
 }
-.gTable tr.gRowColor td {
+.gTable tr.gRowColor{
     background: #EDEDED;
 }
 .gTable tr:hover {
-    background: #c7d5e2;
+    background: #c7d5e2 !important;
+}
+.gTable tr.gRowFeatured{
+    font-weight: bold;
+}
+.gTable tr.gRowFeatured {
+    background: darkturquoise;
 }
 .gTable td {
     border-left: 1px solid #EDFFF9;
@@ -185,7 +191,7 @@ div.gFilter {
     display: table;
     width: 100%;
     margin-bottom: 5px;
-    background: repeat-x top left url(img/massaction_bg.gif) #c8c8c8;
+    background: repeat-x top left url(../../img/admin/massaction_bg.gif) #c8c8c8;
     border: 1px solid #CCC;
     line-height: 24px;
 }

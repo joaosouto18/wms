@@ -28,6 +28,7 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             'estoquePulmao'=>'S',
             'submit'=>'Buscar'
         );
+        
         $produtos = $this->getEntityManager()->getRepository('wms:NotaFiscal')->relatorioProdutoDadosLogisticos($params);
         if (count($produtos) >0) {
             $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
@@ -37,16 +38,20 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
         try {
 
             $datas = $this->_getAllParams();
-            if (empty($datas['dataInicial1']) && empty($datas['dataInicial2'])) {
+            if (empty($datas['dataInicial1'])) {
                 $dataI1 = new \DateTime;
-                $dataI2 = new \DateTime;
-
-                $datas = array(
-                    'dataInicial1' => '01/'.$dataI1->format('m/Y'),
-                    'dataInicial2' => $dataI2->format('d/m/Y')
-                );
+                $datas['dataInicial1'] = '01/'.$dataI1->format('m/Y');
             }
-            $this->view->datas = $datas;
+            if ( empty($datas['dataInicial2'])) {
+                $dataI2 = new \DateTime;
+                $datas['dataInicial2'] = $dataI2->format('d/m/Y');
+            }
+            $form = new \Wms\Module\Web\Form\Index();
+
+            $form->populate($datas);
+
+            $this->view->form = $form;
+
 
             $dataInicial1 = str_replace("/", "-", $datas['dataInicial1']);
             $dataI1 = new \DateTime($dataInicial1);
@@ -67,14 +72,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
                 ->orderBy('s.referencia', 'ASC');
 
 
-
-            /*$status = array();
-            $data = array();
-
-            foreach ($dql->getQuery()->getResult() as $row) {
-                array_push($status, $row['status']);
-                array_push($data, $row['qtty']);
-            }*/
             $result = $this->ordernarByFluxo($dql->getQuery()->getResult(),'recebimento');
             if (empty($result['status']) && empty($result['qtty'])) {
                 $result['status'] = false;
@@ -97,17 +94,6 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
                 ->groupBy('s')
                 ->orderBy('s.referencia', 'ASC');
 
-            /*$statusExpedicao = array();
-            $dados = array();
-            foreach ($sql->getQuery()->getResult() as $value) {
-                array_push($statusExpedicao, $value['status']);
-                array_push($dados, $value['qtty']);
-            }
-
-            if (empty($statusExpedicao) && empty($dados)) {
-                $statusExpedicao = false;
-                $dados = false;
-            }*/
             $result = $this->ordernarByFluxo($sql->getQuery()->getResult(),'expedicao');
             if (empty($result['status']) && empty($result['qtty'])) {
                 $result['status'] = false;

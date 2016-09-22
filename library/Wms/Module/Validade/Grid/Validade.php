@@ -13,9 +13,9 @@ class Validade extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($produtos));
         $this->setShowExport(false);
         $this->addColumn(array(
-            'label' => 'Cód. Produto',
-            'index' => 'CODPRODUTO'
-        ))
+                'label' => 'Cód. Produto',
+                'index' => 'CODPRODUTO'
+            ))
             ->addColumn(array(
                 'label' => 'Descrição',
                 'index' => 'PRODUTO',
@@ -39,7 +39,13 @@ class Validade extends Grid
             ->addColumn(array(
                 'label' => 'Qtd',
                 'index' => 'QTD',
+                'width' => 3
             ))
+            ->addLogicalFeatured(
+                function ($row){
+                    return $row['VALIDADE'] <= date('d/m/Y');
+                }
+            )
         ;
 
         return $this;

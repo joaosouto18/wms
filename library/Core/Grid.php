@@ -145,15 +145,47 @@ class Grid
     protected $hiddenId;
 
     /**
-     * @var string
-     * Valor condicional a ser comparado ao gerar cada linha
+     * @var $conditionalFeatured
      */
-    protected $conditionalValue;
+    protected $conditionalFeatured;
+    
+
+    public function setConditionalFeatured($conditions)
+    {
+        $this->conditionalFeatured = $conditions;
+        return $this;
+    }
+    
+    public function getConditionalFeatured()
+    {
+        return $this->conditionalFeatured;
+    }
 
     /**
-     * @var string
+     * @param $conditions
+     * $conditions espera uma função que recebe via parâmetro a variavel $row com retorno boleano
+     * @return Grid $this
+     * @throws \Exception
      */
-    protected $conditionalKey;
+    public function addLogicalFeatured($conditions)
+    {
+        if (is_callable($conditions))
+            $this->conditionalFeatured = $conditions;
+        else 
+            throw new \Exception("A condição de destaque não é uma função.");
+        
+        return $this;
+    }
+
+    /**
+     * @param array $row
+     * @return bool
+     */
+    public function checkConditionalFeaturedByRow(array $row)
+    {
+        $cond = $this->conditionalFeatured;
+        return ($cond != null) ? call_user_func($cond, $row) : false;
+    }
 
     /**
      * Constructor of the class
