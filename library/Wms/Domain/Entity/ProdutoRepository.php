@@ -1550,7 +1550,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	public function getProdutoByParametroVencimento($params)
 	{
         $dtFrmt = date_format(date_create_from_format('d/m/Y',$params['dataReferencia']),'Y-m-d');
-		$where = " WHERE e3_.DTH_VALIDADE <= '$dtFrmt' ";
+		$where = " WHERE e3_.DTH_VALIDADE <= TO_DATE('$params[dataReferencia]','DD/MM/YYYY')";
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
 			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";
 		}
@@ -1586,7 +1586,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				  INNER JOIN DEPOSITO_ENDERECO d2_ ON (d2_.COD_DEPOSITO_ENDERECO = e3_.COD_DEPOSITO_ENDERECO)
 				  $where
 				  GROUP BY p0_.COD_PRODUTO, p0_.DSC_GRADE, p0_.DSC_PRODUTO, l8_.DSC_LINHA_SEPARACAO, p1_.NOM_PESSOA, d2_.DSC_DEPOSITO_ENDERECO, TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY')
-				  ORDER BY VALIDADE";
+				  ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
 		return $this->_em->getConnection()->query($query)->fetchAll();
 	}

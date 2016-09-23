@@ -43,7 +43,9 @@ class Validade extends Grid
             ))
             ->addLogicalFeatured(
                 function ($row){
-                    return $row['VALIDADE'] <= date('d/m/Y');
+                    $dt = date_create_from_format('d/m/Y', $row['VALIDADE']) ;
+                    $now = date_create_from_format('d/m/Y', date('d/m/Y'));
+                    return $dt <= $now;
                 }
             )
         ;
