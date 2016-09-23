@@ -46,7 +46,7 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
                 $dataI2 = new \DateTime;
                 $datas['dataInicial2'] = $dataI2->format('d/m/Y');
             }
-            $form = new \Wms\Module\Web\Form\Index();
+            $form = new \Wms\Module\Web\Form\IntervaloGraficos();
 
             $form->populate($datas);
 

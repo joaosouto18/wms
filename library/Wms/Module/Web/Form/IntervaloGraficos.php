@@ -6,7 +6,7 @@ namespace Wms\Module\Web\Form;
  *
  * @author medina
  */
-class Index extends \Core\Form
+class IntervaloGraficos extends \Core\Form
 {
 
     public function init()
