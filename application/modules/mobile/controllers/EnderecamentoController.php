@@ -349,6 +349,7 @@ class Mobile_EnderecamentoController extends Action
         $this->em->flush();
         $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $idPalete));
         $validade = $paleteProdutoEn->getValidade();
+        $dataValidade = null;
         if (isset($validade) && !empty($validade) && !is_null($validade))
             $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade()->format('Y-m-d');
 
