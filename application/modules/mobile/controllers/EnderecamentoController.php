@@ -231,11 +231,13 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $paleteRepo->find($idPalete);
 
-        $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn, $capacidadePicking);
+        $enderecoReservado = null;
+        if (isset($paleteEn) && !empty($paleteEn)) {
+            $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn, $capacidadePicking);
+            $enderecoReservado = $paleteEn->getDepositoEndereco();
+        }
 
-        $enderecoReservado = $paleteEn->getDepositoEndereco();
-
-        if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
+        if (($enderecoReservado == null) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
             $this->enderecar($enderecoEn,$paleteEn,$enderecoRepo, $paleteRepo);
         } else {
             $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $idPalete . '/endereco/' . $idEndereco);
@@ -300,7 +302,8 @@ class Mobile_EnderecamentoController extends Action
     {
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+        $paleteProdutoRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\PaleteProduto");
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -344,9 +347,11 @@ class Mobile_EnderecamentoController extends Action
         $paleteEn->setDepositoEndereco($enderecoEn);
         $this->em->persist($paleteEn);
         $this->em->flush();
+        $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $idPalete));
+        $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade();
 
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR);
+        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR,$dataValidade);
 
         $this->createXml('success','Palete endereçado com sucesso ');
     }
