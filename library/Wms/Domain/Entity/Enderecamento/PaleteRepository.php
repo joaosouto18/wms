@@ -735,7 +735,7 @@ class PaleteRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
-        if (isset($dataValidade) and !is_null($dataValidade) and !is_array($dataValidade)) {
+        if (isset($dataValidade) and !is_null($dataValidade)) {
             $validade = new \DateTime($dataValidade['dataValidade']);
         } else {
             $validade = null;

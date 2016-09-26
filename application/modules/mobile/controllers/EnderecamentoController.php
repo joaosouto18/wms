@@ -351,7 +351,7 @@ class Mobile_EnderecamentoController extends Action
         $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade();
 
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR,$dataValidade);
+        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR);
 
         $this->createXml('success','Palete endereçado com sucesso ');
     }
