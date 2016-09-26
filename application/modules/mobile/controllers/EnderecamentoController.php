@@ -825,7 +825,8 @@ class Mobile_EnderecamentoController extends Action
 
     public function enderecoDestinoAction()
     {
-        $this->view->codigoBarrasUMA = $codBarrasUma = $this->_getParam('codigoBarrasUMA');
+        $LeituraColetor = new LeituraColetor();
+        $this->view->codigoBarrasUMA = $codBarrasUma = $LeituraColetor->retiraDigitoIdentificador($this->_getParam('codigoBarrasUMA'));
         $this->view->etiquetaProduto = $codBarras = $this->_getParam('etiquetaProduto');
         $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
         $enderecoParam = $this->_getParam('end');
