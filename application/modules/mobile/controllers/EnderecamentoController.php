@@ -348,7 +348,9 @@ class Mobile_EnderecamentoController extends Action
         $this->em->persist($paleteEn);
         $this->em->flush();
         $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $idPalete));
-        $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade()->format('Y-m-d');
+        $validade = $paleteProdutoEn->getValidade();
+        if (isset($validade) && !empty($validade) && !is_null($validade))
+            $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade()->format('Y-m-d');
 
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
         $paleteRepo->finalizar(array($idPalete), $idPessoa, OrdemServicoEntity::COLETOR, $dataValidade);
