@@ -110,11 +110,11 @@ class Mobile_RessuprimentoController extends Action
                 $this->addFlashMessage("error","UMA $codigoBarrasUMA Não encontrada neste endereço");
                 $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque );
             } else {
-                $this->view->codProduto = $result[0]['id'];
-                $this->view->grade = $result[0]['grade'];
-                $this->view->descricao = $result[0]['descricao'];
-                $this->view->endereco = $result[0]['endereco'];
-                $this->view->qtd = $result[0]['qtd'];
+                $this->view->codProduto = $result[0]['ID'];
+                $this->view->grade = $result[0]['GRADE'];
+                $this->view->descricao = $result[0]['DESCRICAO'];
+                $this->view->endereco = $result[0]['ENDERECO'];
+                $this->view->qtd = $result[0]['QTD'].' '.$result[0]['DSC_EMBALAGEM'];
             }
 
         }
@@ -129,11 +129,11 @@ class Mobile_RessuprimentoController extends Action
                 $this->addFlashMessage("error","Produto $etiquetaProduto não encontrado neste endereço");
                 $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque );
             } else {
-                $this->view->codProduto = $result[0]['id'];
-                $this->view->grade = $result[0]['grade'];
-                $this->view->descricaoProduto = $result[0]['descricao'];
-                $this->view->endereco = $result[0]['endereco'];
-                $this->view->qtd = $result[0]['qtd'];
+                $this->view->codProduto = $result[0]['ID'];
+                $this->view->grade = $result[0]['GRADE'];
+                $this->view->descricaoProduto = $result[0]['DESCRICAO'];
+                $this->view->endereco = $result[0]['ENDERECO'];
+                $this->view->qtd = $result[0]['QTD'].' '.$result[0]['DSC_EMBALAGEM'];
             }
         }
     }
@@ -166,6 +166,7 @@ class Mobile_RessuprimentoController extends Action
                     } else{
                         $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
                         $idEmbalagem = $volEstoque->getProdutoEmbalagem()->getId();
+                        $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
                         if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
                             $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
                         }
