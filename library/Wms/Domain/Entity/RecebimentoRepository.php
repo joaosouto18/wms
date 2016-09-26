@@ -524,7 +524,8 @@ class RecebimentoRepository extends EntityRepository
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
                     //checando Validade
-                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $palete->getProdutosArray()[0]['codProduto'], $palete->getProdutosArray()[0]['grade']);
+                    $getProduto = $palete->getProdutosArray();
+                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $getProduto[0]['codProduto'], $getProduto[0]['grade']);
 
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                     $em->flush();
