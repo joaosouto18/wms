@@ -348,10 +348,10 @@ class Mobile_EnderecamentoController extends Action
         $this->em->persist($paleteEn);
         $this->em->flush();
         $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $idPalete));
-        $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade();
+        $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade()->format('Y-m-d');
 
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR);
+        $paleteRepo->finalizar(array($idPalete), $idPessoa, OrdemServicoEntity::COLETOR, $dataValidade);
 
         $this->createXml('success','Palete endereçado com sucesso ');
     }
