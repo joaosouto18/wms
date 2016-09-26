@@ -273,7 +273,7 @@ class Mobile_EnderecamentoController extends Action
                 $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
                 if (isset($estoqueEn) && !empty($estoqueEn)) {
                     if ($enderecoEn->getId() != $estoqueEn->getDepositoEndereco()->getId()) {
-                        $this->createXml('error','Existe estoque para o Produto '.$estoqueEn->getCodProduto().' grade '.$estoqueEn->getGrade().' no endereco '.$estoqueEn->getDepositoEndereco()->getDescricao());
+//                        $this->createXml('error','Existe estoque para o Produto '.$estoqueEn->getCodProduto().' grade '.$estoqueEn->getGrade().' no endereco '.$estoqueEn->getDepositoEndereco()->getDescricao());
                     }
                 }
 
