@@ -914,8 +914,6 @@ class Mobile_EnderecamentoController extends Action
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
         $volumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
         $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
@@ -937,8 +935,6 @@ class Mobile_EnderecamentoController extends Action
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
             if (isset($params['uma']) && !empty($params['uma'])) {
-                $params['uma'] = $LeituraColetor->retiraDigitoIdentificador($params['uma']);
-
                 $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo));
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
