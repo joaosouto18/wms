@@ -112,25 +112,31 @@ class UMA extends Pdf
         $line_width = 300;
 
         foreach($paletes as $palete) {
+            $posicaoSuperiorLayout = false;
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
             } else {
                 $picking = $this->getPicking($produtoEn);
             }
 
+            $modelo = 5;
             if ($modelo == 1) {
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 2) {
                 $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 4) {
-                $this->layout04($palete,$produtoEn,$font_size,$line_width, $picking,$params);
+                $this->layout04($palete,$produtoEn,$font_size,$line_width, $picking);
+            } elseif ($modelo == 5) {
+                $this->layout05($palete,$produtoEn,$font_size,$line_width,$params);
             } else {
-                $this->layout03($palete,$produtoEn,$font_size,$line_width, $picking,$params);
+                $this->layout03($palete,$produtoEn,$font_size,$line_width,$params);
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
                 if ($modelo == 3) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
+                } elseif ($modelo == 5) {
+                    continue;
                 } else {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
                 }
@@ -156,7 +162,62 @@ class UMA extends Pdf
         $this->Cell(-30,0,utf8_decode(date('d/m/Y')." às ".date('H:i')),0,0,'C');
     }
 
-    public function layout03($palete, $produtoEn, $font_size, $line_width, $enderecoPicking,$params=null){
+    public function layout05($palete, $produtoEn, $font_size, $line_width, $params){
+        $this->AddPage();
+
+        $codigoProduto = $produtoEn->getId();
+        $descricaoProduto = $produtoEn->getDescricao();
+        $referencia = $produtoEn->getReferencia();
+        if (!empty($referencia) && null !== $referencia) {
+            $referencia = ' / '.$produtoEn->getReferencia();
+        }
+
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
+        }
+
+        $this->Image(@CodigoBarras::gerarNovo($palete['idUma']),50,7,170,40);
+
+        $this->SetFont('Arial', 'B', $font_size);
+
+        $this->Cell($line_width, 40, '', 0, 50);
+        $this->Cell($line_width, 15, $descricaoProduto, 0, 30);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(35,40,"",0,0);
+
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
+            $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->SetFont('Arial', 'B', 40);
+            $this->Cell(75,40,utf8_decode("Validade "),0,1);
+            $this->SetFont('Arial', 'B', 70);
+            $this->Cell(75,-40,utf8_decode("               $dataValidade"),0,1);
+        }
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(25,95,"Qtd",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(75,95,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(55,-55,utf8_decode("Endereço "),0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(105,-55,$palete['endereco'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(55,87,utf8_decode("Prod/Ref.:"),0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(105,87,$codigoProduto.$referencia,0,1);
+
+    }
+
+    public function layout03($palete, $produtoEn, $font_size, $line_width, $params){
         $this->AddPage();
 
         $codigoProduto = $produtoEn->getId();
