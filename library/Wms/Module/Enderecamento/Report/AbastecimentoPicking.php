@@ -104,8 +104,8 @@ class AbastecimentoPicking extends Pdf
                     $this->Cell(15, 5, "Res. Ent." ,"TB");
                     $this->Cell(15, 5, "Res. Sai." ,"TB");
                     $this->Cell(15, 5, "Qtd" ,"TB");
-                    $this->Cell(30, 5, utf8_decode("Volume") ,"TB");
-                    $this->Cell(45, 5, 'Data Validade' ,"TB",1);
+                    $this->Cell(25, 5, 'Data Validade' ,"TB");
+                    $this->Cell(30, 5, utf8_decode("Volume") ,"TB",1);
 
                     $limite = $limite -1;
 
@@ -127,8 +127,8 @@ class AbastecimentoPicking extends Pdf
                         $this->Cell(15, 5, utf8_decode($qtdReservaEntrada) ,0,  0);
                         $this->Cell(15, 5, utf8_decode($qtdReservaSaida) ,0,  0);
                         $this->Cell(15, 5, utf8_decode($qtdEndereco) ,0,  0);
-                        $this->Cell(30, 5, utf8_decode($dscVolume) ,0, 0);
-                        $this->Cell(45, 5, utf8_decode($dthValidade) ,0, 1);
+                        $this->Cell(25, 5, utf8_decode($dthValidade) ,0, 0);
+                        $this->Cell(30, 5, utf8_decode($dscVolume) ,0, 1);
 
                         $limite = $limite -1;
                     }
