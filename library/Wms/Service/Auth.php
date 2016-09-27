@@ -31,7 +31,7 @@ class Auth {
      */
     public static function login($username, $password)
     {
-        $em = self::getEm();
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
         // adapter
         $adapter = new \Core\Auth\Adapter\Doctrine2($em, 'wms:Usuario', 'login', 'senha');
         $adapter->setIdentity($username)

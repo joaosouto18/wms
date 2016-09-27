@@ -38,9 +38,18 @@ class Enderecamento_MovimentacaoController extends Action
             $form->populate($data);
         } else {
             if ($request->isPost() && empty($transferir)) {
-                $this->redirect('movimentar', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
-                    'embalagem' => $data['embalagem'], 'volumes' => $data['volumes'], 'rua' => $data['rua'], 'predio' => $data['predio'],
-                    'nivel' => $data['nivel'], 'apto' => $data['apto'], 'validade' => $data['validade'], 'quantidade' => $data['quantidade'], 'idNormaPaletizacao' => $data['idNormaPaletizacao']));
+                $this->redirect('movimentar', 'movimentacao', 'enderecamento', array(
+                    'idProduto' => $data['idProduto'],
+                    'grade' => $data['grade'],
+                    'embalagem' => (isset($data['embalagem']) && !empty($data['embalagem']))? $data['embalagem'] : null,
+                    'volumes' => (isset($data['volumes']) && !empty($data['volumes']))? $data['volumes'] : null,
+                    'rua' => $data['rua'],
+                    'predio' => $data['predio'],
+                    'nivel' => $data['nivel'],
+                    'apto' => $data['apto'],
+                    'validade' => $data['validade'],
+                    'quantidade' => $data['quantidade'],
+                    'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
         $this->view->form = $form;
@@ -126,8 +135,8 @@ class Enderecamento_MovimentacaoController extends Action
 
                 $EstoqueRepository->movimentaEstoque($params, true, true);
             } else {
-                if (isset($data['volumes']) && ($data['volumes'] != "")) {
-                    $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
+                if (isset($data['volumes']) && !empty($data['volumes'] )) {
+                    $volumes = $this->getEntityManager()->getRepository ("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
                     if (count($volumes) <= 0) {
                         $this->addFlashMessage('error',"Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
                         $this->_redirect('/enderecamento/movimentacao');

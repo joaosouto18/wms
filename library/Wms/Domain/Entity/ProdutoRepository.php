@@ -145,10 +145,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				$produtoEntity->setEnderecoReferencia(null);
 			}
 
-			$this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
-			$this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
-			$this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
-			$this->setParamEndAutomatico($produtoEntity,$values['caracteristicaEndereco'],'CaracteristicaEndereco');
+			if (isset($values['areaArmazenagem']) && !empty($values['areaArmazenagem']))
+				$this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
+
+			if (isset($values['estruturaArmazenagem']) && !empty($values['estruturaArmazenagem']))
+				$this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
+
+			if (isset($values['tipoEndereco']) && !empty($values['tipoEndereco']))
+				$this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
+
+			if (isset($values['caracteristicaEndereco']) && !empty($values['caracteristicaEndereco']))
+				$this->setParamEndAutomatico($produtoEntity,$values['caracteristicaEndereco'],'CaracteristicaEndereco');
 
 			$linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
 			$tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
@@ -1549,7 +1556,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	public function getProdutoByParametroVencimento($params)
 	{
-        $dtFrmt = date_format(date_create_from_format('d/m/Y',$params['dataReferencia']),'Y-m-d');
 		$where = " WHERE e3_.DTH_VALIDADE <= TO_DATE('$params[dataReferencia]','DD/MM/YYYY')";
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
 			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";
@@ -1576,7 +1582,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				  FROM RECEBIMENTO r4_ 
 				  INNER JOIN NOTA_FISCAL n5_ ON (n5_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
 				  INNER JOIN NOTA_FISCAL_ITEM n6_ ON (n6_.COD_NOTA_FISCAL = n5_.COD_NOTA_FISCAL) 
-				  INNER JOIN PRODUTO p0_ ON (p0_.COD_PRODUTO = n6_.COD_PRODUTO AND p0_.DSC_GRADE = n6_.DSC_GRADE) 
+				  INNER JOIN PRODUTO p0_ ON (p0_.COD_PRODUTO = n6_.COD_PRODUTO AND p0_.DSC_GRADE = n6_.DSC_GRADE AND p0_.POSSUI_VALIDADE = 'S') 
 				  INNER JOIN FORNECEDOR f7_ ON (f7_.COD_FORNECEDOR = n5_.COD_FORNECEDOR) 
 				  INNER JOIN PESSOA p1_ 
 				  LEFT JOIN PESSOA_JURIDICA p9_ ON p1_.COD_PESSOA = p9_.COD_PESSOA ON (p1_.COD_PESSOA = f7_.COD_FORNECEDOR) 
