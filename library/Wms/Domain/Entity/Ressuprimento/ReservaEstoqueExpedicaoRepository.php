@@ -53,7 +53,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                 }
             }
 
-            $this->getEntityManager()->flush();
+            //$this->getEntityManager()->flush();
         }
     }
 
