@@ -1,65 +1,7 @@
 <?php
 echo $this->form;
 echo $this->grid;
-?>
 
-
-<!--<table class="gTable ">
-    <caption>Disponibilidade de Endereços</caption>
-    <tbody>
-    <tr class ="gTTitle">
-        <td>Endereço</td>
-        <td>Código</td>
-        <td>Grade</td>
-        <td>Quantidade</td>
-        <td>Situação</td>
-    </tr>
-    <?php
-/*
-    // verifico se existem dados para serem retornados
-    if(is_array($this->endDisponivel))
-    {
-    foreach($this->endDisponivel as $enderecos) :
-
-    $dscEndereco   = $enderecos['descricao'];
-    $idProduto     = $enderecos['codProduto'];
-    $grade         = $enderecos['grade'];
-    $qtd           = $enderecos['qtd'];
-    $uma           = $enderecos['uma'];
-    $idRecebimento = $enderecos['idRecebimento'];
-    $statusUma     = $enderecos['sigla'];
-
-    if ($enderecos['codProduto'] == NULL) {
-        $statusEndereco = "Endereço não utilizado";
-        $tipo = "V";
-    } else {
-        if ($uma == NULL) {
-            $tipo = "E";
-            $statusEndereco = "Endereçado no estoque";
-        } else {
-            $statusEndereco = "Reservado para o palete $uma ($statusUma) no recebimento $idRecebimento";
-            $tipo = "P";
-        }
-    }
-    */?>
-    <tr>
-        <td><?php /*echo $dscEndereco */?></td>
-
-    <?php
-/*    if ($tipo == "V") {
-        */?>
-
-        <td colspan="4"><?php /*echo $statusEndereco */?></td>
-    <?php /*} else { */?>
-        <td><?php /*echo $idProduto */?></td>
-        <td><?php /*echo $grade */?></td>
-        <td><?php /*echo $qtd */?></td>
-        <td><?php /*echo $statusEndereco */?></td>
-
-    </tbody>
-    <?php /*} endforeach */?>
-    <?php /*} */?>
-</table>-->
 
 
 
