@@ -85,9 +85,25 @@ class Mobile_EnderecamentoController extends Action
 
             else
             {
+                $atividadeEntity = $this->em->getReference('wms:Atividade', \Wms\Domain\Entity\Atividade::RESSUPRIMENTO);
+                $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                $pessoaEntity = $this->em->getReference('wms:Pessoa', $idPessoa);
+
+                $os = new OrdemServicoEntity();
+                $os->setDataInicial(new DateTime());
+                $os->setAtividade($atividadeEntity);
+                $os->setDscObservacao('Ressuprimento Manual Preventivo');
+                $os->setPessoa($pessoaEntity);
+                $os->setFormaConferencia('C');
+                $this->em->persist($os);
+
                 $contagem = new \Wms\Domain\Entity\Enderecamento\RelatorioPicking();
                 $contagem->setDepositoEndereco($enderecoEn);
+                $contagem->setCodProduto($codProduto);
+                $contagem->setGrade($grade);
+                $contagem->setOs($os);
                 $this->em->persist($contagem);
+
                 $this->em->flush();
             }
 

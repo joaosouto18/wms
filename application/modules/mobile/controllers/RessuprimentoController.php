@@ -144,7 +144,6 @@ class Mobile_RessuprimentoController extends Action
         $grade = $this->_getParam('grade');
         $idEndereco = $this->_getParam('idEndereco');
         $qtd = $this->_getParam('quantidade');
-        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         try {
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -190,6 +189,10 @@ class Mobile_RessuprimentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                 }
             }
+            $relatorioPickingRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\RelatorioPicking');
+            $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
+            $this->getEntityManager()->remove($relatorioPicking);
+            $this->getEntityManager()->flush();
 
             $this->addFlashMessage("success","Movimentação efetivada com sucesso");
         } catch (\Exception $e) {
