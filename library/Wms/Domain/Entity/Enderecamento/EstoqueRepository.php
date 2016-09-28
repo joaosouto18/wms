@@ -724,8 +724,8 @@ class EstoqueRepository extends EntityRepository
         ->leftJoin("wms:Enderecamento\Estoque", "e", "WITH", "e.depositoEndereco = de.id")
         ->leftJoin("wms:Enderecamento\Palete", "p", "WITH", "p.depositoEndereco = de.id  AND p.codStatus !=". Palete::STATUS_ENDERECADO . " AND p.codStatus !=" . Palete::STATUS_CANCELADO)
         ->leftJoin("p.produtos","pp")
-        ->leftJoin("wms:Produto\Volume", "pv", "WITH", "de.id = pv.codEndereco ")
-        ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.codEndereco ")
+        ->leftJoin("wms:Produto\Volume", "pv", "WITH", "de.id = pv.endereco ")
+        ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.endereco ")
         ->leftJoin("p.recebimento", "r")
         ->leftJoin("p.status", "s")
         ->distinct(true)
@@ -765,7 +765,25 @@ class EstoqueRepository extends EntityRepository
             $query-> andWhere('((e.codProduto IS NULL) AND (pp.codProduto IS NULL))');
         }
 
-        $result =$query->getQuery()->getResult();
+        $result = $query->getQuery()->getResult();
+
+        foreach ($result as $key => $endereco) {
+            if ($endereco['codProduto'] == NULL) {
+                $endereco['statusEndereco'] = "Endereço não utilizado";
+                $endereco['tipo'] = "V";
+            } else {
+                if ($endereco['uma'] == NULL) {
+                    $endereco['tipo'] = "E";
+                    $endereco['statusEndereco'] = "Endereçado no estoque";
+                } else {
+                    $endereco['statusEndereco'] = "Reservado para o palete $endereco[uma] ($endereco[sigla]) no recebimento $endereco[idRecebimento]";
+                    $endereco['tipo'] = "P";
+                }
+            }
+            $result[$key] = $endereco;
+        }
+
+
         return $result;
     }
 

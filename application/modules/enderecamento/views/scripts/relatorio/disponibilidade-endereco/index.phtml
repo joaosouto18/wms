@@ -1,9 +1,10 @@
 <?php
 echo $this->form;
+echo $this->grid;
 ?>
 
 
-<table class="gTable ">
+<!--<table class="gTable ">
     <caption>Disponibilidade de Endereços</caption>
     <tbody>
     <tr class ="gTTitle">
@@ -14,7 +15,7 @@ echo $this->form;
         <td>Situação</td>
     </tr>
     <?php
-
+/*
     // verifico se existem dados para serem retornados
     if(is_array($this->endDisponivel))
     {
@@ -40,25 +41,25 @@ echo $this->form;
             $tipo = "P";
         }
     }
-    ?>
+    */?>
     <tr>
-        <td><?php echo $dscEndereco ?></td>
+        <td><?php /*echo $dscEndereco */?></td>
 
     <?php
-    if ($tipo == "V") {
-        ?>
+/*    if ($tipo == "V") {
+        */?>
 
-        <td colspan="4"><?php echo $statusEndereco ?></td>
-    <?php } else { ?>
-        <td><?php echo $idProduto ?></td>
-        <td><?php echo $grade ?></td>
-        <td><?php echo $qtd ?></td>
-        <td><?php echo $statusEndereco ?></td>
+        <td colspan="4"><?php /*echo $statusEndereco */?></td>
+    <?php /*} else { */?>
+        <td><?php /*echo $idProduto */?></td>
+        <td><?php /*echo $grade */?></td>
+        <td><?php /*echo $qtd */?></td>
+        <td><?php /*echo $statusEndereco */?></td>
 
     </tbody>
-    <?php } endforeach ?>
-    <?php } ?>
-</table>
+    <?php /*} endforeach */?>
+    <?php /*} */?>
+</table>-->
 
 
 
