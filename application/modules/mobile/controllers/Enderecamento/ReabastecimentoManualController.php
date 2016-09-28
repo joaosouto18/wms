@@ -29,6 +29,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         $info = $produtoRepo->getProdutoByCodBarras($codigoBarrasProduto);
         $produtoEn = $produtoRepo->find(array('id' => $codigoBarras, 'grade' => 'UNICA'));
 
+
+        $config = \Zend_Registry::get('config');
+        $consultaPreco = false;
+        if (isset($config->database,$config->database->viewErp,$config->database->viewErp->habilitado))
+            $consultaPreco = true;
+
         if ($info || $produtoEn) {
 
             if ($info) {
@@ -37,7 +43,10 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
                 $codProduto = $codigoBarras;
             }
 
-            $preco = $this->getPrecoView($codProduto);
+            $preco = null;
+            if ($consultaPreco)
+                $preco = $this->getPrecoView($codProduto);
+
             $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'codProduto' => $codProduto));
 
             $os = $this->getOs($codOS);
@@ -52,8 +61,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setOs($os['osEntity']);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
-            $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+
+            if (!empty($preco)) {
+                $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
+            } else {
+                $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            }
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
@@ -81,7 +94,10 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 
             $codProduto = $result[0]['codProduto'];
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
-            $preco = $this->getPrecoView($codProduto);
+
+            $preco = null;
+            if ($consultaPreco)
+                $preco = $this->getPrecoView($codProduto);
 
             $os = $this->getOs($codOS);
             $codOS = $os['codOS'];
@@ -96,8 +112,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setQtd($qtd);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
-            $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+
+            if (!empty($preco)) {
+                $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:' . $preco);
+            } else {
+                $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            }
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
@@ -139,9 +159,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $reabastEnt->setQtd($qtd + $reabastEnt->getQtd());
             $this->em->persist($reabastEnt);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
-            $codProduto = $reabastEnt->getCodProduto();
-            $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            if (!empty($preco)) {
+                $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
+            } else {
+                $codProduto = $reabastEnt->getCodProduto();
+                $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            }
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
     }
