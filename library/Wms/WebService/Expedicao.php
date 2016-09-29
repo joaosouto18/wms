@@ -704,11 +704,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     protected function savePedidoProduto($repositorios, array $produtos, Expedicao\Pedido $enPedido) {
-        var_dump($produtos); exit;
         $ProdutoRepo        = $repositorios['produtoRepo'];
         $PedidoProdutoRepo  = $repositorios['pedidoProdutoRepo'];
 
         foreach ($produtos as $produto) {
+            var_dump($produto['quantidade']); exit;
             $idProduto = trim($produto['codProduto']);
             $idProduto = ProdutoUtil::formatar($idProduto);
 
