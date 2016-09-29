@@ -119,7 +119,6 @@ class UMA extends Pdf
                 $picking = $this->getPicking($produtoEn);
             }
 
-            $modelo = 5;
             if ($modelo == 1) {
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 2) {
@@ -135,9 +134,7 @@ class UMA extends Pdf
             if ($paleteEn != NULL ) {
                 if ($modelo == 3) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
-                } elseif ($modelo == 5) {
-                    continue;
-                } else {
+                } elseif ($modelo != 5) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
                 }
 
