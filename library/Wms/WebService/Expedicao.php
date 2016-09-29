@@ -105,7 +105,7 @@ class notaFiscalProduto {
     public $codProduto;
     /** @var string */
     public $grade;
-    /** @var integer */
+    /** @var string */
     public $qtd;
     /** @var double */
     public $valorVenda;
@@ -704,6 +704,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     protected function savePedidoProduto($repositorios, array $produtos, Expedicao\Pedido $enPedido) {
+        var_dump($produtos); exit;
         $ProdutoRepo        = $repositorios['produtoRepo'];
         $PedidoProdutoRepo  = $repositorios['pedidoProdutoRepo'];
 
