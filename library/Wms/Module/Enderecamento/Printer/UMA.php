@@ -164,6 +164,7 @@ class UMA extends Pdf
         $this->AddPage();
 
         $descricaoProduto = $produtoEn->getDescricao();
+        $codigoProduto = $produtoEn->getId();
         if (strlen($descricaoProduto) >= 42) {
             $font_size = 36;
         } else if (strlen($descricaoProduto) >= 20) {
@@ -174,7 +175,7 @@ class UMA extends Pdf
 
         $this->SetFont('Arial', 'B', $font_size);
 
-        $this->Cell($line_width, 15, $descricaoProduto, 0, 5);
+        $this->Cell($line_width, 15, $codigoProduto.' - '.$descricaoProduto, 0, 5);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
