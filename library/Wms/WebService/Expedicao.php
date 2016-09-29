@@ -204,7 +204,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             foreach ($pedidoWs->produtos as $produtoWs) {
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = $produtoWs->grade;
-                $produto['quantidade'] = (float)$produtoWs->quantidade;
+                $produto['quantidade'] = $produtoWs->quantidade;
                 $produtos[] = $produto;
             }
 
@@ -708,7 +708,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $PedidoProdutoRepo  = $repositorios['pedidoProdutoRepo'];
 
         foreach ($produtos as $produto) {
-            var_dump($produto['quantidade']); exit;
             $idProduto = trim($produto['codProduto']);
             $idProduto = ProdutoUtil::formatar($idProduto);
 
