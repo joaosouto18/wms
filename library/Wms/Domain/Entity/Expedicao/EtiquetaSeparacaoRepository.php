@@ -636,7 +636,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
             $pedidoId           = $pedidoProduto->getPedido()->getId();
-            $quantidade         = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
+            $quantidade         = number_format($pedidoProduto->getQuantidade(),2) - number_format($pedidoProduto->getQtdCortada(),2);
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
@@ -651,7 +651,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
             $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
+            $count = 0;
             while ($quantidadeRestantePedido > 0) {
+                $count++;
                 $embalagemAtual = null;
                 $quantidadeAtender = $quantidadeRestantePedido;
 
@@ -673,7 +675,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (!is_null($embalagemAtual->getDataInativacao()))
                     continue;
 
-                $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
+                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2) - number_format($embalagemAtual->getQuantidade(),2);
 
                 $embalado = false;
                 if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == 'P') {
@@ -884,7 +886,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (!is_null($embalagemAtual->getDataInativacao()))
                             continue;
 
-                        $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
+                        $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2) - number_format($embalagemAtual->getQuantidade(),2);
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             $enderecoPulmao['QUANTIDADE'] = $enderecoPulmao['QUANTIDADE'] - $embalagemAtual->getQuantidade();
@@ -1398,6 +1400,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
+        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
@@ -1440,11 +1443,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $qtdCaixas = ceil($cubagem / $cubagemCaixa);
         $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
+
         if ($qtdCaixas == 0) {
             $mapaProduto->setNumCaixaInicio(null);
             $mapaProduto->setNumCaixaFim(null);
             $mapaProduto->setCubagem(null);
-        } else if (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
+        } elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
             if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa * ($caixasUsadas[0]['numCaixaFim'] - $caixasUsadas[0]['numCaixaInicio'] + 1)) {
                 $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
                 $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
