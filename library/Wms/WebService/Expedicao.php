@@ -41,9 +41,9 @@ class produto {
     public $codProduto;
     /** @var string */
     public $grade;
-    /** @var string */
+    /** @var double */
     public $quantidade;
-    /** @var string */
+    /** @var double */
     public $quantidadeAtendida;
 }
 
@@ -242,6 +242,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas)
     {
+        var_dump('abc'); exit;
         $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
