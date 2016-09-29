@@ -722,7 +722,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'produto' => $enProduto,
                 'valorVenda' =>$produto['valorVenda'],
                 'grade' => $produto['grade'],
-                'quantidade' => $produto['qtde']
+                'quantidade' => str_replace(',','.',$produto['qtde'])
             );
             $PedidoProdutoRepo->save($prod);
         }
