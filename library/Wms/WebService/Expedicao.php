@@ -713,7 +713,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
             if (isset($produto['quantidade'])) {
-                $produto['qtde'] = (float)$produto['quantidade'];
+                $produto['qtde'] = $produto['quantidade'];
             }
 
             $prod = array(
