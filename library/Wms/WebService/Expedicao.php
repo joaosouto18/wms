@@ -41,9 +41,9 @@ class produto {
     public $codProduto;
     /** @var string */
     public $grade;
-    /** @var double */
+    /** @var string */
     public $quantidade;
-    /** @var double */
+    /** @var string */
     public $quantidadeAtendida;
 }
 
