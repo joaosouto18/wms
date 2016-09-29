@@ -464,6 +464,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                     if ($capacidadePicking >= $qtdRessuprir){
                         $qtdOnda = $capacidadePicking;
                     } else {
+                        //Todo Reavaliar o cálculo de ressuprimento
                         $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking))* $capacidadePicking;
                     }
                     if ($qtdOnda > $qtdEstoque)
