@@ -204,7 +204,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             foreach ($pedidoWs->produtos as $produtoWs) {
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = $produtoWs->grade;
-                $produto['quantidade'] = round($produtoWs->quantidade);
+                $produto['quantidade'] = (float)$produtoWs->quantidade;
                 $produtos[] = $produto;
             }
 
@@ -713,7 +713,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
             if (isset($produto['quantidade'])) {
-                $produto['qtde'] = $produto['quantidade'];
+                $produto['qtde'] = (float)$produto['quantidade'];
             }
 
             $prod = array(

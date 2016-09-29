@@ -148,6 +148,7 @@ class Mobile_RessuprimentoController extends Action
         try {
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+            $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');
             $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
 
             foreach ($embalagens as $volEstoque) {
@@ -188,12 +189,12 @@ class Mobile_RessuprimentoController extends Action
                     $params['qtd'] = $qtd;
                     $estoqueRepo->movimentaEstoque($params);
                 }
-            }
-            $relatorioPickingRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\RelatorioPicking');
-            $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
-            $this->getEntityManager()->remove($relatorioPicking);
-            $this->getEntityManager()->flush();
 
+                $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
+                $this->getEntityManager()->remove($relatorioPicking);
+            }
+
+            $this->getEntityManager()->flush();
             $this->addFlashMessage("success","Movimentação efetivada com sucesso");
         } catch (\Exception $e) {
             $this->addFlashMessage("error",$e->getMessage());

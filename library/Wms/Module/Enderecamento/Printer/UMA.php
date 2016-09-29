@@ -165,7 +165,7 @@ class UMA extends Pdf
     public function layout05($palete, $produtoEn, $font_size, $line_width, $params)
     {
         $this->AddPage();
-        
+
         $descricaoProduto = $produtoEn->getDescricao();
         if (strlen($descricaoProduto) >= 42) {
             $font_size = 36;
