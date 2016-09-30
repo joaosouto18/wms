@@ -7,6 +7,7 @@ class Validade_ConsultaController extends Action
 {
     public function indexAction()
     {
+        ini_set('memory_limit', '-1');
         $params = $this->_getAllParams();
         $form = new ValidadeForm();
         if (!isset($params['dataReferencia']) || empty($params['dataReferencia'])) {

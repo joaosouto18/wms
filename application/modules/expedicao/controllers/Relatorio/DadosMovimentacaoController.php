@@ -7,6 +7,7 @@ class Expedicao_Relatorio_DadosMovimentacaoController extends \Wms\Controller\Ac
         $form = new \Wms\Module\Expedicao\Form\DadosMovimentacao();
         $params = $form->getParams();
         if ($params) {
+            ini_set('memory_limit', '-1');
             /** @var \Wms\Domain\Entity\Enderecamento\HistoricoEstoqueRepository $HistoricoEstoqueRepository */
             $HistoricoEstoqueRepository   = $this->getEntityManager()->getRepository('wms:Enderecamento\HistoricoEstoque');
             $movimentacao = $HistoricoEstoqueRepository->getDadosMovimentacao($params);

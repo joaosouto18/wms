@@ -24,7 +24,7 @@ class Web_Relatorio_DadosLogisticosProdutoController extends Action
     public function indexAction()
     {
         $form = new FiltroDadosLogisticosProduto;
-        ini_set('memory_limit', '256M');
+        ini_set('memory_limit', '-1');
 
         $params = $form->getParams();
 
