@@ -124,7 +124,7 @@ class EtiquetaSeparacao
     protected $volumePatrimonio;
 
     /**
-     * @Column(name="QTD_PRODUTO", type="integer", nullable=true)
+     * @Column(name="QTD_PRODUTO", type="decimal", nullable=true)
      */
     protected $qtdProduto;
 

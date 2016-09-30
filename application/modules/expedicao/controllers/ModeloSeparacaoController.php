@@ -103,6 +103,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             if ($id == null)
                 throw new \Exception('Id must be provided for the edit action');
 
+            /** @var Expedicao\ModeloSeparacao $entity */
             $entity = $this->repository->findOneBy(array($this->pkField => $id));
 
             $dados = array();
@@ -113,6 +114,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $dados['imprimeEtiquetaPatrimonio'] = $entity->getImprimeEtiquetaVolume();
             $dados['quebraPulmaDoca'] = $entity->getQuebraPulmaDoca();
             $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
+            $dados['separacaoPc'] = $entity->getSeparacaoPC();
             $dados['tipoDefaultEmbalado'] = $entity->getTipoDefaultEmbalado();
             $dados['tipoConferenciaEmbalado'] = $entity->getTipoConferenciaEmbalado();
             $dados['tipoConferenciaNaoEmbalado'] = $entity->getTipoConferenciaNaoEmbalado();
@@ -159,6 +161,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $entity->setImprimeEtiquetaVolume($this->getBooleanValue($params['imprimeEtiquetaPatrimonio']));
                 $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
                 $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
+                $entity->setSeparacaoPC($params['separacaoPc']);
                 $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
                 $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
                 $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);
@@ -257,6 +260,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
         $entity->setUtilizaQuebraColetor($this->getBooleanValue($params['utilizaQuebraColetor']));
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
         $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
+        $entity->setSeparacaoPC($params['separacaoPc']);
         $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
         $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
 

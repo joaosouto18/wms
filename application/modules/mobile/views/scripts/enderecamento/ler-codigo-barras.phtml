@@ -31,17 +31,14 @@
 
         $.ajax({
             url: 'get-capacidade-picking-ajax/endereco/'+rua+'.'+predio+'.'+nivel+'.'+apartamento,
-            beforeSend: function () {
-                $("#capacidade").html('<center><img src="/img/ajax-loader.gif" width="31" height="31"/>Processando...</center>');
-            },
             success: function (data) {
                 if (data.status == 'Ok') {
                     if (data.caracteristicaEndereco == 39 || data.caracteristicaEndereco == 37) {
                         capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="' + data.capacidadePicking + '" id="capacidadePicking" name="capacidadePicking"></div>';
                     }
                     $('#capacidade').html(capacidadePicking);
-                } else if (data.status == 'Error') {
-                    alert(data.msg);
+                } else {
+                    $('#capacidade').html('');
                 }
             }
         });

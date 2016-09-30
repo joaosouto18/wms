@@ -377,11 +377,10 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND E.COD_VOLUME = " . $parametros['volume'];
         }
 
-        $SQLOrderBy = "";
         if ($orderBy != null) {
             $SQLOrderBy = $orderBy;
         } else {
-            $SQLOrderBy = " ORDER BY E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO, E.DTH_VALIDADE";
+            $SQLOrderBy = " ORDER BY E.DTH_VALIDADE, E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO";
         }
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -724,8 +723,9 @@ class EstoqueRepository extends EntityRepository
         ->leftJoin("wms:Enderecamento\Estoque", "e", "WITH", "e.depositoEndereco = de.id")
         ->leftJoin("wms:Enderecamento\Palete", "p", "WITH", "p.depositoEndereco = de.id  AND p.codStatus !=". Palete::STATUS_ENDERECADO . " AND p.codStatus !=" . Palete::STATUS_CANCELADO)
         ->leftJoin("p.produtos","pp")
-        ->leftJoin("wms:Produto\Volume", "pv", "WITH", "de.id = pv.endereco ")
-        ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.endereco ")
+        ->leftJoin("wms:Produto\Volume", "pv", "WITH", "de.id = pv.endereco")
+        ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.endereco")
+
         ->leftJoin("p.recebimento", "r")
         ->leftJoin("p.status", "s")
         ->distinct(true)
@@ -827,37 +827,28 @@ class EstoqueRepository extends EntityRepository
     public function getProdutoByUMA($codigoBarrasUMA, $idEndereco)
     {
         $em = $this->getEntityManager();
-        $sql=$em->createQueryBuilder()
-            ->select('p.descricao, p.id, p.grade, e.qtd, de.descricao as endereco')
-            ->from("wms:Enderecamento\Estoque", "e")
-            ->innerJoin("e.depositoEndereco", "de")
-            ->innerJoin("e.produto", "p")
-            ->where("e.uma = $codigoBarrasUMA")
-            ->andWhere("de.id = $idEndereco");
+        $sql = "
+                SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p2_.QTD_EMBALAGEM, 1) AS qtd, d3_.DSC_DEPOSITO_ENDERECO AS endereco, p2_.DSC_EMBALAGEM
+                FROM ESTOQUE e1_
+                INNER JOIN DEPOSITO_ENDERECO d3_ ON e1_.COD_DEPOSITO_ENDERECO = d3_.COD_DEPOSITO_ENDERECO
+                INNER JOIN PRODUTO p0_ ON e1_.COD_PRODUTO = p0_.COD_PRODUTO AND e1_.DSC_GRADE = p0_.DSC_GRADE
+                LEFT JOIN PRODUTO_EMBALAGEM p2_ ON (p2_.COD_PRODUTO = p0_.COD_PRODUTO AND p2_.DSC_GRADE = p0_.DSC_GRADE)
+                WHERE e1_.UMA = $codigoBarrasUMA AND d3_.COD_DEPOSITO_ENDERECO = $idEndereco";
 
-        $result = $sql->getQuery()->getArrayResult();
-      return $result;
+        return $em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco)
     {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.descricao, p.id, p.grade, e.qtd, de.descricao as endereco')
-            ->from("wms:Enderecamento\Estoque","e")
-            ->innerJoin("e.produto","p")
-            ->leftJoin("e.depositoEndereco", "de")
-            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = e.codProduto AND pe.grade = e.grade')
-            ->leftJoin('p.volumes', 'pv')
-            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-            ->andWhere("de.id = :idEndereco")
-            ->setParameters(
-                array(
-                    'codigoBarras' => $etiquetaProduto,
-                    'idEndereco' => $idEndereco,
-                )
-            );
-        $result = $dql->getQuery()->setMaxResults(1)->getArrayResult();
-        return $result;
+        $em = $this->getEntityManager();
+        $dql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p3_.QTD_EMBALAGEM,1) AS qtd, NVL(p3_.DSC_EMBALAGEM,'') DSC_EMBALAGEM, d2_.DSC_DEPOSITO_ENDERECO AS DSC_DEPOSITO_ENDERECO4
+                    FROM ESTOQUE e1_ INNER JOIN PRODUTO p0_ ON e1_.COD_PRODUTO = p0_.COD_PRODUTO AND e1_.DSC_GRADE = p0_.DSC_GRADE
+                    LEFT JOIN DEPOSITO_ENDERECO d2_ ON e1_.COD_DEPOSITO_ENDERECO = d2_.COD_DEPOSITO_ENDERECO
+                    LEFT JOIN PRODUTO_EMBALAGEM p3_ ON (p3_.COD_PRODUTO = e1_.COD_PRODUTO AND p3_.DSC_GRADE = e1_.DSC_GRADE)
+                    LEFT JOIN PRODUTO_VOLUME p4_ ON p0_.COD_PRODUTO = p4_.COD_PRODUTO AND p0_.DSC_GRADE = p4_.DSC_GRADE
+                    WHERE ((p3_.COD_BARRAS = '$etiquetaProduto' OR p4_.COD_BARRAS = '$etiquetaProduto')) AND d2_.COD_DEPOSITO_ENDERECO = $idEndereco";
+
+        return $em->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getQtdProdutoByVolumesOrProduct($codProduto, $grade, $idEndereco, $volumes) {

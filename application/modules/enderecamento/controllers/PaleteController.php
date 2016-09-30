@@ -22,7 +22,7 @@ class Enderecamento_PaleteController extends Action
         $ProdutoRepository   = $this->em->getRepository('wms:Produto');
         $this->view->endPicking = $picking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
-        $this->view->qtdTotal = $xxx = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
+        $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
         try {
             $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,true,$tipoEnderecamento = 'M');
@@ -81,6 +81,8 @@ class Enderecamento_PaleteController extends Action
                 $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
             } else {
                 $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
+                $dadosPalete['unMedida'] = $embalagemEn->getDescricao();
+                $dadosPalete['qtdEmbalagem'] = $embalagemEn->getQuantidade();
             }
             if ($embalagemEn->getEndereco() != null) {
                 $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();

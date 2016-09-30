@@ -671,7 +671,8 @@ class PaleteRepository extends EntityRepository
                 }
 
                 $qtdPaletes         = $qtd / $unitizador['NUM_NORMA'];
-                $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
+//                $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
+                $qtdUltimoPalete    = fmod($qtd, $unitizador['NUM_NORMA']);
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 
                 $pesoTotalPaletes = 0;
@@ -696,7 +697,8 @@ class PaleteRepository extends EntityRepository
     }
 
     public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A',$pesoPorPalete = null){
-        $dataValidade = new \DateTime($dataValidade);
+        if (!is_null($dataValidade))
+            $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
         $paleteEn->setUnitizador($unitizadorEn);

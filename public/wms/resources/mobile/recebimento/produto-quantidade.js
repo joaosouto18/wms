@@ -6,8 +6,8 @@ $(document).ready(function(){
      */
     function calcTotalQuantidade() {
             
-        var qtdConferida = parseInt($('#qtdConferida').val()) || 0;
-        var unidadePorEmbalagem = parseInt($('#unidadePorEmbalagem').val()) || 0;
+        var qtdConferida = parseFloat($('#qtdConferida').val()) || 0;
+        var unidadePorEmbalagem = parseFloat($('#unidadePorEmbalagem').val()) || 0;
         var total = qtdConferida * unidadePorEmbalagem;
             
         $('#totalQuantidade').html(total);
