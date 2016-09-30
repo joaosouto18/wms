@@ -1158,11 +1158,26 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		return $resultado;
 	}
 
-	public function getNormaPaletizacaoPadrao($codProduto, $grade) {
+	public function getNormaPaletizacaoPadrao($codProduto, $grade, $norma = null) {
+
+		$sql = $this->getEntityManager()->createQueryBuilder()
+			->select('e.descricao unidade, u.descricao unitizador, np.numLastro lastro, np.numCamadas camadas, np.numNorma qtdNorma, u.id idUnitizador, np.id idNorma, p.descricao dscProduto')
+			->from('wms:Produto\NormaPaletizacao', 'np')
+			->innerJoin('wms:Armazenagem\Unitizador','u','WITH','u.id = np.unitizador')
+			->innerJoin('wms:Produto\DadoLogistico','pdl', 'WITH', 'pdl.normaPaletizacao = np.id')
+			->innerJoin('wms:Produto\Embalagem', 'e', 'WITH', 'e.id = pdl.embalagem')
+			->innerJoin('wms:Produto','p','WITH','p.id = e.codProduto AND p.grade = e.grade')
+			->where("e.codProduto = '$codProduto' AND e.grade = '$grade'");
+
+		if (isset($norma) && !is_null($norma)) {
+			$sql->andWhere("np.id = $norma");
+		}
+		$result = $sql->getQuery()->getResult();
+		if (count($result) > 0)
+			return $result;
 
 		$produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
 		$volumes = $produtoEntity->getVolumes();
-		$embalagens = $produtoEntity->getEmbalagens();
 
 		$idNorma = NULL;
 		$unidadePadrao = "";
@@ -1171,37 +1186,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		$lastro = 0;
 		$camadas = 0;
 		$dscProduto = $produtoEntity->getDescricao();
-		$result = array();
-
-		$encontrouEmbalagemPadrao = false;
-		if (count($embalagens) >0) {
-			$ultimaEmbalagem = end($embalagens);
-			$ultimaEmbalagem = $ultimaEmbalagem[0];
-		}
-		foreach ($embalagens as $embalagem) {
-			if ($embalagem->getIsPadrao()=="S" OR (($encontrouEmbalagemPadrao == false) AND ($embalagem == $ultimaEmbalagem))) {
-				$encontrouEmbalagemPadrao = true;
-				$dadosLogisticos = $embalagem->getDadosLogisticos();
-				$unidadePadrao = $embalagem->getDescricao();
-				if (count($dadosLogisticos) >0){
-					$keyPadrao = 0;
-					foreach ($dadosLogisticos as $key => $normaPaletizacao) {
-						if ($normaPaletizacao->getNormaPaletizacao()->getIsPadrao() == 'S') {
-							$keyPadrao = $key;
-						}
-					}
-					$idNorma = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getId();
-					$qtdNorma = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumNorma();
-					$lastro = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumLastro();
-					$camadas = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getNumCamadas();
-					$unitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getDescricao();
-					$IdUnitizador = $dadosLogisticos[$keyPadrao]->getNormaPaletizacao()->getUnitizador()->getId();
-					break;
-				}
-			}
-		}
 
 		foreach ($volumes as $volume) {
+			$result = array();
 			$norma = $volume->getNormaPaletizacao()->getId();
 			if ($norma != NULL) {
 				$unidadePadrao = $volume->getDescricao();

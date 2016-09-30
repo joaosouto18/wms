@@ -79,38 +79,34 @@ class Enderecamento_ProdutoController extends Action
         $codProduto    = $this->_getParam("codigo");
         $grade         = $this->_getParam("grade");
 
-        $result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade);
+        $this->view->norma = $results = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade, null);
 
         $msg = "Confirma a troca da norma de paletização usada no recebimento deste produto para a norma da unidade abaixo?";
         $botaoConfirma = true;
         $tabela = true;
 
-        if ($result['unidade'] == "") {
-            $msg = "Este produto não possui embalagem padrão de recebimento cadastrada";
-            $botaoConfirma = false;
-            $tabela = false;
+        foreach ($results as $result) {
+            if ($result['unidade'] == "") {
+                $msg = "Este produto não possui embalagem padrão de recebimento cadastrada";
+                $botaoConfirma = false;
+                $tabela = false;
+            }
+            if ($result['qtdNorma'] == 0) {
+                $msg = "A embalagem padrão de recebimento está com a norma cadastrada como 0";
+                $botaoConfirma = false;
+                $tabela = true;
+            }
+            if ($result['idNorma'] == NULL) {
+                $msg = "A emabalagem padrão de recebimento (" . $result['unidade'] . ") não possui norma de paletização cadastrada";
+                $botaoConfirma = false;
+                $tabela = false;
+            }
         }
-        if ($result['qtdNorma'] == 0) {
-            $msg = "A embalagem padrão de recebimento está com a norma cadastrada como 0";
-            $botaoConfirma = false;
-            $tabela = true;
-        }
-        if ($result['idNorma'] == NULL) {
-            $msg = "A emabalagem padrão de recebimento (" . $result['unidade'] . ") não possui norma de paletização cadastrada";
-            $botaoConfirma = false;
-            $tabela = false;
-        }
+
 
         $this->view->msg = $msg;
         $this->view->botaoConfirma = $botaoConfirma;
         $this->view->tabela = $tabela;
-
-        $this->view->unidade = $result['unidade'];
-        $this->view->unitizador = $result['unitizador'];
-        $this->view->qtdNorma = $result['qtdNorma'];
-        $this->view->dscProduto = $result['dscProduto'];
-        $this->view->lastro = $result['lastro'];
-        $this->view->camadas = $result['camadas'];
 
         $this->view->idRecebimento = $idRecebimento;
         $this->view->codProduto = $codProduto;
@@ -130,12 +126,12 @@ class Enderecamento_ProdutoController extends Action
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
         $grade         = $this->_getParam("grade");
+        $idNorma       = $this->_getParam("norma");
 
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
         $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
 
-        $result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade);
-        $idNorma = $result['idNorma'];
+        $result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade,$idNorma);
 
         if ($idNorma == NULL) {
             $this->addFlashMessage('error',"O Produto $codProduto, grade $grade não possuí norma de paletização");
