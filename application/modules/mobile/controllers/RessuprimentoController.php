@@ -5,6 +5,26 @@ use Wms\Controller\Action,
 
 class Mobile_RessuprimentoController extends Action
 {
+    public function indexAction()
+    {
+        $menu = array(
+
+            1 => array (
+                'url' => 'enderecamento/leitura-picking' ,
+                'label' => 'SELECIONAR PICKING',
+            ),
+            2 => array (
+                'url' => 'ressuprimento/listar-picking',
+                'label' => 'RESSUPRIMENTO PREVENTIVO',
+            ),
+            3 => array (
+                'url' => 'enderecamento_reabastecimento-manual',
+                'label' => 'RESSUPRIMENTO MANUAL',
+            )
+        );
+        $this->view->menu = $menu;
+        $this->renderScript('menu.phtml');
+    }
 
     public function listarPickingAction()
     {
