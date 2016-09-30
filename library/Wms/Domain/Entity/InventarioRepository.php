@@ -432,6 +432,7 @@ class InventarioRepository extends EntityRepository
         $params['qtd']           = $qtd;
         $params['volume']        = $contagemEndEn->getProdutoVolume();
         $params['embalagem']     = $contagemEndEn->getCodProdutoEmbalagem();
+        $params['validade']      = $contagemEndEn->getValidade();
         $params['tipo']          = 'I';
         $params['observacoes']   = 'Mov. correção inventário';
         $params['os']            = $osEn;
@@ -449,6 +450,7 @@ class InventarioRepository extends EntityRepository
         $params['qtd']          = $qtd;
         $params['volume']       = $estoqueEn->getProdutoVolume();
         $params['embalagem']    = 0;
+        $params['validade']      = $contagemEndEn->getValidade();
         $params['tipo']         = 'I';
         $params['observacoes']  = 'Mov. correção inventário';
         $params['os']           = $osEn;

@@ -18,12 +18,12 @@ class ContagemEndereco
     protected $id;
 
     /**
-     * @Column(name="QTD_AVARIA")
+     * @Column(name="QTD_AVARIA", type="decimal")
      */
     protected $qtdAvaria;
 
     /**
-     * @Column(name="QTD_CONTADA")
+     * @Column(name="QTD_CONTADA", type="decimal")
      */
     protected $qtdContada;
 
@@ -59,7 +59,7 @@ class ContagemEndereco
     protected $produto;
 
     /**
-     * @Column(name="QTD_DIVERGENCIA")
+     * @Column(name="QTD_DIVERGENCIA", type="decimal")
      */
     protected $qtdDivergencia;
 
@@ -93,6 +93,12 @@ class ContagemEndereco
      * @Column(name="CONTAGEM_INVENTARIADA")
      */
     protected $contagemInventariada;
+
+    /**
+     * @Column(name="DTH_VALIDADE", nullable=true, type="string")
+     * @var string
+     */
+    protected $validade;
 
     /**
      * @return mixed
@@ -333,5 +339,23 @@ class ContagemEndereco
     {
         $this->contagemInventariada = $contagemInventariada;
     }
+
+    /**
+     * @return string
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param string $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
+    }
+
+
 
 }

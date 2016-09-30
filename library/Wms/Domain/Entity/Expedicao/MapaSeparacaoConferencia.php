@@ -56,12 +56,12 @@ class MapaSeparacaoConferencia
     protected $produtoVolume;
 
     /**
-     * @Column(name="QTD_EMBALAGEM", type="integer", nullable=false)
+     * @Column(name="QTD_EMBALAGEM", type="decimal", nullable=false)
      */
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="QTD_CONFERIDA", type="integer", nullable=false)
+     * @Column(name="QTD_CONFERIDA", type="decimal", nullable=false)
      */
     protected $qtdConferida;
 

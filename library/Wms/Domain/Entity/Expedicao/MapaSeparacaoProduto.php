@@ -56,17 +56,17 @@ class MapaSeparacaoProduto
     protected $produtoVolume;
 
     /**
-     * @Column(name="QTD_EMBALAGEM", type="integer", nullable=false)
+     * @Column(name="QTD_EMBALAGEM", type="decimal", nullable=false)
      */
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="QTD_SEPARAR", type="integer", nullable=false)
+     * @Column(name="QTD_SEPARAR", type="decimal", nullable=false)
      */
     protected $qtdSeparar;
 
     /**
-     * @Column(name="QTD_CORTADO", type="integer", nullable=false)
+     * @Column(name="QTD_CORTADO", type="decimal", nullable=false)
      */
     protected $qtdCortado;
 
@@ -91,6 +91,21 @@ class MapaSeparacaoProduto
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
     protected $codDepositoEndereco;
+
+    /**
+     * @Column(name="NUM_CAIXA_PC_INI", type="integer", nullable=true)
+     */
+    protected $numCaixaInicio;
+
+    /**
+     * @Column(name="NUM_CAIXA_PC_FIM", type="integer", nullable=true)
+     */
+    protected $numCaixaFim;
+
+    /**
+     * @Column(name="CUBAGEM_TOTAL", nullable=true)
+     */
+    protected $cubagem;
 
     /**
      * @param mixed $codProduto
@@ -315,5 +330,53 @@ class MapaSeparacaoProduto
     {
         $this->pedidoProduto = $pedidoProduto;
     }
-    
+
+    /**
+     * @return mixed
+     */
+    public function getNumCaixaInicio()
+    {
+        return $this->numCaixaInicio;
+    }
+
+    /**
+     * @param mixed $numCaixaInicio
+     */
+    public function setNumCaixaInicio($numCaixaInicio)
+    {
+        $this->numCaixaInicio = $numCaixaInicio;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNumCaixaFim()
+    {
+        return $this->numCaixaFim;
+    }
+
+    /**
+     * @param mixed $numCaixaFim
+     */
+    public function setNumCaixaFim($numCaixaFim)
+    {
+        $this->numCaixaFim = $numCaixaFim;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCubagem()
+    {
+        return $this->cubagem;
+    }
+
+    /**
+     * @param mixed $cubagem
+     */
+    public function setCubagem($cubagem)
+    {
+        $this->cubagem = $cubagem;
+    }
+
 }

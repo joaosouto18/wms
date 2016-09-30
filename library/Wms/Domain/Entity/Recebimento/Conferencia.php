@@ -32,8 +32,7 @@ class Conferencia
     /**
      * Código qtdConferida conferida
      *  
-     * @Column(name="QTD_CONFERIDA", type="integer", nullable=true)
-     * @var integer $qtdConferida
+     * @Column(name="QTD_CONFERIDA", type="decimal", nullable=true)
      */
     protected $qtdConferida;
 
@@ -68,16 +67,14 @@ class Conferencia
     /**
      * Quantidade total - qtdConferida conferida
      *  
-     * @Column(name="QTD_DIVERGENCIA", type="integer", nullable=false)
-     * @var integer
+     * @Column(name="QTD_DIVERGENCIA", type="decimal", nullable=false)
      */
     protected $qtdDivergencia;
 
     /**
      * Quantidade avaria
      *  
-     * @Column(name="QTD_AVARIA", type="integer", nullable=false)
-     * @var integer
+     * @Column(name="QTD_AVARIA", type="decimal", nullable=false)
      */
     protected $qtdAvaria;
 
@@ -132,15 +129,20 @@ class Conferencia
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getQtdConferida()
     {
         return $this->qtdConferida;
     }
 
+    /**
+     * @param mixed $qtdConferida
+     */
     public function setQtdConferida($qtdConferida)
     {
-        $this->qtdConferida = (int) $qtdConferida;
-        return $this;
+        $this->qtdConferida = $qtdConferida;
     }
 
     public function getProduto()
@@ -176,15 +178,20 @@ class Conferencia
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getQtdDivergencia()
     {
         return $this->qtdDivergencia;
     }
 
+    /**
+     * @param mixed $qtdDivergencia
+     */
     public function setQtdDivergencia($qtdDivergencia)
     {
-        $this->qtdDivergencia = (int) $qtdDivergencia;
-        return $this;
+        $this->qtdDivergencia = $qtdDivergencia;
     }
 
     public function getQtdAvaria()

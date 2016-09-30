@@ -19,6 +19,7 @@ class Estoque
     protected $_usuario;
     protected $_estoqueRepo;
     protected $_contagemEndEn;
+    protected $_validade;
 
     public function __construct($em, $params)
     {
@@ -265,6 +266,22 @@ class Estoque
         $this->_produto = $produto;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getValidade()
+    {
+        return $this->_validade;
+    }
+
+    /**
+     * @param mixed $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->_validade = $validade;
+    }
+
     public function movimentaEstoque()
     {
         /** @var  $estoqueRepo */
@@ -279,7 +296,8 @@ class Estoque
             'observacoes' => $this->getObservacoes(),
             'os' => $this->getOs(),
             'usuario' => $this->getUsuario(),
-            'estoqueRepo' => $this->getEstoqueRepo()
+            'estoqueRepo' => $this->getEstoqueRepo(),
+            'validade' => $this->getValidade()
         );
         if (is_null($array['produto'])) {
             return false;

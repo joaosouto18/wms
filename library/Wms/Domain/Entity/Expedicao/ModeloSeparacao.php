@@ -51,10 +51,16 @@ class ModeloSeparacao
      * @Column(name="QUEBRA_PULMA_DOCA", type="string", nullable=true)
      */
     protected $quebraPulmaDoca;
+
     /**
      * @Column(name="TIPO_QUEBRA_VOLUME", type="string", nullable=true)
      */
     protected $tipoQuebraVolume;
+
+    /**
+     * @Column(name="IND_SEPARACAO_PC", type="string", nullable=false)
+     */
+    protected $separacaoPC;
 
     /**
      * @Column(name="TIPO_DEFAUL_EMBALADO", type="string", nullable=true)
@@ -326,6 +332,22 @@ class ModeloSeparacao
     public function setImprimeEtiquetaVolume($imprimeEtiquetaVolume)
     {
         $this->imprimeEtiquetaVolume = $imprimeEtiquetaVolume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSeparacaoPC()
+    {
+        return $this->separacaoPC;
+    }
+
+    /**
+     * @param mixed $separacaoPC
+     */
+    public function setSeparacaoPC($separacaoPC)
+    {
+        $this->separacaoPC = $separacaoPC;
     }
 
 }

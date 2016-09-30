@@ -105,7 +105,7 @@ class notaFiscalProduto {
     public $codProduto;
     /** @var string */
     public $grade;
-    /** @var integer */
+    /** @var string */
     public $qtd;
     /** @var double */
     public $valorVenda;
@@ -204,7 +204,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             foreach ($pedidoWs->produtos as $produtoWs) {
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = $produtoWs->grade;
-                $produto['quantidade'] = round($produtoWs->quantidade);
+                $produto['quantidade'] = $produtoWs->quantidade;
                 $produtos[] = $produto;
             }
 
@@ -722,7 +722,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'produto' => $enProduto,
                 'valorVenda' =>$produto['valorVenda'],
                 'grade' => $produto['grade'],
-                'quantidade' => $produto['qtde']
+                'quantidade' => str_replace(',','.',$produto['qtde'])
             );
             $PedidoProdutoRepo->save($prod);
         }

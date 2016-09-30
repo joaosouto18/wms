@@ -29,7 +29,7 @@ class NotaFiscalSaidaProduto
     protected $grade;
 
     /**
-     * @Column(name="QUANTIDADE", type="string",nullable=false)
+     * @Column(name="QUANTIDADE", type="decimal", nullable=false)
      */
     protected $quantidade;
 

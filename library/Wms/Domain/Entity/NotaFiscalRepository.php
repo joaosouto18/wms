@@ -883,16 +883,17 @@ class NotaFiscalRepository extends EntityRepository
                     if ($produtoEntity == null) throw new \Exception('Produto de código '  . $idProduto . ' e grade ' . $grade . ' não encontrado');
 
                     if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
-                        $qtd = (int)$item['quantidade'] * $item['qtdEmbalagem'];
+                        $qtd = $item['quantidade'] * $item['qtdEmbalagem'];
                     } else {
-                        $qtd = (int)$item['quantidade'];
+                        $qtd = $item['quantidade'];
                     }
+                    $qtd = str_replace(',','.',$qtd);
 
                     if (!isset($item['peso']) || empty($item['peso'])) {
                         if (isset($item['qtdEmbalagem']) && !empty($item['qtdEmbalagem'])){
-                            $item['peso'] = (float)$item['quantidade'] * $item['qtdEmbalagem'];
+                            $item['peso'] = $item['quantidade'] * $item['qtdEmbalagem'];
                         } else {
-                            $item['peso'] = (float)$item['quantidade'];
+                            $item['peso'] = $item['quantidade'];
                         }
                     }
                     $pesoItem = str_replace(',','.',trim($item['peso']));
