@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityRepository,
 use Doctrine\ORM\ORMException;
 use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
+use Wms\Domain\Entity\Deposito\Endereco\Caracteristica;
 use Wms\Domain\Entity\Produto\Embalagem;
 
 /**
@@ -1558,43 +1559,49 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	public function getProdutoByParametroVencimento($params)
 	{
-		$where = " WHERE e3_.DTH_VALIDADE <= TO_DATE('$params[dataReferencia]','DD/MM/YYYY')";
+		$where = " WHERE (E.DTH_VALIDADE <= TO_DATE('$params[dataReferencia]','DD/MM/YYYY') OR E.DTH_VALIDADE IS NULL)";
 		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
-			$where .= "AND p0_.COD_PRODUTO = '$params[codProduto]' ";
+			$where .= " AND P.COD_PRODUTO = '$params[codProduto]' ";
 		}
 		if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
-			$where .= "AND p0_.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
+			$where .= "AND P.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
 		}
 		if (isset($params['descricao']) && !empty($params['descricao'])) {
-			$where .= "AND LOWER(p0_.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
+			$where .= "AND LOWER(P.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
 		}
 		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
-			$where .= "AND LOWER(p1_.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
+			$where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
 		}
 
 		$query = "SELECT 
-  					p0_.COD_PRODUTO AS cod_produto, 
-  					p0_.DSC_GRADE AS grade, 
-				  	p0_.DSC_PRODUTO AS descricao, 
-				  	NVL(l8_.DSC_LINHA_SEPARACAO,'PADRAO') AS linha_separacao, 
-				  	p1_.NOM_PESSOA AS fornecedor, 
-				  	d2_.DSC_DEPOSITO_ENDERECO AS endereco, 
-				  	TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY') AS validade,
-				  	SUM(e3_.QTD) AS qtd 
-				  FROM RECEBIMENTO r4_ 
-				  INNER JOIN NOTA_FISCAL n5_ ON (n5_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
-				  INNER JOIN NOTA_FISCAL_ITEM n6_ ON (n6_.COD_NOTA_FISCAL = n5_.COD_NOTA_FISCAL) 
-				  INNER JOIN PRODUTO p0_ ON (p0_.COD_PRODUTO = n6_.COD_PRODUTO AND p0_.DSC_GRADE = n6_.DSC_GRADE AND p0_.POSSUI_VALIDADE = 'S') 
-				  INNER JOIN FORNECEDOR f7_ ON (f7_.COD_FORNECEDOR = n5_.COD_FORNECEDOR) 
-				  INNER JOIN PESSOA p1_ 
-				  LEFT JOIN PESSOA_JURIDICA p9_ ON p1_.COD_PESSOA = p9_.COD_PESSOA ON (p1_.COD_PESSOA = f7_.COD_FORNECEDOR) 
-				  LEFT JOIN LINHA_SEPARACAO l8_ ON (l8_.COD_LINHA_SEPARACAO = p0_.COD_LINHA_SEPARACAO)
-				  INNER JOIN PALETE p10_ ON (p10_.COD_RECEBIMENTO = r4_.COD_RECEBIMENTO) 
-				  INNER JOIN ESTOQUE e3_ ON (e3_.UMA = p10_.UMA) 
-				  INNER JOIN DEPOSITO_ENDERECO d2_ ON (d2_.COD_DEPOSITO_ENDERECO = e3_.COD_DEPOSITO_ENDERECO)
-				  $where
-				  GROUP BY p0_.COD_PRODUTO, p0_.DSC_GRADE, p0_.DSC_PRODUTO, l8_.DSC_LINHA_SEPARACAO, p1_.NOM_PESSOA, d2_.DSC_DEPOSITO_ENDERECO, TO_CHAR(e3_.DTH_VALIDADE,'DD/MM/YYYY')
-				  ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
+                      P.COD_PRODUTO AS cod_produto, 
+                      P.DSC_GRADE AS grade, 
+                      P.DSC_PRODUTO AS descricao, 
+                      NVL(L.DSC_LINHA_SEPARACAO,'PADRAO') AS linha_separacao, 
+                      NVL(PES.NOM_PESSOA,'NÃO IDENTIFICADO') AS fornecedor, 
+                      DE.DSC_DEPOSITO_ENDERECO AS endereco, 
+                      TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY') AS VALIDADE,
+                      SUM(E.QTD) AS qtd 
+                  FROM ESTOQUE E 
+                  INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO AND DE.COD_CARACTERISTICA_ENDERECO = ".Caracteristica::PULMAO."
+                  INNER JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE AND P.POSSUI_VALIDADE = 'S'
+                  LEFT JOIN LINHA_SEPARACAO L ON L.COD_LINHA_SEPARACAO = P.COD_LINHA_SEPARACAO
+                  LEFT JOIN PALETE PLT ON PLT.UMA = E.UMA AND PLT.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO 
+                  LEFT JOIN (
+                      SELECT COD_RECEBIMENTO, MAX(COD_FORNECEDOR) AS COD_FORNECEDOR 
+                      FROM NOTA_FISCAL 
+                      GROUP BY COD_RECEBIMENTO) NF ON NF.COD_RECEBIMENTO = PLT.COD_RECEBIMENTO
+                  LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_FORNECEDOR
+                  $where
+                  GROUP BY 
+                      P.COD_PRODUTO, 
+                      P.DSC_GRADE, 
+                      P.DSC_PRODUTO, 
+                      L.DSC_LINHA_SEPARACAO, 
+                      PES.NOM_PESSOA, 
+                      DE.DSC_DEPOSITO_ENDERECO,
+                      TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY')
+                  ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
 		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
