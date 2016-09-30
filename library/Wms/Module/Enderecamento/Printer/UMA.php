@@ -119,6 +119,7 @@ class UMA extends Pdf
                 $picking = $this->getPicking($produtoEn);
             }
 
+            $modelo=5;
             if ($modelo == 1) {
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 2) {
@@ -173,9 +174,11 @@ class UMA extends Pdf
 
         $this->Image(@CodigoBarras::gerarNovo($palete['idUma']),50,65,170,40);
 
-        $this->SetFont('Arial', 'B', $font_size);
+        $this->SetFont('Arial', 'B', 75);
+        $this->Cell($line_width, 15, '             '.$codigoProduto, 0, 5);
 
-        $this->Cell($line_width, 15, $codigoProduto.' - '.$descricaoProduto, 0, 5);
+        $this->SetFont('Arial', 'B', $font_size);
+        $this->Cell($line_width, 40, $descricaoProduto, 0, 5);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
@@ -184,9 +187,10 @@ class UMA extends Pdf
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->SetFont('Arial', 'B', 40);
-            $this->Cell(75,40,utf8_decode("Validade "),0,1);
+            $this->Cell(75,100,'',0,1);
+            $this->Cell(75,-40,"Validade ",0,1);
             $this->SetFont('Arial', 'B', 70);
-            $this->Cell(75,-40,utf8_decode("               $dataValidade"),0,1);
+            $this->Cell(75,40,utf8_decode("               $dataValidade"),0,1);
         }
 
         $this->Cell($line_width, 40, '', 0, 25);
