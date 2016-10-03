@@ -584,7 +584,6 @@ class MapaSeparacao extends Pdf
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
-        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
         $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
@@ -634,6 +633,16 @@ class MapaSeparacao extends Pdf
                     $stringCargas = $cargasSelecionadas;
                 }
             }
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
+            /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
+            $cargaRepo = $em->getRepository('wms:Expedicao\Carga');
+            $cargaEn = $cargaRepo->findOneBy(array('codCargaExterno' => array($stringCargas)));
+            $pedidoEn = $pedidoRepo->findOneBy(array('carga' => $cargaEn->getId()));
+            $linhaSeparacao = '';
+            if (isset($pedidoEn) && !empty($pedidoEn))
+                $linhaSeparacao = $pedidoEn->getItinerario()->getDescricao();
 
             $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
 
@@ -759,7 +768,7 @@ class MapaSeparacao extends Pdf
             $this->SetFont('Arial','B',9);
             $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
 
             $this->Image($this->imgCodBarras, 143, 280, 50);
