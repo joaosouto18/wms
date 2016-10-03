@@ -638,7 +638,8 @@ class MapaSeparacao extends Pdf
             $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
             /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
             $cargaRepo = $em->getRepository('wms:Expedicao\Carga');
-            $cargaEn = $cargaRepo->findOneBy(array('codCargaExterno' => array($stringCargas)));
+            $codCargaExterno = explode(',',$stringCargas);
+            $cargaEn = $cargaRepo->findOneBy(array('codCargaExterno' => array($codCargaExterno[0])));
             $pedidoEn = $pedidoRepo->findOneBy(array('carga' => $cargaEn->getId()));
             $linhaSeparacao = '';
             if (isset($pedidoEn) && !empty($pedidoEn))
