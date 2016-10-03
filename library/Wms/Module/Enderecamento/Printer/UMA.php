@@ -193,7 +193,7 @@ class UMA extends Pdf
             $this->Cell(75,75,'',0,1);
             $this->Cell(75,-40,'',0,1);
             $this->SetFont('Arial', 'B', 70);
-            $this->Cell(75,40,utf8_decode(''),0,1);
+            $this->Cell(75,40,'',0,1);
         }
 
         $this->Cell($line_width, 40, '', 0, 25);
