@@ -112,14 +112,12 @@ class UMA extends Pdf
         $line_width = 300;
 
         foreach($paletes as $palete) {
-            $posicaoSuperiorLayout = false;
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
             } else {
                 $picking = $this->getPicking($produtoEn);
             }
 
-            $modelo=5;
             if ($modelo == 1) {
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 2) {
