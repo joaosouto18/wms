@@ -636,7 +636,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
             $pedidoId           = $pedidoProduto->getPedido()->getId();
-            $quantidade         = number_format($pedidoProduto->getQuantidade(),2) - number_format($pedidoProduto->getQtdCortada(),2);
+            $quantidade         = (float)$pedidoProduto->getQuantidade() - (float)$pedidoProduto->getQtdCortada();
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
