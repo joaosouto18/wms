@@ -1441,26 +1441,26 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setCubagem($mapaProduto->getCubagem() + $cubagem);
         }
 
-        $qtdCaixas = ceil($cubagem / $cubagemCaixa);
-        $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
-
-        if ($qtdCaixas == 0) {
-            $mapaProduto->setNumCaixaInicio(null);
-            $mapaProduto->setNumCaixaFim(null);
-            $mapaProduto->setCubagem(null);
-        } elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
-            if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa * ($caixasUsadas[0]['numCaixaFim'] - $caixasUsadas[0]['numCaixaInicio'] + 1)) {
-                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
-            } else {
-                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-            }
-        } else {
-            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
-            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-        }
+//        $qtdCaixas = ceil($cubagem / $cubagemCaixa);
+//        $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
+//
+//        if ($qtdCaixas == 0) {
+//            $mapaProduto->setNumCaixaInicio(null);
+//            $mapaProduto->setNumCaixaFim(null);
+//            $mapaProduto->setCubagem(null);
+//        } elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
+//            if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa * ($caixasUsadas[0]['numCaixaFim'] - $caixasUsadas[0]['numCaixaInicio'] + 1)) {
+//                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
+//                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+//            } else {
+//                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+//                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+//            }
+//        } else {
+//            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+//            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+//            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+//        }
 
         $this->_em->persist($mapaProduto);
         $this->_em->flush($mapaProduto);

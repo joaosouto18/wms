@@ -108,6 +108,12 @@ class MapaSeparacaoProduto
     protected $cubagem;
 
     /**
+     * @Column(name="NUM_CARRINHO", type="integer", nullable=true)
+     * @var int
+     */
+    protected $numCarrinho;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -377,6 +383,22 @@ class MapaSeparacaoProduto
     public function setCubagem($cubagem)
     {
         $this->cubagem = $cubagem;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumCarrinho()
+    {
+        return $this->numCarrinho;
+    }
+
+    /**
+     * @param int $numCarrinho
+     */
+    public function setNumCarrinho($numCarrinho)
+    {
+        $this->numCarrinho = $numCarrinho;
     }
 
 }
