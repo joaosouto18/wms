@@ -312,8 +312,8 @@ class Mobile_OndaRessuprimentoController extends Action
                     throw new \Exception("Ocorreu um erro tentando finalizar a OS");
                 }
 
-                $codProduto = $result[0]['id'];
-                $grade = $result[0]['grade'];
+                $codProduto = $result[0]['ID'];
+                $grade = $result[0]['GRADE'];
                 $ondaOsEn = $ondaOsEn->getProdutos();
 
                 if (($codProduto != $ondaOsEn[0]->getProduto()->getId()) || ($grade != $ondaOsEn[0]->getProduto()->getGrade())){
