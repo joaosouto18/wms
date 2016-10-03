@@ -685,16 +685,24 @@ class MapaSeparacao extends Pdf
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 4, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 4, utf8_decode("RUA: "), 0, 0);
+                    $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 4, utf8_decode($rua), 0, 1);
+                    $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 4, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
+                    $this->Cell(20, 4, utf8_decode("ROTA: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
+                    $this->Cell(20, 4, utf8_decode($linhaSeparacao), 0, 1);
+
+
+                    $this->SetFont('Arial',null,10);
+                    $this->Cell(4, 4, '', 0, 1);
+                    $this->SetFont('Arial','B',10);
+                    $this->Cell(20, 4, utf8_decode("RUA: "), 0, 0);
+                    $this->SetFont('Arial',null,10);
+                    $this->Cell(20, 4, utf8_decode($rua), 0, 1);
 
                     $this->Cell(20, 4, "", 0, 1);
                     $this->SetFont('Arial', 'B', 8);
