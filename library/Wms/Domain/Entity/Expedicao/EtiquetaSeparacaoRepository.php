@@ -653,6 +653,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $count = 0;
             while ($quantidadeRestantePedido > 0) {
+
                 $count++;
                 $embalagemAtual = null;
                 $quantidadeAtender = $quantidadeRestantePedido;
@@ -675,7 +676,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (!is_null($embalagemAtual->getDataInativacao()))
                     continue;
 
-                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2) - number_format($embalagemAtual->getQuantidade(),2);
+                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2,'.','') - number_format($embalagemAtual->getQuantidade(),2,'.','');
 
                 $embalado = false;
                 if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == 'P') {
@@ -738,7 +739,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 /** @var \Wms\Domain\Entity\Produto $produtoEntity */
                 $pedidoEntity   = $pedidoProduto->getPedido();
                 $produtoEntity  = $pedidoProduto->getProduto();
-                $quantidade     = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
+                $quantidade     = (float)$pedidoProduto->getQuantidade() - (float)$pedidoProduto->getQtdCortada();
                 $depositoEnderecoEn     = null;
 
                 $pedidoEntity->setIndEtiquetaMapaGerado("S");
@@ -886,7 +887,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (!is_null($embalagemAtual->getDataInativacao()))
                             continue;
 
-                        $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2) - number_format($embalagemAtual->getQuantidade(),2);
+                        $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2,'.','') - number_format($embalagemAtual->getQuantidade(),2,'.','');
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             $enderecoPulmao['QUANTIDADE'] = $enderecoPulmao['QUANTIDADE'] - $embalagemAtual->getQuantidade();
