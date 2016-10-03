@@ -328,7 +328,7 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         if (($qtdConferida + $qtdCortada + ($qtdEmbalagem * $quantidade)) > $qtdMapa) {
-            throw new \Exception("Quantidade informada excede a quantidade solicitada no mapa");
+            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
         }
         $sessao = new \Zend_Session_Namespace('coletor');
 
