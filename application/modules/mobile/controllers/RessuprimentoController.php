@@ -210,8 +210,8 @@ class Mobile_RessuprimentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                 }
 
-                $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
-                $this->getEntityManager()->remove($relatorioPicking);
+//                $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
+//                $this->getEntityManager()->remove($relatorioPicking);
             }
 
             $this->getEntityManager()->flush();
