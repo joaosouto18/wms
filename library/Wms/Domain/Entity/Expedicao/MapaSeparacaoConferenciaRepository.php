@@ -17,7 +17,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                          P.DSC_PRODUTO,
                          M.QTD_SEPARAR,
                          M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
-                         NVL(PE.COD_BARRAS, PV.COD_BARRAS) as COD_BARRAS,
+                         NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
                          DE.DSC_DEPOSITO_ENDERECO
                     FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
                             FROM MAPA_SEPARACAO_PRODUTO MP
@@ -42,6 +42,13 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                 LEFT JOIN PRODUTO P ON P.COD_PRODUTO = M.COD_PRODUTO AND P.DSC_GRADE = M.DSC_GRADE
               WHERE M.COD_EXPEDICAO = $id
                 AND NVL(C.QTD_CONFERIDA,0) < M.QTD_SEPARAR
+                GROUP BY M.COD_MAPA_SEPARACAO,
+                         M.COD_PRODUTO,
+                         M.DSC_GRADE,
+                         P.DSC_PRODUTO,
+                         M.QTD_SEPARAR,
+                         C.QTD_CONFERIDA,
+                         DE.DSC_DEPOSITO_ENDERECO
             ORDER BY COD_MAPA_SEPARACAO, M.COD_PRODUTO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
