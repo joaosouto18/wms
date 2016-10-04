@@ -103,7 +103,7 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function verificaMapaSeparacao($codMapaSeparacao){
-        $conferenciaFinalizada = $this->validaConferencia($codMapaSeparacao);
+        $conferenciaFinalizada = $this->validaConferencia($codMapaSeparacao, false);
 
         if (count($conferenciaFinalizada) > 0) {
             return 'Existem produtos para serem Conferidos nesse mapa de Separação';
@@ -121,28 +121,30 @@ class MapaSeparacaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    private function validaConferencia($codMapaSeparacao)
+    public function validaConferencia($codMapaSeparacao, $setDivergencia = false)
     {
         $sql = "select mp.COD_MAPA_SEPARACAO, msp.COD_MAPA_SEPARACAO_PRODUTO,
-                    ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) qtd_faltante, p.COD_PRODUTO
+                    ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) QTD_FALTANTE, p.COD_PRODUTO, p.DSC_PRODUTO
                     from MAPA_SEPARACAO mp
                     inner join MAPA_SEPARACAO_PRODUTO msp on msp.COD_MAPA_SEPARACAO = mp.COD_MAPA_SEPARACAO
                     inner join produto p on p.COD_PRODUTO = msp.COD_PRODUTO and p.DSC_GRADE = msp.DSC_GRADE
                     left join MAPA_SEPARACAO_CONFERENCIA msc on msc.COD_MAPA_SEPARACAO = mp.COD_MAPA_SEPARACAO and p.COD_PRODUTO = msc.COD_PRODUTO and p.DSC_GRADE = msc.DSC_GRADE
-                    where mp.COD_MAPA_SEPARACAO = $codMapaSeparacao
-                    GROUP BY mp.COD_MAPA_SEPARACAO, msp.QTD_EMBALAGEM, msp.QTD_SEPARAR, msp.QTD_CORTADO, msc.QTD_CONFERIDA, msc.QTD_EMBALAGEM, p.COD_PRODUTO, msp.COD_MAPA_SEPARACAO_PRODUTO
+                    where mp.COD_MAPA_SEPARACAO = $codMapaSeparacao AND msp.IND_DIVERGENCIA = 'S'
+                    GROUP BY mp.COD_MAPA_SEPARACAO, msp.QTD_EMBALAGEM, msp.QTD_SEPARAR, msp.QTD_CORTADO, msc.QTD_CONFERIDA, msc.QTD_EMBALAGEM, p.COD_PRODUTO, msp.COD_MAPA_SEPARACAO_PRODUTO, p.DSC_PRODUTO
                     having ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) > 0";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
+        if ($setDivergencia == true) {
+            foreach ($result as $mapaSeparacaoProduto) {
+                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', $mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
 
-        foreach ($result as $mapaSeparacaoProduto) {
-            $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', $mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
-
-            $mapaSeparacaoProdutoEn->setDivergencia('S');
-            $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+                $mapaSeparacaoProdutoEn->setDivergencia('S');
+                $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+            }
+            $this->getEntityManager()->flush();
         }
-        $this->getEntityManager()->flush();
+
         return $result;
 
     }
