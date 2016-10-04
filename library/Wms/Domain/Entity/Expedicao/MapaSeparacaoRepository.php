@@ -103,10 +103,10 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function verificaMapaSeparacao($codMapaSeparacao){
-        $conferenciaFinalizada = $this->validaConferencia($codMapaSeparacao, false);
+        $conferenciaFinalizada = $this->validaConferencia($codMapaSeparacao, true);
 
         if (count($conferenciaFinalizada) > 0) {
-            return 'Existem produtos para serem Conferidos nesse mapa de Separação';
+            return 'Existem produtos para serem Conferidos neste Mapa de Separação';
         } else {
             $this->fechaConferencia($codMapaSeparacao);
         }
@@ -142,14 +142,13 @@ class MapaSeparacaoRepository extends EntityRepository
 
         if ($setDivergencia == true) {
             foreach ($result as $mapaSeparacaoProduto) {
-                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', $mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
-
+                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', (int)$mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
                 $mapaSeparacaoProdutoEn->setDivergencia('S');
                 $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
             }
             $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
         }
-
         return $result;
 
     }
