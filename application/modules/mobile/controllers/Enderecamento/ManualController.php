@@ -319,7 +319,7 @@ class Mobile_Enderecamento_ManualController extends Action
         }
         /** @var \Wms\Domain\Entity\Armazenagem\UnitizadorRepository $uniRepo */
         $uniRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
-        $unitizadorEn  = $uniRepo->find($result['idUnitizador']);
+        $unitizadorEn  = $uniRepo->find($result[0]['idUnitizador']);
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO);
 
         $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
