@@ -312,7 +312,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $idProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, 'UNICA');
-        $idNorma = $result['idNorma'];
+        $idNorma = $result[0]['idNorma'];
 
         if ($idNorma == null) {
             throw  new \Exception("O Produto ". $produtoEn->getDescricao() . " não possui norma de paletização");
