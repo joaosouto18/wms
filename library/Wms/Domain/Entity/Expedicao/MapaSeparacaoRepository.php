@@ -123,13 +123,18 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function validaConferencia($codMapaSeparacao, $setDivergencia = false)
     {
+        $andWhere = ' ';
+        if ($setDivergencia == false) {
+            $andWhere = " AND msp.IND_DIVERGENCIA = 'S' ";
+        }
         $sql = "select mp.COD_MAPA_SEPARACAO, msp.COD_MAPA_SEPARACAO_PRODUTO,
                     ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) QTD_FALTANTE, p.COD_PRODUTO, p.DSC_PRODUTO
                     from MAPA_SEPARACAO mp
                     inner join MAPA_SEPARACAO_PRODUTO msp on msp.COD_MAPA_SEPARACAO = mp.COD_MAPA_SEPARACAO
                     inner join produto p on p.COD_PRODUTO = msp.COD_PRODUTO and p.DSC_GRADE = msp.DSC_GRADE
                     left join MAPA_SEPARACAO_CONFERENCIA msc on msc.COD_MAPA_SEPARACAO = mp.COD_MAPA_SEPARACAO and p.COD_PRODUTO = msc.COD_PRODUTO and p.DSC_GRADE = msc.DSC_GRADE
-                    where mp.COD_MAPA_SEPARACAO = $codMapaSeparacao AND msp.IND_DIVERGENCIA = 'S'
+                    where mp.COD_MAPA_SEPARACAO = $codMapaSeparacao
+                    $andWhere
                     GROUP BY mp.COD_MAPA_SEPARACAO, msp.QTD_EMBALAGEM, msp.QTD_SEPARAR, msp.QTD_CORTADO, msc.QTD_CONFERIDA, msc.QTD_EMBALAGEM, p.COD_PRODUTO, msp.COD_MAPA_SEPARACAO_PRODUTO, p.DSC_PRODUTO
                     having ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) > 0";
 
