@@ -26,3 +26,5 @@ ALTER TABLE mapa_separacao_quebra DROP COLUMN ind_tipo_quebra_temp;
 
 
 ALTER TABLE RELATORIO_PICKING ADD (DSC_GRADE CHAR(45) NULL);
+
+alter table mapa_separacao_produto add (IND_DIVERGENCIA VARCHAR(1) null);

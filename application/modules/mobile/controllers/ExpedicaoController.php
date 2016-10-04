@@ -17,6 +17,15 @@ class Mobile_ExpedicaoController extends Action
         $this->setIdCentral($idCentral);
     }
 
+    public function iniciarExpedicaoAction()
+    {
+
+        $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+        $expedicaoEn = $expedicaoRepo->getExpedicaoByCliente();
+
+
+    }
+
     public function confirmarOperacaoAction()
     {
         $this->view->codBarras = $codBarras = $this->_getParam('codigoBarras');
@@ -409,7 +418,7 @@ public function informaQtdMapaAction()
         $central          = $sessao->centralSelecionada;
         $mapa             = $request->getParam('mapa', "N");
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
+        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {

@@ -114,6 +114,11 @@ class MapaSeparacaoProduto
     protected $numCarrinho;
 
     /**
+     * @Column(name="IND_DIVERGENCIA", nullable=true)
+     */
+    protected $divergencia;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -399,6 +404,22 @@ class MapaSeparacaoProduto
     public function setNumCarrinho($numCarrinho)
     {
         $this->numCarrinho = $numCarrinho;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDivergencia()
+    {
+        return $this->divergencia;
+    }
+
+    /**
+     * @param mixed $divergencia
+     */
+    public function setDivergencia($divergencia)
+    {
+        $this->divergencia = $divergencia;
     }
 
 }
