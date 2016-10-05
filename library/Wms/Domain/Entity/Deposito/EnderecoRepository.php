@@ -613,8 +613,9 @@ class EnderecoRepository extends EntityRepository
 
     public function getEndereco($rua, $predio, $nivel, $apto)
     {
+        $nivel = ((int)$nivel === 0)? '00': $nivel;
         if (empty($rua) || empty($predio) || empty($nivel) || empty($apto)) {
-            throw new Exception("É necessário informar todo o endereço");
+            throw new \Exception("É necessário informar todo o endereço");
         }
         $source = $this->_em->createQueryBuilder()
             ->select("e.id, e.descricao")
@@ -626,7 +627,7 @@ class EnderecoRepository extends EntityRepository
 
         $result =  $source->getQuery()->getSingleResult();
         if ($result == null) {
-            throw new Exception("Endereço não encontrado.");
+            throw new \Exception("Endereço não encontrado.");
         }
         return $result;
     }

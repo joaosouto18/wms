@@ -887,16 +887,6 @@ class Mobile_EnderecamentoController extends Action
         $codProduto = $embalagemEn->getCodProduto();
         $grade = $embalagemEn->getGrade();
 
-        if (isset($embalagemEn) && empty($embalagemEn)) {
-            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
-        } else {
-            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco));
-
-        }
-        $this->view->qtd = $qtd = $estoqueEn->getQtd();
-
         $SQL = "SELECT RE.*
                   FROM RESERVA_ESTOQUE RE
                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
@@ -952,6 +942,7 @@ class Mobile_EnderecamentoController extends Action
 
             if (isset($params['uma']) && !empty($params['uma'])) {
                 $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo));
+                /** @var Estoque $estoque */
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
@@ -962,15 +953,10 @@ class Mobile_EnderecamentoController extends Action
                         $this->_redirect('/mobile/enderecamento/movimentacao');
                     }
 
-
-                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
+                    /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                    $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
                     $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
-                    $validade = $estoque->getValidade();
-                    $params['validade'] = null;
-                    if (isset($validade) && !is_null($validade)) {
-                        $params['validade'] = $validade->format('d/m/Y');
-                    }
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -1029,10 +1015,52 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    $estoqueDestino = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn, 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $endereco));
+                    if ($produtoEn->getValidade() == 'S' ) {
+                        $valEstOrigem = $estoque->getValidade();
+                        $valEstDestino = (!empty($estoqueDestino))? $estoqueDestino->getValidade() : null;
+
+                        if (!empty($valEstOrigem)) {
+                            if (!empty($valEstDestino)) {
+                                $validade = ($valEstOrigem < $valEstDestino)? $valEstOrigem : $valEstDestino;
+                            } else {
+                                $validade = $valEstOrigem;
+                            }
+                        } elseif(!empty($valEstDestino)) {
+                            $validade = $valEstDestino;
+                        } else {
+                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
+                            $umaOrigem = (!empty($estoque->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoque->getUma()) : null;
+
+                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
+                            $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
+
+                            $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
+                            $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
+
+                            if (!empty($valUmaOrigem)) {
+                                if (!empty($valUmaDestino)) {
+                                    $validade = ($valUmaOrigem < $valUmaDestino)? $valUmaOrigem : $valUmaDestino;
+                                } else {
+                                    $validade = $valUmaOrigem;
+                                }
+                            } elseif(!empty($valUmaDestino)) {
+                                $validade = $valUmaDestino;
+                            }
+                        }
+                        if (isset($validade) && !empty($validade)) {
+                            $params['validade'] = $validade->format('d/m/Y');
+                        }
+                    }
+
+                    if (empty($estoqueDestino))
+                        $data['uma'] = $estoque->getUma();
+
                     $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
+                    $params['validade'] = $estoque->getValidade()->format('d/m/Y');
                     $params['qtd'] = $qtd * -1;
                     $params['observacoes'] = "Transferencia de Estoque - Destino: ".$endereco->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
@@ -1045,7 +1073,8 @@ class Mobile_EnderecamentoController extends Action
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
                 if (isset($params['embalagem']) && !empty($params['embalagem'])) {
-                    $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                    /** @var Wms\Domain\Entity\Produto $produtoEn */
+                    $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
                     $newEndereco = $this->getEnderecoByParametro($enderecoNovo);
                     if (!isset($newEndereco) || empty($newEndereco))
@@ -1100,10 +1129,42 @@ class Mobile_EnderecamentoController extends Action
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
-                    $validade = $estoqueEn->getValidade();
-                    $params['validade'] = null;
-                    if (isset($validade) && !is_null($validade)) {
-                        $params['validade'] = $validade->format('d/m/Y');
+                    $estoqueDestino = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn, 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $endereco));
+                    if ($produtoEn->getValidade() == 'S' ) {
+                        $valEstOrigem = $estoqueEn->getValidade();
+                        $valEstDestino = (!empty($estoqueDestino))? $estoqueDestino->getValidade() : null;
+
+                        if (!empty($valEstOrigem)) {
+                            if (!empty($valEstDestino)) {
+                                $validade = ($valEstOrigem < $valEstDestino)? $valEstOrigem : $valEstDestino;
+                            } else {
+                                $validade = $valEstOrigem;
+                            }
+                        } elseif(!empty($valEstDestino)) {
+                            $validade = $valEstDestino;
+                        } else {
+                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
+                            $umaOrigem = (!empty($estoqueEn->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma()) : null;
+
+                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
+                            $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
+
+                            $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
+                            $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
+
+                            if (!empty($valUmaOrigem)) {
+                                if (!empty($valUmaDestino)) {
+                                    $validade = ($valUmaOrigem < $valUmaDestino)? $valUmaOrigem : $valUmaDestino;
+                                } else {
+                                    $validade = $valUmaOrigem;
+                                }
+                            } elseif(!empty($valUmaDestino)) {
+                                $validade = $valUmaDestino;
+                            }
+                        }
+                        if (isset($validade) && !empty($validade)) {
+                            $params['validade'] = $validade->format('d/m/Y');
+                        }
                     }
 
                     $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
@@ -1111,6 +1172,7 @@ class Mobile_EnderecamentoController extends Action
                     //RETIRA ESTOQUE
                     $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                     $params['endereco'] = $enderecoAntigo;
+                    $params['validade'] = $estoqueEn->getValidade()->format('d/m/Y');
                     $params['qtd'] = $qtd * -1;
                     $estoqueRepo->movimentaEstoque($params);
                 }
@@ -1167,12 +1229,8 @@ class Mobile_EnderecamentoController extends Action
                         $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $volume->getProduto(), 'grade' => $volume->getGrade()));
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
-                        $validade = $estoqueEn->getValidade();
-                        $params['validade'] = null;
-                        if (isset($validade) && !is_null($validade)) {
-                            $params['validade'] = $validade->format('d/m/Y');
-                        }
 
+                        $params['validade'] = null;
                         $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                         $estoqueRepo->movimentaEstoque($params);
 

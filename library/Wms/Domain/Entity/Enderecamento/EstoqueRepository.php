@@ -69,12 +69,6 @@ class EstoqueRepository extends EntityRepository
             }
         }
 
-        if (isset($params['estoqueRepo']) and !is_null($params['estoqueRepo'])) {
-            $estoqueRepo = $params['estoqueRepo'];
-        } else {
-            $estoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
-        }
-
         $usuarioEn = null;
         if (isset($params['usuario']) and !is_null($params['usuario'])) {
             $usuarioEn = $params['usuario'];
@@ -88,13 +82,13 @@ class EstoqueRepository extends EntityRepository
         $volumeEn = null;
         if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
-            $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume'=>$volumeEn));
+            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume'=>$volumeEn));
         }
 
         $embalagemEn = null;
         if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
-            $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
         }
 
         $tipo = "S";
@@ -176,18 +170,18 @@ class EstoqueRepository extends EntityRepository
 
         //CRIA UM HISTÓRICO DE MOVIMENTAÇÃO DE ESTOQUE
         $historico = new HistoricoEstoque();
-            $historico->setQtd($qtd);
-            $historico->setData(new \DateTime());
-            $historico->setDepositoEndereco($enderecoEn);
-            $historico->setObservacao($observacoes);
-            $historico->setOrdemServico($osEn);
-            $historico->setTipo($tipo);
-            $historico->setUsuario($usuarioEn);
-            $historico->setUma($idUma);
-            $historico->setProduto($produtoEn);
-            $historico->setUnitizador($unitizadorEn);
-            $historico->setProdutoEmbalagem($embalagemEn);
-            $historico->setProdutoVolume($volumeEn);
+        $historico->setQtd($qtd);
+        $historico->setData(new \DateTime());
+        $historico->setDepositoEndereco($enderecoEn);
+        $historico->setObservacao($observacoes);
+        $historico->setOrdemServico($osEn);
+        $historico->setTipo($tipo);
+        $historico->setUsuario($usuarioEn);
+        $historico->setUma($idUma);
+        $historico->setProduto($produtoEn);
+        $historico->setUnitizador($unitizadorEn);
+        $historico->setProdutoEmbalagem($embalagemEn);
+        $historico->setProdutoVolume($volumeEn);
         $em->persist($historico);
 
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO

@@ -49,31 +49,7 @@
         <tr>
             <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>"
-                           onkeyup="var v = this.value;
-
-                                    var key = event.keyCode;
-                                    if (key != 8) {
-                                        if (v.match(/^\d{2}$/) !== null) {
-                                            this.value = v + '/';
-                                        }
-                                        else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
-                                            this.value = v + '/';
-                                        }
-                                    }
-
-                                    if (v != '' && v.length == 8) {
-                                        quantidade = document.getElementById('qtdConferida');
-                                        if (quantidade) {
-                                            quantidade.focus();
-                                            if(event.preventDefault) {
-                                                event.preventDefault();
-                                            } else {
-                                                event.returnValue = false;
-                                            }
-                                        }
-                                    }
-                                    "/></td>
+                <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade" value="<?php echo $this->dataValidade ?>"/></td>
             <?php endif; ?>
             <?php if ($this->pesoVariavel == 'N') : ?>
                 <td><input type="text" maxlength="15" value="" size="10" class=" required
@@ -82,7 +58,7 @@
             <?php endif; ?>
             <?php if ( $this->pesoVariavel == 'S' ) : ?>
                 <td>
-                    <input type="text" maxlength="15" value="" size="10" class="required focus" id="numPeso" name="numPeso" value="" />
+                    <input type="text" maxlength="15" value="" size="10" class="required focus" id="numPeso" name="numPeso"/>
                 </td>
             <?php endif; ?>
             <td><span id="totalQuantidade">0</span></td>
@@ -93,3 +69,40 @@
     <input type="submit" class="btn" value="Salvar" id="submit" name="submit">
 </form>
 
+<script>
+    $(function () {
+        $("#dataValidade").keyup(function(event){
+
+            var v = $(this).val();
+
+            v = v.replace(/\D/g,"");
+            v = v.replace(/(\d{2})(\d)/,"$1/$2");
+            v = v.replace(/(\d{2})(\d)/,"$1/$2");
+            v = v.replace(/(\d{2})(\d{2})$/,"$1$2");
+
+            $(this).val(v);
+
+            if (v != '' && v.length == 8) {
+
+                var strRegex = /^(((([0-2][0-8])(-|\/)(0[1-9]|1[012]))|((29|30|31)(-|\/)(0[13578]|1[02]))|((29|30)(-|\/)(0[469]|11)))(-|\/)(\d{2}))|((29)(-|\/)(02)(-|\/)(([02468][048])|([13579][26])))$/;
+                var regexp = new RegExp(strRegex);
+                if (!regexp.test(v)){
+                    alert('A data ' + v + ' é inválida');
+                    $(this).val('');
+                    return false;
+                } else {
+                    quantidade = document.getElementById('qtdConferida');
+                    if (quantidade) {
+                        quantidade.focus();
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+
+        });
+    })
+</script>

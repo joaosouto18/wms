@@ -51,11 +51,12 @@ class ProdutosAVencer extends Pdf
 
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
-        $this->Cell(40, $lineH, utf8_decode("Endereço: $produto[ENDERECO]") ,1 ,0 ,'C' , true);
+        $this->Cell(40, $lineH, utf8_decode("Endereço: $produto[ENDERECO]") ,1 ,0 ,'' , true);
 
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
-        $this->Cell(50, $lineH, utf8_decode("Data de validade: $produto[VALIDADE]") ,1 ,1 ,'C' , true);
+        $strg = (!empty($produto['VALIDADE']))? $produto['VALIDADE'] : 'Sem Registro';
+        $this->Cell(50, $lineH, utf8_decode("Data de validade: $strg") ,1 ,1 ,'' , true);
 
         //LINHA 3
 
@@ -71,7 +72,17 @@ class ProdutosAVencer extends Pdf
 
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(175);
-        $status = ($produto['VALIDADE'] <= date('d/m/Y'))? "VENCIDO" : "À VENCER";
+
+        $dt = date_create_from_format('d/m/Y', $produto['VALIDADE']) ;
+        $now = date_create_from_format('d/m/Y', date('d/m/Y'));
+        if (!empty($produto['VALIDADE']) && ($dt <= $now)){
+            $status = "VENCIDO";
+        } else if (!empty($produto['VALIDADE']) && ($dt > $now)) {
+            $status = "À VENCER";
+        } else {
+            $status = 'N/D';
+        }
+        
         $this->Cell(36, $lineH, utf8_decode("STATUS: $status") ,1 ,0 ,'C' , true);
     }
 

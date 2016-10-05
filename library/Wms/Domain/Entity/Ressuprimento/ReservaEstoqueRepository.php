@@ -208,12 +208,22 @@ class ReservaEstoqueRepository extends EntityRepository
             $params = array();
             $params['endereco'] = $reservaEstoqueEn->getEndereco();
             $params['observacoes'] = $observacoes;
-            $params['estoqueRepo'] = $estoqueRepo;
 
             foreach ($produtos as $produto) {
                 $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('id'=>$produto['codProdutoEmbalagem']));
                 $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('id'=>$produto['codProdutoVolume']));
                 $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$produto['codProduto'], 'grade'=>$produto['grade']));
+
+                $params['validade'] = null;
+                if ($produtoEn->getValidade() == 'S' ) {
+                    if ($origemReserva == "U") {
+                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
+                        $umaEn = $this->_em->find('wms:Enderecamento\Palete', $idOrigem);
+                        if (!empty($umaEn)) {
+                            $params['validade'] = $umaEn->getValidade();
+                        }
+                    }
+                }
 
                 $params['qtd'] = $produto['qtd'] * -1;
                 $params['produto'] = $produtoEn;

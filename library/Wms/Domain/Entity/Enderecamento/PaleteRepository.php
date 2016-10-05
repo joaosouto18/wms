@@ -735,31 +735,30 @@ class PaleteRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
-        if (isset($dataValidade) and !is_null($dataValidade)) {
-            $validade = new \DateTime($dataValidade['dataValidade']);
-        } else {
-            $validade = null;
-        }
         $ok = false;
         foreach($paletes as $paleteId) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $this->find($paleteId);
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
-                if ($formaConferencia == OrdemServicoEntity::COLETOR) {
-                    $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                    if (isset($validade) && !empty($validade)) {
-                        $paleteEn->setValidade($validade);
-                    }
-                    $this->_em->persist($paleteEn);
-                    $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
+
+                if (!empty($dataValidade)) {
+                    $validade = new \DateTime($dataValidade['dataValidade']);
                 } else {
-                    if ($paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
-                        $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                        $paleteEn->setValidade($validade);
-                        $this->_em->persist($paleteEn);
-                        $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
+                    $validadePalete = $paleteEn->getValidade();
+                    if (!empty($validadePalete)){
+                        $validade = $validadePalete;
+                    } else {
+                        $validade = null;
                     }
                 }
+
+                if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
+                    $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
+                    $paleteEn->setValidade($validade);
+                    $this->_em->persist($paleteEn);
+                    $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
+                }
+
                 if ($retorno['criado']) {
                     $ok = true;
                     $this->getEntityManager()->flush();

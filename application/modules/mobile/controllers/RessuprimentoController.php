@@ -151,37 +151,52 @@ class Mobile_RessuprimentoController extends Action
             $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');
             $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
 
+            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $volEstoque */
             foreach ($embalagens as $volEstoque) {
                 $params = array();
                 $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
                 $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idEndereco));
 
                 $idPicking = null;
-                    if ($volEstoque->getProdutoVolume() != NULL) {
-                        $params['volume'] = $volEstoque->getProdutoVolume();
-                        $idVolume = $volEstoque->getProdutoVolume()->getId();
-                        if ($volEstoque->getProdutoVolume()->getEndereco() != NULL) {
-                            $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
-                        }
-                    } else{
-                        $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
-                        $idEmbalagem = $volEstoque->getProdutoEmbalagem()->getId();
-                        $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
-                        if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
-                            $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
+                if ($volEstoque->getProdutoVolume() != NULL) {
+                    $params['volume'] = $volEstoque->getProdutoVolume();
+                    $idVolume = $volEstoque->getProdutoVolume()->getId();
+                    if ($volEstoque->getProdutoVolume()->getEndereco() != NULL) {
+                        $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
+                    }
+                } else{
+                    $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
+                    $idEmbalagem = $volEstoque->getProdutoEmbalagem()->getId();
+                    $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
+                    if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
+                        $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
+                    }
+                }
+
+                if ($idPicking == NULL){
+                    throw new \Exception("Não foi encontrado endereço de picking para o produto");
+                }
+
+                $params['validade'] = null;
+                if ($produtoEn->getValidade() == 'S' ) {
+                    $validade = $volEstoque->getValidade();
+                    if (!empty($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    } else {
+                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
+                        $umaEn = $volEstoque->getUma();
+                        if (!empty($umaEn)) {
+                            $params['validade'] = $umaEn->getValidade();
                         }
                     }
+                }
 
-                    if ($idPicking == NULL){
-                        throw new \Exception("Não foi encontrado endereço de picking para o produto");
-                    }
-
-                    $params['produto'] = $produtoEn;
-                    $params['endereco'] = $enderecoEn;
-                    $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
-                    $params['estoqueRepo'] = $estoqueRepo;
-                    $params['qtd'] = $qtd * -1;
-                    $estoqueRepo->movimentaEstoque($params);
+                $params['produto'] = $produtoEn;
+                $params['endereco'] = $enderecoEn;
+                $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
+                $params['estoqueRepo'] = $estoqueRepo;
+                $params['qtd'] = $qtd * -1;
+                $estoqueRepo->movimentaEstoque($params);
 
                 if ($idPicking != NULL) {
                     $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));

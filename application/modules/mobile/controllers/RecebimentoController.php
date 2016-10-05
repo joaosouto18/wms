@@ -226,24 +226,15 @@ class Mobile_RecebimentoController extends Action
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
 
-                $dataValida = true;
-                if (strlen($params['dataValidade']) < 8) {
-                    $dataValida = false;
-                } else {
-                    $dia = substr($params['dataValidade'],0,2);
-                    if ($dia == false) $dataValida = false;
-                    $mes = substr($params['dataValidade'],3,2);
-                    if ($mes == false) $dataValida = false;
-                    $ano = substr($params['dataValidade'],6,2);
-                    if ($mes == false) $dataValida = false;
-
-                    if ($dataValida == true) {
-                        $data = $dia . "/" . $mes . "/20" . $ano;
-                        if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
-                    }
+                $data = null;
+                if (strlen($params['dataValidade']) >= 8) {
+                    list ($dia, $mes , $ano) = explode('/', $params['dataValidade']);
+                    $ano = substr(date("Y"),0,2) . $ano;
+                    if (checkdate((int)$mes, (int)$dia, (int)$ano))
+                        $data = $dia . "/" . $mes . "/" . $ano;
                 }
 
-                if ($dataValida == false) {
+                if (empty($data)) {
                     $this->_helper->messenger('error', 'Informe uma data de validade correta');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 }
