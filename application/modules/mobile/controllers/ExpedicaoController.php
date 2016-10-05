@@ -109,7 +109,7 @@ class Mobile_ExpedicaoController extends Action
 
                 if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     if (empty($volumePatrimonioEn)) {
-                        $tipoProvavelCodBarras = 'volume';
+//                        $tipoProvavelCodBarras = 'volume';
                     } else {
                         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
                         $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);

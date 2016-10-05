@@ -123,20 +123,45 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function validaConferencia($codMapaSeparacao, $setDivergencia = false)
     {
-        $andWhere = ' ';
-        if ($setDivergencia == false) {
-            $andWhere = " AND msp.IND_DIVERGENCIA = 'S' ";
-        }
-        $sql = "select mp.COD_MAPA_SEPARACAO, msp.COD_MAPA_SEPARACAO_PRODUTO,
-                    ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) QTD_FALTANTE, p.COD_PRODUTO, p.DSC_PRODUTO
-                    from MAPA_SEPARACAO mp
-                    inner join MAPA_SEPARACAO_PRODUTO msp on msp.COD_MAPA_SEPARACAO = mp.COD_MAPA_SEPARACAO
-                    inner join produto p on p.COD_PRODUTO = msp.COD_PRODUTO and p.DSC_GRADE = msp.DSC_GRADE
-                    left join MAPA_SEPARACAO_CONFERENCIA msc on msc.COD_MAPA_SEPARACAO = mp.COD_MAPA_SEPARACAO and p.COD_PRODUTO = msc.COD_PRODUTO and p.DSC_GRADE = msc.DSC_GRADE
-                    where mp.COD_MAPA_SEPARACAO = $codMapaSeparacao
-                    $andWhere
-                    GROUP BY mp.COD_MAPA_SEPARACAO, msp.QTD_EMBALAGEM, msp.QTD_SEPARAR, msp.QTD_CORTADO, msc.QTD_CONFERIDA, msc.QTD_EMBALAGEM, p.COD_PRODUTO, msp.COD_MAPA_SEPARACAO_PRODUTO, p.DSC_PRODUTO
-                    having ((msp.QTD_EMBALAGEM * msp.QTD_SEPARAR) - msp.QTD_CORTADO) - (sum(NVL(msc.QTD_CONFERIDA,0) * NVL(msc.QTD_EMBALAGEM,0))) > 0";
+        $sql = " SELECT M.COD_MAPA_SEPARACAO,
+                         M.COD_PRODUTO,
+                         M.DSC_GRADE,
+                         P.DSC_PRODUTO,
+                         M.QTD_SEPARAR,
+                         M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
+                         NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
+                         DE.DSC_DEPOSITO_ENDERECO
+                    FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
+                            FROM MAPA_SEPARACAO_PRODUTO MP
+                            LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
+                           WHERE MP.IND_CONFERIDO = 'N'
+                           GROUP BY M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
+               LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
+                            FROM MAPA_SEPARACAO_CONFERENCIA
+                           WHERE IND_CONFERENCIA_FECHADA = 'N'
+                           GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) C
+                      ON M.COD_MAPA_SEPARACAO = C.COD_MAPA_SEPARACAO
+                     AND M.COD_PRODUTO = C.COD_PRODUTO
+                     AND M.DSC_GRADE = C.DSC_GRADE
+                     AND M.VOLUME = C.VOLUME
+                LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP
+                  ON MSP.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
+                 AND MSP.COD_PRODUTO = M.COD_PRODUTO
+                 AND MSP.DSC_GRADE = M.DSC_GRADE
+                LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM
+                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+                LEFT JOIN PRODUTO P ON P.COD_PRODUTO = M.COD_PRODUTO AND P.DSC_GRADE = M.DSC_GRADE
+              WHERE M.COD_MAPA_SEPARACAO = $codMapaSeparacao
+                AND NVL(C.QTD_CONFERIDA,0) < M.QTD_SEPARAR
+                GROUP BY M.COD_MAPA_SEPARACAO,
+                         M.COD_PRODUTO,
+                         M.DSC_GRADE,
+                         P.DSC_PRODUTO,
+                         M.QTD_SEPARAR,
+                         C.QTD_CONFERIDA,
+                         DE.DSC_DEPOSITO_ENDERECO
+            ORDER BY COD_MAPA_SEPARACAO, M.COD_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
