@@ -991,8 +991,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $this->_em->flush();
 
                 foreach ($embalagensEn as $embalagem) {
-                    while ($qtdTotalMapaProdutos >= $embalagem->getQuantidade()) {
-                        $qtdTotalMapaProdutos = $qtdTotalMapaProdutos - $embalagem->getQuantidade();
+                    while (number_format($qtdTotalMapaProdutos,2,'.','') >= number_format($embalagem->getQuantidade(),2,'.','')) {
+                        $qtdTotalMapaProdutos = number_format($qtdTotalMapaProdutos,2,'.','') - number_format($embalagem->getQuantidade(),2,'.','');
                         $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagem, $pedidoProduto,$depositoEnderecoEn);
                     }
                 }
