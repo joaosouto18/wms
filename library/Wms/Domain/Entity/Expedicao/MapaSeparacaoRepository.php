@@ -185,7 +185,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
             }
             $this->getEntityManager()->flush();
-            $this->getEntityManager()->commit();
+//            $this->getEntityManager()->commit();
         }
         return $result;
 

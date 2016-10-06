@@ -678,10 +678,6 @@ class ExpedicaoRepository extends EntityRepository
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
         $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
@@ -717,7 +713,6 @@ class ExpedicaoRepository extends EntityRepository
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
         $this->getEntityManager()->flush();
-        return true;
     }
 
     public function efetivaReservaEstoqueByExpedicao($idExpedicao)
