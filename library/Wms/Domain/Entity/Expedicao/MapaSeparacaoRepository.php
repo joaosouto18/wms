@@ -106,6 +106,19 @@ class MapaSeparacaoRepository extends EntityRepository
         $conferenciaFinalizada = $this->validaConferencia($codMapaSeparacao, true);
 
         if (count($conferenciaFinalizada) > 0) {
+            $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+            $mapaSeparacaoProdutos = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $codMapaSeparacao));
+            foreach ($mapaSeparacaoProdutos as $mapaProduto) {
+                $mapaProduto->setDivergencia('N');
+                $this->getEntityManager()->persist($mapaProduto);
+            }
+            foreach ($conferenciaFinalizada as $mapaSeparacaoProduto) {
+                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', (int)$mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
+                $mapaSeparacaoProdutoEn->setDivergencia('S');
+                $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+            }
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
             return 'Existem produtos para serem Conferidos neste Mapa de Separação';
         } else {
             $this->fechaConferencia($codMapaSeparacao);
@@ -172,21 +185,21 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-        if ($setDivergencia == true) {
-            $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-            $mapaSeparacaoProdutos = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $codMapaSeparacao));
-            foreach ($mapaSeparacaoProdutos as $mapaProduto) {
-                $mapaProduto->setDivergencia('N');
-                $this->getEntityManager()->persist($mapaProduto);
-            }
-            foreach ($result as $mapaSeparacaoProduto) {
-                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', (int)$mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
-                $mapaSeparacaoProdutoEn->setDivergencia('S');
-                $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
-            }
-            $this->getEntityManager()->flush();
+//        if ($setDivergencia == true) {
+//            $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+//            $mapaSeparacaoProdutos = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $codMapaSeparacao));
+//            foreach ($mapaSeparacaoProdutos as $mapaProduto) {
+//                $mapaProduto->setDivergencia('N');
+//                $this->getEntityManager()->persist($mapaProduto);
+//            }
+//            foreach ($result as $mapaSeparacaoProduto) {
+//                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', (int)$mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
+//                $mapaSeparacaoProdutoEn->setDivergencia('S');
+//                $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+//            }
+//            $this->getEntityManager()->flush();
 //            $this->getEntityManager()->commit();
-        }
+//        }
         return $result;
 
     }
