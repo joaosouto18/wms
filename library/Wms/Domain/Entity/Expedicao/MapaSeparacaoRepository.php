@@ -123,6 +123,10 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function validaConferencia($codMapaSeparacao, $setDivergencia = false)
     {
+        $andWhere = ' ';
+        if ($setDivergencia == false) {
+            $andWhere = " AND MSP.IND_DIVERGENCIA = 'S' ";
+        }
         $sql = " SELECT M.COD_MAPA_SEPARACAO,
                          M.COD_PRODUTO,
                          M.DSC_GRADE,
@@ -130,7 +134,8 @@ class MapaSeparacaoRepository extends EntityRepository
                          M.QTD_SEPARAR,
                          M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
                          NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
-                         DE.DSC_DEPOSITO_ENDERECO
+                         DE.DSC_DEPOSITO_ENDERECO,
+                         MSP.COD_MAPA_SEPARACAO_PRODUTO
                     FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
                             FROM MAPA_SEPARACAO_PRODUTO MP
                             LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
@@ -154,18 +159,26 @@ class MapaSeparacaoRepository extends EntityRepository
                 LEFT JOIN PRODUTO P ON P.COD_PRODUTO = M.COD_PRODUTO AND P.DSC_GRADE = M.DSC_GRADE
               WHERE M.COD_MAPA_SEPARACAO = $codMapaSeparacao
                 AND NVL(C.QTD_CONFERIDA,0) < M.QTD_SEPARAR
+                $andWhere
                 GROUP BY M.COD_MAPA_SEPARACAO,
                          M.COD_PRODUTO,
                          M.DSC_GRADE,
                          P.DSC_PRODUTO,
                          M.QTD_SEPARAR,
                          C.QTD_CONFERIDA,
-                         DE.DSC_DEPOSITO_ENDERECO
+                         DE.DSC_DEPOSITO_ENDERECO,
+                         MSP.COD_MAPA_SEPARACAO_PRODUTO
             ORDER BY COD_MAPA_SEPARACAO, M.COD_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if ($setDivergencia == true) {
+            $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+            $mapaSeparacaoProdutos = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $codMapaSeparacao));
+            foreach ($mapaSeparacaoProdutos as $mapaProduto) {
+                $mapaProduto->setDivergencia('N');
+                $this->getEntityManager()->persist($mapaProduto);
+            }
             foreach ($result as $mapaSeparacaoProduto) {
                 $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', (int)$mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
                 $mapaSeparacaoProdutoEn->setDivergencia('S');
