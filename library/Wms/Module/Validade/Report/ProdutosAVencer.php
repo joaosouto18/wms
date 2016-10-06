@@ -82,7 +82,7 @@ class ProdutosAVencer extends Pdf
         } else {
             $status = 'N/D';
         }
-        
+
         $this->Cell(36, $lineH, utf8_decode("STATUS: $status") ,1 ,0 ,'C' , true);
     }
 

@@ -835,7 +835,7 @@ class EstoqueRepository extends EntityRepository
     public function getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco)
     {
         $em = $this->getEntityManager();
-        $dql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p3_.QTD_EMBALAGEM,1) AS qtd, NVL(p3_.DSC_EMBALAGEM,'') DSC_EMBALAGEM, d2_.DSC_DEPOSITO_ENDERECO AS DSC_DEPOSITO_ENDERECO4
+        $dql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p3_.QTD_EMBALAGEM,1) AS qtd, NVL(p3_.DSC_EMBALAGEM,'') DSC_EMBALAGEM, d2_.DSC_DEPOSITO_ENDERECO AS ENDERECO
                     FROM ESTOQUE e1_ INNER JOIN PRODUTO p0_ ON e1_.COD_PRODUTO = p0_.COD_PRODUTO AND e1_.DSC_GRADE = p0_.DSC_GRADE
                     LEFT JOIN DEPOSITO_ENDERECO d2_ ON e1_.COD_DEPOSITO_ENDERECO = d2_.COD_DEPOSITO_ENDERECO
                     LEFT JOIN PRODUTO_EMBALAGEM p3_ ON (p3_.COD_PRODUTO = e1_.COD_PRODUTO AND p3_.DSC_GRADE = e1_.DSC_GRADE)

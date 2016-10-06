@@ -146,9 +146,9 @@ class Mobile_RessuprimentoController extends Action
         $qtd = $this->_getParam('quantidade');
 
         try {
+            $this->em->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');
             $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
 
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque $volEstoque */
@@ -160,13 +160,11 @@ class Mobile_RessuprimentoController extends Action
                 $idPicking = null;
                 if ($volEstoque->getProdutoVolume() != NULL) {
                     $params['volume'] = $volEstoque->getProdutoVolume();
-                    $idVolume = $volEstoque->getProdutoVolume()->getId();
                     if ($volEstoque->getProdutoVolume()->getEndereco() != NULL) {
                         $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
                     }
                 } else{
                     $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
-                    $idEmbalagem = $volEstoque->getProdutoEmbalagem()->getId();
                     $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
                     if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
                         $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
@@ -205,22 +203,19 @@ class Mobile_RessuprimentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                 }
 
+
+                $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');
                 $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
-                $this->getEntityManager()->remove($relatorioPicking);
+                if (!empty($relatorioPicking))
+                    $this->getEntityManager()->remove($relatorioPicking);
             }
 
             $this->getEntityManager()->flush();
             $this->addFlashMessage("success","Movimentação efetivada com sucesso");
         } catch (\Exception $e) {
+            $this->em->rollback();
             $this->addFlashMessage("error",$e->getMessage());
         }
         $this->_redirect('/mobile/ressuprimento/listar-picking');
-
     }
-
-
-  }
-
-
-
-
+}
