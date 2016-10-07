@@ -820,7 +820,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
 
                             $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto,$quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
-                            $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,$quantidade,$volumeEntity,null,$pedidoProduto,$depositoEnderecoEn);
+                            $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,$quantidade,$volumeEntity,null,$pedidoProduto,$depositoEnderecoEn,null,$pedidoProduto->getPedido());
                         }
                     }
                 }

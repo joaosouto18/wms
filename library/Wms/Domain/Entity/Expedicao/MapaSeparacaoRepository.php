@@ -395,10 +395,29 @@ class MapaSeparacaoRepository extends EntityRepository
             'mapaProdutoEn' => $mapaProdutoEn);
     }
 
+    private function findMapaByProdutoAndExpedicao($produtoEn, $expedicaoEn) {
+
+        $idProduto = $produtoEn->getId();
+        $grade = $produtoEn->getGrade();
+        $idExpedicao = $expedicaoEn->getId();
+
+        $SQL = " SELECT MSP.COD_MAPA_SEPARACAO 
+                   FROM MAPA_SEPARACAO_PRODUTO MSP
+                   LEFT JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  WHERE MSP.COD_PRODUTO = '$idProduto'
+                    AND MSP.DSC_GRADE = '$grade'
+                    AND MS.COD_EXPEDICAO = '$idExpedicao'";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($result) >0) {
+            return $result[0]['COD_MAPA_SEPARACAO'];
+        }
+        return null;
+    }
+
     public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn) {
         $mensagemColetor = false;
         $produtoEn = null;
-
+        $idMapa = $mapaEn->getId();
         try {
             if (($embalagemEn == null) && ($volumeEn == null)) {
                 $mensagemColetor = false;
@@ -412,8 +431,19 @@ class MapaSeparacaoRepository extends EntityRepository
             $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $mapaEn->getId(),
                 'codProduto' => $produtoEn->getId(),                                                                                                                             'dscGrade' => $produtoEn->getGrade()));
             if ($mapaSeparacaoProduto == null) {
-                $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não se encontra no mapa selecionado");
+                if ($modeloSeparacaoEn->getUtilizaQuebraColetor() == "S") {
+                    $mensagemColetor = true;
+                    throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não se encontra no mapa selecionado");
+                } else {
+                    $idMapa = $this->findMapaByProdutoAndExpedicao($produtoEn,$mapaEn->getExpedicao());
+                    if ($idMapa == null) {
+                        $mensagemColetor = true;
+                        throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não se encontra na expedição selecionada");
+                    }
+                    $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $idMapa,
+                        'codProduto' => $produtoEn->getId(),                                                                                                                             'dscGrade' => $produtoEn->getGrade()));
+
+                }
             }
 
             if ($mapaSeparacaoProduto[0]->getIndConferido() == "S") {
@@ -460,7 +490,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 throw new \Exception($e->getMessage());
             }
         }
-        return array('return'=>true);
+        return array('return'=>true,'idMapa'=>$idMapa);
     }
 
     public function getQtdConferidaByVolumePatrimonio($idExpedicao, $idVolume)

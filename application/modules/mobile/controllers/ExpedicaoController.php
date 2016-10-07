@@ -150,6 +150,9 @@ class Mobile_ExpedicaoController extends Action
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
+                    $idMapa = $resultado['idMapa'];
+                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+
                     if (isset($qtd) && ($qtd != null)) {
                         $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
                         $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
