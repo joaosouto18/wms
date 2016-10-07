@@ -159,6 +159,26 @@ class MapaSeparacao extends Pdf
             $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
             $this->Image($imgCodBarras, 150, 280, 50);
 
+            $this->InFooter = true;
+            $pageSizeA4 = $this->_getpagesize('A4');
+            $wPage = $pageSizeA4[0]/12;
+
+            $this->SetY(-23);
+            $this->SetFont('Arial','B',10);
+            $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial',null,10);
+            $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+            //$this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+
+            $this->SetFont('Arial','B',9);
+            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1);
+            //$this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
+            //$this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+
+            //$this->Image($this->imgCodBarras, 143, 280, 50);
+            $this->InFooter = false;
+
         }
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
