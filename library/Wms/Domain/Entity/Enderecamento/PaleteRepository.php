@@ -742,19 +742,19 @@ class PaleteRepository extends EntityRepository
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
 
                 if (!empty($dataValidade)) {
-                    $validade = new \DateTime($dataValidade['dataValidade']);
+                    $dataValidade['dataValidade']  = new \DateTime($dataValidade['dataValidade']);
                 } else {
                     $validadePalete = $paleteEn->getValidade();
                     if (!empty($validadePalete)){
-                        $validade = $validadePalete;
+                        $dataValidade['dataValidade'] = $validadePalete;
                     } else {
-                        $validade = null;
+                        $dataValidade['dataValidade'] = null;
                     }
                 }
 
                 if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
                     $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                    $paleteEn->setValidade($validade);
+                    $paleteEn->setValidade($dataValidade['dataValidade']);
                     $this->_em->persist($paleteEn);
                     $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
                 }

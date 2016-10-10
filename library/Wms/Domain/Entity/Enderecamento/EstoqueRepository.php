@@ -124,8 +124,8 @@ class EstoqueRepository extends EntityRepository
                 $validade = new \Zend_Date($params['validade']);
                 $validade = $validade->toString('Y-MM-dd');
                 $validade = new \DateTime($validade);
-            } elseif (isset($dataValidade) and !is_null($dataValidade)) {
-                $validade = new \DateTime($dataValidade['dataValidade']);
+            } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
+                $validade = (is_string($dataValidade['dataValidade']))? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
             }
         }
 
