@@ -100,12 +100,10 @@ class AtorRepository extends EntityRepository {
 
             $pessoaFisicaEntity = $em->getRepository('wms:Pessoa\Fisica')->findOneBy(array('cpf' => $cpf));
 
-            if ($permitirCnpjIguais == 'N') {
-                if (($pessoa->getId() == null) && ($pessoaFisicaEntity != null)) {
-                    throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
-                } else if (($pessoaFisicaEntity != null) && ($pessoaFisicaEntity->getId() != $pessoa->getId())) {
-                    throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
-                }
+            if (($pessoa->getId() == null) && ($pessoaFisicaEntity != null)) {
+                throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
+            } else if (($pessoaFisicaEntity != null) && ($pessoaFisicaEntity->getId() != $pessoa->getId())) {
+                throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
             }
 
             //transforma as datas de string ara DateTime
