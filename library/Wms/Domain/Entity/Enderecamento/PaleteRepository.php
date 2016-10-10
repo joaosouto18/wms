@@ -697,7 +697,7 @@ class PaleteRepository extends EntityRepository
     }
 
     public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A',$pesoPorPalete = null){
-        if (!is_null($dataValidade))
+        if (!empty($dataValidade))
             $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
