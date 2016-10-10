@@ -1,4 +1,5 @@
 <?php 
+/** @var \Core\Grid $grid */
 $grid = $this->grid;
 $pager = $grid->getPager();
 
@@ -15,16 +16,26 @@ $attribs = $grid->getAttribs();
                 select.focus();
                 return false;
             }
-            
-            $('#formGrid')
-                .attr('action', '?')
+
+            var formGrid = $('#formGrid');
+
+            var forms = $("form");
+            forms.splice( $.inArray(formGrid, forms),1 );
+
+            var params = "";
+            forms.each(function () {
+                params += $.param($(this).serializeArray());
+            });
+
+            formGrid
+                .attr('action', '?' + params)
                 .attr('target', '_blank')
                 .submit();
 
             select.val('');
             
             return false;
-        })
+        });
         
         // button apply filter
         $('#btnAddFilter').click(function() {
@@ -178,7 +189,7 @@ $attribs = $grid->getAttribs();
         <?php
         $i = 0;
         foreach ($grid->getResult() as $row) { ?>
-            <tr class="gTResultSet <?php if ($i % 2) echo "gRowColor" ?>">
+            <tr class="gTResultSet <?php if($grid->checkConditionalFeaturedByRow($row)) echo "gRowFeatured"; elseif ($i % 2) echo "gRowColor" ?>">
                 <?php if ($grid->getShowMassActions()) { ?>
                 <td class="gRowCheck"><input type="checkbox" name="mass-id[]" class="massaction-check-opt" value="<?php echo $row[$grid->getPkIndex()]; ?>" /></td>
                 <?php } ?>

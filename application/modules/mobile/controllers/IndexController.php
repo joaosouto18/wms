@@ -19,18 +19,22 @@ class Mobile_IndexController  extends Action
                 'label' => 'ARMAZENAGEM',
             ),
             4 => array(
+                'url' => '/mobile/ressuprimento',
+                'label' => 'RESSUPRIMENTO',
+            ),
+            5 => array(
                 'url' => '/mobile/ordem-servico/conferencia-inventario',
                 'label' => 'INVENTÁRIO'
             ),
-            5 => array(
+            6 => array(
                 'url' => '/mobile/consulta-produto',
                 'label' => 'CONSULTA PRODUTO',
             ),
-            6 => array(
+            7 => array(
                 'url' => '/mobile/reentrega/recebimento',
                 'label' => 'REENTREGA',
             ),
-            7 => array(
+            8 => array(
                 'url' => '/mobile/recebimento-transbordo/produtividade',
                 'label' => 'PRODUTIVIDADE',
             )

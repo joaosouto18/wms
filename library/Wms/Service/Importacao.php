@@ -124,7 +124,7 @@ class Importacao
             $entity->setId($pessoa->getId());
             $entity->setCodClienteExterno($codExterno);
             $em->persist($entity);
-            return true;
+            return $entity;
         }catch (\Exception $e){
             return $e->getMessage();
         }
@@ -221,7 +221,7 @@ class Importacao
                 if (isset($cliente['cidade']))
                     $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
                 if (isset($cliente['numero']))
-                    $cliente['enderecos'][0]['numero'] = $cliente['numeor'];
+                    $cliente['enderecos'][0]['numero'] = $cliente['numero'];
                 if (isset($cliente['cep']))
                     $cliente['enderecos'][0]['cep'] = $cliente['cep'];
                 if (isset($entitySigla))
@@ -241,7 +241,7 @@ class Importacao
                 $em->persist($entityCliente);
 
             }
-            return true;
+            return $entityCliente;
         }catch (\Exception $e){
             return $e->getMessage();
         }
@@ -423,7 +423,7 @@ class Importacao
         }
     }
 
-    public function savePedido($em, $pedido)
+    public function savePedido($em, $pedido, $arrRepo)
     {
         /** @var EntityManager $em */
         try {
@@ -442,8 +442,103 @@ class Importacao
                 throw new \Exception("Carga: $pedido[codCargaExterno] não foi encontrada");
 
             $pedido['pessoa'] = $em->getRepository('wms:Pessoa\Papel\Cliente')->findOneBy(array('codClienteExterno' => $pedido['codCliente']));
-            if (empty($pedido['pessoa']))
-                throw new \Exception("Cliente: $pedido[codClienteExterno] não foi encontrado");
+
+            if (empty($pedido['pessoa']) && !empty($pedido['cpf_cnpj'])) {
+                $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($pedido['cpf_cnpj']);
+                if (strlen($cpf_cnpjFormatado) == 11) {
+                    $tipoCliente = "F";
+                } else if (strlen($cpf_cnpjFormatado) == 14) {
+                    $tipoCliente = "J";
+                } else {
+                    throw new \Exception("CNPJ ou CPF: $pedido[cpf_cnpj] fora do padrão, impossível cadastrar novo cliente para o pedido $pedido[codPedido]");
+                }
+
+                if ($tipoCliente == 'J') {
+                    $pJuridicaRepo = $arrRepo['pJuridicaRepo'];
+                    /** @var Juridica $entityPessoa */
+                    $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));
+                    if ($entityPessoa) {
+
+                        /** @var Pessoa\Papel\ClienteRepository $clienteRepo */
+                        $clienteRepo = $arrRepo['clienteRepo'];
+
+                        /** @var Cliente $result */
+                        $result = $clienteRepo->findOneBy(array('codPessoa' => $entityPessoa->getId()));
+
+                        if (empty($result)){
+                            $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
+                        } else {
+                            $result->setCodClienteExterno($pedido['codCliente']);
+                            $em->persist($result);
+                            $em->flush($result);
+                        }
+
+                        if (is_string($result)) {
+                            throw new \Exception($result);
+                        }
+
+                        $pedido['pessoa'] = $result;
+                    } else {
+                        $nCliente = array(
+                            'tipoPessoa' => $tipoCliente,
+                            'codClienteExterno' => $pedido['codCliente'],
+                            'cpf_cnpj' => $pedido['cpf_cnpj'],
+                            'nome' => $pedido['nome'],
+                            'uf' => $pedido['uf'],
+                            'cidade' => $pedido['cidade']
+                        );
+                        $result = $this->saveCliente($em, $nCliente);
+                        if (is_string($result)) {
+                            throw new \Exception($result);
+                        }
+                        $pedido['pessoa'] = $result;
+                    }
+                } else if ($tipoCliente == 'F') {
+                    $pFisicaRepo = $arrRepo['pFisicaRepo'];
+                    $entityPessoa = $pFisicaRepo->findOneBy(array('cpf' => $cpf_cnpjFormatado));
+                    if ($entityPessoa) {
+
+                        /** @var Pessoa\Papel\ClienteRepository $clienteRepo */
+                        $clienteRepo = $arrRepo['clienteRepo'];
+
+                        /** @var Cliente $result */
+                        $result = $clienteRepo->findOneBy(array('codPessoa' => $entityPessoa->getId()));
+
+                        if (empty($result)) {
+                            $result = $this->savePessoaEmCliente($em, $entityPessoa, $pedido['codCliente']);
+                        } else {
+                            $result->setCodClienteExterno($pedido['codCliente']);
+                            $em->persist($result);
+                            $em->flush($result);
+                        }
+
+                        if (is_string($result)) {
+                            throw new \Exception($result);
+                        }
+
+                        $pedido['pessoa'] = $result;
+                    } else {
+                        $nCliente = array(
+                            'tipoPessoa' => $tipoCliente,
+                            'codClienteExterno' => $pedido['codCliente'],
+                            'cpf_cnpj' => $pedido['cpf_cnpj'],
+                            'nome' => $pedido['nome'],
+                            'uf' => $pedido['uf'],
+                            'cidade' => $pedido['cidade']
+                        );
+                        $result = $this->saveCliente($em, $nCliente);
+                        if (is_string($result)) {
+                            throw new \Exception($result);
+                        }
+                        $pedido['pessoa'] = $result;
+                    }
+                }
+            }
+
+            unset($pedido['cpf_cnpj']);
+            unset($pedido['nome']);
+            unset($pedido['cidade']);
+            unset($pedido['uf']);
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
@@ -471,7 +566,7 @@ class Importacao
 
             $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
             if (empty($pedido['pedido'])){
-                throw new \Exception("Pedido: $pedido[pedido] não foi encontrado");
+                throw new \Exception("Pedido: $pedido[codPedido] não foi encontrado");
             }
 
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $pedido['codPedido'], 'codProduto' => $pedido['produto']->getId(), 'grade' => $pedido['produto']->getGrade()));

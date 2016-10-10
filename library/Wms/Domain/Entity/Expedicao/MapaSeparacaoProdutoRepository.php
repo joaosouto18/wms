@@ -41,7 +41,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
             ->leftJoin('msp.codDepositoEndereco', 'de')
             ->where("msp.mapaSeparacao = $idMapa")
-            ->orderBy('de.rua, de.predio, de.nivel, de.apartamento');
+            ->orderBy('de.rua, de.predio, de.nivel, de.apartamento, msp.numCaixaInicio, msp.numCaixaFim');
 
         return $sql->getQuery()->getResult();
     }
@@ -59,6 +59,26 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->andWhere("pe.imprimirCB = 'S'");
 
         return $sql->getQuery()->getResult();
+    }
+
+    public function getCaixasByExpedicao($expedicaoEntity,$pedidoEntity,$novoPedido)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('MAX(msp.numCaixaInicio) AS numCaixaInicio, MAX(msp.numCaixaFim) AS numCaixaFim, SUM(msp.cubagem) AS cubagem')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'msp.codPedidoProduto = pp.id')
+            ->innerJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.id = pp.codPedido')
+            ->where("ms.expedicao = ".$expedicaoEntity->getId())
+            ->andWhere("msp.numCaixaInicio is not null and msp.numCaixaFim is not null")
+            ->orderBy('msp.id, msp.numCaixaInicio, msp.numCaixaFim', 'DESC');
+
+        if ($novoPedido == false) {
+            $sql->andWhere("p.id = ".$pedidoEntity->getId());
+        }
+
+        return $sql->getQuery()->getResult();
+
     }
 
 

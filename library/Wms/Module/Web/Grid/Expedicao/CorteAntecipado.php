@@ -18,14 +18,14 @@ class CorteAntecipado extends Grid
      * @param $idExpedicao
      * @return $this|void
      */
-    public function init($produtos, $idExpedicao)
+    public function init($produtos,$idPedido,$idExpedicao)
     {
         $this->showPager = false;
         $this->showExport = false;
         $this->setSource(new \Core\Grid\Source\ArraySource($produtos))
                 ->setId('expedicao-mapas-grid')
                 ->setAttrib('class', 'grid-expedicao-pendencias')
-                ->setAttrib('caption', 'Mapas')
+                ->setAttrib('caption', 'Produtos para Corte')
                 ->addColumn(array(
                     'label' => 'Cod.',
                     'index' => 'COD_PRODUTO',
@@ -49,22 +49,12 @@ class CorteAntecipado extends Grid
                 ->addAction(array(
                     'label' => 'Cortar Item',
                     'moduleName' => 'expedicao',
-                    'controllerName' => 'corte-pedido',
-                    'actionName' => 'list',
+                    'controllerName' => 'corte',
+                    'actionName' => 'cortar-item',
                     'cssClass' => 'inside-modal',
-                    'params'=>array('pedidoCompleto'=>'N','COD_EXPEDICAO'=>$idExpedicao),
-                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
-                ))
-                ->addAction(array(
-                    'label' => 'Cortar Pedido',
-                    'moduleName' => 'expedicao',
-                    'controllerName' => 'corte-pedido',
-                    'actionName' => 'list',
-                    'cssClass' => 'inside-modal',
-                    'params'=>array('pedidoCompleto'=>'S','COD_EXPEDICAO'=>$idExpedicao),
-                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
-                ))
-                ;
+                    'params' => array('expedicao' => $idExpedicao),
+                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO')
+                ));
         $this->setShowPager(true);
         $pager = new \Core\Grid\Pager(count($produtos),1,2000);
         $this->setpager($pager);

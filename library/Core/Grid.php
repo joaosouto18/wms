@@ -145,6 +145,49 @@ class Grid
     protected $hiddenId;
 
     /**
+     * @var $conditionalFeatured
+     */
+    protected $conditionalFeatured;
+    
+
+    public function setConditionalFeatured($conditions)
+    {
+        $this->conditionalFeatured = $conditions;
+        return $this;
+    }
+    
+    public function getConditionalFeatured()
+    {
+        return $this->conditionalFeatured;
+    }
+
+    /**
+     * @param $conditions
+     * $conditions espera uma função que recebe via parâmetro a variavel $row com retorno boleano
+     * @return Grid $this
+     * @throws \Exception
+     */
+    public function addLogicalFeatured($conditions)
+    {
+        if (is_callable($conditions))
+            $this->conditionalFeatured = $conditions;
+        else 
+            throw new \Exception("A condição de destaque não é uma função.");
+        
+        return $this;
+    }
+
+    /**
+     * @param array $row
+     * @return bool
+     */
+    public function checkConditionalFeaturedByRow(array $row)
+    {
+        $cond = $this->conditionalFeatured;
+        return ($cond != null) ? call_user_func($cond, $row) : false;
+    }
+
+    /**
      * Constructor of the class
      * @param Core\Grid\Source\ISource $source
      * @param array $options 
@@ -1275,7 +1318,7 @@ class Grid
         if (isset($params['grid']['export']) && !empty($params['grid']['export'])) {
 
             $title = $this->getAttrib('title');
-            if (isset($title) || (!is_null($title)) | (!empty($title))) {
+            if (empty($title)) {
                 $title = 'Grid';
             }
             switch ($params['grid']['export']) {

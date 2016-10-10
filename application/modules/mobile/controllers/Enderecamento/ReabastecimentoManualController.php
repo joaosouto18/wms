@@ -29,6 +29,12 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         $info = $produtoRepo->getProdutoByCodBarras($codigoBarrasProduto);
         $produtoEn = $produtoRepo->find(array('id' => $codigoBarras, 'grade' => 'UNICA'));
 
+
+        $config = \Zend_Registry::get('config');
+        $consultaPreco = false;
+        if (isset($config->database,$config->database->viewErp,$config->database->viewErp->habilitado))
+            $consultaPreco = true;
+
         if ($info || $produtoEn) {
 
             if ($info) {
@@ -37,8 +43,14 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
                 $codProduto = $codigoBarras;
             }
 
-            $preco = $this->getPrecoView($codProduto);
+            $preco = null;
+            if ($consultaPreco)
+                $preco = $this->getPrecoView($codProduto);
+
             $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'codProduto' => $codProduto));
+
+            $os = $this->getOs($codOS);
+            $codOS = $os['codOS'];
             $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
             $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
@@ -46,27 +58,31 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setProduto($produtoEn);
             $contagem->setCodProduto($codProduto);
             $contagem->setQtd($qtd);
-            $os = $this->getOs($codOS);
             $contagem->setOs($os['osEntity']);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
-            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
+
+            if (!empty($preco)) {
+                $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
+            } else {
+                $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            }
+            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
         $codigoBarrasEndereco = $coletorService->retiraDigitoIdentificador($codigoBarras);
 
-        $idEndereco = null;
-        if (count($codigoBarrasEndereco) >5) {
+        $endereco = null;
+        if (strlen($codigoBarrasEndereco) >5) {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-            $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarrasEndereco);
+            $endereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarrasEndereco);
         }
 
-        if ($idEndereco) {
-            $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
+        if ($endereco) {
+            $idEndereco = $endereco[0]['COD_DEPOSITO_ENDERECO'];
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $result = $enderecoRepo->getProdutoByEndereco($codigoBarras,false);
+            $result = $enderecoRepo->getProdutoByEndereco($endereco[0]['DSC_DEPOSITO_ENDERECO'],false);
 
             if (count($result) == 0)
             {
@@ -74,15 +90,20 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
                 $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
             }
 
-            $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $idEndereco));
-            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS);
+            $reabastEnt = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $idEndereco));
 
             $codProduto = $result[0]['codProduto'];
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
-            $preco = $this->getPrecoView($codProduto);
+
+            $preco = null;
+            if ($consultaPreco)
+                $preco = $this->getPrecoView($codProduto);
+
+            $os = $this->getOs($codOS);
+            $codOS = $os['codOS'];
+            $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
             $enderecoEn = $enderecoRepo->find($idEndereco);
-            $os = $this->getOs($codOS);
             $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
             $contagem->setProduto($produtoEn);
             $contagem->setCodProduto($codProduto);
@@ -91,8 +112,13 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $contagem->setQtd($qtd);
             $this->em->persist($contagem);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:'.$preco);
-            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$os['codOs']);
+
+            if (!empty($preco)) {
+                $this->addFlashMessage('success', 'Consulta realizada com sucesso.Preço:' . $preco);
+            } else {
+                $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            }
+            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
     }
@@ -117,17 +143,28 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         }
         return array(
             'osEntity' => $osEntity,
-            'codOs' => $codOS
+            'codOS' => $codOS
         );
     }
 
-    protected function somaConferenciaRepetida($reabastEnt, $qtd, $codOS, $preco)
+    /**
+     * @param $reabastEnt \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual
+     * @param $qtd
+     * @param $codOS
+     * @param $preco
+     */
+    protected function somaConferenciaRepetida($reabastEnt, $qtd, $codOS, $preco = null)
     {
         if ($reabastEnt && $qtd && $codOS) {
             $reabastEnt->setQtd($qtd + $reabastEnt->getQtd());
             $this->em->persist($reabastEnt);
             $this->em->flush();
-            $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:'.$codOS.' Preço:'.$preco);
+            if (!empty($preco)) {
+                $this->addFlashMessage('success', 'Etiqueta consultada com sucesso. OS:' . $codOS . ' Preço:' . $preco);
+            } else {
+                $codProduto = $reabastEnt->getCodProduto();
+                $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
+            }
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
     }
@@ -142,7 +179,8 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $this->addFlashMessage('success', 'Ordem de serviço: '.$codOS.' finalizada');
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/');
         }
-
+        $this->addFlashMessage('error', 'Não foi identicada a OS');
+        $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/');
     }
 
     /**
@@ -152,7 +190,9 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
     private function getPrecoView($codProduto)
     {
         $config = \Zend_Registry::get('config');
-        $viewErp = $config->database->viewErp->habilitado;
+        $viewErp = false;
+        if (isset($config->database,$config->database->viewErp,$config->database->viewErp->habilitado))
+            $viewErp = $config->database->viewErp->habilitado;
         $preco = 'Não disponível';
         if ($viewErp) {
             $conexao = \Wms\Domain\EntityRepository::conexaoViewERP();

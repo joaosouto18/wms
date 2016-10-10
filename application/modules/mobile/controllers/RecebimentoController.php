@@ -167,16 +167,6 @@ class Mobile_RecebimentoController extends Action
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
 
-//            if ($produtoVolumeEn == null) {
-//                $idProduto = $produtoEmbEn->getProduto()->getId();
-//                $grade = $produtoEmbEn->getProduto()->getGrade();
-//                $pesoVariavel = $produtoEmbEn->getProduto()->getToleranciaNominal();
-//            } else {
-//                $idProduto = $produtoVolumeEn->getCodProduto();
-//                $grade = $produtoVolumeEn->getGrade();
-//                $pesoVariavel = $produtoVolumeEn->getProduto()->getToleranciaNominal();
-//            }
-
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
                 $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
@@ -195,11 +185,6 @@ class Mobile_RecebimentoController extends Action
 
         $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getUnitizadoresByProduto($itemNF['idProduto'],$itemNF['grade']);
         $this->view->normasPaletizacao = $normasPaletizacao;
-
-//        if ( !empty($pesoVariavel) )
-//            $pesoVariavel = "S";
-//        else
-//            $pesoVariavel = "N";
 
         $this->view->pesoVariavel = $pesoVariavel;
         $this->view->recebimento = $recebimentoEntity;
@@ -241,24 +226,15 @@ class Mobile_RecebimentoController extends Action
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
 
-                $dataValida = true;
-                if (strlen($params['dataValidade']) < 8) {
-                    $dataValida = false;
-                } else {
-                    $dia = substr($params['dataValidade'],0,2);
-                    if ($dia == false) $dataValida = false;
-                    $mes = substr($params['dataValidade'],3,2);
-                    if ($mes == false) $dataValida = false;
-                    $ano = substr($params['dataValidade'],6,2);
-                    if ($mes == false) $dataValida = false;
-
-                    if ($dataValida == true) {
-                        $data = $dia . "/" . $mes . "/20" . $ano;
-                        if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
-                    }
+                $data = null;
+                if (strlen($params['dataValidade']) >= 8) {
+                    list ($dia, $mes , $ano) = explode('/', $params['dataValidade']);
+                    $ano = substr(date("Y"),0,2) . $ano;
+                    if (checkdate((int)$mes, (int)$dia, (int)$ano))
+                        $data = $dia . "/" . $mes . "/" . $ano;
                 }
 
-                if ($dataValida == false) {
+                if (empty($data)) {
                     $this->_helper->messenger('error', 'Informe uma data de validade correta');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 }
@@ -293,29 +269,13 @@ class Mobile_RecebimentoController extends Action
                     $this->_helper->messenger('error', 'Informe o peso para conferência');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 } else {
-//                    $quantidade = (int) $qtdConferida;
-//                    $pesoDigitado = str_replace(",",".",$params['numPeso']);
                     $params['numPeso'] = str_replace(",",".",$params['numPeso']);
                     $parametros['COD_PRODUTO'] = $produtoEn->getId();
                     $parametros['DSC_GRADE'] = $produtoEn->getGrade();
-//                    $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
+                    $qtdConferida = str_replace(",",".",$params['numPeso']);
 
-//                    $pesoProduto = $this->em->getRepository('wms:Produto')->getPesoProduto($parametros);
                     $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
 
-//                    if (!empty($volumes) && count($volumes) != 0){
-//                        $peso = (float) $pesoProduto[0]['NUM_PESO'] / count($volumes);
-//                    } else {
-//                        $peso = (float) $pesoProduto[0]['NUM_PESO'];
-//                    }
-
-//                    $pesoUnitarioMargemS = (float) ($peso * $quantidade) + $tolerancia;
-//                    $pesoUnitarioMargemI = (float) ($peso * $quantidade) - $tolerancia;
-
-//                    if (!($pesoDigitado <= $pesoUnitarioMargemS && $pesoDigitado >= $pesoUnitarioMargemI)){
-//                        $this->_helper->messenger('error', 'O peso informado não confere com a tolerância permitida');
-//                        $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-//                    } else {
                         if ( !empty($volumes) && count($volumes)!=0 ){
                             $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
                         } else {
@@ -355,8 +315,6 @@ class Mobile_RecebimentoController extends Action
         $params = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-        $params['dataValidade'] = '20/08/16';
-        var_dump('abc');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
             $this->view->qtdNFs = $params['qtdNFs'];
@@ -396,7 +354,6 @@ class Mobile_RecebimentoController extends Action
             }
             if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
-                    var_dump('ghi');
                     if ($params['conferenciaCega'] == true) {
                         $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
 

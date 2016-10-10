@@ -1,24 +1,34 @@
 <script type="text/javascript">
-
+    var arrRecebimenoValues = null;
+    var arrRecebimenoColumns = null;
+    var arrRecebimentoTotal = null;
+    var arrExpedicaoValues = null;
+    var arrExpedicaoColumns = null;
+    var arrExpedicaoTotal = null;
     $(window).load(function() {
         $(document).ready(function(){
 
             <?php if ($this->recebimentoData != "false" ) : ?>
-                graficoRecebimento();
+            arrRecebimenoValues = <?php echo $this->recebimentoData ?>;
+            arrRecebimenoColumns = <?php echo $this->recebimentoStatus ?>;
+            arrRecebimentoTotal = parseInt(<?php echo $this->recebimentoTotal ?>);
+            graficoRecebimento();
             <?php endif; ?>
             graficoDadosLogisticos();
             <?php if ($this->expedicaoData != "false" ) : ?>
-                graficoExpedicao();
+            arrExpedicaoValues = <?php echo $this->expedicaoData ?>;
+            arrExpedicaoColumns = <?php echo $this->expedicaoStatus ?>;
+            arrExpedicaoTotal = parseInt(<?php echo $this->expedicaoTotal ?>);
+            graficoExpedicao();
             <?php endif; ?>
-
 
         });
 
         function graficoRecebimento(){
-            var s1 = <?php echo $this->recebimentoData ?>;
+            var s1 = arrRecebimenoValues;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
-            var ticks = <?php echo $this->recebimentoStatus ?>;
+            var ticks = arrRecebimenoColumns;
 
             var plot1 = $.jqplot('chart_recebimento', [s1], {
                 // The "seriesDefaults" option is an options object that will
@@ -58,10 +68,10 @@
         }
 
         function graficoExpedicao(){
-            var s1 = <?php echo $this->expedicaoData ?>;
+            var s1 = arrExpedicaoValues;
             // Can specify a custom tick Array.
             // Ticks should match up one for each y value (category) in the series.
-            var ticks = <?php echo $this->expedicaoStatus ?>;
+            var ticks = arrExpedicaoColumns;
 
             var plot1 = $.jqplot('chart_expedicao', [s1], {
                 // The "seriesDefaults" option is an options object that will
@@ -162,52 +172,84 @@
         border-right-style: solid;
     }
     .charts{
-        float: left;
-        margin-right: 40px;
+        margin-top: -60px;
     }
     .chartTitle{
         font-weight: bold;
     }
-    .chartProdutosDadosLogisticos{
-        margin-top: 25px;
+    .chart{
+        margin-top: 70px;
+        margin-left: 20%;
+        margin-right: 20%;
+        height: 250px;
+        width: 60%;
+        position: relative;
         text-align: center;
+    }
+    .sem-dados p{
+        margin-top: 200px;
+        font-size: 18px;
+        font-weight: bold;
+        text-shadow: #595959;
     }
 </style>
 
-
-<form action="" class="filtro" method="get">
-    <div>
-        <fieldset id="fieldset-busca">
-            <legend>Filtros</legend>
-            <table style="width:auto">
-                <tbody>
-                    <tr>
-                        <td>Data</td>
-                        <td rowspan="4">
-                            &nbsp;<input type="submit" class="btn" value="Buscar" id="submit" name="submit">
-                        </td>
-                    </tr>
-                <tr>
-                    <td>
-                        <input type="text" class="date  hasDatepicker" alt="date" size="11" value="<?php echo $this->datas['dataInicial1'] ?>" id="dataInicial1" name="dataInicial1"> a
-                        <input type="text" class="date  hasDatepicker" alt="date" size="11" value="<?php echo $this->datas['dataInicial2'] ?>" id="dataInicial2" name="dataInicial2">
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </fieldset>
-    </div>
-</form>
+<?php echo $this->form;?>
 
 <!--Div that will hold the pie chart-->
-<div class="chartRecebimento">
-    <div class="charts" id="chart_recebimento" style="height: 250px; width: 500px;" ></div>
-</div>
-<div class="chartProdutosDadosLogisticos">
-    <label class="chartTitle">Produtos Dados Logísticos</label>
-    <div class="charts" id="chart_produtosDadosLogisticos" style="height: 230px; width: 400px;" ></div>
+<div class="charts">
+    <div class="chart">
+        <label class="chartTitle">Produtos com/sem Dados Logísticos</label>
+        <div class="" id="chart_produtosDadosLogisticos"></div>
+    </div>
+
+    <div class="chart">
+        <?php if ($this->recebimentoData != "false" ){ ?>
+        <div class="" id="chart_recebimento"></div>
+        <?php } else {?>
+        <div class="sem-dados">
+            <p>Neste intervalo de datas não houve registro de recebimento</p>
+        </div>
+        <?php } ?>
+    </div>
+
+    <div class="chart">
+        <?php if ($this->expedicaoData != "false" ){ ?>
+        <div class="" id="chart_expedicao"></div>
+        <?php } else {?>
+        <div class="sem-dados">
+            <p>Neste intervalo de datas não houve registro de expedição</p>
+        </div>
+        <?php } ?>
+    </div>
 </div>
 
-<div class="chartExpedicao">
-    <div class="charts" id="chart_expedicao" style="height: 250px; width: 500px;" ></div>
-</div>
+<script>
+    $(function() {
+        $('#chart_expedicao').bind('jqplotDataHighlight',
+            function (ev,seriesIndex, pointIndex) {
+                var x = ((arrExpedicaoValues[pointIndex]/arrExpedicaoTotal) * 100).toFixed(2);
+                var status = arrExpedicaoColumns[pointIndex];
+                var title = "Expedições com status " + status + " correspondem à " + x.replace('.',',') + "% do total deste periodo";
+                $(this).prop('title', title);
+            }
+        ).bind('jqplotDataUnhighlight',
+            function (ev) {
+                $(this).removeAttr('title');
+            }
+        );
+
+        $('#chart_recebimento').bind('jqplotDataHighlight',
+            function (ev,seriesIndex, pointIndex) {
+                var x = ((arrRecebimenoValues[pointIndex] / arrRecebimentoTotal) * 100).toFixed(2);
+                var status = arrRecebimenoColumns[pointIndex];
+                var title = "Recebimentos com status " + status + " correspondem à " + x.replace('.',',') + "% do total deste periodo";
+                $(this).prop('title', title);
+            }
+        ).bind('jqplotDataUnhighlight',
+            function (ev) {
+                $(this).removeAttr('title');
+            }
+        );
+    })
+</script>

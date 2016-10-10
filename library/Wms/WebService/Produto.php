@@ -28,6 +28,14 @@ class produto {
     public $idClasse;
     /** @var string */
     public $nomeFabricante;
+    /** @var integer */
+    public $estoqueArmazenado;
+    /** @var integer */
+    public $estoqueDisponivel;
+    /** @var string */
+    public $teste;
+
+
 }
 
 class produtos {
@@ -59,26 +67,32 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @return produto|Exception
      */
     public function buscar($idProduto, $grade) {
+        try {
+            $idProduto = trim ($idProduto);
+            $grade = trim ($grade);
 
-        $idProduto = trim ($idProduto);
-        $grade = trim ($grade);
+            $produtoService = $this->__getServiceLocator()->getService('Produto');
+            $produto = $produtoService->findOneBy(array('id' => $idProduto, 'grade'=> $grade));
 
-        $produtoService = $this->__getServiceLocator()->getService('Produto');
-        $produto = $produtoService->findOneBy(array('id' => $idProduto, 'grade'=> $grade));
+            if ($produto == null) {
+                throw new \Exception('Produto não encontrado');
+            }
 
-        if ($produto == null) {
-            throw new \Exception('Produto não encontrado');
+            $prod = new produto();
+            $prod->idProduto = $idProduto;
+            $prod->descricao = $this->removeCaracteres($produto->getDescricao());
+            $prod->grade = $produto->getGrade();
+            $prod->idFabricante = $produto->getFabricante()->getId();
+            $prod->tipo = $produto->getTipoComercializacao()->getId();
+            $prod->idClasse = $produto->getClasse()->getId();
+            $prod->nomeFabricante = $this->removeCaracteres($produto->getFabricante()->getNome());
+            $prod->estoqueArmazenado = 0;
+            $prod->estoqueDisponivel = 0;
+            return $prod;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-
-        $prod = new produto();
-        $prod->idProduto = $idProduto;
-        $prod->descricao = $this->removeCaracteres($produto->getDescricao());
-        $prod->grade = $produto->getGrade();
-        $prod->idFabricante = $produto->getFabricante()->getId();
-        $prod->tipo = $produto->getTipoComercializacao()->getId();
-        $prod->idClasse = $produto->getClasse()->getId();
-        $prod->nomeFabricante = $this->removeCaracteres($produto->getFabricante()->getNome());
-        return $prod;
     }
 
     /**
@@ -191,9 +205,9 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
-
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
+
                     foreach ($embalagens as $embalagemWs) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
@@ -206,7 +220,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                             continue;
                         }
                     }
-
                     $endPicking = null;
                     if ($embalagemCadastrada->getEndereco() != null ) {
                         $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
@@ -216,6 +229,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                         'acao'=> 'alterar',
                         'id' =>$embalagemCadastrada->getId(),
                         'endereco' => $endPicking,
+                        'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
                         'CBInterno' => $embalagemCadastrada->getCBInterno(),
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
@@ -224,12 +238,16 @@ class Wms_WebService_Produto extends Wms_WebService {
                     );
 
                     if ($encontrouEmbalagem == false) {
+                        $embalagemArray['ativarDesativar'] = false;
+                    } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
 
                     $embalagensArray[] = $embalagemArray;
 
                 }
+
+                //throw new \Exception(count($embalagemArray));
 
                 //DEPOIS INCLUO AS NOVAS EMBALAGENS
                 foreach ($embalagens as $embalagemWs) {
@@ -261,7 +279,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                         );
                         $embalagensArray[] = $embalagemArray;
                     }
-
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
@@ -360,6 +377,8 @@ class Wms_WebService_Produto extends Wms_WebService {
             $produto->tipo = $line['tipo'];
             $produto->idClasse = $line['idClasse'];
             $produto->nomeFabricante = $this->removeCaracteres($line['nomeFabricante']);
+            $produto->estoqueArmazenado = 0;
+            $produto->estoqueDisponivel = 0;
             $arrayProdutos[] = $produto;
         }
         $produtos->produtos = $arrayProdutos;

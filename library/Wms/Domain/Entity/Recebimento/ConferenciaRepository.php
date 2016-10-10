@@ -166,7 +166,8 @@ class ConferenciaRepository extends EntityRepository
                         PESONF.PESO as PESO_NF,
                         P.DSC_REFERENCIA,
                         NVL(V.NUM_PESO,0) as PES_RECEBIDO,
-                        P.TOLERANCIA_NOMINAL
+                        P.TOLERANCIA_NOMINAL,
+                        P.IND_POSSUI_PESO_VARIAVEL
                    FROM RECEBIMENTO_CONFERENCIA RC
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = RC.COD_PRODUTO AND P.DSC_GRADE = RC.DSC_GRADE
                    LEFT JOIN V_QTD_RECEBIMENTO V ON V.COD_PRODUTO = RC.COD_PRODUTO
@@ -201,10 +202,11 @@ class ConferenciaRepository extends EntityRepository
             $pesoRecebimento = $line ['PES_RECEBIDO'];
             $toleranciaNominal = $line['TOLERANCIA_NOMINAL'];
             $referencia = $line['DSC_REFERENCIA'];
+            $possuiPesoVariavel = $line['IND_POSSUI_PESO_VARIAVEL'];
 
             if ($qtdDivergencia == 0) {
                 $qtdConferida = $pesoRecebimento . " Kg";
-                if ($pesoRecebimento > $pesoNf -$toleranciaNominal) {
+                if ($pesoRecebimento > $pesoNf - $toleranciaNominal) {
                     $qtdDivergencia = $pesoRecebimento - $pesoNf - $toleranciaNominal;
                 } else {
                     $qtdDivergencia = $pesoRecebimento - $pesoNf + $toleranciaNominal;
@@ -220,7 +222,8 @@ class ConferenciaRepository extends EntityRepository
                 'qtdConferida' => $qtdConferida,
                 'qtdAvaria' => $qtdAvaria,
                 'qtdDivergencia' => $qtdDivergencia,
-                'referencia' => $referencia
+                'referencia' => $referencia,
+                'possui_peso_variavel' => $possuiPesoVariavel
             );
         }
         return $resultArr;

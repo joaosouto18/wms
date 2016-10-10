@@ -40,8 +40,9 @@ class Expedicao_CortePedidoController  extends Action
         if ($this->_getParam('clientes') != null) {
             $params['clientes'] = $this->_getParam('clientes');
         }
+
         if ($this->_getParam('pedidos') != null) {
-            $params['pedidos'] = $this->_getParam('pedidos');
+            $params['pedidos'] = $this->_getParam('id');
         }
 
         $pedidoCompleto = true;
@@ -57,6 +58,48 @@ class Expedicao_CortePedidoController  extends Action
         //'pedidos'=>array(20009662,11022547)
         $pedidos = $this->getEntityManager()->getRepository('wms:Expedicao')->getPedidosParaCorteByParams($params);
         $this->view->pedidos = $pedidos;
+    }
+
+    public function cortarPedidoAction()
+    {
+        $this->view->pedido = $pedido = $this->_getParam('id',0);
+        $this->view->expedicao = $idExpedicao = $this->_getParam('expedicao');
+
+        $senha    = $this->_getParam('senha');
+        $motivo   = $this->_getParam('motivoCorte');
+
+        if (isset($senha) && !empty($senha) && isset($motivo) && !empty($motivo)) {
+
+            try {
+                $this->getEntityManager()->beginTransaction();
+
+                if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA'))
+                    throw new \Exception("Senha Informada Inválida");
+
+                /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+                $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+                $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+                $pedidoProdutos = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
+                    ->findBy(array('codPedido' => $pedido));
+
+                if (!isset($pedidoProdutos) || empty($pedidoProdutos))
+                    throw new \Exception("Produtos nao encontrados para o Pedido $pedido");
+
+                foreach ($pedidoProdutos as $produto) {
+                    $expedicaoRepo->cortaPedido($pedido, $produto->getCodProduto(), $produto->getGrade(), $produto->getQuantidade(), $this->_getParam('motivoCorte',null));
+                }
+
+                $andamentoRepo->save("Pedido $pedido cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
+
+                $this->getEntityManager()->commit();
+                $this->addFlashMessage('success','Pedido '.$pedido.' Cortado com Sucesso');
+                $this->_redirect('/expedicao');
+            } catch (\Exception $e) {
+                $this->getEntityManager()->rollback();
+                return $e->getMessage();
+            }
+        }
     }
 
     //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];

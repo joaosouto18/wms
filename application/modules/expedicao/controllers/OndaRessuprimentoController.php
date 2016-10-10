@@ -53,22 +53,27 @@ class Expedicao_OndaRessuprimentoController  extends Action
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicao");
-
-        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
-
-        if (count($verificaDisponibilidadeEstoquePedido) > 0){
-            $idExp = $expedicoes = implode(',', $expedicoes);
-
-            $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-            $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
-
-            $this->addFlashMessage("error", $mensagem);
-            $this->redirect("index","onda-ressuprimento","expedicao");
-        }
-
         try {
+
+            if (empty($expedicoes))
+                throw new \Exception("Nenhuma expedição selecionada");
+
+            $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+
+            if (count($verificaDisponibilidadeEstoquePedido) > 0){
+                $idExp = $expedicoes = implode(',', $expedicoes);
+
+                $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+                $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+
+                $this->addFlashMessage("error", $mensagem);
+                $this->redirect("index","onda-ressuprimento","expedicao");
+            }
+
+
             ini_set('max_execution_time', 300);
-                $result = $expedicaoRepo->gerarOnda($expedicoes);
+
+            $result = $expedicaoRepo->gerarOnda($expedicoes);
             ini_set('max_execution_time', 30);
 
             if ($result['resultado'] == false) {

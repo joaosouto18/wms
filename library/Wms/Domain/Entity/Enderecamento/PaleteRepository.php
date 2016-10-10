@@ -24,11 +24,11 @@ class PaleteRepository extends EntityRepository
                S.DSC_SIGLA END as STATUS,
                QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
                NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
-               ROUND(NVL(QTD_END.QTD,0)/QTD_TOTAL.QTD_TOTAL * 100,2) as PERCENTUAL
+               ROUND(NVL(QTD_END.QTD,0)/NVL(QTD_TOTAL.QTD_TOTAL,1) * 100,2) as PERCENTUAL
           FROM RECEBIMENTO R
           LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
           LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
-                       FROM (SELECT MIN (QTD) as QTD, COD_RECEBIMENTO
+                       FROM (SELECT MAX (QTD) as QTD, COD_RECEBIMENTO
                                FROM V_QTD_RECEBIMENTO
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO
@@ -194,14 +194,14 @@ class PaleteRepository extends EntityRepository
         $SQL = "
         SELECT DISTINCT
                NULL as COD_PRODUTO_VOLUME,
-               RE.COD_PRODUTO_EMBALAGEM
+               MAX(RE.COD_PRODUTO_EMBALAGEM) COD_PRODUTO_EMBALAGEM
           FROM RECEBIMENTO_EMBALAGEM RE
          INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
           WHERE RE.COD_RECEBIMENTO = '$codRecebimento'
-            AND RE.COD_OS = '$codOs'
-            AND RE.COD_NORMA_PALETIZACAO = '$normaPaletizacao'
-            AND PE.COD_PRODUTO = '$codProduto'
-            AND PE.DSC_GRADE = '$grade'";
+        AND RE.COD_OS = '$codOs'
+        AND RE.COD_NORMA_PALETIZACAO = '$normaPaletizacao'
+        AND PE.COD_PRODUTO = '$codProduto'
+        AND PE.DSC_GRADE = '$grade'";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -259,7 +259,9 @@ class PaleteRepository extends EntityRepository
         $SQL = " SELECT DISTINCT
                         P.UMA,
                         U.DSC_UNITIZADOR as UNITIZADOR,
-                        QTD.QTD,
+                        CASE WHEN PRODUTO.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO || ' Kg'  
+                             ELSE TO_CHAR(QTD.QTD)
+                        END as QTD,
                         S.DSC_SIGLA as STATUS,
                         DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                         P.IND_IMPRESSO,
@@ -399,7 +401,7 @@ class PaleteRepository extends EntityRepository
                 $quantidadePalete = $produtos[0]->getQtd();
 
                 if ($pickingEn == Null) {
-                    throw new \Exception("Não existe endereço de picking para o produto " . $embalagem[0]->getCodProduto() . " / " . $embalagem[0]->getGrade());
+                    throw new \Exception("Não existe endereço de picking para o produto " . $embalagem->getCodProduto() . " / " . $embalagem->getGrade());
                 }
 
                 $idVolume = null;
@@ -555,7 +557,7 @@ class PaleteRepository extends EntityRepository
             $pesoLimite = $this->getPesoLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
         }
 
-        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento);
+        $this->salvaNovosPaletes($produtoEn,$qtdRecebida,$idProduto,$idOs,$grade,$recebimentoFinalizado,$qtdLimite,$tipo,$recebimentoEn,$statusEn,$qtdTotalConferido,$tipoEnderecamento,$pesoLimite,$pesoTotalConferido);
 
         $this->_em->flush();
         $this->_em->clear();
@@ -613,7 +615,6 @@ class PaleteRepository extends EntityRepository
 
     public function salvaNovosPaletes($produtoEn, $qtdRecebida, $idProduto, $idOs, $grade, $recebimentoFinalizado, $qtdLimite, $tipo, $recebimentoEn, $statusEn, $qtdTotalConferido, $tipoEnderecamento = 'A', $pesoLimite = null, $pesoTotalConferido = null)
     {
-
         //QUANTIDADE DA NOTA
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $nfRepo */
         $nfRepo    = $this->getEntityManager()->getRepository('wms:NotaFiscal');
@@ -661,6 +662,7 @@ class PaleteRepository extends EntityRepository
                         if ($qtdLimite < 0) {
                             $qtd = $qtd + $qtdLimite;
                         }
+
                         $pesoLimite = $pesoLimite - $peso;
                         if ($pesoLimite < 0) {
                             $peso = (float) $peso + $pesoLimite;
@@ -669,18 +671,14 @@ class PaleteRepository extends EntityRepository
                 }
 
                 $qtdPaletes         = $qtd / $unitizador['NUM_NORMA'];
-                $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
+//                $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
+                $qtdUltimoPalete    = fmod($qtd, $unitizador['NUM_NORMA']);
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 
-                if ( !empty($pesoTotalConferido) && $pesoTotalConferido != 0 ){
-                    $peso = (float) ( $peso - $pesoTotalConferido );
-                    if ( $peso<0 ){
-                        $peso *= -1;
-                    }
-                }
-
                 $pesoTotalPaletes = 0;
-                $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
+                if ($qtdPaletes > 0)
+                    $pesoPorPalete = (float) ($peso/$qtdPaletes) ;
+
                 for ($i = 1; $i <= $qtdPaletes; $i++) {
                     $pesoTotal += $pesoPorPalete;
                     $pesoTotalPaletes += $pesoPorPalete;
@@ -699,7 +697,8 @@ class PaleteRepository extends EntityRepository
     }
 
     public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A',$pesoPorPalete = null){
-        $dataValidade = new \DateTime($dataValidade);
+        if (!is_null($dataValidade))
+            $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
         $paleteEn->setUnitizador($unitizadorEn);
@@ -736,31 +735,30 @@ class PaleteRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
-        if (isset($dataValidade) and !is_null($dataValidade)) {
-            $validade = new \DateTime($dataValidade['dataValidade']);
-        } else {
-            $validade = null;
-        }
         $ok = false;
         foreach($paletes as $paleteId) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $this->find($paleteId);
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
-                if ($formaConferencia == OrdemServicoEntity::COLETOR) {
-                    $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                    if (isset($validade) && !empty($validade)) {
-                        $paleteEn->setValidade($validade);
-                    }
-                    $this->_em->persist($paleteEn);
-                    $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
+
+                if (!empty($dataValidade)) {
+                    $validade = new \DateTime($dataValidade['dataValidade']);
                 } else {
-                    if ($paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
-                        $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                        $paleteEn->setValidade($validade);
-                        $this->_em->persist($paleteEn);
-                        $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
+                    $validadePalete = $paleteEn->getValidade();
+                    if (!empty($validadePalete)){
+                        $validade = $validadePalete;
+                    } else {
+                        $validade = null;
                     }
                 }
+
+                if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
+                    $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
+                    $paleteEn->setValidade($validade);
+                    $this->_em->persist($paleteEn);
+                    $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
+                }
+
                 if ($retorno['criado']) {
                     $ok = true;
                     $this->getEntityManager()->flush();

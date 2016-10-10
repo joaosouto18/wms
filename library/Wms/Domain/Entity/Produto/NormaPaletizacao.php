@@ -31,14 +31,14 @@ class NormaPaletizacao
     protected $unitizador;
 
     /**
-     * @Column(name="NUM_LASTRO", type="integer", nullable=false)
-     * @var integer lastro (qtd. total de volumes por camada) da norma
+     * @Column(name="NUM_LASTRO", type="decimal", nullable=false)
+     * @var decimal lastro (qtd. total de volumes por camada) da norma
      */
     protected $numLastro;
 
     /**
-     * @Column(name="NUM_CAMADAS", type="integer", nullable=false)
-     * @var integer número de camadas (níveis) da norma
+     * @Column(name="NUM_CAMADAS", type="decimal", nullable=false)
+     * @var decimal número de camadas (níveis) da norma
      */
     protected $numCamadas;
 
@@ -49,8 +49,8 @@ class NormaPaletizacao
     protected $numPeso;
 
     /**
-     * @Column(name="NUM_NORMA", type="integer", nullable=false)
-     * @var integer valor de lastro x camada
+     * @Column(name="NUM_NORMA", type="decimal", nullable=false)
+     * @var decimal valor de lastro x camada
      */
     protected $numNorma;
 

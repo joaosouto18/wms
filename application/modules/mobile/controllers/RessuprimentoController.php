@@ -5,6 +5,26 @@ use Wms\Controller\Action,
 
 class Mobile_RessuprimentoController extends Action
 {
+    public function indexAction()
+    {
+        $menu = array(
+
+            1 => array (
+                'url' => 'enderecamento/leitura-picking' ,
+                'label' => 'SELECIONAR PICKING',
+            ),
+            2 => array (
+                'url' => 'ressuprimento/listar-picking',
+                'label' => 'RESSUPRIMENTO PREVENTIVO',
+            ),
+            3 => array (
+                'url' => 'enderecamento_reabastecimento-manual',
+                'label' => 'RESSUPRIMENTO MANUAL',
+            )
+        );
+        $this->view->menu = $menu;
+        $this->renderScript('menu.phtml');
+    }
 
     public function listarPickingAction()
     {
@@ -110,11 +130,11 @@ class Mobile_RessuprimentoController extends Action
                 $this->addFlashMessage("error","UMA $codigoBarrasUMA Não encontrada neste endereço");
                 $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque );
             } else {
-                $this->view->codProduto = $result[0]['id'];
-                $this->view->grade = $result[0]['grade'];
-                $this->view->descricao = $result[0]['descricao'];
-                $this->view->endereco = $result[0]['endereco'];
-                $this->view->qtd = $result[0]['qtd'];
+                $this->view->codProduto = $result[0]['ID'];
+                $this->view->grade = $result[0]['GRADE'];
+                $this->view->descricao = $result[0]['DESCRICAO'];
+                $this->view->endereco = $result[0]['ENDERECO'];
+                $this->view->qtd = $result[0]['QTD'].' '.$result[0]['DSC_EMBALAGEM'];
             }
 
         }
@@ -129,11 +149,11 @@ class Mobile_RessuprimentoController extends Action
                 $this->addFlashMessage("error","Produto $etiquetaProduto não encontrado neste endereço");
                 $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque );
             } else {
-                $this->view->codProduto = $result[0]['id'];
-                $this->view->grade = $result[0]['grade'];
-                $this->view->descricaoProduto = $result[0]['descricao'];
-                $this->view->endereco = $result[0]['endereco'];
-                $this->view->qtd = $result[0]['qtd'];
+                $this->view->codProduto = $result[0]['ID'];
+                $this->view->grade = $result[0]['GRADE'];
+                $this->view->descricaoProduto = $result[0]['DESCRICAO'];
+                $this->view->endereco = $result[0]['ENDERECO'];
+                $this->view->qtd = $result[0]['QTD'].' '.$result[0]['DSC_EMBALAGEM'];
             }
         }
     }
@@ -144,43 +164,57 @@ class Mobile_RessuprimentoController extends Action
         $grade = $this->_getParam('grade');
         $idEndereco = $this->_getParam('idEndereco');
         $qtd = $this->_getParam('quantidade');
-        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         try {
+            $this->em->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
             $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
 
+            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $volEstoque */
             foreach ($embalagens as $volEstoque) {
                 $params = array();
                 $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
                 $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idEndereco));
 
                 $idPicking = null;
-                    if ($volEstoque->getProdutoVolume() != NULL) {
-                        $params['volume'] = $volEstoque->getProdutoVolume();
-                        $idVolume = $volEstoque->getProdutoVolume()->getId();
-                        if ($volEstoque->getProdutoVolume()->getEndereco() != NULL) {
-                            $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
-                        }
-                    } else{
-                        $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
-                        $idEmbalagem = $volEstoque->getProdutoEmbalagem()->getId();
-                        if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
-                            $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
+                if ($volEstoque->getProdutoVolume() != NULL) {
+                    $params['volume'] = $volEstoque->getProdutoVolume();
+                    if ($volEstoque->getProdutoVolume()->getEndereco() != NULL) {
+                        $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
+                    }
+                } else{
+                    $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
+                    $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
+                    if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
+                        $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
+                    }
+                }
+
+                if ($idPicking == NULL){
+                    throw new \Exception("Não foi encontrado endereço de picking para o produto");
+                }
+
+                $params['validade'] = null;
+                if ($produtoEn->getValidade() == 'S' ) {
+                    $validade = $volEstoque->getValidade();
+                    if (!empty($validade)) {
+                        $params['validade'] = $validade->format('d/m/Y');
+                    } else {
+                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
+                        $umaEn = $volEstoque->getUma();
+                        if (!empty($umaEn)) {
+                            $params['validade'] = $umaEn->getValidade();
                         }
                     }
+                }
 
-                    if ($idPicking == NULL){
-                        throw new \Exception("Não foi encontrado endereço de picking para o produto");
-                    }
-
-                    $params['produto'] = $produtoEn;
-                    $params['endereco'] = $enderecoEn;
-                    $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
-                    $params['estoqueRepo'] = $estoqueRepo;
-                    $params['qtd'] = $qtd * -1;
-                    $estoqueRepo->movimentaEstoque($params);
+                $params['produto'] = $produtoEn;
+                $params['endereco'] = $enderecoEn;
+                $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
+                $params['estoqueRepo'] = $estoqueRepo;
+                $params['qtd'] = $qtd * -1;
+                $estoqueRepo->movimentaEstoque($params);
 
                 if ($idPicking != NULL) {
                     $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));
@@ -188,19 +222,19 @@ class Mobile_RessuprimentoController extends Action
                     $params['qtd'] = $qtd;
                     $estoqueRepo->movimentaEstoque($params);
                 }
+
+                $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');
+                $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
+                if (!empty($relatorioPicking))
+                    $this->getEntityManager()->remove($relatorioPicking);
             }
 
+            $this->getEntityManager()->flush();
             $this->addFlashMessage("success","Movimentação efetivada com sucesso");
         } catch (\Exception $e) {
+            $this->em->rollback();
             $this->addFlashMessage("error",$e->getMessage());
         }
         $this->_redirect('/mobile/ressuprimento/listar-picking');
-
     }
-
-
-  }
-
-
-
-
+}

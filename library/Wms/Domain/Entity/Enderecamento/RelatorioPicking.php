@@ -32,6 +32,11 @@ class RelatorioPicking
     protected $codProduto;
 
     /**
+     * @Column(name="DSC_GRADE", type="string", nullable=true)
+     */
+    protected $grade;
+
+    /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
      */
@@ -104,6 +109,38 @@ class RelatorioPicking
     public function setOs($os)
     {
         $this->os = $os;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGrade()
+    {
+        return $this->grade;
+    }
+
+    /**
+     * @param mixed $grade
+     */
+    public function setGrade($grade)
+    {
+        $this->grade = $grade;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataColeta()
+    {
+        return $this->dataColeta;
+    }
+
+    /**
+     * @param mixed $dataColeta
+     */
+    public function setDataColeta($dataColeta)
+    {
+        $this->dataColeta = $dataColeta;
     }
 
 }

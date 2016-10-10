@@ -105,7 +105,9 @@ class ReabastecimentoManual extends Pdf
         }
 
         $config = \Zend_Registry::get('config');
-        $viewErp = $config->database->viewErp->habilitado;
+        $viewErp = false;
+        if ((isset($config->database,$config->database->viewErp,$config->database->viewErp->habilitado)))
+            $viewErp = $config->database->viewErp->habilitado;
 
         foreach ($produtos as $produto) {
 

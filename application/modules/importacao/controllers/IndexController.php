@@ -349,8 +349,12 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = "Pedido repetido: " . $registro;
                         break;
                     }
-
-                    $result = $importacaoService->savePedido($em, $arrRegistro);
+                    $arrRepo = array(
+                        'pJuridicaRepo' => $pJuridicaRepo,
+                        'pFisicaRepo' => $pFisicaRepo,
+                        'clienteRepo' => $clienteRepo
+                    );
+                    $result = $importacaoService->savePedido($em, $arrRegistro, $arrRepo);
                     if (is_string($result)) {
                         $arrErroRows['exception'] = $result;
                     } else {
@@ -635,10 +639,9 @@ class Importacao_IndexController extends Action
                             foreach ($camposArquivo as $campo){
                                 $coluna = $campo->getPosicaoTxt();
                                 if (!empty($coluna)){
-                                    $checkCabecalho = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
-                                    if (empty($checkCabecalho)){
-                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
-                                    }
+//                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
+//                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
+//                                    }
                                 }
                             }
                             continue;

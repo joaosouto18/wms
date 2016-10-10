@@ -34,23 +34,16 @@ class DisponibilidadeEstoque extends Pdf
         $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
     }
 
-    public function init($params)
+    public function init($enderecos)
     {
 
         /** @var \Wms\Domain\Entity\Expedicao\VRelProdutosRepository $RelProdutos */
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = \Zend_Registry::get('doctrine')->getEntityManager();
-
         $this->SetMargins(7, 0, 0);
         $this->SetFont('Arial', 'B', 8);
         $this->AddPage();
-
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepository */
-        $EstoqueRepository   = $em->getRepository('wms:Enderecamento\Estoque');
-        $enderecos = $EstoqueRepository->getSituacaoEstoque($params);
 
         foreach ($enderecos as $endereco) {
 

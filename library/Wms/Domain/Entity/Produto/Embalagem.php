@@ -54,8 +54,7 @@ class Embalagem
     protected $descricao;
 
     /**
-     * @Column(name="QTD_EMBALAGEM", type="integer", length=60, nullable=false)
-     * @var integer quantidade de itens esta embalagem contém
+     * @Column(name="QTD_EMBALAGEM", type="decimal", length=60, nullable=false)
      */
     protected $quantidade;
 
@@ -113,7 +112,7 @@ class Embalagem
     protected $pontoReposicao;
 
     /**
-     * @Column(name="CAPACIDADE_PICKING", type="integer", nullable=false)
+     * @Column(name="CAPACIDADE_PICKING", type="decimal", nullable=false)
      */
     protected $capacidadePicking;
     
@@ -339,6 +338,7 @@ class Embalagem
     }
 
     /**
+<<<<<<< HEAD
      * @return datetime
      */
     public function getDataInativacao()

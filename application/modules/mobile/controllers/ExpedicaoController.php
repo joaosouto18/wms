@@ -17,6 +17,15 @@ class Mobile_ExpedicaoController extends Action
         $this->setIdCentral($idCentral);
     }
 
+    public function iniciarExpedicaoAction()
+    {
+
+        $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+        $expedicaoEn = $expedicaoRepo->getExpedicaoByCliente();
+
+
+    }
+
     public function confirmarOperacaoAction()
     {
         $this->view->codBarras = $codBarras = $this->_getParam('codigoBarras');
@@ -53,6 +62,7 @@ class Mobile_ExpedicaoController extends Action
     }
 
     public function lerProdutoMapaAction() {
+        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
@@ -79,6 +89,7 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
+        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idMapa, false);
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
@@ -98,7 +109,7 @@ class Mobile_ExpedicaoController extends Action
 
                 if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     if (empty($volumePatrimonioEn)) {
-                        $tipoProvavelCodBarras = 'volume';
+//                        $tipoProvavelCodBarras = 'volume';
                     } else {
                         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
                         $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
@@ -116,6 +127,11 @@ class Mobile_ExpedicaoController extends Action
                 if ($tipoProvavelCodBarras === 'volume') {
                     $idVolume = $codBarras;
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                    if (empty($volumePatrimonioEn)) {
+                        $this->addFlashMessage('error',"Nenhum volume-patrimônio foi encontrado com o código $idVolume");
+                        $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao");
+                    }
+
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
                     /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
                     $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
@@ -145,6 +161,9 @@ class Mobile_ExpedicaoController extends Action
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
+                    $idMapa = $resultado['idMapa'];
+                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+
                     if (isset($qtd) && ($qtd != null)) {
                         $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
                         $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
@@ -201,9 +220,13 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
 
+        /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         /** @var Expedicao\ExpedicaoVolumePatrimonio $expVolumePatrimonioEn */
         $expVolumePatrimonioEn = $expVolumePatrimonioRepo->findOneBy(array('volumePatrimonio' => $volume, 'expedicao' => $idExpedicao));
+
+        if (empty($expVolumePatrimonioEn))
+            throw new Exception("Não foi encontrado o volume $volume na expedição $expVolumePatrimonioEn");
 
         $codCliente = $expVolumePatrimonioEn->getTipoVolume();
         $clienteRepo = $this->em->getRepository('wms:Pessoa\Papel\Cliente');
@@ -231,27 +254,39 @@ class Mobile_ExpedicaoController extends Action
 
         $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
+        $dataInicio = (!empty($expedicaoEn))?$expedicaoEn->getDataInicio():null;
+        $emissor = (!empty($pessoaEmpresa))?$pessoaEmpresa->getNome():null;
+
+        $localidade = null;
+        $estado = null;
+        if (!empty($endereco)) {
+            $localidade = $endereco->getLocalidade();
+            $estado = $endereco->getUf()->getReferencia();
+        }
+
+        $sequencia = $expVolumePatrimonioEn->getSequencia();
+
         if ($modeloSeparacaoEn->getImprimeEtiquetaVolume() == 'S') {
 
             $fields = array();
             $fields['expedicao'] = $idExpedicao;
             $fields['volume'] = $volume;
-            $fields['dataInicio'] = $expedicaoEn->getDataInicio();
-            $fields['emissor'] = $pessoaEmpresa->getNome();
-            $fields['localidade'] = $endereco->getLocalidade();
-            $fields['estado'] = $endereco->getUf()->getReferencia();
+            $fields['dataInicio'] = $dataInicio;
+            $fields['emissor'] = $emissor;
+            $fields['localidade'] = $localidade;
+            $fields['estado'] = $estado;
             $fields['descricao'] = $dscVolume;
             $fields['quebra'] = $codPessoa;
             $fields['pedido'] = $idPedido;
             $fields['produtos'] = $produtos;
-            if (isset($expVolumePatrimonioEn) && !empty($expVolumePatrimonioEn))
+            if (!empty($sequencia))
                 $fields['sequencia'] = $expVolumePatrimonioEn->getSequencia();
 
 
             switch ($parametroEtiquetaVolume) {
                 case 1:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
-                    $gerarEtiqueta->imprimirExpedicaoModelo1($fields);
+                    $gerarEtiqueta->imprimirExpedicaoModelo1($fields, false);
                     break;
                 case 2:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
@@ -388,7 +423,7 @@ public function informaQtdMapaAction()
         $central          = $sessao->centralSelecionada;
         $mapa             = $request->getParam('mapa', "N");
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
+        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
@@ -1270,5 +1305,6 @@ public function informaQtdMapaAction()
         }
 
     }
+
 }
 

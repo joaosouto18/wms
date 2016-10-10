@@ -46,9 +46,15 @@
                     <td><?php echo $produtoConferencia['idProduto'] . ' - ' . $produtoConferencia['dscProduto'] ?></td>
                     <td><?php echo $produtoConferencia['grade'] ?></td>
                     <td><?php echo $produtoConferencia['referencia'] ?></td>
-                    <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
-                    <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
-                    <td ><?php echo $produtoConferencia['qtdDivergencia'] . ' (' . $tipoDivergencia . ')' ?></td>
+                    <?php if ($produtoConferencia['possui_peso_variavel'] == 'S') : ?>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
+                        <td ><?php echo $produtoConferencia['qtdDivergencia'] ?></td>
+                    <?php else : ?>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
+                        <td ><?php echo $produtoConferencia['qtdDivergencia'] . ' (' . $tipoDivergencia . ')' ?></td>
+                    <?php endif; ?>
                     <td>
                         <?php
                         echo $this->formSelect("notasFiscais[{$produtoConferencia['id']}]", '', array('style' => 'max-width: 150px', 'class' => 'notaFiscal'), $produtoConferencia['nfs']);

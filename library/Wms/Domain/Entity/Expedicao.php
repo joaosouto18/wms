@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity;
+use Wms\Domain\Entity\Util\Sigla;
 
 /**
  * Expedição
@@ -100,6 +101,9 @@ class Expedicao
         $this->status = $status;
     }
 
+    /**
+     * @return Sigla
+     */
     public function getStatus()
     {
         return $this->status;

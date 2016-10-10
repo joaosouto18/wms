@@ -9,7 +9,7 @@ class Item {
     public $idProduto;
     /** @var string */
     public $grade;
-    /** @var integer */
+    /** @var double */
     public $quantidade;
     /** @var double */
     public $peso;
@@ -253,10 +253,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = trim($itemNf->quantidade);
-                    $itemWs['peso'] = trim($itemNf->peso);
+                    $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
+                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
                     if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
                         $itemWs['peso'] = trim($itemNf->quantidade);
+
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
@@ -269,12 +270,13 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             //VERIFICO SE É UMA NOTA NOVA OU SE É ALTERAÇÃO DE ALGUMA NOTA JA EXISTENTE
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
+            /** @var NotaFiscalEntity $notaFiscalEn */
             $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $fornecedorEntity->getId()));
 
             if ($notaFiscalEn != null) {
                 $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
                 if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
-                    throw new \Exception ("Não é Possível alterar, NF cancelada ou já recebida");
+                    throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." cancelada ou já recebida");
                 }
 
                 //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
@@ -536,11 +538,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 if ($continueNF == false) {
                     $itemWs['idProduto'] = trim($itemNf['idProduto']);
                     $itemWs['grade'] = trim($itemNf['grade']);
-                    $itemWs['quantidade'] = trim($itemNf['quantidade']);
-                    $itemWs['peso'] = trim($itemNf['peso']);
+                    $itemWs['quantidade'] = trim(str_replace(',','.',$itemNf['quantidade']));
+                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf['peso']));
                     if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
-                        $itemWs['peso'] = trim($itemNf['quantidade']);
+                        $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
                     }
+
 
                     $itensNf[] = $itemWs;
                 }

@@ -13,7 +13,10 @@ class PaleteProdutoRepository extends EntityRepository
             ->select('SUM(pp.qtd) qtd')
             ->from('wms:Enderecamento\Palete', 'p')
             ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = p.id')
-            ->where("p.recebimento = $idRecebimento AND pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+            ->where("p.recebimento = $idRecebimento 
+                 AND pp.codProduto = '$codProduto' 
+                 AND pp.grade = '$grade'
+                 AND (p.codStatus <> ". Palete::STATUS_EM_RECEBIMENTO . " OR p.impresso = 'S')");
 
         return $sql->getQuery()->getResult();
     }
@@ -25,8 +28,6 @@ class PaleteProdutoRepository extends EntityRepository
             ->from('wms:Enderecamento\Palete', 'p')
             ->innerJoin('wms:Enderecamento\PaleteProduto', 'pp', 'WITH', 'pp.uma = p.id')
             ->innerJoin('wms:Produto', 'prod', 'WITH', 'prod.id = pp.codProduto AND prod.grade = pp.grade')
-//            ->leftJoin('wms:Produto\Embalagem', 'pe' ,'WITH', 'pe.codProduto = prod.id AND pe.grade = prod.grade')
-//            ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = prod.id AND pv.grade = prod.grade')
             ->where("p.id = $uma");
 
         return $sql->getQuery()->getResult();

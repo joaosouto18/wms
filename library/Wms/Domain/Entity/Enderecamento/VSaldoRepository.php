@@ -17,7 +17,7 @@ class VSaldoRepository extends EntityRepository
         ->leftJoin("s.produto","p")
         ->leftJoin('p.tipoComercializacao','tp')
         ->leftJoin("s.depositoEndereco", "e")
-        ->orderBy("e.rua, lado, e.nivel,  e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
+        ->orderBy("e.rua, e.predio, lado, e.nivel, e.apartamento, s.codProduto, s.grade, s.volume");
 
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];
@@ -42,7 +42,7 @@ class VSaldoRepository extends EntityRepository
         if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
             $query->andWhere("e.idCaracteristica IN ($tipoPicking, $tipoPickingRotativo)");
         }
-		
+
 		$result = $query->getQuery()->getResult();
 		return $result;
     }

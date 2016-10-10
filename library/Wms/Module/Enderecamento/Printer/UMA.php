@@ -85,16 +85,11 @@ class UMA extends Pdf
 
         $this->SetMargins(7, 7, 0);
         $ProdutoRepository    = $em->getRepository('wms:Produto');
-        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
-        $notaFiscalItemRepository = $em->getRepository('wms:NotaFiscal\Item');
 
         $codProduto     = $params['codProduto'];
         $grade          = $params['grade'];
         $idRecebimento  = $params['idRecebimento'];
 
-//        $notaFiscalEn = $notaFiscalItemRepository->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'notaFiscal' => array('recebimento' => 3932)));
-//        $notaFiscalEn = $notaFiscalItemRepository->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'notaFiscal' => array('id' => 16630, 'recebimento' => null)));
-//        var_dump($notaFiscalEn); exit;
         $produtoEn  = $ProdutoRepository->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
 
         if ($produtoEn == null) {
@@ -127,14 +122,18 @@ class UMA extends Pdf
                 $this->layout01($palete,$produtoEn,$font_size,$line_width, $picking,$params);
             } else if ($modelo == 2) {
                 $this->layout02($palete,$produtoEn,$font_size,$line_width, $picking,$params);
+            } else if ($modelo == 4) {
+                $this->layout04($palete,$produtoEn,$font_size,$line_width, $picking);
+            } elseif ($modelo == 5) {
+                $this->layout05($palete,$produtoEn,$font_size,$line_width,$params);
             } else {
-                $this->layout03($palete,$produtoEn,$font_size,$line_width, $picking,$params);
+                $this->layout03($palete,$produtoEn,$font_size,$line_width,$params);
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL ) {
                 if ($modelo == 3) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), 50, 160,170,40);
-                } else {
+                } elseif ($modelo != 5) {
                     $this->Image(@CodigoBarras::gerarNovo($paleteEn->getId()), null, null,170,40);
                 }
 
@@ -159,12 +158,68 @@ class UMA extends Pdf
         $this->Cell(-30,0,utf8_decode(date('d/m/Y')." às ".date('H:i')),0,0,'C');
     }
 
-    public function layout03($palete, $produtoEn, $font_size, $line_width, $enderecoPicking,$params=null){
+    public function layout05($palete, $produtoEn, $font_size, $line_width, $params)
+    {
+        $this->AddPage();
+
+        $descricaoProduto = $produtoEn->getDescricao();
+        $codigoProduto = $produtoEn->getId();
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
+        }
+
+        $this->Image(@CodigoBarras::gerarNovo($palete['idUma']),50,65,170,40);
+
+        $this->SetFont('Arial', 'B', 75);
+        $this->Cell($line_width, 15, '             '.$codigoProduto, 0, 5);
+
+        $this->SetFont('Arial', 'B', $font_size);
+        $this->Cell($line_width, 40, $descricaoProduto, 0, 5);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(35,40,"",0,0);
+
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
+            $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->SetFont('Arial', 'B', 40);
+            $this->Cell(75,75,'',0,1);
+            $this->Cell(75,-40,"Validade ",0,1);
+            $this->SetFont('Arial', 'B', 70);
+            $this->Cell(75,40,utf8_decode("               $dataValidade"),0,1);
+        } else {
+            $this->Cell(75,75,'',0,1);
+            $this->Cell(75,-40,'',0,1);
+            $this->SetFont('Arial', 'B', 70);
+            $this->Cell(75,40,'',0,1);
+        }
+
+        $this->Cell($line_width, 40, '', 0, 25);
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(25,-60,"Qtd",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(75,-60,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'],0,40);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(55,-110,utf8_decode("                              End.: "),0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(105,-110,'              '.$palete['endereco'],0,1);
+
+    }
+
+    public function layout03($palete, $produtoEn, $font_size, $line_width, $params){
         $this->AddPage();
 
         $codigoProduto = $produtoEn->getId();
         $descricaoProduto = $produtoEn->getDescricao();
         $referencia = $produtoEn->getReferencia();
+        if (!empty($referencia) && null !== $referencia) {
+            $referencia = ' / '.$produtoEn->getReferencia();
+        }
 
         if (strlen($descricaoProduto) >= 42) {
             $font_size = 36;
@@ -179,7 +234,7 @@ class UMA extends Pdf
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
 
-        if (isset($params['dataValidade'])) {
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->SetFont('Arial', 'B', 40);
@@ -192,7 +247,7 @@ class UMA extends Pdf
         $this->Cell(25,95,"Qtd",0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(75,95,$palete['qtd'],0,1);
+        $this->Cell(75,95,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55,-35,utf8_decode("Endereço "),0,0);
@@ -204,7 +259,7 @@ class UMA extends Pdf
         $this->Cell(55,90,utf8_decode("Prod/Ref.:"),0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(105,90,$codigoProduto . " / " .  $referencia,0,1);
+        $this->Cell(105,90,$codigoProduto .$referencia,0,1);
 
     }
 
@@ -228,7 +283,7 @@ class UMA extends Pdf
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(30,35);
-        if (isset($params['dataValidade'])) {
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
@@ -269,7 +324,7 @@ class UMA extends Pdf
         $this->Cell(25,30,"Qtd",0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(25,30,$palete['qtd'],0,1);
+        $this->Cell(25,30,$palete['qtd']/$palete['qtdEmbalagem'],0,1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(15,110);
@@ -310,7 +365,7 @@ class UMA extends Pdf
 
         $this->SetFont('Arial', 'B', 32);
 
-        if (isset($params['dataValidade'])) {
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(75,20,utf8_decode("Picking $enderecoPicking - Validade $dataValidade"),0,1);
@@ -348,5 +403,42 @@ class UMA extends Pdf
         }
         return $enderecoPicking;
     }
+
+    public function layout04($palete, $produtoEn, $font_size, $line_width, $enderecoPicking){
+        $this->AddPage();
+
+        $descricaoProduto = $produtoEn->getId().'-'.$produtoEn->getDescricao();
+
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 56;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 66;
+        }
+
+        $this->SetFont('Arial', 'B', $font_size);
+
+        $this->MultiCell($line_width, 20, $descricaoProduto, 0, 'C');
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(35,40,"",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(165,40,$produtoEn->getGrade(),0,0);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(25,40,"Qtd",0,0);
+
+        $this->SetFont('Arial', 'B', 60);
+        $this->Cell(75,40,$palete['qtd'],0,1);
+
+        $this->SetFont('Arial', 'B', 32);
+
+        $this->Cell(150,20,utf8_decode("Picking $enderecoPicking"),0,0);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(1,20,utf8_decode("Endereço 01.001.00.01"),0,1);
+
+    }
+
 
 }

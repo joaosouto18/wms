@@ -392,9 +392,10 @@ class InventarioRepository extends EntityRepository
                 }
 
                 $qtdContagem = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
-                if ($estoqueEn && $invEnderecoEn->getAtualizaEstoque() == 1) {
+                if ($estoqueEn) {
                     //mesmo produto?
-                    if ($serviceInventario->compareProduto($estoqueEn,$contagemEndEn) == true) {
+                    $result = $serviceInventario->compareProduto($estoqueEn,$contagemEndEn);
+                    if ($result == true) {
                         $qtd = $qtdContagem - $estoqueEn->getQtd();
                         if ($qtd != 0) {
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtd, $osEn, $usuarioEn, $estoqueRepo);
@@ -431,6 +432,7 @@ class InventarioRepository extends EntityRepository
         $params['qtd']           = $qtd;
         $params['volume']        = $contagemEndEn->getProdutoVolume();
         $params['embalagem']     = $contagemEndEn->getCodProdutoEmbalagem();
+        $params['validade']      = $contagemEndEn->getValidade();
         $params['tipo']          = 'I';
         $params['observacoes']   = 'Mov. correção inventário';
         $params['os']            = $osEn;
@@ -448,6 +450,7 @@ class InventarioRepository extends EntityRepository
         $params['qtd']          = $qtd;
         $params['volume']       = $estoqueEn->getProdutoVolume();
         $params['embalagem']    = 0;
+        $params['validade']      = $contagemEndEn->getValidade();
         $params['tipo']         = 'I';
         $params['observacoes']  = 'Mov. correção inventário';
         $params['os']           = $osEn;
@@ -563,9 +566,9 @@ class InventarioRepository extends EntityRepository
 
         $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'N');
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(),'N');
         }
-        $this->_em->flush();
+//        $this->_em->flush();
     }
 
     public function impressaoInventarioByEndereco($params, $idInventario)

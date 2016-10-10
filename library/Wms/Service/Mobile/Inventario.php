@@ -3,6 +3,7 @@
 namespace Wms\Service\Mobile;
 
 
+use Core\Grid\Column\Filter\Render\Date;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 
@@ -163,7 +164,9 @@ class Inventario
         $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
         $idEndereco = $params['idEndereco'];
         $enderecoRepo = $this->getEm()->getRepository('wms:Deposito\Endereco');
+        $embalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
         $enderecoEn = $enderecoRepo->find($idEndereco);
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
 
         $idPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         $idPickingDinamico = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
@@ -190,6 +193,7 @@ class Inventario
         $populateForm['idEndereco']         = $params['idEndereco'];
         $populateForm['dscEndereco']        = $enderecoEn->getDescricao();
         $populateForm['descricaoProduto']   = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
+        $populateForm['dscEmbalagem']       = '<b>Embalagem ' . $embalagemEn->getDescricao().' - Fator '.number_format($embalagemEn->getQuantidade(),2,',','') . '</b>';
         if ($dscVolume != null) {
             $populateForm['codProdutoVolume'] = $idVolume;
         } else {
@@ -203,16 +207,71 @@ class Inventario
 
     public function contagemEndereco($params)
     {
-        $qtdConferida           = $params['qtdConferida'];
-        $idContagemOs           = $params['idContagemOs'];
-        $qtdAvaria              = $params['qtdAvaria'];
-        $idInventarioEnd        = $params['idInventarioEnd'];
-        $idProduto              = $params['idProduto'];
-        $grade                  = $params['grade'];
-        $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
-        $codProdutoVolume       = $params['codProdutoVolume'];
-        $contagemEndId          = $params['contagemEndId'];
-        $numContagem            = $params['numContagem'];
+        $qtdConferida = null;
+        if (isset($params['qtdConferida']))
+            $qtdConferida           = $params['qtdConferida'];
+        $idContagemOs = null;
+        if (isset($params['idContagemOs']))
+            $idContagemOs           = $params['idContagemOs'];
+        $qtdAvaria = null;
+        if (isset($params['qtdAvaria']))
+            $qtdAvaria              = $params['qtdAvaria'];
+        $idInventarioEnd = null;
+        if (isset($params['idInventarioEnd']))
+            $idInventarioEnd        = $params['idInventarioEnd'];
+        $idProduto = null;
+        if (isset($params['idProduto']))
+            $idProduto              = $params['idProduto'];
+        $grade = null;
+        if (isset($params['grade']))
+            $grade                  = $params['grade'];
+        $codProdutoEmbalagem = null;
+        if (isset($params['codProdutoEmbalagem']))
+            $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
+        $codProdutoVolume = null;
+        if (isset($params['codProdutoVolume']))
+            $codProdutoVolume       = $params['codProdutoVolume'];
+        $contagemEndId = null;
+        if (isset($params['contagemEndId']))
+            $contagemEndId          = $params['contagemEndId'];
+        $numContagem = null;
+        if (isset($params['numContagem']))
+            $numContagem            = $params['numContagem'];
+
+        $produtoEn = $this->getEm()->getRepository('wms:Produto')
+            ->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
+
+        if (isset($produtoEn) && !empty($produtoEn))
+            $possuiValidade = $produtoEn->getValidade();
+
+        $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
+
+        $dataValida = true;
+        $validade = null;
+        if ($possuiValidade == 'S' && $controleValidade == 'S') {
+            if (strlen($params['validade']) < 8) {
+                $dataValida = false;
+            } else {
+                $dia = substr($params['validade'],0,2);
+                if ($dia == false) $dataValida = false;
+                $mes = substr($params['validade'],3,2);
+                if ($mes == false) $dataValida = false;
+                $ano = substr($params['validade'],6,2);
+                if ($mes == false) $dataValida = false;
+
+                if ($dataValida == true) {
+                    $data = $dia . "/" . $mes . "/20" . $ano;
+                    if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
+                }
+            }
+            if ($dataValida == false) {
+                return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => 'mobile');
+            } else {
+                $validade = new \Zend_Date($data);
+                $validade = $validade->toString('Y-MM-dd');
+
+            }
+        }
 
         $divergencia = null;
         if (isset($params['divergencia'])) {
@@ -225,6 +284,8 @@ class Inventario
 
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEm()->getRepository("wms:Produto\Volume");
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
+        $produtoEmbalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
         if (empty($qtdConferida)) {
@@ -233,6 +294,7 @@ class Inventario
 
         if ($codProdutoEmbalagem != null) {
             $codProdutoVolume = null;
+            $embalagemEntity = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
         }
 
         $embConferidos = array();
@@ -271,6 +333,10 @@ class Inventario
             if (isset($embalagem['idEmbalagem'])) $idEmbalagem = $embalagem['idEmbalagem'];
             if (isset($embalagem['idVolume'])) $idVolume = $embalagem['idVolume'];
 
+            if (isset($embalagemEntity) && !empty($embalagemEntity)) {
+                $qtdConferida = $qtdConferida * $embalagemEntity->getQuantidade();
+            }
+
             $contagemEndEn = $contagemEndRepo->findOneBy(array(
                 'contagemOs' =>$idContagemOs,
                 'inventarioEndereco' => $idInventarioEnd,
@@ -280,8 +346,9 @@ class Inventario
                 'codProdutoVolume'=>$idVolume,
                 'numContagem'=>$numContagem));
             if ($contagemEndEn != null) {
-                $contagemEndEn->setQtdContada($qtdConferida);
-                $contagemEndEn->setQtdAvaria($qtdAvaria);
+                $contagemEndEn->setQtdContada($contagemEndEn->getQtdContada() + $qtdConferida);
+                $contagemEndEn->setQtdAvaria($contagemEndEn->getQtdAvaria() + $qtdAvaria);
+                $contagemEndEn->setValidade($validade);
                 $this->_em->persist($contagemEndEn);
                 $contagemEndId = $contagemEndEn->getId();
             } else {
@@ -294,7 +361,8 @@ class Inventario
                     'grade' => $grade,
                     'codProdutoEmbalagem' => $idEmbalagem,
                     'codProdutoVolume' => $idVolume,
-                    'numContagem' => $numContagem
+                    'numContagem' => $numContagem,
+                    'validade' => $validade
                 ));
                 $contagemEndId = $contagemEndEn->getId();
             }
@@ -521,7 +589,7 @@ class Inventario
         return $this->getEm()->flush();
     }
 
-    public function deveAtualizarEstoque($params)
+    public function deveAtualizarEstoque($params, $atualiza)
     {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
@@ -530,7 +598,7 @@ class Inventario
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEndRepo */
         $invEndRepo         = $this->getEm()->getRepository("wms:Inventario\Endereco");
         $inventarioEndEn    = $invEndRepo->find($params['idInventarioEnd']);
-        $inventarioEndEn->setAtualizaEstoque(1);
+        $inventarioEndEn->setAtualizaEstoque($atualiza);
         $this->getEm()->persist($inventarioEndEn);
         $this->getEm()->flush();
     }
@@ -727,9 +795,10 @@ class Inventario
                 if ((true == $estoqueValidado || true == $regraContagem) && (false == $contagemEndComDivergencia)) {
                     //Estoque validado, endereço considerado inventariado
                     $this->inventariarEndereco($params, $contagemEndEntities);
+                    $this->deveAtualizarEstoque($params, true);
                     $result = true;
                 } else {
-                    $this->deveAtualizarEstoque($params);
+                    $this->deveAtualizarEstoque($params, false);
                     $result = false;
                 }
             }

@@ -53,10 +53,18 @@ class Mapas extends Grid
                     'index' => 'PERCENTUAL',
                 ))
                 ->addAction(array(
-                    'label' => 'Visualizar Produtos',
+                    'label'=>'Visualizar produtos',
+                    'moduleName'=>'expedicao',
+                    'controllerName'=>'mapa',
+                    'actionName'=>'consultar',
+                    'cssClass'=>'dialogAjax',
+                    'pkIndex'=>'COD_MAPA_SEPARACAO'
+                ))
+                ->addAction(array(
+                    'label' => 'Visualizar pedidos',
                     'moduleName' => 'expedicao',
-                    'controllerName' => 'mapa',
-                    'actionName' => 'consultar',
+                    'controllerName' => 'corte',
+                    'actionName' => 'corte-antecipado-by-mapa',
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => 'COD_MAPA_SEPARACAO'
                 ))

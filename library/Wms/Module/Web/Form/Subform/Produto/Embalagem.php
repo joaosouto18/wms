@@ -24,12 +24,13 @@ class Embalagem extends SubForm
                 ->addElement('hidden', 'grade')
                 ->addElement('hidden', 'codigoBarrasAntigo')
                 ->addElement('hidden', 'enderecoAntigo')
+                ->addElement('hidden', 'dataInativacao')
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
                     'size' => 45,
                     'maxlength' => 60,
                 ))
-                ->addElement('numeric', 'quantidade', array(
+                ->addElement('text', 'quantidade', array(
                     'label' => 'Quantidade de itens',
                     'size' => 10
                 ))
