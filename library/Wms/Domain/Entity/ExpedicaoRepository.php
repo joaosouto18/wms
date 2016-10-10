@@ -521,7 +521,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa=null)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -553,7 +553,7 @@ class ExpedicaoRepository extends EntityRepository
                 if (is_string($result)) {
                     return $result;
                 }
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn->getId());
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($idMapa);
                 if (is_string($result)) {
                     return $result;
                 }
@@ -679,10 +679,6 @@ class ExpedicaoRepository extends EntityRepository
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
         $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
@@ -718,7 +714,6 @@ class ExpedicaoRepository extends EntityRepository
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
         $this->getEntityManager()->flush();
-        return true;
     }
 
     public function efetivaReservaEstoqueByExpedicao($idExpedicao)
@@ -2752,6 +2747,20 @@ class ExpedicaoRepository extends EntityRepository
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+    }
+
+    public function getClienteByExpedicao()
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('')
+            ->from( 'wms:Expedicao','e')
+            ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'c.codExpedicao = e.id')
+            ->innerJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.carga = c.id')
+            ->innerJoin('wms:Pessoa', 'pe', 'WITH', 'pe.id = p.pessoa')
+            ->where('e.codStatus <> '. Expedicao::STATUS_FINALIZADO);
+
+        return $sql->getQuery()->getResult();
+
     }
 
 }

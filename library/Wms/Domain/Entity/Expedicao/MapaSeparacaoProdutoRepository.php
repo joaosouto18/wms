@@ -71,7 +71,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.id = pp.codPedido')
             ->where("ms.expedicao = ".$expedicaoEntity->getId())
             ->andWhere("msp.numCaixaInicio is not null and msp.numCaixaFim is not null")
-            ->orderBy('msp.numCaixaInicio, msp.numCaixaFim', 'DESC');
+            ->orderBy('msp.id, msp.numCaixaInicio, msp.numCaixaFim', 'DESC');
 
         if ($novoPedido == false) {
             $sql->andWhere("p.id = ".$pedidoEntity->getId());

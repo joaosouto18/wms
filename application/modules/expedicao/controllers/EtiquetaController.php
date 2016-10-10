@@ -149,7 +149,6 @@ class Expedicao_EtiquetaController  extends Action
             }
         }
         if ($tipo == "reentrega") {
-//            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA;
             $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
             if ($this->getRequest()->getParam('todas') == 'S') $status = null;
 

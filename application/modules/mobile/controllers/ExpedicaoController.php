@@ -17,6 +17,15 @@ class Mobile_ExpedicaoController extends Action
         $this->setIdCentral($idCentral);
     }
 
+    public function iniciarExpedicaoAction()
+    {
+
+        $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+        $expedicaoEn = $expedicaoRepo->getExpedicaoByCliente();
+
+
+    }
+
     public function confirmarOperacaoAction()
     {
         $this->view->codBarras = $codBarras = $this->_getParam('codigoBarras');
@@ -53,6 +62,7 @@ class Mobile_ExpedicaoController extends Action
     }
 
     public function lerProdutoMapaAction() {
+        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
@@ -79,6 +89,7 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
+        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idMapa, false);
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
@@ -98,7 +109,7 @@ class Mobile_ExpedicaoController extends Action
 
                 if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     if (empty($volumePatrimonioEn)) {
-                        $tipoProvavelCodBarras = 'volume';
+//                        $tipoProvavelCodBarras = 'volume';
                     } else {
                         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
                         $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
@@ -412,7 +423,7 @@ public function informaQtdMapaAction()
         $central          = $sessao->centralSelecionada;
         $mapa             = $request->getParam('mapa', "N");
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
+        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {

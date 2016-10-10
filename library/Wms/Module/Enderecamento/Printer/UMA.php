@@ -112,7 +112,6 @@ class UMA extends Pdf
         $line_width = 300;
 
         foreach($paletes as $palete) {
-            $posicaoSuperiorLayout = false;
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
             } else {
@@ -173,9 +172,11 @@ class UMA extends Pdf
 
         $this->Image(@CodigoBarras::gerarNovo($palete['idUma']),50,65,170,40);
 
-        $this->SetFont('Arial', 'B', $font_size);
+        $this->SetFont('Arial', 'B', 75);
+        $this->Cell($line_width, 15, '             '.$codigoProduto, 0, 5);
 
-        $this->Cell($line_width, 15, $codigoProduto.' - '.$descricaoProduto, 0, 5);
+        $this->SetFont('Arial', 'B', $font_size);
+        $this->Cell($line_width, 40, $descricaoProduto, 0, 5);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35,40,"",0,0);
@@ -184,17 +185,23 @@ class UMA extends Pdf
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->SetFont('Arial', 'B', 40);
-            $this->Cell(75,40,utf8_decode("Validade "),0,1);
+            $this->Cell(75,75,'',0,1);
+            $this->Cell(75,-40,"Validade ",0,1);
             $this->SetFont('Arial', 'B', 70);
-            $this->Cell(75,-40,utf8_decode("               $dataValidade"),0,1);
+            $this->Cell(75,40,utf8_decode("               $dataValidade"),0,1);
+        } else {
+            $this->Cell(75,75,'',0,1);
+            $this->Cell(75,-40,'',0,1);
+            $this->SetFont('Arial', 'B', 70);
+            $this->Cell(75,40,'',0,1);
         }
 
         $this->Cell($line_width, 40, '', 0, 25);
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(25,110,"Qtd",0,0);
+        $this->Cell(25,-60,"Qtd",0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(75,110,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'],0,40);
+        $this->Cell(75,-60,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'],0,40);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55,-110,utf8_decode("                              End.: "),0,0);
