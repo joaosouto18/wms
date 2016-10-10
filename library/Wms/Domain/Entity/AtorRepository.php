@@ -47,6 +47,7 @@ class AtorRepository extends EntityRepository {
      */
     public function persistirPessoa(AtorInterface $ator, array $values) {
         $em = $this->getEntityManager();
+        $permitirCnpjIguais = $this->getParametroCNPJ();
 
         //Configura a pessoa de acorodo  o seu tipo
         if ($values['pessoa']['tipo'] == 'J') { //pessoa jurídica
@@ -99,10 +100,12 @@ class AtorRepository extends EntityRepository {
 
             $pessoaFisicaEntity = $em->getRepository('wms:Pessoa\Fisica')->findOneBy(array('cpf' => $cpf));
 
-            if (($pessoa->getId() == null) && ($pessoaFisicaEntity != null)) {
-                throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
-            } else if (($pessoaFisicaEntity != null) && ($pessoaFisicaEntity->getId() != $pessoa->getId())) {
-                throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
+            if ($permitirCnpjIguais == 'N') {
+                if (($pessoa->getId() == null) && ($pessoaFisicaEntity != null)) {
+                    throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
+                } else if (($pessoaFisicaEntity != null) && ($pessoaFisicaEntity->getId() != $pessoa->getId())) {
+                    throw new \Exception('CPF ' . $pessoaFisicaEntity->getCpf() . ' já cadastrado.');
+                }
             }
 
             //transforma as datas de string ara DateTime
@@ -249,6 +252,11 @@ class AtorRepository extends EntityRepository {
         $em = $this->getEntityManager();
         $pessoa = $em->getReference('wms:Pessoa', $id);
         $em->remove($pessoa);
+    }
+
+    public function getParametroCNPJ()
+    {
+        return $this->getSystemParameterValue('PERMITE_CLIENTES_CNPJ_IGUAIS');
     }
 
 }
