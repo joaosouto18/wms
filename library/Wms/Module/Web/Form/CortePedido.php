@@ -2,46 +2,29 @@
 
 namespace Wms\Module\Web\Form;
 
-use Wms\Module\Web\Form,
-    Core\Form\SubForm,
-    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
+use Wms\Module\Web\Form;
 
-/**
- * Description of SystemContextParam
- *
- * @author Renato Medina <medinadato@gmail.com>
- */
-class OrdemServico extends Form
+class CortePedido extends Form
 {
 
     public function init()
     {
-        $em = $this->getEm();
-
-        $this->addElement('hidden', 'idRecebimento')
-                ->addElement('submit', 'btnSubmit', array(
+        $this
+            ->addElement('text', 'codProduto', array(
+                'label' => 'Cod. Produto',
+                'class' => 'focus'
+            ))
+            ->addElement('text', 'grade', array(
+                'label' => 'Grade',
+                'value' => 'UNICA'
+            ))
+            ->addElement('button', 'btnSubmit', array(
                     'class' => 'btn',
-                    'label' => 'Gerar Ordem de Serviço para Conferência Cega',
-                    'decorators' => array('ViewHelper'),
-                ))
-                ->addDisplayGroup(array('btnSubmit'), 'identificacao', array('legend' => 'Clique abaixo para gerar a conferencia cega'));
+                    'label' => 'Buscar',
+//                    'decorators' => array('ViewHelper'),
+            ))
+            ->addDisplayGroup(array('codProduto', 'grade', 'btnSubmit'), 'Buscar', array('legend' => 'Buscar por Produto'));
         
-        $this->setDecorators(array(array('ViewScript', array('viewScript' => 'recebimento/ordem-servico-form.phtml'))));
-    }
-    
-    /**
-     * Sets the values from entity
-     * @param \Wms\Domain\Entity\OrdemServico
-     */
-    public function setDefaultsFromEntity(OrdemServicoEntity $ordemServico)
-    {
-        $values = array(
-            'identificacao' => array(
-                'id' => $ordemServico->getId(),
-            )
-        );
-
-        $this->setDefaults($values);
     }
 
 }

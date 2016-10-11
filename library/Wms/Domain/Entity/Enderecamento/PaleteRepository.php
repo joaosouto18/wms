@@ -743,8 +743,6 @@ class PaleteRepository extends EntityRepository
 
                 if (!empty($dataValidade['dataValidade'])) {
                     $dataValidade['dataValidade']  = new \DateTime($dataValidade['dataValidade']);
-                } else {
-                    $dataValidade['dataValidade'] = $paleteEn->getValidade();
                 }
 
                 if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {

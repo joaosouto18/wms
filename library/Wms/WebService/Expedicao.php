@@ -803,13 +803,15 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
             }
         }
-
     }
 
     public function findClienteByCodigoExterno ($repositorios, $cliente) {
         $ClienteRepo    = $repositorios['clienteRepo'];
         $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
         $permitirCnpjIguais = $ClienteRepo->getParametroCNPJ();
+
+        if ($permitirCnpjIguais == 'S')
+            $cliente['cpf_cnpj'] = $cliente['codCliente'];
 
         if ($entityCliente == null) {
 
@@ -818,10 +820,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $cliente['pessoa']['tipo'] = 'J';
 
                     $PessoaJuridicaRepo    = $repositorios['pessoaJuridicaRepo'];
-                    $entityPessoa = null;
-                    if ($permitirCnpjIguais == 'N') {
-                        $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
-                    }
+                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
                     if ($entityPessoa) {
                         break;
                     }
@@ -835,10 +834,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 case 'F':
 
                     $PessoaFisicaRepo    = $repositorios['pessoaFisicaRepo'];
-                    $entityPessoa = null;
-                    if ($permitirCnpjIguais == 'N') {
-                        $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
-                    }
+                    $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
                     if ($entityPessoa) {
                         break;
                     }
