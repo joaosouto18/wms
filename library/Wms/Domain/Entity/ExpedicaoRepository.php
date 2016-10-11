@@ -521,7 +521,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa=null)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -553,10 +553,12 @@ class ExpedicaoRepository extends EntityRepository
                 if (is_string($result)) {
                     return $result;
                 }
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($idMapa);
+
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn);
                 if (is_string($result)) {
                     return $result;
                 }
+
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
