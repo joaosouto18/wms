@@ -320,6 +320,7 @@ public function informaQtdMapaAction()
     $this->view->idMapa = $idMapa;
     $this->view->codBarras = $codBarras;
     $this->view->idExpedicao = $idExpedicao;
+    $this->view->urlVoltar = 'ler-produto-mapa/idMapa/'.$idMapa.'/idExpedicao/'.$idExpedicao;
 
     if (isset($qtd) && ($qtd > 0)) {
         try {

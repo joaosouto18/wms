@@ -84,25 +84,55 @@
 
             if (v != '' && v.length == 8) {
 
-                var strRegex = /^(((([0-2][0-8])(-|\/)(0[1-9]|1[012]))|((29|30|31)(-|\/)(0[13578]|1[02]))|((29|30)(-|\/)(0[469]|11)))(-|\/)(\d{2}))|((29)(-|\/)(02)(-|\/)(([02468][048])|([13579][26])))$/;
+                var strRegex = /^(((([0-2][0-8]|09|19)(-|\/)(0[1-9]|1[012]))|((29|30|31)(-|\/)(0[13578]|1[02]))|((29|30)(-|\/)(0[469]|11)))(-|\/)(\d{2}))|((29)(-|\/)(02)(-|\/)(([02468][048])|([13579][26])))$/;
                 var regexp = new RegExp(strRegex);
                 if (!regexp.test(v)){
                     alert('A data ' + v + ' é inválida');
                     $(this).val('');
                     return false;
                 } else {
-                    quantidade = document.getElementById('qtdConferida');
-                    if (quantidade) {
-                        quantidade.focus();
-                        if (event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
+                    if (checkValidade()) {
+                        var quantidade = document.getElementById('qtdConferida');
+                        if (quantidade) {
+                            quantidade.focus();
+                            if (event.preventDefault) {
+                                event.preventDefault();
+                            } else {
+                                event.returnValue = false;
+                            }
                         }
                     }
                 }
             }
 
         });
+
+        $("#recebimento-embalagem-quantidade-form").submit(function () {
+            return checkValidade();
+        });
+
+        function checkValidade(){
+            var obj = $("#dataValidade");
+            if ( obj.length ) {
+                var data = obj.val();
+                if (data.length < 8) {
+                    alert("O campo 'Data de validade' não foi preenchido corretamente!");
+                    return false;
+                }
+                var hj = new Date();
+                var validade = gerarData(data);
+                if (validade <= hj) {
+                    alert("A data de validade não pode ser menor ou igual a data atual");
+                    obj.val('');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function gerarData(str) {
+            var partes = str.split("/");
+            return new Date("20" + partes[2], partes[1] - 1, partes[0]);
+        }
     })
 </script>

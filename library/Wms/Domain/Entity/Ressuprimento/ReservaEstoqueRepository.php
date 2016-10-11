@@ -137,7 +137,6 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['os'] = $osEn;
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
-            $params['estoqueRepo'] = $estoqueRepo;
             $estoqueRepo->movimentaEstoque($params, false, null, $dataValidade);
         }
 

@@ -135,6 +135,7 @@ class Enderecamento_PaleteController extends Action
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
 
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
             $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($id, null, $codigo, $grade);
 
