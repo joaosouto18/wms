@@ -89,7 +89,7 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
-        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idMapa, false);
+        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false);
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
@@ -424,7 +424,7 @@ public function informaQtdMapaAction()
         $central          = $sessao->centralSelecionada;
         $mapa             = $request->getParam('mapa', "N");
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
+        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
