@@ -90,15 +90,21 @@ class Expedicao_CorteController  extends Action
     }
 
     public function corteAntecipadoAjaxAction(){
-        $id = $this->_getParam('id');
+        $this->view->id = $id = $this->_getParam('id');
+        $grade = $this->_getParam('grade');
+        $codProduto = $this->_getParam('codProduto');
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-        $pedidos = $pedidoRepo->getPedidoByExpedicao($id);
+        $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
         $this->view->grid = $grid->init($pedidos,$id);
-
+        $form = new \Wms\Module\Web\Form\CortePedido();
+        $this->view->form = $form;
+        if (isset($codProduto) && !empty($codProduto)) {
+            $this->_helper->json(array('result' => $pedidos));
+        }
     }
 
     public function corteAntecipadoByMapaAction(){

@@ -413,17 +413,23 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao)
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA')
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('p.id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario')
             ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'p.id = pp.codPedido')
             ->innerJoin('wms:Pessoa','pe', 'WITH', 'pe.id = p.pessoa')
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
             ->where("e.id = $idExpedicao")
+            ->groupBy('p.id, pe.nome, i.descricao')
             ->orderBy('p.id');
+
+        if (isset($codProduto) && !empty($codProduto)) {
+            $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+        }
 
         return $sql->getQuery()->getResult();
     }
