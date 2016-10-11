@@ -741,15 +741,10 @@ class PaleteRepository extends EntityRepository
             $paleteEn = $this->find($paleteId);
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
 
-                if (!empty($dataValidade)) {
+                if (!empty($dataValidade['dataValidade'])) {
                     $dataValidade['dataValidade']  = new \DateTime($dataValidade['dataValidade']);
                 } else {
-                    $validadePalete = $paleteEn->getValidade();
-                    if (!empty($validadePalete)){
-                        $dataValidade['dataValidade'] = $validadePalete;
-                    } else {
-                        $dataValidade['dataValidade'] = null;
-                    }
+                    $dataValidade['dataValidade'] = $paleteEn->getValidade();
                 }
 
                 if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {

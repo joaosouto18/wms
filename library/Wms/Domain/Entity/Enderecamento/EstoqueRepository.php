@@ -22,7 +22,6 @@ class EstoqueRepository extends EntityRepository
      $params['os'];           - entidade de OS relacionada a movimentação - wms:OrdemServico
      $params['uma'];          - id da U.M.A
      $params['usuario'];      - entidade de usuario - wms:Usuario
-     $params['estoqueRepo'];  - Estoque Repository - wms:Deposito\EnderecoRepository
      */
     public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
     {
@@ -116,17 +115,27 @@ class EstoqueRepository extends EntityRepository
         }
 
         $validade = null;
+        $validadeEsttoque = null;
+        $validadeParam = null;
         if (isset($estoqueEn) && is_object($estoqueEn)) {
-            $validade = $estoqueEn->getValidade();
+            $validadeEsttoque = $estoqueEn->getValidade();
         }
         if ($qtd > 0 ) {
             if (isset($params['validade']) and !is_null($params['validade'])) {
-                $validade = new \Zend_Date($params['validade']);
-                $validade = $validade->toString('Y-MM-dd');
-                $validade = new \DateTime($validade);
+                $validadeParam = new \Zend_Date($params['validade']);
+                $validadeParam = $validadeParam->toString('Y-MM-dd');
+                $validadeParam = new \DateTime($validadeParam);
             } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
-                $validade = (is_string($dataValidade['dataValidade']))? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
+                $validadeParam = (is_string($dataValidade['dataValidade']))? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
             }
+        }
+
+        if (!empty($validadeEsttoque) && !empty($validadeParam)){
+            $validade = ($validadeParam < $validadeEsttoque)? $validadeParam : $validadeEsttoque;
+        } elseif (!empty($validadeEsttoque)) {
+            $validade = $validadeEsttoque;
+        } elseif (!empty($validadeParam)) {
+            $validade = $validadeParam;
         }
 
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
