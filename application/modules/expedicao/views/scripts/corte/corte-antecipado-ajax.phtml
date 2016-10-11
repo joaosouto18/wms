@@ -1,23 +1,26 @@
 <?php
 echo $this->form;
-echo $this->grid;
 ?>
+<div id="gridCorte">
+    <?php echo $this->grid; ?>
+</div>
 <input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
 
 <script>
     $('#btnSubmit').click(function () {
-        var dados = '';
-//        $('#expedicao-mapas-grid').html('');
-//        $('.gTTitle').append('abc');
         $.ajax({
-            url:  URL_MODULO + '/corte/corte-antecipado-ajax/id/'+$('#id').val()+'/codProduto/'+$('#codProduto').val()+'/grade/'+$('#grade').val(),
+            url:  URL_MODULO + '/corte/corte-antecipado-ajax/',
             type: 'post',
+            data: {
+                id: $('#id').val(),
+                codProduto: $('#codProduto').val(),
+                grade: $('#grade').val(),
+                acao: 'buscar'
+            },
             success: function (data) {
-                console.log(data['result'][0]['id']);
-                dados += '<tr class="gTResultSet"><td style="text-align: left">'+data['result'][0]['id'] +'</td><td style="text-align: left">'+data['result'][0]['cliente'] +'</td><td style="text-align: left">'+data['result'][0]['itinerario'] +'</td></tr>';
+                console.log(data);
+                $("#gridCorte").html(data.result);
             }
         });
-        $('.gTTitle').html(dados);
-//        $('#expedicao-mapas-grid').html(dados);
     });
 </script>

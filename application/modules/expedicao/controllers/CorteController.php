@@ -93,17 +93,21 @@ class Expedicao_CorteController  extends Action
         $this->view->id = $id = $this->_getParam('id');
         $grade = $this->_getParam('grade');
         $codProduto = $this->_getParam('codProduto');
+        $actionAjax = $this->_getParam('acao');
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
-        $this->view->grid = $grid->init($pedidos,$id);
+        $grid = $grid->init($pedidos,$id);
+        $this->view->grid = $grid;
+
         $form = new \Wms\Module\Web\Form\CortePedido();
         $this->view->form = $form;
-        if (isset($codProduto) && !empty($codProduto)) {
-            $this->_helper->json(array('result' => $pedidos));
+
+        if (!empty($actionAjax)) {
+            $this->_helper->json(array('result' => $grid->render()));
         }
     }
 

@@ -19,12 +19,11 @@ class CortePedido extends Form
                 'value' => 'UNICA'
             ))
             ->addElement('button', 'btnSubmit', array(
-                    'class' => 'btn',
-                    'label' => 'Buscar',
-//                    'decorators' => array('ViewHelper'),
+                'class' => 'btn',
+                'label' => 'Buscar',
+                'decorators' => array('ViewHelper'),
+                'attribs' => array('style' => 'margin-top:16px')
             ))
             ->addDisplayGroup(array('codProduto', 'grade', 'btnSubmit'), 'Buscar', array('legend' => 'Buscar por Produto'));
-        
     }
-
 }
