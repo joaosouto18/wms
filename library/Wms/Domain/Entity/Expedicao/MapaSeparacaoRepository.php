@@ -125,7 +125,7 @@ class MapaSeparacaoRepository extends EntityRepository
             }
             $this->getEntityManager()->flush();
             $this->getEntityManager()->commit();
-            return 'Existem produtos para serem Conferidos neste Mapa de Separação';
+            return 'Existem produtos para serem Conferidos nesta Expedição';
         } else {
             $this->fechaConferencia($expedicaoEn);
         }

@@ -553,10 +553,12 @@ class ExpedicaoRepository extends EntityRepository
                 if (is_string($result)) {
                     return $result;
                 }
+
                 $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn);
                 if (is_string($result)) {
                     return $result;
                 }
+
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
