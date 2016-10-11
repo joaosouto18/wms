@@ -289,9 +289,19 @@ class Mobile_Enderecamento_ManualController extends Action
                 }
             }
 
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+            $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $codProduto, $grade);
+
+            if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
+                $dataValidade['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
+            } else {
+                $dataValidade['dataValidade'] = null;
+            }
+
             $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
-            $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa);
+            $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa, null, $dataValidade);
 
             $this->addFlashMessage('success','Palete ' . $paleteEn->getId(). ' criado e endereçado com sucesso');
             $this->getEntityManager()->commit();
