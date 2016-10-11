@@ -539,10 +539,10 @@ class PaleteRepository extends EntityRepository
 
         foreach ($qtdEnderecada as $enderecado) {
             foreach ($qtdRecebida as $key => $recebido) {
-                if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
+//                if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
                     $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
                     $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
-                }
+//                }
             }
         }
 
@@ -697,7 +697,7 @@ class PaleteRepository extends EntityRepository
     }
 
     public function salvarPaleteEntity($produtoEn,$recebimentoEn,$unitizadorEn,$statusEn,$volumes,$idNorma,$Qtd,$dataValidade,$tipoEnderecamento = 'A',$pesoPorPalete = null){
-        if (!is_null($dataValidade))
+        if (!empty($dataValidade))
             $dataValidade = new \DateTime($dataValidade);
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
@@ -741,20 +741,15 @@ class PaleteRepository extends EntityRepository
             $paleteEn = $this->find($paleteId);
             if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
 
-                if (!empty($dataValidade)) {
-                    $validade = new \DateTime($dataValidade['dataValidade']);
+                if (!empty($dataValidade['dataValidade'])) {
+                    $dataValidade['dataValidade']  = new \DateTime($dataValidade['dataValidade']);
                 } else {
-                    $validadePalete = $paleteEn->getValidade();
-                    if (!empty($validadePalete)){
-                        $validade = $validadePalete;
-                    } else {
-                        $validade = null;
-                    }
+                    $dataValidade['dataValidade'] = $paleteEn->getValidade();
                 }
 
                 if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
                     $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
-                    $paleteEn->setValidade($validade);
+                    $paleteEn->setValidade($dataValidade['dataValidade']);
                     $this->_em->persist($paleteEn);
                     $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
                 }
