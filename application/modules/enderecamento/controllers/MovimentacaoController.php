@@ -15,13 +15,14 @@ class Enderecamento_MovimentacaoController extends Action
         $request = $this->getRequest();
         $data = $this->_getAllParams();
         $transferir = $this->_getParam('transferir');
+        $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
 
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             $this->redirect('transferir', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
                 'embalagem' => $data['embalagem'], 'volumes' => $data['volumes'], 'rua' => $data['rua'], 'predio' => $data['predio'],
                 'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
-                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $data['quantidade']));
+                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade));
         }
 
         if (isset($data['return'])) {
@@ -48,7 +49,7 @@ class Enderecamento_MovimentacaoController extends Action
                     'nivel' => $data['nivel'],
                     'apto' => $data['apto'],
                     'validade' => $data['validade'],
-                    'quantidade' => $data['quantidade'],
+                    'quantidade' => $quantidade,
                     'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
@@ -62,7 +63,6 @@ class Enderecamento_MovimentacaoController extends Action
         $EstoqueRepository   = $this->_em->getRepository('wms:Enderecamento\Estoque');
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-        $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
         $data = $this->_getAllParams();
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
@@ -71,8 +71,6 @@ class Enderecamento_MovimentacaoController extends Action
 
         try {
             $this->getEntityManager()->beginTransaction();
-            //$endereco = $enderecoRepo->getEndereco($data['rua'], $data['predio'], $data['nivel'], $data['apto']);
-            //$enderecoEn = $enderecoRepo->findOneBy(array('id'=>$endereco['id']));
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
 
@@ -143,9 +141,6 @@ class Enderecamento_MovimentacaoController extends Action
                 }
                 $params['embalagem'] = $embalagensEn[0];
 
-                /*if ($indPickMultiProduto == 'N')
-                    $enderecoRepo->checkTipoEnderecoPicking($enderecoEn->getDescricao(),$idProduto, $params['embalagem']->getId());*/
-
                 $EstoqueRepository->movimentaEstoque($params, true, true);
             } else {
                 if (isset($data['volumes']) && !empty($data['volumes'] )) {
@@ -197,7 +192,6 @@ class Enderecamento_MovimentacaoController extends Action
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-        $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
 
         try {
             $this->getEntityManager()->beginTransaction();
@@ -244,9 +238,6 @@ class Enderecamento_MovimentacaoController extends Action
                     $this->_redirect('/enderecamento/movimentacao');
                 }
 
-                /*if ($indPickMultiProduto == 'N')
-                    $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());*/
-
                 //SAIDA DO ENDEREÇO DE ORIGEM
                 $data['endereco'] = $enderecoEn;
                 $data['qtd'] = $data['quantidade'] * -1;
@@ -278,7 +269,8 @@ class Enderecamento_MovimentacaoController extends Action
                         $umaOrigem = (!empty($estoqueEn->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma()) : null;
 
                         /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
-                        $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
+                        if (isset($estoqueDestino) && !empty($estoqueDestino))
+                            $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
 
                         $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                         $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
