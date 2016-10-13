@@ -18,7 +18,6 @@ echo $this->form;
                 acao: 'buscar'
             },
             success: function (data) {
-                console.log(data);
                 $("#gridCorte").html(data.result);
             }
         });
