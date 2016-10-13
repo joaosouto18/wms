@@ -268,8 +268,8 @@ class Enderecamento_MovimentacaoController extends Action
                         /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
                         $umaOrigem = (!empty($estoqueEn->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma()) : null;
 
-                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
-                        if (isset($estoqueDestino) && !empty($estoqueDestino))
+                        if (!empty($estoqueDestino))
+                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
                             $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
 
                         $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
