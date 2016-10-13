@@ -5,6 +5,7 @@ echo $this->form;
     <?php echo $this->grid; ?>
 </div>
 <input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
+<input type="hidden" name="COD_MAPA_SEPARACAO" id="COD_MAPA_SEPARACAO" value="<?php echo $this->idMapa ?>">
 
 <script>
     $('#btnSubmit').click(function () {
@@ -15,6 +16,7 @@ echo $this->form;
                 id: $('#id').val(),
                 codProduto: $('#codProduto').val(),
                 grade: $('#grade').val(),
+                COD_MAPA_SEPARACAO: $('#COD_MAPA_SEPARACAO').val(),
                 acao: 'buscar'
             },
             success: function (data) {

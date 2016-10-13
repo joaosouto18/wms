@@ -73,8 +73,10 @@ class Expedicao_CortePedidoController  extends Action
             try {
                 $this->getEntityManager()->beginTransaction();
 
-                if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA'))
-                    throw new \Exception("Senha Informada Inválida");
+                if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA')) {
+                    $this->addFlashMessage('error','Senha Informada Inválida');
+                    $this->_redirect('/expedicao');
+                }
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
