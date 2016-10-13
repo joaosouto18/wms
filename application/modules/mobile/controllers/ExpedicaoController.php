@@ -317,10 +317,10 @@ public function informaQtdMapaAction()
     $this->view->embalagem = $embalagemEntity->getDescricao() . "(" . $embalagemEntity->getQuantidade() . ")";
     $this->view->fator = $embalagemEntity->getQuantidade();
     $this->view->idVolume = $idVolume;
-    $this->view->idMapa = $idMapa;
     $this->view->codBarras = $codBarras;
+    $this->view->idMapa = $idMapa;
     $this->view->idExpedicao = $idExpedicao;
-    $this->view->urlVoltar = 'ler-produto-mapa/idMapa/'.$idMapa.'/idExpedicao/'.$idExpedicao;
+    $this->view->urlVoltar = '/mobile/expedicao/ler-produto-mapa/idMapa/'.$idMapa.'/idExpedicao/'.$idExpedicao;
 
     if (isset($qtd) && ($qtd > 0)) {
         try {
