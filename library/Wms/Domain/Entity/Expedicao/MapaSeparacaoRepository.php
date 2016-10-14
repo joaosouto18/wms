@@ -129,7 +129,7 @@ class MapaSeparacaoRepository extends EntityRepository
         } else {
             $this->fechaConferencia($expedicaoEn);
         }
-        return $conferenciaFinalizada;
+        return true;
     }
 
     private function fechaConferencia($expedicaoEn){

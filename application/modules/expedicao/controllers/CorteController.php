@@ -94,7 +94,7 @@ class Expedicao_CorteController  extends Action
         $grade = $this->_getParam('grade');
         $codProduto = $this->_getParam('codProduto');
         $actionAjax = $this->_getParam('acao');
-        $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
+        $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO',null);
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
@@ -102,7 +102,7 @@ class Expedicao_CorteController  extends Action
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
 
         if (isset($idMapa) && !empty($idMapa))
-            $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa);
+            $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa,$codProduto,$grade);
          else
             $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
 
