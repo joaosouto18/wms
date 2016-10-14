@@ -88,6 +88,8 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
+        $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
         $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false);
         $volumePatrimonioEn = null;
@@ -107,9 +109,13 @@ class Mobile_ExpedicaoController extends Action
                 $tipoProvavelCodBarras = 'embalagem';
                 $embalagens = null;
 
-                if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
+                $produtoEmbalagenEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+                $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codBarras));
+                if ((isset($produtoEmbalagenEn) && !empty($produtoEmbalagenEn)) || (isset($produtoVolumeEn) && !empty($produtoVolumeEn))) {
+                    $tipoProvavelCodBarras = 'embalagem';
+                } else if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     if (empty($volumePatrimonioEn)) {
-//                        $tipoProvavelCodBarras = 'volume';
+                        $tipoProvavelCodBarras = 'volume';
                     } else {
                         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
                         $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
