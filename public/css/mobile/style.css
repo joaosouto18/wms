@@ -187,6 +187,22 @@ button.alert, .btnAlert {
     float: right;
 }
 
+
+a#btnShowObs  {
+    display: inline-block;
+    width: 74px;
+    line-height: 20px;
+    text-align: center;
+    moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    background-color: #a29b51;
+    border: 1px solid #a29b51;
+    color: white !important;
+    margin: 20px 5px 0 0;
+    float: right;
+}
+
 .finalizar  {
     display: inline-block;
     width: 60px;
