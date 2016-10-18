@@ -73,7 +73,7 @@ class Apontamento extends Pdf
         $dataFim = $this->dataFim;
         $this->Cell($this->body, 6, utf8_decode("Período de $dataInicio até $dataFim"),0,1,"C");
 
-        $this->Image(APPLICATION_PATH .'\..\public\img\logo_quebec.jpg',160,6,40,12);
+        //$this->Image(APPLICATION_PATH .'\..\public\img\logo_quebec.jpg',160,6,40,12);
         $this->Line($marginL, 23, $marginR, 23);
 
         return $this->startY;
