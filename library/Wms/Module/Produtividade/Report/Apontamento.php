@@ -10,7 +10,7 @@ class Apontamento extends Pdf
     private $marginLeft = 0;
     private $marginRight = 0;
     private $startEndRowGroupH = 8;
-    private $lineH = 7;
+    private $lineH = 6;
     private $body;
     
     private function startPage($orientacao, $dataInicio, $dataFim)
@@ -123,16 +123,19 @@ class Apontamento extends Pdf
         $sergH = $this->startEndRowGroupH;
         $lineH = $this->lineH;
         $pgH = $this->GetPageHeight();
-        $startY = 25;
+        $startY = 27;
 
         self::startPage($params['orientacao'], $params['dataInicio'], $params['dataFim']);
 
         $pgHeightRestante = $pgH;
+
         foreach($params['rows'] as $index => $rows){
-            $groupH = (count($rows) * $lineH) + ($sergH * 2);
+            $groupH = (count($rows) * $lineH) + ($sergH * 3);
             if ($groupH < $pgHeightRestante) {
                 self::addFullGroup($params['orientacao'], $index, $rows, $startY);
             }
+            $startY += ($groupH + 5);
+            $pgHeightRestante -= $groupH;
 
         }
 
@@ -141,6 +144,9 @@ class Apontamento extends Pdf
 
     private function addFullGroup($orientacao, $groupIndex, $rowsGroup, $startY)
     {
+
+        $keyRow = ($orientacao == 'Atividade')? 'NOM_PESSOA' : 'DSC_ATIVIDADE';
+        $headGroup = ($orientacao == 'Atividade')? 'Funcionário' : 'Atividade';
         $tItens = 0;
         $tVolumes = 0;
         $tCubagem = 0;
@@ -152,23 +158,78 @@ class Apontamento extends Pdf
         $marginR = $this->marginRight;
 
         $this->SetY($startY);
-        $this->SetFont('Arial', '',12);
+        $this->SetFont('Arial', '',10);
         $this->Cell(10,$sergH);
         $this->Cell(20, $sergH, utf8_decode("$orientacao:"));
+        $this->Cell(80, $sergH, utf8_decode($groupIndex), 0, 1);
 
-        $this->SetFont('Arial', 'B',10);
-        $this->Cell(80, $sergH, utf8_decode("$groupIndex"));
+        $this->SetLineWidth(0.5);
 
         $this->Line($marginL, $startY + 1 + $sergH, $marginR,  $startY + 1 + $sergH);
 
-        $this->SetFont('Arial','',11);
-        $this->SetY($startY + 13);
+        $this->SetY($startY + 2 + $sergH);
+        $this->SetFont('Arial', 'B',9);
+        $this->Cell(10);
+        $this->Cell(65, $sergH, utf8_decode($headGroup));
+        $this->Cell(30, $sergH, utf8_decode("Qtde produtos"));
+        $this->Cell(35, $sergH, utf8_decode("Cubagem"));
+        $this->Cell(25, $sergH, utf8_decode("Peso"));
+        $this->Cell(20, $sergH, utf8_decode("Volumes"));
+        $this->Cell(20, $sergH, utf8_decode("Paletes"));
+
+        $this->SetFont('Arial','',9);
+        $startYGroup = $startY + 16;
+        $this->SetY($startYGroup);
+
+        $i = 1;
         foreach ($rowsGroup as $row) {
             $this->Cell(15, $lineH);
+<<<<<<< HEAD
             $cellWidth = 40;
             $str = self::setStringByMaxWidth(utf8_decode($row),$cellWidth);
             //$this->Cell($cellWidth, $lineH, )
+=======
+            $cellWidth = 65;
+            $str = self::setStringByMaxWidth(utf8_decode($row[$keyRow]),$cellWidth);
+            $this->Cell($cellWidth, $lineH, $str,0,0);
+
+            $qtd = (!empty($row['QTD_PRODUTOS']))?$row['QTD_PRODUTOS']:0;
+            $tItens += $qtd;
+            $this->Cell(30, $lineH, $qtd,0,0);
+
+            $qtd = (!empty($row['QTD_CUBAGEM']))?$row['QTD_CUBAGEM']:0;
+            $tCubagem += $qtd;
+            $this->Cell(35, $lineH, $row['QTD_CUBAGEM'],0,0);
+
+            $qtd = (!empty($row['QTD_PESO']))?$row['QTD_PESO']:0;
+            $tPeso += $qtd;
+            $this->Cell(20, $lineH, $row['QTD_PESO'],0,0);
+
+            $qtd = (!empty($row['QTD_VOLUMES']))?$row['QTD_VOLUMES']:0;
+            $tVolumes += $qtd;
+            $this->Cell(25, $lineH, $row['QTD_VOLUMES'],0,0);
+
+            $qtd = (!empty($row['QTD_PALETES']))?$row['QTD_PALETES']:0;
+            $tPalete += $qtd;
+            $this->Cell(20, $lineH, $row['QTD_PALETES'],0,1);
+
+
+            $endLineY = $startYGroup + ($lineH * $i);
+            $this->Line($marginL + 10, $endLineY, $marginR, $endLineY);
+            $i++;
+>>>>>>> f1bd0083d47fc784d6bba6c0cdb659eadf161a74
         }
+        $this->SetFont('Arial','B',11);
+        $this->Cell(15, $lineH);
+        $this->Cell(65, $lineH, 'TOTAL',0,0);
+        $this->Cell(30, $lineH, $tItens,0,0);
+        $this->Cell(35, $lineH, $tCubagem,0,0);
+        $this->Cell(20, $lineH, $tPeso,0,0);
+        $this->Cell(25, $lineH, $tVolumes,0,0);
+        $this->Cell(20, $lineH, $tPalete,0,1);
+
+        $endGroupY = $startYGroup + ($lineH * $i) ;
+        $this->Line($marginL, $endGroupY, $marginR, $endGroupY);
     }
 
     private function addPartialGroup($orientacao, $groupIndex, $rowsGroup, $y, $endRow)

@@ -21,26 +21,18 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
-        $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO(SYSDATE,SYSDATE)";
-        $procedure = $this->em->getConnection()->prepare($procedureSQL);
-        $procedure->execute();
-        $this->em->flush();
 
-
-        $sql = "
-           SELECT DSC_ATIVIDADE as OPERACAO,
-                  DTH_ATIVIDADE,
-                  P.NOM_PESSOA,
-                  QTD_PESO AS PESO,
-                  QTD_CUBAGEM AS CUBAGEM,
-                  QTD_PALETES,
-                  QTD_VOLUMES,
-                  QTD_PRODUTOS
-             FROM APONTAMENTO_PRODUTIVIDADE A
-             LEFT JOIN PESSOA P ON A.COD_PESSOA = P.COD_PESSOA
-             WHERE TO_DATE(A.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
-        ";
-
+        $sql = "SELECT AP.DSC_ATIVIDADE,
+                       PE.NOM_PESSOA,
+                       SUM(AP.QTD_PRODUTOS) QTD_PRODUTOS,
+                       SUM(AP.QTD_VOLUMES) QTD_VOLUMES,
+                       SUM(AP.QTD_CUBAGEM) QTD_CUBAGEM,
+                       SUM(AP.QTD_PESO) QTD_PESO,
+                       SUM(AP.QTD_PALETES) QTD_PALETES  
+                   FROM APONTAMENTO_PRODUTIVIDADE AP
+                  INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
+                  WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
+                  GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA";
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
 
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
@@ -61,12 +53,12 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         if ($orientacao == 'atividade') {
             $groupBy['orientacao'] = 'Atividade';
             foreach ($result as $row) {
-                $groupBy['rows'][$row['OPERACAO']][] = $row;
+                $groupBy['rows'][$row['DSC_ATIVIDADE']][] = $row;
             }
         } else {
             $groupBy['orientacao'] = 'Funcionario';
             foreach ($result as $row) {
-                array_push($groupBy['rows'][$row['FUNCIONARIO']][],$row);
+                $groupBy['rows'][$row['NOM_PESSOA']][] = $row;
             }
         }
         return $groupBy;
