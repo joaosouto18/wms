@@ -14,11 +14,11 @@ class Apontamento extends Pdf
     private $body;
     private $offsetHead = 10;
     private $offsetListW = 12.5;
-    private $colIndexHeadW = 77.5;
-    private $colIndexW = 75;
-    private $colProdutoW = 30;
-    private $colCubagemW= 25;
-    private $colPesoW = 19;
+    private $colIndexHeadW = 61.5;
+    private $colIndexW = 59;
+    private $colProdutoW = 23;
+    private $colCubagemW = 34;
+    private $colPesoW = 28;
     private $colVolumesW = 22;
     private $colPaletesW = 20;
     private $dataInicio;
@@ -101,7 +101,7 @@ class Apontamento extends Pdf
 
         self::startGroup($startY, $groupIndex, $headGroup);
 
-        $this->SetFont('Arial','',9);
+        $this->SetFont('Arial','',8);
         $startYGroup = $startY + $groupHeadH;
         $this->SetY($startYGroup);
 
@@ -134,7 +134,7 @@ class Apontamento extends Pdf
             if ($heightRestante < 0) {
                 $startY = self::startPage();
                 self::startGroup($startY, $groupIndex, $headGroup);
-                $this->SetFont('Arial','',9);
+                $this->SetFont('Arial','',8);
                 $startYGroup = $startY + $groupHeadH;
                 $this->SetY($startYGroup);
                 $i = 1;
@@ -185,7 +185,7 @@ class Apontamento extends Pdf
         $this->SetFont('Arial', 'B',9);
         $this->Cell($this->offsetHead);
         $this->Cell($this->colIndexHeadW, $sergH, utf8_decode($headGroup));
-        $this->Cell($this->colProdutoW, $sergH, utf8_decode("Qtde produtos"));
+        $this->Cell($this->colProdutoW, $sergH, utf8_decode("Produtos"));
         $this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
         $this->Cell($this->colPesoW, $sergH, utf8_decode("Peso"));
         $this->Cell($this->colVolumesW, $sergH, utf8_decode("Volumes"));
@@ -194,7 +194,7 @@ class Apontamento extends Pdf
 
     private function endGroup($lineH, $tItens, $tCubagem, $tPeso, $tVolumes, $tPalete, $i, $startYGroup, $marginL, $marginR)
     {
-        $this->SetFont('Arial','B',11);
+        $this->SetFont('Arial','B',10);
         $this->Cell($this->offsetListW, $lineH);
         $this->Cell($this->colIndexW, $lineH, 'TOTAL',0,0);
         $this->Cell($this->colProdutoW, $lineH, $tItens,0,0);
