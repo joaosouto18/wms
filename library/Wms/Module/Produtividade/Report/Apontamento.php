@@ -61,7 +61,7 @@ class Apontamento extends Pdf
         $this->SetDrawColor(12, 53, 140);
 
         $this->Line($marginL, 3, $marginR, 3);
-        $this->Image(APPLICATION_PATH . '\..\public\img\admin\logoRelatorio.gif', 18, 7, 28, 11);
+        //$this->Image(APPLICATION_PATH . '\..\public\img\admin\logoRelatorio.gif', 18, 7, 28, 11);
 
         $this->SetY(4);
         $this->SetFont('Arial', 'B', 15);
