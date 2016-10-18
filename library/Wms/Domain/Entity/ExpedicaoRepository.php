@@ -210,8 +210,8 @@ class ExpedicaoRepository extends EntityRepository
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
             $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
 
-            if (count($produtosRessuprir) <=0) {
-                throw new \Exception("Nenhuma expedição Selecionada");
+            if (empty($produtosRessuprir)) {
+                throw new \Exception("Não foi encontrado produto pendente de onda de ressuprimento ou a quantidade cortada é equivalente a do pedido");
             }
 
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
