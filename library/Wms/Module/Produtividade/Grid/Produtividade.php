@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Produtividade\Grid;
 
+use Core\Grid\Pager;
 use Wms\Module\Web\Grid;
 
 class Produtividade extends Grid
@@ -40,8 +41,9 @@ class Produtividade extends Grid
                     'index' => 'QTD_PALETES',
                 ));
 
-        $this->setShowExport(false);
-
+        $this->setShowExport(true);
+        $pg = new Pager(count($params),0,count($params));
+        $this->setPager($pg);
         return $this;
     }
 

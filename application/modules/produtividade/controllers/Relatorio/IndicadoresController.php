@@ -21,26 +21,26 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
-        $sql = "SELECT 'ENDERECAMENTO' as OPERACAO,
-                       TO_DATE(RE.DTH_ATENDIMENTO) as DTH_ATIVIDADE,
-                       PE.NOM_PESSOA,
-                       SUM(NVL(SPP.NUM_PESO, PV.NUM_PESO) * PP.QTD) as PESO,
-                       SUM(NVL(SPP.NUM_CUBAGEM, PV.NUM_CUBAGEM) * PP.QTD) as CUBAGEM,
-                       COUNT (DISTINCT P.UMA) as QTD_PALETES,
-                       --SUM(PP.QTD) as QTD_VOLUMES,
-                       COUNT (DISTINCT PP.COD_PRODUTO || '/' || PP.DSC_GRADE) as QTD_PRODUTOS    
-                   FROM PALETE P
-                  INNER JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
-                   LEFT JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PP.COD_PRODUTO AND SPP.DSC_GRADE = PP.DSC_GRADE AND PP.COD_PRODUTO_VOLUME IS NULL
-                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
-                  INNER JOIN RESERVA_ESTOQUE_ENDERECAMENTO REE ON REE.UMA = P.UMA
-                  INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
-                  INNER JOIN PESSOA PE ON PE.COD_PESSOA = RE.COD_USUARIO_ATENDIMENTO
-                  WHERE P.COD_STATUS = 536
-                  AND RE.DTH_ATENDIMENTO IS NOT NULL
-                  AND RE.IND_ATENDIDA = 'S'
-                  AND TO_DATE(RE.DTH_ATENDIMENTO) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
-                  GROUP BY PE.NOM_PESSOA, TO_DATE(RE.DTH_ATENDIMENTO)";
+        $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO(SYSDATE,SYSDATE)";
+        $procedure = $this->em->getConnection()->prepare($procedureSQL);
+        $procedure->execute();
+        $this->em->flush();
+
+
+        $sql = "
+           SELECT DSC_ATIVIDADE as OPERACAO,
+                  DTH_ATIVIDADE,
+                  P.NOM_PESSOA,
+                  QTD_PESO AS PESO,
+                  QTD_CUBAGEM AS CUBAGEM,
+                  QTD_PALETES,
+                  QTD_VOLUMES,
+                  QTD_PRODUTOS
+             FROM APONTAMENTO_PRODUTIVIDADE A
+             LEFT JOIN PESSOA P ON A.COD_PESSOA = P.COD_PESSOA
+             WHERE TO_DATE(A.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
+        ";
+
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
 
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
