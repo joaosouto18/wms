@@ -1032,8 +1032,9 @@ class Mobile_EnderecamentoController extends Action
                             /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
                             $umaOrigem = (!empty($estoque->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoque->getUma()) : null;
 
-                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
-                            $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
+                            if (!empty($estoqueDestino))
+                                /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
+                                $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
 
                             $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                             $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
@@ -1146,8 +1147,9 @@ class Mobile_EnderecamentoController extends Action
                             /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
                             $umaOrigem = (!empty($estoqueEn->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma()) : null;
 
-                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
-                            $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
+                            if (!empty($estoqueDestino))
+                                /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
+                                $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
 
                             $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                             $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
@@ -1172,7 +1174,12 @@ class Mobile_EnderecamentoController extends Action
                     //RETIRA ESTOQUE
                     $params['observacoes'] = "Transferencia de Estoque -  Destino: ".$params['endereco']->getDescricao();
                     $params['endereco'] = $enderecoAntigo;
-                    $params['validade'] = $estoqueEn->getValidade()->format('d/m/Y');
+                    if (isset($estoqueEn) && !empty($estoqueEn)) {
+                        $getValidadeEstoque = $estoqueEn->getValidade();
+                        if (isset($getValidadeEstoque) && !empty($getValidadeEstoque)) {
+                            $params['validade'] = $estoqueEn->getValidade()->format('d/m/Y');
+                        }
+                    }
                     $params['qtd'] = $qtd * -1;
                     $estoqueRepo->movimentaEstoque($params);
                 }

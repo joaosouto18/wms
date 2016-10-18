@@ -277,6 +277,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 
 			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+				if (!isset($itemEmbalagem['quantidade']) || empty($itemEmbalagem['quantidade']))
+					$itemEmbalagem['quantidade'] = 1;
+				
 				$itemEmbalagem['quantidade'] = str_replace(',','.',$itemEmbalagem['quantidade']);
 				extract($itemEmbalagem);
 				switch ($itemEmbalagem['acao']) {

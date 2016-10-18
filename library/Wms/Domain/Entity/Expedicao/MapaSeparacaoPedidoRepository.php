@@ -8,7 +8,7 @@ use Wms\Domain\Entity\Expedicao;
 
 class MapaSeparacaoPedidoRepository extends EntityRepository
 {
-    public function getPedidosByMapa($idMapa)
+    public function getPedidosByMapa($idMapa,$codProduto,$grade)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('p.id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario')
@@ -20,7 +20,11 @@ class MapaSeparacaoPedidoRepository extends EntityRepository
             ->setParameter('mapa',$idMapa)
             ->where('mps.mapaSeparacao = :mapa')
             ->groupBy('p.id, pe.nome, i.descricao');
-        
+
+        if (isset($codProduto) && !empty($codProduto)) {
+            $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+        }
+
         return $sql->getQuery()->getResult();
     }
 

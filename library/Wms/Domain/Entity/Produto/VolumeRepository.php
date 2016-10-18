@@ -22,6 +22,7 @@ class VolumeRepository extends EntityRepository
     public function save(ProdutoEntity $produtoEntity, array $values)
     {
         $em = $this->getEntityManager();
+        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         extract($values);
 
@@ -44,6 +45,14 @@ class VolumeRepository extends EntityRepository
         $volumeEntity->setCodigoBarras($codigoBarras);
         $volumeEntity->setCapacidadePicking($capacidadePicking);
         $volumeEntity->setPontoReposicao($pontoReposicao);
+        if (isset($ativarDesativar) && !empty($ativarDesativar)) {
+            $volumeEntity->setDataInativacao(new \DateTime());
+            $volumeEntity->setUsuarioInativacao($idUsuario);
+        } else {
+            $volumeEntity->setDataInativacao(null);
+            $volumeEntity->setUsuarioInativacao(null);
+        }
+
         $volumeEntity->setEndereco(null);
 
         //valida o endereco informado

@@ -1,0 +1,25 @@
+<table class="info">
+    <caption>Recebimento: <?php echo $this->idRecebimento?></caption>
+    <thead>
+        <tr>
+            <th width="30%">Data de registro</th>
+            <th width="70%">Observação</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php if (!empty($this->observacoes)) { ?>
+        <?php
+        /** @var \Wms\Domain\Entity\Recebimento\Andamento $obsevacao */
+        foreach ($this->observacoes as $obsevacao) { ?>
+        <tr>
+            <td align="center">
+                <?php echo $obsevacao->getDataAndamento()->format('d/m/Y'); ?>
+            </td>
+            <td align="center">
+                <?php echo $obsevacao->getDscObservacao(); ?>
+            </td>
+        </tr>
+        <?php } ?>
+    <?php } ?>
+    </tbody>
+</table>

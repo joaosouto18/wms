@@ -77,3 +77,13 @@ Documentação
 ===========================
 
 library\bin\phpdoc.bat -d library\Wms\WebService -t docs\phpDoc
+
+
+
+Build nos arquivos JS e CSS
+===========================
+Abrir o CMD
+
+navegar até a pasta wms/public
+
+js wms/scripts/build.js

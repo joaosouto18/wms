@@ -33,6 +33,14 @@ class Mobile_RecebimentoController extends Action
         $this->view->osId           = $osId;
     }
 
+    public function observacoesRecebimentoAction()
+    {
+        $this->view->idRecebimento = $this->_getParam('id');
+
+        $this->view->observacoes = $this->em->getRepository('wms:Recebimento\Andamento')->findBy(array('recebimento' => $this->view->idRecebimento, 'tipoAndamento' => 456));
+
+    }
+
     public function finalizarAction(){
         $idOS = $this->_getParam("os");
         $idRecebimento = $this->_getParam("id");

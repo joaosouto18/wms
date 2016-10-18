@@ -129,7 +129,7 @@ class MapaSeparacaoRepository extends EntityRepository
         } else {
             $this->fechaConferencia($expedicaoEn);
         }
-        return $conferenciaFinalizada;
+        return true;
     }
 
     private function fechaConferencia($expedicaoEn){
@@ -169,7 +169,6 @@ class MapaSeparacaoRepository extends EntityRepository
                            GROUP BY M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
                LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
                             FROM MAPA_SEPARACAO_CONFERENCIA
-                           WHERE IND_CONFERENCIA_FECHADA = 'N'
                            GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) C
                       ON M.COD_MAPA_SEPARACAO = C.COD_MAPA_SEPARACAO
                      AND M.COD_PRODUTO = C.COD_PRODUTO

@@ -421,7 +421,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 if ( this.className == 'isPadrao' ) {
                     if ( this.value == 'S' ) {
                         // adiciono o valor da embalagem de recebimento
-                        qtdItemEmbalagemRecebimento = parseInt($(this).parent('div').find('.qtdItens').val());
+                        qtdItemEmbalagemRecebimento = parseFloat($(this).parent('div').find('.qtdItens').val().replace(',','.')).toFixed(3);
                         // incremento a qtd de embalagens de recebimento cadastradas
                         qtdEmbalagensRecebimento = qtdEmbalagensRecebimento + 1;
                     }
@@ -473,13 +473,15 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
             // calculo de quantidade de itens para embalagens de expedição de produto unitarios
             if(($('#produto-idTipoComercializacao').val() == UNITARIO) && ($('#embalagem-isPadrao').val() == 'N')) {
-                var qtdItensEmbalagem = parseInt($('#embalagem-quantidade').val());
+                var qtdItensEmbalagem = parseFloat($('#embalagem-quantidade').val().replace(',','.')).toFixed(3);
 
                 if ( qtdItensEmbalagem > qtdItemEmbalagemRecebimento ) {
                     alert('Quantidade de itens da embalagem de expedição, deve ser menor ou igual da quantidade de itens da embalagem de recebimento.');
                     return false;
                 }
 
+                console.log(qtdItemEmbalagemRecebimento);
+                console.log(qtdItensEmbalagem);
                 if ( (qtdItemEmbalagemRecebimento % qtdItensEmbalagem) != 0 ) {
                     alert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
                     return false;

@@ -94,10 +94,17 @@ class Expedicao_CorteController  extends Action
         $grade = $this->_getParam('grade');
         $codProduto = $this->_getParam('codProduto');
         $actionAjax = $this->_getParam('acao');
+        $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO',null);
 
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-        $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
+
+        if (isset($idMapa) && !empty($idMapa))
+            $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa,$codProduto,$grade);
+         else
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
         $grid = $grid->init($pedidos,$id);
@@ -109,19 +116,6 @@ class Expedicao_CorteController  extends Action
         if (!empty($actionAjax)) {
             $this->_helper->json(array('result' => $grid->render()));
         }
-    }
-
-    public function corteAntecipadoByMapaAction(){
-        $id = $this->_getParam('COD_MAPA_SEPARACAO');
-        $idExpedicao = $this->_getParam('id');
-
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
-        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
-        $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($id);
-
-        $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
-        $this->view->grid = $grid->init($pedidos,$idExpedicao);
-
     }
 
     public function listAction()
