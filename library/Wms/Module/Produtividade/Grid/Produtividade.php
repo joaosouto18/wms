@@ -13,23 +13,23 @@ class Produtividade extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($params))
                 ->addColumn(array(
                     'label' => 'Atividade',
-                    'index' => 'OPERACAO',
+                    'index' => 'DSC_ATIVIDADE',
                 ))
                 ->addColumn(array(
                     'label' => 'Usuario',
                     'index' => 'NOM_PESSOA',
                 ))
                 ->addColumn(array(
-                    'label' => 'Data de execução',
-                    'index' => 'DTH_ATIVIDADE',
+                    'label' => 'Volumes',
+                    'index' => 'QTD_VOLUMES',
                 ))
                 ->addColumn(array(
                     'label' => 'Peso',
-                    'index' => 'PESO',
+                    'index' => 'QTD_PESO',
                 ))
                 ->addColumn(array(
                     'label' => 'Cubagem',
-                    'index' => 'CUBAGEM',
+                    'index' => 'QTD_CUBAGEM',
                 ))
                 ->addColumn(array(
                     'label' => 'Produtos',

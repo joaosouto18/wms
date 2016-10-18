@@ -21,26 +21,17 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
-        $sql = "SELECT 'ENDERECAMENTO' as OPERACAO,
-                       TO_DATE(RE.DTH_ATENDIMENTO) as DTH_ATIVIDADE,
+        $sql = "SELECT AP.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
-                       SUM(NVL(SPP.NUM_PESO, PV.NUM_PESO) * PP.QTD) as PESO,
-                       SUM(NVL(SPP.NUM_CUBAGEM, PV.NUM_CUBAGEM) * PP.QTD) as CUBAGEM,
-                       COUNT (DISTINCT P.UMA) as QTD_PALETES,
-                       --SUM(PP.QTD) as QTD_VOLUMES,
-                       COUNT (DISTINCT PP.COD_PRODUTO || '/' || PP.DSC_GRADE) as QTD_PRODUTOS    
-                   FROM PALETE P
-                  INNER JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
-                   LEFT JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PP.COD_PRODUTO AND SPP.DSC_GRADE = PP.DSC_GRADE AND PP.COD_PRODUTO_VOLUME IS NULL
-                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
-                  INNER JOIN RESERVA_ESTOQUE_ENDERECAMENTO REE ON REE.UMA = P.UMA
-                  INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
-                  INNER JOIN PESSOA PE ON PE.COD_PESSOA = RE.COD_USUARIO_ATENDIMENTO
-                  WHERE P.COD_STATUS = 536
-                  AND RE.DTH_ATENDIMENTO IS NOT NULL
-                  AND RE.IND_ATENDIDA = 'S'
-                  AND TO_DATE(RE.DTH_ATENDIMENTO) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
-                  GROUP BY PE.NOM_PESSOA, TO_DATE(RE.DTH_ATENDIMENTO)";
+                       SUM(AP.QTD_PRODUTOS) QTD_PRODUTOS,
+                       SUM(AP.QTD_VOLUMES) QTD_VOLUMES,
+                       SUM(AP.QTD_CUBAGEM) QTD_CUBAGEM,
+                       SUM(AP.QTD_PESO) QTD_PESO,
+                       SUM(AP.QTD_PALETES) QTD_PALETES  
+                   FROM APONTAMENTO_PRODUTIVIDADE AP
+                  INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
+                  WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
+                  GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA";
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
 
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
@@ -61,12 +52,12 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         if ($orientacao == 'atividade') {
             $groupBy['orientacao'] = 'Atividade';
             foreach ($result as $row) {
-                $groupBy['rows'][$row['OPERACAO']][] = $row;
+                $groupBy['rows'][$row['DSC_ATIVIDADE']][] = $row;
             }
         } else {
             $groupBy['orientacao'] = 'Funcionario';
             foreach ($result as $row) {
-                array_push($groupBy['rows'][$row['FUNCIONARIO']][],$row);
+                $groupBy['rows'][$row['NOM_PESSOA']][] = $row;
             }
         }
         return $groupBy;
