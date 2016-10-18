@@ -36,18 +36,6 @@ class Validade extends Form
                 'label' => 'Linha de separação',
                 'multiOptions' =>  $arr,
             ))
-            ->addElement('hidden','br', array(
-                'required' => false,
-                'ignore' => true,
-                'autoInsertNotEmptyValidator' => false,
-                'decorators' => array(
-                    array(
-                        'HtmlTag', array(
-                            'tag'  => 'br',
-                        )
-                    )
-                )
-            ))
             ->addElement('text', 'fornecedor', array(
                 'label' => 'Fornecedor',
                 'size' => 45,
