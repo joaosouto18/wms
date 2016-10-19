@@ -17,11 +17,11 @@ class Apontamento extends Pdf
 
     private $colIndexHeadW = 77.5;
     private $colIndexW = 75;
-    private $colProdutoW = 23;
+    private $colProdutoW = 30;
     private $colCubagemW= 27;
-    private $colPesoW = 20;
-    private $colVolumesW = 20;
-    private $colPaletesW = 20;
+    private $colPesoW = 30;
+    private $colVolumesW = 30;
+    private $colPaletesW = 30;
     private $dataInicio;
     private $dataFim;
     private $orientacao;
@@ -88,22 +88,27 @@ class Apontamento extends Pdf
         $marginL = $this->marginLeft;
         $marginR = $this->marginRight;
 
-        $groupHeadH = 16;
+        $groupHeadH = 21;
         $groupEndH = 7;
 
-        $footerH = 18;
+        $footerH = 21;
         $posicaoAtual = $this->GetY();
         $pageH = (int) $this->GetPageHeight();
         $heightRestante = $pageH - $posicaoAtual - $footerH;
 
-        if ($groupHeadH > $heightRestante) {
+        if (($groupHeadH + $lineH + 1) > $heightRestante) {
             $startY = self::startPage();
         }
+
+        $rowBreak = null;
+        $check = self::checkPageBreak($rowsGroup, $groupHeadH, $lineH, $startY);
+        if (!empty($check))
+            list($startY, $rowBreak) = $check;
 
         self::startGroup($startY, $groupIndex, $headGroup);
 
         $this->SetFont('Arial','',8);
-        $startYGroup = $startY + $groupHeadH;
+        $startYGroup = $startY + $groupHeadH - 5;
         $this->SetY($startYGroup);
 
         $i = 1;
@@ -129,14 +134,15 @@ class Apontamento extends Pdf
             $qtdPaletes = (!empty($row['QTD_PALETES']))?$row['QTD_PALETES']:0;
             $tPalete += $qtdPaletes;
 
-            $posicaoAtual = $this->GetY();
-            $heightRestante = $pageH - $posicaoAtual - $footerH - ($lineH + $groupEndH);
+            /*$posicaoAtual = $this->GetY();
+            $next = (isset($rowsGroup[$key + 1]))? $lineH : $lineH + $groupEndH;
+            $heightRestante = $pageH - $posicaoAtual - $footerH - $next;*/
 
-            if ($heightRestante < 0) {
+            if (!is_null($rowBreak) && $key == $rowBreak) {
                 $startY = self::startPage();
                 self::startGroup($startY, $groupIndex, $headGroup);
                 $this->SetFont('Arial','',8);
-                $startYGroup = $startY + $groupHeadH;
+                $startYGroup = $startY + $groupHeadH - 5;
                 $this->SetY($startYGroup);
                 $i = 1;
             }
@@ -159,11 +165,11 @@ class Apontamento extends Pdf
         $cellWidth = $this->colIndexW;
         $str = self::setStringByMaxWidth(utf8_decode($index),$cellWidth);
         $this->Cell($cellWidth, $lineH, $str,0,0);
-        $this->Cell($this->colProdutoW, $lineH, $qtdProduto,0,0);
-        $this->Cell($this->colCubagemW, $lineH, $qtdCubagem,0,0);
-        $this->Cell($this->colPesoW, $lineH, $qtdPeso,0,0);
-        $this->Cell($this->colVolumesW, $lineH, $qtdVolumes,0,0);
-        $this->Cell($this->colPaletesW, $lineH, $qtdPaletes,0,1);
+        $this->Cell($this->colProdutoW, $lineH, number_format($qtdProduto,2),0,0);
+        //$this->Cell($this->colCubagemW, $lineH, $qtdCubagem,0,0);
+        $this->Cell($this->colPesoW, $lineH, number_format($qtdPeso,2),0,0);
+        $this->Cell($this->colVolumesW, $lineH, number_format($qtdVolumes,2),0,0);
+        $this->Cell($this->colPaletesW, $lineH, number_format($qtdPaletes,2),0,1);
     }
 
     private function startGroup($startY, $groupIndex, $headGroup)
@@ -187,7 +193,7 @@ class Apontamento extends Pdf
         $this->Cell($this->offsetHead);
         $this->Cell($this->colIndexHeadW, $sergH, utf8_decode($headGroup));
         $this->Cell($this->colProdutoW, $sergH, utf8_decode("Produtos"));
-        $this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
+        //$this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
         $this->Cell($this->colPesoW, $sergH, utf8_decode("Peso"));
         $this->Cell($this->colVolumesW, $sergH, utf8_decode("Volumes"));
         $this->Cell($this->colPaletesW, $sergH, utf8_decode("Paletes"),0,1);
@@ -198,11 +204,11 @@ class Apontamento extends Pdf
         $this->SetFont('Arial','B',10);
         $this->Cell($this->offsetListW, $lineH);
         $this->Cell($this->colIndexW, $lineH, 'TOTAL',0,0);
-        $this->Cell($this->colProdutoW, $lineH, $tItens,0,0);
-        $this->Cell($this->colCubagemW, $lineH, $tCubagem,0,0);
-        $this->Cell($this->colPesoW, $lineH, $tPeso,0,0);
-        $this->Cell($this->colVolumesW, $lineH, $tVolumes,0,0);
-        $this->Cell($this->colPaletesW, $lineH, $tPalete,0,1);
+        $this->Cell($this->colProdutoW, $lineH, number_format($tItens,2),0,0);
+        //$this->Cell($this->colCubagemW, $lineH, $tCubagem,0,0);
+        $this->Cell($this->colPesoW, $lineH, number_format($tPeso,2),0,0);
+        $this->Cell($this->colVolumesW, $lineH, number_format($tVolumes,2),0,0);
+        $this->Cell($this->colPaletesW, $lineH, number_format($tPalete,2),0,1);
 
         $endGroupY = $startYGroup + ($lineH * $i) ;
         $this->Line($marginL, $endGroupY, $marginR, $endGroupY);
@@ -214,5 +220,35 @@ class Apontamento extends Pdf
         $this->SetY(-20);
         $this->Cell(176, 15, utf8_decode("Relatório gerado em ".date('d/m/Y')." às ".date('H:i:s')), 0, 0, "L");
         $this->Cell(20, 15, utf8_decode('Página ').$this->PageNo(), 0, 1, 'R');
+    }
+
+    private function checkPageBreak($rows, $groupHeadH, $lineH, $startY)
+    {
+        $groupEndH = 7;
+        $footerH = 21;
+        $posicaoAtual = $this->GetY();
+        $pageH = (int) $this->GetPageHeight();
+
+        $r = count($rows);
+
+        if ($r < 2) {
+            $heightRestante = $pageH - $posicaoAtual - ($groupHeadH + $lineH + $groupEndH) - $footerH;
+            if ($heightRestante < 0) {
+                $startY = self::startPage();
+                return array($startY, null);
+            }
+            return null;
+        } else {
+            $k = 1;
+            while ($k <= $r){
+                $next = ($k < $r)?$k * $lineH : ($k * $lineH) + $footerH;
+                $heightRestante = $pageH - $posicaoAtual - ($groupHeadH  + $next) - $footerH;
+                if ($heightRestante < 0) {
+                    return array($startY, ($k - 1));
+                }
+                $k++;
+            }
+            return null;
+        }
     }
 }
