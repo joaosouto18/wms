@@ -35,22 +35,27 @@ class Produtividade extends Grid
                 $this->addColumn(array(
                     'label' => 'Volumes',
                     'index' => 'QTD_VOLUMES',
+                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Peso',
                     'index' => 'QTD_PESO',
+                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Cubagem',
                     'index' => 'QTD_CUBAGEM',
+                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Produtos',
                     'index' => 'QTD_PRODUTOS',
+                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Paletes',
                     'index' => 'QTD_PALETES',
+                    'render' => 'N2'
                 ));
 
         $this->setShowExport(true);
