@@ -54,11 +54,15 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $this->view->grid = $grid->init($result,$orientacao);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
-            $result = self::groupByOrientacao($result, $params['orientacao']);
-            $result['dataInicio'] = $params['dataInicio'];
-            $result['dataFim'] = $params['dataFim'];
-            $pdfReport = new \Wms\Module\Produtividade\Report\Apontamento();
-            $pdfReport->generatePDF($result);
+            if (!empty($result)) {
+                $result = self::groupByOrientacao($result, $params['orientacao']);
+                $result['dataInicio'] = $params['dataInicio'];
+                $result['dataFim'] = $params['dataFim'];
+                $pdfReport = new \Wms\Module\Produtividade\Report\Apontamento();
+                $pdfReport->generatePDF($result);
+            }else {
+                $this->addFlashMessage('error',"Nenhum resultado encontrado entre $params[dataInicio] e $params[dataFim]");
+            }
         }
     }
 

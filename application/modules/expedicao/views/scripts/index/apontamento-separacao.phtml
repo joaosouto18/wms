@@ -234,7 +234,7 @@
                 return false;
             }
 
-            var result = {mapa:mapa, cpf:cpf, pessoa:null};
+            var result = {mapa:mapa.substring(0,(mapa.length - 1)), cpf:cpf, pessoa:null};
 
             $.ajax({
                 url: 'conferente-apontamento-separacao-ajax/cpf/'+cpf,
