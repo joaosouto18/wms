@@ -21,7 +21,12 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
-        if ($params['orientacao'] == 'atividade') {
+        $orientacao = 'atividade';
+        if (isset($params['orientacao'])) {
+            $orientacao = $params['orientacao'];
+        }
+
+        if ($orientacao == 'atividade') {
             $SQLOrder = " ORDER BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
         } else {
             $SQLOrder = " ORDER BY PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
@@ -41,7 +46,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
 
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
-        $this->view->grid = $grid->init($result,$params['orientacao']);
+        $this->view->grid = $grid->init($result,$orientacao);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
             $result = self::groupByOrientacao($result, $params['orientacao']);
