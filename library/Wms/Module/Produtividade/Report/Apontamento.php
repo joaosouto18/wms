@@ -16,10 +16,10 @@ class Apontamento extends Pdf
     private $offsetListW = 12.5;
     private $colIndexHeadW = 77.5;
     private $colIndexW = 75;
-    private $colProdutoW = 30;
-    private $colCubagemW= 25;
-    private $colPesoW = 19;
-    private $colVolumesW = 22;
+    private $colProdutoW = 23;
+    private $colCubagemW= 27;
+    private $colPesoW = 20;
+    private $colVolumesW = 20;
     private $colPaletesW = 20;
     private $dataInicio;
     private $dataFim;
@@ -185,7 +185,7 @@ class Apontamento extends Pdf
         $this->SetFont('Arial', 'B',9);
         $this->Cell($this->offsetHead);
         $this->Cell($this->colIndexHeadW, $sergH, utf8_decode($headGroup));
-        $this->Cell($this->colProdutoW, $sergH, utf8_decode("Qtde produtos"));
+        $this->Cell($this->colProdutoW, $sergH, utf8_decode("Produtos"));
         $this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
         $this->Cell($this->colPesoW, $sergH, utf8_decode("Peso"));
         $this->Cell($this->colVolumesW, $sergH, utf8_decode("Volumes"));
