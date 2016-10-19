@@ -265,12 +265,21 @@ class Enderecamento_MovimentacaoController extends Action
                     } elseif(!empty($valEstDestino)) {
                         $validade = $valEstDestino;
                     } else {
-                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
-                        $umaOrigem = (!empty($estoqueEn->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma()) : null;
+                        $umaOrigem = null;
+                        if (isset($estoqueEn) && !empty($estoqueEn)) {
+                            $estoqueUma = $estoqueEn->getUma();
+                            if (isset($estoqueUma) && !empty($estoqueUma)) {
+                                $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma());
+                            }
+                        }
 
-                        if (!empty($estoqueDestino))
-                            /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
-                            $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
+                        $umaDestino = null;
+                        if (isset($estoqueDestino) && !empty($estoqueDestino)) {
+                            $estoqueDestinoUma = $estoqueDestino->getUma();
+                            if (isset($estoqueDestinoUma) && !empty($estoqueDestinoUma)) {
+                                $umaDestino = $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma());
+                            }
+                        }
 
                         $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                         $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
