@@ -129,6 +129,92 @@
     }
 
     $(function () {
+        $('#etiquetas-etiquetaInicial').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptCodBarraFinal   = $('#etiquetas-etiquetaFinal');
+                    if (inptCodBarraFinal) {
+                        inptCodBarraFinal.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#etiquetas-etiquetaFinal').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $('#etiquetas-pessoa');
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#etiquetas-pessoa').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $("#etiquetas-buscar");
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#mapas-codMapaSeparacao').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $('#mapas-pessoa');
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#mapas-pessoa').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $('#mapas-salvarMapa');
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+
         $('.btnSearch').prepend($('<img>').prop('src',basePath + "/img/icons/magnifier.png"));
 
         $('#mapas-salvarMapa').click(function () {
