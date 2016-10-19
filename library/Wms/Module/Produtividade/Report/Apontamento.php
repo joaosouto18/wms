@@ -88,22 +88,27 @@ class Apontamento extends Pdf
         $marginL = $this->marginLeft;
         $marginR = $this->marginRight;
 
-        $groupHeadH = 16;
+        $groupHeadH = 21;
         $groupEndH = 7;
 
-        $footerH = 18;
+        $footerH = 21;
         $posicaoAtual = $this->GetY();
         $pageH = (int) $this->GetPageHeight();
         $heightRestante = $pageH - $posicaoAtual - $footerH;
 
-        if ($groupHeadH > $heightRestante) {
+        if (($groupHeadH + $lineH + 1) > $heightRestante) {
             $startY = self::startPage();
         }
+
+        $rowBreak = null;
+        $check = self::checkPageBreak($rowsGroup, $groupHeadH, $lineH, $startY);
+        if (!empty($check))
+            list($startY, $rowBreak) = $check;
 
         self::startGroup($startY, $groupIndex, $headGroup);
 
         $this->SetFont('Arial','',8);
-        $startYGroup = $startY + $groupHeadH;
+        $startYGroup = $startY + $groupHeadH - 5;
         $this->SetY($startYGroup);
 
         $i = 1;
@@ -129,14 +134,15 @@ class Apontamento extends Pdf
             $qtdPaletes = (!empty($row['QTD_PALETES']))?$row['QTD_PALETES']:0;
             $tPalete += $qtdPaletes;
 
-            $posicaoAtual = $this->GetY();
-            $heightRestante = $pageH - $posicaoAtual - $footerH - ($lineH + $groupEndH);
+            /*$posicaoAtual = $this->GetY();
+            $next = (isset($rowsGroup[$key + 1]))? $lineH : $lineH + $groupEndH;
+            $heightRestante = $pageH - $posicaoAtual - $footerH - $next;*/
 
-            if ($heightRestante < 0) {
+            if (!is_null($rowBreak) && $key == $rowBreak) {
                 $startY = self::startPage();
                 self::startGroup($startY, $groupIndex, $headGroup);
                 $this->SetFont('Arial','',8);
-                $startYGroup = $startY + $groupHeadH;
+                $startYGroup = $startY + $groupHeadH - 5;
                 $this->SetY($startYGroup);
                 $i = 1;
             }
@@ -214,5 +220,35 @@ class Apontamento extends Pdf
         $this->SetY(-20);
         $this->Cell(176, 15, utf8_decode("Relatório gerado em ".date('d/m/Y')." às ".date('H:i:s')), 0, 0, "L");
         $this->Cell(20, 15, utf8_decode('Página ').$this->PageNo(), 0, 1, 'R');
+    }
+
+    private function checkPageBreak($rows, $groupHeadH, $lineH, $startY)
+    {
+        $groupEndH = 7;
+        $footerH = 21;
+        $posicaoAtual = $this->GetY();
+        $pageH = (int) $this->GetPageHeight();
+
+        $r = count($rows);
+
+        if ($r < 2) {
+            $heightRestante = $pageH - $posicaoAtual - ($groupHeadH + $lineH + $groupEndH) - $footerH;
+            if ($heightRestante < 0) {
+                $startY = self::startPage();
+                return array($startY, null);
+            }
+            return null;
+        } else {
+            $k = 1;
+            while ($k <= $r){
+                $next = ($k < $r)?$k * $lineH : ($k * $lineH) + $footerH;
+                $heightRestante = $pageH - $posicaoAtual - ($groupHeadH  + $next) - $footerH;
+                if ($heightRestante < 0) {
+                    return array($startY, ($k - 1));
+                }
+                $k++;
+            }
+            return null;
+        }
     }
 }
