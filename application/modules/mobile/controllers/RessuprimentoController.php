@@ -48,7 +48,7 @@ class Mobile_RessuprimentoController extends Action
 
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-        $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel, false);
+        $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel);
 
         if ($result == NULL)
         {
@@ -174,8 +174,8 @@ class Mobile_RessuprimentoController extends Action
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque $volEstoque */
             foreach ($embalagens as $volEstoque) {
                 $params = array();
-                $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
-                $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idEndereco));
+                $produtoEn = $volEstoque->getProduto();
+                $enderecoEn = $volEstoque->getDepositoEndereco();
 
                 $idPicking = null;
                 if ($volEstoque->getProdutoVolume() != NULL) {
@@ -185,7 +185,6 @@ class Mobile_RessuprimentoController extends Action
                     }
                 } else{
                     $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
-                    $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
                     if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
                         $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
                     }
