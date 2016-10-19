@@ -405,9 +405,6 @@ class MapaSeparacaoRepository extends EntityRepository
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
         }
         $sessao = new \Zend_Session_Namespace('coletor');
-        var_dump($sessao);
-        var_dump($sessao->osID);
-        exit;
 
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
