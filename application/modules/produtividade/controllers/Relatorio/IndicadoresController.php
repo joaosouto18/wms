@@ -21,6 +21,11 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
+        $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO(SYSDATE,SYSDATE)";
+        $procedure = $this->em->getConnection()->prepare($procedureSQL);
+        $procedure->execute();
+        $this->em->flush();
+
         $orientacao = 'atividade';
         if (isset($params['orientacao'])) {
             $orientacao = $params['orientacao'];
