@@ -38,7 +38,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         }
 
         $SQLWHere = "";
-        if ($params['atividade']) {
+        if (isset($params['atividade']) && !empty($params['atividade'])) {
             $SQLWHere = " AND DSC_ATIVIDADE = '".$params['atividade']."'";
         }
 
