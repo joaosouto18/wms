@@ -1030,10 +1030,10 @@ class Mobile_EnderecamentoController extends Action
                             $validade = $valEstDestino;
                         } else {
                             /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
-                            $umaOrigem = (!empty($estoque->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoque->getUma()) : null;
+                            if (isset($estoque) && !empty($estoque))
+                                $umaOrigem = (!empty($estoque->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoque->getUma()) : null;
 
                             if (!empty($estoqueDestino))
-                                /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaDestino */
                                 $umaDestino = (!empty($estoqueDestino->getUma()))? $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma()) : null;
 
                             $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
