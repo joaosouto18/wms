@@ -37,16 +37,23 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
             $SQLOrder = " ORDER BY PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
         }
 
+        $SQLWHere = "";
+        if ($params['atividade']) {
+            $SQLWHere = " AND DSC_ATIVIDADE = '".$params['atividade']."'";
+        }
+
+
         $sql = "SELECT AP.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
-                       CAST(SUM(AP.QTD_PRODUTOS) as NUMBER(20,2)) QTD_PRODUTOS,
-                       CAST(SUM(AP.QTD_VOLUMES)  as NUMBER(20,2)) QTD_VOLUMES,
-                       CAST(SUM(AP.QTD_CUBAGEM)  as NUMBER(20,2)) QTD_CUBAGEM,
-                       CAST(SUM(AP.QTD_PESO)     as NUMBER(20,2)) QTD_PESO,
-                       CAST(SUM(AP.QTD_PALETES)  as NUMBER(20,2)) QTD_PALETES  
+                       SUM(AP.QTD_PRODUTOS)as QTD_PRODUTOS,
+                       SUM(AP.QTD_VOLUMES) as QTD_VOLUMES,
+                       SUM(AP.QTD_CUBAGEM) as QTD_CUBAGEM,
+                       SUM(AP.QTD_PESO)    as QTD_PESO,
+                       SUM(AP.QTD_PALETES) as QTD_PALETES  
                    FROM APONTAMENTO_PRODUTIVIDADE AP
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
                   WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
+                  $SQLWHere
                   GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
 

@@ -17,11 +17,11 @@ class Apontamento extends Pdf
 
     private $colIndexHeadW = 77.5;
     private $colIndexW = 75;
-    private $colProdutoW = 23;
+    private $colProdutoW = 30;
     private $colCubagemW= 27;
-    private $colPesoW = 20;
-    private $colVolumesW = 20;
-    private $colPaletesW = 20;
+    private $colPesoW = 30;
+    private $colVolumesW = 30;
+    private $colPaletesW = 30;
     private $dataInicio;
     private $dataFim;
     private $orientacao;
@@ -165,11 +165,11 @@ class Apontamento extends Pdf
         $cellWidth = $this->colIndexW;
         $str = self::setStringByMaxWidth(utf8_decode($index),$cellWidth);
         $this->Cell($cellWidth, $lineH, $str,0,0);
-        $this->Cell($this->colProdutoW, $lineH, $qtdProduto,0,0);
-        $this->Cell($this->colCubagemW, $lineH, $qtdCubagem,0,0);
-        $this->Cell($this->colPesoW, $lineH, $qtdPeso,0,0);
-        $this->Cell($this->colVolumesW, $lineH, $qtdVolumes,0,0);
-        $this->Cell($this->colPaletesW, $lineH, $qtdPaletes,0,1);
+        $this->Cell($this->colProdutoW, $lineH, number_format($qtdProduto,2),0,0);
+        //$this->Cell($this->colCubagemW, $lineH, $qtdCubagem,0,0);
+        $this->Cell($this->colPesoW, $lineH, number_format($qtdPeso,2),0,0);
+        $this->Cell($this->colVolumesW, $lineH, number_format($qtdVolumes,2),0,0);
+        $this->Cell($this->colPaletesW, $lineH, number_format($qtdPaletes,2),0,1);
     }
 
     private function startGroup($startY, $groupIndex, $headGroup)
@@ -193,7 +193,7 @@ class Apontamento extends Pdf
         $this->Cell($this->offsetHead);
         $this->Cell($this->colIndexHeadW, $sergH, utf8_decode($headGroup));
         $this->Cell($this->colProdutoW, $sergH, utf8_decode("Produtos"));
-        $this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
+        //$this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
         $this->Cell($this->colPesoW, $sergH, utf8_decode("Peso"));
         $this->Cell($this->colVolumesW, $sergH, utf8_decode("Volumes"));
         $this->Cell($this->colPaletesW, $sergH, utf8_decode("Paletes"),0,1);
@@ -204,11 +204,11 @@ class Apontamento extends Pdf
         $this->SetFont('Arial','B',10);
         $this->Cell($this->offsetListW, $lineH);
         $this->Cell($this->colIndexW, $lineH, 'TOTAL',0,0);
-        $this->Cell($this->colProdutoW, $lineH, $tItens,0,0);
-        $this->Cell($this->colCubagemW, $lineH, $tCubagem,0,0);
-        $this->Cell($this->colPesoW, $lineH, $tPeso,0,0);
-        $this->Cell($this->colVolumesW, $lineH, $tVolumes,0,0);
-        $this->Cell($this->colPaletesW, $lineH, $tPalete,0,1);
+        $this->Cell($this->colProdutoW, $lineH, number_format($tItens,2),0,0);
+        //$this->Cell($this->colCubagemW, $lineH, $tCubagem,0,0);
+        $this->Cell($this->colPesoW, $lineH, number_format($tPeso,2),0,0);
+        $this->Cell($this->colVolumesW, $lineH, number_format($tVolumes,2),0,0);
+        $this->Cell($this->colPaletesW, $lineH, number_format($tPalete,2),0,1);
 
         $endGroupY = $startYGroup + ($lineH * $i) ;
         $this->Line($marginL, $endGroupY, $marginR, $endGroupY);
