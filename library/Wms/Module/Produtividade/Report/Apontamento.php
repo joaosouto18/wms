@@ -14,12 +14,13 @@ class Apontamento extends Pdf
     private $body;
     private $offsetHead = 10;
     private $offsetListW = 12.5;
-    private $colIndexHeadW = 61.5;
-    private $colIndexW = 59;
+
+    private $colIndexHeadW = 77.5;
+    private $colIndexW = 75;
     private $colProdutoW = 23;
-    private $colCubagemW = 34;
-    private $colPesoW = 28;
-    private $colVolumesW = 22;
+    private $colCubagemW= 27;
+    private $colPesoW = 20;
+    private $colVolumesW = 20;
     private $colPaletesW = 20;
     private $dataInicio;
     private $dataFim;
@@ -61,7 +62,7 @@ class Apontamento extends Pdf
         $this->SetDrawColor(12, 53, 140);
 
         $this->Line($marginL, 3, $marginR, 3);
-        $this->Image(APPLICATION_PATH . '\..\public\img\admin\logoRelatorio.gif', 18, 7, 28, 11);
+        //$this->Image(APPLICATION_PATH . '\..\public\img\admin\logoRelatorio.gif', 18, 7, 28, 11);
 
         $this->SetY(4);
         $this->SetFont('Arial', 'B', 15);
@@ -73,7 +74,7 @@ class Apontamento extends Pdf
         $dataFim = $this->dataFim;
         $this->Cell($this->body, 6, utf8_decode("Período de $dataInicio até $dataFim"),0,1,"C");
 
-        $this->Image(APPLICATION_PATH .'\..\public\img\logo_quebec.jpg',160,6,40,12);
+        //$this->Image(APPLICATION_PATH .'\..\public\img\logo_quebec.jpg',160,6,40,12);
         $this->Line($marginL, 23, $marginR, 23);
 
         return $this->startY;
