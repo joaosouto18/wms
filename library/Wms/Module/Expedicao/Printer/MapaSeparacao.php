@@ -373,10 +373,11 @@ class MapaSeparacao extends Pdf
             $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
 
             $this->SetFont('Arial','B',9);
-            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+            $this->Cell($wPage * 3, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell($wPage * 2.5, 6, utf8_decode("EXPEDIÇÃO: " .$this->idExpedicao), 0, 0);
+            $this->Cell($wPage * 3, 6, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1);
+            $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
+            $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
 
             $this->Image($this->imgCodBarras, 143, 280, 50);
             $this->InFooter = false;
