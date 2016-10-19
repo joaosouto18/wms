@@ -800,8 +800,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 ->innerJoin('nf.status', 's')
                 ->where('nf.recebimento = :idRecebimento')
                 ->setParameter('idRecebimento', $id)
+                ->groupBy('nf.id, nf.numero, nf.serie, nf.dataEmissao, pj.nomeFantasia, s.id, s.sigla')
                 ->orderBy('nf.id');
 
+        echo $dql->getQuery()->getSQL(); exit;
         $notasFiscais = $dql->getQuery()->execute();
 
         // loop nas notas
