@@ -293,7 +293,7 @@
         $('.save').click(function () {
             var data = [];
             $.each($('#tbResult').children(), function () {
-                var mapa = $(this).children(".intervalo").text();
+                var mapa = $(this).children(".mapa").text();
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
@@ -302,6 +302,7 @@
 
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
+                    console.log(data);
                     if (data.result === 'Ok') {
                         alert('Todas os apontamentos foram salvos com sucesso!');
                         window.location.href = 'apontamento-separacao';
