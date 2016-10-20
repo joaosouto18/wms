@@ -171,6 +171,11 @@ class Mobile_RessuprimentoController extends Action
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
             $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
 
+            var_dump($idProduto);
+            var_dump($grade);
+            var_dump($idEndereco);
+            var_dump($embalagens);
+            exit;
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque $volEstoque */
             foreach ($embalagens as $volEstoque) {
                 $params = array();
