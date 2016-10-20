@@ -158,7 +158,9 @@ class MapaSeparacaoRepository extends EntityRepository
         if (isset($modeloSeparacaoEn) && !empty($modeloSeparacaoEn)) {
             $quebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             if ($quebra == 'S') {
-                $andWhere .= " AND M.COD_MAPA_SEPARACAO = $idMapa";
+                if (isset($idMapa) && !empty($idMapa) && !is_null($idMapa)) {
+                    $andWhere .= " AND M.COD_MAPA_SEPARACAO = $idMapa";
+                }
             }
         }
 
