@@ -190,7 +190,6 @@ class Mobile_RessuprimentoController extends Action
                     }
                 }
 
-                var_dump($idPicking); exit;
                 if ($idPicking == NULL){
                     throw new \Exception("Não foi encontrado endereço de picking para o produto");
                 }
@@ -224,6 +223,7 @@ class Mobile_RessuprimentoController extends Action
             }
 
             $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
             $this->addFlashMessage("success","Movimentação efetivada com sucesso");
         } catch (\Exception $e) {
             $this->em->rollback();
