@@ -199,15 +199,6 @@ class Mobile_RessuprimentoController extends Action
                     $validade = $volEstoque->getValidade();
                     if (!empty($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
-                    } else {
-                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
-                        $umaEn = $volEstoque->getUma();
-                        if (isset($umaEn) && !empty($umaEn)) {
-                            $validadeUma = $umaEn->getValidade();
-                            if (isset($validadeUma) && !empty($validadeUma)) {
-                                $params['validade'] = $umaEn->getValidade();
-                            }
-                        }
                     }
                 }
 
