@@ -147,12 +147,21 @@ class MapaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function validaConferencia($expedicao, $setDivergencia = false)
+    public function validaConferencia($expedicao, $setDivergencia = false, $idMapa = null)
     {
+        $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao',$this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO'));
         $andWhere = ' ';
         if ($setDivergencia == false) {
             $andWhere = " AND MSP.IND_DIVERGENCIA = 'S' ";
         }
+
+        if (isset($modeloSeparacaoEn) && !empty($modeloSeparacaoEn)) {
+            $quebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+            if ($quebra == 'S') {
+                $andWhere .= " AND M.COD_MAPA_SEPARACAO = $idMapa";
+            }
+        }
+
         $sql = " SELECT M.COD_MAPA_SEPARACAO,
                          M.COD_PRODUTO,
                          M.DSC_GRADE,

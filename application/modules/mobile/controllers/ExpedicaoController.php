@@ -91,7 +91,7 @@ class Mobile_ExpedicaoController extends Action
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false);
+        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa);
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
