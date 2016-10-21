@@ -384,19 +384,19 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn);
 
         if (!empty($qtdProdutoMapa)){
-            $qtdMapa = $qtdProdutoMapa[0]['QTD'];
-            $qtdCortada = $qtdProdutoMapa[0]['QTD_CORTADO'];
+            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
+            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
         }
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = $ultConferencia['qtd'];
+            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
         }
 
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
-            $qtdEmbalagem = $embalagemEn->getQuantidade();
+            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
