@@ -33,7 +33,7 @@
             url: 'get-capacidade-picking-ajax/endereco/'+rua+'.'+predio+'.'+nivel+'.'+apartamento,
             success: function (data) {
                 if (data.status == 'Ok') {
-                    if (data.caracteristicaEndereco == 39 || data.caracteristicaEndereco == 37) {
+                    if (data.caracteristicaEndereco == 39) {
                         capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="' + data.capacidadePicking + '" id="capacidadePicking" name="capacidadePicking"></div>';
                     }
                     $('#capacidade').html(capacidadePicking);
