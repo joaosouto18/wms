@@ -412,16 +412,17 @@ class MapaSeparacaoRepository extends EntityRepository
             $produtoEn = $volumeEn->getProduto();
         }
 
-//        var_dump((float)$qtdConferida);
-//        var_dump((float)$qtdCortada);
-//        var_dump((float)$qtdEmbalagem);
-//        var_dump((float)number_format($quantidade,2,'.',''));
+        $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,2,'.','');
+        $qtdBanco    = (float)$qtdConferida + (float)$qtdCortada;
+        $qtdMapa     = (float)$qtdMapa;
+//        var_dump($qtdBanco);
+//        var_dump($qtdDigitada);
 //        var_dump((float)$qtdMapa);
-//        var_dump(($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa);
+//        var_dump(((float)$qtdConferida + (float)$qtdCortada + ((float)$qtdEmbalagem * (float)number_format($quantidade,2,'.',''))) > (float)$qtdMapa);
 //        exit;
-//        if (((float)$qtdConferida + (float)$qtdCortada + ((float)$qtdEmbalagem * (float)number_format($quantidade,2,'.',''))) > (float)$qtdMapa) {
-//            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
-//        }
+        if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
+            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
+        }
         $sessao = new \Zend_Session_Namespace('coletor');
 
         $novaConferencia = new MapaSeparacaoConferencia();
