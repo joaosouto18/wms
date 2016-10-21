@@ -419,9 +419,9 @@ class MapaSeparacaoRepository extends EntityRepository
 //        var_dump((float)$qtdMapa);
 //        var_dump(($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa);
 //        exit;
-        if (((float)$qtdConferida + (float)$qtdCortada + ((float)$qtdEmbalagem * (float)number_format($quantidade,2,'.',''))) > (float)$qtdMapa) {
-            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
-        }
+//        if (((float)$qtdConferida + (float)$qtdCortada + ((float)$qtdEmbalagem * (float)number_format($quantidade,2,'.',''))) > (float)$qtdMapa) {
+//            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
+//        }
         $sessao = new \Zend_Session_Namespace('coletor');
 
         $novaConferencia = new MapaSeparacaoConferencia();
