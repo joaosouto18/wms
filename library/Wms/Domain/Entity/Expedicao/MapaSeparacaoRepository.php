@@ -425,6 +425,29 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
+    public function conferenciaMapa($idMapa)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        $listaProdutosNãoConferidosMapa = $mapaSeparacaoRepo->verificaConferenciaMapa($idMapa);
+        $todoMapaConferido = true;
+
+        foreach ($listaProdutosNãoConferidosMapa as $produtoNaoConferidoMapa) {
+            if ($produtoNaoConferidoMapa['QTD_PRODUTO_CONFERIR'] != 0) {
+                $todoMapaConferido = false;
+                break;
+            }
+        }
+
+        if ($todoMapaConferido == true) {
+            $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $idMapa);
+            $mapaSeparacaoEn->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
+            $this->getEntityManager()->persist($mapaSeparacaoEn);
+            $this->getEntityManager()->flush();
+        }
+        return $todoMapaConferido;
+    }
+
     public function forcaConferencia($idExpedicao) {
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
         $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
