@@ -412,14 +412,14 @@ class MapaSeparacaoRepository extends EntityRepository
             $produtoEn = $volumeEn->getProduto();
         }
 
-        var_dump($qtdConferida);
-        var_dump($qtdCortada);
-        var_dump($qtdEmbalagem);
-        var_dump(number_format($quantidade,2,'.',''));
-        var_dump($qtdMapa);
-        var_dump(($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa);
-        exit;
-        if (($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa) {
+//        var_dump((float)$qtdConferida);
+//        var_dump((float)$qtdCortada);
+//        var_dump((float)$qtdEmbalagem);
+//        var_dump((float)number_format($quantidade,2,'.',''));
+//        var_dump((float)$qtdMapa);
+//        var_dump(($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa);
+//        exit;
+        if (((float)$qtdConferida + (float)$qtdCortada + ((float)$qtdEmbalagem * (float)number_format($quantidade,2,'.',''))) > (float)$qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
         }
         $sessao = new \Zend_Session_Namespace('coletor');
