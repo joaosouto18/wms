@@ -7,8 +7,10 @@
                 <div class="field">
                     <label>Informe um nivel:</label>
                     <input style="width: 99%" class="focus" maxlength="100" size="40" type="text" name="nivel" id="nivel" value="" />
-                    <label>Capac. Picking:</label>
-                    <input style="width: 99%" maxlength="100" size="40"  type="text" name="capacidadePicking" id="capacidadePicking" value="<?php echo $this->capacidadePicking ?>" />
+                    <?php if ($this->caracteristica == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING_DINAMICO) : ?>
+                        <label>Capac. Picking:</label>
+                        <input style="width: 99%" maxlength="100" size="40"  type="text" name="capacidadePicking" id="capacidadePicking" value="<?php echo $this->capacidadePicking ?>" />
+                    <?php endif; ?>
                 </div>
                 <div id="inserir"></div>
                 <input type="hidden" name="endereco" id="endereco" value="<?php echo $this->idEndereco ?>" />

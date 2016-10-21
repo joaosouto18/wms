@@ -83,7 +83,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
 
             } else {
-                $this->addFlashMessage('info', "Informe um produto, endereço e quantidade para endereçar");
+//                $this->addFlashMessage('info', "Informe um produto, endereço e quantidade para endereçar");
             }
         } catch (\Exception $ex) {
             $this->addFlashMessage('error', $ex->getMessage());
@@ -149,6 +149,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->predio = $enderecoEn->getPredio();
             $this->view->apartamento = $enderecoEn->getApartamento();
             $this->view->endereco = $enderecoEn->getDescricao();
+            $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
             if (isset($params['submit'])&& $params['submit'] != null) {
                 if (trim($params['nivel']) != "") {
@@ -237,8 +238,12 @@ class Mobile_Enderecamento_ManualController extends Action
             $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
             $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
-            if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
-                throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
+            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
+                    throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
+            } else {
+                $params['capacidadePicking'] = null;
+            }
 
             $novaCapacidadePicking = $params['capacidadePicking'];
 
