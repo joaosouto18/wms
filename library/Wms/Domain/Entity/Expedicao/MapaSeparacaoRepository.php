@@ -395,19 +395,19 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn);
 
         if (!empty($qtdProdutoMapa)){
-            $qtdMapa = $qtdProdutoMapa[0]['QTD'];
-            $qtdCortada = $qtdProdutoMapa[0]['QTD_CORTADO'];
+            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
+            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
         }
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = $ultConferencia['qtd'];
+            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
         }
 
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
-            $qtdEmbalagem = $embalagemEn->getQuantidade();
+            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
@@ -434,6 +434,29 @@ class MapaSeparacaoRepository extends EntityRepository
         $this->getEntityManager()->persist($novaConferencia);
         $this->getEntityManager()->flush();
 
+    }
+
+    public function conferenciaMapa($idMapa)
+    {
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        $listaProdutosNãoConferidosMapa = $mapaSeparacaoRepo->verificaConferenciaMapa($idMapa);
+        $todoMapaConferido = true;
+
+        foreach ($listaProdutosNãoConferidosMapa as $produtoNaoConferidoMapa) {
+            if ($produtoNaoConferidoMapa['QTD_PRODUTO_CONFERIR'] != 0) {
+                $todoMapaConferido = false;
+                break;
+            }
+        }
+
+        if ($todoMapaConferido == true) {
+            $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $idMapa);
+            $mapaSeparacaoEn->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
+            $this->getEntityManager()->persist($mapaSeparacaoEn);
+            $this->getEntityManager()->flush();
+        }
+        return $todoMapaConferido;
     }
 
     public function forcaConferencia($idExpedicao) {

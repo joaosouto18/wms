@@ -25,6 +25,11 @@ class MapaSeparacao
     protected $expedicao;
 
     /**
+     * @Column(name="COD_EXPEDICAO", type="integer", nullable=false)
+     */
+    protected $codExpedicao;
+
+    /**
      * @Column(name="DTH_CRIACAO", type="datetime", nullable=true)
      */
     protected $dataCriacao;
@@ -139,6 +144,22 @@ class MapaSeparacao
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodExpedicao()
+    {
+        return $this->codExpedicao;
+    }
+
+    /**
+     * @param mixed $codExpedicao
+     */
+    public function setCodExpedicao($codExpedicao)
+    {
+        $this->codExpedicao = $codExpedicao;
     }
 
 }
