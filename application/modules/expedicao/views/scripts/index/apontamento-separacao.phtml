@@ -129,6 +129,92 @@
     }
 
     $(function () {
+        $('#etiquetas-etiquetaInicial').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptCodBarraFinal   = $('#etiquetas-etiquetaFinal');
+                    if (inptCodBarraFinal) {
+                        inptCodBarraFinal.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#etiquetas-etiquetaFinal').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $('#etiquetas-pessoa');
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#etiquetas-pessoa').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $("#etiquetas-buscar");
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#mapas-codMapaSeparacao').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $('#mapas-pessoa');
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        $('#mapas-pessoa').keyup(function(event) {
+            if (event.which == 13 || event.keyCode == 13) {
+                if ($(this).val() != "") {
+                    var inptConferente   = $('#mapas-salvarMapa');
+                    if (inptConferente) {
+                        inptConferente.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+
         $('.btnSearch').prepend($('<img>').prop('src',basePath + "/img/icons/magnifier.png"));
 
         $('#mapas-salvarMapa').click(function () {
@@ -148,7 +234,7 @@
                 return false;
             }
 
-            var result = {mapa:mapa, cpf:cpf, pessoa:null};
+            var result = {mapa:mapa.substring(0,(mapa.length - 1)), cpf:cpf, pessoa:null};
 
             $.ajax({
                 url: 'conferente-apontamento-separacao-ajax/cpf/'+cpf,
@@ -293,7 +379,7 @@
         $('.save').click(function () {
             var data = [];
             $.each($('#tbResult').children(), function () {
-                var mapa = $(this).children(".intervalo").text();
+                var mapa = $(this).children(".mapa").text();
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
@@ -302,6 +388,7 @@
 
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
+                    console.log(data);
                     if (data.result === 'Ok') {
                         alert('Todas os apontamentos foram salvos com sucesso!');
                         window.location.href = 'apontamento-separacao';

@@ -21,29 +21,55 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
+        $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO(TO_DATE(SYSDATE),TO_DATE(SYSDATE))";
+        $procedure = $this->em->getConnection()->prepare($procedureSQL);
+        $procedure->execute();
+        $this->em->flush();
+
+        $orientacao = 'atividade';
+        if (isset($params['orientacao'])) {
+            $orientacao = $params['orientacao'];
+        }
+
+        if ($orientacao == 'atividade') {
+            $SQLOrder = " ORDER BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
+        } else {
+            $SQLOrder = " ORDER BY PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
+        }
+
+        $SQLWHere = "";
+        if (isset($params['atividade']) && !empty($params['atividade'])) {
+            $SQLWHere = " AND DSC_ATIVIDADE = '".$params['atividade']."'";
+        }
+
 
         $sql = "SELECT AP.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
-                       SUM(AP.QTD_PRODUTOS) QTD_PRODUTOS,
-                       SUM(AP.QTD_VOLUMES) QTD_VOLUMES,
-                       SUM(AP.QTD_CUBAGEM) QTD_CUBAGEM,
-                       SUM(AP.QTD_PESO) QTD_PESO,
-                       SUM(AP.QTD_PALETES) QTD_PALETES  
+                       SUM(AP.QTD_PRODUTOS)as QTD_PRODUTOS,
+                       SUM(AP.QTD_VOLUMES) as QTD_VOLUMES,
+                       SUM(AP.QTD_CUBAGEM) as QTD_CUBAGEM,
+                       SUM(AP.QTD_PESO)    as QTD_PESO,
+                       SUM(AP.QTD_PALETES) as QTD_PALETES  
                    FROM APONTAMENTO_PRODUTIVIDADE AP
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
                   WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
-                  GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA";
+                  $SQLWHere
+                  GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
 
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
-        $this->view->grid = $grid->init($result);
+        $this->view->grid = $grid->init($result,$orientacao);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
-            $result = self::groupByOrientacao($result, $params['orientacao']);
-            $result['dataInicio'] = $params['dataInicio'];
-            $result['dataFim'] = $params['dataFim'];
-            $pdfReport = new \Wms\Module\Produtividade\Report\Apontamento();
-            $pdfReport->generatePDF($result);
+            if (!empty($result)) {
+                $result = self::groupByOrientacao($result, $params['orientacao']);
+                $result['dataInicio'] = $params['dataInicio'];
+                $result['dataFim'] = $params['dataFim'];
+                $pdfReport = new \Wms\Module\Produtividade\Report\Apontamento();
+                $pdfReport->generatePDF($result);
+            }else {
+                $this->addFlashMessage('error',"Nenhum resultado encontrado entre $params[dataInicio] e $params[dataFim]");
+            }
         }
     }
 

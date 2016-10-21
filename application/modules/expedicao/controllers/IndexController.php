@@ -319,7 +319,7 @@ class Expedicao_IndexController extends Action
                         $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
                         //VERIFICA O USUARIO
                         if (is_null($usuarioEn))
-                            throw new \Exception('Conferente não encontrado!');
+                            throw new \Exception("Conferente $cpf não encontrado!");
                         //VERIFICA AS ETIQUETAS
                         if (is_null($etiquetaFinal))
                             $etiquetaFinal = $etiquetaInicial;
@@ -338,24 +338,24 @@ class Expedicao_IndexController extends Action
                         $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
                         //VERIFICA O USUARIO
                         if (is_null($usuarioEn))
-                            throw new \Exception('Conferente não encontrado!');
+                            throw new \Exception("Conferente $cpf não encontrado!");
 
                         $codMapaSeparacao = $params['mapa'];
                         $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
                         if (is_null($mapaSeparacaoEn))
-                            throw new \Exception('Mapa de Separação não encontrado!');
+                            throw new \Exception("Mapa de Separação $codMapaSeparacao não encontrado!");
 
                         $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
                         if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
                             $apontamentoMapaRepo->save($mapaSeparacaoEn, $usuarioEn->getId());
                     }
                 }
-                echo Zend_Json::encode(array('result' => 'Ok'));
+                $this->_helper->json(array('result' => 'Ok'));
                 exit;
             }
 
         } catch (\Exception $e) {
-            echo Zend_Json::encode(array('result' => 'Error', 'msg' => $e->getMessage()));
+            $this->_helper->json(array('result' => 'Error', 'msg' => $e->getMessage()));
         }
 
         $this->view->form = $form;

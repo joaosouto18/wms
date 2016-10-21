@@ -1213,14 +1213,14 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			}
 		}
 
-		$result['idNorma'] = $idNorma;
-		$result['unidade'] = $unidadePadrao;
-		$result['idUnitizador'] = $IdUnitizador;
-		$result['unitizador'] = $unitizador;
-		$result['qtdNorma'] = $qtdNorma;
-		$result['lastro'] = $lastro;
-		$result['camadas'] = $camadas;
-		$result['dscProduto'] = $dscProduto;
+		$result[0]['idNorma'] = $idNorma;
+		$result[0]['unidade'] = $unidadePadrao;
+		$result[0]['idUnitizador'] = $IdUnitizador;
+		$result[0]['unitizador'] = $unitizador;
+		$result[0]['qtdNorma'] = $qtdNorma;
+		$result[0]['lastro'] = $lastro;
+		$result[0]['camadas'] = $camadas;
+		$result[0]['dscProduto'] = $dscProduto;
 
 		return $result;
 
