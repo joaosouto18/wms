@@ -412,6 +412,13 @@ class MapaSeparacaoRepository extends EntityRepository
             $produtoEn = $volumeEn->getProduto();
         }
 
+        var_dump($qtdConferida);
+        var_dump($qtdCortada);
+        var_dump($qtdEmbalagem);
+        var_dump(number_format($quantidade,2,'.',''));
+        var_dump($qtdMapa);
+        var_dump(($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa);
+        exit;
         if (($qtdConferida + $qtdCortada + ($qtdEmbalagem * number_format($quantidade,2,'.',''))) > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
         }
