@@ -203,6 +203,27 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
     public function geraNovaOnda (){
+
+
+        /*
+        $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+        //$usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        //$usuarioEn = $usuarioRepo->find($idUsuario);
+
+        $sql = "INSERT INTO ONDA_RESSUPRIMENTO (COD_ONDA_RESSUPRIMENTO, DTH_CRIACAO, DSC_OBSERVACAO, COD_USUARIO) VALUES (:sequence, :dthCriacao, :dscObs, :usuario)";
+        $dth = new \DateTime();
+
+        $conn = $this->_em->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue('sequence', 'SQ_ONDA_RESSUPRIMENTO.NEXTVAL');
+        $stmt->bindValue('dthCriacao', $dth->format('d/m/Y'));
+        $stmt->bindValue('dscObs', '');
+        $stmt->bindValue('usuario', $idUsuario);
+        $stmt->execute();
+
+        $ondaEn = $this->find($conn->lastInsertId());
+        */
+
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
         $usuarioEn = $usuarioRepo->find($idUsuario);
