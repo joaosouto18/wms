@@ -1248,16 +1248,16 @@ class ExpedicaoRepository extends EntityRepository
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
                          GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT MS.COD_EXPEDICAO, 
-                                    NVL(SUM(QTD_CONF.QTD),0) as QTD_CONFERIDA, 
+                                    NVL(SUM(QTD_CONF.QTD),0) + NVL(SUM(QTD_SEP.QTD_CORTADO),0) as QTD_CONFERIDA,
                                     NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL, 
                                     NVL(SUM(QTD_SEP.QTD),0) as QTD_MAPA_TOTAL
                                FROM MAPA_SEPARACAO MS
                                LEFT JOIN (SELECT SUM(QTD_CONFERIDA * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO 
                                             FROM MAPA_SEPARACAO_CONFERENCIA
                                            GROUP BY COD_MAPA_SEPARACAO) QTD_CONF ON QTD_CONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                               LEFT JOIN (SELECT SUM(QTD_SEPARAR * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO
+                               LEFT JOIN (SELECT SUM(QTD_SEPARAR * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO, SUM(QTD_CORTADO) QTD_CORTADO
                                             FROM MAPA_SEPARACAO_PRODUTO
-                                           GROUP BY COD_MAPA_SEPARACAO) QTD_SEP ON QTD_SEP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                                           GROUP BY COD_MAPA_SEPARACAO, QTD_CORTADO) QTD_SEP ON QTD_SEP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                                LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) as QTD, MSP.COD_MAPA_SEPARACAO
                                             FROM MAPA_SEPARACAO_PRODUTO MSP
                                             LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
