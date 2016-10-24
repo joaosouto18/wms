@@ -185,6 +185,7 @@ class Mobile_RessuprimentoController extends Action
                     }
                 } else{
                     $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
+                    $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
                     if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
                         $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
                     }
