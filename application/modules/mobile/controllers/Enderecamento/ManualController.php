@@ -194,6 +194,7 @@ class Mobile_Enderecamento_ManualController extends Action
     public function enderecarManualAction(){
         $params = $this->_getAllParams();
         try {
+            var_dump('abc');
             $this->getEntityManager()->beginTransaction();
             $produto = $params['produto'];
             $codProduto = $params['codProduto'];
@@ -207,10 +208,12 @@ class Mobile_Enderecamento_ManualController extends Action
             $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($idRecebimento,$codProduto,$grade);
             $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
+            var_dump('def');
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
             $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
             $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade);
 
+            var_dump('ghi');
             if ($sumQtdRecebimento < ((((int)$params['qtd']) * $params['qtdEmbalagem']) + (int)$paleteProdutoEn[0]['qtd'])) {
                 throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
             }
@@ -254,6 +257,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     $normaRepo->gravarNormaPaletizacao($embalagemEn,$novaCapacidadePicking);
                 }
 
+                var_dump('jkl');
                 $endereco = null;
                 if (!is_null($embalagemEn->getEndereco()))
                     $endereco = $embalagemEn->getEndereco()->getId();
@@ -293,6 +297,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
             }
+            var_dump('mno');
 
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
@@ -308,6 +313,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa, null, $dataValidade);
 
+            var_dump('pqr'); exit;
             $this->addFlashMessage('success','Palete ' . $paleteEn->getId(). ' criado e endereçado com sucesso');
             $this->getEntityManager()->commit();
             $this->redirect('ler-codigo-barras','enderecamento_manual','mobile',array('id'=>$params['id']));
