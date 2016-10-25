@@ -151,6 +151,9 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->endereco = $enderecoEn->getDescricao();
             $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
+            var_dump($params['submit']);
+            var_dump(trim($params['nivel']));
+            var_dump($urlDestino); exit;
             if (isset($params['submit'])&& $params['submit'] != null) {
                 if (trim($params['nivel']) != "") {
                     $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
@@ -180,7 +183,6 @@ class Mobile_Enderecamento_ManualController extends Action
                     unset($params['urlOrigem']);
                     unset($params['nivel']);
 
-                    var_dump($urlDestino); exit;
                     $this->redirect($urlDestino,'enderecamento_manual','mobile', $params);
                 }
             }
