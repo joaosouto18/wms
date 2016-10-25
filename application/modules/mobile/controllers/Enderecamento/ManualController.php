@@ -248,10 +248,30 @@ class Mobile_Enderecamento_ManualController extends Action
             $novaCapacidadePicking = $params['capacidadePicking'];
 
             $embalagens = $produtoEn->getEmbalagens();
+            $arrDL = array();
+            $normaRelativa = null;
+            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
+            foreach($embalagens as $embalagem) {
+                /** @var \Wms\Domain\Entity\Produto\DadoLogistico $dadoLogisticoEn */
+                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagem));
+                if (!empty($dadoLogisticoEn)) {
+                    $arrDL[$embalagem->getId()] = $dadoLogisticoEn;
+                    if (empty($normaRelativa))
+                        $normaRelativa = $dadoLogisticoEn->getNormaPaletizacao();
+                }
+            }
+
+            if (empty($arrDL)){
+                throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
+            }
+
             foreach ($embalagens as $embalagemEn) {
-                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
-                if (!isset($dadoLogisticoEn) || empty($dadoLogisticoEn)) {
-                    $normaRepo->gravarNormaPaletizacao($embalagemEn,$novaCapacidadePicking);
+                if (!isset($arrDL[$embalagemEn->getId()]) && !empty($novaCapacidadePicking)){
+                    $dadoLogisticoEn = $normaRepo->gravarNormaPaletizacao($embalagemEn, $novaCapacidadePicking);
+                    if (empty($normaRelativa))
+                        $normaRelativa = $dadoLogisticoEn->getNormaPaletizacao();
+                } elseif (!isset($arrDL[$embalagemEn->getId()]) && empty($novaCapacidadePicking) && !empty($normaRelativa)) {
+                    $normaRepo->gravarNormaPaletizacao($embalagemEn, $novaCapacidadePicking, $normaRelativa);
                 }
 
                 $endereco = null;

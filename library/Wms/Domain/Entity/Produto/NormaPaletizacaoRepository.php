@@ -93,19 +93,23 @@ class NormaPaletizacaoRepository extends EntityRepository
         return true;
     }
 
-    public function gravarNormaPaletizacao($embalagemEn,$novaCapacidadePicking)
+    public function gravarNormaPaletizacao($embalagemEn,$novaCapacidadePicking, NormaPaletizacaoEntity $normaRelativa = null)
     {
         /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
-        $normaEn = new \Wms\Domain\Entity\Produto\NormaPaletizacao();
-        $values['numLastro'] = $novaCapacidadePicking;
-        $values['numCamadas'] = 1;
-        $values['numNorma'] = $novaCapacidadePicking;
-        $values['isPadrao'] = 'S';
-        $values['idUnitizador'] = $this->getSystemParameterValue('COD_UNITIZADOR_PADRAO');
-        $values['numPeso'] = 1;
-        $normaId = $this->save($normaEn, $values);
+        if (empty($normaRelativa)) {
+            $normaEn = new \Wms\Domain\Entity\Produto\NormaPaletizacao();
+            $values['numLastro'] = $novaCapacidadePicking;
+            $values['numCamadas'] = 1;
+            $values['numNorma'] = $novaCapacidadePicking;
+            $values['isPadrao'] = 'S';
+            $values['idUnitizador'] = $this->getSystemParameterValue('COD_UNITIZADOR_PADRAO');
+            $values['numPeso'] = 1;
+            $normaId = $this->save($normaEn, $values);
+        } else {
+            $normaId = $normaRelativa->getId();
+        }
 
         $valuesDadoLogistico = array(
             'idEmbalagem' => $embalagemEn->getId(),
@@ -116,7 +120,7 @@ class NormaPaletizacaoRepository extends EntityRepository
             'altura' => 1,
             'idNormaPaletizacao' => $normaId,
         );
-        $dadoLogisticoRepo->save($valuesDadoLogistico);
+        return $dadoLogisticoRepo->save($valuesDadoLogistico);
 
     }
 

@@ -33,7 +33,7 @@ class DadoLogistico
      * 
      * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\NormaPaletizacao", cascade={"persist"})
      * @JoinColumn(name="COD_NORMA_PALETIZACAO", referencedColumnName="COD_NORMA_PALETIZACAO")
-     * @var Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @var \Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      */
     protected $normaPaletizacao;
     /**
@@ -87,7 +87,7 @@ class DadoLogistico
     }
     /**
      * Retorna a norma de paletizacao
-     * @return integer
+     * @return \Wms\Domain\Entity\Produto\NormaPaletizacao
      */
     public function getNormaPaletizacao()
     {
