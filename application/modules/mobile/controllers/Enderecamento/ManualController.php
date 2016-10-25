@@ -180,6 +180,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     unset($params['urlOrigem']);
                     unset($params['nivel']);
 
+                    var_dump($urlDestino); exit;
                     $this->redirect($urlDestino,'enderecamento_manual','mobile', $params);
                 }
             }
