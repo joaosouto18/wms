@@ -151,7 +151,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->endereco = $enderecoEn->getDescricao();
             $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
-            var_dump($params['submit']);
+            var_dump($params);
             var_dump(trim($params['nivel']));
             var_dump($urlDestino); exit;
             if (isset($params['submit'])&& $params['submit'] != null) {
