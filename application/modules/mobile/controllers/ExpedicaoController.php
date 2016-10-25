@@ -430,10 +430,6 @@ public function informaQtdMapaAction()
         $central          = $sessao->centralSelecionada;
         $mapa             = $request->getParam('mapa', "N");
 
-
-
-
-
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
