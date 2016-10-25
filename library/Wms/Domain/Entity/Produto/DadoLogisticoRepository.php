@@ -44,6 +44,7 @@ class DadoLogisticoRepository extends EntityRepository
         
         $em->persist($dadoLogisticoEntity);
         $em->flush($dadoLogisticoEntity);
+        return $dadoLogisticoEntity;
     }
 
     /**
