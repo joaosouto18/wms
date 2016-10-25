@@ -151,7 +151,8 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->endereco = $enderecoEn->getDescricao();
             $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
-            if (trim($params['nivel']) != "") {
+            $paramNivel = trim($params['nivel']);
+            if (isset($paramNivel) && !empty($paramNivel)) {
                 $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
                 $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
                 $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
