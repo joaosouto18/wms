@@ -1263,12 +1263,10 @@ class ExpedicaoRepository extends EntityRepository
                                             LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                                            WHERE MSP.IND_CONFERIDO = \'N\' AND MSC.COD_MAPA_SEPARACAO_CONFERENCIA IS NULL
                                            GROUP BY MSP.COD_MAPA_SEPARACAO) QTD_CONF_M ON QTD_CONF_M.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-
                                LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = MS.COD_EXPEDICAO
                               WHERE 1 = 1
                                 '.$WhereExpedicao.'
                               GROUP BY MS.COD_EXPEDICAO) MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
-
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C '. $JoinExpedicao . $JoinSigla . '

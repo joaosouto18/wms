@@ -448,7 +448,7 @@ public function informaQtdMapaAction()
                 foreach ($mapasExpedicao as $mapaExpedicao) {
                     $statusMapa = $mapaExpedicao->getStatus();
                     if (isset($statusMapa) && !empty($statusMapa)) {
-                        if ($statusMapa != EtiquetaSeparacao::STATUS_CONFERIDO) {
+                        if ($statusMapa->getId() != EtiquetaSeparacao::STATUS_CONFERIDO) {
                             $todosMapasConferidos = false;
                             break;
                         }
