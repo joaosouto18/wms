@@ -1070,7 +1070,13 @@ class Mobile_EnderecamentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
                     $params['endereco'] = $enderecoAntigo;
-                    $params['validade'] = $estoque->getValidade()->format('d/m/Y');
+                    if (isset($estoque) && !empty($estoque)) {
+                        $estoqueValidade = $estoque->getValidade();
+                        if (isset($estoqueValidade) && !empty($estoqueValidade)) {
+                            $params['validade'] = $estoqueValidade->format('d/m/Y');
+                        }
+                    }
+
                     $params['qtd'] = $qtd * -1;
                     $params['observacoes'] = "Transferencia de Estoque - Destino: ".$endereco->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);

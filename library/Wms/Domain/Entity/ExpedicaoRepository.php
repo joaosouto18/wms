@@ -1228,7 +1228,7 @@ class ExpedicaoRepository extends EntityRepository
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0 
-                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0) + NVL(MS.QTD_CONF_MANUAL,0) ) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia" 
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -1246,15 +1246,15 @@ class ExpedicaoRepository extends EntityRepository
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
                          GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
-                  LEFT JOIN (SELECT MS.COD_EXPEDICAO, 
-                                    NVL(SUM(QTD_CONF.QTD),0) as QTD_CONFERIDA, 
-                                    NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL, 
-                                    NVL(SUM(QTD_SEP.QTD),0) as QTD_MAPA_TOTAL
+                  LEFT JOIN (SELECT MS.COD_EXPEDICAO,
+                                NVL(SUM(QTD_CONF.QTD),0) + NVL(SUM(QTD_SEP.QTD_CORTADO),0) as QTD_CONFERIDA,
+                                NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL,
+                                NVL(SUM(QTD_SEP.QTD),0) as QTD_MAPA_TOTAL
                                FROM MAPA_SEPARACAO MS
-                               LEFT JOIN (SELECT SUM(QTD_CONFERIDA * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO 
+                               LEFT JOIN (SELECT SUM(QTD_CONFERIDA * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO
                                             FROM MAPA_SEPARACAO_CONFERENCIA
                                            GROUP BY COD_MAPA_SEPARACAO) QTD_CONF ON QTD_CONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                               LEFT JOIN (SELECT SUM(QTD_SEPARAR * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO
+                               LEFT JOIN (SELECT SUM(QTD_SEPARAR * QTD_EMBALAGEM) as QTD, COD_MAPA_SEPARACAO, SUM(QTD_CORTADO) QTD_CORTADO
                                             FROM MAPA_SEPARACAO_PRODUTO
                                            GROUP BY COD_MAPA_SEPARACAO) QTD_SEP ON QTD_SEP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                                LEFT JOIN (SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) as QTD, MSP.COD_MAPA_SEPARACAO

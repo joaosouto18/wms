@@ -83,7 +83,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
 
             } else {
-                $this->addFlashMessage('info', "Informe um produto, endereço e quantidade para endereçar");
+//                $this->addFlashMessage('info', "Informe um produto, endereço e quantidade para endereçar");
             }
         } catch (\Exception $ex) {
             $this->addFlashMessage('error', $ex->getMessage());
@@ -149,38 +149,37 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->predio = $enderecoEn->getPredio();
             $this->view->apartamento = $enderecoEn->getApartamento();
             $this->view->endereco = $enderecoEn->getDescricao();
+            $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
-            if (isset($params['submit'])&& $params['submit'] != null) {
-                if (trim($params['nivel']) != "") {
-                    $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-                    $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-                    $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-                    $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+            if (trim($params['nivel']) != "") {
+                $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
+                $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
+                $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
+                $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-                    $rua         = substr("000" . $enderecoEn->getRua(), -$tamanhoRua, $tamanhoRua);
-                    $predio      = substr("000" . $enderecoEn->getPredio(), -$tamanhoPredio, $tamanhoPredio);
-                    $nivel       = substr("000" . $params['nivel'], -$tamanhoNivel, $tamanhoNivel);
-                    $apartamento = substr("000" . $enderecoEn->getApartamento(), -$tamanhoApartamento, $tamanhoApartamento);
-                    $codBarras   = $rua . $predio . $nivel . $apartamento;
+                $rua         = substr("000" . $enderecoEn->getRua(), -$tamanhoRua, $tamanhoRua);
+                $predio      = substr("000" . $enderecoEn->getPredio(), -$tamanhoPredio, $tamanhoPredio);
+                $nivel       = substr("000" . $params['nivel'], -$tamanhoNivel, $tamanhoNivel);
+                $apartamento = substr("000" . $enderecoEn->getApartamento(), -$tamanhoApartamento, $tamanhoApartamento);
+                $codBarras   = $rua . $predio . $nivel . $apartamento;
 
-                    $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codBarras);
-                    if (count($idEndereco) == 0) {
-                        throw  new \Exception("Nenhum Endereço Encontrado");
-                    }
-
-                    $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
-                    $params['endereco'] = $idEndereco;
-
-                    unset($params['module']);
-                    unset($params['controller']);
-                    unset($params['action']);
-                    unset($params['submit']);
-                    unset($params['urlDestino']);
-                    unset($params['urlOrigem']);
-                    unset($params['nivel']);
-
-                    $this->redirect($urlDestino,'enderecamento_manual','mobile', $params);
+                $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codBarras);
+                if (count($idEndereco) == 0) {
+                    throw  new \Exception("Nenhum Endereço Encontrado");
                 }
+
+                $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
+                $params['endereco'] = $idEndereco;
+
+                unset($params['module']);
+                unset($params['controller']);
+                unset($params['action']);
+                unset($params['submit']);
+                unset($params['urlDestino']);
+                unset($params['urlOrigem']);
+                unset($params['nivel']);
+
+                $this->redirect($urlDestino,'enderecamento_manual','mobile', $params);
             }
             $this->addFlashMessage('info', "Informe um nível");
 
@@ -237,16 +236,40 @@ class Mobile_Enderecamento_ManualController extends Action
             $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
             $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
 
-            if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
-                throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
+            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
+                    throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
+            } else {
+                $params['capacidadePicking'] = null;
+            }
 
             $novaCapacidadePicking = $params['capacidadePicking'];
 
             $embalagens = $produtoEn->getEmbalagens();
+            $arrDL = array();
+            $normaRelativa = null;
+            /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
+            foreach($embalagens as $embalagem) {
+                /** @var \Wms\Domain\Entity\Produto\DadoLogistico $dadoLogisticoEn */
+                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagem));
+                if (!empty($dadoLogisticoEn)) {
+                    $arrDL[$embalagem->getId()] = $dadoLogisticoEn;
+                    if (empty($normaRelativa))
+                        $normaRelativa = $dadoLogisticoEn->getNormaPaletizacao();
+                }
+            }
+
+            if (empty($arrDL)){
+                throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
+            }
+
             foreach ($embalagens as $embalagemEn) {
-                $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
-                if (!isset($dadoLogisticoEn) || empty($dadoLogisticoEn)) {
-                    $normaRepo->gravarNormaPaletizacao($embalagemEn,$novaCapacidadePicking);
+                if (!isset($arrDL[$embalagemEn->getId()]) && !empty($novaCapacidadePicking)){
+                    $dadoLogisticoEn = $normaRepo->gravarNormaPaletizacao($embalagemEn, $novaCapacidadePicking);
+                    if (empty($normaRelativa))
+                        $normaRelativa = $dadoLogisticoEn->getNormaPaletizacao();
+                } elseif (!isset($arrDL[$embalagemEn->getId()]) && empty($novaCapacidadePicking) && !empty($normaRelativa)) {
+                    $normaRepo->gravarNormaPaletizacao($embalagemEn, $novaCapacidadePicking, $normaRelativa);
                 }
 
                 $endereco = null;
@@ -305,7 +328,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $this->addFlashMessage('success','Palete ' . $paleteEn->getId(). ' criado e endereçado com sucesso');
             $this->getEntityManager()->commit();
-            $this->redirect('ler-codigo-barras','enderecamento_manual','mobile',array('id'=>$params['id']));
+            $this->_redirect('/mobile/enderecamento_manual/ler-codigo-barras/id/'.$params['id']);
 
         } catch (\Exception $ex) {
             $this->addFlashMessage('error',$ex->getMessage());
