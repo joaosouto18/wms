@@ -123,12 +123,6 @@ class Enderecamento_MovimentacaoController extends Action
                     $validade = $estoqueEn->getValidade();
                     if (!empty($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
-                    } else {
-                        /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
-                        $umaEn = $estoqueEn->getUma();
-                        if (!empty($umaEn)) {
-                            $params['validade'] = $umaEn->getValidade();
-                        }
                     }
                 }
             }
