@@ -204,25 +204,20 @@ class OndaRessuprimentoRepository extends EntityRepository
 
     public function geraNovaOnda (){
 
+        /*$idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
 
-        /*
-        $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
-        //$usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-        //$usuarioEn = $usuarioRepo->find($idUsuario);
-
-        $sql = "INSERT INTO ONDA_RESSUPRIMENTO (COD_ONDA_RESSUPRIMENTO, DTH_CRIACAO, DSC_OBSERVACAO, COD_USUARIO) VALUES (:sequence, :dthCriacao, :dscObs, :usuario)";
+        $sql = "INSERT INTO ONDA_RESSUPRIMENTO (COD_ONDA_RESSUPRIMENTO, DTH_CRIACAO, DSC_OBSERVACAO, COD_USUARIO) 
+                VALUES (SQ_ONDA_RESSUPRIMENTO.NEXTVAL, :dthCriacao, :dscObs, :usuario)";
         $dth = new \DateTime();
 
         $conn = $this->_em->getConnection();
         $stmt = $conn->prepare($sql);
-        $stmt->bindValue('sequence', 'SQ_ONDA_RESSUPRIMENTO.NEXTVAL');
-        $stmt->bindValue('dthCriacao', $dth->format('d/m/Y'));
+        $stmt->bindValue('dthCriacao', "'".$dth->format('d/m/Y')."'");
         $stmt->bindValue('dscObs', '');
         $stmt->bindValue('usuario', $idUsuario);
         $stmt->execute();
 
-        $ondaEn = $this->find($conn->lastInsertId());
-        */
+        $ondaEn = $this->find($conn->lastInsertId());*/
 
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
@@ -233,6 +228,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         $ondaEn->setDscObservacao("");
         $ondaEn->setUsuario($usuarioEn);
         $this->getEntityManager()->persist($ondaEn);
+
         return $ondaEn;
     }
 
@@ -337,6 +333,17 @@ class OndaRessuprimentoRepository extends EntityRepository
 
             $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
             $pedidoEn = $pedidoRepo->findOneBy(array('id'=>$codPedido));
+
+            /*$sql = "INSERT INTO ONDA_RESSUPRIMENTO_PEDIDO (COD_ONDA_RESSUPRIMENTO_PEDIDO, COD_ONDA_RESSUPRIMENTO, COD_PEDIDO, COD_PRODUTO, QTD)
+                    VALUES (SQ_ONDA_RESSUPRIMENTO_PEDIDO.NEXTVAL, :idOnda, :idPedido, :idProduto, :qtd )";
+
+            $conn = $this->_em->getConnection();
+            $stmt = $conn->prepare($sql);
+            $stmt->bindValue('idOnda', $ondaEn->getId());
+            $stmt->bindValue('idPedido', $pedidoEn->getId());
+            $stmt->bindValue('idProduto', $produtoEn->getId());
+            $stmt->bindValue('qtd', $qtd);
+            $stmt->execute();*/
 
             $ondaPedido = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedido();
             $ondaPedido->setOndaRessuprimento($ondaEn);
