@@ -54,7 +54,7 @@ class Expedicao_OndaRessuprimentoController  extends Action
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicao");
         try {
-
+            $this->em->beginTransaction();
             if (empty($expedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
 
@@ -70,7 +70,6 @@ class Expedicao_OndaRessuprimentoController  extends Action
                 $this->redirect("index","onda-ressuprimento","expedicao");
             }
 
-
             ini_set('max_execution_time', 300);
 
             $result = $expedicaoRepo->gerarOnda($expedicoes);
@@ -83,6 +82,7 @@ class Expedicao_OndaRessuprimentoController  extends Action
             }
 
         } catch(\Exception $e) {
+            $this->em->rollback();
             $this->addFlashMessage("error","Falha gerando ressuprimento. " . $e->getMessage());
         }
         $this->redirect("index","onda-ressuprimento","expedicao");

@@ -205,7 +205,6 @@ class ExpedicaoRepository extends EntityRepository
                 throw new \Exception("A Filial " . $deposito->getFilial()->getPessoa()->getNomeFantasia() . " não utiliza ressuprimento");
             }
 
-            //TODO Verificar se apenas a produtosReservaSaida já atende pois é a mais completa
             $produtosRessuprir = $this->getProdutosSemOnda($strExpedicao,$central);
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
             $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
