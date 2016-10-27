@@ -211,6 +211,15 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Relatório Cod. Bar. Produtos',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'relatorio-codigo-barras-produtos',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Relatório de Produtos sem Estoque',
                 'target' => '_blank',
                 'modelName' => 'expedicao',
@@ -242,15 +251,6 @@ class Expedicao extends Grid
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',
                 'actionName' => 'declaracao-ajax',
-                'cssClass' => 'pdf',
-                'pkIndex' => 'id'
-            ))
-            ->addAction(array(
-                'label' => 'Relatório Código Barras de Produtos',
-                'target' => '_blank',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'index',
-                'actionName' => 'relatorio-codigo-barras-produtos',
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
