@@ -1315,7 +1315,7 @@ class PaleteRepository extends EntityRepository
         //PEGA O MODELO DE ENDEREÇAMENTO PARA USO FUTURO NA FUNÇÃO
         $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$codRecebimento));
         if ($recebimentoEn->getModeloEnderecamento() != null) {
-            $codModelo= $recebimentoEn->getModeloEnderecamento()->getId();
+            $codModelo = $recebimentoEn->getModeloEnderecamento()->getId();
         } else {
             $codModelo = $this->getSystemParameterValue('MODELO_ENDERECAMENTO_PADRAO');
         }
