@@ -42,7 +42,7 @@ class MapasSemConferencia extends Pdf
         $this->SetMargins(7, 0, 0);
         $this->SetFont('Arial', 'B', 8);
 
-        $this->layout1($produtos, $quebraCarga);
+        $this->layout1($produtos);
 
         $this->Output('Produtos-Mapa-Sem_Conferencia-' . $idExpedicao . '.pdf', 'D');
     }
