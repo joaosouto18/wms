@@ -18,9 +18,9 @@ class NvlFunction extends FunctionNode
     {
         $parser->match(Lexer::T_IDENTIFIER); // (2)
         $parser->match(Lexer::T_OPEN_PARENTHESIS); // (3)
-        $this->firstExpression = $parser->StringPrimary(); // (4)
+        $this->firstExpression = $parser->ArithmeticPrimary(); // (4)
 	$parser->match(Lexer::T_COMMA); // (5)
-	$this->secondExpression = $parser->StringPrimary(); // (6)
+	$this->secondExpression = $parser->ArithmeticPrimary(); // (6)
         $parser->match(Lexer::T_CLOSE_PARENTHESIS); // (7)
     }
 

@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 use Doctrine\ORM\EntityRepository,
     Core\Util\Produto as ProdutoUtil,
     Core\Util\Produto;
+use Doctrine\ORM\Query;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -223,43 +224,26 @@ class EstoqueRepository extends EntityRepository
     {
         $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
 
-        /*$qb = $this->createQueryBuilder()
-            ->select("
-                    ESTQ.id as COD_DEPOSITO_ENDERECO,
-                    DE.descricao as DSC_DEPOSITO_ENDERECO, 
-                    ESTQ.qtd QTD,
-                    PV.id AS COD_PRODUTO_VOLUME, 
-                    ESTQ.codProduto, 
-                    ESTQ.grade, 
-                    ESTQ.dtPrimeiraEntrada,
-                    NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO")
-            ->addSelect("(SELECT SUM(REP.QTD_RESERVADA)
-                                FROM wms:Ressuprimento\ResrvaEstoque RE
-                           LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto REP ON REP.reservaEstoque = RE.id
-                               WHERE RE.tipoReserva = 'S'
-                                 AND RE.atendida = 'N'
-                                 AND REP.produto = ESTQ.produto
-                                 AND RE.depositoEndereco = ESTQ.depositoEndereco
-                                 AND ((REP.produtoVolume = ESTQ.produtoVolume) OR (REP.produtoVolume = 0 AND ESTQ.produtoVolume IS NULL))
-                               GROUP BY RE.depositoEndereco, REP.produto, REP.produtoVolume) as QTD_RESERVA")
-            ->addSelect("ESTQ.qtd + NVL((SELECT SUM(REP.QTD_RESERVADA)
-                                FROM wms:Ressuprimento\ResrvaEstoque RE
-                           LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto REP ON REP.reservaEstoque = RE.id
-                               WHERE RE.tipoReserva = 'S'
-                                 AND RE.atendida = 'N'
-                                 AND REP.produto = ESTQ.produto
-                                 AND RE.depositoEndereco = ESTQ.depositoEndereco
-                                 AND ((REP.produtoVolume = ESTQ.produtoVolume) OR (REP.produtoVolume = 0 AND ESTQ.produtoVolume IS NULL))
-                               GROUP BY RE.depositoEndereco, REP.produto, REP.produtoVolume),0) as SALDO")
+        $qb = $this->_em->createQueryBuilder()
+            ->select("ESTQ.id as COD_DEPOSITO_ENDERECO, DE.descricao as DSC_DEPOSITO_ENDERECO, ESTQ.qtd QTD, NVL(RS.qtdReserva, 0) AS QTD_RESERVA, (ESTQ.qtd + NVL(RS.qtdReserva, 0)) AS SALDO, PV.id AS COD_PRODUTO_VOLUME, ESTQ.codProduto AS COD_PRODUTO, ESTQ.grade AS GRADE, ESTQ.dtPrimeiraEntrada AS DTH_PRIMEIRA_MOVIMENTACAO, NVL(ESTQ.validade, TO_DATE( CONCAT( TO_CHAR(ESTQ.dtPrimeiraEntrada,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO")
             ->from('wms:Enderecamento\Estoque', 'ESTQ')
-            ->leftJoin('wms:Depsoito\Endereco', 'DE', 'WITH', 'DE.id = ESTQ.depositoEndereco')
-            ->where('((ESTQ.qtd + NVL(RS.QTD_ATENDIDA,0)) > 0)')
+            ->leftJoin('wms:Enderecamento\VQTDReserva', "RS", "WITH"," RS.codProduto = ESTQ.codProduto AND RS.grade = ESTQ.grade AND RS.depositoEndereco = ESTQ.depositoEndereco AND ((RS.codProdutoVolume = ESTQ.produtoVolume) OR (RS.codProdutoVolume = 0 AND ESTQ.produtoVolume IS NULL)) ")
+            ->leftJoin('wms:Deposito\Endereco', 'DE', 'WITH', 'DE.id = ESTQ.depositoEndereco')
+            ->leftJoin('wms:Produto\Volume', 'PV', 'WITH', 'PV = ESTQ.produtoVolume')
+            ->where("((ESTQ.qtd + NVL(RS.qtdReserva, 0)) > 0)")
             ->andWhere("DE.idCaracteristica <> $tipoPicking")
-            ->andWhere("ESTQ.grade = $grade")
-            ->andWhere("ESTQ.codProduto = $codProduto");
+            ->andWhere("ESTQ.grade = '$grade'")
+            ->andWhere("ESTQ.codProduto = '$codProduto'")
+            ->orderBy("DT_MOVIMENTACAO , ESTQ.qtd");
+        if (!empty($volume)) {
+            $qb->andWhere("ESTQ.produtoVolume = '$volume'");
+        }
 
-        $teste = $qb->getQuery()->getResult();
-        throw new \Exception('teste');*/
+        $estq = $qb->getQuery()->getResult();
+
+
+        //SELECT ESTQ.id as COD_DEPOSITO_ENDERECO, DE.descricao as DSC_DEPOSITO_ENDERECO, ESTQ.qtd QTD, PV.id AS COD_PRODUTO_VOLUME, ESTQ.codProduto AS COD_PRODUTO, ESTQ.grade AS GRADE, ESTQ.dtPrimeiraEntrada AS DTH_PRIMEIRA_MOVIMENTACAO, NVL(ESTQ.validade, TO_DATE(CONCAT(TO_CHAR(ESTQ.dtPrimeiraEntrada,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO, (SELECT SUM(REP.qtd) FROM wms:Ressuprimento\ReservaEstoque RE LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto REP WITH REP.reservaEstoque = RE WHERE RE.endereco = DE AND REP.codProduto = '2629CZ' AND REP.grade = 'UNICA' AND RE.tipoReserva = 'S' AND RE.atendida = 'N' AND GROUP BY RE.endereco, REP.codProduto, REP.grade, REP.codProdutoVolume) as QTD_RESERVA FROM Wms\Domain\Entity\Enderecamento\Estoque teste LEFT JOIN ReservaEstoque RS WITH RS.COD_PRODUTO = ESTQ.codProduto AND RS.DSC_GRADE = ESTQ.grade AND RS.COD_DEPOSITO_ENDERECO = ESTQ.depositoEndereco AND ((RS.VOLUME = ESTQ.produtoVolume) OR (RS.VOLUME = 0 AND ESTQ.produtoVolume IS NULL)) LEFT JOIN wms:Deposito\Endereco DE WITH DE.id = ESTQ.depositoEndereco LEFT JOIN wms:Produto\Volume PV WITH PV = ESTQ.produtoVolume, wms:Enderecamento\Estoque ESTQ WHERE ((ESTQ.qtd + QTD_RESERVA) > 0) AND DE.idCaracteristica <> 37 AND ESTQ.grade = 'UNICA' AND ESTQ.codProduto = '2629CZ
+        throw new \Exception($estq);
 
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
@@ -271,7 +255,7 @@ class EstoqueRepository extends EntityRepository
                     ESTQ.COD_PRODUTO, 
                     ESTQ.DSC_GRADE, 
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
-                        NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO
+                    NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                 FROM RESERVA_ESTOQUE RE

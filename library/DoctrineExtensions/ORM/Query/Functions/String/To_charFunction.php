@@ -18,7 +18,6 @@ class To_charFunction extends FunctionNode
      */
     public function getSql(\Doctrine\ORM\Query\SqlWalker $sqlWalker)
     {
-        $platform = $sqlWalker->getConnection()->getDatabasePlatform();
         return 'TO_CHAR(' .
             $sqlWalker->walkStringPrimary($this->firstStringPrimary) . ', ' . 
             $sqlWalker->walkStringPrimary($this->secondStringPrimary) .

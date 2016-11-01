@@ -31,6 +31,16 @@ class ReservaEstoqueProduto
     protected $produto;
 
     /**
+     * @Column(name="COD_PRODUTO", type="decimal", nullable=false)
+     */
+    protected $codProduto;
+
+    /**
+     * @Column(name="DSC_GRADE", type="decimal", nullable=false)
+     */
+    protected $grade;
+
+    /**
      * Qtd Reservada (Positivo para Reserva de Entrada, Negativo para Reserva de Saida)
      * @Column(name="QTD_RESERVADA", type="decimal", nullable=false)
      */
