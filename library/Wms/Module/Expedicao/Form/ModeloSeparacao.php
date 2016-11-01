@@ -26,6 +26,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'utilizaEtiquetaMae', array(
             'label' => 'Utiliza Etiqueta Mãe',
             'checkedValue' => 'S'
+        ))->addElement('checkbox', 'utilizaVolumePatrimonio', array(
+            'label' => 'Utiliza Volume Patrimônio',
+            'checkedValue' => 'S'
         ))->addElement('checkbox', 'imprimeEtiquetaPatrimonio', array(
             'label' => 'Imprime Etiqueta Volume Patrimonio',
             'checkedValue' => 'S',
@@ -85,6 +88,7 @@ class ModeloSeparacao extends Form
             'utilizaCaixaMaster',
             'utilizaQuebraColetor',
             'utilizaEtiquetaMae',
+            'utilizaVolumePatrimonio',
             'imprimeEtiquetaPatrimonio',
             'quebraPulmaDoca',
             'tipoQuebraVolume',

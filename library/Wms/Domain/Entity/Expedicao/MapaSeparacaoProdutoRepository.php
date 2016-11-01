@@ -74,7 +74,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->orderBy('msp.id, msp.numCaixaInicio, msp.numCaixaFim', 'DESC');
 
         if ($novoPedido == false) {
-            $sql->andWhere("p.id = ".$pedidoEntity->getId());
+            $sql->andWhere("p.pessoa = ".$pedidoEntity->getPessoa()->getId());
         }
 
         return $sql->getQuery()->getResult();

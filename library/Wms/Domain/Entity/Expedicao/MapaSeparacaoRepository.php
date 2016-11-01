@@ -530,7 +530,7 @@ class MapaSeparacaoRepository extends EntityRepository
         return null;
     }
 
-    public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn) {
+    public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn, $codPessoa = null) {
         $mensagemColetor = false;
         $produtoEn = null;
         $idMapa = $mapaEn->getId();
@@ -545,7 +545,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 $produtoEn = $volumeEn->getProduto();
 
             $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $mapaEn->getId(),
-                'codProduto' => $produtoEn->getId(),                                                                                                                             'dscGrade' => $produtoEn->getGrade()));
+                'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade()));
             if ($mapaSeparacaoProduto == null) {
                 if ($modeloSeparacaoEn->getUtilizaQuebraColetor() == "S") {
                     $mensagemColetor = true;
@@ -557,9 +557,17 @@ class MapaSeparacaoRepository extends EntityRepository
                         throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não se encontra na expedição selecionada");
                     }
                     $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $idMapa,
-                        'codProduto' => $produtoEn->getId(),                                                                                                                             'dscGrade' => $produtoEn->getGrade()));
+                        'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade()));
 
                 }
+            }
+
+            $result = $this->getClientesByMapa($idMapa, $codPessoa, $produtoEn->getId(), $produtoEn->getGrade());
+
+            if (count($result) <= 0) {
+                $pessoaEn = $this->getEntityManager()->getRepository('wms:Pessoa')->find($codPessoa);
+                $mensagemColetor = true;
+                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não pertence ao cliente ". $pessoaEn->getNome());
             }
 
             if ($mapaSeparacaoProduto[0]->getIndConferido() == "S") {
@@ -590,14 +598,16 @@ class MapaSeparacaoRepository extends EntityRepository
             if ($embalagemEn != null){
                 $dscEmbalagem = " - " . $embalagemEn->getDescricao() . " (".$embalagemEn->getQuantidade().") - ";
             }
-            if ((isset($volumePatrimonioEn)) && ($volumePatrimonioEn != null) && ($embalado == false)) {
-                $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " não é embalado");
-            }
+            if ($modeloSeparacaoEn->getUtilizaVolumePatrimonio() == 'S') {
+                if ((isset($volumePatrimonioEn)) && ($volumePatrimonioEn != null) && ($embalado == false)) {
+                    $mensagemColetor = true;
+                    throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " não é embalado");
+                }
 
-            if ((!(isset($volumePatrimonioEn)) || ($volumePatrimonioEn == null)) && ($embalado == true)) {
-                $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " é embalado");
+                if ((!(isset($volumePatrimonioEn)) || ($volumePatrimonioEn == null)) && ($embalado == true)) {
+                    $mensagemColetor = true;
+                    throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . $dscEmbalagem . " é embalado");
+                }
             }
         } catch (\Exception $e) {
             if ($mensagemColetor == true) {
@@ -677,6 +687,35 @@ class MapaSeparacaoRepository extends EntityRepository
                   GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO AND MSC.DSC_GRADE = MSP.DSC_GRADE
                 WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao
                 GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, MSC.QTD_CONFERIDA ";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getClientesByMapa($idMapaSeparacao,$codPessoa = null,$idProduto = null,$grade = null)
+    {
+        $andWhere = '';
+        if (isset($codPessoa) && !empty($codPessoa)) {
+            $andWhere = ' AND P.COD_PESSOA = '.$codPessoa;
+        }
+        if (isset($idProduto) && !empty($idProduto) && isset($grade) && !empty($grade)) {
+            $andWhere .= " AND PROD.COD_PRODUTO = '$idProduto' AND PROD.DSC_GRADE = '$grade' ";
+        }
+        $sql = "SELECT P.NOM_PESSOA, PED.COD_PEDIDO, MSPROD.NUM_CAIXA_PC_INI, MSPROD.NUM_CAIXA_PC_FIM, P.COD_PESSOA
+                    FROM MAPA_SEPARACAO MS
+                    INNER JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                    INNER JOIN PEDIDO PED ON PP.COD_PEDIDO = PED.COD_PEDIDO
+                    INNER JOIN PESSOA P ON P.COD_PESSOA = PED.COD_PESSOA
+                    LEFT JOIN (
+                      SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.COD_MAPA_SEPARACAO, MSP.COD_PEDIDO_PRODUTO
+                      FROM MAPA_SEPARACAO_PRODUTO MSP
+                      WHERE MSP.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                    ) MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                    INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+
+                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                $andWhere
+                GROUP BY P.NOM_PESSOA, PED.COD_PEDIDO, MSPROD.NUM_CAIXA_PC_INI, MSPROD.NUM_CAIXA_PC_FIM, P.COD_PESSOA";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
