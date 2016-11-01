@@ -95,12 +95,21 @@ class Mobile_ExpedicaoController extends Action
         $sessao = new \Zend_Session_Namespace('coletor');
         $central = $sessao->centralSelecionada;
 
-        $mapaSeparacaoEmbaladoEn = false;
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+
+        if (count($mapaSeparacaoEmbaladoEn) <= 0) {
+            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+        } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
+            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+        }
+
+        $statusMapaEmbalado = false;
         if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-            $mapaSeparacaoEmbaladoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')
-                ->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
-                $mapaSeparacaoEmbaladoEn = true;
+            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
+                $statusMapaEmbalado = true;
             }
         }
 
@@ -112,7 +121,7 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idExpedicao = $idExpedicao;
         $this->view->central = $central;
         $this->view->idPessoa = $codPessoa;
-        $this->view->mapaSeparacaoEmbalado = $mapaSeparacaoEmbaladoEn;
+        $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
         $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
         if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
@@ -136,16 +145,6 @@ class Mobile_ExpedicaoController extends Action
 
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
-
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
-
-        if (count($mapaSeparacaoEmbaladoEn) <= 0) {
-            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
-        } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
-            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
-        }
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
             try {
