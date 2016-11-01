@@ -239,7 +239,7 @@ class EstoqueRepository extends EntityRepository
             $qb->andWhere("ESTQ.produtoVolume = '$volume'");
         }
 
-        $estq = $qb->getQuery()->getResult();
+        $estq = $qb->getQuery()->setMaxResults($maxResult)->getResult(Query::HYDRATE_ARRAY);
 
 
         //SELECT ESTQ.id as COD_DEPOSITO_ENDERECO, DE.descricao as DSC_DEPOSITO_ENDERECO, ESTQ.qtd QTD, PV.id AS COD_PRODUTO_VOLUME, ESTQ.codProduto AS COD_PRODUTO, ESTQ.grade AS GRADE, ESTQ.dtPrimeiraEntrada AS DTH_PRIMEIRA_MOVIMENTACAO, NVL(ESTQ.validade, TO_DATE(CONCAT(TO_CHAR(ESTQ.dtPrimeiraEntrada,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO, (SELECT SUM(REP.qtd) FROM wms:Ressuprimento\ReservaEstoque RE LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto REP WITH REP.reservaEstoque = RE WHERE RE.endereco = DE AND REP.codProduto = '2629CZ' AND REP.grade = 'UNICA' AND RE.tipoReserva = 'S' AND RE.atendida = 'N' AND GROUP BY RE.endereco, REP.codProduto, REP.grade, REP.codProdutoVolume) as QTD_RESERVA FROM Wms\Domain\Entity\Enderecamento\Estoque teste LEFT JOIN ReservaEstoque RS WITH RS.COD_PRODUTO = ESTQ.codProduto AND RS.DSC_GRADE = ESTQ.grade AND RS.COD_DEPOSITO_ENDERECO = ESTQ.depositoEndereco AND ((RS.VOLUME = ESTQ.produtoVolume) OR (RS.VOLUME = 0 AND ESTQ.produtoVolume IS NULL)) LEFT JOIN wms:Deposito\Endereco DE WITH DE.id = ESTQ.depositoEndereco LEFT JOIN wms:Produto\Volume PV WITH PV = ESTQ.produtoVolume, wms:Enderecamento\Estoque ESTQ WHERE ((ESTQ.qtd + QTD_RESERVA) > 0) AND DE.idCaracteristica <> 37 AND ESTQ.grade = 'UNICA' AND ESTQ.codProduto = '2629CZ
