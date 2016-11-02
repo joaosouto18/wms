@@ -559,7 +559,7 @@ class Mobile_ExpedicaoController extends Action
             if (is_string($result)) {
                 $this->addFlashMessage('error', $result);
                 if ($mapa == 'S') {
-                    $this->_redirect("mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao");
+                    $this->_redirect("mobile/expedicao/index/idCentral/$central");
                 }
                 $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
             } else if ($result==0) {

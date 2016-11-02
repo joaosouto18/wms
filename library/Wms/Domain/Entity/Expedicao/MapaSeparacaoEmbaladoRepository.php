@@ -75,6 +75,22 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
     }
 
+    public function validaVolumesEmbaladoConferidos($idExpedicao)
+    {
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('codExpedicao' => $idExpedicao));
+        foreach ($mapaSeparacaoEn as $mapaSeparacao) {
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $mapaSeparacao));
+            foreach ($mapaSeparacaoEmbaladoEn as $mapaSeparacaoEmbalado) {
+                $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus();
+                if ($statusMapaEmbalado != MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public function getDadosEmbalado($idMapaSeparacaoEmabalado)
     {
         $sql = "SELECT E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE

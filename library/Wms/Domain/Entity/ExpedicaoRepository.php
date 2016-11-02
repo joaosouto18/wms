@@ -526,6 +526,8 @@ class ExpedicaoRepository extends EntityRepository
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
         $MapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
@@ -540,6 +542,11 @@ class ExpedicaoRepository extends EntityRepository
         if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
             return 'Existem etiquetas pendentes de corte nesta expedição';
         }
+
+        if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
+            return 'Existem volumes embalados pendentes de conferecia!';
+        }
+
         ini_set('max_execution_time', 3000);
         Try {
             $this->getEntityManager()->beginTransaction();
