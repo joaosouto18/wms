@@ -9,11 +9,8 @@
                 <div class="field"><label for="codigoBarras" class="field required"></label>
                     <?php $clienteAntigo = null;
                     foreach ($this->clientes as $cliente) :
-                        if (empty($cliente['NUM_CAIXA_PC_INI']))
-                            continue;
                         if ($cliente['COD_PESSOA'] == $clienteAntigo)
                             continue;
-
                         $caixas = null;
                         for ($count = $cliente['NUM_CAIXA_PC_INI']; $count <= $cliente['NUM_CAIXA_PC_FIM']; $count++) :
                             if ($count == $cliente['NUM_CAIXA_PC_FIM']) :
@@ -29,4 +26,5 @@
             </dl>
         </fieldset>
     </dd>
+    <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao . '/idMapa/' .$this->codigoBarras .'/mapa/S' ?>" >Finalizar</a></td>
 </form>
