@@ -102,7 +102,7 @@ class Mobile_ExpedicaoController extends Action
         if (count($mapaSeparacaoEmbaladoEn) <= 0) {
             $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
         } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
-            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
         }
 
         $statusMapaEmbalado = false;
@@ -112,7 +112,6 @@ class Mobile_ExpedicaoController extends Action
                 $statusMapaEmbalado = true;
             }
         }
-
 
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $dscVolume = "";
@@ -266,15 +265,29 @@ class Mobile_ExpedicaoController extends Action
         $idMapa = $this->_getParam('idMapa');
         $idPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam('idExpedicao');
+        $existeItensPendentes = true;
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
+
         try {
-            $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($idMapa,$idPessoa,$mapaSeparacaoEmbaladoRepo);
+
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($idMapa,$idPessoa,$mapaSeparacaoEmbaladoRepo);
+            if (count($qtdPendenteConferencia) <= 0)
+                $existeItensPendentes = false;
+
+            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes);
+            }
+
         } catch (Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
-        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+        if ($existeItensPendentes === false)
+            $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+        else
+            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $idMapa);
 
     }
 
@@ -408,7 +421,7 @@ class Mobile_ExpedicaoController extends Action
                 }
                 $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
-                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
                 $listaQtdProdutosConferidos = $mapaSeparacaoRepo->verificaConferenciaProduto($idMapa,$embalagemEn,$volumeEn);
                 $listaProdutosNãoConferidosMapa = $mapaSeparacaoRepo->verificaConferenciaMapa($idMapa);
                 $todosProdutosConferidos = true;
@@ -430,10 +443,10 @@ class Mobile_ExpedicaoController extends Action
                 $this->addFlashMessage('info','Produto conferido com sucesso');
 
                 if ($todosProdutosConferidos == true)
-                    $this->addFlashMessage('info', 'Todos os Produtos ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foram conferidos com sucesso!');
+                    $this->addFlashMessage('success', 'Todos os Produtos ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foram conferidos com sucesso!');
 
                 if ($todoMapaConferido == true)
-                    $this->addFlashMessage('info', 'Todo o Mapa foi conferido com sucesso!');
+                    $this->addFlashMessage('success', 'Todo o Mapa foi conferido com sucesso!');
 
                 $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
 

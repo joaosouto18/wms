@@ -384,7 +384,7 @@ class MapaSeparacaoRepository extends EntityRepository
         return $qtdCortada;
     }
 
-    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade){
+    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null){
 
         $numConferencia = 1;
         $qtdConferida = 0;
@@ -415,14 +415,14 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,2,'.','');
         $qtdBanco    = (float)$qtdConferida + (float)$qtdCortada;
         $qtdMapa     = (float)$qtdMapa;
-//        var_dump($qtdBanco);
-//        var_dump($qtdDigitada);
-//        var_dump((float)$qtdMapa);
-//        var_dump(((float)$qtdConferida + (float)$qtdCortada + ((float)$qtdEmbalagem * (float)number_format($quantidade,2,'.',''))) > (float)$qtdMapa);
-//        exit;
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
         }
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $mapaEn->getId(), 'pessoa' => $codPessoa, 'status' => MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+
         $sessao = new \Zend_Session_Namespace('coletor');
 
         $novaConferencia = new MapaSeparacaoConferencia();
@@ -438,6 +438,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $novaConferencia->setQtdEmbalagem($qtdEmbalagem);
         $novaConferencia->setQtdConferida($quantidade);
         $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
+        $novaConferencia->setMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
         $novaConferencia->setDataConferencia(new \DateTime());
         $this->getEntityManager()->persist($novaConferencia);
         $this->getEntityManager()->flush();

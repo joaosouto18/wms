@@ -92,6 +92,12 @@ class MapaSeparacaoConferencia
     protected $dataConferencia;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbalado")
+     * @JoinColumn(name="COD_MAPA_SEPARACAO_EMBALADO",referencedColumnName="COD_MAPA_SEPARACAO_EMB_CLIENTE")
+     */
+    protected $mapaSeparacaoEmbalado;
+
+    /**
      * @param mixed $codOS
      */
     public function setCodOS($codOS)
@@ -313,6 +319,22 @@ class MapaSeparacaoConferencia
     public function getVolumePatrimonio()
     {
         return $this->volumePatrimonio;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMapaSeparacaoEmbalado()
+    {
+        return $this->mapaSeparacaoEmbalado;
+    }
+
+    /**
+     * @param mixed $mapaSeparacaoEmbalado
+     */
+    public function setMapaSeparacaoEmbalado($mapaSeparacaoEmbalado)
+    {
+        $this->mapaSeparacaoEmbalado = $mapaSeparacaoEmbalado;
     }
 
 }
