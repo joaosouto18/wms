@@ -7,7 +7,13 @@
             <legend>Selecionar Clientes</legend>
             <dl>
                 <div class="field"><label for="codigoBarras" class="field required"></label>
-                    <?php foreach ($this->clientes as $cliente) :
+                    <?php $clienteAntigo = null;
+                    foreach ($this->clientes as $cliente) :
+                        if (empty($cliente['NUM_CAIXA_PC_INI']))
+                            continue;
+                        if ($cliente['COD_PESSOA'] == $clienteAntigo)
+                            continue;
+
                         $caixas = null;
                         for ($count = $cliente['NUM_CAIXA_PC_INI']; $count <= $cliente['NUM_CAIXA_PC_FIM']; $count++) :
                             if ($count == $cliente['NUM_CAIXA_PC_FIM']) :
@@ -15,7 +21,8 @@
                             else :
                                 $caixas .= $count.'; ';
                             endif;
-                        endfor; ?>
+                        endfor;
+                        $clienteAntigo = $cliente['COD_PESSOA']; ?>
                         <input type="radio" name="cliente" value="<?php echo $cliente['COD_PESSOA'] ?>"> <?php echo $cliente['NOM_PESSOA']?><b><?php echo' CAIXA(S): '.$caixas ?></b><br>
                     <?php endforeach; ?>
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
