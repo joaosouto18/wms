@@ -82,7 +82,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         foreach ($mapaSeparacaoEn as $mapaSeparacao) {
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $mapaSeparacao));
             foreach ($mapaSeparacaoEmbaladoEn as $mapaSeparacaoEmbalado) {
-                $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus();
+                $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus()->getId();
                 if ($statusMapaEmbalado != MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
                     return false;
                 }
