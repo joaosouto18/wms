@@ -47,6 +47,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $mapaSeparacaoEmbaladoEn;
     }
 
+    /** ocorre quando o conferente está bipando nos volumes ja lacrados */
     public function conferirVolumeEmbalado($idEmbalado)
     {
         $mapaSeparacaoEmbaladoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->findOneBy(array('id' => $idEmbalado));
