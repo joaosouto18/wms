@@ -717,7 +717,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao
                 $andWhere
                 GROUP BY P.NOM_PESSOA, PED.COD_PEDIDO, MSPROD.NUM_CAIXA_PC_INI, MSPROD.NUM_CAIXA_PC_FIM, P.COD_PESSOA
-                ORDER BY P.NOM_PESSOA";
+                ORDER BY MSPROD.NUM_CAIXA_PC_INI";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
