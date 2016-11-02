@@ -34,7 +34,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
         if (!isset($mapaSeparacaoEmbaladoEn) || empty($mapaSeparacaoEmbaladoEn)) {
-            throw new \Exception('Não existe conferencia de embalados em aberto para esse Cliente!');
+            throw new \Exception(utf8_encode('Não existe conferencia de embalados em aberto para esse Cliente!'));
         }
 
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO);
@@ -94,7 +94,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                         INNER JOIN PESSOA P ON P.COD_PESSOA = PED.COD_PESSOA
                       WHERE MS.COD_MAPA_SEPARACAO = $idMapa AND P.COD_PESSOA = $idPessoa
                     ) PESSOA ON PESSOA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                    WHERE MS.COD_MAPA_SEPARACAO = $idMapa AND P.COD_PESSOA = $idPessoa
+                    WHERE MS.COD_MAPA_SEPARACAO = $idMapa AND PESSOA.COD_PESSOA = $idPessoa
                     GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, MSC.QTD_CONFERIDA, PESSOA.COD_PESSOA, PESSOA.NOM_PESSOA
                     HAVING SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) - NVL(MSC.QTD_CONFERIDA,0) > 0";
 

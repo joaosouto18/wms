@@ -269,11 +269,11 @@ class Mobile_ExpedicaoController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
 
         try {
 
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($idMapa,$idPessoa,$mapaSeparacaoEmbaladoRepo);
+            $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
             if (count($qtdPendenteConferencia) <= 0)
                 $existeItensPendentes = false;
 
