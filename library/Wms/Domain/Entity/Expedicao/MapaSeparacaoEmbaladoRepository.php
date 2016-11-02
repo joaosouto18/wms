@@ -23,12 +23,13 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $mapaSeparacaoEmbalado->setPessoa($pessoaEn);
         $mapaSeparacaoEmbalado->setSequencia($sequencia);
         $mapaSeparacaoEmbalado->setStatus($siglaEn);
-
-
+        $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
+        $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         $this->getEntityManager()->flush();
     }
 
+    /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
     public function fecharMapaSeparacaoEmbalado($idMapa,$idPessoa,$mapaSeparacaoEmbaladoRepo)
     {
 
@@ -44,6 +45,24 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $this->getEntityManager()->flush();
 
         return $mapaSeparacaoEmbaladoEn;
+    }
+
+    public function conferirVolumeEmbalado($idEmbalado)
+    {
+        $mapaSeparacaoEmbaladoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->findOneBy(array('id' => $idEmbalado));
+        if (!isset($mapaSeparacaoEmbaladoEn) || empty($mapaSeparacaoEmbaladoEn)) {
+            throw new \Exception(utf8_encode('Volume Embalado nao encontrado!'));
+        }
+        $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO);
+
+        $mapaSeparacaoEmbaladoEn->setStatus($siglaEn);
+
+        $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
+        $this->getEntityManager()->flush();
+
+        return $mapaSeparacaoEmbaladoEn;
+
+
     }
 
     public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes)

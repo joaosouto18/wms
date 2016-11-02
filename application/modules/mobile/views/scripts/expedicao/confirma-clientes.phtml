@@ -11,6 +11,7 @@
                     foreach ($this->clientes as $cliente) :
                         if ($cliente['COD_PESSOA'] == $clienteAntigo)
                             continue;
+
                         $caixas = null;
                         for ($count = $cliente['NUM_CAIXA_PC_INI']; $count <= $cliente['NUM_CAIXA_PC_FIM']; $count++) :
                             if ($count == $cliente['NUM_CAIXA_PC_FIM']) :

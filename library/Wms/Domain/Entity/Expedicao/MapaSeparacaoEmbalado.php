@@ -11,6 +11,7 @@ class MapaSeparacaoEmbalado
 {
     const CONFERENCIA_EMBALADO_INICIADO = 567;
     const CONFERENCIA_EMBALADO_FINALIZADO = 569;
+    const CONFERENCIA_EMBALADO_FECHADO_FINALIZADO = 570;
 
     /**
      * @Id

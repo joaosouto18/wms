@@ -30,11 +30,12 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
-        if ($mapaSeparacaoQuebraEn->getTipoQuebra() == 'T') {
-            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/'.$codBarras);
-        } else {
-            $this->_redirect('mobile/expedicao/confirmar-operacao/codigoBarras/'.$this->_getParam('codigoBarras'));
+        if (isset($mapaSeparacaoQuebraEn) && !empty($mapaSeparacaoQuebraEn)) {
+            if ($mapaSeparacaoQuebraEn->getTipoQuebra() == 'T') {
+                $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/'.$codBarras);
+            }
         }
+        $this->_redirect('mobile/expedicao/confirmar-operacao/codigoBarras/'.$this->_getParam('codigoBarras'));
     }
 
     public function confirmaClientesAction()
@@ -81,6 +82,26 @@ class Mobile_ExpedicaoController extends Action
             $this->addFlashMessage('info','informe um código de barras');
             $this->_redirect('mobile/expedicao/index');
         }
+    }
+
+    public function lerEmbaladosMapaAction()
+    {
+        $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
+        $submit = $this->_getParam('submit');
+        $LeituraColetor = new LeituraColetor();
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        try {
+            if (isset($submit)) {
+                $idEmbalado = $LeituraColetor->retiraDigitoIdentificador($idEmbalado);
+                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado);
+                $this->addFlashMessage('success',"Volume embalado $idEmbalado conferido com sucesso!");
+            }
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error',$e->getMessage());
+        }
+
     }
 
     public function lerProdutoMapaAction() {
