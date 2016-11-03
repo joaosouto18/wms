@@ -1448,20 +1448,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setNumCaixaInicio(null);
             $mapaProduto->setNumCaixaFim(null);
             $mapaProduto->setCubagem(null);
-        } elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
-            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
-            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
-//            if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa * ($caixasUsadas[0]['numCaixaFim'] - $caixasUsadas[0]['numCaixaInicio'] + 1)) {
-//                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
-//                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
-//            } else {
-//                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-//                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-//            }
-        } else {
+        }
+
+        elseif (count($caixasUsadas) == 0) {
             $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
             $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
             $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+        }
+
+        elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
         }
 
         $this->_em->persist($mapaProduto);

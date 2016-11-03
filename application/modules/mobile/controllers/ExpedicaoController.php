@@ -294,7 +294,7 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
         try {
-
+            $this->getEntityManager()->beginTransaction();
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($idMapa,$idPessoa,$mapaSeparacaoEmbaladoRepo);
             $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
             if (count($qtdPendenteConferencia) <= 0)
@@ -303,8 +303,9 @@ class Mobile_ExpedicaoController extends Action
             if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
                 $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes);
             }
-
+            $this->getEntityManager()->commit();
         } catch (Exception $e) {
+            $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
         if ($existeItensPendentes === false)
