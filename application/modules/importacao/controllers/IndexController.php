@@ -184,7 +184,10 @@ class Importacao_IndexController extends Action
                     /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedor */
                     $fornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $arrRegistro['idExterno']));
                     if (!empty($fornecedor)){
-                        $arrErroRows[$linha] = "O fornecedor ". $fornecedor->getPessoa()->getNomeFantasia() ." já está cadastrado com o código $arrRegistro[idExterno]";
+                        $nome = $fornecedor->getPessoa()->getNome();
+                        $nomFantasia = $fornecedor->getPessoa()->getNomeFantasia();
+                        $nom = (!empty($nomFantasia)) ? $nomFantasia : $nome;
+                        $arrErroRows[$linha] = "O fornecedor $nom já está cadastrado com o código $arrRegistro[idExterno]";
                         break;
                     }
 
