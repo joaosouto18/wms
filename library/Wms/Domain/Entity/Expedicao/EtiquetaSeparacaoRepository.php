@@ -1459,6 +1459,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
             $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
             $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+        } else {
+            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
         }
 
         $this->_em->persist($mapaProduto);
