@@ -1409,7 +1409,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         if ($embalagemEntity != null) {
             $quantidadeEmbalagem = $embalagemEntity->getQuantidade();
-            $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
+            $mapaIgual = false;
+            $mapaProduto = null;
+            $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
+            if (!empty($mapaProdutos)) {
+                foreach ($mapaProdutos as $value) {
+                    $pessoaId = $value->getPedidoProduto()->getPedido()->getPessoa()->getId();
+                    $pessoaIdPedido = $pedidoEntity->getPessoa()->getId();
+                    if ($pessoaIdPedido == $pessoaId) {
+                        $mapaProduto = $value;
+                        break;
+                    }
+                }
+            }
         }
 
         $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));

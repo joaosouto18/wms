@@ -43,7 +43,8 @@ class Mobile_ExpedicaoController extends Action
         $this->view->codigoBarras = $idMapaSeparacao = $this->_getParam('codigoBarras');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $this->view->clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
+        $this->view->clientes = $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
+
         $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);
         $idExpedicao = $mapaSeparacaoEn->getExpedicao()->getId();
         $this->view->idExpedicao = $idExpedicao;
