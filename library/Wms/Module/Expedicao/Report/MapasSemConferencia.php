@@ -40,9 +40,9 @@ class MapasSemConferencia extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(7, 0, 0);
-        $this->SetFont('Arial', 'B', 8);
+        $this->SetFont('Arial', 'B', 12);
 
-        $this->layout1($produtos, $quebraCarga);
+        $this->layout1($produtos);
 
         $this->Output('Produtos-Mapa-Sem_Conferencia-' . $idExpedicao . '.pdf', 'D');
     }
@@ -53,17 +53,25 @@ class MapasSemConferencia extends Pdf
         /** @var \Wms\Domain\Entity\Produto $produto */
         $cont =0;
         $this->AddPage();
-        $this->Cell(20, 5, utf8_decode("Endereço"), "TB");
+        $this->Cell(35, 5, utf8_decode("Endereço"), "TB");
         $this->Cell(20, 5, utf8_decode("Código"), "TB");
         $this->Cell(95, 5, utf8_decode("Descrição"), "TB");
         $this->Cell(70, 5, "Quantidade a conferir", "TB");
         $this->Ln();
 
+        $linhaSeparacao = null;
         foreach ($produtos as $key => $produto) {
-            $this->Cell(20, 5, utf8_decode($produto["DSC_DEPOSITO_ENDERECO"]), 0);
+            if ($linhaSeparacao != $produto['DSC_LINHA_SEPARACAO']) {
+                $this->SetFont('Arial', 'B', 15);
+                $this->Cell(110, 5,utf8_decode($produto["DSC_LINHA_SEPARACAO"]), 0, 0, 'R');
+                $this->Ln();
+            }
+            $this->SetFont('Arial', '', 12);
+            $this->Cell(35, 5, utf8_decode($produto["DSC_DEPOSITO_ENDERECO"]), 0);
             $this->Cell(20, 5, utf8_decode($produto["COD_PRODUTO"]), 0);
             $this->Cell(95, 5, utf8_decode($produto["DSC_PRODUTO"]), 0);
             $this->Cell(70, 5, utf8_decode($produto["QTD_CONFERIR"]), 0);
+            $linhaSeparacao = $produto['DSC_LINHA_SEPARACAO'];
             $this->Ln();
         }
     }

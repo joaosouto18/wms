@@ -1409,7 +1409,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         if ($embalagemEntity != null) {
             $quantidadeEmbalagem = $embalagemEntity->getQuantidade();
-            $mapaIgual = false;
             $mapaProduto = null;
             $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
             if (!empty($mapaProdutos)) {
