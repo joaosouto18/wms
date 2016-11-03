@@ -57,6 +57,7 @@
                     <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume?>" size="40" maxlength="100" style="width: 99%">
                     <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa?>" size="40" maxlength="100" style="width: 99%">
                     <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa?>" >
 
                     <table>
                         <tr>
@@ -81,6 +82,9 @@
             <?php if ($this->idVolume != "") :?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
+            <?php endif; ?>
+            <?php if ($this->mapaSeparacaoEmbalado === true) : ?>
+                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/cliente/' .$this->idPessoa ?>" >Fechar Caixa</a></td>
             <?php endif; ?>
 
         </fieldset>

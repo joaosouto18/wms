@@ -95,6 +95,11 @@ class ModeloSeparacao
     protected $imprimeEtiquetaVolume;
 
     /**
+     * @Column(name="UTILIZA_VOLUME_PATRIMONIO", type="string", nullable=true)
+     */
+    protected $utilizaVolumePatrimonio;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -348,6 +353,22 @@ class ModeloSeparacao
     public function setSeparacaoPC($separacaoPC)
     {
         $this->separacaoPC = $separacaoPC;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUtilizaVolumePatrimonio()
+    {
+        return $this->utilizaVolumePatrimonio;
+    }
+
+    /**
+     * @param mixed $utilizaVolumePatrimonio
+     */
+    public function setUtilizaVolumePatrimonio($utilizaVolumePatrimonio)
+    {
+        $this->utilizaVolumePatrimonio = $utilizaVolumePatrimonio;
     }
 
 }

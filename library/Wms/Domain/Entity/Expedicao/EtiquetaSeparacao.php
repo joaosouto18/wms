@@ -24,6 +24,7 @@ class EtiquetaSeparacao
     const PREFIXO_ETIQUETA_MAE = 11;
     const PREFIXO_MAPA_SEPARACAO = 12;
     const PREFIXO_ETIQUETA_VOLUME = 13;
+    const PREFIXO_ETIQUETA_EMBALADO = 14;
 
     /**
      * @Id

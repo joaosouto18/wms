@@ -111,6 +111,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $dados['utilizaCaixaMaster'] = $entity->getUtilizaCaixaMaster();
             $dados['utilizaQuebraColetor'] = $entity->getUtilizaQuebraColetor();
             $dados['utilizaEtiquetaMae'] = $entity->getUtilizaEtiquetaMae();
+            $dados['utilizaVolumePatrimonio'] = $entity->getUtilizaVolumePatrimonio();
             $dados['imprimeEtiquetaPatrimonio'] = $entity->getImprimeEtiquetaVolume();
             $dados['quebraPulmaDoca'] = $entity->getQuebraPulmaDoca();
             $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
@@ -158,6 +159,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $entity->setUtilizaCaixaMaster($params['utilizaCaixaMaster']);
                 $entity->setUtilizaQuebraColetor($params['utilizaQuebraColetor']);
                 $entity->setUtilizaEtiquetaMae($params['utilizaEtiquetaMae']);
+                $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
                 $entity->setImprimeEtiquetaVolume($this->getBooleanValue($params['imprimeEtiquetaPatrimonio']));
                 $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
                 $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
@@ -256,6 +258,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
         $entity->setDescricao($params['descricao']);
         $entity->setUtilizaCaixaMaster($this->getBooleanValue($params['utilizaCaixaMaster']));
         $entity->setUtilizaEtiquetaMae($this->getBooleanValue($params['utilizaEtiquetaMae']));
+        $entity->setUtilizaVolumePatrimonio($this->getBooleanValue($params['utilizaVolumePatrimonio']));
         $entity->setImprimeEtiquetaVolume($this->getBooleanValue($params['imprimeEtiquetaPatrimonio']));
         $entity->setUtilizaQuebraColetor($this->getBooleanValue($params['utilizaQuebraColetor']));
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
