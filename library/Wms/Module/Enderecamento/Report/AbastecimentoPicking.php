@@ -16,9 +16,10 @@ class AbastecimentoPicking extends Pdf
 
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(15,  5, utf8_decode("Código")  ,1, 0);
-        $this->Cell(20,  5, "Grade"   ,1, 0);
-        $this->Cell(130, 5, "Produto" ,1, 0);
-        $this->Cell(30,  5, "End.Picking" ,1, 1);
+        $this->Cell(17,  5, "Grade"   ,1, 0);
+        $this->Cell(80, 5, "Produto" ,1, 0);
+        $this->Cell(58, 5, "Cod. Barras" ,1, 0);
+        $this->Cell(25,  5, "End.Picking" ,1, 1);
     }
 
     public function Footer()
@@ -54,6 +55,9 @@ class AbastecimentoPicking extends Pdf
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $em->getRepository("wms:Enderecamento\Estoque");
 
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
+        $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+
         $limite = 49;
         $codProdutoAnterior = null;
         $gradeAnterior = null;
@@ -80,6 +84,13 @@ class AbastecimentoPicking extends Pdf
                     $params['idProduto'] = $codProduto;
                     $params['grade'] = $grade;
                     $params['volume'] = $produto['codVolume'];
+                    $produtoEmbalagemEn = $produtoEmbalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade));
+                    $codBarras = array();
+                    foreach ($produtoEmbalagemEn as $key => $produtoEmbalagem) {
+                        $codBarras[$key] = $produtoEmbalagem->getCodigoBarras();
+                    }
+                    $codBarras = implode(' - ',$codBarras);
+
 
                     $enderecosPulmao = $estoqueRepo->getEstoqueAndVolumeByParams ($params,5,false);
                     $c = count($enderecosPulmao);
@@ -92,9 +103,10 @@ class AbastecimentoPicking extends Pdf
 
                     $this->SetFont('Arial', 'B', 8);
                     $this->Cell(15, 5, utf8_decode($codProduto) ,1, 0);
-                    $this->Cell(20, 5, utf8_decode($grade)      ,1, 0);
-                    $this->Cell(130, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
-                    $this->Cell(30, 5, utf8_decode($dscPicking) ,1, 1);
+                    $this->Cell(17, 5, utf8_decode($grade)      ,1, 0);
+                    $this->Cell(80, 5, utf8_decode(substr($dscProduto,0,60)) ,1, 0);
+                    $this->Cell(58, 5, utf8_decode($codBarras) ,1, 0);
+                    $this->Cell(25, 5, utf8_decode($dscPicking) ,1, 1);
 
                     $limite = $limite -1;
 

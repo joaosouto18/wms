@@ -1409,7 +1409,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         if ($embalagemEntity != null) {
             $quantidadeEmbalagem = $embalagemEntity->getQuantidade();
-            $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
+            $mapaProduto = null;
+            $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
+            if (!empty($mapaProdutos)) {
+                foreach ($mapaProdutos as $value) {
+                    $pessoaId = $value->getPedidoProduto()->getPedido()->getPessoa()->getId();
+                    $pessoaIdPedido = $pedidoEntity->getPessoa()->getId();
+                    if ($pessoaIdPedido == $pessoaId) {
+                        $mapaProduto = $value;
+                        break;
+                    }
+                }
+            }
         }
 
         $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
@@ -1459,6 +1470,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
             $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
             $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+        } else {
+            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
         }
 
         $this->_em->persist($mapaProduto);

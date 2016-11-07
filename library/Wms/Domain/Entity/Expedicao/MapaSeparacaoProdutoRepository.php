@@ -65,10 +65,10 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('MAX(msp.numCaixaInicio) AS numCaixaInicio, MAX(msp.numCaixaFim) AS numCaixaFim, SUM(msp.cubagem) AS cubagem')
-            ->from('wms:Expedicao\Pedido', 'p')
-            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'p.id = pp.codPedido')
-            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.codPedidoProduto = pp.id')
-            ->innerJoin('wms:Expedicao\MapaSeparacao', 'ms', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'msp.codPedidoProduto = pp.id')
+            ->innerJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.id = pp.codPedido')
             ->where("ms.expedicao = ".$expedicaoEntity->getId())
             ->andWhere("msp.numCaixaInicio is not null and msp.numCaixaFim is not null")
             ->orderBy('msp.id, msp.numCaixaInicio, msp.numCaixaFim', 'DESC');

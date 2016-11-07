@@ -70,6 +70,9 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     {
 
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
+        if (!isset($etiqueta) || !empty($etiqueta) || count($etiqueta) <= 0) {
+            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
+        }
 
         $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
         $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
@@ -114,7 +117,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $sql = "SELECT SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR, NVL(MSC.QTD_CONFERIDA,0) QTD_CONFERIDA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PESSOA.COD_PESSOA, PESSOA.NOM_PESSOA
                     FROM MAPA_SEPARACAO_PRODUTO MSP
                     INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                    INNER JOIN (
+                    LEFT JOIN (
                       SELECT SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) QTD_CONFERIDA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MS.COD_MAPA_SEPARACAO
                         FROM MAPA_SEPARACAO_CONFERENCIA MSC
                         INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
