@@ -146,15 +146,10 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idPessoa = $codPessoa;
         $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
-        $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
-        if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
-            //BLOQUEIA COLETOR
-        }
-
-        $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+        $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
-        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
@@ -235,11 +230,11 @@ class Mobile_ExpedicaoController extends Action
                         throw new \Exception($resultado['message']);
                     }
                     $idMapa = $resultado['idMapa'];
-                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+//                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
                     if (isset($qtd) && ($qtd != null)) {
-                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
-                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
+//                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+//                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
                     } else{
                         $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
                     }
@@ -432,9 +427,10 @@ class Mobile_ExpedicaoController extends Action
 
         if (isset($qtd) && ($qtd > 0)) {
             try {
-                $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+                $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-                $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+                $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+                /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
                 $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
 
                 $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);

@@ -158,7 +158,7 @@ class MapaSeparacaoRepository extends EntityRepository
         if (isset($modeloSeparacaoEn) && !empty($modeloSeparacaoEn)) {
             $quebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             if ($quebra == 'S') {
-                if (isset($idMapa) && !empty($idMapa) && !is_null($idMapa)) {
+                if (isset($idMapa) && !empty($idMapa)) {
                     $andWhere .= " AND M.COD_MAPA_SEPARACAO = $idMapa";
                 }
             }
@@ -309,6 +309,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function getQtdProdutoMapa($embalagemEn, $volumeEn, $mapaEn, $codPessoa){
         $sqlVolume = "";
+        $sqlPessoa = "";
         $idMapa = $mapaEn->getId();
         if ($embalagemEn != null) {
             $grade = $embalagemEn->getProduto()->getGrade();
@@ -316,7 +317,12 @@ class MapaSeparacaoRepository extends EntityRepository
         } else {
             $grade = $volumeEn->getProduto()->getGrade();
             $idProduto = $volumeEn->getProduto()->getId();
-            $sqlVolume = "AND M.COD_PRODUTO_VOLUME = " .$volumeEn->getId();
+            $sqlVolume = " AND M.COD_PRODUTO_VOLUME = " .$volumeEn->getId();
+        }
+        if (isset($codPessoa) && !empty($codPessoa)) {
+            $sqlPessoa = " AND M.COD_PEDIDO_PRODUTO IN (
+                            SELECT COD_PEDIDO_PRODUTO FROM PEDIDO_PRODUTO WHERE COD_PEDIDO IN (SELECT COD_PEDIDO FROM PEDIDO WHERE COD_PESSOA = $codPessoa)
+                         )";
         }
 
         $SQL = "SELECT SUM(M.QTD_EMBALAGEM * M.QTD_SEPARAR) as QTD, M.QTD_CORTADO
@@ -325,9 +331,7 @@ class MapaSeparacaoRepository extends EntityRepository
                    AND M.DSC_GRADE = '$grade'
                    $sqlVolume
                    AND M.COD_MAPA_SEPARACAO = $idMapa
-                   AND M.COD_PEDIDO_PRODUTO IN (
-                    SELECT COD_PEDIDO_PRODUTO FROM PEDIDO_PRODUTO WHERE COD_PEDIDO IN (SELECT COD_PEDIDO FROM PEDIDO WHERE COD_PESSOA IN $codPessoa)
-                  )
+                   $sqlPessoa
                    GROUP BY M.QTD_CORTADO
                    ";
 
@@ -535,6 +539,8 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn, $codPessoa = null) {
+        /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
         $mensagemColetor = false;
         $produtoEn = null;
         $idMapa = $mapaEn->getId();
@@ -548,7 +554,7 @@ class MapaSeparacaoRepository extends EntityRepository
             else
                 $produtoEn = $volumeEn->getProduto();
 
-            $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $mapaEn->getId(),
+            $mapaSeparacaoProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=> $mapaEn->getId(),
                 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade()));
             if ($mapaSeparacaoProduto == null) {
                 if ($modeloSeparacaoEn->getUtilizaQuebraColetor() == "S") {
@@ -560,7 +566,7 @@ class MapaSeparacaoRepository extends EntityRepository
                         $mensagemColetor = true;
                         throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não se encontra na expedição selecionada");
                     }
-                    $mapaSeparacaoProduto = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto")->findBy(array('mapaSeparacao'=> $idMapa,
+                    $mapaSeparacaoProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=> $idMapa,
                         'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade()));
 
                 }
