@@ -457,8 +457,8 @@ public function informaQtdMapaAction()
             }
         }
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if ($todosMapasConferidos === true) {
+            $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
             if (is_string($result)) {
                 $this->addFlashMessage('error', $result);
                 if ($mapa == 'S') {
