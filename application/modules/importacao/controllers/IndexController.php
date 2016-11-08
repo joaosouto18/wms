@@ -181,6 +181,16 @@ class Importacao_IndexController extends Action
                         break;
                     }
 
+                    /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedor */
+                    $fornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $arrRegistro['idExterno']));
+                    if (!empty($fornecedor)){
+                        $nome = $fornecedor->getPessoa()->getNome();
+                        $nomFantasia = $fornecedor->getPessoa()->getNomeFantasia();
+                        $nom = (!empty($nomFantasia)) ? $nomFantasia : $nome;
+                        $arrErroRows[$linha] = "O fornecedor $nom já está cadastrado com o código $arrRegistro[idExterno]";
+                        break;
+                    }
+
                     if($arrRegistro['tipoPessoa'] == 'J') {
                         /** @var \Wms\Domain\Entity\Pessoa\Juridica $entityPessoa */
                         $entityPessoa = $pJuridicaRepo->findOneBy(array('cnpj' => $cpf_cnpjFormatado));

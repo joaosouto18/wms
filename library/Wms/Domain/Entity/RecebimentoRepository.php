@@ -344,16 +344,16 @@ class RecebimentoRepository extends EntityRepository
                     $qtdConferida = (float)$qtdConferida;
                     $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade];
 
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
-                    }
-
-                    $qtdConferida = $qtdConferida * $quantidade;
+                    $qtdConferidaCalculada = $qtdConferida * $quantidade;
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferidaCalculada, $qtdAvaria, $divergenciaPesoVariavel);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
+                    }
+
+                    if ($gravaRecebimentoVolumeEmbalagem == true) {
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
                     }
                 } else {
 
@@ -369,14 +369,15 @@ class RecebimentoRepository extends EntityRepository
                         $dataValidade['dataValidade'] = null;
                     }
 
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
-                    }
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento,$produtoEn,$repositorios);
                     $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
+                    }
+
+                    if ($gravaRecebimentoVolumeEmbalagem == true) {
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
                     }
                 }
             }
