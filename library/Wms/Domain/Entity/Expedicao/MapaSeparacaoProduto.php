@@ -1,6 +1,8 @@
 <?php
 
 namespace Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\Volume;
 
 /**
  *
@@ -175,7 +177,7 @@ class MapaSeparacaoProduto
     }
 
     /**
-     * @return mixed
+     * @return MapaSeparacao
      */
     public function getMapaSeparacao()
     {
@@ -207,7 +209,7 @@ class MapaSeparacaoProduto
     }
 
     /**
-     * @return mixed
+     * @return Embalagem
      */
     public function getProdutoEmbalagem()
     {
@@ -223,7 +225,7 @@ class MapaSeparacaoProduto
     }
 
     /**
-     * @return mixed
+     * @return Volume
      */
     public function getProdutoVolume()
     {
