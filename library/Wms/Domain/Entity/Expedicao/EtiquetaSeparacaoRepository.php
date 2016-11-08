@@ -708,6 +708,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function gerarMapaEtiqueta($idExpedicao, array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idModeloSeparacao)
     {
+        //teste de tempo de respota
+        list($usec, $sec) = explode(" ", microtime());
+        $script_start = (float) $sec + (float) $usec;
+
+
+
         $this->getEntityManager()->beginTransaction();
         $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         $filialRepository = $this->getEntityManager()->getRepository('wms:Filial');
@@ -943,6 +949,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->_em->flush();
             $this->_em->clear();
+
+            //teste de tempo de execução do metodo
+            list($usec, $sec) = explode(" ", microtime());
+            $script_end = (float) $sec + (float) $usec;
+            $elapsed_time = round($script_end - $script_start, 5);
+            echo $elapsed_time; exit;
+
+
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
