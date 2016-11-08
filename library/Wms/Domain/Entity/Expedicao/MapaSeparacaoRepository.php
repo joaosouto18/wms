@@ -307,7 +307,7 @@ class MapaSeparacaoRepository extends EntityRepository
         return $conferido;
     }
 
-    public function getQtdProdutoMapa($embalagemEn, $volumeEn, $mapaEn){
+    public function getQtdProdutoMapa($embalagemEn, $volumeEn, $mapaEn, $codPessoa){
         $sqlVolume = "";
         $idMapa = $mapaEn->getId();
         if ($embalagemEn != null) {
@@ -325,6 +325,9 @@ class MapaSeparacaoRepository extends EntityRepository
                    AND M.DSC_GRADE = '$grade'
                    $sqlVolume
                    AND M.COD_MAPA_SEPARACAO = $idMapa
+                   AND M.COD_PEDIDO_PRODUTO IN (
+                    SELECT COD_PEDIDO_PRODUTO FROM PEDIDO_PRODUTO WHERE COD_PEDIDO IN (SELECT COD_PEDIDO FROM PEDIDO WHERE COD_PESSOA IN $codPessoa)
+                  )
                    GROUP BY M.QTD_CORTADO
                    ";
 
@@ -392,7 +395,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdMapa = 0;
 
         $ultConferencia = $this->getQtdConferenciaAberta($embalagemEn,$volumeEn,$mapaEn);
-        $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn);
+        $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
 
         if (!empty($qtdProdutoMapa)){
             $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
@@ -416,7 +419,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdBanco    = (float)$qtdConferida + (float)$qtdCortada;
         $qtdMapa     = (float)$qtdMapa;
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
-            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa");
+            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente!");
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
