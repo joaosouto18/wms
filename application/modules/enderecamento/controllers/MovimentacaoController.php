@@ -73,6 +73,10 @@ class Enderecamento_MovimentacaoController extends Action
             $this->getEntityManager()->beginTransaction();
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('rua' => $data['rua'], 'predio' => $data['predio'], 'nivel' => $data['nivel'], 'apartamento' => $data['apto']));
+            if (empty($enderecoEn)){
+                $this->addFlashMessage('error',"Endereço $data[rua].$data[predio].$data[nivel].$data[apto] não encontrado");
+                $this->_redirect('/enderecamento/movimentacao');
+            }
 
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
             $estoqueEn = $EstoqueRepository->findOneBy(array('depositoEndereco' => $enderecoEn->getId(),

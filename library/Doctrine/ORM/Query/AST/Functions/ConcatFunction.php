@@ -35,18 +35,17 @@ use Doctrine\ORM\Query\Lexer;
 class ConcatFunction extends FunctionNode
 {
     public $firstStringPrimary;
-    public $secondStringPriamry;
+    public $secondStringPrimary;
 
     /**
      * @override
      */
     public function getSql(\Doctrine\ORM\Query\SqlWalker $sqlWalker)
     {
-        $platform = $sqlWalker->getConnection()->getDatabasePlatform();
-        return $platform->getConcatExpression(
-            $sqlWalker->walkStringPrimary($this->firstStringPrimary),
-            $sqlWalker->walkStringPrimary($this->secondStringPrimary)
-        );
+        return 'CONCAT(' .
+            $sqlWalker->walkStringPrimary($this->firstStringPrimary) . ', ' .
+            $sqlWalker->walkStringPrimary($this->secondStringPrimary) .
+        ')'; // (8)
     }
 
     /**
