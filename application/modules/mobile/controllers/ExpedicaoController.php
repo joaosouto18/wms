@@ -301,10 +301,11 @@ class Mobile_ExpedicaoController extends Action
             if (count($qtdPendenteConferencia) <= 0)
                 $existeItensPendentes = false;
 
+            $this->getEntityManager()->commit();
             if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
                 $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes);
             }
-            $this->getEntityManager()->commit();
+
         } catch (Exception $e) {
             $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());

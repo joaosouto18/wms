@@ -904,9 +904,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $this->salvaNovaEtiqueta($statusEntity,$produtoEntity,$pedidoEntity,$embalagemAtual->getQuantidade(),null,$embalagemAtual,null,$etiquetaMae,$depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
                             } else {
                                 $cubagem = null;
-
                                 $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
-
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$produtoEntity->getId()][$produtoEntity->getGrade()];
                                     $quebrasNaoFracionado = array();
@@ -1467,10 +1465,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
         }
 
-        elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
-            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
-            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
-        } else {
+        elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0
+            && $caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa) {
+                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
+                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+        }
+
+        else {
             $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
             $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
             $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);

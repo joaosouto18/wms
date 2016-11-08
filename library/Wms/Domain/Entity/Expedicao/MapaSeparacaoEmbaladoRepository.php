@@ -70,7 +70,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     {
 
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
-        if (!isset($etiqueta) || !empty($etiqueta) || count($etiqueta) <= 0) {
+        if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 

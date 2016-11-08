@@ -750,6 +750,7 @@ class MapaSeparacao extends Pdf
                 }
 
                 if ($tipoQebra == true) {
+                    $this->SetFont('Arial', "", 8);
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(17, 4, $codProduto ,0, 0);
                     $this->Cell(80, 4, substr($descricao,0,45) ,0, 0);
@@ -759,6 +760,7 @@ class MapaSeparacao extends Pdf
                     $this->Cell(20, 4, $quantidade ,0, 0);
                     $this->Cell(15, 4, $caixas ,0, 1, 'C');
                 } else {
+                    $this->SetFont('Arial', "", 8);
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
                     $this->Cell(95, 4, substr($descricao,0,57) ,0, 0);
