@@ -18,7 +18,8 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                          M.QTD_SEPARAR,
                          M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
                          NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
-                         DE.DSC_DEPOSITO_ENDERECO
+                         DE.DSC_DEPOSITO_ENDERECO,
+                         LS.DSC_LINHA_SEPARACAO
                     FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
                             FROM MAPA_SEPARACAO_PRODUTO MP
                             LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
@@ -40,6 +41,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
                 LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO P ON P.COD_PRODUTO = M.COD_PRODUTO AND P.DSC_GRADE = M.DSC_GRADE
+                LEFT JOIN LINHA_SEPARACAO LS ON LS.COD_LINHA_SEPARACAO = P.COD_LINHA_SEPARACAO
               WHERE M.COD_EXPEDICAO = $id
                 AND NVL(C.QTD_CONFERIDA,0) < M.QTD_SEPARAR
                 GROUP BY M.COD_MAPA_SEPARACAO,
@@ -48,7 +50,8 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                          P.DSC_PRODUTO,
                          M.QTD_SEPARAR,
                          C.QTD_CONFERIDA,
-                         DE.DSC_DEPOSITO_ENDERECO
+                         DE.DSC_DEPOSITO_ENDERECO,
+                         LS.DSC_LINHA_SEPARACAO
             ORDER BY COD_MAPA_SEPARACAO, M.COD_PRODUTO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
