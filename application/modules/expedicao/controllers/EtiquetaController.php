@@ -29,6 +29,27 @@ class Expedicao_EtiquetaController  extends Action
 
     public function imprimirAction()
     {
+        $em = $this->getEntityManager();
+        $arrayRepositorios = array(
+            'expedicao'           => $em->getRepository('wms:Expedicao'),
+            'filial'               => $em->getRepository('wms:Filial'),
+            'etiquetaSeparacao'   => $em->getRepository('wms:Expedicao\EtiquetaSeparacao'),
+            'depositoEndereco'    => $em->getRepository('wms:Deposito\Endereco'),
+            'modeloSeparacao'     => $em->getRepository('wms:Expedicao\ModeloSeparacao'),
+            'etiquetaConferencia' => $em->getRepository('wms:Expedicao\EtiquetaConferencia'),
+            'produtoEmbalagem'    => $em->getRepository('wms:Produto\Embalagem'),
+            'mapaSeparacaoProduto'=> $em->getRepository('wms:Expedicao\MapaSeparacaoProduto'),
+            'mapaSeparacaoPedido' => $em->getRepository('wms:Expedicao\MapaSeparacaoPedido'),
+            'cliente'             => $em->getRepository('wms:Pessoa\Papel\Cliente'),
+            'praca'               => $em->getRepository('wms:MapaSeparacao\Praca'),
+            'mapaSeparacao'       => $em->getRepository('wms:Expedicao\MapaSeparacao'),
+            'andamentoNf'         => $em->getRepository('wms:Expedicao\NotaFiscalSaidaAndamento'),
+            'reentrega'           => $em->getRepository('wms:Expedicao\Reentrega'),
+            'nfPedido'            => $em->getRepository('wms:Expedicao\NotaFiscalSaidaPedido'),
+            'nfSaida'             => $em->getRepository('wms:Expedicao\NotaFiscalSaida'),
+            'produto'             => $em->getRepository('wms:Produto')
+        );
+
         ini_set('max_execution_time', 3000);
         $idExpedicao    = $this->getRequest()->getParam('id');
         $central        = $this->getRequest()->getParam('central');
@@ -67,7 +88,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', $mensagem );
                 $this->_redirect('/expedicao');
             } else {
-                $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas);
+                $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
             }
 
             $linkEtiqueta = "";
@@ -321,18 +342,18 @@ class Expedicao_EtiquetaController  extends Action
     /**
      * @param $idExpedicao
      */
-    protected function gerarMapaEtiqueta($idExpedicao, $central, $cargas) {
+    protected function gerarMapaEtiqueta($idExpedicao, $central, $cargas, $arrayRepositorios) {
 
         try {
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-            $EtiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $EtiquetaRepo = $arrayRepositorios['etiquetaSeparacao'];
 
             if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
-                $EtiquetaRepo->gerarMapaEtiquetaReentrega($idExpedicao);
+                $EtiquetaRepo->gerarMapaEtiquetaReentrega($idExpedicao,$arrayRepositorios);
             }
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-            $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
+            $ExpedicaoRepo = $arrayRepositorios['expedicao'];
             $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
 
             $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
@@ -344,7 +365,7 @@ class Expedicao_EtiquetaController  extends Action
                     $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
                 }
             } else {
-                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao);
+                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao, $arrayRepositorios);
             }
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
