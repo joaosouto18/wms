@@ -29,7 +29,7 @@ class MapasSemConferencia extends Pdf
         $this->Cell(0, 15, utf8_decode('Página ') . $this->PageNo(), 0, 0, 'R');
     }
 
-    public function imprimir($idExpedicao, $produtos, $modelo = 1, $quebraCarga = "N")
+    public function imprimir($idExpedicao, $produtos, $embalagemRepo)
     {
         $this->idExpedicao = $idExpedicao;
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -42,37 +42,50 @@ class MapasSemConferencia extends Pdf
         $this->SetMargins(7, 0, 0);
         $this->SetFont('Arial', 'B', 12);
 
-        $this->layout1($produtos);
+        $this->layout1($produtos, $embalagemRepo);
 
         $this->Output('Produtos-Mapa-Sem_Conferencia-' . $idExpedicao . '.pdf', 'D');
     }
 
-    private function layout1($produtos)
+    private function layout1($produtos, $embalagemRepo)
     {
-        $cargaAntiga = "";
-        /** @var \Wms\Domain\Entity\Produto $produto */
-        $cont =0;
         $this->AddPage();
         $this->Cell(35, 5, utf8_decode("Endereço"), "TB");
         $this->Cell(20, 5, utf8_decode("Código"), "TB");
-        $this->Cell(140, 5, utf8_decode("Descrição"), "TB");
-        $this->Cell(50, 5, 'Quantidade', "TB");
-        $this->Cell(50, 5, 'Qtd a Conferir', "TB");
+        $this->Cell(120, 5, utf8_decode("Descrição"), "TB");
+        $this->Cell(35, 5, 'Quantidade', "TB");
+        $this->Cell(35, 5, 'Qtd Conferir', "TB");
+        $this->Cell(35, 5, 'Qtd Conferir', "TB");
         $this->Ln();
 
         $linhaSeparacao = null;
         foreach ($produtos as $key => $produto) {
+            $qtdConferirI = '';
+            $qtdConferirII = '';
+            $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto["COD_PRODUTO"], 'grade' => $produto['DSC_GRADE']), array('quantidade' => 'DESC'));
+            foreach ($embalagens as $embalagem) {
+                $qtdConferir = floor($produto["QTD_CONFERIR"] % $embalagem->getQuantidade());
+                $qtdConferirI = floor($produto["QTD_CONFERIR"] / $embalagem->getQuantidade()) . $embalagem->getDescricao();
+                break;
+            }
+            $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto["COD_PRODUTO"], 'grade' => $produto['DSC_GRADE']), array('quantidade' => 'ASC'));
+            foreach ($embalagens as $embalagem) {
+                $qtdConferirII = floor(($qtdConferir) / $embalagem->getQuantidade()) . $embalagem->getDescricao();
+                break;
+            }
             if ($linhaSeparacao != $produto['DSC_LINHA_SEPARACAO']) {
                 $this->SetFont('Arial', 'B', 15);
                 $this->Cell(110, 5,utf8_decode($produto["DSC_LINHA_SEPARACAO"]), 0, 0, 'R');
                 $this->Ln();
             }
+
             $this->SetFont('Arial', '', 12);
             $this->Cell(35, 5, utf8_decode($produto["DSC_DEPOSITO_ENDERECO"]), 0);
             $this->Cell(20, 5, utf8_decode($produto["COD_PRODUTO"]), 0);
-            $this->Cell(140, 5, utf8_decode($produto["DSC_PRODUTO"]), 0);
-            $this->Cell(50, 5, utf8_decode($produto["QTD_SEPARAR"]), 0);
-            $this->Cell(50, 5, utf8_decode($produto["QTD_CONFERIR"]), 0);
+            $this->Cell(120, 5, utf8_decode($produto["DSC_PRODUTO"]), 0);
+            $this->Cell(35, 5, utf8_decode($produto["QTD_SEPARAR"]), 0);
+            $this->Cell(35, 5, utf8_decode($qtdConferirI), 0);
+            $this->Cell(35, 5, utf8_decode($qtdConferirII), 0);
             $linhaSeparacao = $produto['DSC_LINHA_SEPARACAO'];
             $this->Ln();
         }
