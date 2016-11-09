@@ -65,12 +65,20 @@ class MapasSemConferencia extends Pdf
             $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto["COD_PRODUTO"], 'grade' => $produto['DSC_GRADE']), array('quantidade' => 'DESC'));
             foreach ($embalagens as $embalagem) {
                 $qtdConferir = floor($produto["QTD_CONFERIR"] % $embalagem->getQuantidade());
-                $qtdConferirI = floor($produto["QTD_CONFERIR"] / $embalagem->getQuantidade()) . $embalagem->getDescricao();
+                $qtdConferirI = floor($produto["QTD_CONFERIR"] / $embalagem->getQuantidade());
+                if ($qtdConferirI == 0)
+                    $qtdConferirI = '';
+                else
+                    $qtdConferirI = $qtdConferirI . ' ' . $embalagem->getDescricao();
                 break;
             }
             $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto["COD_PRODUTO"], 'grade' => $produto['DSC_GRADE']), array('quantidade' => 'ASC'));
             foreach ($embalagens as $embalagem) {
-                $qtdConferirII = floor(($qtdConferir) / $embalagem->getQuantidade()) . $embalagem->getDescricao();
+                $qtdConferirII = floor(($qtdConferir) / $embalagem->getQuantidade());
+                if ($qtdConferirII == 0)
+                    $qtdConferirII = '';
+                else
+                    $qtdConferirII = $qtdConferirII . ' '  . $embalagem->getDescricao();
                 break;
             }
             if ($linhaSeparacao != $produto['DSC_LINHA_SEPARACAO']) {
