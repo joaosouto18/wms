@@ -90,15 +90,15 @@ class Expedicao_EtiquetaController  extends Action
             }
 
             $this->getEntityManager()->commit();
+
+            if (($linkMapa != "") && ($linkEtiqueta != "")) {
+                $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta . $linkReentrega ;
+            } else {
+                $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
+            }
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
-        }
-
-        if (($linkMapa != "") && ($linkEtiqueta != "")) {
-            $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta . $linkReentrega ;
-        } else {
-            $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
         }
 
         $this->addFlashMessage('success', $mensagem );
