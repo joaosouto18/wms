@@ -169,7 +169,7 @@ class MapaSeparacaoRepository extends EntityRepository
                          M.DSC_GRADE,
                          P.DSC_PRODUTO,
                          M.QTD_SEPARAR,
-                         NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIDA
+                         NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIDA,
                          M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
                          NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
                          DE.DSC_DEPOSITO_ENDERECO,
