@@ -102,11 +102,11 @@ class MapaSeparacaoRepository extends EntityRepository
         return $result;
     }
 
-    public function verificaMapaSeparacao($expedicaoEn){
+    public function verificaMapaSeparacao($expedicaoEn, $idMapa){
         $mapaSeparacaoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-        $conferenciaFinalizada = $this->validaConferencia($expedicaoEn->getId(), true);
+        $conferenciaFinalizada = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa);
 
         if (count($conferenciaFinalizada) > 0) {
             $mapaSeparacaoEn = $mapaSeparacaoRepo->findBy(array('expedicao' => $expedicaoEn));

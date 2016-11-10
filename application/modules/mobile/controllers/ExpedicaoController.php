@@ -106,6 +106,7 @@ class Mobile_ExpedicaoController extends Action
     }
 
     public function lerProdutoMapaAction() {
+
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
@@ -560,8 +561,8 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         if ($todosMapasConferidos === true) {
+            $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
             if (is_string($result)) {
                 $this->addFlashMessage('error', $result);
                 if ($mapa == 'S') {
