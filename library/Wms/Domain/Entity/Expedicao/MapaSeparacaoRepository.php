@@ -435,7 +435,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
-        $novaConferencia->setCodOS($sessao->osID);
+        $novaConferencia->setCodOS(51481);
         $novaConferencia->setCodProduto($produtoEn->getId());
         $novaConferencia->setDscGrade($produtoEn->getGrade());
         $novaConferencia->setProduto($produtoEn);
