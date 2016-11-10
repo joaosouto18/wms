@@ -24,8 +24,6 @@
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
     <?php if(count($this->produtosMapa) > 0) : ?>
-        <?php $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js'); ?>
-
         <script type="text/javascript">
             $(document).ready(function(){
                 $('#carousel').cycle({
