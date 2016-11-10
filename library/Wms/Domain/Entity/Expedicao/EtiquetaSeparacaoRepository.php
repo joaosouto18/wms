@@ -1184,7 +1184,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $etiquetaMae;
     }
 
-    public function getMapaSeparacao($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity, $arrayRepositorios){
+    public function getMapaSeparacao($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity){
         $codExpedicao    = $expedicaoEntity->getId();
         $qtdQuebras  = 0;
         $SQL_Quebras = "";
@@ -1265,12 +1265,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             //PRAÇA
             if ($quebra == "P") {
-                $clienteRepo = $arrayRepositorios['cliente'];
+                $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
                 $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
                 if ($codPraca == 0){
                     $nomPraca = "Sem Praça Definida";
                 } else {
-                    $pracaEn = $arrayRepositorios['praca'];
+                    $pracaEn = $this->getEntityManager()->getRepository("wms:MapaSeparacao\Praca")->find($codPraca);
                     $nomPraca = $pracaEn->getNomePraca();
                 }
 
@@ -1306,32 +1306,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         if(count($result) > 0) {
-            $mapaSeparacao = $arrayRepositorios['mapaSeparacao']->find($result[0]['COD_MAPA_SEPARACAO']);
+            $mapaSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao")->find($result[0]['COD_MAPA_SEPARACAO']);
         } else {
-            $dataCriacao = new \DateTime();
-            $dataCriacao = $dataCriacao->format('d/m/Y');
-
-            $insertMapaSeparacao = "INSERT INTO MAPA_SEPARACAO (COD_MAPA_SEPARACAO, COD_EXPEDICAO, DTH_CRIACAO, COD_STATUS) VALUES (concat(12,SQ_MAPA_SEPARACAO_01.NEXTVAL), $codExpedicao, '$dataCriacao',$codStatus)";
-            $this->_em->getConnection()->query($insertMapaSeparacao)->execute();
-
-            $sql = 'SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO ORDER BY COD_MAPA_SEPARACAO DESC';
-            $resultado = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-            $idMapaSeparacao = $resultado[0]['COD_MAPA_SEPARACAO'];
-
-
-
-//            $mapaSeparacao = new MapaSeparacao();
-//            $mapaSeparacao->setExpedicao($expedicaoEntity);
-//            $mapaSeparacao->setStatus($siglaEntity);
-//            $mapaSeparacao->setCodStatus($codStatus);
-//            $mapaSeparacao->setDataCriacao(new \DateTime());
-//            $mapaSeparacao->setDscQuebra("");
-//            $this->getEntityManager()->persist($mapaSeparacao);
-//            $mapaSeparacao->setId("12".$mapaSeparacao->getId());
-//            $this->getEntityManager()->persist($mapaSeparacao);
-//            $this->getEntityManager()->flush();
-//            $novoId = $mapaSeparacao->getId();
-//            $this->getEntityManager()->clear($mapaSeparacao);
+            $mapaSeparacao = new MapaSeparacao();
+            $mapaSeparacao->setExpedicao($expedicaoEntity);
+            $mapaSeparacao->setStatus($siglaEntity);
+            $mapaSeparacao->setCodStatus($codStatus);
+            $mapaSeparacao->setDataCriacao(new \DateTime());
+            $mapaSeparacao->setDscQuebra("");
+            $this->getEntityManager()->persist($mapaSeparacao);
+            $mapaSeparacao->setId("12".$mapaSeparacao->getId());
+            $this->getEntityManager()->persist($mapaSeparacao);
+            $this->getEntityManager()->flush();
+            $novoId = $mapaSeparacao->getId();
+            $this->getEntityManager()->clear($mapaSeparacao);
+            $mapaSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao")->find($novoId);
             $dscQuebra = "";
             foreach ($quebras as $quebra) {
                 $quebra = $quebra['tipoQuebra'];
@@ -1367,23 +1356,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dscQuebra = $dscQuebra . "PRACA: " . $codPraca . " - " . $nomPraca;
                     $codQuebra = $codPraca;
                 }
-
-                $insertMapaSeparacaoQuebra = "INSERT INTO MAPA_SEPARACAO_QUEBRA (COD_MAPA_SEPARACAO_QUEBRA, COD_MAPA_SEPARACAO, COD_QUEBRA, IND_TIPO_QUEBRA)
-                  VALUES (SQ_MAPA_SEPARACAO_QUEB_01.NEXTVAL, $idMapaSeparacao, $codQuebra, '$quebra')";
-                $this->_em->getConnection()->query($insertMapaSeparacaoQuebra)->execute();
-//                $mapaQuebra = new MapaSeparacaoQuebra();
-//                $mapaQuebra->setMapaSeparacao($mapaSeparacao);
-//                $mapaQuebra->setTipoQuebra($quebra);
-//                $mapaQuebra->setCodQuebra($codQuebra);
-//                $this->getEntityManager()->persist($mapaQuebra);
+                $mapaQuebra = new MapaSeparacaoQuebra();
+                $mapaQuebra->setMapaSeparacao($mapaSeparacao);
+                $mapaQuebra->setTipoQuebra($quebra);
+                $mapaQuebra->setCodQuebra($codQuebra);
+                $this->getEntityManager()->persist($mapaQuebra);
             }
-            $updateMapaSeparacao = "UPDATE MAPA_SEPARACAO SET DSC_QUEBRA = '$dscQuebra' WHERE COD_MAPA_SEPARACAO = $idMapaSeparacao";
-            $this->_em->getConnection()->query($updateMapaSeparacao)->execute();
-//            $mapaSeparacao->setDscQuebra(trim($dscQuebra));
-//            $this->getEntityManager()->persist($mapaSeparacao);
-//            $this->getEntityManager()->flush();
+            $mapaSeparacao->setDscQuebra(trim($dscQuebra));
+            $this->getEntityManager()->persist($mapaSeparacao);
+            $this->getEntityManager()->flush();
         }
-        $mapaSeparacao = $arrayRepositorios['mapaSeparacao']->find($idMapaSeparacao);
         return $mapaSeparacao;
     }
 
@@ -1417,7 +1399,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
         $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
-        $mapaProduto = null;
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
             $mapaProduto = $mapaProdutoRepo->findOneBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoVolume'=>$volumeEntity));
@@ -1438,31 +1419,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        $produtoEmbalagem = 'null';
-        $produtoVolume = 'null';
-        if (isset($embalagemEntity) && !empty($embalagemEntity)) {
-            $produtoEmbalagem = $embalagemEntity->getId();
-        }
-        if (isset($volumeEntity) && !empty($volumeEntity)) {
-            $produtoVolume = $volumeEntity->getId();
-        }
-
         $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
         if ($mapaPedidoEn == null) {
-            $idPedidoproduto = $pedidoProduto->getId();
-            $idMapaSeparacao = $mapaSeparacaoEntity->getId();
-            $sqlMSPedido = "INSERT INTO MAPA_SEPARACAO_PEDIDO (COD_MAPA_SEPARACAO_PEDIDO, COD_MAPA_SEPARACAO, COD_PEDIDO_PRODUTO)
-                            VALUES (SQ_MAPA_SEPARACAO_PEDIDO_01.NEXTVAL, $idMapaSeparacao, $idPedidoproduto)";
-
-            $this->_em->getConnection()->query($sqlMSPedido)->execute();
-
-            /*$mapaPedidoEn = new MapaSeparacaoPedido();
+            $mapaPedidoEn = new MapaSeparacaoPedido();
             $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
             $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
             $mapaPedidoEn->setPedidoProduto($pedidoProduto);
-            $this->getEntityManager()->persist($mapaPedidoEn);*/
+            $this->getEntityManager()->persist($mapaPedidoEn);
         }
-        $acao = null;
 
         if ($mapaProduto == null) {
             $mapaProduto = new MapaSeparacaoProduto();
@@ -1480,70 +1444,39 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setCodDepositoEndereco($depositoEndereco);
             $mapaProduto->setPedidoProduto($pedidoProduto);
             $mapaProduto->setCubagem($cubagem);
-
-            // CALCULA A CUBAGEM E ORGANIZA CADA CAIXA
-            $qtdCaixas = ceil($cubagem / $cubagemCaixa);
-            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
-
-            if ($qtdCaixas == 0) {
-                $mapaProduto->setNumCaixaInicio(null);
-                $mapaProduto->setNumCaixaFim(null);
-                $mapaProduto->setCubagem(null);
-            }
-
-            elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0
-                && $caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa) {
-                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
-            }
-
-            else {
-                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
-                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-            }
-
-            $acao = 'insert';
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
-            $acao = 'update';
         }
 
-        if ($acao == 'insert'){
-            $sqlMapaProduto = "INSERT INTO MAPA_SEPARACAO_PRODUTO
-                                    (COD_MAPA_SEPARACAO_PRODUTO,
-                                    COD_MAPA_SEPARACAO,
-                                    COD_PRODUTO,
-                                    DSC_GRADE,
-                                    COD_PRODUTO_VOLUME,
-                                    COD_PRODUTO_EMBALAGEM,
-                                    QTD_EMBALAGEM,
-                                    QTD_SEPARAR,
-                                    COD_PEDIDO_PRODUTO,
-                                    IND_CONFERIDO,
-                                    QTD_CORTADO,
-                                    COD_DEPOSITO_ENDERECO)
-                               VALUES (SQ_MAPA_SEPARACAO_PROD_01.NEXTVAL,
-                                        ".$mapaProduto->getMapaSeparacao()->getId().",
-                                        '".$mapaProduto->getCodProduto()."',
-                                        '".$mapaProduto->getDscGrade()."',
-                                        ".$produtoVolume.",
-                                        ".$produtoEmbalagem.",
-                                        ".$mapaProduto->getQtdEmbalagem().",
-                                        ".$mapaProduto->getQtdSeparar().",
-                                        ".$mapaProduto->getCodPedidoProduto().",
-                                        '".$mapaProduto->getIndConferido()."',
-                                        ".$mapaProduto->getQtdCortado().",
-                                        ".$mapaProduto->getCodDepositoEndereco()->getId().")";
-        } else {
-            $sqlMapaProduto = "UPDATE MAPA_SEPARACAO_PRODUTO SET QTD_SEPARAR = ". $mapaProduto->getQtdSeparar()
-                ." WHERE COD_MAPA_SEPARACAO_PRODUTO = " . $mapaProduto->getId();
+        $qtdCaixas = ceil($cubagem / $cubagemCaixa);
+        $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
+
+        if ($qtdCaixas == 0) {
+            $mapaProduto->setNumCaixaInicio(null);
+            $mapaProduto->setNumCaixaFim(null);
+            $mapaProduto->setCubagem(null);
         }
 
-        $this->_em->getConnection()->query($sqlMapaProduto)->execute();
+        elseif (count($caixasUsadas) == 0) {
+            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+        }
 
-        /*$this->_em->persist($mapaProduto);
-        $this->_em->flush($mapaProduto);*/
+        elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0
+            && $caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa) {
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+        }
+
+        else {
+            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+            $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+            $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+        }
+
+        $this->_em->persist($mapaProduto);
+        $this->_em->flush($mapaProduto);
     }
 
     /**

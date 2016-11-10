@@ -43,13 +43,14 @@ class Expedicao_MapaController  extends Action
     public function relatorioPendentesAjaxAction()
     {
         $idExpedicao = $this->getRequest()->getParam('id');
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
         $result = $mapaSeparacaoConferenciaRepo->getProdutosConferirByExpedicao($idExpedicao);
 
         $RelatorioPendencias = new \Wms\Module\Expedicao\Report\MapasSemConferencia("L", "mm", "A4");
-        $RelatorioPendencias->imprimir($idExpedicao, $result);
+        $RelatorioPendencias->imprimir($idExpedicao, $result, $embalagemRepo);
 
     }
 
