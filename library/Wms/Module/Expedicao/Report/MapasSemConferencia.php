@@ -50,13 +50,13 @@ class MapasSemConferencia extends Pdf
     private function layout1($produtos, $embalagemRepo)
     {
         $this->AddPage();
-        $this->Cell(35, 5, utf8_decode("Endereço"), "TB");
-        $this->Cell(20, 5, utf8_decode("Código"), "TB");
-        $this->Cell(100, 5, utf8_decode("Descrição"), "TB");
-        $this->Cell(31, 5, 'Qtd Total', "TB");
-        $this->Cell(31, 5, 'Qtd Conferida', "TB");
-        $this->Cell(31, 5, 'Qtd Conferir', "TB");
-        $this->Cell(31, 5, 'Qtd Conferir', "TB");
+        $this->Cell(35, 5, "Endereço", "TB");
+        $this->Cell(20, 5, "Código", "TB");
+        $this->Cell(120, 5, utf8_decode("Descrição"), "TB");
+        $this->Cell(30, 5, 'Qtd Total', "TB");
+        $this->Cell(30, 5, 'Conferida', "TB");
+        $this->Cell(10, 5, '', "TB");
+        $this->Cell(30, 5, 'Qtd Conferir', "TB");
         $this->Ln();
 
         $linhaSeparacao = null;
@@ -91,11 +91,11 @@ class MapasSemConferencia extends Pdf
             $this->SetFont('Arial', '', 12);
             $this->Cell(35, 5, utf8_decode($produto["DSC_DEPOSITO_ENDERECO"]), 0);
             $this->Cell(20, 5, utf8_decode($produto["COD_PRODUTO"]), 0);
-            $this->Cell(100, 5, utf8_decode($produto["DSC_PRODUTO"]), 0);
-            $this->Cell(31, 5, utf8_decode($produto["QTD_SEPARAR"]), 0);
-            $this->Cell(31, 5, utf8_decode($produto["QTD_SEPARAR"] - $produto["QTD_CONFERIR"]), 0);
-            $this->Cell(31, 5, utf8_decode($qtdConferirI), 0);
-            $this->Cell(31, 5, utf8_decode($qtdConferirII), 0);
+            $this->Cell(120, 5, utf8_decode(substr($produto["DSC_PRODUTO"],0,45)), 0);
+            $this->Cell(30, 5, utf8_decode($produto["QTD_SEPARAR"]), 0);
+            $this->Cell(30, 5, utf8_decode($produto["QTD_SEPARAR"] - $produto["QTD_CONFERIR"]), 0);
+            $this->Cell(30, 5, utf8_decode($qtdConferirI), 0);
+            $this->Cell(30, 5, utf8_decode($qtdConferirII), 0);
             $linhaSeparacao = $produto['DSC_LINHA_SEPARACAO'];
             $this->Ln();
         }
