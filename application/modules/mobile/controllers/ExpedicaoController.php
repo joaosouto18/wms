@@ -62,7 +62,6 @@ class Mobile_ExpedicaoController extends Action
     }
 
     public function lerProdutoMapaAction() {
-        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
@@ -91,7 +90,10 @@ class Mobile_ExpedicaoController extends Action
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa);
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa);
+        if (count($produtosMapa) > 0)
+            $this->view->produtosMapa = $produtosMapa;
+
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
@@ -315,7 +317,13 @@ public function informaQtdMapaAction()
     $qtd = $this->_getParam('qtd');
     $idExpedicao = $this->_getParam('idExpedicao');
 
-    $embalagens = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
+    $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+    /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+    $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+    $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+    $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+
+    $embalagens = $embalagemRepo->findBy(array('codigoBarras'=>$codBarras));
     $embalagemEntity = $embalagens[0];
     $this->view->codProduto = $embalagemEntity->getProduto()->getId();
     $this->view->grade = $embalagemEntity->getProduto()->getGrade();
@@ -330,11 +338,6 @@ public function informaQtdMapaAction()
 
     if (isset($qtd) && ($qtd > 0)) {
         try {
-            $volumePatrimonioRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
-            $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-
             $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
             $embalagemEn = $embalagens['embalagem'];
             $volumeEn = $embalagens['volume'];
