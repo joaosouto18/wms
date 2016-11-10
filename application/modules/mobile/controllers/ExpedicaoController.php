@@ -106,7 +106,6 @@ class Mobile_ExpedicaoController extends Action
     }
 
     public function lerProdutoMapaAction() {
-        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
@@ -153,7 +152,13 @@ class Mobile_ExpedicaoController extends Action
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        $this->view->produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa);
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa);
+        if (count($produtosMapa) > 0) {
+            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+            $this->view->produtosMapa = $produtosMapa;
+        }
+
+
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
@@ -230,11 +235,11 @@ class Mobile_ExpedicaoController extends Action
                         throw new \Exception($resultado['message']);
                     }
                     $idMapa = $resultado['idMapa'];
-//                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
                     if (isset($qtd) && ($qtd != null)) {
-//                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
-//                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
+                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
+                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
                     } else{
                         $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
                     }
