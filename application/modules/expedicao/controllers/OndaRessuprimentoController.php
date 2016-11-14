@@ -76,7 +76,7 @@ class Expedicao_OndaRessuprimentoController  extends Action
             ini_set('max_execution_time', 30);
 
             if ($result['resultado'] == false) {
-                $this->addFlashMessage("error",$result['observacao']);
+                throw new Exception($result['observacao']);
             } else {
                 $this->addFlashMessage("success",$result['observacao']);
             }

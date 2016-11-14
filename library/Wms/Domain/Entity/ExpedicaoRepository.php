@@ -191,7 +191,6 @@ class ExpedicaoRepository extends EntityRepository
     public function gerarOnda($expedicoes)
     {
         try {
-            $this->getEntityManager()->beginTransaction();
             $strExpedicao = "";
             foreach ($expedicoes as $expedicao){
                 $strExpedicao = $strExpedicao . $expedicao;
@@ -246,7 +245,6 @@ class ExpedicaoRepository extends EntityRepository
 
             return $resultado;
         } catch(\Exception $e) {
-            $this->getEntityManager()->rollback();
 
             $resultado = array();
             $resultado['observacao'] = $e->getMessage();
