@@ -12,6 +12,9 @@ use Wms\Domain\Entity\NotaFiscal;
 class EtiquetaSeparacaoRepository extends EntityRepository
 {
 
+    public $qtdIteracoesMapa = 0;
+    public $qtdIteracoesMapaProduto = 0;
+
     /**
      * @param $idExpedicao
      * @return int
@@ -620,13 +623,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-
-
-
-
-
-
-
     public function getCubagemPedidos(array $pedidosProdutos, $modeloSeparacaoEn)
     {
         /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
@@ -715,6 +711,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $etiquetaConferenciaRepo = $arrayRepositorios['etiquetaConferencia'];
         $verificaReentrega       = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
 
+        $tempoInicial = round(microtime(true) * 1000);
+
         try {
             if ( empty($status) ){
                 $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
@@ -732,6 +730,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             $arrMapasEmbPP = array();
+            $this->qtdIteracoesMapa = 0;
+            $this->qtdIteracoesMapaProduto = 0;
 
             foreach($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
@@ -940,8 +940,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $quebrasFracionado = array();
                                     $quebrasFracionado[]['tipoQuebra'] = 'T';
                                 }
-                                $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity, $arrayRepositorios);
-                                $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, $pedidoProduto,$depositoEnderecoEn,$cubagem,$pedidoEntity,$arrayRepositorios);
                                 $encontrouPP = false;
 
                                 if (array_key_exists($pedidoProduto->getId(),$arrMapasEmbPP)) {
@@ -982,8 +980,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
 
-
-
             $this->_em->flush();
             $this->_em->clear();
             $this->getEntityManager()->commit();
@@ -991,6 +987,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
+
+        $tempoFinal = round(microtime(true) * 1000);
+        echo ("Tempo = ". ($tempoFinal - $tempoInicial));
+        echo ("Iteracoes Mapa - " .$this->qtdIteracoesMapa);
+        echo ("Iteracoes MapaProduto - " .$this->qtdIteracoesMapaProduto);
+        exit;
+
     }
 
     private function atualizaMapaSeparacaoProduto($idExpedicao)
@@ -1230,6 +1233,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     public function getMapaSeparacao($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity){
+
+        $this->qtdIteracoesMapa = $this->qtdIteracoesMapa + 1;
+
         $codExpedicao    = $expedicaoEntity->getId();
         $qtdQuebras  = 0;
         $SQL_Quebras = "";
@@ -1438,6 +1444,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco,$cubagem = null,$pedidoEntity = null) {
+        $this->qtdIteracoesMapaProduto = $this->qtdIteracoesMapaProduto +1;
+
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
         $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
