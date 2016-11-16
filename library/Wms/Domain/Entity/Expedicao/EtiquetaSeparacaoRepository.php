@@ -914,17 +914,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $encontrouPP = false;
                                 if (array_key_exists($pedidoProduto->getId(),$arrMapasEmbPP)) {
                                     if (array_key_exists($embalagemAtual->getId(),$arrMapasEmbPP[$pedidoProduto->getId()])) {
-                                        $encontrouPP = true;
+                                        if (array_key_exists($depositoEnderecoEn->getId(),$arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()])) {
+                                            $encontrouPP = true;
+                                        }
                                     }
                                 }
 
                                 if ($encontrouPP == true) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] + 1;
+                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] + 1;
                                 } else {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()] = array('qtd'=> 1,
-                                                                                                              'mapa'=> $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity, $arrayRepositorios),
-                                                                                                              'cubagem' => $cubagem,
-                                                                                                              'endereco' => $depositoEnderecoEn);
+                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()] = array(
+                                        'qtd'=> 1,
+                                        'mapa'=> $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity, $arrayRepositorios),
+                                        'cubagem' => $cubagem);
                                 }
                             }
                         } else {
@@ -944,17 +946,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                                 if (array_key_exists($pedidoProduto->getId(),$arrMapasEmbPP)) {
                                     if (array_key_exists($embalagemAtual->getId(),$arrMapasEmbPP[$pedidoProduto->getId()])) {
-                                        $encontrouPP = true;
+                                        if (array_key_exists($depositoEnderecoEn->getId(),$arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()])) {
+                                            $encontrouPP = true;
+                                        }
                                     }
                                 }
 
                                 if ($encontrouPP == true) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] + 1;
+                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] + 1;
                                 } else {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()] = array('qtd'=> 1,
+                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()] = array(
+                                        'qtd'=> 1,
                                         'mapa'=> $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity, $arrayRepositorios),
-                                        'cubagem' => $cubagem,
-                                        'endereco' => $depositoEnderecoEn);
+                                        'cubagem' => $cubagem);
                                 }
                             }
                         }
@@ -968,15 +972,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             foreach ($arrMapasEmbPP as $idPedidoProduto => $embalagens) {
-                foreach ($embalagens as $idEmbalagem => $valores) {
-                    $mapaSeparacaoEn = $valores['mapa'];
-                    $pedidoProdutoEn = $arrayRepositorios['pedidoProduto']->find($idPedidoProduto);
-                    $embalagemEn     = $arrayRepositorios['produtoEmbalagem']->find($idEmbalagem);
-                    $pedidoEn        = $pedidoProdutoEn->getPedido();
-                    $produtoEn       = $pedidoProdutoEn->getProduto();
-                    $enderecoEn      = $valores['endereco'];
-                    $cubagem         = $valores['cubagem'];
-                    $this->salvaMapaSeparacaoProduto($mapaSeparacaoEn,$produtoEn,1,null,$embalagemEn,$pedidoProdutoEn,$enderecoEn,$cubagem,$pedidoEn,$arrayRepositorios);
+                foreach ($embalagens as $idEmbalagem => $enderecos) {
+                    foreach ($enderecos as $idEndereco => $valores) {
+                        $mapaSeparacaoEn = $valores['mapa'];
+                        $qtdMapa = $valores['qtd'];
+                        $pedidoProdutoEn = $arrayRepositorios['pedidoProduto']->find($idPedidoProduto);
+                        $embalagemEn     = $arrayRepositorios['produtoEmbalagem']->find($idEmbalagem);
+                        $pedidoEn        = $pedidoProdutoEn->getPedido();
+                        $produtoEn       = $pedidoProdutoEn->getProduto();
+                        $enderecoEn      = $arrayRepositorios['depositoEndereco']->find($idEndereco);
+                        $cubagem         = $valores['cubagem'];
+                        $this->salvaMapaSeparacaoProduto($mapaSeparacaoEn,$produtoEn,$qtdMapa,null,$embalagemEn,$pedidoProdutoEn,$enderecoEn,$cubagem,$pedidoEn,$arrayRepositorios);
+                    }
                 }
             }
 
@@ -992,7 +999,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         echo ("Tempo = ". ($tempoFinal - $tempoInicial));
         echo ("Iteracoes Mapa - " .$this->qtdIteracoesMapa);
         echo ("Iteracoes MapaProduto - " .$this->qtdIteracoesMapaProduto);
-        exit;
+        //exit;
 
     }
 
@@ -1443,12 +1450,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $codEtiqueta;
     }
 
-    public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco,$cubagem = null,$pedidoEntity = null) {
+    public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$pedidoProduto,$depositoEndereco,$cubagem = null,$pedidoEntity = null, $arrays = null) {
         $this->qtdIteracoesMapaProduto = $this->qtdIteracoesMapaProduto +1;
 
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
-        $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        if ($arrays == null) {
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
+            $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+            $mapaPedidoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        }    else {
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
+            $mapaProdutoRepo = $arrays['mapaSeparacaoProduto'];
+            $mapaPedidoRepo = $arrays['mapaSeparacaoPedido'];
+        }
         $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
         $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
