@@ -921,7 +921,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
 
                                 if ($encontrouPP == true) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] + 1;
+                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] + 1;
                                 } else {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()] = array(
                                         'qtd'=> 1,
@@ -953,7 +953,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
 
                                 if ($encontrouPP == true) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()]['qtd'] + 1;
+                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()]['qtd'] + 1;
                                 } else {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$depositoEnderecoEn->getId()] = array(
                                         'qtd'=> 1,
