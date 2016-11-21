@@ -130,7 +130,18 @@ class Mobile_RessuprimentoController extends Action
                 $this->addFlashMessage("error","UMA $codigoBarrasUMA Não encontrada neste endereço");
                 $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque );
             } else {
+                $arrEmbs = array();
+                $produto = $result[0]['ID'];
+                foreach ($result as $item){
+                    if ($item['ID'] = $produto)
+                        $arrEmbs[$item['COD_PRODUTO_EMBALAGEM']] = array(
+                            "embalagem" => $item['DSC_EMBALAGEM'],
+                            "qtd" => $item['QTD_EMBALAGEM']
+                        );
+                }
                 $this->view->codProduto = $result[0]['ID'];
+                $this->view->embalagens = $arrEmbs;
+                $this->view->codEmbalagem = null;
                 $this->view->grade = $result[0]['GRADE'];
                 $this->view->descricao = $result[0]['DESCRICAO'];
                 $this->view->endereco = $result[0]['ENDERECO'];
@@ -149,6 +160,8 @@ class Mobile_RessuprimentoController extends Action
                 $this->addFlashMessage("error","Produto $etiquetaProduto não encontrado neste endereço");
                 $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque );
             } else {
+                $this->view->embalagens = null;
+                $this->view->codEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
                 $this->view->codProduto = $result[0]['ID'];
                 $this->view->grade = $result[0]['GRADE'];
                 $this->view->descricaoProduto = $result[0]['DESCRICAO'];
@@ -161,6 +174,7 @@ class Mobile_RessuprimentoController extends Action
     public function confirmaMovimentacaoAction() {
 
         $idProduto = $this->_getParam('idProduto');
+        $codEmbalagem = $this->_getParam('codEmbalagem');
         $grade = $this->_getParam('grade');
         $idEndereco = $this->_getParam('idEndereco');
         $qtd = $this->_getParam('quantidade');
@@ -184,10 +198,12 @@ class Mobile_RessuprimentoController extends Action
                         $idPicking = $volEstoque->getProdutoVolume()->getEndereco()->getId();
                     }
                 } else{
-                    $params['embalagem'] = $volEstoque->getProdutoEmbalagem();
-                    $qtd = $qtd * $volEstoque->getProdutoEmbalagem()->getQuantidade();
-                    if ($volEstoque->getProdutoEmbalagem()->getEndereco() != NULL) {
-                        $idPicking   = $volEstoque->getProdutoEmbalagem()->getEndereco()->getId();
+                    /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
+                    $embalagem = $this->em->find('wms:Produto\Embalagem', $codEmbalagem);
+                    $params['embalagem'] = $embalagem;
+                    $qtd = $qtd * $embalagem->getQuantidade();
+                    if ($embalagem->getEndereco() != NULL) {
+                        $idPicking = $embalagem->getEndereco()->getId();
                     }
                 }
 
@@ -210,12 +226,10 @@ class Mobile_RessuprimentoController extends Action
                 $params['qtd'] = $qtd * -1;
                 $estoqueRepo->movimentaEstoque($params);
 
-                if ($idPicking != NULL) {
-                    $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));
-                    $params['endereco'] = $enderecoEn;
-                    $params['qtd'] = $qtd;
-                    $estoqueRepo->movimentaEstoque($params);
-                }
+                $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));
+                $params['endereco'] = $enderecoEn;
+                $params['qtd'] = $qtd;
+                $estoqueRepo->movimentaEstoque($params);
 
                 $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');
                 $relatorioPicking = $relatorioPickingRepo->findOneBy(array('depositoEndereco' => $enderecoEn));
