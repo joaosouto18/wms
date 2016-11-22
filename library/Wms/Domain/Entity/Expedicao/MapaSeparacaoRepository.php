@@ -479,7 +479,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $mapa->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
             $this->getEntityManager()->persist($mapa);
         }
-        $this->getEntityManager()->flush();re
+        $this->getEntityManager()->flush();
     }
 
     /**
