@@ -937,7 +937,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
 
-//            $this->atualizaMapaSeparacaoProduto($idExpedicao);
+            $this->atualizaMapaSeparacaoProduto($idExpedicao);
 
             $this->_em->flush();
             $this->_em->clear();

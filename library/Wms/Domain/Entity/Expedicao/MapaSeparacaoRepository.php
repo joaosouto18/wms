@@ -399,7 +399,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdCortada = 0;
         $qtdMapa = 0;
 
-        $ultConferencia = $this->getQtdConferenciaAberta($embalagemEn,$volumeEn,$mapaEn);
+        $ultConferencia = $this->getQtdConferenciaAberta($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
 
         if (!empty($qtdProdutoMapa)){
@@ -435,7 +435,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
-        $novaConferencia->setCodOS(51481);
+        $novaConferencia->setCodOS($sessao->osID);
         $novaConferencia->setCodProduto($produtoEn->getId());
         $novaConferencia->setDscGrade($produtoEn->getGrade());
         $novaConferencia->setProduto($produtoEn);

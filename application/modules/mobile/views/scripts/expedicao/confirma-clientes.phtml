@@ -1,31 +1,24 @@
+<h3><?php echo utf8_encode('Recebimentos Pendentes de Endereçamento') ?></h3>
+<ul class="menu">
+    <?php $clienteAntigo = null;
+    foreach ($this->clientes as $cliente) :
+        if ($cliente['COD_PESSOA'] == $clienteAntigo)
+            continue;
+        $caixas = null;
+        for ($count = $cliente['NUM_CAIXA_PC_INI']; $count <= $cliente['NUM_CAIXA_PC_FIM']; $count++) :
+            if ($count == $cliente['NUM_CAIXA_PC_FIM']) :
+                $caixas .= $count;
+            else :
+                $caixas .= $count.'; ';
+            endif;
+        endfor;
+        $clienteAntigo = $cliente['COD_PESSOA']; ?>
 
-<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa/idMapa/<?php echo $this->codigoBarras ?>/idExpedicao/<?php echo $this->idExpedicao ?>" method="post">
-    <dt id="identification-label">&nbsp;</dt>
-    <input type="hidden" name="idMapa" value="<?php echo $this->codigoBarras; ?>">
-    <dd id="identification-element">
-        <fieldset id="fieldset-identification">
-            <legend>Selecionar Clientes</legend>
-            <dl>
-                <div class="field"><label for="codigoBarras" class="field required"></label>
-                    <?php $clienteAntigo = null;
-                    foreach ($this->clientes as $cliente) :
-                        if ($cliente['COD_PESSOA'] == $clienteAntigo)
-                            continue;
+        <li>
+            <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa', 'idMapa' => $this->codigoBarras, 'idExpedicao' => $this->idExpedicao, 'cliente' => $cliente['COD_PESSOA'])); ?>"
+               title="<?php echo $cliente['NOM_PESSOA'] ?>" ><?php echo $cliente['NOM_PESSOA'] ?> - <?php echo ' CAIXA(S): '.$caixas ?></a>
+        </li>
+    <?php endforeach; ?>
+</ul>
+<td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao . '/idMapa/' .$this->codigoBarras .'/mapa/S' ?>" >Finalizar</a></td>
 
-                        $caixas = null;
-                        for ($count = $cliente['NUM_CAIXA_PC_INI']; $count <= $cliente['NUM_CAIXA_PC_FIM']; $count++) :
-                            if ($count == $cliente['NUM_CAIXA_PC_FIM']) :
-                                $caixas .= $count;
-                            else :
-                                $caixas .= $count.'; ';
-                            endif;
-                        endfor;
-                        $clienteAntigo = $cliente['COD_PESSOA']; ?>
-                        <input type="radio" name="cliente" value="<?php echo $cliente['COD_PESSOA'] ?>"> <?php echo $cliente['NOM_PESSOA']?><b><?php echo' CAIXA(S): '.$caixas ?></b><br>
-                    <?php endforeach; ?>
-                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
-            </dl>
-        </fieldset>
-    </dd>
-    <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao . '/idMapa/' .$this->codigoBarras .'/mapa/S' ?>" >Finalizar</a></td>
-</form>
