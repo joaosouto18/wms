@@ -98,6 +98,11 @@ class MapaSeparacaoConferencia
     protected $mapaSeparacaoEmbalado;
 
     /**
+     * @Column(name="COD_PESSOA", type="integer", nullable=true)
+     */
+    protected $codPessoa;
+
+    /**
      * @param mixed $codOS
      */
     public function setCodOS($codOS)
@@ -335,6 +340,22 @@ class MapaSeparacaoConferencia
     public function setMapaSeparacaoEmbalado($mapaSeparacaoEmbalado)
     {
         $this->mapaSeparacaoEmbalado = $mapaSeparacaoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPessoa()
+    {
+        return $this->codPessoa;
+    }
+
+    /**
+     * @param mixed $codPessoa
+     */
+    public function setCodPessoa($codPessoa)
+    {
+        $this->codPessoa = $codPessoa;
     }
 
 }
