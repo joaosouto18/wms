@@ -57,6 +57,11 @@ class Produtividade extends Grid
                     'index' => 'QTD_PALETES',
                     'render' => 'N2'
                 ));
+                $this->addColumn(array(
+                    'label' => 'Cargas',
+                    'index' => 'QTD_CARGA',
+                    'render' => 'N2'
+                ));
 
         $this->setShowExport(true);
         $pg = new Pager(count($params),0,count($params));

@@ -17,11 +17,12 @@ class Apontamento extends Pdf
 
     private $colIndexHeadW = 77.5;
     private $colIndexW = 75;
-    private $colProdutoW = 30;
+    private $colProdutoW = 24;
     private $colCubagemW= 27;
-    private $colPesoW = 30;
-    private $colVolumesW = 30;
-    private $colPaletesW = 30;
+    private $colPesoW = 24;
+    private $colVolumesW = 24;
+    private $colPaletesW = 24;
+    private $colCargasW = 24;
     private $dataInicio;
     private $dataFim;
     private $orientacao;
@@ -117,6 +118,7 @@ class Apontamento extends Pdf
         $tCubagem = 0;
         $tPeso = 0;
         $tPalete = 0;
+        $tCarga = 0;
         foreach ($rowsGroup as $key => $row) {
 
             $qtdProduto = (!empty($row['QTD_PRODUTOS']))?$row['QTD_PRODUTOS']:0;
@@ -134,6 +136,9 @@ class Apontamento extends Pdf
             $qtdPaletes = (!empty($row['QTD_PALETES']))?$row['QTD_PALETES']:0;
             $tPalete += $qtdPaletes;
 
+            $qtdCarga = (!empty($row['QTD_CARGA'])) ? $row['QTD_CARGA'] : 0;
+            $tCarga += $qtdCarga;
+
             /*$posicaoAtual = $this->GetY();
             $next = (isset($rowsGroup[$key + 1]))? $lineH : $lineH + $groupEndH;
             $heightRestante = $pageH - $posicaoAtual - $footerH - $next;*/
@@ -147,19 +152,19 @@ class Apontamento extends Pdf
                 $i = 1;
             }
 
-            self::addListRow($lineH, $row[$keyRow], $qtdProduto, $qtdCubagem, $qtdPeso, $qtdVolumes, $qtdPaletes);
+            self::addListRow($lineH, $row[$keyRow], $qtdProduto, $qtdCubagem, $qtdPeso, $qtdVolumes, $qtdPaletes, $qtdCarga);
 
             $endLineY = $startYGroup + ($lineH * $i);
             $this->Line($marginL + 10, $endLineY, $marginR, $endLineY);
             $i++;
         }
 
-        self::endGroup($lineH, $tItens, $tCubagem, $tPeso, $tVolumes, $tPalete, $i, $startYGroup, $marginL, $marginR);
+        self::endGroup($lineH, $tItens, $tCubagem, $tPeso, $tVolumes, $tPalete, $i, $startYGroup, $marginL, $marginR, $tCarga);
 
         return $this->GetY();
     }
 
-    private function addListRow($lineH, $index, $qtdProduto, $qtdCubagem, $qtdPeso, $qtdVolumes, $qtdPaletes)
+    private function addListRow($lineH, $index, $qtdProduto, $qtdCubagem, $qtdPeso, $qtdVolumes, $qtdPaletes, $qtdCarga)
     {
         $this->Cell($this->offsetListW, $lineH);
         $cellWidth = $this->colIndexW;
@@ -169,7 +174,8 @@ class Apontamento extends Pdf
         //$this->Cell($this->colCubagemW, $lineH, $qtdCubagem,0,0);
         $this->Cell($this->colPesoW, $lineH, number_format($qtdPeso,2),0,0);
         $this->Cell($this->colVolumesW, $lineH, number_format($qtdVolumes,2),0,0);
-        $this->Cell($this->colPaletesW, $lineH, number_format($qtdPaletes,2),0,1);
+        $this->Cell($this->colPaletesW, $lineH, number_format($qtdPaletes,2),0,0);
+        $this->Cell($this->colCargasW, $lineH, number_format($qtdCarga,2),0,1);
     }
 
     private function startGroup($startY, $groupIndex, $headGroup)
@@ -196,10 +202,11 @@ class Apontamento extends Pdf
         //$this->Cell($this->colCubagemW, $sergH, utf8_decode("Cubagem"));
         $this->Cell($this->colPesoW, $sergH, utf8_decode("Peso"));
         $this->Cell($this->colVolumesW, $sergH, utf8_decode("Volumes"));
-        $this->Cell($this->colPaletesW, $sergH, utf8_decode("Paletes"),0,1);
+        $this->Cell($this->colPaletesW, $sergH, utf8_decode("Paletes"));
+        $this->Cell($this->colCargasW, $sergH, 'Cargas',0,1);
     }
 
-    private function endGroup($lineH, $tItens, $tCubagem, $tPeso, $tVolumes, $tPalete, $i, $startYGroup, $marginL, $marginR)
+    private function endGroup($lineH, $tItens, $tCubagem, $tPeso, $tVolumes, $tPalete, $i, $startYGroup, $marginL, $marginR, $tCarga)
     {
         $this->SetFont('Arial','B',10);
         $this->Cell($this->offsetListW, $lineH);
@@ -208,7 +215,8 @@ class Apontamento extends Pdf
         //$this->Cell($this->colCubagemW, $lineH, $tCubagem,0,0);
         $this->Cell($this->colPesoW, $lineH, number_format($tPeso,2),0,0);
         $this->Cell($this->colVolumesW, $lineH, number_format($tVolumes,2),0,0);
-        $this->Cell($this->colPaletesW, $lineH, number_format($tPalete,2),0,1);
+        $this->Cell($this->colPaletesW, $lineH, number_format($tPalete,2),0,0);
+        $this->Cell($this->colCargasW, $lineH, number_format($tCarga,2),0,1);
 
         $endGroupY = $startYGroup + ($lineH * $i) ;
         $this->Line($marginL, $endGroupY, $marginR, $endGroupY);
