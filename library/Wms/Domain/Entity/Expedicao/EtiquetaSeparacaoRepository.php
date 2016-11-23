@@ -987,7 +987,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
 
-            $this->atualizaMapaSeparacaoProduto($idExpedicao);
+            $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
 
             $this->_em->flush();
             $this->_em->clear();
@@ -1005,18 +1005,32 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
-    private function atualizaMapaSeparacaoProduto($idExpedicao)
+    private function atualizaMapaSeparacaoProduto($idExpedicao, $arrRepo = null)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
-        $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-        $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
-        $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
-        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $produtoRepo = $this->_em->getRepository('wms:Produto');
+
+        if ($arrRepo == null) {
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
+            $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+            $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $this->_em->getRepository('wms:Produto');
+        } else {
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
+            $mapaProdutoRepo = $arrRepo['mapaSeparacaoProduto'];
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $arrRepo['mapaSeparacao'];
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+            $pedidoProdutoRepo = $arrRepo['pedidoProduto'];
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $arrRepo['produtoEmbalagem'];
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $arrRepo['produto'];
+        }
 
         $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
 
@@ -1476,13 +1490,22 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto = null;
             $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
             if (!empty($mapaProdutos)) {
-                foreach ($mapaProdutos as $value) {
-                    $pessoaId = $value->getPedidoProduto()->getPedido()->getPessoa()->getId();
-                    $pessoaIdPedido = $pedidoEntity->getPessoa()->getId();
-                    if ($pessoaIdPedido == $pessoaId) {
-                        $mapaProduto = $value;
-                        break;
+                $mapa = $mapaProdutos[0];
+                $idMapa = $mapa->getMapaSeparacao()->getId();
+
+                $sql = "SELECT * FROM MAPA_SEPARACAO_QUEBRA WHERE COD_MAPA_SEPARACAO = " . $idMapa . " AND IND_TIPO_QUEBRA = 'T'";
+                $result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                if (count($result) >0) {
+                    foreach ($mapaProdutos as $value) {
+                        $pessoaId = $value->getPedidoProduto()->getPedido()->getPessoa()->getId();
+                        $pessoaIdPedido = $pedidoEntity->getPessoa()->getId();
+                        if ($pessoaIdPedido == $pessoaId) {
+                            $mapaProduto = $value;
+                            break;
+                        }
                     }
+                } else {
+                    $mapaProduto = $mapaProdutos[0];
                 }
             }
         }
