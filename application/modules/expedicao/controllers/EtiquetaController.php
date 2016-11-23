@@ -45,6 +45,7 @@ class Expedicao_EtiquetaController  extends Action
             'mapaSeparacao'       => $em->getRepository('wms:Expedicao\MapaSeparacao'),
             'andamentoNf'         => $em->getRepository('wms:Expedicao\NotaFiscalSaidaAndamento'),
             'reentrega'           => $em->getRepository('wms:Expedicao\Reentrega'),
+            'pedidoProduto'       => $em->getRepository('wms:Expedicao\PedidoProduto'),
             'nfPedido'            => $em->getRepository('wms:Expedicao\NotaFiscalSaidaPedido'),
             'nfSaida'             => $em->getRepository('wms:Expedicao\NotaFiscalSaida'),
             'produto'             => $em->getRepository('wms:Produto')
