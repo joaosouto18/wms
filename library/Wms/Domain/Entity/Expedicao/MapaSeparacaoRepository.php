@@ -344,7 +344,7 @@ class MapaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function getQtdConferenciaAberta($embalagemEn, $volumeEn, $mapaEn){
+    public function getQtdConferenciaAberta($embalagemEn, $volumeEn, $mapaEn, $codPessoa){
         $sqlVolume = "";
         $idMapa = $mapaEn->getId();
         if ($embalagemEn != null) {
@@ -363,6 +363,7 @@ class MapaSeparacaoRepository extends EntityRepository
                    AND C.COD_MAPA_SEPARACAO = '$idMapa'
                    $sqlVolume
                    AND C.IND_CONFERENCIA_FECHADA = 'N'
+                   AND C.COD_PESSOA = $codPessoa
               GROUP BY C.NUM_CONFERENCIA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -448,6 +449,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
         $novaConferencia->setMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
         $novaConferencia->setDataConferencia(new \DateTime());
+        $novaConferencia->setCodPessoa($codPessoa);
         $this->getEntityManager()->persist($novaConferencia);
         $this->getEntityManager()->flush();
 

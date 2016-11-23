@@ -170,7 +170,7 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
-        if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
+        if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = (float) $codBarras;
 
