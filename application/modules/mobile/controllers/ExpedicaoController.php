@@ -146,6 +146,11 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idPessoa = $codPessoa;
         $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
+        $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
+        if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
+            //BLOQUEIA COLETOR
+        }
+
         $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
