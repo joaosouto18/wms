@@ -308,6 +308,7 @@ class Expedicao
                 return false;
             }
         }
+
         $resultado = $this->getExpedicaoRepo()->criarOrdemServico($idExpedicao);
         $this->getSessaoColetor()->osID = $resultado['id'];
         return true;
