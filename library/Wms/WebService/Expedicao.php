@@ -525,10 +525,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto->codProduto = $item['COD_PRODUTO'];
                 $produto->grade = $item['DSC_GRADE'];
                 $produto->quantidade = $item['QTD_PEDIDO'];
-                if (is_null($item['QTD_ATENDIDA'])) {
+                if (is_null($item['ATENDIDA'])) {
                     $produto->quantidadeAtendida = 0;
                 } else {
-                    $produto->quantidadeAtendida = $item['QTD_ATENDIDA'];
+                    if ($pedidoEn->getCarga()->getExpedicao()->getStatus()->getId() == EXPEDICAO::STATUS_FINALIZADO) {
+                        $produto->quantidadeAtendida = $item['ATENDIDA'];
+                    } else {
+                        $produto->quantidadeAtendida = 0;
+                    }
                 }
                 $pedido->produtos[] = $produto;
             }
@@ -601,12 +605,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {
-                if ($pedidoEn->getCarga()->getExpedicao()->getStatus() == EXPEDICAO::STATUS_FINALIZADO) {
+                if ($pedidoEn->getCarga()->getExpedicao()->getStatus()->getId() == EXPEDICAO::STATUS_FINALIZADO) {
                     $produto->quantidadeAtendida = $item['ATENDIDA'];
                 } else {
                     $produto->quantidadeAtendida = 0;
                 }
-
             }
             $result->produtos[] = $produto;
         }
