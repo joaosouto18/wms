@@ -356,6 +356,12 @@ class MapaSeparacaoRepository extends EntityRepository
             $sqlVolume = " AND C.COD_PRODUTO_VOLUME = " .$volumeEn->getId();
         }
 
+        if ($codPessoa == null){
+            $sqlPessoa = " IS NULL";
+        } else {
+            $sqlPessoa = " = ". $codPessoa;
+        }
+
         $SQL = "SELECT C.NUM_CONFERENCIA, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
                   FROM MAPA_SEPARACAO_CONFERENCIA C
                  WHERE C.COD_PRODUTO = '$idProduto'
@@ -363,7 +369,7 @@ class MapaSeparacaoRepository extends EntityRepository
                    AND C.COD_MAPA_SEPARACAO = '$idMapa'
                    $sqlVolume
                    AND C.IND_CONFERENCIA_FECHADA = 'N'
-                   AND C.COD_PESSOA = $codPessoa
+                   AND C.COD_PESSOA ". $sqlPessoa."
               GROUP BY C.NUM_CONFERENCIA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
