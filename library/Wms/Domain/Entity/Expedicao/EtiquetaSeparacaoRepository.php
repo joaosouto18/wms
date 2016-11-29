@@ -857,6 +857,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
                     while ($quantidadeRestantePedido > 0) {
+
                         $embalagemAtual = null;
                         $quantidadeAtender = $quantidadeRestantePedido;
 
@@ -953,10 +954,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                                 if (array_key_exists($pedidoProduto->getId(),$arrMapasEmbPP)) {
                                     if (array_key_exists($embalagemAtual->getId(),$arrMapasEmbPP[$pedidoProduto->getId()])) {
-                                        if (isset($depositoEnderecoEn) && empty($depositoEnderecoEn)) {
-                                            if (array_key_exists($depositoEnderecoEn->getId(),$arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()])) {
-                                                $encontrouPP = true;
-                                            }
+                                        if (array_key_exists($idEndereco,$arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()])) {
+                                            $encontrouPP = true;
                                         }
                                     }
                                 }
@@ -991,13 +990,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $produtoEn       = $pedidoProdutoEn->getProduto();
                         $enderecoEn      = $arrayRepositorios['depositoEndereco']->find($idEndereco);
                         $cubagem         = $valores['cubagem'];
+
                         $this->salvaMapaSeparacaoProduto($mapaSeparacaoEn,$produtoEn,$qtdMapa,null,$embalagemEn,$pedidoProdutoEn,$enderecoEn,$cubagem,$pedidoEn,$arrayRepositorios);
                     }
                 }
             }
 //            exit;
 
-//            $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
+            $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
 
             $this->_em->flush();
             $this->_em->clear();
