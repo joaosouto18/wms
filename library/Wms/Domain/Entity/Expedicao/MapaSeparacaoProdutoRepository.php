@@ -73,7 +73,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->andWhere("msp.numCaixaInicio is not null and msp.numCaixaFim is not null")
             ->orderBy('msp.id, msp.numCaixaInicio, msp.numCaixaFim', 'DESC');
 
-        if ($novoCliente == false && isset($pedidoEntity) && !empty($pedidoEntity)) {
+        if ($novoCliente == false) {
             $sql->andWhere("p.pessoa = ".$pedidoEntity->getPessoa()->getId());
         }
 
