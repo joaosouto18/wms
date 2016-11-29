@@ -1508,10 +1508,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $separacaoConsolidada = true;
                     foreach ($mapaProdutos as $value) {
                         $pessoaId = $value->getPedidoProduto()->getPedido()->getPessoa()->getId();
-                        $pessoaIdPedido = $pedidoEntity->getPessoa()->getId();
-                        if ($pessoaIdPedido == $pessoaId) {
-                            $mapaProduto = $value;
-                            break;
+                        if (isset($pedidoEntity) && !empty($pedidoEntity)) {
+                            $pessoaIdPedido = $pedidoEntity->getPessoa()->getId();
+                            if ($pessoaIdPedido == $pessoaId) {
+                                $mapaProduto = $value;
+                                break;
+                            }
                         }
                     }
                 } else {
