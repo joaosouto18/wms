@@ -953,8 +953,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                                 if (array_key_exists($pedidoProduto->getId(),$arrMapasEmbPP)) {
                                     if (array_key_exists($embalagemAtual->getId(),$arrMapasEmbPP[$pedidoProduto->getId()])) {
-                                        if (array_key_exists($depositoEnderecoEn->getId(),$arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()])) {
-                                            $encontrouPP = true;
+                                        if (isset($depositoEnderecoEn->getId()) && empty($depositoEnderecoEn->getId())) {
+                                            if (array_key_exists($depositoEnderecoEn->getId(),$arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()])) {
+                                                $encontrouPP = true;
+                                            }
                                         }
                                     }
                                 }
