@@ -8,11 +8,6 @@
             });
         });
 
-
-
-
-
-
         $('.btn').click(function () {
 
             $.ajax({
@@ -22,6 +17,7 @@
                     cargas: $('input[type="checkbox"]:checked').val()
                 },
                 success: function(data){
+                    location.href = 'expedicao/'
 //                    if (data.result) {
 //                        if (data.result != true) {
 //                            alert(data.result);
@@ -70,12 +66,6 @@
             <li>
                 <input type="button" class="btn" id="<?php echo $central['centralEntrega'] ?>" value="Central <?php echo $central['centralEntrega'] ?>" name="central-<?php echo $central['centralEntrega'] ?>">
             </li>
-<!--        <li>-->
-<!--            <a href="--><?php //echo $this->url(array('module' => 'expedicao' ,'controller' => $this->controller, 'action' => $this->action, 'id' => $this->expedicao, 'central' => $central['centralEntrega']),'default',true) ?><!--">-->
-<!--            <img style="vertical-align: middle" src="--><?php //echo $this->baseUrl('img/icons/page_white_acrobat.png') ?><!--" alt="#" />-->
-<!--            Central --><?php //echo $central['centralEntrega'] ?>
-<!--            </a>-->
-<!--        </li>-->
         <?php endforeach; ?>
     </ul>
 </div>

@@ -92,32 +92,52 @@ class Expedicao_EtiquetaController  extends Action
                 $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
             }
 
-            $linkEtiqueta = "";
-            $linkMapa = "";
 
-            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0)
-                $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
-            if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)
-                $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
 
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
-            $linkReentrega = "";
-            if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') =='S') {
-                $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao);
-                if (count($qtdReentrega) >0){
-                    $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'todas'=>'N', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
-                }
-            }
+
 
             $this->getEntityManager()->commit();
 
-            if (($linkMapa != "") && ($linkEtiqueta != "")) {
-                $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta . $linkReentrega ;
-            } else {
-                $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
-            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//            $linkEtiqueta = "";
+//            $linkMapa = "";
+//
+//            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0)
+//                $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
+//            if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)
+//                $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
+//
+//            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
+//            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+//
+//            $linkReentrega = "";
+//            if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') =='S') {
+//                $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao);
+//                if (count($qtdReentrega) >0){
+//                    $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'todas'=>'N', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
+//                }
+//            }
+//
+//            $this->getEntityManager()->commit();
+//
+//            if (($linkMapa != "") && ($linkEtiqueta != "")) {
+//                $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta . $linkReentrega ;
+//            } else {
+//                $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
+//            }
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
@@ -125,6 +145,11 @@ class Expedicao_EtiquetaController  extends Action
 
         $this->addFlashMessage('success', $mensagem );
         $this->_redirect('/expedicao');
+
+    }
+
+    public function gerarPdfQuebraAjaxAction()
+    {
 
     }
 
