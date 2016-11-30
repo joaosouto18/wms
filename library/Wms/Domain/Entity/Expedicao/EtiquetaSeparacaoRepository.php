@@ -1003,7 +1003,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
 
-            $parametroConsistencia = (int)$this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
+            $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
                 if (count($resultadoConsistencia) > 0) {
