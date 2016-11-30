@@ -1003,9 +1003,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
 
-            $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
-            if (count($resultadoConsistencia) > 0) {
-                throw new \Exception('Existe problemas com a geração dos mapas, entre em contato com o suporte!');
+            $parametroConsistencia = (int)$this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
+            if ($parametroConsistencia == 'S') {
+                $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
+                if (count($resultadoConsistencia) > 0) {
+                    throw new \Exception('Existe problemas com a geração dos mapas, entre em contato com o suporte!');
+                }
             }
 
             $this->_em->flush();
