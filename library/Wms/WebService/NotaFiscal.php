@@ -93,7 +93,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
             'serie' => $serie,
-            'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao),
+            //'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao),
             'status' => $idStatus,
         ));
 
@@ -162,7 +162,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
             'serie' => $serie,
-            'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao)
+            //'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao)
         ));
 
         if ($notaFiscalEntity == null)
@@ -395,7 +395,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
             'serie' => $serie,
-            'dataEmissao' => $dataEmissao,
+            //'dataEmissao' => $dataEmissao,
         ));
 
         $em->getRepository('wms:NotaFiscal')->descartar($notaFiscalEntity->getId(), $observacao);
