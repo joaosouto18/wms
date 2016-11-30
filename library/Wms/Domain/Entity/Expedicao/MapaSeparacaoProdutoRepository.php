@@ -81,4 +81,25 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     }
 
+    public function verificaConsistenciaSeguranca($idExpedicao)
+    {
+        $sql = "SELECT *
+                    FROM (SELECT SUM(PP.QUANTIDADE) AS QTD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE
+                      FROM PEDIDO P
+                      INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                      INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                      WHERE C.COD_EXPEDICAO = $idExpedicao AND P.IND_ETIQUETA_MAPA_GERADO = 'S'
+                      GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PP
+                    LEFT JOIN (
+                      SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) AS QTD_MAPA, MSP.COD_PRODUTO, MSP.DSC_GRADE
+                      FROM MAPA_SEPARACAO MS
+                      INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                      WHERE MS.COD_EXPEDICAO = $idExpedicao
+                      GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE) MSP ON MSP.COD_PRODUTO = PP.COD_PRODUTO AND MSP.DSC_GRADE = PP.DSC_GRADE
+                    WHERE QTD_PEDIDO <> QTD_MAPA";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+    }
+
 }

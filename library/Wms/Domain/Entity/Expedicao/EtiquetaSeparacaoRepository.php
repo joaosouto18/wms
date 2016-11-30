@@ -705,14 +705,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function gerarMapaEtiqueta($idExpedicao, array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idModeloSeparacao, $arrayRepositorios)
     {
-        $this->getEntityManager()->beginTransaction();
         $depositoEnderecoRepo    = $arrayRepositorios['depositoEndereco'];
         $filialRepository        = $arrayRepositorios['filial'];
         $modeloSeparacaoRepo     = $arrayRepositorios['modeloSeparacao'];
         $etiquetaConferenciaRepo = $arrayRepositorios['etiquetaConferencia'];
+        $mapaSeparacaoRepo       = $arrayRepositorios['mapaSeparacaoProduto'];
         $verificaReentrega       = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
-
-        $tempoInicial = round(microtime(true) * 1000);
 
         try {
             if ( empty($status) ){
@@ -807,7 +805,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                                 if ($filial == null) {
-                                    throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                                    throw new \Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
                                 }
                                 if ($filial->getIndUtilizaRessuprimento() == "S") {
                                     $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
@@ -843,7 +841,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
-                                throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                                throw new \Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
                             }
                             if ($filial->getIndUtilizaRessuprimento() == "S") {
                                 $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
@@ -969,7 +967,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] + 1;
                                 } else {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
-                                        'qtd'=> 1,
+                                        'qtd'=> 2,
                                         'consolidado' => $consolidado,
                                         'mapa'=> $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity, $arrayRepositorios),
                                         'cubagem' => $cubagem);
@@ -1005,11 +1003,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
 
+            $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
+            if (count($resultadoConsistencia) > 0) {
+                throw new \Exception('Existe problemas com a geração dos mapas, entre em contato com o suporte!');
+            }
+
             $this->_em->flush();
             $this->_em->clear();
-            $this->getEntityManager()->commit();
+//            $this->_em->commit();
         } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
+//            $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
 
@@ -1050,7 +1053,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'tipoQuebra' => 'T'));
             if (isset($mapaSeparacaoQuebraEn) && !empty($mapaSeparacaoQuebraEn))
                 continue;
-            
+
             $mapaProdutosByMapa = $mapaProdutoRepo->getMapaProdutoByMapa($mapaSeparacao->getId());
             foreach ($mapaProdutosByMapa as $mapaProduto) {
                 $idMapaSeparacao = $mapaProduto['id'];
