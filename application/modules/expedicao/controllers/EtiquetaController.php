@@ -118,12 +118,12 @@ class Expedicao_EtiquetaController  extends Action
             } else {
                 $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
             }
+            $this->addFlashMessage('success', $mensagem );
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
-            throw new \Exception($e->getMessage());
+            $this->_helper->messenger('error', $e->getMessage());
         }
 
-        $this->addFlashMessage('success', $mensagem );
         $this->_redirect('/expedicao');
 
     }
@@ -369,7 +369,7 @@ class Expedicao_EtiquetaController  extends Action
                 $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao, $arrayRepositorios);
             }
         } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            throw new \Exception($e->getMessage());
         }
     }
 

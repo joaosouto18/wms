@@ -967,7 +967,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] = $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] + 1;
                                 } else {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
-                                        'qtd'=> 2,
+                                        'qtd'=> 1,
                                         'consolidado' => $consolidado,
                                         'mapa'=> $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasFracionado, $statusEntity, $expedicaoEntity, $arrayRepositorios),
                                         'cubagem' => $cubagem);
@@ -1010,9 +1010,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->_em->flush();
             $this->_em->clear();
-//            $this->_em->commit();
         } catch (\Exception $e) {
-//            $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
 
