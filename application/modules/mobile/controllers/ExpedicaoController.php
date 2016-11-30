@@ -94,7 +94,8 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         try {
-            if (isset($submit)) {
+            $conferir = 'Conferir';
+            if (isset($submit) || isset($conferir)) {
                 $idEmbalado = $LeituraColetor->retiraDigitoIdentificador($idEmbalado);
                 $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado);
                 $this->addFlashMessage('success',"Volume embalado $idEmbalado conferido com sucesso!");
