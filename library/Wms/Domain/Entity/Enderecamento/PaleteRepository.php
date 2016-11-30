@@ -76,7 +76,11 @@ class PaleteRepository extends EntityRepository
 
         if (isset($status) && (!empty($status))) {
             if ($filter == true) {$queryWhere = $queryWhere . " AND ";}
-            $queryWhere = $queryWhere . " R.COD_STATUS = $status";
+            if ($status != 536) {
+                $queryWhere = $queryWhere . " R.COD_STATUS = $status";
+            } else {
+                $queryWhere .= " R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) ";
+            }
             $filter = true;
         }
 
