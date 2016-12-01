@@ -84,7 +84,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     public function verificaConsistenciaSeguranca($idExpedicao)
     {
         $sql = "SELECT *
-                    FROM (SELECT SUM(PP.QUANTIDADE - PP.QTD_CORTADA) AS QTD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE
+                    FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) AS QTD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE
                       FROM PEDIDO P
                       INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                       INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
