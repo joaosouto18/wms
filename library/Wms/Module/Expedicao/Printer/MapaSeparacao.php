@@ -700,33 +700,39 @@ class MapaSeparacao extends Pdf
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
                 }
                 if ($ruaAnterior != $rua) {
-                    $this->Cell(20, 3, "", 0, 1);
+                    $this->Cell(20, 7, "", 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+                    $this->Cell(24, 2, utf8_decode("EXPEDIÇÃO: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(4, 4, utf8_decode( $this->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
+                    $this->Cell(4, 2, utf8_decode( $this->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
 
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(4, 4, '', 0, 1);
+                    $this->Cell(4, 2, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
+                    $this->Cell(20, 2, utf8_decode("QUEBRAS: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
+                    $this->Cell(20, 2, utf8_decode($this->quebrasEtiqueta), 0, 1);
 
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(4, 4, '', 0, 1);
+                    $this->Cell(4, 2, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 4, utf8_decode("ROTA: "), 0, 0);
+                    $this->Cell(20, 2, utf8_decode("ROTA: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 4, utf8_decode($linhaSeparacao), 0, 1);
-
+                    $this->Cell(20, 2, utf8_decode($linhaSeparacao), 0, 1);
 
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(4, 4, '', 0, 1);
+                    $this->Cell(4, 2, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 4, utf8_decode("RUA: "), 0, 0);
+                    $this->Cell(20, 2, utf8_decode("RUA: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 4, utf8_decode($rua), 0, 1);
+                    $this->Cell(20, 2, utf8_decode($rua), 0, 1);
+
+                    $this->SetFont('Arial',null,10);
+                    $this->Cell(4, 2, '', 0, 1);
+                    $this->SetFont('Arial','B',10);
+                    $this->Cell(20, 2, utf8_decode("PLACA: "), 0, 0);
+                    $this->SetFont('Arial',null,10);
+                    $this->Cell(20, 2, utf8_decode($cargaEn->getPlacaCarga()), 0, 1);
 
                     $this->Cell(20, 4, "", 0, 1);
                     $this->SetFont('Arial', 'B', 8);
@@ -794,19 +800,27 @@ class MapaSeparacao extends Pdf
             $wPage = $pageSizeA4[0]/12;
 
             $this->SetY(-23);
-            $this->SetFont('Arial','B',10);
-            $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
-            $this->SetFont('Arial',null,10);
-            $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
-            $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
-
             $this->SetFont('Arial','B',9);
+            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".utf8_decode($this->quebrasEtiqueta)), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
             $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
             $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
-
             $this->Image($this->imgCodBarras, 143, 280, 50);
+
+            $this->SetY(-50);
+            $this->SetFont('Arial','B',9);
+            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".utf8_decode($this->quebrasEtiqueta)), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+            $this->Image($this->imgCodBarras, 143, 253, 50);
+
             $this->InFooter = false;
 
         }
