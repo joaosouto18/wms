@@ -2203,8 +2203,273 @@ class ExpedicaoRepository extends EntityRepository
         }
     }
 
+    public function getUrlMobileByCodBarras($codBarras){
+        $LeituraColetor = new LeituraColetor();
+        $codBarras = (float) $codBarras;
+        $tipoEtiqueta  = null;
+
+        if (strlen($codBarras) >2){
+            if ((substr($codBarras,0,2)) == "39") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
+            }
+            if ((substr($codBarras,0,2)) == "69") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
+            }
+            if ((substr($codBarras,0,2)) == "68") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
+            }
+
+            if ((substr($codBarras,0,2)) == "10") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
+            }
+            if ((substr($codBarras,0,2)) == "11") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE;
+            }
+            if ((substr($codBarras,0,2)) == "12") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO;
+            }
+            if ((substr($codBarras,0,2)) == "13") {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
+            }
+            if (substr($codBarras,0,2) == '14') {
+                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO;
+            }
+        }
+
+        //ETIQUETA DE VOLUME
+        $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+        $volumeEn = $volumeRepo->find($codBarras);
+        if ($volumeEn != null) {
+            $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
+        }
+
+        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
+            //ETIQUETA DE SEPARAÇÃO
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+            $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
+            if ($etiquetaSeparacao == null) {
+                throw new \Exception("Nenhuma Etiqueta de Separação encontrada com o codigo de barras " . $codBarras);
+            }
+            $idExpedicao = 0;
+            $placa = "";
+            $carga = "";
+
+            if ($etiquetaSeparacao->getReentrega() != null) {
+                $idExpedicao = $etiquetaSeparacao->getReentrega()->getCarga()->getExpedicao()->getId();
+
+                $operacao = "Conferencia de Etiqueta de Reentrega";
+                $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
+            } else {
+                switch ($etiquetaSeparacao->getStatus()->getId()){
+                    case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
+                        throw new \Exception("Etiqueta pendente de impresão");
+                        break;
+                    case EtiquetaSeparacao::STATUS_CORTADO:
+                        throw new \Exception("Etiqueta Cortada");
+                        break;
+                    case EtiquetaSeparacao::STATUS_PENDENTE_CORTE:
+                        throw new \Exception("Etiqueta Pendente de Corte");
+                        break;
+                    case EtiquetaSeparacao::STATUS_CONFERIDO:
+                        $expedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao();
+                        $idExpedicao = $expedicao->getId();
+                        $placa    = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                        $carga    = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                        $idStatus = $expedicao->getStatus()->getId();
+
+                        if ($idStatus == Expedicao::STATUS_PARCIALMENTE_FINALIZADO){
+                            $idFilialExterno = $etiquetaSeparacao->getPedido()->getPontoTransbordo();
+                            $filialEn = $this->getEntityManager()->getRepository("wms:Filial")->findOneBy(array('codExterno'=>$idFilialExterno));
+                            if ($filialEn == null) {
+                                throw new \Exception("Nenhuma filial encontrada com o código " . $idFilialExterno);
+                            }
+
+                            if ($filialEn->getIndRecTransbObg() == "S") {
+                                $operacao = "Recebimento de Transbordo";
+                                $url      = "/mobile/recebimento-transbordo/ler-codigo-barras/idExpedicao/".$idExpedicao;
+                            } else {
+                                $operacao    = "Expedição de Transbordo";
+                                $url =       "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
+                            }
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
+
+                        }
+                        if ($idStatus == Expedicao::STATUS_FINALIZADO) {
+                            throw new \Exception("Expedição Finalizada");
+                        }
+                    case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
+                        $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+
+                        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+                        $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
+                        if ($modeloSeparacao == null) throw new \Exception("Modelo de Separação não encontrado");
+                        $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
+
+                        $embalado = false;
+                        if ($embalagem != null) {
+                            if ($modeloSeparacao->getTipoDefaultEmbalado() == "P") {
+                                if ($embalagem->getEmbalado() == "S") {
+                                    $embalado = true;
+                                }
+                            } else {
+                                $embalagens = $etiquetaSeparacao->getProduto()->getEmbalagens();
+                                foreach ($embalagens as $emb){
+                                    if ($emb->getIsPadrao() == "S") {
+                                        if ($embalagem->getQuantidade() < $emb->getQuantidade()) {
+                                            $embalado = true;
+                                        }
+                                        break;
+                                    }
+                                }
+
+                            }
+                        }
+
+                        if ($embalado == true) {
+
+                            if ($modeloSeparacao->getTipoQuebraVolume() == "C") {
+                                $idCliente     = $etiquetaSeparacao->getPedido()->getPessoa()->getCodClienteExterno();
+                                $idTipoVolume = $idCliente;
+                            } else {
+                                $idCarga       = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                                $idTipoVolume = $idCarga;
+                            }
+
+                            $operacao = "Conferencia de Embalados";
+                            $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/idTipoVolume/$idTipoVolume";
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'carga'=>$carga, 'parcialmenteFinalizado'=>false);
+                        } else {
+                            $operacao = "Conferencia de Etiquetas de Separação";
+                            $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
+                        }
+                        break;
+                    case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO:
+                        $expedicaoEn = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao();
+
+                        if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
+                            throw new \Exception("Expedição já finalizada");
+                        } else {
+                            $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+                            $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                            $carga       = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                            $operacao    = "Expedição de Transbordo";
+                            $url =       "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
+
+                            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
+                        }
+                        break;
+                    case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO:
+                        $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
+                        $placa       = $etiquetaSeparacao->getPedido()->getCarga()->getPlacaCarga();
+                        $carga = $etiquetaSeparacao->getPedido()->getCarga()->getCodCargaExterno();
+                        $operacao = "Expedição de Transbordo";
+                        $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/placa/$placa";
+
+                        return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'placa'=>$placa,'carga'=>$carga, 'parcialmenteFinalizado' => true);
+                        break;
+                }
+            }
 
 
+            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao ,'parcialmenteFinalizado'=>false);
+        }
+        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE) {
+            //ETIQUETA MÃE
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+            $etiquetaMae = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaMae")->find($codBarras);
+            if ($etiquetaMae == null) throw new \Exception("Nenhuma etiqueta mãe encontrada com este código de barras $codBarras");
+
+            $etiquetas = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao")->findBy(array('codEtiquetaMae'=>$codBarras));
+            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+
+            $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
+            if ($modeloSeparacao == null) throw new \Exception("Modelo de Separação não encontrado");
+
+            $embalado = false;
+            $idCliente   = 0;
+            $idCarga     = 0;
+            $idExpedicao = 0;
+            foreach ($etiquetas as $etiqueta){
+                $idCliente     = $etiqueta->getPedido()->getPessoa()->getCodClienteExterno();
+                $idCarga       = $etiqueta->getPedido()->getCarga()->getId();
+                $idExpedicao   = $etiqueta->getPedido()->getCarga()->getExpedicao()->getId();
+
+                $embalagem = $etiqueta->getProdutoEmbalagem();
+                $embalado = false;
+                if ($embalagem != null) {
+                    if ($modeloSeparacao->getTipoDefaultEmbalado() == "P") {
+                        if ($embalagem->getEmbalado() == "S") {
+                            $embalado = true;
+                        }
+                    } else {
+                        $embalagens = $etiqueta->getProduto()->getEmbalagens();
+                        foreach ($embalagens as $emb){
+                            if ($emb->getIsPadrao() == "S") {
+                                if ($embalagem->getQuantidade() < $emb->getQuantidade()) {
+                                    $embalado = true;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                if ($embalado == true) break;
+            }
+
+            if ($embalado == true) {
+                if ($modeloSeparacao->getTipoQuebraVolume() == "C") {
+                    $idTipoVolume = $idCliente;
+                } else {
+                    $idTipoVolume = $idCarga;
+                }
+                $operacao = "Conferencia de Embalados";
+                $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/idTipoVolume/$idTipoVolume";
+            } else {
+                $operacao = "Conferencia de Etiquetas de Separação";
+                $url = "/mobile/expedicao/ler-codigo-barras/idExpedicao/$idExpedicao/tipo-conferencia/naoembalado";
+            }
+            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+        }
+        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO) {
+            //MAPA DE SEPARAÇÃO
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+            $mapaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codBarras);
+            if ($mapaSeparacao == NULL) throw new \Exception("Nenhum mapa de separação encontrado com o códgo ". $codBarras);
+            $idExpedicao = $mapaSeparacao->getExpedicao()->getId();
+            $operacao = "Conferencia do Mapa cód. $codBarras";
+            $url = "/mobile/expedicao/ler-produto-mapa/idMapa/$codBarras/idExpedicao/$idExpedicao";
+            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+        }
+        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO) {
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+            $mapaSeparacaoEmbalado = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoEmbalado',$codBarras);
+            if ($mapaSeparacaoEmbalado == null) throw new \Exception("Nenhum volume embalado encontrado com o códgo ". $codBarras);
+            $idMapa = $mapaSeparacaoEmbalado->getMapaSeparacao()->getId();
+            $idExpedicao = $mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getId();
+            $operacao = "Conferencia dos volumes embalados do Mapa cód. $idMapa";
+            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao";
+            return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
+        }
+        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
+            //ETIQUETA DE VOLUME
+            $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+            $volumeEn = $volumeRepo->find($codBarras);
+            if ($volumeEn == null) throw new \Exception("Nenhum volume patrimonio encontrado com o códgo ". $codBarras);
+            $idExpedicao = $volumeRepo->getExpedicaoByVolume($codBarras,'arr');
+            if (is_array($idExpedicao)) {
+                $idExpedicao = $idExpedicao[0]['expedicao'];
+            } else {
+                throw new \Exception("Nenhuma expedição com o volume ". $codBarras);
+            }
+
+            $operacao = "Conferencia dos volumes no box";
+            $url = "/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/$idExpedicao/box/1";
+            return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
+        }
+
+        throw new \Exception("Código de barras invalido");
+
+    }
 
     public function qtdTotalVolumePatrimonio($idExpedicao)
     {
