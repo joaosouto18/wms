@@ -676,13 +676,16 @@ class MapaSeparacao extends Pdf
                 $this->SetFont('Arial', null, 8);
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
-                $embalagemEn   = $produto->getProdutoEmbalagem();
+                $embalagemEn  = $produto->getProdutoEmbalagem();
                 $rua          = null;
                 $endereco     = $produto->getCodDepositoEndereco();
                 $codProduto   = $produto->getCodProduto();
                 $descricao    = utf8_decode($produto->getProduto()->getDescricao());
                 $quantidade   = $produto->getQtdSeparar();
-                $caixas       = $produto->getNumCaixaInicio().' - '.$produto->getNumCaixaFim();
+                $caixaInicio  = $produto->getNumCaixaInicio();
+                $caixaFim     = $produto->getNumCaixaFim();
+
+                $caixas       = $caixaInicio.' - '.$caixaFim;
                 $dscEndereco  = '';
                 $codigoBarras = '';
                 if ($endereco != null) {

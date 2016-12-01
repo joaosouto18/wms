@@ -1002,6 +1002,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
+            $this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
 
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
@@ -1019,6 +1020,75 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
+    private function atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity)
+    {
+        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+
+        $idExpedicao = $expedicaoEntity->getId();
+        $sql = "SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.NUM_CARRINHO, MS.COD_MAPA_SEPARACAO
+                    FROM MAPA_SEPARACAO MS
+                    INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MSQ.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
+                    WHERE  MSQ.IND_TIPO_QUEBRA = 'T'
+                    AND MS.COD_EXPEDICAO = $idExpedicao
+                    AND MSP.NUM_CAIXA_PC_INI IS NOT NULL
+                    AND MSP.NUM_CAIXA_PC_FIM IS NOT NULL
+                    ORDER BY MSP.NUM_CARRINHO DESC, MSP.NUM_CAIXA_PC_FIM DESC, MSP.NUM_CAIXA_PC_INI DESC";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        for ($numCarrinho = 2; $numCarrinho <= $result[0]['NUM_CARRINHO']; $numCarrinho++) {
+            $mapaSeparacaoEn = new MapaSeparacao();
+            $mapaSeparacaoEn->setExpedicao($expedicaoEntity);
+            $mapaSeparacaoEn->setStatus($statusEntity);
+            $mapaSeparacaoEn->setDataCriacao(new \DateTime());
+            $mapaSeparacaoEn->setDscQuebra('MAPA DE SEPARAÇÃO CONSOLIDADA');
+            $this->getEntityManager()->persist($mapaSeparacaoEn);
+            $mapaSeparacaoEn->setId("12".$mapaSeparacaoEn->getId());
+            $this->getEntityManager()->persist($mapaSeparacaoEn);
+            $this->getEntityManager()->flush();
+            $novoId = $mapaSeparacaoEn->getId();
+            $mapaSeparacaoEn = $mapaSeparacaoRepo->find($novoId);
+
+            $mapaQuebra = new MapaSeparacaoQuebra();
+            $mapaQuebra->setMapaSeparacao($mapaSeparacaoEn);
+            $mapaQuebra->setTipoQuebra('T');
+            $mapaQuebra->setCodQuebra($numCarrinho);
+            $this->getEntityManager()->persist($mapaQuebra);
+
+            if (isset($result) && !empty($result)) {
+                $mapaSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao")->find($result[0]['COD_MAPA_SEPARACAO']);
+                $mapasSeparacaoProdutoEn = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacao, 'numCarrinho' => $numCarrinho));
+                foreach ($mapasSeparacaoProdutoEn as $mapaSeparacaoProdutoEn) {
+
+//                    if ($mapaPedidoEn == null) {
+//                        $mapaPedidoEn = new MapaSeparacaoPedido();
+//                        $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
+//                        $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
+//                        $mapaPedidoEn->setPedidoProduto($pedidoProduto);
+//                        $this->getEntityManager()->persist($mapaPedidoEn);
+//                    }
+
+                    if (($mapaSeparacaoProdutoEn->getNumCaixaFim() - $mapaSeparacaoProdutoEn->getNumCaixaInicio() + 1) > 12) continue;
+
+                    if ($mapaSeparacaoProdutoEn->getNumCaixaInicio() > 12 && $mapaSeparacaoProdutoEn->getNumCaixaFim() > 12) {
+                        $caixaInicio = ($mapaSeparacaoProdutoEn->getNumCaixaInicio() - (12 * ($mapaSeparacaoProdutoEn->getNumCarrinho() - 1)));
+                        $caixaFim = ($mapaSeparacaoProdutoEn->getNumCaixaFim() - (12 * ($mapaSeparacaoProdutoEn->getNumCarrinho() - 1)));
+                    } else if (($mapaSeparacaoProdutoEn->getNumCaixaInicio() <= 12 && $mapaSeparacaoProdutoEn->getNumCaixaFim() > 12)) {
+                        $caixaFim = $mapaSeparacaoProdutoEn->getNumCaixaFim() - $mapaSeparacaoProdutoEn->getNumCaixaInicio() + 1;
+                        $caixaInicio = 1;
+                    }
+                    $mapaSeparacaoProdutoEn->setMapaSeparacao($mapaSeparacaoEn);
+                    $mapaSeparacaoProdutoEn->setNumCaixaInicio($caixaInicio);
+                    $mapaSeparacaoProdutoEn->setNumCaixaFim($caixaFim);
+                    $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+
+                }
+
+            }
+        }
+        $this->getEntityManager()->flush();
+    }
 
     private function atualizaMapaSeparacaoProduto($idExpedicao, $arrRepo = null)
     {
@@ -1277,8 +1347,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function getMapaSeparacao($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity){
 
-        $this->qtdIteracoesMapa = $this->qtdIteracoesMapa + 1;
-
         $codExpedicao    = $expedicaoEntity->getId();
         $qtdQuebras  = 0;
         $SQL_Quebras = "";
@@ -1290,6 +1358,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dscRua = "";
         $codLinhaSeparacao = "";
         $nomLinha = "";
+        $numCarrinho = 0;
         $codStatus = $siglaEntity->getId();
 
         foreach ($quebras as $quebra) {
@@ -1376,7 +1445,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        if ($qtdQuebras >0) {
+        if ($qtdQuebras > 0) {
             $SQL_Quebras = " AND (".$SQL_Quebras.")";
         }
 
@@ -1393,7 +1462,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $SQL_Quebras
                   GROUP BY E.COD_MAPA_SEPARACAO,QTD_QUEBRA.QTD_QUEBRAS" ;
 
-        if ($qtdQuebras >0) {
+        if ($qtdQuebras > 0) {
             $SQL = $SQL . " HAVING COUNT(*) = QTD_QUEBRA.QTD_QUEBRAS";
         }
 
@@ -1431,7 +1500,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($quebra == "T") {
                     $dscQuebra = $dscQuebra . "MAPA DE SEPARAÇÃO CONSOLIDADA";
-                    $codQuebra = 0;
+                    $codQuebra = 1;
                 }
 
                 if ($quebra == "C")  {
@@ -1581,6 +1650,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
                 $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
             }
+
+            $numeroCarrinho = $mapaProduto->getNumCaixaFim() / $parametroQtdCaixas;
+            $mapaProduto->setNumCarrinho(ceil($numeroCarrinho));
+
         }
 
         $this->_em->persist($mapaProduto);
