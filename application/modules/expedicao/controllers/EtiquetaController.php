@@ -140,14 +140,17 @@ class Expedicao_EtiquetaController  extends Action
             throw new \Exception($e->getMessage());
         }
 
-        $this->addFlashMessage('success', $mensagem );
-        $this->_redirect('/expedicao');
+        exit;
+//        $this->addFlashMessage('success', $mensagem );
+//        $this->_redirect('/expedicao/etiqueta/listar-mapas-quebra-ajax');
 
     }
 
-    public function gerarPdfQuebraAjaxAction()
+    public function listarMapasQuebraAjaxAction()
     {
-
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $this->view->mapasSeparacao = $mapaSeparacaoEn = $mapaSeparacaoRepo->findBy(array('codExpedicao' => $this->_getParam('id',0), 'codStatus' => \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO), array('id' => 'ASC'));
     }
 
     public function etiquetaCargaAjaxAction(){
@@ -159,24 +162,29 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
-
     public function gerarPdfAjaxAction(){
         $central        = $this->getRequest()->getParam('central');
-        $idExpedicao    = $this->getRequest()->getParam('id');
-        $tipo    = $this->getRequest()->getParam('tipo');
+        /** nome da variavel deve mudar para idMapa */
+//        $idExpedicao    = $this->getRequest()->getParam('id');
+        $idMapa         = $this->getRequest()->getParam('id');
+        $tipo           = $this->getRequest()->getParam('tipo');
+
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
+        $mapaSeparacaoRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacao');
+        $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapa);
+        $idExpedicao = $mapaSeparacaoEn->getCodExpedicao();
         $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
         if ($tipo == "mapa") {
-            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
+            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
+                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Mapas Impressos', $idExpedicao);
             } else {
-                $this->addFlashMessage('info', 'Todos os mapas ja foram impressos');
+                $this->addFlashMessage('info', "Mapa $idExpedicao já impresso!");
                 $this->_redirect('/expedicao');
             }
 

@@ -1,0 +1,48 @@
+<script>
+    $(document).ready(function(){
+        $('#seleciona-todos').live('click',function(){
+            var checked_status = this.checked;
+            $("input").each(function()
+            {
+                this.checked = checked_status;
+            });
+        });
+
+        $('.imprimir-mapa').click(function (a) {
+            $.ajax({
+                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
+                type: 'POST',
+                data: {
+                    id: $('input[name="impressao"]:checked').val(),
+                    tipo: 'mapa'
+                },
+                success: function(data){
+
+                }
+            });
+
+        });
+    });
+</script>
+
+<div class="padding-top">
+    <?php if ($this->mapasSeparacao) : ?>
+        <p><b>Selecione o Mapa para Impressão</b>
+
+        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos"> Selecione Todos<br></p>
+
+        <div id="impressao">
+            <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
+                <input
+                    class="checkBoxClass"
+                    style="vertical-align: middle"
+                    type="checkbox"
+                    name="impressao"
+                    value="<?php echo $mapaSeparacao->getId(); ?>"
+                    >
+                Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
+            <?php endforeach ?>
+        </div>
+    <?php endif; ?>
+    <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
+</div>

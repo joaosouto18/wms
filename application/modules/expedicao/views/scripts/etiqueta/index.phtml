@@ -8,7 +8,7 @@
             });
         });
 
-        $('.btn').click(function () {
+        $('.btn').click(function (a) {
 
             $.ajax({
                 url: URL_MODULO + '/' + $('#controller').val() + '/' + $('#action').val() + '/id/' + $('#expedicao').val() + '/central/' + $(this).attr('id'),
@@ -17,22 +17,17 @@
                     cargas: $('input[type="checkbox"]:checked').val()
                 },
                 success: function(data){
-                    location.href = 'expedicao/';
-//                    if (data.result) {
-//                        if (data.result != true) {
-//                            alert(data.result);
-//                        }
-//                        if (data.redirect) {
-//                            location.href = '/produtividade/carregamento/index/id/'.concat(564);
-//                        } else {
-//                            location.href = window.location.href;
-//                        }
-//                    }
+                    a.preventDefault();
+                    $.wmsDialogAjax({
+                        width: 750,
+                        height: 450,
+                        url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/'+$('#expedicao').val(),
+                        title: 'Mapas Pendentes de Impressão'
+                    });
                 }
             });
 
         });
-
 
     });
 </script>

@@ -2175,11 +2175,11 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function getQtdMapasPendentesImpressao($codExpedicao){
+    public function getQtdMapasPendentesImpressao($codMapa){
         $SQL = "SELECT COUNT(COD_MAPA_SEPARACAO) as QTD
                   FROM MAPA_SEPARACAO
                  WHERE COD_STATUS = 522
-                   AND COD_EXPEDICAO = " . $codExpedicao;
+                   AND COD_MAPA_SEPARACAO = " . $codMapa;
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
         if (count($result) >0) {
             return $result['QTD'];
