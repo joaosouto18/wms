@@ -109,9 +109,6 @@ class Expedicao_EtiquetaController  extends Action
 
 
 
-
-
-
 //            $linkEtiqueta = "";
 //            $linkMapa = "";
 //
