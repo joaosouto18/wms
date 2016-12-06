@@ -8,12 +8,27 @@
             });
         });
 
+        $('.imprimir-etiquetas').click(function (a) {
+            $.ajax({
+                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
+                type: 'POST',
+                data: {
+                    idEtiqueta: $('input[name="etiquetas"]:checked').val(),
+                    tipo: 'etiqueta'
+                },
+                success: function(data){
+
+                }
+            });
+
+        });
+
         $('.imprimir-mapa').click(function (a) {
             $.ajax({
                 url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
                 type: 'POST',
                 data: {
-                    id: $('input[name="impressao"]:checked').val(),
+                    idMapa: $('input[name="mapas"]:checked').val(),
                     tipo: 'mapa'
                 },
                 success: function(data){
@@ -31,18 +46,41 @@
 
         <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos"> Selecione Todos<br></p>
 
-        <div id="impressao">
+        <div id="mapas">
             <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
                 <input
                     class="checkBoxClass"
                     style="vertical-align: middle"
                     type="checkbox"
-                    name="impressao"
+                    name="mapas"
                     value="<?php echo $mapaSeparacao->getId(); ?>"
                     >
                 Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
             <?php endforeach ?>
         </div>
+        <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
     <?php endif; ?>
-    <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
+</div>
+
+
+<div class="padding-top">
+    <?php if ($this->etiquetasSeparacao) : ?>
+        <p><b>Selecione Etiquetas para Impressão</b>
+
+        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos"> Selecione Todos<br></p>
+
+        <div id="etiquetas">
+            <?php foreach($this->etiquetasSeparacao as $etiquetaSeparacao) : ?>
+                <input
+                    class="checkBoxClass"
+                    style="vertical-align: middle"
+                    type="checkbox"
+                    name="etiquetas"
+                    value="<?php echo $etiquetaSeparacao['id']; ?>"
+                    >
+                Etiqueta <?php echo $etiquetaSeparacao['id'].' - '.$etiquetaSeparacao['dscQuebra'] ?>
+            <?php endforeach ?>
+        </div>
+        <input type="button" class="btn imprimir-etiquetas" id="imprimir-etiqueta" value="Imprimir Etiquetas" name="imprimir-etiquetas">
+    <?php endif; ?>
 </div>

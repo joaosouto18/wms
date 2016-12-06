@@ -285,7 +285,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $result;
     }
 
-    public function getEtiquetasByExpedicao($idExpedicao = null, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null, $idEtiquetas = null)
+    public function getEtiquetasByExpedicao($idExpedicao = null, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null, $idEtiquetas = null, $idEtiquetaMae = null)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('etq.id, es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
@@ -297,8 +297,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
+            ->innerJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftjoin('etq.codDepositoEndereco', 'de')
             ->distinct(true);
+
+        if (isset($idEtiquetaMae) && !empty($idEtiquetaMae)) {
+            $dql->andWhere("em.id = $idEtiquetaMae");
+        }
 
         if ($idExpedicao != null) {
             $dql->andWhere('es.codExpedicao = :idExpedicao')
@@ -2172,4 +2177,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $result;
     }
 
+    public function getEtiquetaPendenteImpressao($idExpedicao, $codStatus = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('em.id, em.dscQuebra')
+            ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
+            ->innerJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = es.etiquetaMae')
+            ->where("em.codExpedicao = $idExpedicao")
+            ->andWhere("es.codStatus = $codStatus")
+            ->groupBy('em.id, em.dscQuebra');
+
+        return $sql->getQuery()->getResult();
+    }
 }
