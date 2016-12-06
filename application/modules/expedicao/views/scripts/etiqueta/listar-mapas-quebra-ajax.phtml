@@ -21,17 +21,19 @@
             for (var i = 0; i < $('input[name="etiquetas"]:checked').length; i++) {
                 arr[i] = $('input[name="etiquetas"]:checked')[i].value;
             }
-            $.ajax({
-                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
-                type: 'POST',
-                data: {
-                    idEtiqueta: arr,
-                    tipo: 'etiqueta'
-                },
-                success: function(data){
-
-                }
-            });
+            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
+//            $.ajax({
+//                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
+//                type: 'POST',
+//                data: {
+//                    idEtiqueta: arr,
+//                    tipo: 'etiqueta'
+//                },
+//                success: function(data){
+//                    window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
+//
+//                }
+//            });
 
         });
 
@@ -40,17 +42,18 @@
             for (var i = 0; i < $('input[name="mapas"]:checked').length; i++) {
                 arr[i] = $('input[name="mapas"]:checked')[i].value;
             }
-            $.ajax({
-                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
-                type: 'POST',
-                data: {
-                    idMapa: arr,
-                    tipo: 'mapa'
-                },
-                success: function(data){
-
-                }
-            });
+            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+//            $.ajax({
+//                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
+//                type: 'POST',
+//                data: {
+//                    idMapa: arr,
+//                    tipo: 'mapa'
+//                },
+//                success: function(data){
+//
+//                }
+//            });
 
         });
     });
