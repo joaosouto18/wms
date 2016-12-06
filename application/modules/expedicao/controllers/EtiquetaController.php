@@ -168,24 +168,25 @@ class Expedicao_EtiquetaController  extends Action
 
     public function gerarPdfAjaxAction(){
         $tipo              = $this->getRequest()->getParam('tipo');
-        $idMapa            = $this->getRequest()->getParam('idMapa');
+        $arrMapa            = $this->getRequest()->getParam('idMapa');
         $central           = $this->getRequest()->getParam('central');
-        $idEtiquetaMae     = $this->getRequest()->getParam('idEtiqueta');
+        $arrEtiquetaMae     = $this->getRequest()->getParam('idEtiqueta');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $etiquetaMaeRepo = $this->em->getRepository('wms:Expedicao\EtiquetaMae');
         $mapaSeparacaoRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacao');
-        if (isset($idMapa) && !empty($idMapa)) {
-            $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapa);
+        if (isset($arrMapa) && !empty($arrMapa)) {
+            $mapaSeparacaoEn = $mapaSeparacaoRepo->find($arrMapa[0]);
             $idExpedicao = $mapaSeparacaoEn->getCodExpedicao();
-        } elseif (isset($idEtiquetaMae) && !empty($idEtiquetaMae)) {
-            $etiquetaMaeEn = $etiquetaMaeRepo->find($idEtiquetaMae);
+        } elseif (isset($arrEtiquetaMae) && !empty($arrEtiquetaMae)) {
+            $etiquetaMaeEn = $etiquetaMaeRepo->find($arrEtiquetaMae[0]);
             $idExpedicao = $etiquetaMaeEn->getCodExpedicao();
         }
         $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
         if ($tipo == "mapa") {
+            $idMapa = implode(',',$arrMapa);
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
                 $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
@@ -193,7 +194,7 @@ class Expedicao_EtiquetaController  extends Action
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Mapas Impressos', $idExpedicao);
             } else {
-                $this->addFlashMessage('info', "Mapa $idMapa já impresso!");
+                $this->addFlashMessage('info', "Mapas já impressos!");
                 $this->_redirect('/expedicao');
             }
 
@@ -201,6 +202,7 @@ class Expedicao_EtiquetaController  extends Action
         if ($tipo == "etiqueta") {
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
+            $idEtiquetaMae = implode(',',$arrEtiquetaMae);
 
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();

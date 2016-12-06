@@ -302,7 +302,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->distinct(true);
 
         if (isset($idEtiquetaMae) && !empty($idEtiquetaMae)) {
-            $dql->andWhere("em.id = $idEtiquetaMae");
+            $dql->andWhere("em.id IN ($idEtiquetaMae)");
         }
 
         if ($idExpedicao != null) {

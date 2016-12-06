@@ -1,19 +1,31 @@
 <script>
     $(document).ready(function(){
-        $('#seleciona-todos').live('click',function(){
+        $('#seleciona-todos-mapas').live('click',function(){
             var checked_status = this.checked;
-            $("input").each(function()
+            $('input[name="mapas"]').each(function()
+            {
+                this.checked = checked_status;
+            });
+        });
+
+        $('#seleciona-todas-etiquetas').live('click',function(){
+            var checked_status = this.checked;
+            $('input[name="etiquetas"]').each(function()
             {
                 this.checked = checked_status;
             });
         });
 
         $('.imprimir-etiquetas').click(function (a) {
+            var arr = [];
+            for (var i = 0; i < $('input[name="etiquetas"]:checked').length; i++) {
+                arr[i] = $('input[name="etiquetas"]:checked')[i].value;
+            }
             $.ajax({
                 url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
                 type: 'POST',
                 data: {
-                    idEtiqueta: $('input[name="etiquetas"]:checked').val(),
+                    idEtiqueta: arr,
                     tipo: 'etiqueta'
                 },
                 success: function(data){
@@ -24,11 +36,15 @@
         });
 
         $('.imprimir-mapa').click(function (a) {
+            var arr = [];
+            for (var i = 0; i < $('input[name="mapas"]:checked').length; i++) {
+                arr[i] = $('input[name="mapas"]:checked')[i].value;
+            }
             $.ajax({
                 url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
                 type: 'POST',
                 data: {
-                    idMapa: $('input[name="mapas"]:checked').val(),
+                    idMapa: arr,
                     tipo: 'mapa'
                 },
                 success: function(data){
@@ -44,7 +60,7 @@
     <?php if ($this->mapasSeparacao) : ?>
         <p><b>Selecione o Mapa para Impressão</b>
 
-        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos"> Selecione Todos<br></p>
+        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos-mapas"> Selecione Todos<br></p>
 
         <div id="mapas">
             <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
@@ -67,7 +83,7 @@
     <?php if ($this->etiquetasSeparacao) : ?>
         <p><b>Selecione Etiquetas para Impressão</b>
 
-        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos"> Selecione Todos<br></p>
+        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todas-etiquetas"> Selecione Todos<br></p>
 
         <div id="etiquetas">
             <?php foreach($this->etiquetasSeparacao as $etiquetaSeparacao) : ?>
