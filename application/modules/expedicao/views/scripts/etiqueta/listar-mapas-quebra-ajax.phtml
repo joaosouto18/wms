@@ -22,19 +22,6 @@
                 arr[i] = $('input[name="etiquetas"]:checked')[i].value;
             }
             window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
-//            $.ajax({
-//                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
-//                type: 'POST',
-//                data: {
-//                    idEtiqueta: arr,
-//                    tipo: 'etiqueta'
-//                },
-//                success: function(data){
-//                    window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
-//
-//                }
-//            });
-
         });
 
         $('.imprimir-mapa').click(function (a) {
@@ -43,18 +30,6 @@
                 arr[i] = $('input[name="mapas"]:checked')[i].value;
             }
             window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
-//            $.ajax({
-//                url: URL_MODULO + '/etiqueta/gerar-pdf-ajax',
-//                type: 'POST',
-//                data: {
-//                    idMapa: arr,
-//                    tipo: 'mapa'
-//                },
-//                success: function(data){
-//
-//                }
-//            });
-
         });
     });
 </script>

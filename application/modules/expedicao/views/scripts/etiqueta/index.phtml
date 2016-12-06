@@ -9,12 +9,15 @@
         });
 
         $('.btn').click(function (a) {
-
+            var arr = [];
+            for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
+                arr[i] = $('input[name="cargas"]:checked')[i].value;
+            }
             $.ajax({
                 url: URL_MODULO + '/' + $('#controller').val() + '/' + $('#action').val() + '/id/' + $('#expedicao').val() + '/central/' + $(this).attr('id'),
                 type: 'POST',
                 data: {
-                    cargas: $('input[type="checkbox"]:checked').val()
+                    cargas: arr
                 },
                 success: function(data){
                     a.preventDefault();
@@ -44,7 +47,7 @@
                        class="checkBoxClass"
                        style="vertical-align: middle"
                        type="checkbox"
-                       name="cargas[]"
+                       name="cargas"
                        value="<?php echo $carga['codCargaExterno']?>"
                        >
                 Carga <?php echo $carga['codCargaExterno']?>
