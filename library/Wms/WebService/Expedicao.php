@@ -923,7 +923,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
                     }
 
-                    $nfPedidoEntity->setCodPedido($notaFiscal->pedido);
+                    $nfPedidoEntity->setCodPedido($pedidoEn->getId());
                     $nfPedidoEntity->setPedido($pedidoEn);
                     $this->_em->persist($nfPedidoEntity);
                 }
