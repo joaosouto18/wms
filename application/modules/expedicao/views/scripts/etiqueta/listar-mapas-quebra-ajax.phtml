@@ -42,6 +42,7 @@
 
         <div id="mapas">
             <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
+                <label>
                 <input
                     class="checkBoxClass"
                     style="vertical-align: middle"
@@ -50,6 +51,7 @@
                     value="<?php echo $mapaSeparacao->getId(); ?>"
                     >
                 Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
+                </label>
             <?php endforeach ?>
         </div>
         <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
@@ -65,6 +67,7 @@
 
         <div id="etiquetas">
             <?php foreach($this->etiquetasSeparacao as $etiquetaSeparacao) : ?>
+                <label>
                 <input
                     class="checkBoxClass"
                     style="vertical-align: middle"
@@ -73,6 +76,7 @@
                     value="<?php echo $etiquetaSeparacao['id']; ?>"
                     >
                 Etiqueta <?php echo $etiquetaSeparacao['id'].' - '.$etiquetaSeparacao['dscQuebra'] ?>
+                </label>
             <?php endforeach ?>
         </div>
         <input type="button" class="btn imprimir-etiquetas" id="imprimir-etiqueta" value="Imprimir Etiquetas" name="imprimir-etiquetas">

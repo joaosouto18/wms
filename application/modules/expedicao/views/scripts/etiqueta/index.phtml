@@ -43,6 +43,7 @@
 
         <div id="cargas">
             <?php foreach($this->cargas as $carga) : ?>
+                <label>
                 <input
                        class="checkBoxClass"
                        style="vertical-align: middle"
@@ -51,6 +52,7 @@
                        value="<?php echo $carga['codCargaExterno']?>"
                        >
                 Carga <?php echo $carga['codCargaExterno']?>
+                </label>
             <?php endforeach ?>
         </div>
     <?php endif; ?>
