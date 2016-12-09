@@ -91,7 +91,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                       WHERE C.COD_EXPEDICAO = $idExpedicao AND P.IND_ETIQUETA_MAPA_GERADO = 'S'
                       GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PP
                     LEFT JOIN (
-                      SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM - NVL(QTD_CORTADO,0)) AS QTD_MAPA, MSP.COD_PRODUTO, MSP.DSC_GRADE
+                      SELECT SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - NVL(QTD_CORTADO,0)) AS QTD_MAPA, MSP.COD_PRODUTO, MSP.DSC_GRADE
                       FROM MAPA_SEPARACAO MS
                       INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                       WHERE MS.COD_EXPEDICAO = $idExpedicao
