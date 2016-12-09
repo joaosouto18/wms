@@ -549,6 +549,8 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
 
         $todosMapasConferidos = true;
+
+        /*
         if ($quebraColetor == 'S') {
             $resultMapa = $mapaSeparacaoRepo->conferenciaMapa($idMapa);
             if ($resultMapa === true) {
@@ -565,6 +567,8 @@ class Mobile_ExpedicaoController extends Action
                 }
             }
         }
+        */
+
 
         if ($todosMapasConferidos === true) {
             $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
