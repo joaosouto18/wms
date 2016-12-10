@@ -103,23 +103,64 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function verificaMapaSeparacao($expedicaoEn, $idMapa){
-        $conferenciaFinalizada = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa);
+
+        $divergencias = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa);
+        $this->alteraStatusMapaAndMapaProdutos($expedicaoEn,$idMapa);
 
         if ($this->getSystemParameterValue('RESETA_CONFERENCIA_MAPA') == 'S') {
             $this->fechaConferencia($expedicaoEn, $idMapa);
         }
 
-        if (count($conferenciaFinalizada) > 0) {
-            return 'Existem produtos para serem Conferidos nesta Expedição';
+        if (count($divergencias) > 0) {
+            if ($idMapa == null) {
+                return 'Existem produtos para serem Conferidos nesta Expedição';
+            } else {
+                return 'Existem produtos para serem Conferidos neste Mapa';
+            }
         } else {
             if ($this->getSystemParameterValue('RESETA_CONFERENCIA_MAPA') == 'N') {
                 $this->fechaConferencia($expedicaoEn, $idMapa);
             }
         }
+
+        $mapas = $this->findBy(array('codExpedicao'=>$expedicaoEn->getid()));
+        foreach ($mapas as $mapaEn) {
+            if ($mapaEn->getCodStatus() != EtiquetaSeparacao::STATUS_CONFERIDO){
+                return 'Existem Mapas para conferir nesta Expedição';
+            }
+        }
+
         return true;
     }
 
     private function alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa) {
+
+        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
+
+        $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, "A");
+        foreach ($acertos as $acerto) {
+            $idMapaSeparacaoProduto = $acerto['COD_MAPA_SEPARACAO_PRODUTO'];
+            $mapaProdutoEn = $mapaSeparacaoProdutoRepo->findOneBy(array('id'=>$idMapaSeparacaoProduto));
+            $mapaProdutoEn->setIndConferido("S");
+            $this->getEntityManager()->persist($mapaProdutoEn);
+        }
+        $this->getEntityManager()->flush();
+
+        if ($idMapa != null) {
+            $mapas = $this->findBy(array('id'=>$idMapa));
+        } else {
+            $mapas = $this->findBy(array('codExpedicao'=>$expedicaoEn->getId()));
+        }
+
+        foreach ($mapas as $mapaEn){
+            $produtosPendentes = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapaEn,
+                                                                         'indConferido'=>'N'));
+            if (count($produtosPendentes) == 0) {
+                $mapaEn->setCodStatus(Etiquetaseparacao::STATUS_CONFERIDO);
+            }
+        }
+
+        $this->getEntityManager()->flush();
 
     }
 
@@ -144,8 +185,17 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function validaConferencia($expedicao, $setDivergencia = false, $idMapa = null)
+    public function validaConferencia($expedicao, $setDivergencia = false, $idMapa = null, $tipoRetorno = 'D')
     {
+
+        if ($tipoRetorno == "D") {
+            // EXIBE SOMENTE AS DIVERGENCIAS
+            $sinal = " < ";
+        } else {
+            // EXIBE SOMENTE OS ACERTOS
+            $sinal = " = ";
+        }
+
         $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao',$this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO'));
         $andWhere = ' ';
         if ($setDivergencia == false) {
@@ -161,16 +211,16 @@ class MapaSeparacaoRepository extends EntityRepository
             }
         }
 
-        $sql = " SELECT M.COD_MAPA_SEPARACAO,
-                         M.COD_PRODUTO,
-                         M.DSC_GRADE,
-                         P.DSC_PRODUTO,
-                         M.QTD_SEPARAR,
-                         NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIDA,
-                         M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
-                         NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
-                         DE.DSC_DEPOSITO_ENDERECO,
-                         MSP.COD_MAPA_SEPARACAO_PRODUTO
+          $sql = " SELECT M.COD_MAPA_SEPARACAO,
+                          M.COD_PRODUTO,
+                          M.DSC_GRADE,
+                          P.DSC_PRODUTO,
+                          M.QTD_SEPARAR,
+                          NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIDA,
+                          M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
+                          NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
+                          DE.DSC_DEPOSITO_ENDERECO,
+                          MSP.COD_MAPA_SEPARACAO_PRODUTO
                     FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
                             FROM MAPA_SEPARACAO_PRODUTO MP
                             LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
@@ -193,7 +243,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO P ON P.COD_PRODUTO = M.COD_PRODUTO AND P.DSC_GRADE = M.DSC_GRADE
               WHERE M.COD_EXPEDICAO = $expedicao
-                AND NVL(C.QTD_CONFERIDA,0) < M.QTD_SEPARAR
+                AND NVL(C.QTD_CONFERIDA,0) $sinal M.QTD_SEPARAR
                 $andWhere
                 GROUP BY M.COD_MAPA_SEPARACAO,
                          M.COD_PRODUTO,
@@ -393,11 +443,13 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapas = $this->findBy(array('expedicao' => $idExpedicao));
         foreach ($mapas as $mapa) {
             $expedicaoEn = $mapa->getExpedicao();
-            $mapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapa->getId(), 'indConferido' => 'N'));
+            $mapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapa->getId(),
+                                                                   'indConferido' => 'N'));
             foreach ($mapaProduto as $produtoEn) {
                 $produtoEn->setIndConferido('S');
                 $this->getEntityManager()->persist($produtoEn);
             }
+
             $mapa->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
             $this->getEntityManager()->persist($mapa);
         }
