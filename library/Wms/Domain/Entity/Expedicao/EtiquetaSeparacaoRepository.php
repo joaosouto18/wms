@@ -667,8 +667,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     }
                     if ($embalagemAtual == null) {
-                        $mensagem = 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
-                        throw new \Exception($mensagem);
+                        echo 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+                        exit;
+//                        $mensagem = 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+//                        throw new \Exception($mensagem);
                     }
                 } else {
                     $embalagemAtual = $menorEmbalagem;
@@ -716,7 +718,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $etiquetaConferenciaRepo = $arrayRepositorios['etiquetaConferencia'];
         $verificaReentrega       = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
 
-        $tempoInicial = round(microtime(true) * 1000);
+//        $tempoInicial = round(microtime(true) * 1000);
 
         try {
             if ( empty($status) ){
@@ -778,7 +780,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 } else {
                                     $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                                     if ($filial == null) {
-                                        throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                                        echo "errorFilial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada";
+                                        exit;
+//                                        throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
                                     }
                                     if ($filial->getIndUtilizaRessuprimento() == "S") {
                                         $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
@@ -811,7 +815,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                                 if ($filial == null) {
-                                    throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                                    echo 'errorFilial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
+                                    exit;
+
+//                                    throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
                                 }
                                 if ($filial->getIndUtilizaRessuprimento() == "S") {
                                     $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
@@ -847,7 +854,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
-                                throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
+                                echo 'errorFilial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
+                                exit;
+//                                throw new Exception ("Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada");
                             }
                             if ($filial->getIndUtilizaRessuprimento() == "S") {
                                 $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
@@ -882,8 +891,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                             if ($embalagemAtual == null) {
-                                $mensagem = 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
-                                throw new \Exception($mensagem);
+                                echo 'errorNão existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+                                exit;
+//                                $mensagem = 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+//                                throw new \Exception($mensagem);
                             }
                         } else {
                             $embalagemAtual = $menorEmbalagem;
@@ -977,8 +988,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 } else {
                     $view = \Zend_layout::getMvcInstance()->getView();
                     $link = '<a href="' . $view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
-                    $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
-                    throw new \Exception($mensagem);
+                    echo 'errorExistem produtos sem definição de volume. Clique para exibir ' . $link;
+                    exit;
+//                    $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
+//                    throw new \Exception($mensagem);
                 }
             }
 
@@ -1008,10 +1021,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             throw new \Exception($e->getMessage());
         }
 
-        $tempoFinal = round(microtime(true) * 1000);
-        echo ("Tempo = ". ($tempoFinal - $tempoInicial));
-        echo ("Iteracoes Mapa - " .$this->qtdIteracoesMapa);
-        echo ("Iteracoes MapaProduto - " .$this->qtdIteracoesMapaProduto);
+//        $tempoFinal = round(microtime(true) * 1000);
+//        echo ("Tempo = ". ($tempoFinal - $tempoInicial));
+//        echo ("Iteracoes Mapa - " .$this->qtdIteracoesMapa);
+//        echo ("Iteracoes MapaProduto - " .$this->qtdIteracoesMapaProduto);
         //exit;
 
     }
@@ -1490,7 +1503,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaPedidoRepo = $arrays['mapaSeparacaoPedido'];
         }
         $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
-        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
+//        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
         $separacaoConsolidada = false;
         $quantidadeEmbalagem = 1;
