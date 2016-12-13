@@ -718,4 +718,14 @@ class MapaSeparacaoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getMapaSeparacaoById($codMapas)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('ms')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->where("ms.id IN ($codMapas)");
+
+        return $dql->getQuery()->getResult();
+    }
+
 }

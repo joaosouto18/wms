@@ -42,7 +42,7 @@ class MapaSeparacao extends Pdf
         if ($codBarras == null) {
             $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
         } else {
-            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('id' => array($codBarras)));
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
@@ -208,7 +208,7 @@ class MapaSeparacao extends Pdf
         if ($codBarras == null) {
             $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
         } else {
-            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('id' => array($codBarras)));
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
@@ -405,7 +405,7 @@ class MapaSeparacao extends Pdf
         if ($codBarras == null) {
             $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
         } else {
-            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('id' => array($codBarras)));
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
@@ -599,9 +599,9 @@ class MapaSeparacao extends Pdf
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         if ($codBarras == null) {
-            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('id' => $idExpedicao, 'codStatus' => $status));
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
         } else {
-            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('id' => array($codBarras)));
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
