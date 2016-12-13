@@ -130,6 +130,14 @@ class Enderecamento_MovimentacaoController extends Action
                     }
                 }
             }
+            if (isset($params['validade']) && !empty($params['validade'])) {
+                $hoje = new DateTime();
+                $hoje = $hoje->format('d/m/Y');
+                if ($params['validade'] <= $hoje) {
+                    $this->addFlashMessage('error',"Data de Validade deve ser maior que $hoje");
+                    $this->_redirect('/enderecamento/movimentacao');
+                }
+            }
 
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$idProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
