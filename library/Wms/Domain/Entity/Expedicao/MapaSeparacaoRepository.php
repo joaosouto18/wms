@@ -175,13 +175,14 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         foreach ($mapaSeparacaoEn as $mapaSeparacao) {
-            $mapaConferenciaEn = $mapaConferenciaRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacao->getId(),'indConferenciaFechada'=>'N'));
+            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao'=>$mapaSeparacao->getId(),'indConferenciaFechada'=>'N'));
             foreach ($mapaConferenciaEn as $mapaConferencia) {
                 $mapaConferencia->setIndConferenciaFechada('S');
                 $this->getEntityManager()->persist($mapaConferencia);
             }
         }
         $this->getEntityManager()->flush();
+        $this->getEntityManager()->commit();
 
     }
 
@@ -323,7 +324,8 @@ class MapaSeparacaoRepository extends EntityRepository
                    $sqlVolume
                    AND C.IND_CONFERENCIA_FECHADA = 'N'
                    AND C.COD_PESSOA ". $sqlPessoa."
-              GROUP BY C.NUM_CONFERENCIA";
+              GROUP BY C.NUM_CONFERENCIA
+              ORDER BY C.NUM_CONFERENCIA DESC";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($result) > 0) {
@@ -367,17 +369,21 @@ class MapaSeparacaoRepository extends EntityRepository
             $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
         }
 
-        if ($ultConferencia != null) {
-            $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
-        }
-
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
             $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
+        }
+
+        if ($ultConferencia != null) {
+            $numConferencia = $ultConferencia['numConferencia'];
+            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
+        } else {
+            $mapaSeparacaoConferenciaEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia')
+                ->findBy(array('mapaSeparacao' => $mapaEn, 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));
+            $numConferencia = $mapaSeparacaoConferenciaEn[0]->getNumConferencia() + 1;
         }
 
         $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,2,'.','');
