@@ -667,7 +667,7 @@ class Importacao_IndexController extends Action
                             if (($coluna == null) || ($tColunas - 1 < $coluna)) {
                                 $valorCampo = trim($campo->getValorPadrao());
                             } else {
-                                $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+                                $valorCampo = trim($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue());
                                 $valorCampo = utf8_encode($valorCampo);
                                 if (empty($valorCampo)) {
                                     if ($campo->getPreenchObrigatorio() === "n") {
