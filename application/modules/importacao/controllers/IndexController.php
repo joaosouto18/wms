@@ -715,6 +715,7 @@ class Importacao_IndexController extends Action
                         if ($countFlush >= 40) {
                             $countFlush = 0;
                             $em->flush();
+                            $em->clear();
                         }
                     }
                 } elseif ($extencao == "csv") {
