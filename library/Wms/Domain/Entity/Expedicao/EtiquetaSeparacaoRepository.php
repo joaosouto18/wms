@@ -1004,6 +1004,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
             $this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
 
+            $this->_em->flush();
+            $this->_em->clear();
+
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
@@ -1121,7 +1124,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         $mapaSeparacaoQuebraRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
-        $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
+        $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao, 'codStatus'=>EtiquetaSeparacao::STATUS_ETIQUETA_GERADA));
 
         foreach ($mapasSeparacao as $mapaSeparacao) {
             $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'tipoQuebra' => 'T'));
