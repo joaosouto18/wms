@@ -755,6 +755,21 @@ class Inventario
         if (count($contagemEndEntities) == 0) {
             return false;
         }
+
+        /* verifica se todos os produtos do estoque foram conferidos */
+        $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
+            ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
+
+        $countProdutosInventarioEndereco = 0;
+        foreach ($estoqueEntities as $estoqueEn) {
+            foreach($contagemEndEntities as $contagemEndEn) {
+                if ($estoqueEn->getCodProduto() == $contagemEndEn->getProduto()->getId() && $estoqueEn->getGrade() == $contagemEndEn->getGrade()) {
+                    $countProdutosInventarioEndereco++;
+                }
+            }
+        }
+        if ($countProdutosInventarioEndereco < count($estoqueEntities)) return false;
+
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
 
@@ -772,7 +787,7 @@ class Inventario
              * Gera Posição do Estoque como primeira contagem?
              */
             //$estoqueValidado = false;
-            
+
             $estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
 
 
@@ -783,7 +798,7 @@ class Inventario
              */
             //$regraContagem = $this->novaRegraContagem($params,$regraContagemParam);
             $regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
-            
+
 
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 
