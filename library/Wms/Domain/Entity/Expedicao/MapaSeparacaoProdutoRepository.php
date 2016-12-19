@@ -41,7 +41,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
             ->leftJoin('msp.codDepositoEndereco', 'de')
             ->where("msp.mapaSeparacao = $idMapa")
-            ->orderBy('msp.numCarrinho, de.rua, de.predio, de.nivel, de.apartamento, msp.numCaixaInicio, msp.numCaixaFim');
+            ->orderBy('de.rua, de.predio, de.nivel, de.apartamento, msp.numCaixaInicio, msp.numCaixaFim');
 
         return $sql->getQuery()->getResult();
     }
@@ -83,7 +83,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function verificaConsistenciaSeguranca($idExpedicao)
     {
-        $sql = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD_PEDIDO, MSP.QTD_MAPA
+        $sql = "SELECT *
                     FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) AS QTD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE
                       FROM PEDIDO P
                       INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
@@ -91,7 +91,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                       WHERE C.COD_EXPEDICAO = $idExpedicao AND P.IND_ETIQUETA_MAPA_GERADO = 'S'
                       GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PP
                     LEFT JOIN (
-                      SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) AS QTD_MAPA, MSP.COD_PRODUTO, MSP.DSC_GRADE
+                      SELECT SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - NVL(QTD_CORTADO,0)) AS QTD_MAPA, MSP.COD_PRODUTO, MSP.DSC_GRADE
                       FROM MAPA_SEPARACAO MS
                       INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                       WHERE MS.COD_EXPEDICAO = $idExpedicao
