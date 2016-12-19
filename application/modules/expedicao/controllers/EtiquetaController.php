@@ -56,11 +56,6 @@ class Expedicao_EtiquetaController  extends Action
         $central        = $this->getRequest()->getParam('central');
         $cargas         = $this->getRequest()->getParam('cargas');
 
-        if (!isset($cargas)) {
-            $this->addFlashMessage('error', 'É necessário informar uma carga');
-            $this->_redirect('/expedicao');
-        }
-
         if (empty($idExpedicao) || empty($central)) {
             $this->_redirect('/');
         }
@@ -71,61 +66,48 @@ class Expedicao_EtiquetaController  extends Action
         try {
             $this->getEntityManager()->beginTransaction();
 
+            if (!isset($cargas)) {
+                echo 'errorÉ Necessário informar uma carga';
+                exit;
+            }
+
             //verifica se vai utilizar Ressuprimento
             $filialEn = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('codExterno'=>$central));
             if ($filialEn->getIndUtilizaRessuprimento() == "S") {
                 $pedidosSemOnda = $ExpedicaoRepo->getPedidoProdutoSemOnda($idExpedicao,$central);
                 if (count($pedidosSemOnda)) {
-                    $mensagem = 'Existem pedidos sem onda de ressuprimento gerada na expedição ' . $idExpedicao;
-                    $this->addFlashMessage('error', $mensagem );
-                    $this->_redirect('/expedicao');
+                    echo 'errorExistem pedidos sem onda de ressuprimento gerada na expedição ' . $idExpedicao;
+                    exit;
                 }
             }
 
             if (count($ExpedicaoRepo->getProdutosSemDadosByExpedicao($idExpedicao)) > 0) {
                 $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
-                $mensagem = 'Existem produtos sem definição de volume. Clique para exibir ' . $link;
-
-                $this->addFlashMessage('error', $mensagem );
-                $this->_redirect('/expedicao');
+                echo 'errorExistem produtos sem definição de volume. Clique para exibir ' . $link;
+                exit;
             } else {
                 $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
             }
 
-            $linkEtiqueta = "";
-            $linkMapa = "";
-
-            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0)
-                $linkMapa     = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'mapa', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Mapa de Separação</a>';
-            if ($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) > 0)
-                $linkEtiqueta = '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'etiqueta', 'central'=>$central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Etiqueta de Separação</a>';
-
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
-            $linkReentrega = "";
-            if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') =='S') {
-                $qtdReentrega = $etiquetaRepo->getEtiquetasReentrega($idExpedicao);
-                if (count($qtdReentrega) >0){
-                    $linkReentrega     = " - " . '<a href="' . $this->view->url(array('controller' => 'etiqueta', 'action' => 'gerar-pdf-ajax', 'id' => $idExpedicao, 'tipo'=>'reentrega', 'todas'=>'N', 'central' => $central)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Reentrega </a>';
-                }
-            }
-
             $this->getEntityManager()->commit();
 
-            if (($linkMapa != "") && ($linkEtiqueta != "")) {
-                $mensagem = "Clique para imprimir " . $linkMapa . " - " . $linkEtiqueta . $linkReentrega ;
-            } else {
-                $mensagem = "Clique para imprimir " . $linkMapa . $linkEtiqueta . $linkReentrega;
-            }
-            $this->addFlashMessage('success', $mensagem );
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
+        exit;
+    }
 
-        $this->_redirect('/expedicao');
+    public function listarMapasQuebraAjaxAction()
+    {
+        $idExpedicao = $this->_getParam('id',0);
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $this->view->mapasSeparacao = $mapaSeparacaoEn = $mapaSeparacaoRepo->findBy(array('codExpedicao' => $idExpedicao, 'codStatus' => \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO), array('id' => 'ASC'));
 
+        /**@var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
+        $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $this->view->etiquetasSeparacao = $etiquetaSeparacaoEn = $etiquetaSeparacaoRepo->getEtiquetaPendenteImpressao($idExpedicao);
     }
 
     public function etiquetaCargaAjaxAction(){
@@ -137,24 +119,36 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
-
     public function gerarPdfAjaxAction(){
-        $central        = $this->getRequest()->getParam('central');
-        $idExpedicao    = $this->getRequest()->getParam('id');
-        $tipo    = $this->getRequest()->getParam('tipo');
+        $tipo              = $this->getRequest()->getParam('tipo');
+        $idMapa            = $this->getRequest()->getParam('idMapa');
+        $central           = $this->getRequest()->getParam('central');
+        $idEtiquetaMae     = $this->getRequest()->getParam('idEtiqueta');
+
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
+        $etiquetaMaeRepo = $this->em->getRepository('wms:Expedicao\EtiquetaMae');
+        $mapaSeparacaoRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacao');
+        if (isset($idMapa) && !empty($idMapa)) {
+            $arrMapa        = explode(',',$idMapa);
+            $mapaSeparacaoEn = $mapaSeparacaoRepo->find($arrMapa[0]);
+            $idExpedicao = $mapaSeparacaoEn->getCodExpedicao();
+        } elseif (isset($idEtiquetaMae) && !empty($idEtiquetaMae)) {
+            $arrEtiquetaMae = explode(',',$idEtiquetaMae);
+            $etiquetaMaeEn = $etiquetaMaeRepo->find($arrEtiquetaMae[0]);
+            $idExpedicao = $etiquetaMaeEn->getCodExpedicao();
+        }
         $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
         if ($tipo == "mapa") {
-            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao) > 0) {
+            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
+                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Mapas Impressos', $idExpedicao);
             } else {
-                $this->addFlashMessage('info', 'Todos os mapas ja foram impressos');
+                $this->addFlashMessage('info', "Mapas já impressos!");
                 $this->_redirect('/expedicao');
             }
 
@@ -173,7 +167,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('info', 'Todas as etiquetas já foram impressas');
                 $this->_redirect('/expedicao');
             } else {
-                $Etiqueta->imprimir(array('idExpedicao' =>$idExpedicao, 'central' => $central),$modelo);
+                $Etiqueta->imprimir(array('idExpedicao' =>$idExpedicao, 'central' => $central, 'idEtiquetaMae' => $idEtiquetaMae),$modelo);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Etiquetas Impressas', $idExpedicao);
@@ -363,7 +357,9 @@ class Expedicao_EtiquetaController  extends Action
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
                      && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
                     $cargas = implode(',',$cargas);
-                    $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
+                    echo 'errorEtiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas;
+                    exit;
+//                    $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
                 }
             } else {
                 $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao, $arrayRepositorios);

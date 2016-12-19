@@ -160,7 +160,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         if($dscProduto == "") {
-            $this->Cell(148.5,14," Rua      Pr�dio     N�vel    Apto.",0,1);
+            $this->Cell(148.5,14," Rua      Predio     Nivel    Apto.",0,1);
         } else {
             $this->Cell(148.5,14,$dscProduto,0,1);
         }
@@ -341,7 +341,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         if($dscProduto == "") {
-            $this->Cell(148.5,14,"               Rua      Pr�dio     N�vel    Apto.",0,1);
+            $this->Cell(148.5,14,"               Rua      Predio     Nivel    Apto.",0,1);
         } else {
             $this->Cell(148.5,14,'     '.$dscProduto,0,1);
         }

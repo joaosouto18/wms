@@ -110,6 +110,7 @@ class EtiquetaSeparacao extends Pdf
         $this->total= "";
 
         $idExpedicao            = $params['idExpedicao'];
+        $idEtiquetaMae          = $params['idEtiquetaMae'];
         $centralEntregaPedido   = $params['central'];
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -117,7 +118,7 @@ class EtiquetaSeparacao extends Pdf
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $centralEntregaPedido);
+        $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $centralEntregaPedido, null, $idEtiquetaMae);
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);

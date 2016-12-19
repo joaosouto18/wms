@@ -549,41 +549,30 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
 
-        $todosMapasConferidos = true;
         if ($quebraColetor == 'S') {
-            $resultMapa = $mapaSeparacaoRepo->conferenciaMapa($idMapa);
-            if ($resultMapa === true) {
-                $this->addFlashMessage('success', 'Mapa de Separação Finalizado com sucesso!');
-                $mapasExpedicao = $mapaSeparacaoRepo->findBy(array('codExpedicao' => $idExpedicao));
-                foreach ($mapasExpedicao as $mapaExpedicao) {
-                    $statusMapa = $mapaExpedicao->getCodStatus();
-                    if (isset($statusMapa) && !empty($statusMapa)) {
-                        if ($statusMapa != EtiquetaSeparacao::STATUS_CONFERIDO) {
-                            $todosMapasConferidos = false;
-                            break;
-                        }
-                    }
-                }
+            $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
+            $mapaEn = $mapaSeparacaoRepo->findOneBy(array('id'=>$idMapa));
+            if ($mapaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CONFERIDO) {
+                $this->addFlashMessage('success', "Mapa de Separação $idMapa Finalizado com sucesso!");
             }
+        } else {
+            $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         }
 
-        if ($todosMapasConferidos === true) {
-            $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
-            if (is_string($result)) {
-                $this->addFlashMessage('error', $result);
-                if ($mapa == 'S') {
-                    $this->_redirect("mobile/expedicao/index/idCentral/$central");
-                }
-                $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
-            } else if ($result==0) {
-                $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
-            } else {
-                $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
+        if (is_string($result)) {
+            $this->addFlashMessage('error', $result);
+            if ($mapa == 'S') {
+                $this->_redirect("mobile/expedicao/index/idCentral/$central");
             }
+            $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
+        } else if ($result==0) {
+            $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
+        } else {
+            $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
+        }
 
-            if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
-                $this->redirect('carregamento', 'expedicao','mobile', array('idExpedicao' => $idExpedicao));
-            }
+        if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
+            $this->redirect('carregamento', 'expedicao','mobile', array('idExpedicao' => $idExpedicao));
         }
 
         $this->_redirect('mobile/expedicao/index/idCentral/'.$central);

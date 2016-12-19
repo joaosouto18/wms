@@ -1,0 +1,84 @@
+<script>
+    $(document).ready(function(){
+        $('#seleciona-todos-mapas').live('click',function(){
+            var checked_status = this.checked;
+            $('input[name="mapas"]').each(function()
+            {
+                this.checked = checked_status;
+            });
+        });
+
+        $('#seleciona-todas-etiquetas').live('click',function(){
+            var checked_status = this.checked;
+            $('input[name="etiquetas"]').each(function()
+            {
+                this.checked = checked_status;
+            });
+        });
+
+        $('.imprimir-etiquetas').click(function (a) {
+            var arr = [];
+            for (var i = 0; i < $('input[name="etiquetas"]:checked').length; i++) {
+                arr[i] = $('input[name="etiquetas"]:checked')[i].value;
+            }
+            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
+        });
+
+        $('.imprimir-mapa').click(function (a) {
+            var arr = [];
+            for (var i = 0; i < $('input[name="mapas"]:checked').length; i++) {
+                arr[i] = $('input[name="mapas"]:checked')[i].value;
+            }
+            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+        });
+    });
+</script>
+
+<div class="padding-top">
+    <?php if ($this->mapasSeparacao) : ?>
+        <p><b>Selecione o Mapa para Impressão</b>
+
+        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos-mapas"> Selecione Todos<br></p>
+
+        <div id="mapas">
+            <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
+                <label>
+                <input
+                    class="checkBoxClass"
+                    style="vertical-align: middle"
+                    type="checkbox"
+                    name="mapas"
+                    value="<?php echo $mapaSeparacao->getId(); ?>"
+                    >
+                Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
+                </label>
+            <?php endforeach ?>
+        </div>
+        <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
+    <?php endif; ?>
+</div>
+
+
+<div class="padding-top">
+    <?php if ($this->etiquetasSeparacao) : ?>
+        <p><b>Selecione Etiquetas para Impressão</b>
+
+        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todas-etiquetas"> Selecione Todos<br></p>
+
+        <div id="etiquetas">
+            <?php foreach($this->etiquetasSeparacao as $etiquetaSeparacao) : ?>
+                <label>
+                <input
+                    class="checkBoxClass"
+                    style="vertical-align: middle"
+                    type="checkbox"
+                    name="etiquetas"
+                    value="<?php echo $etiquetaSeparacao['id']; ?>"
+                    >
+                Etiqueta <?php echo $etiquetaSeparacao['id'].' - '.$etiquetaSeparacao['dscQuebra'] ?>
+                </label>
+            <?php endforeach ?>
+        </div>
+        <input type="button" class="btn imprimir-etiquetas" id="imprimir-etiqueta" value="Imprimir Etiquetas" name="imprimir-etiquetas">
+    <?php endif; ?>
+</div>
