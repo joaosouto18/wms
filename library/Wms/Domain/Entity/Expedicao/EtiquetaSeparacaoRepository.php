@@ -632,7 +632,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
             $pedidoId           = $pedidoProduto->getPedido()->getId();
-            $quantidade         = number_format($pedidoProduto->getQuantidade(),2,'.','') - number_format($pedidoProduto->getQtdCortada(),2,'.','');
+            $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
             $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
@@ -672,7 +672,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (!is_null($embalagemAtual->getDataInativacao()))
                     continue;
 
-                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2,'.','') - number_format($embalagemAtual->getQuantidade(),2,'.','');
+                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
 
                 $embalado = false;
                 if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == 'P') {
@@ -887,7 +887,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (!is_null($embalagemAtual->getDataInativacao()))
                             continue;
 
-                        $quantidadeRestantePedido = number_format($quantidadeRestantePedido,2,'.','') - number_format($embalagemAtual->getQuantidade(),2,'.','');
+                        $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             $enderecoPulmao['QUANTIDADE'] = $enderecoPulmao['QUANTIDADE'] - $embalagemAtual->getQuantidade();
