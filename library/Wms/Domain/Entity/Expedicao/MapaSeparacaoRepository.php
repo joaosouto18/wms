@@ -410,26 +410,29 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
 
         if (!empty($qtdProdutoMapa)){
-            $qtdMapa = $qtdProdutoMapa[0]['QTD'];
-            $qtdCortada = $qtdProdutoMapa[0];
+            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
+            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
         }
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = $ultConferencia['qtd'];
+            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
         }
 
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
-            $qtdEmbalagem = $embalagemEn->getQuantidade();
+            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
 
-        $qtdDigitada = (float)$qtdEmbalagem * (float)$quantidade;
+        $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,2,'.','');
         $qtdBanco    = (float)$qtdConferida + (float)$qtdCortada;
         $qtdMapa     = (float)$qtdMapa;
+        var_dump($qtdBanco);
+        var_dump($qtdDigitada);
+        var_dump($qtdMapa); exit;
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente!");
         }
@@ -534,7 +537,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $grade = $produtoEn->getGrade();
         $idExpedicao = $expedicaoEn->getId();
 
-        $SQL = " SELECT MSP.COD_MAPA_SEPARACAO 
+        $SQL = " SELECT MSP.COD_MAPA_SEPARACAO
                    FROM MAPA_SEPARACAO_PRODUTO MSP
                    LEFT JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   WHERE MSP.COD_PRODUTO = '$idProduto'
@@ -760,6 +763,6 @@ class MapaSeparacaoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
-    
+
 
 }
