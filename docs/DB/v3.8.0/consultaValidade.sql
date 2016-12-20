@@ -1,3 +1,5 @@
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '3.8.0', 'consultaValidade.sql');
+
 insert into recurso (dsc_recurso, cod_recurso, cod_recurso_pai, nom_recurso) values ('Validade', SQ_RECURSO_01.NEXTVAL, 0, 'validade');
 INSERT INTO RECURSO (DSC_RECURSO, COD_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES ('Consulta de validade', SQ_RECURSO_01.NEXTVAL, (select COD_RECURSO from recurso where NOM_RECURSO = 'validade'), 'validade:consulta');
 INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO)

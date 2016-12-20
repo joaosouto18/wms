@@ -1,3 +1,4 @@
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '3.8.0', 'importacao.sql');
 
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (
     SQ_ACAO_01.NEXTVAL, 'Alterar Status do Arquivo de Importação', 'alterar-status');
@@ -116,4 +117,3 @@ NOCYCLE
 NOCACHE
 NOORDER;
 
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '3.8.0', 'importacao.sql');
