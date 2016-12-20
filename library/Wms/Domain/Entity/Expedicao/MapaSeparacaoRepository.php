@@ -410,28 +410,28 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
 
         if (!empty($qtdProdutoMapa)){
-            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
-            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
+            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],3,'.','');
+            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],3,'.','');
         }
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
+            $qtdConferida = number_format($ultConferencia['qtd'],3,'.','');
         }
 
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
-            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
+            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),3,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
 
-        $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,2,'.','');
+        $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,3,'.','');
         $qtdBanco    = (float)$qtdConferida + (float)$qtdCortada;
         $qtdMapa     = (float)$qtdMapa;
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
-            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente!");
+            throw new \Exception("Quantidade informada(".(float)number_format($qtdDigitada,3,'.','').") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente!");
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
