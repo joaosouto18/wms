@@ -74,7 +74,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
-        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
         $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
 
     }
@@ -120,13 +120,13 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
                 INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO AND P.COD_PESSOA = $idPessoa
                 INNER JOIN MAPA_SEPARACAO MS ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                INNER JOIN (
+                LEFT JOIN (
                   SELECT SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) QTD_CONFERIDA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MS.COD_MAPA_SEPARACAO
                   FROM MAPA_SEPARACAO_CONFERENCIA MSC
                   INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   WHERE MS.COD_MAPA_SEPARACAO = $idMapa
                   GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS.COD_MAPA_SEPARACAO ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO AND MSC.DSC_GRADE = MSP.DSC_GRADE
-                INNER JOIN (
+                LEFT JOIN (
                   SELECT MS.COD_MAPA_SEPARACAO, P.COD_PESSOA, P.NOM_PESSOA
                   FROM MAPA_SEPARACAO MS
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
