@@ -394,67 +394,76 @@ class Mobile_EnderecamentoController extends Action
 
     public function efetivarEnderecamentoAction()
     {
-        $confirma = $this->_getParam("confirma");
-        $idPalete = $this->_getParam("uma");
-        $idEndereco = $this->_getParam("endereco");
-        $nivel = $this->_getParam("nivel");
+        try{
+            $confirma = $this->_getParam("confirma");
+            $idPalete = $this->_getParam("uma");
+            $idEndereco = $this->_getParam("endereco");
+            $nivel = $this->_getParam("nivel");
 
-        if ($confirma == "N") {
-            $this->addFlashMessage('error','Selecione outro endereço de pulmão');
+            if ($confirma == "N") {
+                $this->addFlashMessage('error','Selecione outro endereço de pulmão');
+                $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
+            }
+
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+            $enderecoEn = $this->em->getRepository("wms:Deposito\Endereco")->find($idEndereco);
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+            if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
+                $this->addFlashMessage('success','Endereço selecionado está ocupado');
+                $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
+            }
+
+            /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
+            $paleteEn = $paleteRepo->find($idPalete);
+
+            //REGRA PARA LIBERAR O ENDEREÇO ANTIGO
+            $enderecoAntigo = $paleteEn->getDepositoEndereco();
+            $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
+            $unitizadorEn = $paleteEn->getUnitizador();
+            if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+                if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
+                    throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
+                }
+            } else {
+                if ($enderecoRepo->getValidaTamanhoEndereco($idEndereco,$unitizadorEn->getLargura(false) * 100) == false) {
+                    $this->addFlashMessage('error','Espaço insuficiente no endereço');
+                    $this->_redirect('mobile/enderecamento/ler-codigo-barras');
+                }
+            }
+
+            if ($enderecoAntigo != NULL) {
+                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR");
+                $reservaEstoqueRepo->cancelaReservaEstoque($enderecoAntigo->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
+            }
+
+            $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR");
+            $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
+
+            $paleteEn->setDepositoEndereco($enderecoEn);
+            $this->em->persist($paleteEn);
+            $this->em->flush();
+
+            $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $result = $paleteRepo->finalizar(array($idPalete), $idPessoa, OrdemServicoEntity::COLETOR);
+
+            if ($result && !is_string($result)) {
+                $this->em->commit();
+                $this->addFlashMessage('success', 'PaleteEndereçadocomsucesso');
+                $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
+            } else {
+                throw new Exception($result);
+            }
+        } catch (Exception $e) {
+            $this->em->rollback();
+            $this->addFlashMessage('info', 'Nãoforamfeitosendereçamentos.' . $e->getMessage());
             $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
         }
-
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-        /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
-        $enderecoEn = $this->em->getRepository("wms:Deposito\Endereco")->find($idEndereco);
-        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-
-        if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
-            $this->addFlashMessage('success','Endereço selecionado está ocupado');
-            $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
-        }
-
-        /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
-        $paleteEn = $paleteRepo->find($idPalete);
-
-        //REGRA PARA LIBERAR O ENDEREÇO ANTIGO
-        $enderecoAntigo = $paleteEn->getDepositoEndereco();
-        $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
-        $unitizadorEn = $paleteEn->getUnitizador();
-        if ($nivel == '00') {
-            if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
-                throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
-            }
-            if ($enderecoAntigo != NULL) {
-                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");
-                $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
-            }
-        } else {
-            if ($enderecoRepo->getValidaTamanhoEndereco($idEndereco,$unitizadorEn->getLargura(false) * 100) == false) {
-                $this->addFlashMessage('error','Espaço insuficiente no endereço');
-                $this->_redirect('mobile/enderecamento/ler-codigo-barras');
-            }
-            if ($enderecoAntigo != NULL) {
-                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");
-                $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
-            }
-            $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn,$qtdAdjacente,"OCUPAR");
-            $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
-        }
-
-        $paleteEn->setDepositoEndereco($enderecoEn);
-        $this->em->persist($paleteEn);
-        $this->em->flush();
-
-        $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR);
-
-        $this->addFlashMessage('success','Palete Endereçado com sucesso');
-        $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
     }
 
     public function listarPaletesAction()
