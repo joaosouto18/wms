@@ -155,7 +155,7 @@ class Importacao_IndexController extends Action
                             );
 
                         if (empty($endereco)) {
-                            $arrErroRows[$linha] = "Embalagem sem picking - CodProduto: " . $arrRegistro['codProduto'];
+                            $arrErroRows[$linha] = "Embalagem endereço - CodProduto: " . $arrRegistro['codProduto'];
                             break;
                         }
 
