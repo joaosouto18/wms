@@ -137,6 +137,30 @@ class Importacao_IndexController extends Action
                             }
                         }
                     }
+                    if (!empty($registro['endereco'])) {
+
+                        $endereco = explode(".", $registro['endereco']);
+
+                        $arrDados['rua'] = $endereco[0];
+                        $arrDados['predio'] = $endereco[1];
+                        $arrDados['nivel'] = $endereco[2];
+                        $arrDados['apartamento'] = $endereco[3];
+
+                        $endereco = $em->getRepository('wms:Deposito\Endereco')
+                            ->findOneBy(array(
+                                    'rua' => $endereco[0],
+                                    'predio' => $endereco[1],
+                                    'nivel' => $endereco[2],
+                                    'apartamento' => $endereco[3])
+                            );
+
+                        if (empty($endereco)) {
+                            $arrErroRows[$linha] = "Embalagem sem picking - CodProduto: " . $arrRegistro['codProduto'];
+                            break;
+                        }
+
+                        $arrRegistro['enderecoEn'] = $endereco;
+                    }
 
                     $embalagemEntity = null;
                     if ($arrRegistro['codigoBarras'] != "") {

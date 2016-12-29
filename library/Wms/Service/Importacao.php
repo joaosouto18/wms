@@ -715,7 +715,7 @@ class Importacao
             } else {
                 $embalagemEntity->setCodigoBarras($codigoBarras);
             }
-            $embalagemEntity->setEndereco($enderecoEn);
+            $embalagemEntity->setEndereco($registro['enderecoEn']);
             $em->persist($embalagemEntity);
 
             return true;
