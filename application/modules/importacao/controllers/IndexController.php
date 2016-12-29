@@ -134,7 +134,6 @@ class Importacao_IndexController extends Action
                         foreach ($endereco as $element) {
                             if (strlen($element) < 1) {
                                 $arrErroRows[$linha] = "Endereço fora do padrão - CodProduto: " . $arrRegistro['codProduto'];
-                                break;
                             }
                         }
                     }
@@ -159,7 +158,6 @@ class Importacao_IndexController extends Action
 
                         if (empty($endereco)) {
                             $arrErroRows[$linha] = "Endereço $arrRegistro[endereco] do produto $arrRegistro[codProduto] não foi encontrado";
-                            break;
                         }
 
                         $arrRegistro['enderecoEn'] = $endereco;
