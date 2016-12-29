@@ -62,6 +62,9 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
         $cargaRepo = $repositorios['cargaRepo'];
 
+        /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
+        $classeRepo = $repositorios['classeRepo'];
+
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
         $clienteRepo = $repositorios['clienteRepo'];
 
@@ -109,7 +112,13 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'classe':
-                    $result = $importacaoService->saveClasse($em, $arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
+                    if (!in_array($arrRegistro['id'], $checkArray)) {
+                        array_push($checkArray, $arrRegistro['id']);
+                    } else {
+                        $arrErroRows[$linha] = "Classe repetida" . $arrRegistro['nome'];
+                        break;
+                    }
+                    $result = $importacaoService->saveClasse($arrRegistro['id'], $arrRegistro['nome'], (isset($arrRegistro['idPai'])) ? $arrRegistro['idPai'] : null, $repositorios);
                     if (is_string($result)) {
                         $arrErroRows['exception'] = $result;
                     } else {
@@ -133,8 +142,6 @@ class Importacao_IndexController extends Action
                     if ($arrRegistro['codigoBarras'] != "") {
                         $codigoBarras = \Wms\Util\CodigoBarras::formatarCodigoEAN128Embalagem($arrRegistro['codigoBarras']);
                         $embalagemEntity = $embalagemRepo->findOneBy(array(
-                            'codProduto' => $arrRegistro['codProduto'],
-                            'grade' => $arrRegistro['grade'],
                             'codigoBarras' => $codigoBarras
                         ));
                     } else {
@@ -146,7 +153,7 @@ class Importacao_IndexController extends Action
                         ));
                     }
                     if (!empty($embalagemEntity)){
-                        $arrErroRows[$linha] = "Embalagem já cadastrada " . http_build_query($arrRegistro, '', ' ');
+                        $arrErroRows[$linha] = "Código de barras já cadastrado " . $arrRegistro['codigoBarras'];
                         break;
                     };
                     $result = $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
@@ -256,7 +263,6 @@ class Importacao_IndexController extends Action
 
                         if ($arrRegistro['tipoPessoa'] == "F")
                             $arrErroRows[$linha] = "CPF repetido: " . $arrRegistro['cpf_cnpj'];
-
                         break;
                     }
 
@@ -640,24 +646,34 @@ class Importacao_IndexController extends Action
                         $arquivoAtual = $file;
                     }
 
-                    $this->statusProgress["tLinha"] = $tLinhas - 1;
+                    if (ucfirst($cabecalho) == 'S') {
+                        $this->statusProgress["tLinha"] = $tLinhas - 1;
+                    } else {
+                        $this->statusProgress["tLinha"] = $tLinhas;
+                    }
 
                     for ($linha = 1; $linha <= $tLinhas; $linha++) {
 
                         if (ucfirst($cabecalho) == 'S' && $linha == 1) {
                             /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
-                            foreach ($camposArquivo as $campo){
+                            /*foreach ($camposArquivo as $campo){
                                 $coluna = $campo->getPosicaoTxt();
                                 if (!empty($coluna)){
 //                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
 //                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
 //                                    }
                                 }
-                            }
+                            }*/
                             continue;
                         }
 
-                        $this->statusProgress["iLinha"] = $linha - 1;
+                        if (ucfirst($cabecalho) == 'S') {
+                            $this->statusProgress["iLinha"] = $linha - 1;
+                        } else {
+                            $this->statusProgress["iLinha"] = $linha;
+                        }
+
+
 
                         $arrRegistro = array();
 
@@ -712,7 +728,7 @@ class Importacao_IndexController extends Action
 
                         $this->progressBar->update(null, $this->statusProgress);
 
-                        if ($countFlush >= 40) {
+                        if ($countFlush >= 100) {
                             $countFlush = 0;
                             $em->flush();
                             $em->clear();
