@@ -137,6 +137,8 @@ class Importacao_IndexController extends Action
                             }
                         }
                     }
+
+                    $arrRegistro['enderecoEn'] = null;
                     if (!empty($registro['endereco'])) {
 
                         $endereco = explode(".", $registro['endereco']);
