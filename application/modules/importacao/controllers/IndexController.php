@@ -133,7 +133,8 @@ class Importacao_IndexController extends Action
 
                         foreach ($endereco as $element) {
                             if (strlen($element) < 1) {
-                                $arrErroRows[$linha] = "Embalagem sem picking - CodProduto: " . $arrRegistro['codProduto'];
+                                $arrErroRows[$linha] = "Endereço fora do padrão - CodProduto: " . $arrRegistro['codProduto'];
+                                break;
                             }
                         }
                     }
