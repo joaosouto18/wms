@@ -140,9 +140,9 @@ class Importacao_IndexController extends Action
                     }
 
                     $arrRegistro['enderecoEn'] = null;
-                    if (!empty($registro['endereco'])) {
+                    if (!empty($arrRegistro['endereco'])) {
 
-                        $endereco = explode(".", $registro['endereco']);
+                        $endereco = explode(".", $arrRegistro['endereco']);
 
                         $arrDados['rua'] = $endereco[0];
                         $arrDados['predio'] = $endereco[1];
@@ -158,7 +158,7 @@ class Importacao_IndexController extends Action
                             );
 
                         if (empty($endereco)) {
-                            $arrErroRows[$linha] = "Endereço $registro[endereco] do produto $arrRegistro[codProduto] não foi encontrado";
+                            $arrErroRows[$linha] = "Endereço $arrRegistro[endereco] do produto $arrRegistro[codProduto] não foi encontrado";
                             break;
                         }
 
