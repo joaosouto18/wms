@@ -157,7 +157,7 @@ class Importacao_IndexController extends Action
                             );
 
                         if (empty($endereco)) {
-                            $arrErroRows[$linha] = "Embalagem endereço - CodProduto: " . $arrRegistro['codProduto'];
+                            $arrErroRows[$linha] = "Endereço $registro[endereco] do produto $arrRegistro[codProduto] não foi encontrado";
                             break;
                         }
 
