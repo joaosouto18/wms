@@ -266,61 +266,65 @@ class Mobile_OndaRessuprimentoController extends Action
         $etiquetaProduto = $this->_getParam('etiquetaProduto');
         $idOnda = $this->_getParam('idOnda');
         $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
+        $ondaOsEn = null;
 
         try {
             $this->getEntityManager()->beginTransaction();
 
-                /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-                $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-                $ondaOsRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs");
-                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-                $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+            $ondaOsRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs");
+            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
 
-                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
-                $ondaOsEn = $ondaOsEn2 = $ondaOsRepo->findOneBy(array('id'=>$idOnda));
-                /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-                $estoqueEn = $ondaOsEn->getEndereco();
+            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
+            $ondaOsEn = $ondaOsRepo->findOneBy(array('id'=>$idOnda));
 
-                $LeituraColetor = new \Wms\Service\Coletor();
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+            $enderecoEn = $ondaOsEn->getEndereco();
 
-                $result = null;
-                if ($codigoBarrasUMA)
-                {
-                    $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
-                    $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
+            if ($ondaOsEn->getStatus()->getId() == \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO)
+                throw new \Exception("A onda neste endereço " . $enderecoEn->getDescricao() . ' já foi atendida!');
 
-                    $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $estoqueEn->getId());
-                    if ($result == NULL) {
-                        $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
-                        throw new \Exception("UMA $codigoBarrasUMA Não encontrada neste endereço");
-                    }
+            $LeituraColetor = new \Wms\Service\Coletor();
+
+            $result = null;
+            if ($codigoBarrasUMA)
+            {
+                $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
+                $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
+
+                $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $enderecoEn->getId());
+                if ($result == NULL) {
+                    throw new \Exception("UMA $codigoBarrasUMA Não encontrada neste endereço");
                 }
+            }
 
-                if ($etiquetaProduto)
-                {
-                    $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
-                    $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto);
+            if ($etiquetaProduto)
+            {
+                $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
+                $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto);
 
-                    $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $estoqueEn->getId());
-                    if ($result == NULL) {
-                        $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/'.$idOnda;
-                        throw new \Exception("Produto $etiquetaProduto não encontrado neste endereço");
-                    }
+                $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $enderecoEn->getId());
+                if ($result == NULL) {
+                    throw new \Exception("Produto $etiquetaProduto não encontrado neste endereço");
                 }
+            }
 
-                if ($result == null) {
-                    throw new \Exception("Ocorreu um erro tentando finalizar a OS");
-                }
+            if ($result == null) {
+                throw new \Exception("Ocorreu um erro tentando finalizar a OS");
+            }
 
-                $codProduto = $result[0]['ID'];
-                $grade = $result[0]['GRADE'];
-                $ondaOsEn = $ondaOsEn->getProdutos();
+            $codProduto = $result[0]['ID'];
+            $grade = $result[0]['GRADE'];
+            $produtosOnda = $ondaOsEn->getProdutos();
 
-                if (($codProduto != $ondaOsEn[0]->getProduto()->getId()) || ($grade != $ondaOsEn[0]->getProduto()->getGrade())){
-                    throw new \Exception("Produto diferente do indicado na onda");
-                }
+            if (($codProduto != $produtosOnda[0]->getProduto()->getId()) || ($grade != $produtosOnda[0]->getProduto()->getGrade())){
+                throw new \Exception("Produto diferente do indicado na onda");
+            }
 
-                $ondaRepo->finalizaOnda($ondaOsEn2);
+            $ondaRepo->finalizaOnda($ondaOsEn);
+
             $this->getEntityManager()->commit();
             $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
 
@@ -328,7 +332,7 @@ class Mobile_OndaRessuprimentoController extends Action
 
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
-            $this->addFlashMessage("error","Falha finalizando os $idOnda - " .$e->getMessage() );
+            $this->addFlashMessage("error","Falha finalizando a OS ". $ondaOsEn->getOs()->getId() ." - " .$e->getMessage() );
         }
 
         $this->_redirect($urlRedirect);

@@ -1,6 +1,9 @@
 <?php
 
 namespace Wms\Domain\Entity\Ressuprimento;
+use Wms\Domain\Entity\OrdemServico;
+use Wms\Domain\Entity\Util\Sigla;
+
 /**
  * @Table(name="ONDA_RESSUPRIMENTO_OS")
  * @Entity(repositoryClass="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOsRepository")
@@ -89,6 +92,9 @@ class OndaRessuprimentoOs
         $this->os = $os;
     }
 
+    /**
+     * @return OrdemServico
+     */
     public function getOs()
     {
         return $this->os;
@@ -99,6 +105,9 @@ class OndaRessuprimentoOs
         $this->status = $status;
     }
 
+    /**
+     * @return Sigla
+     */
     public function getStatus()
     {
         return $this->status;
