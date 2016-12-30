@@ -735,28 +735,37 @@ class PaleteRepository extends EntityRepository
         if (count($paletes) <= 0 || empty($idPessoa)) {
             throw new Exception('Usuario ou palete não informados');
         }
+
         $retorno = array();
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
         $ok = false;
-        foreach($paletes as $paleteId) {
+        $arrPaletesResult = array();
+        foreach ($paletes as $paleteId) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $this->find($paleteId);
-            if ($paleteEn->getCodStatus() != Palete::STATUS_ENDERECADO && $paleteEn->getCodStatus() != Palete::STATUS_CANCELADO) {
+
+            if ($paleteEn->getCodStatus() == Palete::STATUS_CANCELADO) {
+                $arrPaletesResult[] = $paleteId;
+            } elseif ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO &&
+                $paleteEn->getRecebimento()->getStatus()->getId() != \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO
+            ) {
+                $arrPaletesResult[] = $paleteId;
+            } else {
 
                 if (!empty($dataValidade['dataValidade'])) {
-                    $dataValidade['dataValidade']  = new \DateTime($dataValidade['dataValidade']);
+                    $dataValidade['dataValidade'] = new\DateTime($dataValidade['dataValidade']);
                 }
 
-                if ($formaConferencia == OrdemServicoEntity::COLETOR ||$paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
+                if ($formaConferencia == OrdemServicoEntity::COLETOR || $paleteEn->getCodStatus() == Palete::STATUS_EM_ENDERECAMENTO) {
                     $paleteEn->setCodStatus(Palete::STATUS_ENDERECADO);
                     $paleteEn->setValidade($dataValidade['dataValidade']);
                     $this->_em->persist($paleteEn);
                     $retorno = $this->criarOrdemServico($paleteId, $idPessoa, $formaConferencia);
                 }
 
-                if ($retorno['criado']) {
+                if (!empty($retorno)) {
                     $ok = true;
                     $this->getEntityManager()->flush();
                     if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
@@ -765,13 +774,25 @@ class PaleteRepository extends EntityRepository
                         $idPalete = $paleteEn->getId();
                         $idUnitizador = $paleteEn->getUnitizador()->getId();
                         $this->getEntityManager()->clear();
-                        $reservaEstoqueRepo->efetivaReservaEstoque($idEstoque,$produtosArray,"E","U",$idPalete,$idPessoa,$retorno['id'],$idUnitizador,null,$dataValidade);
+                        $reservaEstoqueRepo->efetivaReservaEstoque($idEstoque, $produtosArray, "E", "U", $idPalete, $idPessoa, $retorno['id'], $idUnitizador, null, $dataValidade);
                     }
                 }
             }
         }
-
         $this->_em->flush();
+
+        if (!empty($arrPaletesResult)) {
+            if (count($arrPaletesResult) > 1) {
+                $strPaletes = '';
+                foreach ($arrPaletesResult as $palete) {
+                    $strPaletes .= $palete . ',';
+                }
+                return "Os paletes $strPaletes não tiveram as reservas de estoque atendidas";
+            } else {
+                return "O palete $arrPaletesResult[0] não teve a reserva de estoque atendida";
+            }
+        }
+
         return $ok;
     }
 

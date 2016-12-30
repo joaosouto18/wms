@@ -121,30 +121,39 @@ class Enderecamento_PaleteController extends Action
 
     public function enderecarAction()
     {
-        $usuarioRepo = $this->em->getRepository('wms:Usuario');
-        $perfilParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_PERFIL_OPERADOR_EMPILHADEIRA'));
+        try {
+            $this->em->beginTransaction();
+            $usuarioRepo = $this->em->getRepository('wms:Usuario');
+            $perfilParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_PERFIL_OPERADOR_EMPILHADEIRA'));
 
-        $this->view->conferentes = $usuarioRepo->getIdValueByPerfil($perfilParam->getValor());
+            $this->view->conferentes = $usuarioRepo->getIdValueByPerfil($perfilParam->getValor());
 
-        $this->view->id      = $id         = $this->_getParam('id');
-        $this->view->codigo  = $codigo     = $this->_getParam('codigo');
-        $this->view->grade   = $grade      = urldecode($this->_getParam('grade'));
+            $this->view->id = $id = $this->_getParam('id');
+            $this->view->codigo = $codigo = $this->_getParam('codigo');
+            $this->view->grade = $grade = urldecode($this->_getParam('grade'));
 
-        $paletes = $this->_getParam('palete', null);
-        if ($paletes != null) {
-            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-            $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
+            $paletes = $this->_getParam('palete', null);
+            if ($paletes != null) {
+                /**@var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+                $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
 
-            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($id, null, $codigo, $grade);
+                /**@var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+                $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+                $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($id, null, $codigo, $grade);
 
-            if ($paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'), null, $dataValidade)) {
-                $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
-            } else {
-                $this->addFlashMessage('info', 'Não foram feitos endereçamentos');
+                $result = $paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'), null, $dataValidade);
+                if ($result && !is_string($result)) {
+                    $this->em->commit();
+                    $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
+                    $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
+                } else {
+                    throw new Exception($result);
+                }
             }
-            $this->_redirect('enderecamento/palete/index/id/'.$id.'/codigo/'.$codigo.'/grade/'. urlencode($grade));
+        } catch (Exception $e) {
+            $this->addFlashMessage('info', 'Não foram feitos endereçamentos.' . $e->getMessage());
+            $this->em->rollback();
+            $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
         }
     }
 
