@@ -43,7 +43,19 @@ class Mobile_ExpedicaoController extends Action
         $this->view->codigoBarras = $idMapaSeparacao = $this->_getParam('codigoBarras');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $this->view->clientes = $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
+        $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
+
+        foreach ($clientes as $key => $cliente) {
+            $numeroCaixas = explode(',',$cliente['NUM_CAIXA_PC_INI']);
+            $caixaAnterior = null;
+            $arrCaixas = array();
+            foreach ($numeroCaixas as $caixa) {
+                if ($caixa != $caixaAnterior) $arrCaixas[] = $caixa;
+                $caixaAnterior = $caixa;
+            }
+            $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ',$arrCaixas);
+        }
+        $this->view->clientes = $clientes;
 
         $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);
         $idExpedicao = $mapaSeparacaoEn->getExpedicao()->getId();
@@ -303,24 +315,39 @@ class Mobile_ExpedicaoController extends Action
 
         try {
             $this->getEntityManager()->beginTransaction();
-            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($idMapa,$idPessoa,$mapaSeparacaoEmbaladoRepo);
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
             $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
-            if (count($qtdPendenteConferencia) <= 0)
-                $existeItensPendentes = false;
 
-            $this->getEntityManager()->commit();
-            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
-                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes);
+            if (count($qtdPendenteConferencia) <= 0) {
+                $existeItensPendentes = false;
+//                $this->addFlashMessage('sucess','Todas as caixas conferidas para o cliente!');
+//                $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $idMapa);
+            } elseif (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
+                $this->getEntityManager()->commit();
             }
+            $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($existeItensPendentes);
+            $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+
+
+
+
+
+
+//            if (count($qtdPendenteConferencia) <= 0)
+//                $existeItensPendentes = false;
+
+//            $this->getEntityManager()->commit();
+//            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+//                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes);
+//            }
 
         } catch (Exception $e) {
             $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
-        if ($existeItensPendentes === false)
-            $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
-        else
-            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $idMapa);
+//        if ($existeItensPendentes === true)
+//            $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
 
     }
 

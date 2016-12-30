@@ -49,6 +49,8 @@ class Web_ImprimirController extends Action
                 $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
             } elseif($modelo == 7) {
                 $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 75));
+            } elseif($modelo == 9) {
+                $etiqueta = new EtiquetaEndereco("L", 'mm', array(85, 30));
             } else {
                 $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
             }

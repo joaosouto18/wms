@@ -1,22 +1,9 @@
 <h3><?php echo utf8_encode('Recebimentos Pendentes de Endereçamento') ?></h3>
 <ul class="menu">
-    <?php $clienteAntigo = null;
-    foreach ($this->clientes as $cliente) :
-        if ($cliente['COD_PESSOA'] == $clienteAntigo)
-            continue;
-        $caixas = null;
-        for ($count = $cliente['NUM_CAIXA_PC_INI']; $count <= $cliente['NUM_CAIXA_PC_FIM']; $count++) :
-            if ($count == $cliente['NUM_CAIXA_PC_FIM']) :
-                $caixas .= $count;
-            else :
-                $caixas .= $count.'; ';
-            endif;
-        endfor;
-        $clienteAntigo = $cliente['COD_PESSOA']; ?>
-
+    <?php foreach ($this->clientes as $cliente) : ?>
         <li>
             <a href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa', 'idMapa' => $this->codigoBarras, 'idExpedicao' => $this->idExpedicao, 'cliente' => $cliente['COD_PESSOA'])); ?>"
-               title="<?php echo $cliente['NOM_PESSOA'] ?>" ><?php echo $cliente['NOM_PESSOA'] ?> - <?php echo ' CAIXA(S): '.$caixas ?></a>
+               title="<?php echo $cliente['NOM_PESSOA'] ?>" ><?php echo $cliente['NOM_PESSOA'] ?> - <?php echo ' CAIXA(S): '.$cliente['NUM_CAIXA_PC_INI'] ?></a>
         </li>
     <?php endforeach; ?>
 </ul>

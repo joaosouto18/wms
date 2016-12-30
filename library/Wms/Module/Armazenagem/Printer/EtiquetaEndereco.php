@@ -86,6 +86,17 @@ class EtiquetaEndereco extends Pdf
                         $this->layoutModelo8(null,$codBarras);
                     }
                     break;
+                case 9:
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    if (count($produtos) <= 0){
+                        $this->layoutModelo9(null,$codBarras);
+                    } else {
+                        foreach ($produtos as $produto){
+                            $this->layoutModelo9($produto,$codBarras);
+                            $this->AddPage();
+                        }
+                    }
+                    break;
                 default:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo1($produto,$codBarras);
@@ -365,6 +376,44 @@ class EtiquetaEndereco extends Pdf
 
         $this->Cell(5,5," ",0,1);
         $this->Line(0,$this->GetY(),297,$this->GetY());
+    }
+
+    public function layoutModelo9 ($produto, $codBarras){
+
+        if (count($produto) <= 0) {
+            $dscProduto = "";
+            $dscGrade = "";
+            $idProduto = "";
+        } else {
+            $idProduto = $produto['codProduto'];
+            $dscProduto = utf8_decode($produto['descricao']);
+            $dscGrade  = utf8_decode($produto['grade']);
+        }
+
+        $fontSizeCodBarras = 12;
+        $fontSizeProduto  = 9;
+        if ($idProduto == "") {
+            $idProduto = "";
+        } else {
+            $idProduto = $idProduto . " / " . '100 UN';
+        }
+
+        $dscProduto = 'RESPIRADOR DESCARTAVEL TIPO MOLDAVEL PFF-2 COM VALVULA CARVAO COR CINZA (CX-20UNID) BR101H801VNL';
+        $this->SetFont('Arial', 'B', 13);
+        $this->Cell(1,4,substr($dscProduto,0,25).'-',0,1);
+        $this->Cell(1,3,substr($dscProduto,25,25),0,1);
+
+        $y = $this->SetY(9);
+        $this->SetFont('Arial', 'B', $fontSizeCodBarras);
+        $this->Cell(1,$y,$codBarras,0,0);
+
+        $this->SetFont('Arial', 'B', $fontSizeProduto);
+        $this->Cell(1,$y,'                                              '.$idProduto,0,1);
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 22.5, 20 , 40, 10);
+
+//        $this->Cell(5,5," ",0,1);
+//        $this->Line(0,$this->GetY(),297,$this->GetY());
     }
 
 }

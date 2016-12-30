@@ -425,7 +425,7 @@ class Mobile_EnderecamentoController extends Action
         $enderecoAntigo = $paleteEn->getDepositoEndereco();
         $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
         $unitizadorEn = $paleteEn->getUnitizador();
-        if ($nivel == '00') {
+        if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
                 throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
