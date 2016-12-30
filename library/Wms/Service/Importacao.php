@@ -670,7 +670,7 @@ class Importacao
             /** @var EntityManager $em */
             $produtoRepo = $repositorios['produtoRepo'];
 
-            $codigoBarras = "";
+            $codigoBarras = $registro['codigoBarras'];
 
             /** @var \Wms\Domain\Entity\Produto $produto */
             $produto = $produtoRepo->findOneBy(array(
