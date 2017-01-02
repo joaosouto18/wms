@@ -60,7 +60,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
     }
 
-    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$existeItensPendentes)
+    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$mapaSeparacaoEmbaladoRepo,$idMapa,$idPessoa)
     {
 
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
@@ -68,6 +68,11 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
+        $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
+        $existeItensPendentes = true;
+        if (count($qtdPendenteConferencia) <= 0) {
+            $existeItensPendentes = false;
+        }
         $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
         $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
 
