@@ -382,33 +382,34 @@ class EtiquetaEndereco extends Pdf
 
         if (count($produto) <= 0) {
             $dscProduto = "";
-            $dscGrade = "";
             $idProduto = "";
+            $capacidadePicking = '';
+            $descricaoEmbalagem = "";
         } else {
             $idProduto = $produto['codProduto'];
             $dscProduto = utf8_decode($produto['descricao']);
-            $dscGrade  = utf8_decode($produto['grade']);
+            $capacidadePicking = $produto['capacidadePicking'];
+            $descricaoEmbalagem = $produto['descricaoEmbalagem'];
         }
 
-        $fontSizeCodBarras = 12;
         $fontSizeProduto  = 9;
         if ($idProduto == "") {
             $idProduto = "";
         } else {
-            $idProduto = $idProduto . " / " . '100 UN';
+            $idProduto = $idProduto . " / " . $capacidadePicking.$descricaoEmbalagem;
         }
 
         $dscProduto = 'RESPIRADOR DESCARTAVEL TIPO MOLDAVEL PFF-2 COM VALVULA CARVAO COR CINZA (CX-20UNID) BR101H801VNL';
-        $this->SetFont('Arial', 'B', 13);
-        $this->Cell(1,4,substr($dscProduto,0,25).'-',0,1);
-        $this->Cell(1,3,substr($dscProduto,25,25),0,1);
+        $this->SetFont('Arial', '', 15);
+        $this->Cell(1,5,substr($dscProduto,0,21).'-',0,1);
+        $this->Cell(1,3,substr($dscProduto,21,24),0,1);
 
-        $y = $this->SetY(9);
-        $this->SetFont('Arial', 'B', $fontSizeCodBarras);
+        $y = $this->SetY(9.99);
+        $this->SetFont('Arial', 'B', 13);
         $this->Cell(1,$y,$codBarras,0,0);
 
-        $this->SetFont('Arial', 'B', $fontSizeProduto);
-        $this->Cell(1,$y,'                                              '.$idProduto,0,1);
+        $this->SetFont('Arial', '', 11);
+        $this->Cell(1,$y,'                                        '.$idProduto,0,1);
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 22.5, 20 , 40, 10);
 
