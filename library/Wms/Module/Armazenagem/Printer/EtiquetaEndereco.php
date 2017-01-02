@@ -91,9 +91,10 @@ class EtiquetaEndereco extends Pdf
                     if (count($produtos) <= 0){
                         $this->layoutModelo9(null,$codBarras);
                     } else {
-                        foreach ($produtos as $produto){
+                        foreach ($produtos as $i => $produto){
                             $this->layoutModelo9($produto,$codBarras);
-                            $this->AddPage();
+                            if ($i < (count($produtos) - 1))
+                                $this->AddPage();
                         }
                     }
                     break;
