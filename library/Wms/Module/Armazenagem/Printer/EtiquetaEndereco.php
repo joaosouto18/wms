@@ -393,14 +393,12 @@ class EtiquetaEndereco extends Pdf
             $descricaoEmbalagem = $produto['descricaoEmbalagem'];
         }
 
-        $fontSizeProduto  = 9;
         if ($idProduto == "") {
             $idProduto = "";
         } else {
             $idProduto = $idProduto . " / " . $capacidadePicking.$descricaoEmbalagem;
         }
 
-        $dscProduto = 'RESPIRADOR DESCARTAVEL TIPO MOLDAVEL PFF-2 COM VALVULA CARVAO COR CINZA (CX-20UNID) BR101H801VNL';
         $this->SetFont('Arial', '', 15);
         $this->Cell(1,5,substr($dscProduto,0,21).'-',0,1);
         $this->Cell(1,3,substr($dscProduto,21,24),0,1);
@@ -414,8 +412,6 @@ class EtiquetaEndereco extends Pdf
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 22.5, 20 , 40, 10);
 
-//        $this->Cell(5,5," ",0,1);
-//        $this->Line(0,$this->GetY(),297,$this->GetY());
     }
 
 }
