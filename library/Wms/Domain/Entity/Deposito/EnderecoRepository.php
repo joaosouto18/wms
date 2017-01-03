@@ -384,7 +384,7 @@ class EnderecoRepository extends EntityRepository
             $rua = intval( substr($tempEndereco,0,2));
             $predio = intval(substr($tempEndereco,2,3));
             $nivel =  intval(substr($tempEndereco,5,2));
-            $apartamento = intval(substr($tempEndereco,7,2));
+            $apartamento = intval(substr($tempEndereco,7,3));
         }
 
         $dql = $em->createQueryBuilder()
