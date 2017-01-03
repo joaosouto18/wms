@@ -37,12 +37,13 @@ class RelatoriosSimplesRepository extends EntityRepository {
                     ores.dataCriacao as Data_Criacao,
                     p.id as Produto,
                     p.grade as Grade,
-                    o.qtd as Quantidade,
+                    osp.qtd as Quantidade,
                     e.descricao as Pulmao
                 ")
                 ->from("wms:Ressuprimento\OndaRessuprimentoOs","o")
                 ->leftJoin("o.ondaRessuprimento", "ores")
-                ->leftJoin("o.produto", "p")
+                ->leftJoin('wms:Ressuprimento\OndaRessuprimentoOsProduto', 'osp', 'WITH', 'osp.ondaRessuprimentoOs = o.id')
+                ->leftJoin("osp.produto", "p")
                 ->leftJoin("o.os", "os")
                 ->leftJoin("o.endereco", "e")
                 ->where("( ores.dataCriacao >= :dInicio and ores.dataCriacao <= :dFim )")

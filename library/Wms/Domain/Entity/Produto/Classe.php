@@ -21,7 +21,7 @@ class Classe
      */
     protected $idPai;
     /**
-     * @Column(name="NOM_PRODUTO_CLASSE", type="string", length=60, nullable=false)
+     * @Column(name="NOM_PRODUTO_CLASSE", type="string", length=80, nullable=false)
      */
     protected $nome;
     /**
