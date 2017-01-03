@@ -30,18 +30,32 @@
         <input type="hidden" name="idProduto" id="idProduto" value="<?php echo $this->codProduto?>"/>
         <input type="hidden" name="grade" id="grade" value="<?php echo $this->grade?>"/>
         <input type="hidden" name="idEndereco" id="idEndereco" value="<?php echo $this->idEndereco?>"/>
+        <?php if (!empty($this->codEmbalagem)) { ?>
+        <input type="hidden" name="codEmbalagem" id="codEmbalagem" value="<?php echo $this->codEmbalagem?>"/>
+        <?php }?>
         <table class="gTable">
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+            <?php if (!empty($this->embalagens)) {?>
+            <tr>
+                <td>Embalagem:</td>
+                <td>
+                    <select id="codEmbalagem" name="codEmbalagem" title="Embalagem" required>
+                        <?php foreach ($this->embalagens as $key => $item){ ?>
+                        <option value="<?php echo $key?>"><?php echo $item['embalagem'] . "($item[qtd])"?></option>
+                        <?php }?>
+                    </select>
+                </td>
+            </tr>
+            <?php } ?>
+            <tr><td>&nbsp;</td></tr>
             <tr>
                 <td>Quantidade:</td>
-                <td> <input class="focus" type="text" name="quantidade" id="quantidade" value="" /></td>
+                <td><input class="focus" title="Quantidade" type="text" name="quantidade" id="quantidade" value="" width="30px"/></td>
             </tr>
         </table>
         <br>
         <input type="submit" name="submit" id="submit" value="Movimentar" />
     </div>
-
-
 </form>
 
 

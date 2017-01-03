@@ -28,7 +28,7 @@ class PaleteRepository extends EntityRepository
           FROM RECEBIMENTO R
           LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
           LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
-                       FROM (SELECT MAX (QTD) as QTD, COD_RECEBIMENTO
+                       FROM (SELECT SUM (QTD) as QTD, COD_RECEBIMENTO
                                FROM V_QTD_RECEBIMENTO
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO
@@ -76,7 +76,11 @@ class PaleteRepository extends EntityRepository
 
         if (isset($status) && (!empty($status))) {
             if ($filter == true) {$queryWhere = $queryWhere . " AND ";}
-            $queryWhere = $queryWhere . " R.COD_STATUS = $status";
+            if ($status != 536) {
+                $queryWhere = $queryWhere . " R.COD_STATUS = $status";
+            } else {
+                $queryWhere .= " R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) ";
+            }
             $filter = true;
         }
 

@@ -3,6 +3,7 @@
 namespace Wms\Module\Web\Form\Subform;
 
 use Wms\Domain\Entity\Recebimento;
+use Wms\Domain\Entity\Util\SiglaRepository;
 
 /**
  * Description of FiltroRecebimentoMercadoria
@@ -15,7 +16,11 @@ class FiltroRecebimentoMercadoria extends \Wms\Module\Web\Form
     public function init()
     {
         $em = $this->getEm();
+        /** @var SiglaRepository $repoSigla */
         $repoSigla = $em->getRepository('wms:Util\Sigla');
+
+        $status = $repoSigla->getIdValue(50);
+        $status[536] = 'ENDERECADO';
 
         $this->setAttribs(array(
             'method' => 'get',
@@ -54,7 +59,7 @@ class FiltroRecebimentoMercadoria extends \Wms\Module\Web\Form
                 ))
                 ->addElement('select', 'status', array(
                     'label' => 'Status do Recebimento',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(50)),
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $status),
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('submit', 'submit', array(
