@@ -29,7 +29,7 @@ use Wms\Util\Endereco as EnderecoUtil;
 class Importacao
 {
 
-    public function saveClasse($em, $idClasse, $nome, $idClassePai = null, $repositorios)
+    public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
     {
         try {
             /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
@@ -668,79 +668,32 @@ class Importacao
     {
         try {
             /** @var EntityManager $em */
-
             $produtoRepo = $repositorios['produtoRepo'];
-            $embalagemRepo = $repositorios['embalagemRepo'];
 
-            $codigoBarras = "";
-            if ($registro['codigoBarras'] != "") {
-                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($registro['codigoBarras']);
-                $embalagemEntity = $embalagemRepo->findOneBy(array(
-                    'codProduto' => $registro['codProduto'],
-                    'grade' => $registro['grade'],
-                    'codigoBarras' => $codigoBarras
-                ));
-            } else {
-                $registro['CBInterno'] = 'S';
-                $embalagemEntity = $embalagemRepo->findOneBy(array(
-                    'codProduto' => $registro['codProduto'],
-                    'grade' => $registro['grade'],
-                    'quantidade' => $registro['quantidade']
-                ));
-            }
+            $codigoBarras = $registro['codigoBarras'];
 
-            $enderecoEn = null;
-            if (!empty($registro['endereco'])) {
+            /** @var \Wms\Domain\Entity\Produto $produto */
+            $produto = $produtoRepo->findOneBy(array(
+                'id' => $registro['codProduto'],
+                'grade' => $registro['grade'],
+            ));
 
-                $endereco = explode(".", $registro['endereco']);
-
-                $arrDados['rua'] = $endereco[0];
-                $arrDados['predio'] = $endereco[1];
-                $arrDados['nivel'] = $endereco[2];
-                $arrDados['apartamento'] = $endereco[3];
-
-                $endereco = $em->getRepository('wms:Deposito\Endereco')
-                    ->findOneBy(array(
-                            'rua' => $endereco[0],
-                            'predio' => $endereco[1],
-                            'nivel' => $endereco[2],
-                            'apartamento' => $endereco[3])
-                    );
-
-                if (empty($endereco))
-                    throw new \Exception("O endereço $registro[endereco] não foi encontrado");
-
-                $enderecoEn = $endereco;
-            }
+            if (empty($produto))
+                throw new \Exception("O produto $registro[codProduto] de grade $registro[grade] não foi encontrado");
 
             /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
-            if (empty($embalagemEntity)) {
-                /** @var \Wms\Domain\Entity\Produto $produto */
-                $produto = $produtoRepo->findOneBy(array(
-                    'id' => $registro['codProduto'],
-                    'grade' => $registro['grade'],
-                ));
-
-                if (empty($produto))
-                    throw new \Exception("O produto $registro[codProduto] de grade $registro[grade] não foi encontrado");
-
-                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
-                $embalagemEntity = new Produto\Embalagem();
-                $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity, $registro);
-                $embalagemEntity->setProduto($produto);
-                if ($registro['codigoBarras'] == "") {
-                    $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
-                    $embalagemEntity->setCodigoBarras($codigoBarras);
-                } else {
-                    $embalagemEntity->setCodigoBarras($codigoBarras);
-                }
-                $embalagemEntity->setEndereco($enderecoEn);
-                $em->persist($embalagemEntity);
-
+            $embalagemEntity = new Produto\Embalagem();
+            $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity, $registro);
+            $embalagemEntity->setProduto($produto);
+            if ($registro['codigoBarras'] == "") {
+                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                $embalagemEntity->setCodigoBarras($codigoBarras);
             } else {
-                $embalagemEntity->setEndereco($enderecoEn);
-                $em->persist($embalagemEntity);
+                $embalagemEntity->setCodigoBarras($codigoBarras);
             }
+            $embalagemEntity->setEndereco($registro['enderecoEn']);
+            $em->persist($embalagemEntity);
+
             return true;
         }catch (\Exception $e) {
             return $e->getMessage();
@@ -907,7 +860,6 @@ class Importacao
                 
                 $entity->setDescricao($dscEndereco);
                 $em->persist($entity);
-                $em->flush();
             }
             return true;
         }catch (\Exception $e){
