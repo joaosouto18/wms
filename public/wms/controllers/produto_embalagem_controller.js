@@ -635,7 +635,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 return false;
             }
 
-            if (endereco.length != 12){
+            if (endereco.length < 12 || endereco.length > 13){
                 alert('Formato inválido de Endereço.');
                 return false;
             }

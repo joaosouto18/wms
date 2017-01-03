@@ -60,7 +60,7 @@ class Cadastro extends Form
             ))
             ->addElement('text', 'apto', array(
                 'size' => 3,
-                'maxlength' => '2',
+                'maxlength' => '3',
                 'label' => 'Apto',
                 'class' => 'ctrSize',
             ))
