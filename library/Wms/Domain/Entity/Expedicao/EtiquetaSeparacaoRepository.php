@@ -1578,7 +1578,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
-//        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
+        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
