@@ -23,6 +23,7 @@ use Wms\Domain\Entity\Produto\Classe;
 use Wms\Domain\Entity\Util\SiglaRepository;
 use Wms\Module\Web\Controller\Action;
 use Wms\Util\CodigoBarras;
+use Core\Util\Produto as ProdutoUtil;
 use Zend\Stdlib\Configurator;
 use Wms\Util\Endereco as EnderecoUtil;
 
@@ -591,6 +592,153 @@ class Importacao
         }catch (\Exception $e){
             return $e->getMessage();
         }
+    }
+
+    public function saveProdutoWs($em,$repositorios,$idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia) {
+        $idProduto = trim ($idProduto);
+        $descricao = trim ($descricao);
+
+        $idProduto = ProdutoUtil::formatar($idProduto);
+
+        $grade = trim ($grade);
+        $idFabricante = trim ($idFabricante);
+        $tipo = trim ($tipo);
+        $idClasse = trim($idClasse);
+
+        $produtoRepo = $repositorios['produtoRepo'];
+
+        $produto = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+
+        if (!$produto) {
+            $produtoNovo = true;
+        } else {
+            $produtoNovo = false;
+        }
+
+        if (!$produto)
+            $produto = new ProdutoEntity;
+
+        $fabricanteRepo = $repositorios['fabricanteRepo'];
+        $fabricante = $fabricanteRepo->find($idFabricante);
+
+        if (!$fabricante)
+            throw new \Exception('Fabricante inexistente');
+
+        $classeRepo = $repositorios['classeRepo'];
+        $classe = $classeRepo->find($idClasse);
+
+        if (!$classe)
+            throw new \Exception('Classe do produto de codigo ' . $idClasse . ' inexistente');
+
+        // define numero de volume e tipo de comercializacao do produto
+        $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $tipo);
+        $numVolumes = ($produto->getNumVolumes()) ? $produto->getNumVolumes() : 1;
+
+        $produto->setId($idProduto)
+            ->setDescricao($descricao)
+            ->setGrade($grade)
+            ->setFabricante($fabricante)
+            ->setClasse($classe)
+            ->setReferencia($referencia);
+
+        if ($produtoNovo == true) {
+            $produto
+                ->setTipoComercializacao($tipoComercializacaoEntity)
+                ->setNumVolumes($numVolumes);
+        }
+
+        $em->persist($produto);
+
+        $parametroRepo = $repositorios['parametroRepo'];
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS'));
+
+        //VERIFICA SE VAI RECEBER AS EMBALAGENS OU NÃO
+        if ($parametro->getValor() == 'S') {
+
+            $embalagensArray = array();
+
+            //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
+            foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
+                $descricaoEmbalagem = null;
+                $encontrouEmbalagem = false;
+
+                foreach ($embalagens as $embalagemWs) {
+                    if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
+                        $encontrouEmbalagem = true;
+                        $descricaoEmbalagem =  $embalagemWs->descricao;
+
+                        if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                            throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
+                        }
+
+                        continue;
+                    }
+                }
+                $endPicking = null;
+                if ($embalagemCadastrada->getEndereco() != null ) {
+                    $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
+                }
+
+                $embalagemArray = array(
+                    'acao'=> 'alterar',
+                    'id' =>$embalagemCadastrada->getId(),
+                    'endereco' => $endPicking,
+                    'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
+                    'CBInterno' => $embalagemCadastrada->getCBInterno(),
+                    'embalado' => $embalagemCadastrada->getEmbalado(),
+                    'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
+                    'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
+                    'descricao' => $descricaoEmbalagem
+                );
+
+                if ($encontrouEmbalagem == false) {
+                    $embalagemArray['ativarDesativar'] = false;
+                } else {
+                    $embalagemArray['ativarDesativar'] = true;
+                }
+
+                $embalagensArray[] = $embalagemArray;
+
+            }
+
+            //DEPOIS INCLUO AS NOVAS EMBALAGENS
+            foreach ($embalagens as $embalagemWs) {
+
+                $encontrouEmbalagem = false;
+                foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
+                    if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
+                        $encontrouEmbalagem = true;
+                        continue;
+                    }
+                }
+
+                if ($encontrouEmbalagem == false) {
+
+                    $this->verificaCodigoBarrasDuplicado($embalagemWs->codBarras,$idProduto,$grade);
+
+                    $embalagemArray = array (
+                        'acao' => 'incluir',
+                        'descricao' => $embalagemWs->descricao,
+                        'quantidade' => $embalagemWs->qtdEmbalagem,
+                        'isPadrao' => 'N',
+                        'CBInterno' => 'N',
+                        'imprimirCB' => 'N',
+                        'codigoBarras' => $embalagemWs->codBarras,
+                        'embalado' => 'N',
+                        'capacidadePicking' => 0,
+                        'pontoReposicao' => 0,
+                        'endereco' => null
+                    );
+                    $embalagensArray[] = $embalagemArray;
+                }
+            }
+
+            $embalagensPersistir = array('embalagens'=>$embalagensArray);
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $em->getRepository('wms:Produto');
+            $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
+        }
+        return true;
     }
 
     public function saveProduto($em, $produto, $repositorios)
