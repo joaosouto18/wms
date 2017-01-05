@@ -7,6 +7,7 @@ class RelatorioDescarga extends Form
 {
     public function init()
     {
+        /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEm()->getRepository('wms:Usuario');
         $idPerfil = $usuarioRepo->getIdPerfil("DESCARREGADOR RECEBI");
         $usuariosDescarga = $usuarioRepo->getIdValueByPerfil($idPerfil);
