@@ -411,4 +411,20 @@ class Expedicao_EtiquetaController  extends Action
         $result = $etiquetaSeparacaoRepo->getEtiquetasByFaixa($primeira, $ultima, true);
         $this->_helper->json(array('result'=>count($result)));
     }
+
+    public function reimprimirEmbaladosAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+        $existeItensPendentes = true;
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+
+        $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
+        if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
+            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
+        }
+        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+        $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
+    }
 }

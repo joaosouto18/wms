@@ -181,6 +181,13 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Reimprimir Volume Embalado',
+                'ModelName' => 'expedicao',
+                'controllerName' => 'etiqueta',
+                'actionName' => 'reimprimir-embalados',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Imprimir Volume Patrimonio',
                 'modelName' => 'expedicao',
                 'controllerName' => 'volume-patrimonio',

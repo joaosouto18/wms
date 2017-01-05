@@ -319,7 +319,7 @@ class Mobile_ExpedicaoController extends Action
             if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
                 $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
                 $this->getEntityManager()->commit();
-                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$mapaSeparacaoEmbaladoRepo,$idMapa,$idPessoa);
+                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa);
             } else {
                 $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
                 if (count($qtdPendenteConferencia) <= 0) {

@@ -541,8 +541,14 @@ class ExpedicaoRepository extends EntityRepository
             return 'Existem etiquetas pendentes de corte nesta expedição';
         }
 
-        if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
-            return 'Existem volumes embalados pendentes de conferecia!';
+        if (isset($idMapa) && !empty($idMapa)) {
+            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
+                return 'Existem volumes embalados pendentes de FECHAMENTO!';
+            }
+        } else {
+            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
+                return 'Existem volumes embalados pendentes de CONFERENCIA!';
+            }
         }
 
         ini_set('max_execution_time', 3000);
