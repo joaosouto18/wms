@@ -399,16 +399,23 @@ class EtiquetaEndereco extends Pdf
             $idProduto = $idProduto . " / " . $capacidadePicking.$descricaoEmbalagem;
         }
 
-        $this->SetFont('Arial', '', 15);
-        $this->Cell(1,5,substr($dscProduto,0,21).'-',0,1);
-        $this->Cell(1,3,substr($dscProduto,21,24),0,1);
+        $this->SetFont('Arial', '', 13);
+        $this->Cell(1,5,substr($dscProduto,0,25).'-',0,1);
+        $this->Cell(1,3,substr($dscProduto,25,25),0,1);
 
-        $y = $this->SetY(9.99);
         $this->SetFont('Arial', 'B', 13);
-        $this->Cell(1,$y,$codBarras,0,0);
 
-        $this->SetFont('Arial', '', 11);
-        $this->Cell(1,$y,'                                        '.$idProduto,0,1);
+        /** Criar imagem para o endereco */
+        $img = imagecreatefromjpeg(APPLICATION_PATH . '/../public/img/imagem.jpg');
+        $cor = imagecolorallocate($img,0,0,0);
+        $texto = $codBarras.'                  '.$idProduto;
+        $fonte = APPLICATION_PATH . '/../public/img/arialbd.ttf';
+        imagettftext($img,15,0,5,15,$cor,$fonte,$texto);
+        imagejpeg($img,APPLICATION_PATH . '/../public/img/'.$codBarras.'.jpg',100);
+
+        header('Content-type:image/jpeg');
+        $this->Image(APPLICATION_PATH . '/../public/img/'.$codBarras.'.jpg' , 20, 12 , 50, 10);
+        unlink(APPLICATION_PATH . '/../public/img/'.$codBarras.'.jpg');
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 22.5, 20 , 40, 10);
 
