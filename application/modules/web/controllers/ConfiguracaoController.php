@@ -46,4 +46,18 @@ class Web_ConfiguracaoController extends Action
         $this->view->form = $form;
     }
 
+
+    public function getPadraoEnderecoClientAjaxAction()
+    {
+        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $paramRepo */
+        $paramRepo = $this->em->getRepository('wms:Sistema\Parametro');
+
+        $digito = '9';
+        $reverse = true;
+
+        $dscEndereco = $paramRepo->getConfigEndereco($digito, $reverse);
+
+        $this->_helper->json(array('dscEndereco' => $dscEndereco));
+    }
+
 }
