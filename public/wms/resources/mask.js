@@ -109,7 +109,9 @@
 				'+' : '',
 				'-' : '-'
 			},
-			
+
+			clientEnderecoConfig: null,
+
 			// default settings for the plugin
 			options : {
 				attr: 'alt', // an attr to look for the mask name or the mask itself
@@ -136,12 +138,12 @@
 			// and then if the 'attr' options value is 'alt', your input should look like:
 			// <input type="text" name="some_name" id="some_name" alt="msk" />
 			masks : {
-                                'ddd'                           : { mask : '999' },
-                                'ramal'                         : { mask : '9999' },
-                                'numero'                        : { mask : '99999999999999999999'},
-                                'number'                        : { mask : '99999999999999999999'},
-                                'depositoEndereco'              : { mask : '999' },
-                                'phoneNumber'                   : { mask : '9999-9999' },
+				'ddd'                           : { mask : '999' },
+				'ramal'                         : { mask : '9999' },
+				'numero'                        : { mask : '99999999999999999999'},
+				'number'                        : { mask : '99999999999999999999'},
+				'depositoEndereco'              : { mask : '999' },
+				'phoneNumber'                   : { mask : '9999-9999' },
 				'phone'				: { mask : '(99) 9999-9999' },
 				'phone-us'			: { mask : '(999) 999-9999' },
 				'cpf'				: { mask : '999.999.999-99' }, // cadastro nacional de pessoa fisica
@@ -150,21 +152,21 @@
 				'date-us'			: { mask : '19/39/9999' },
 				'cep'				: { mask : '99999-999' },
 				'time'				: { mask : '29:59' },
-                                'dimension'			: { mask : '99,9999999', type : 'reverse' },
+				'dimension'			: { mask : '99,9999999', type : 'reverse' },
 				'cc'				: { mask : '9999 9999 9999 9999' }, //credit card mask
 				'integer'			: { mask : '999.999.999.999', type : 'reverse' },				
 				'decimal'			: { mask : '99,999.999.999.999', type : 'reverse', defaultValue : '000' },
-                                'decimalNoValue'        	: { mask : '99,999.999.999.999', type : 'reverse'},
-                                'centesimal'                    : { mask : '999,999.999.999.999', type : 'reverse', defaultValue : '0000' },
-                                'centesimalNoValue'             : { mask : '999,999.999.999.999', type : 'reverse'},
-                                'milesimal'                     : { mask : '9999,999.999.999.999', type : 'reverse', defaultValue : '00000' },
-                                'milesimalNoValue'              : { mask : '9999,999.999.999.999', type : 'reverse'},
-                                'real'                          : { mask : '99.999999999999', type : 'reverse'},
+				'decimalNoValue'        	: { mask : '99,999.999.999.999', type : 'reverse'},
+				'centesimal'                    : { mask : '999,999.999.999.999', type : 'reverse', defaultValue : '0000' },
+				'centesimalNoValue'             : { mask : '999,999.999.999.999', type : 'reverse'},
+				'milesimal'                     : { mask : '9999,999.999.999.999', type : 'reverse', defaultValue : '00000' },
+				'milesimalNoValue'              : { mask : '9999,999.999.999.999', type : 'reverse'},
+				'real'                          : { mask : '99.999999999999', type : 'reverse'},
 				'decimal-us'                    : { mask : '99.999,999,999,999', type : 'reverse', defaultValue : '000' },
 				'signed-decimal'                : { mask : '99,999.999.999.999', type : 'reverse', defaultValue : '+000' },
 				'signed-decimal-us'             : { mask : '99,999.999.999.999', type : 'reverse', defaultValue : '+000' },
-                                'placaVeiculo'                  : { mask : 'aaa9999' },
-                                'endereco'                      : { mask : '99.99.999.99', type : 'reverse'}
+				'placaVeiculo'                  : { mask : 'aaa9999' },
+				'endereco'                      : { mask : '99.99.999.99', type : 'reverse'}
 			},
 			
 			init : function(){
@@ -191,8 +193,8 @@
 			},
 			
 			set: function(el,options){
-				
-				var maskObj = this,
+
+				var maskObj = this.getClientConfig(this),
 					$el = $(el),
 					mlStr = 'maxLength';
 				
@@ -323,6 +325,17 @@
 							o.defaultValue,
 							fixedCharsReg,
 							o.signal);
+			},
+
+			getClientConfig: function(obj){
+                $.ajax({
+                    url: "/configuracao/get-padrao-endereco-client-ajax",
+                    async: false,
+                    success: function (data) {
+                        obj.masks.endereco.mask = data.dscEndereco;
+                    }
+                });
+                return obj;
 			},
 			
 			// all the 3 events below are here just to fix the change event on reversed masks.

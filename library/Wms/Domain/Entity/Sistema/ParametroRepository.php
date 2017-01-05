@@ -94,5 +94,31 @@ class ParametroRepository extends EntityRepository
         
         return (is_object($parametro)) ? $parametro->getValor() : false;
     }
-    
+
+
+    public function getConfigEndereco($digito, $reverse = false)
+    {
+
+        $params = $this->findBy(array('constante' => array('TAMANHO_CARACT_RUA', 'TAMANHO_CARACT_PREDIO', 'TAMANHO_CARACT_NIVEL', 'TAMANHO_CARACT_APARTAMENTO')));
+
+        $arrParams = array(
+            'TAMANHO_CARACT_RUA' => '',
+            'TAMANHO_CARACT_PREDIO' => '',
+            'TAMANHO_CARACT_NIVEL' => '',
+            'TAMANHO_CARACT_APARTAMENTO' => ''
+        );
+
+        /** @var \Wms\Domain\Entity\Sistema\Parametro $param */
+        foreach ($params as $param){
+            for ($i = 0; $i < $param->getValor(); $i++){
+                $arrParams[$param->getConstante()] .= $digito;
+            }
+        }
+
+        if ($reverse)
+            return $arrParams['TAMANHO_CARACT_APARTAMENTO'] . '.' . $arrParams['TAMANHO_CARACT_NIVEL'] . '.' . $arrParams['TAMANHO_CARACT_PREDIO'] . '.' . $arrParams['TAMANHO_CARACT_RUA'];
+        else
+            return $arrParams['TAMANHO_CARACT_RUA'] . '.' . $arrParams['TAMANHO_CARACT_PREDIO'] . '.' . $arrParams['TAMANHO_CARACT_NIVEL'] . '.' . $arrParams['TAMANHO_CARACT_APARTAMENTO'];
+
+    }
 }

@@ -4,6 +4,7 @@ namespace Wms\Module\Web\Form\Subform\Produto;
 
 use Wms\Domain\Entity\Produto,
     Core\Form\SubForm;
+use Wms\Domain\Entity\Sistema\ParametroRepository;
 
 /**
  * Description of Embalagem
@@ -16,8 +17,11 @@ class Embalagem extends SubForm
     public function init()
     {
         //repositories
-        $repoFabricante = $this->getEm()->getRepository('wms:Fabricante');
-        $repoClasse = $this->getEm()->getRepository('wms:Produto\Classe');
+        /** @var ParametroRepository $repoParam */
+        $repoParam = $this->getEm()->getRepository('wms:Sistema\Parametro');
+        $digito = '0';
+        $reverse = false;
+        $placeholder = $repoParam->getConfigEndereco($digito, $reverse);
 
         $this->addElement('hidden', 'id')
                 ->addElement('hidden', 'idProduto')
@@ -61,7 +65,7 @@ class Embalagem extends SubForm
                     'label' => 'Endereço',
                     'alt' => 'endereco',
                     'size' => 20,
-                    'placeholder' => '00.000.00.00',
+                    'placeholder' => $placeholder,
                 ))
                 ->addElement('select', 'embalado', array(
                     'mostrarSelecione' => false,
