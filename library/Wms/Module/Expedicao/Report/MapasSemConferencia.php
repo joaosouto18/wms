@@ -59,7 +59,7 @@ class MapasSemConferencia extends Pdf
         $this->Cell(30, 5, 'Qtd Conferir', "TB");
         $this->Ln();
 
-        $linhaSeparacao = null;
+        $quebra = null;
         foreach ($produtos as $key => $produto) {
             $qtdConferirI = '';
             $qtdConferirII = '';
@@ -82,9 +82,9 @@ class MapasSemConferencia extends Pdf
                     $qtdConferirII = $qtdConferirII . ' '  . $embalagem->getDescricao();
                 break;
             }
-            if ($linhaSeparacao != $produto['DSC_LINHA_SEPARACAO']) {
+            if ($quebra != $produto['DSC_QUEBRA']) {
                 $this->SetFont('Arial', 'B', 15);
-                $this->Cell(110, 5,utf8_decode($produto["DSC_LINHA_SEPARACAO"]), 0, 0, 'R');
+                $this->Cell(110, 5,utf8_decode(trim($produto['DSC_QUEBRA'])), 0, 0, 'R');
                 $this->Ln();
             }
 
@@ -96,7 +96,7 @@ class MapasSemConferencia extends Pdf
             $this->Cell(30, 5, utf8_decode($produto["QTD_SEPARAR"] - $produto["QTD_CONFERIR"]), 0);
             $this->Cell(30, 5, utf8_decode($qtdConferirI), 0);
             $this->Cell(30, 5, utf8_decode($qtdConferirII), 0);
-            $linhaSeparacao = $produto['DSC_LINHA_SEPARACAO'];
+            $quebra = $produto['DSC_QUEBRA'];
             $this->Ln();
         }
     }
