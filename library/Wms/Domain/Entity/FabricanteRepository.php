@@ -46,7 +46,7 @@ class FabricanteRepository extends EntityRepository implements ObjectRepository
             if ($flush == true) {
                 $em->rollback();
             }
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
     }
     
