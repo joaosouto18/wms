@@ -46,7 +46,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->getEntityManager()->commit();
 
         } catch (\Exception $e) {
-                $observacao = $e->getMessage();
+                $observacao = $e->getMessage() . " - QUERY: " . $query;
                 $sucess = "N";
 
             $this->getEntityManager()->rollback();
