@@ -171,8 +171,7 @@ class Integracao
             $this->_em->flush();
 
             foreach ($arrayClasses as $classe) {
-                $importacaoService->saveClasse($this->_em,
-                                               $classe['codClasse'],
+                $importacaoService->saveClasse($classe['codClasse'],
                                                $classe['dscClasse'],
                                                $classe['codClassePai'],
                                                $repositorios);
