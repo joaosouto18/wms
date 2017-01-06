@@ -420,11 +420,16 @@ class Expedicao_EtiquetaController  extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
-        $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
-        if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
-            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
+        try {
+            $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
+            if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
+                throw new \Exception(utf8_encode('Não existe volume embalado para ser reimpresso!'));
+            }
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
-        $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
+
     }
 }
