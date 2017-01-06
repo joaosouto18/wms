@@ -632,7 +632,7 @@ class Importacao
         }
 
         if (!$produto)
-            $produto = new ProdutoEntity;
+            $produto = new Produto();
 
         $fabricanteRepo = $repositorios['fabricanteRepo'];
         $fabricante = $fabricanteRepo->find($idFabricante);
