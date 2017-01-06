@@ -46,7 +46,7 @@ class AcaoIntegracao
 
     /**
      * @var \DateTime
-     * @Column(name="DTH_ULTIMA_EXECUCAO", type="date", nullable=true)
+     * @Column(name="DTH_ULTIMA_EXECUCAO", type="datetime", nullable=true)
      */
     protected $dthUltimaExecucao;
 

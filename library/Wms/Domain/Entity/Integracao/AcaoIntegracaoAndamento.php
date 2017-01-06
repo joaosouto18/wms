@@ -28,7 +28,7 @@ class AcaoIntegracaoAndamento
     
     /**
      * @var \DateTime
-     * @Column(name="DTH_ANDAMENTO", type="date", nullable=true)
+     * @Column(name="DTH_ANDAMENTO", type="datetime", nullable=true)
      */
     protected $dthAndamento;
 

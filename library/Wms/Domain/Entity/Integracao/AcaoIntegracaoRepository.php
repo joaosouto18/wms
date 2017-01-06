@@ -22,6 +22,20 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
 
+                if ($acaoEn->getDthUltimaExecucao() == null) {
+                    $dthExecucao = '01/01/1900 01:01:01';
+                } else {
+                    $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
+                }
+
+                if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
+                    $query = str_replace("and p.dtultaltcom >= :dthExecucao", "" ,$query);
+                } else {
+                    $query = str_replace(":dthExecucao", $dthExecucao ,$query);
+                }
+
+                $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
+
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
                 $integracaoService = new Integracao($this->getEntityManager(),
                                                     array('acao'=>$acaoEn,
