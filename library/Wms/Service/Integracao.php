@@ -67,7 +67,8 @@ class Integracao
     }
 
     public function processaProdutos($dados){
-
+        ini_set('memory_limit', '-1');
+        
         $repositorios = array(
             'fabricanteRepo'        => $this->_em->getRepository('wms:Fabricante'),
             'classeRepo'            => $this->_em->getRepository('wms:Produto\Classe'),
