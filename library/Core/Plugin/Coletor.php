@@ -31,8 +31,10 @@ class Coletor extends \Zend_Controller_Plugin_Abstract
 
         try {
             if (!$auth->hasIdentity()) {
-                $controller = $this->notLoggedRoute['controller'];
-                $action = $this->notLoggedRoute['action'];
+                if ($request->getModuleName() != "integracao") {
+                    $controller = $this->notLoggedRoute['controller'];
+                    $action = $this->notLoggedRoute['action'];
+                }
             }
         } catch (\Zend_Acl_Role_Registry_Exception $e) {
             //problemas com identity invalida, limpo auth e peco para logar novamente
