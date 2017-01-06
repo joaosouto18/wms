@@ -30,7 +30,15 @@ use Wms\Util\Endereco as EnderecoUtil;
 class Importacao
 {
 
-    public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
+    protected $_throwsException;
+
+    public function __construct($throwException = false)
+    {
+        $this->_throwsException = $throwException;
+    }
+
+
+        public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
     {
         try {
             /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
@@ -38,7 +46,11 @@ class Importacao
             $entityClasse = $classeRepo->save((int)$idClasse, $nome, (int)$idClassePai, false);
             return $entityClasse;
         }catch (\Exception $e){
-            return $e->getMessage();
+            if ($this->_throwsException == true) {
+                throw new \Exception($e->getMessage());
+            } else {
+                return $e->getMessage();
+            }
         }
 
     }
@@ -590,7 +602,11 @@ class Importacao
             $entityFabricante = $fabricanteRepo->save($idFabricante, $nome, false);
             return $entityFabricante;
         }catch (\Exception $e){
-            return $e->getMessage();
+            if ($this->_throwsException == true) {
+                throw new \Exception($e->getMessage());
+            } else {
+                return $e->getMessage();
+            }
         }
     }
 
