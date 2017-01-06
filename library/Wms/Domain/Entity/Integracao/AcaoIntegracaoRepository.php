@@ -52,21 +52,26 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->getEntityManager()->rollback();
         }
 
-        if ($acaoEn->getIndUtilizaLog() == 'S') {
-            $andamentoEn = new AcaoIntegracaoAndamento();
-            $andamentoEn->setAcaoIntegracao($acaoEn);
-            $andamentoEn->setIndSucesso($sucess);
-            $andamentoEn->setDthAndamento(new \DateTime);
-            $andamentoEn->setObservacao($observacao);
-            $this->getEntityManager()->persist($andamentoEn);
+        try {
+            if ($acaoEn->getIndUtilizaLog() == 'S') {
+                $andamentoEn = new AcaoIntegracaoAndamento();
+                $andamentoEn->setAcaoIntegracao($acaoEn);
+                $andamentoEn->setIndSucesso($sucess);
+                $andamentoEn->setDthAndamento(new \DateTime);
+                $andamentoEn->setObservacao($observacao);
+                $this->getEntityManager()->persist($andamentoEn);
+            }
+
+            if ($sucess=="S") {
+                $acaoEn->setDthUltimaExecucao(new \DateTime);
+                $this->getEntityManager()->persist($acaoEn);
+            }
+
+            $this->getEntityManager()->flush();
+        } catch (\Exception $e) {
+            var_dump($e->getMessage());exit;
         }
 
-        if ($sucess=="S") {
-            $acaoEn->setDthUltimaExecucao(new \DateTime);
-            $this->getEntityManager()->persist($acaoEn);
-        }
-
-        $this->getEntityManager()->flush();
         return true;
     }
 }
