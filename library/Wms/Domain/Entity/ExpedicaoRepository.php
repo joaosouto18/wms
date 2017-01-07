@@ -541,8 +541,14 @@ class ExpedicaoRepository extends EntityRepository
             return 'Existem etiquetas pendentes de corte nesta expedição';
         }
 
-        if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
-            return 'Existem volumes embalados pendentes de conferecia!';
+        if (isset($idMapa) && !empty($idMapa)) {
+            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
+                return 'Existem volumes embalados pendentes de FECHAMENTO!';
+            }
+        } else {
+            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
+                return 'Existem volumes embalados pendentes de CONFERENCIA!';
+            }
         }
 
         ini_set('max_execution_time', 3000);
@@ -1232,7 +1238,7 @@ class ExpedicaoRepository extends EntityRepository
                        PESO.NUM_CUBAGEM as "cubagem",
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
-                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0 
+                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS

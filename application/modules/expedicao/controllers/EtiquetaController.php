@@ -411,4 +411,26 @@ class Expedicao_EtiquetaController  extends Action
         $result = $etiquetaSeparacaoRepo->getEtiquetasByFaixa($primeira, $ultima, true);
         $this->_helper->json(array('result'=>count($result)));
     }
+
+    public function reimprimirEmbaladosAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+        $existeItensPendentes = true;
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+
+        try {
+            $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
+            if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
+                $this->addFlashMessage('error', 'Não existe volume embalado para ser reimpresso!');
+                $this->_redirect('/expedicao/index');
+            }
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+    }
 }

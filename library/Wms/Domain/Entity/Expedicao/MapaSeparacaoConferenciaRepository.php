@@ -19,12 +19,13 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                          M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
                          NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
                          DE.DSC_DEPOSITO_ENDERECO,
-                         LS.DSC_LINHA_SEPARACAO
-                    FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
+                         LS.DSC_LINHA_SEPARACAO,
+                         M.DSC_QUEBRA
+                    FROM (SELECT M.COD_EXPEDICAO, M.DSC_QUEBRA, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
                             FROM MAPA_SEPARACAO_PRODUTO MP
                             LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
                            WHERE MP.IND_CONFERIDO = 'N'
-                           GROUP BY M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
+                           GROUP BY M.COD_EXPEDICAO, M.DSC_QUEBRA, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
                LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
                             FROM MAPA_SEPARACAO_CONFERENCIA
                            WHERE IND_CONFERENCIA_FECHADA = 'N'
@@ -51,7 +52,8 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                          M.QTD_SEPARAR,
                          C.QTD_CONFERIDA,
                          DE.DSC_DEPOSITO_ENDERECO,
-                         LS.DSC_LINHA_SEPARACAO
+                         LS.DSC_LINHA_SEPARACAO,
+                         M.DSC_QUEBRA
             ORDER BY COD_MAPA_SEPARACAO, M.COD_PRODUTO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

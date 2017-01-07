@@ -60,7 +60,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
     }
 
-    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$mapaSeparacaoEmbaladoRepo,$idMapa,$idPessoa)
+    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa)
     {
 
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
@@ -68,7 +68,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
-        $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
+        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa,$idPessoa);
         $existeItensPendentes = true;
         if (count($qtdPendenteConferencia) <= 0) {
             $existeItensPendentes = false;
@@ -94,8 +94,29 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return true;
     }
 
-    public function getDadosEmbalado($idMapaSeparacaoEmabalado)
+    public function validaVolumesEmbaladoConferidosByMapa($idMapa)
     {
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
+        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
+        foreach ($mapaSeparacaoEmbaladoEn as $mapaSeparacaoEmbalado) {
+            $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus()->getId();
+            if ($statusMapaEmbalado != MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function getDadosEmbalado($idMapaSeparacaoEmabalado = null, $idExpedicao = null)
+    {
+        $andWhere = '';
+        if (isset($idMapaSeparacaoEmabalado) && !empty($idMapaSeparacaoEmabalado)) {
+            $andWhere .= " AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = $idMapaSeparacaoEmabalado ";
+        }
+        if (isset($idExpedicao) && !empty($idExpedicao)) {
+            $andWhere .= " AND MS.COD_EXPEDICAO = $idExpedicao ";
+        }
         $sql = "SELECT E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE
                     FROM MAPA_SEPARACAO_EMB_CLIENTE MSE
                     INNER JOIN MAPA_SEPARACAO MS ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
@@ -105,7 +126,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                     INNER JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
                     INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
                     INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA
-                WHERE MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = $idMapaSeparacaoEmabalado
+                WHERE 1 = 1
+                $andWhere
                 GROUP BY E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
