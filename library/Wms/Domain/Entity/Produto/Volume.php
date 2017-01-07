@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Produto as ProdutoEntity,
     Wms\Domain\Entity\Produto\NormaPaletizacao as NormaPaletizacaoEntity,
     Core\Util\Converter;
+use Wms\Domain\Entity\Produto;
 
 /**
  * Description of Volume
@@ -31,7 +32,7 @@ class Volume
      *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
      *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
      * })
-     * @var Wms\Domain\Entity\Produto $produto Produto que o volumes está relacionado a
+     * @var \Wms\Domain\Entity\Produto $produto Produto que o volumes está relacionado a
      */
     protected $produto;
 
@@ -55,31 +56,31 @@ class Volume
 
     /**
      * @Column(type="decimal", name="NUM_ALTURA")
-     * @var decimal altura do volume
+     * @var float altura do volume
      */
     protected $altura;
 
     /**
      * @Column(type="decimal", name="NUM_LARGURA")
-     * @var decimal largura do volume
+     * @var float largura do volume
      */
     protected $largura;
 
     /**
      * @Column(type="decimal", name="NUM_PROFUNDIDADE")
-     * @var decimal profundidade do volume
+     * @var float profundidade do volume
      */
     protected $profundidade;
 
     /**
      * @Column(type="decimal", name="NUM_CUBAGEM")
-     * @var decimal cubagem do volume
+     * @var float cubagem do volume
      */
     protected $cubagem;
 
     /**
      * @Column(type="decimal", name="NUM_PESO")
-     * @var decimal peso do volume
+     * @var float peso do volume
      */
     protected $peso;
 
@@ -103,7 +104,7 @@ class Volume
     /**
      * Norma de paletizacao do volume
      *
-     * @var Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @var \Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\NormaPaletizacao", cascade={"persist"})
      * @JoinColumn(name="COD_NORMA_PALETIZACAO", referencedColumnName="COD_NORMA_PALETIZACAO")
      */
@@ -118,7 +119,7 @@ class Volume
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
-     * @var Wms\Domain\Entity\Deposito\Endereco $endereco
+     * @var \Wms\Domain\Entity\Deposito\Endereco $endereco
      */
     protected $endereco;
 
@@ -140,7 +141,7 @@ class Volume
 
     /**
      * @Column(name="DTH_INATIVACAO", type="datetime", nullable=true)
-     * @var datetime
+     * @var \datetime
      */
     protected $dataInativacao;
 
@@ -176,6 +177,7 @@ class Volume
     /**
      * Informa o produto no qual este volume compõe
      * @param Produto $produto
+     * @return Volume
      */
     public function setProduto(ProdutoEntity $produto)
     {
@@ -206,6 +208,7 @@ class Volume
     /**
      * Informa o código sequencial do volume
      * @param integer $codigoSequencial
+     * @return Volume
      */
     public function setCodigoSequencial($codigoSequencial)
     {
@@ -215,7 +218,7 @@ class Volume
 
     /**
      * Retorna a norma de paletizacao
-     * @return integer
+     * @return NormaPaletizacaoEntity
      */
     public function getNormaPaletizacao()
     {
@@ -224,7 +227,8 @@ class Volume
 
     /**
      * Registra a norma de paletizacao
-     * @param integer $normaPaletizacaoEntity
+     * @param integer|NormaPaletizacaoEntity $normaPaletizacaoEntity
+     * @return Volume
      */
     public function setNormaPaletizacao(NormaPaletizacaoEntity $normaPaletizacaoEntity)
     {
@@ -234,7 +238,7 @@ class Volume
 
     /**
      * Retorna a altura do produto
-     * @return decimal
+     * @return float
      */
     public function getAltura()
     {
@@ -243,7 +247,7 @@ class Volume
 
     /**
      * Informa a altura do volume
-     * @param decimal $altura
+     * @param float $altura
      */
     public function setAltura($altura)
     {
@@ -253,7 +257,7 @@ class Volume
 
     /**
      * Retorna a largura do volume
-     * @return decimal
+     * @return float
      */
     public function getLargura()
     {
@@ -262,7 +266,8 @@ class Volume
 
     /**
      * Informa a largura do volume
-     * @param decimal $largura
+     * @param float $largura
+     * @return Volume
      */
     public function setLargura($largura)
     {
@@ -272,7 +277,7 @@ class Volume
 
     /**
      * Retorna a profundidade do volume
-     * @return decimal
+     * @return float
      */
     public function getProfundidade()
     {
@@ -281,7 +286,8 @@ class Volume
 
     /**
      * Informa a profundidade do volume
-     * @param decimal $profundidade
+     * @param float $profundidade
+     * @return Volume
      */
     public function setProfundidade($profundidade)
     {
@@ -291,7 +297,7 @@ class Volume
 
     /**
      * Retorna a cubagem do volume
-     * @return decimal
+     * @return float
      */
     public function getCubagem()
     {
@@ -300,7 +306,8 @@ class Volume
 
     /**
      * Informa a cubagem do volume
-     * @param decimal $cubagem
+     * @param float $cubagem
+     * @return Volume
      */
     public function setCubagem($cubagem)
     {
@@ -310,7 +317,7 @@ class Volume
 
     /**
      * Retorna o peso do volume
-     * @return decimal
+     * @return float
      */
     public function getPeso()
     {
@@ -319,7 +326,8 @@ class Volume
 
     /**
      * Informa o peso do volume
-     * @param decimal $peso
+     * @param float $peso
+     * @return Volume
      */
     public function setPeso($peso)
     {
@@ -350,6 +358,7 @@ class Volume
     /**
      * Informa o código de barras do volume
      * @param string $codigoBarras
+     * @return Volume
      */
     public function setCodigoBarras($codigoBarras)
     {
@@ -450,7 +459,7 @@ class Volume
     }
 
     /**
-     * @return datetime
+     * @return \datetime
      */
     public function getDataInativacao()
     {
@@ -458,7 +467,7 @@ class Volume
     }
 
     /**
-     * @param datetime $dataInativacao
+     * @param \datetime $dataInativacao
      */
     public function setDataInativacao($dataInativacao)
     {

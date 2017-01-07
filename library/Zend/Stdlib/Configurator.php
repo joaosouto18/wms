@@ -59,8 +59,8 @@ abstract class Configurator
      *
      * @param  object       $object  The object that needs to be configured
      * @param  \Traversable $options The configuration to apply
-     * @throws \Zend\Stdlib\Exception\InvalidArgumentException
-     * @return void
+     * @throws \InvalidArgumentException
+     * @return object
      */
     public static function configure($object, $options)
     {
@@ -109,6 +109,6 @@ abstract class Configurator
             }
         }
 	
-	return $object;
+	    return $object;
     }
 }

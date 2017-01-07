@@ -329,10 +329,10 @@
 
 			getClientConfig: function(obj){
                 $.ajax({
-                    url: "/configuracao/get-padrao-endereco-client-ajax",
+                    url: "/configuracao/get-mask-endereco-ajax",
                     async: false,
                     success: function (data) {
-                        obj.masks.endereco.mask = data.dscEndereco;
+                        obj.masks.endereco.mask = data.mask;
                     }
                 });
                 return obj;

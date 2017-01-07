@@ -197,7 +197,7 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('info','Escolha um nível',null, $elementos);
         }
 
-        $this->validaEnderecoPicking($enderecoEn->getDescricao(), $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
+        $this->validaEnderecoPicking($paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
 
         if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
             $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $idEndereco);
@@ -214,34 +214,27 @@ class Mobile_EnderecamentoController extends Action
 
     public function validaNivelAction()
     {
-        $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-        $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-        $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-        $nivel = $this->_getParam("nivel");
-        if (strlen($this->_getParam("nivel")) < 2) {
-            $nivel = '0'.$this->_getParam("nivel");
-        }
-        $capacidadePicking  = $this->_getParam('capacidadePicking');
+        $arrEndereco = array(
+            'rua' => $this->_getParam("rua"),
+            'predio' => $this->_getParam("predio"),
+            'nivel' => $this->_getParam("nivel"),
+            'apto' => $this->_getParam("apartamento"),
+        );
+
+        $endereco = \Wms\Util\Endereco::formatar($arrEndereco);
+
         $idPalete           = $this->_getParam("uma");
-        $rua                = substr($this->_getParam("rua"), -$tamanhoRua, $tamanhoRua);
-        $predio             = substr($this->_getParam("predio"), -$tamanhoPredio, $tamanhoPredio);
-        $nivel              = substr($nivel, -$tamanhoNivel, $tamanhoNivel);
-        $apartamento        = substr($this->_getParam("apartamento"), -$tamanhoApartamento, $tamanhoApartamento);
-        $codBarras          = $rua . $predio . $nivel . $apartamento;
+        $capacidadePicking  = $this->_getParam('capacidadePicking');
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
-        $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codBarras);
-        if (count($idEndereco) == 0) {
+        /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+        if (empty($enderecoEn)) {
             $this->createXml('error','Endereço não encontrado');
         }
-        $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
-
-        /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
-        $enderecoEn = $enderecoRepo->find($idEndereco);
 
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
@@ -249,14 +242,14 @@ class Mobile_EnderecamentoController extends Action
 
         $enderecoReservado = null;
         if (isset($paleteEn) && !empty($paleteEn)) {
-            $this->validaEnderecoPicking($codBarras, $paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn, $capacidadePicking);
+            $this->validaEnderecoPicking($paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn, $capacidadePicking);
             $enderecoReservado = $paleteEn->getDepositoEndereco();
         }
 
         if (($enderecoReservado == null) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
             $this->enderecar($enderecoEn,$paleteEn,$enderecoRepo, $paleteRepo);
         } else {
-            $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $idPalete . '/endereco/' . $idEndereco);
+            $this->createXml('info','Confirmar novo endereço','/mobile/enderecamento/confirmar-novo-endereco/uma/' . $idPalete . '/endereco/' . $enderecoEn->getId());
         }
 
     }
@@ -266,7 +259,7 @@ class Mobile_EnderecamentoController extends Action
      * @param $codBarras
      * @return int
      */
-    public function validaEnderecoPicking($endereco, $paleteEn, $caracteristicaEnd, $enderecoEn = null, $capacidadePicking = 0)
+    public function validaEnderecoPicking($paleteEn, $caracteristicaEnd, $enderecoEn = null, $capacidadePicking = 0)
     {
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
         $paleteProdutoRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\PaleteProduto');
@@ -1287,13 +1280,21 @@ class Mobile_EnderecamentoController extends Action
 
     private function getEnderecoNivel($dscEndereco, $nivel)
     {
-        if (strlen($dscEndereco) < 8) {
-            $rua = 0;
-            $predio = 0;
-            $nivel = 0;
-            $apartamento = 0;
+        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+        $totalDigitos = \Wms\Util\Endereco::getTotalDigitos($arrQtdDigitos, false);
+
+        if (strlen($dscEndereco) < $totalDigitos) {
+            $arrEndereco = array(
+                'rua' => 0,
+                'predio' => 0,
+                'nivel' => 0,
+                'apartamento' => 0
+            );
         } else {
-            $dscEndereco = str_replace('.','',$dscEndereco);
+            $endereco = \Wms\Util\Endereco::formatar($dscEndereco);
+            $arrEndereco = \Wms\Util\Endereco::separar($endereco,$arrQtdDigitos);
+            $arrEndereco['nivel'] = $nivel;
+            /*$dscEndereco = str_replace('.','',$dscEndereco);
             if (strlen($dscEndereco) == 8){
                 $tempEndereco = "0" . $dscEndereco;
             } else {
@@ -1301,20 +1302,17 @@ class Mobile_EnderecamentoController extends Action
             }
             $rua = intval( substr($tempEndereco,0,2));
             $predio = intval(substr($tempEndereco,2,3));
-            $apartamento = intval(substr($tempEndereco,7,2));
+            $apartamento = intval(substr($tempEndereco,7,2));*/
         }
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-        return $enderecoRepo->findOneBy(array('rua' => $rua, 'predio' => $predio, 'apartamento' => $apartamento, 'nivel' => $nivel));
+        return $enderecoRepo->findOneBy($arrEndereco);
     }
 
     public function getEnderecoByParametro($dscEndereco)
     {
-        $tamanhoRua         = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-        $tamanhoPredio      = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-        $tamanhoNivel       = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+        list($tamanhoRua, $tamanhoPredio, $tamanhoNivel, $tamanhoApartamento) = \Wms\Util\Endereco::getQtdDigitos();
 
         $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL, COD_DEPOSITO_ENDERECO, COD_CARACTERISTICA_ENDERECO
                  FROM DEPOSITO_ENDERECO

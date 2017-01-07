@@ -55,69 +55,69 @@ class Endereco
     protected $status;
 
     /**
-     * @var smallint $idCaracteristica
+     * @var int $idCaracteristica
      *
      * @Column(name="COD_CARACTERISTICA_ENDERECO", type="smallint", nullable=false)
      */
     protected $idCaracteristica;
 
     /**
-     * @var Wms\Domain\Entity\Deposito\Endereco\Caracteristica $caracteristica
+     * @var \Wms\Domain\Entity\Deposito\Endereco\Caracteristica $caracteristica
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco\Caracteristica")
      * @JoinColumn(name="COD_CARACTERISTICA_ENDERECO", referencedColumnName="COD_CARACTERISTICA_ENDERECO") 
      */
     protected $caracteristica;
 
     /**
-     * @var smallint $idEstruturaArmazenagem
+     * @var int $idEstruturaArmazenagem
      *
      * @Column(name="COD_TIPO_EST_ARMAZ", type="smallint", nullable=false)
      */
     protected $idEstruturaArmazenagem;
 
     /**
-     * @var Wms\Domain\Entity\Armazenagem\Estrutura\Tipo $estruturaArmazenagem
+     * @var \Wms\Domain\Entity\Armazenagem\Estrutura\Tipo $estruturaArmazenagem
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Armazenagem\Estrutura\Tipo")
      * @JoinColumn(name="COD_TIPO_EST_ARMAZ", referencedColumnName="COD_TIPO_EST_ARMAZ") 
      */
     protected $estruturaArmazenagem;
 
     /**
-     * @var smallint $idTipoEndereco
+     * @var int $idTipoEndereco
      *
      * @Column(name="COD_TIPO_ENDERECO", type="smallint", nullable=false)
      */
     protected $idTipoEndereco;
 
     /**
-     * @var Wms\Domain\Entity\Deposito\Endereco\Tipo $tipoEndereco
+     * @var \Wms\Domain\Entity\Deposito\Endereco\Tipo $tipoEndereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco\Tipo")
      * @JoinColumn(name="COD_TIPO_ENDERECO", referencedColumnName="COD_TIPO_ENDERECO") 
      */
     protected $tipoEndereco;
 
     /**
-     * @var smallint $idAreaArmazenagem
+     * @var int $idAreaArmazenagem
      *
      * @Column(name="COD_AREA_ARMAZENAGEM", type="smallint", nullable=false)
      */
     protected $idAreaArmazenagem;
 
     /**
-     * @var Wms\Domain\Entity\Deposito\AreaArmazenagem $areaArmazenagem
+     * @var \Wms\Domain\Entity\Deposito\AreaArmazenagem $areaArmazenagem
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\AreaArmazenagem")
      * @JoinColumn(name="COD_AREA_ARMAZENAGEM", referencedColumnName="COD_AREA_ARMAZENAGEM") 
      */
     protected $areaArmazenagem;
 
     /**
-     * @var smallint $idDeposito
+     * @var int $idDeposito
      * @Column(name="COD_DEPOSITO", type="smallint", nullable=false)
      */
     protected $idDeposito;
 
     /**
-     * @var Wms\Domain\Entity\Deposito $deposito
+     * @var \Wms\Domain\Entity\Deposito $deposito
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito")
      * @JoinColumn(name="COD_DEPOSITO", referencedColumnName="COD_DEPOSITO") 
      */
@@ -215,8 +215,7 @@ class Endereco
 
     public function getRua()
     {
-        $mascara = \Wms\Util\Endereco::mascara();
-        return str_pad($this->rua, $mascara['RUA'], "0", STR_PAD_LEFT);
+        return \Wms\Util\Endereco::formatarRua($this->rua);
     }
 
     public function setRua($rua)
@@ -227,8 +226,7 @@ class Endereco
 
     public function getPredio()
     {
-        $mascara = \Wms\Util\Endereco::mascara();
-        return str_pad($this->predio, $mascara['PREDIO'], "0", STR_PAD_LEFT);
+        return \Wms\Util\Endereco::formatarPredio($this->predio);
     }
 
     public function setPredio($predio)
@@ -239,8 +237,7 @@ class Endereco
 
     public function getNivel()
     {
-        $mascara = \Wms\Util\Endereco::mascara();
-        return str_pad($this->nivel, $mascara['NIVEL'], "0", STR_PAD_LEFT);
+        return \Wms\Util\Endereco::formatarNivel($this->nivel);
     }
 
     public function setNivel($nivel)
@@ -251,8 +248,7 @@ class Endereco
 
     public function getApartamento()
     {
-        $mascara = \Wms\Util\Endereco::mascara();
-        return str_pad($this->apartamento, $mascara['APTO'], "0", STR_PAD_LEFT);
+        return \Wms\Util\Endereco::formatarApto($this->apartamento);
     }
 
     public function setApartamento($apartamento)

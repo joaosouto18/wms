@@ -6,65 +6,338 @@ namespace Wms\Util;
  * Description of Endereco
  *
  * @author medina
+ *
+ * @update 06/01/2017
+ * @author Tarcísio César
+ *
  */
 class Endereco
 {
 
     /**
-     * Retorna formato de mascara para cada elemento de um endereco
-     * @return array Matriz associativa de (RUA, PREDIO, NIVEL, APTO)
+     * Esta função retorna uma matriz associativa com a quantidade de digitos de cada elemento do endereço de acordo com os parametros definidos
+     *
+     * Ex.:
+     *
+     * retorno = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apto' => 2)
+     *
+     * @return array
      */
-    public static function mascara()
+    public static function getQtdDigitos()
     {
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
-        $parametro = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 3, 'constante' => 'FORMATO_MASCARA_ENDERECO'));
 
-        $valor = explode('.', $parametro->getValor());
+        $arrCriterio = array('TAMANHO_CARACT_RUA', 'TAMANHO_CARACT_PREDIO', 'TAMANHO_CARACT_NIVEL', 'TAMANHO_CARACT_APARTAMENTO');
+
+        $params = $em->getRepository('wms:Sistema\Parametro')->findBy(array('constante' => $arrCriterio));
+
+        $arrParams = array();
+
+        /** @var \Wms\Domain\Entity\Sistema\Parametro $param */
+        foreach ($params as $param) {
+            $arrParams[$param->getConstante()] = $param->getValor();
+        }
 
         return array(
-            'RUA' => strlen($valor[0]),
-            'PREDIO' => strlen($valor[1]),
-            'NIVEL' => strlen($valor[2]),
-            'APTO' => strlen($valor[3]),
+            'rua' => $arrParams['TAMANHO_CARACT_RUA'],
+            'predio' => $arrParams['TAMANHO_CARACT_PREDIO'],
+            'nivel' => $arrParams['TAMANHO_CARACT_NIVEL'],
+            'apto' => $arrParams['TAMANHO_CARACT_APARTAMENTO']
         );
     }
 
     /**
-     * Retorna o endereco separado no formato de cada elemento de um endereco
-     * @param String $endereco
-     * @return array Matriz associativa de (RUA, PREDIO, NIVEL, APTO)
+     * Esta função retorna um inteiro co a soma total de digitos de um endereço de acordo com os parametros definidos
+     *
+     * @param null|array $qtdDigitos
+     * @param bool $considerarSeparador
+     * @return int
      */
-    public static function separar($endereco)
+    public static function getTotalDigitos($qtdDigitos = null, $considerarSeparador = false)
     {
-        $valor = explode('.', $endereco);
+        $arrQtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
 
-        return array(
-            'RUA' => $valor[0],
-            'PREDIO' => $valor[1],
-            'NIVEL' => $valor[2],
-            'APTO' => $valor[3],
-        );
+        $total = 0;
+
+        foreach ($arrQtdDigitos as $elemento) {
+            $total += (int) $elemento;
+        }
+
+        if ($considerarSeparador)
+            $total += (count($arrQtdDigitos) - 1);
+
+        return $total;
     }
 
     /**
-     * Retorna o endereco formatado de acordo com a mascara definida nos parametros do sistema
-     * @param Array $endereco
+     * Esta função recebe um array ($qtdDigitos) com a quantidade de digitos de cada campo do endereço
+     * Caso necessite da mascara em um digito específico, o mesmo deve ser passado no parametro como string $digito
+     *
+     * Ex.:
+     * $qtdDigitos = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apto' => 2)
+     * $digito = '9' (default = '0')
+     *
+     * retorno = '99.999.99.99'
+     *
+     * @param array $qtdDigitos
+     * @param string $digito
+     * @return string Retorna o formato de acordo com as configurações de cada campo do endereço
+     */
+    public static function mascara($qtdDigitos = null, $digito = '0')
+    {
+        $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
+
+        $arrParams = array(
+            'rua' => self::formatarRua($digito, $qtdDigitos['rua'], $digito),
+            'predio' => self::formatarPredio($digito, $qtdDigitos['predio'], $digito),
+            'nivel' => self::formatarNivel($digito, $qtdDigitos['nivel'], $digito),
+            'apto' => self::formatarApto($digito, $qtdDigitos['apto'], $digito)
+        );
+
+        return implode('.', $arrParams);
+    }
+
+    /**
+     * Retorna o endereco separado no formato de cada elemento
+     * O parametro $qtdDigitos recebe uma matriz associativa com a quantidade de digitos de cada elemento do endereço
+     * Caso não seja passado será aplicado o interno de acordo com a definições dos parametros
+     *
+     * Ex.:
+     * $endereco = 01.001.01.01
+     * $qtdDigitos = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apto' => 2)
+     *
+     * retorno = array('rua' => '01', 'predio' => '001', 'nivel' => '01', 'apto' => '01')
+     *
+     * @param string $endereco
+     * @param array|null $qtdDigitos
+     * @return array Matriz associativa de (rua, predio, nivel, apto)
+     */
+    public static function separar($endereco, $qtdDigitos = null)
+    {
+        $result = null;
+
+        //Se endereço tiver ponto "." ele será o critério de quebra
+        if (strpos($endereco,'.')) {
+
+            $valor = explode('.', $endereco);
+
+            $result = array(
+                'rua' => $valor[0],
+                'predio' => $valor[1],
+                'nivel' => $valor[2],
+                'apto' => $valor[3],
+            );
+
+        }
+
+        //Se não tiver ponto "." o critério será a qtd de digitos para cada campo
+        //de acordo com a configuração dos parametros de cada elemento
+        else {
+
+            $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
+            $dgtRua = (int) $qtdDigitos['rua'];
+            $dgtPredio = (int) $qtdDigitos['predio'];
+            $dgtNivel = (int) $qtdDigitos['nivel'];
+            $dgtApto = (int) $qtdDigitos['rua'];
+
+            $result = array(
+                'rua' => (int) substr($endereco, 0, $dgtRua),
+                'predio' => (int) substr($endereco, $dgtRua, $dgtPredio),
+                'nivel' => (int) substr($endereco, ($dgtRua + $dgtPredio), $dgtNivel),
+                'apto' => (int) substr($endereco, ($dgtRua + $dgtPredio + $dgtNivel), $dgtApto),
+            );
+
+        }
+        return $result;
+    }
+
+    /**
+     * Retorna o endereco formatado de acordo com os parametros de endereço do sistema
+     *
+     * Ex.:
+     * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apto' => '1')
+     * $dgtComplementar = null (default ='0')
+     *
+     * retorno = '01.004.00.01'
+     *
+     * O parametro $dgtComplementar não é obrigatório por padrão será o digito '0'
+     * Define apenas qual o digito será utilizado para preencher o formato
+     *
+     * Ex.:
+     * $endereco = '2.03.2.1'
+     * $dgtComplementar = '9' (default ='0')
+     *
+     * retorno = '92.903.92.91'
+     *
+     * @param array|string $endereco
+     * @param string $dgtComplementar
      * @return string $dscEndereco
+     * @throws \Exception Caso $endereco seja passado faltando algum parametro
      */
-    public static function formatar(array $endereco)
+    public static function formatar($endereco, $dgtComplementar = '0')
     {
-        $mascaraEndereco = self::mascara();
+        $arrEndereco = (!is_array($endereco)) ? self::separar($endereco) : $endereco;
 
-        $rua = str_pad($endereco['RUA'], $mascaraEndereco['RUA'], '0', STR_PAD_LEFT);
-        $predio = str_pad($endereco['PREDIO'], $mascaraEndereco['PREDIO'], '0', STR_PAD_LEFT);
-        $nivel = str_pad($endereco['NIVEL'], $mascaraEndereco['NIVEL'], '0', STR_PAD_LEFT);
-        $apartamento = str_pad($endereco['APTO'], $mascaraEndereco['APTO'], '0', STR_PAD_LEFT);
+        $qtdDigitos = self::getQtdDigitos();
+        $dscEndereco = array();
 
-        $dscEndereco = array($rua, $predio, $nivel, $apartamento);
+        if (isset($arrEndereco['rua'])) {
+            $rua = self::formatarRua($arrEndereco['rua'], (int)$qtdDigitos['rua'], $dgtComplementar);
+            $dscEndereco['rua'] = $rua;
+        } else {
+            throw new \Exception('Elemento "rua" não definido');
+        }
 
-        $dscEndereco = implode('.', $dscEndereco);
+        if (isset($arrEndereco['predio'])) {
+            $predio = self::formatarPredio($arrEndereco['predio'], (int) $qtdDigitos['predio'], $dgtComplementar);
+            $dscEndereco['predio'] = $predio;
+        } else {
+            throw new \Exception('Elemento "$predio" não definido');
+        }
 
-        return $dscEndereco;
+        if (isset($arrEndereco['nivel'])) {
+            $nivel = self::formatarNivel($arrEndereco['nivel'], (int) $qtdDigitos['nivel'], $dgtComplementar);
+            $dscEndereco['nivel'] = $nivel;
+        } else {
+            throw new \Exception('Elemento "nivel" não definido');
+        }
+
+        if (isset($arrEndereco['apto'])) {
+            $apartamento = self::formatarApto($arrEndereco['apto'], (int) $qtdDigitos['apto'], $dgtComplementar);
+            $dscEndereco['apto'] = $apartamento;
+        } else {
+            throw new \Exception('Elemento "apto" não definido');
+        }
+
+        return implode('.', $dscEndereco);
+    }
+
+    /**
+     * Esta função formata exclusivamente o campo relativo ao nome
+     * Se $qtdDigitos não for informada, por padrão será a qtd definida no parametro
+     * Se $dgtComplementar não for informada, por padrão será o digito '0'
+     * Define apenas qual o digito será utilizado para preencher o formato
+     *
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = 2
+     * $dgtComplementar = null (default = '0')
+     *
+     * retorno = '03'
+     *
+     * Ou
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = null (exemplo de valor do parametro do sistema = 2)
+     * $dgtComplementar = '9'
+     *
+     * retorno = '93'
+     *
+     * @param int|string $elemento
+     * @param int|null $qtdDigitos
+     * @param string $dgtSuplementar
+     * @return string
+     */
+    public static function formatarRua($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
+    {
+        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['rua'] : (int) $qtdDigitos;
+        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+    }
+
+    /**
+     * Esta função formata exclusivamente o campo relativo ao nome
+     * Se $qtdDigitos não for informada, por padrão será a qtd definida no parametro
+     * Se $dgtComplementar não for informada, por padrão será o digito '0'
+     * Define apenas qual o digito será utilizado para preencher o formato
+     *
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = 3
+     * $dgtComplementar = null (default = '0')
+     *
+     * retorno = '003'
+     *
+     * Ou
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = null (exemplo de valor do parametro do sistema = 3)
+     * $dgtComplementar = '9'
+     *
+     * retorno = '993'
+     *
+     * @param int|string $elemento
+     * @param int|null $qtdDigitos
+     * @param string $dgtSuplementar
+     * @return string
+     */
+    public static function formatarPredio($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
+    {
+        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['predio'] : (int) $qtdDigitos;
+        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+    }
+
+    /**
+     * Esta função formata exclusivamente o campo relativo ao nome
+     * Se $qtdDigitos não for informada, por padrão será a qtd definida no parametro
+     * Se $dgtComplementar não for informada, por padrão será o digito '0'
+     * Define apenas qual o digito será utilizado para preencher o formato
+     *
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = 2
+     * $dgtComplementar = null (default = '0')
+     *
+     * retorno = '03'
+     *
+     * Ou
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = null (exemplo de valor do parametro do sistema = 2)
+     * $dgtComplementar = '9'
+     *
+     * retorno = '93'
+     *
+     * @param int|string $elemento
+     * @param int|null $qtdDigitos
+     * @param string $dgtSuplementar
+     * @return string
+     */
+    public static function formatarNivel($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
+    {
+        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['nivel'] : (int) $qtdDigitos;
+        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+    }
+
+    /**
+     * Esta função formata exclusivamente o campo relativo ao nome
+     * Se $qtdDigitos não for informada, por padrão será a qtd definida no parametro
+     * Se $dgtComplementar não for informada, por padrão será o digito '0'
+     * Define apenas qual o digito será utilizado para preencher o formato
+     *
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = 2
+     * $dgtComplementar = null (default = '0')
+     *
+     * retorno = '03'
+     *
+     * Ou
+     * Ex.:
+     * $elemento = 3 ou '3'
+     * $qtdDigito = null (exemplo de valor do parametro do sistema = 2)
+     * $dgtComplementar = '9'
+     *
+     * retorno = '93'
+     *
+     * @param int|string $elemento
+     * @param int|null $qtdDigitos
+     * @param string $dgtSuplementar
+     * @return string
+     */
+    public static function formatarApto($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
+    {
+        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['apto'] : (int) $qtdDigitos;
+        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
 }

@@ -5,6 +5,7 @@ namespace Wms\Module\Web\Form\Subform\Produto;
 use Wms\Domain\Entity\Produto,
     Core\Form\SubForm;
 use Wms\Domain\Entity\Sistema\ParametroRepository;
+use Wms\Util\Endereco;
 
 /**
  * Description of Embalagem
@@ -16,12 +17,7 @@ class Embalagem extends SubForm
 
     public function init()
     {
-        //repositories
-        /** @var ParametroRepository $repoParam */
-        $repoParam = $this->getEm()->getRepository('wms:Sistema\Parametro');
-        $digito = '0';
-        $reverse = false;
-        $placeholder = $repoParam->getConfigEndereco($digito, $reverse);
+        $placeholder = Endereco::mascara();
 
         $this->addElement('hidden', 'id')
                 ->addElement('hidden', 'idProduto')

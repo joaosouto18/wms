@@ -3,9 +3,7 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
-    Core\Util\Produto as ProdutoUtil,
-    Core\Util\Produto;
-use Doctrine\ORM\Query;
+    Core\Util\Produto as ProdutoUtil;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -802,27 +800,24 @@ class EstoqueRepository extends EntityRepository
 
     public function getProdutoByNivel($dscEndereco, $nivel) {
 
-        if (is_null($nivel)) {
-            throw new Exception('Nivel esperado');
+        if (empty($nivel)) {
+            throw new \Exception('Nivel esperado');
         }
 
         $em = $this->getEntityManager();
 
-        if (strlen($dscEndereco) < 8) {
+        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+        $totalDigitos = \Wms\Util\Endereco::getTotalDigitos($arrQtdDigitos, false);
+
+        if (strlen($dscEndereco) < $totalDigitos) {
             $rua = 0;
             $predio = 0;
             $nivel = 0;
             $apartamento = 0;
         } else {
-            $dscEndereco = str_replace('.','',$dscEndereco);
-            if (strlen($dscEndereco) == 8){
-                $tempEndereco = "0" . $dscEndereco;
-            } else {
-                $tempEndereco = $dscEndereco;
-            }
-            $rua = intval( substr($tempEndereco,0,2));
-            $predio = intval(substr($tempEndereco,2,3));
-            $apartamento = intval(substr($tempEndereco,7,2));
+            $endereco = \Wms\Util\Endereco::formatar($dscEndereco);
+            $arrEndereco = \Wms\Util\Endereco::separar($endereco,$arrQtdDigitos);
+            list($rua, $predio, , $apartamento) = array_values($arrEndereco);
         }
 
         $dql = $em->createQueryBuilder()
@@ -833,8 +828,8 @@ class EstoqueRepository extends EntityRepository
             ->andWhere("dep.predio = $predio")
             ->andWhere("dep.nivel = $nivel")
             ->andWhere("dep.apartamento =  $apartamento");
-            $result = $dql->getQuery()->getArrayResult();
-        return $result;
+
+        return $dql->getQuery()->getArrayResult();
     }
 
     public function getProdutoByUMA($codigoBarrasUMA, $idEndereco)

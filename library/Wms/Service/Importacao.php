@@ -794,21 +794,13 @@ class Importacao
     public function saveEndereco($em, $arrDados)
     {
         try {
-            $endereco = explode(".", $arrDados['endereco']);
+            $endereco = EnderecoUtil::formatar($arrDados['endereco']);
 
-            $arrDados['rua'] = $endereco[0];
-            $arrDados['predio'] = $endereco[1];
-            $arrDados['nivel'] = $endereco[2];
-            $arrDados['apartamento'] = $endereco[3];
+            $arrEndereco = EnderecoUtil::separar($endereco);
 
-            $criterio = array(
-                'rua' => $endereco[0],
-                'predio' => $endereco[1],
-                'nivel' => $endereco[2],
-                'apartamento' => $endereco[3]
-            );
+            $arrDados = array_merge($arrDados, $arrEndereco);
 
-            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($criterio);
+            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrEndereco);
 
             if (!$entity) {
             
@@ -850,15 +842,7 @@ class Importacao
                 $entity = new Endereco();
                 Configurator::configure($entity, $arrDados);
                 
-                $dscEndereco = array(
-                    'RUA' => $endereco[0],
-                    'PREDIO' => $endereco[1],
-                    'NIVEL' => $endereco[2],
-                    'APTO' => $endereco[3])
-                ;
-                $dscEndereco = EnderecoUtil::formatar($dscEndereco);
-                
-                $entity->setDescricao($dscEndereco);
+                $entity->setDescricao($endereco);
                 $em->persist($entity);
             }
             return true;
