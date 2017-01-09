@@ -30,7 +30,15 @@ use Wms\Util\Endereco as EnderecoUtil;
 class Importacao
 {
 
-    public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
+    protected $_throwsException;
+
+    public function __construct($throwException = false)
+    {
+        $this->_throwsException = $throwException;
+    }
+
+
+        public function saveClasse($idClasse, $nome, $idClassePai = null, $repositorios)
     {
         try {
             /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
@@ -38,7 +46,11 @@ class Importacao
             $entityClasse = $classeRepo->save((int)$idClasse, $nome, (int)$idClassePai, false);
             return $entityClasse;
         }catch (\Exception $e){
-            return $e->getMessage();
+            if ($this->_throwsException == true) {
+                throw new \Exception($e->getMessage());
+            } else {
+                return $e->getMessage();
+            }
         }
 
     }
@@ -590,7 +602,11 @@ class Importacao
             $entityFabricante = $fabricanteRepo->save($idFabricante, $nome, false);
             return $entityFabricante;
         }catch (\Exception $e){
-            return $e->getMessage();
+            if ($this->_throwsException == true) {
+                throw new \Exception($e->getMessage());
+            } else {
+                return $e->getMessage();
+            }
         }
     }
 
@@ -616,7 +632,7 @@ class Importacao
         }
 
         if (!$produto)
-            $produto = new ProdutoEntity;
+            $produto = new Produto();
 
         $fabricanteRepo = $repositorios['fabricanteRepo'];
         $fabricante = $fabricanteRepo->find($idFabricante);
@@ -942,21 +958,13 @@ class Importacao
     public function saveEndereco($em, $arrDados)
     {
         try {
-            $endereco = explode(".", $arrDados['endereco']);
 
-            $arrDados['rua'] = $endereco[0];
-            $arrDados['predio'] = $endereco[1];
-            $arrDados['nivel'] = $endereco[2];
-            $arrDados['apartamento'] = $endereco[3];
+            $arrQtdDigitos = EnderecoUtil::getQtdDigitos();
+            $endereco = EnderecoUtil::formatar($arrDados['endereco'], $arrQtdDigitos);
+            $arrEndereco = EnderecoUtil::separar($endereco, $arrQtdDigitos);
+            $arrDados = array_merge($arrDados, $arrEndereco);
 
-            $criterio = array(
-                'rua' => $endereco[0],
-                'predio' => $endereco[1],
-                'nivel' => $endereco[2],
-                'apartamento' => $endereco[3]
-            );
-
-            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($criterio);
+            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrEndereco);
 
             if (!$entity) {
             
@@ -998,15 +1006,7 @@ class Importacao
                 $entity = new Endereco();
                 Configurator::configure($entity, $arrDados);
                 
-                $dscEndereco = array(
-                    'RUA' => $endereco[0],
-                    'PREDIO' => $endereco[1],
-                    'NIVEL' => $endereco[2],
-                    'APTO' => $endereco[3])
-                ;
-                $dscEndereco = EnderecoUtil::formatar($dscEndereco);
-                
-                $entity->setDescricao($dscEndereco);
+                $entity->setDescricao($endereco);
                 $em->persist($entity);
             }
             return true;

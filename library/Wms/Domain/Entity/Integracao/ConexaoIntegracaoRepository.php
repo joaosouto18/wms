@@ -15,6 +15,7 @@ class ConexaoIntegracaoRepository extends EntityRepository
 
     private function oracleQuery($query, $conexao) {
         try {
+            ini_set('memory_limit', '-1');
             $usuario = $conexao->getUsuario();
             $senha = $conexao->getSenha();
             $servidor = $conexao->getServidor();

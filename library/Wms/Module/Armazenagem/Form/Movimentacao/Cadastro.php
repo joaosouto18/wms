@@ -3,6 +3,7 @@
 namespace Wms\Module\Armazenagem\Form\Movimentacao;
 
 use Wms\Module\Web\Form;
+use Wms\Util\Endereco;
 
 class Cadastro extends Form
 {
@@ -11,6 +12,8 @@ class Cadastro extends Form
     {
 
         $normasPaletizacao = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdValue(true);
+        $arrQtdDigitos = Endereco::getQtdDigitos();
+        $placeholder = Endereco::mascara($arrQtdDigitos);
 
         $this
             ->setAttribs(array(
@@ -43,24 +46,24 @@ class Cadastro extends Form
             ->addElement('text', 'rua', array(
                 'size' => 3,
                 'label' => 'Rua',
-                'maxlength' => '2',
+                'maxlength' => $arrQtdDigitos['rua'],
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
-                'maxlength' => '3',
+                'maxlength' => $arrQtdDigitos['predio'],
                 'label' => 'Predio',
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'nivel', array(
                 'size' => 3,
-                'maxlength' => '2',
+                'maxlength' => $arrQtdDigitos['nivel'],
                 'label' => 'Nivel',
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'apto', array(
                 'size' => 3,
-                'maxlength' => '3',
+                'maxlength' => $arrQtdDigitos['apto'],
                 'label' => 'Apto',
                 'class' => 'ctrSize',
             ))
@@ -90,30 +93,30 @@ class Cadastro extends Form
                 'alt' => 'endereco',
                 'size' => 20,
                 'disabled' => 'disabled',
-                'placeholder' => '00.000.00.00',
+                'placeholder' => $placeholder,
             ))
 
             ->addElement('text', 'ruaDestino', array(
                 'size' => 3,
                 'label' => 'Rua Destino',
-                'maxlength' => '2',
+                'maxlength' => $arrQtdDigitos['rua'],
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'predioDestino', array(
                 'size' => 3,
-                'maxlength' => '3',
+                'maxlength' => $arrQtdDigitos['predio'],
                 'label' => 'Predio Destino',
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'nivelDestino', array(
                 'size' => 3,
-                'maxlength' => '2',
+                'maxlength' => $arrQtdDigitos['nivel'],
                 'label' => 'Nivel Destino',
                 'class' => 'ctrSize',
             ))
             ->addElement('text', 'aptoDestino', array(
                 'size' => 3,
-                'maxlength' => '2',
+                'maxlength' => $arrQtdDigitos['apto'],
                 'label' => 'Apto Destino',
                 'class' => 'ctrSize',
             ))

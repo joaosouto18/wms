@@ -1,7 +1,8 @@
 <?php
 use Wms\Controller\Action,
 Wms\Service\Recebimento as LeituraColetor,
-Wms\Domain\Entity\Recebimento as RecebimentoEntity;
+Wms\Domain\Entity\Recebimento as RecebimentoEntity,
+\Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
 
 class Mobile_Enderecamento_ManualController extends Action
 {
@@ -94,27 +95,25 @@ class Mobile_Enderecamento_ManualController extends Action
     public function validarEndereco($codBarraEndereco, $params, $urlOrigem, $urlDestino) {
         try{
             $LeituraColetor = new LeituraColetor();
-            $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
+            $codigoBarras   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
 
-            if (!isset($endereco)) {
+            if (empty($codigoBarras)) {
                 throw new \Exception('Nenhum Endereço Informado');
             }
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
-            $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($endereco);
-            if (empty($idEndereco)) {
-                throw new \Exception('Endereço não encontrado');
+            $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+            $endereco = \Wms\Util\Endereco::formatar($codigoBarras);
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+            $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+            if (empty($enderecoEn)) {
+                throw new Exception("Endereço não encontrado");
             }
 
-            $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
-            $params['endereco'] = $idEndereco;
+            $params['endereco'] = $enderecoEn->getId();
 
-            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
-            $enderecoEn = $enderecoRepo->find($idEndereco);
-
-            if ($enderecoEn->getIdCaracteristica() == $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING')
-                || $enderecoEn->getIdCaracteristica() == $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO')) {
+            if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING
+                || $enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
                 $params['urlOrigem'] = $urlOrigem;
                 $params['urlDestino'] = $urlDestino;
                 $this->redirect('selecionar-nivel','enderecamento_manual','mobile', $params);
@@ -152,24 +151,24 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
             if (trim($params['nivel']) != "") {
-                $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-                $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-                $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-                $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
-                $rua         = substr("000" . $enderecoEn->getRua(), -$tamanhoRua, $tamanhoRua);
-                $predio      = substr("000" . $enderecoEn->getPredio(), -$tamanhoPredio, $tamanhoPredio);
-                $nivel       = substr("000" . $params['nivel'], -$tamanhoNivel, $tamanhoNivel);
-                $apartamento = substr("000" . $enderecoEn->getApartamento(), -$tamanhoApartamento, $tamanhoApartamento);
-                $codBarras   = $rua . $predio . $nivel . $apartamento;
+                $arrEndereco = array(
+                    'rua' => $enderecoEn->getRua(),
+                    'predio' => $enderecoEn->getPredio(),
+                    'nivel' => $params['nivel'],
+                    'apto' => $enderecoEn->getApartamento()
+                );
 
-                $idEndereco = $enderecoRepo->getEnderecoIdByDescricao($codBarras);
-                if (count($idEndereco) == 0) {
-                    throw  new \Exception("Nenhum Endereço Encontrado");
+                $endereco = \Wms\Util\Endereco::formatar($arrEndereco);
+                /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+                $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+                if (empty($enderecoEn)) {
+                    throw new Exception("Endereço não encontrado");
                 }
 
-                $idEndereco = $idEndereco[0]['COD_DEPOSITO_ENDERECO'];
-                $params['endereco'] = $idEndereco;
+                $params['endereco'] = $enderecoEn->getId();
 
                 unset($params['module']);
                 unset($params['controller']);
@@ -233,10 +232,7 @@ class Mobile_Enderecamento_ManualController extends Action
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->find($idEndereco);
 
-            $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
-            $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
-
-            if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+            if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
                 if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
                     throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
             } else {
@@ -276,10 +272,10 @@ class Mobile_Enderecamento_ManualController extends Action
                 if (!is_null($embalagemEn->getEndereco()))
                     $endereco = $embalagemEn->getEndereco()->getId();
 
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
+                if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $embalagemEn->getEndereco()->getDescricao());
                 }
-                if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                     if (isset($estoqueEn) && !empty($estoqueEn)) {
                         throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
@@ -297,10 +293,10 @@ class Mobile_Enderecamento_ManualController extends Action
                 if (!is_null($volumeEn->getEndereco()))
                     $endereco = $volumeEn->getEndereco()->getId();
 
-                if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
+                if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
                     throw new \Exception('O produto já está cadastrado no Picking '. $volumeEn->getEndereco()->getDescricao());
                 }
-                if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                     if (isset($estoqueEn) && !empty($estoqueEn)) {
                         throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
@@ -395,7 +391,7 @@ class Mobile_Enderecamento_ManualController extends Action
     {
         $codBarraEndereco = $this->_getParam('id');
         $codEndereco = $this->_getParam('endereco');
-        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+
         $LeituraColetor = new LeituraColetor();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
@@ -406,28 +402,31 @@ class Mobile_Enderecamento_ManualController extends Action
         //VALIDO PARA A PRIMEIRA TELA
         if (isset($codBarraEndereco) && !empty($codBarraEndereco)) {
             $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
+            $endereco = \Wms\Util\Endereco::formatar($endereco);
             $primeiraTela = true;
         //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
         } elseif (isset($codEndereco) && !empty($codEndereco)) {
             $enderecoEn = $enderecoRepo->find($codEndereco);
-            $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-            $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-            $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-            $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
 
-            $rua         = substr("000" . $enderecoEn->getRua(), -$tamanhoRua, $tamanhoRua);
-            $predio      = substr("000" . $enderecoEn->getPredio(), -$tamanhoPredio, $tamanhoPredio);
-            $nivel       = substr("000" . $this->_getParam('nivel'), -$tamanhoNivel, $tamanhoNivel);
-            $apartamento = substr("000" . $enderecoEn->getApartamento(), -$tamanhoApartamento, $tamanhoApartamento);
-            $endereco   = $rua . $predio . $nivel . $apartamento;
+            $arrEndereco = array(
+                'rua' => $enderecoEn->getRua(),
+                'predio' => $enderecoEn->getPredio(),
+                'nivel' => $this->_getParam('nivel'),
+                'apto' => $enderecoEn->getApartamento()
+            );
+
+            $endereco = \Wms\Util\Endereco::formatar($arrEndereco);
 
         }
-        $enderecoEn = $enderecoRepo->getEnderecoIdByDescricao($endereco);
-        $nivel = $enderecoEn[0]['NUM_NIVEL'];
-        $caracteristicaEndereco = $enderecoEn[0]['COD_CARACTERISTICA_ENDERECO'];
+        /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+        if (!empty($enderecoEn)) {
+            $nivel = $enderecoEn->getNivel();
+            $caracteristicaEndereco = $enderecoEn->getIdCaracteristica();
 
-        if (($nivel != 0 && $caracteristicaEndereco == $idCaracteristicaPickingRotativo) || ($primeiraTela == false && $caracteristicaEndereco == $idCaracteristicaPickingRotativo))
-            $data = true;
+            if (($nivel != 0 && $caracteristicaEndereco == EnderecoEntity::ENDERECO_PICKING_DINAMICO) || ($primeiraTela == false && $caracteristicaEndereco == EnderecoEntity::ENDERECO_PICKING_DINAMICO))
+                $data = true;
+        }
 
         echo $this->_helper->json($data);
 

@@ -25,8 +25,6 @@ class Web_EnderecoController extends Crud
 
             extract($values['identificacao']);
 
-            $mascaraEndereco = \Wms\Util\Endereco::mascara();
-
             $source = $this->em->createQueryBuilder()
                 ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
                 ->from('wms:Deposito\Endereco', 'e')
@@ -327,7 +325,6 @@ class Web_EnderecoController extends Crud
     {
         $params = $this->getRequest()->getParams();
         extract($params['identificacao']);
-        $mascaraEndereco = \Wms\Util\Endereco::mascara();
 
         $dql = $this->em->createQueryBuilder()
             ->select("e.id, e.descricao as endereco,
@@ -472,10 +469,13 @@ class Web_EnderecoController extends Crud
         );
 
         try {
+            $enderecoFormatado = \Wms\Util\Endereco::formatar($endereco);
 
-            $enderecoRepo = $em->getRepository('wms:Deposito\Endereco')->verificarEndereco($endereco);
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+            $enderecoEn = $enderecoRepo->findBy(array('descricao' => $enderecoFormatado));
 
-            if (!$enderecoRepo) {
+            if (empty($enderecoEn)) {
                 throw new \Exception('Este Endereço não existe.');
             }
         } catch (\Exception $e) {

@@ -28,81 +28,87 @@ class Mobile_InventarioController extends Action
 
     public function consultaEnderecoAction()
     {
+
         $idInventario = $this->_getParam('idInventario');
-        $numContagem  = $this->_getParam('numContagem', null);
-        $divergencia  = $this->_getParam('divergencia', null);
+        $numContagem = $this->_getParam('numContagem', null);
+        $divergencia = $this->_getParam('divergencia', null);
         $this->view->idInventario = $idInventario;
-        /** @var \Wms\Service\Mobile\Inventario $inventarioService */
-        $inventarioService = $this->_service;
+        try {
+            /** @var \Wms\Service\Mobile\Inventario $inventarioService */
+            $inventarioService = $this->_service;
 
-        $idContagemOs = $inventarioService->criarOS($idInventario);
+            $idContagemOs = $inventarioService->criarOS($idInventario);
 
-        $enderecos                  = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
-        $this->view->enderecos      = $enderecos;
-        $this->view->botoes         = false;
+            $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+            $this->view->enderecos = $enderecos;
+            $this->view->botoes = false;
 
-        $form = new \Wms\Module\Mobile\Form\Endereco();
-        $form->setLabel('Busca por endereço');
-        $this->view->form   = $form;
-        $codigoBarras       = $this->_getParam('codigoBarras');
-        $nivelParam         = $this->_getParam('nivel', null);
-        if (isset($codigoBarras) && !empty($codigoBarras)) {
+            $form = new \Wms\Module\Mobile\Form\Endereco();
+            $form->setLabel('Busca por endereço');
+            $this->view->form = $form;
+            $codigoBarras = $this->_getParam('codigoBarras');
+            $nivelParam = $this->_getParam('nivel', null);
+            if (isset($codigoBarras) && !empty($codigoBarras)) {
 
-            $coletorService = new \Wms\Service\Coletor();
-            $codigoBarras = $coletorService->retiraDigitoIdentificador($codigoBarras);
-            if (($nivelParam != null)) {
-                $formNivel = new \Wms\Module\Mobile\Form\Nivel();
-                $formNivel->populate(array('codigoBarras' => $this->_getParam('codigoBarras')));
-                $this->view->form = $formNivel;
-                $this->render('form');
-                return false;
-            } else {
-                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo           = $this->em->getRepository("wms:Deposito\Endereco");
-                $enderecoArray          = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
-                if (count($enderecoArray) == 0) {
-                    $result = array(
-                        'status' => 'error',
-                        'msg' => 'Endereço não encontrado',
-                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
-                    );
+                $coletorService = new \Wms\Service\Coletor();
+                $codigoBarras = $coletorService->retiraDigitoIdentificador($codigoBarras);
+                if (($nivelParam != null)) {
+                    $formNivel = new \Wms\Module\Mobile\Form\Nivel();
+                    $formNivel->populate(array('codigoBarras' => $this->_getParam('codigoBarras')));
+                    $this->view->form = $formNivel;
+                    $this->render('form');
+                    return false;
+                } else {
+                    /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                    $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+                    $endereco = \Wms\Util\Endereco::formatar($codigoBarras);
+                    /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+                    $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+                    if (empty($enderecoEn)) {
+                        throw new Exception("Endereço não encontrado");
+                    }
+                    $produtosEndPicking = $enderecoRepo->getProdutoByEndereco($endereco, false, true);
+
+                    $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoEn->getId(), $numContagem, $divergencia);
                     $this->checkErrors($result);
+
+                    $recontagemMesmoUsuario = $this->getSystemParameterValue('RECONTAGEM_MESMO_USUARIO');
+                    $resultOsEnd = $inventarioService->consultaOseEnd($idContagemOs, $result['idInventarioEnd'], $idInventario, $recontagemMesmoUsuario);
+                    $this->checkErrors($resultOsEnd);
+
+                    $populateForm = array('idEndereco' => $enderecoEn->getId(), 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem);
+                    $this->view->idInventarioEnd = $result['idInventarioEnd'];
+                    $this->view->numContagem = $numContagem;
+                    $this->view->divergencia = $divergencia;
+                    $this->view->botoes = true;
+                    if (count($produtosEndPicking) > 0) {
+                        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                        $this->view->produtosEndPicking = $produtosEndPicking;
+                        $this->view->enderecoBipado = $this->_getParam('codigoBarras');
+                    }
                 }
-                $produtosEndPicking     = $enderecoRepo->getProdutoByEndereco($codigoBarras, false, true);
-                $enderecoId = $enderecoArray[0]['COD_DEPOSITO_ENDERECO'];
 
-                $result = $inventarioService->consultaVinculoEndereco($idInventario, $enderecoId, $numContagem, $divergencia);
-                $this->checkErrors($result);
-
-                $recontagemMesmoUsuario = $this->getSystemParameterValue('RECONTAGEM_MESMO_USUARIO');
-                $resultOsEnd = $inventarioService->consultaOseEnd($idContagemOs, $result['idInventarioEnd'], $idInventario, $recontagemMesmoUsuario);
-                $this->checkErrors($resultOsEnd);
-
-                $populateForm   = array('idEndereco' => $enderecoId, 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem);
-                $this->view->idInventarioEnd = $result['idInventarioEnd'];
-                $this->view->numContagem     = $numContagem;
-                $this->view->divergencia     = $divergencia;
-                $this->view->botoes          = true;
-                if (count($produtosEndPicking) > 0) {
-                    $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                    $this->view->produtosEndPicking = $produtosEndPicking;
-                    $this->view->enderecoBipado = $this->_getParam('codigoBarras');
+                $exigenciaUma = $this->getSystemParameterValue('EXIGENCIA_UMA');
+                if ($exigenciaUma == 'S') {
+                    $formUma = new \Wms\Module\Mobile\Form\Uma();
+                    $formUma->setUrlParams(array('controller' => 'inventario', 'action' => 'consulta-uma'));
+                    $this->view->form = $formUma;
+                    return false;
                 }
+
+                $this->view->form = $inventarioService->formProduto($populateForm);
             }
 
-            $exigenciaUma = $this->getSystemParameterValue('EXIGENCIA_UMA');
-            if ($exigenciaUma == 'S') {
-                $formUma =  new \Wms\Module\Mobile\Form\Uma();
-                $formUma->setUrlParams(array('controller' => 'inventario', 'action' => 'consulta-uma'));
-                $this->view->form = $formUma;
-                return false;
-            }
-
-            $this->view->form = $inventarioService->formProduto($populateForm);
+            $this->view->urlVoltar = '/mobile/inventario/seleciona-contagem/idInventario/' . $idInventario;
+            $this->render('form');
+        }catch (Exception $e){
+            $result = array(
+                'status' => 'error',
+                'msg' => $e->getMessage(),
+                'url' => '/mobile/inventario/consulta-endereco/idInventario/' . $idInventario . '/numContagem/' . $numContagem . '/divergencia/' . $divergencia
+            );
+            $this->checkErrors($result);
         }
-
-        $this->view->urlVoltar       = '/mobile/inventario/seleciona-contagem/idInventario/'.$idInventario;
-        $this->render('form');
     }
 
     public function consultaUmaAction()

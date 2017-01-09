@@ -37,30 +37,33 @@ class Mobile_RessuprimentoController extends Action
 
     public function enderecoEstoqueAction()
     {
-        $codigoBarras = $this->_getParam('codigoBarras');
-        $nivel = $this->_getParam('nivel');
-        $this->view->codigoBarras = $codigoBarras;
+        try {
+            $codigoBarras = $this->_getParam('codigoBarras');
+            $nivel = $this->_getParam('nivel');
+            $this->view->codigoBarras = $codigoBarras;
 
-        if ($codigoBarras) {
-          $LeituraColetor = new LeituraColetor();
-          $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
-        }
-
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-        $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel);
-
-        if ($result == NULL)
-        {
-            $this->addFlashMessage("error","Endereço selecionado está vazio");
-            $this->_redirect('/mobile/ressuprimento/listar-picking');
-        } else {
-            $idEstoque = $result[0]['id'];
-            if ($result[0]['uma']) {
-                $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque);
-            } else {
-                $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque );
+            if ($codigoBarras) {
+                $LeituraColetor = new LeituraColetor();
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
             }
+
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+            $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel);
+
+            if (empty($result)) {
+                throw new Exception("error", "Endereço selecionado está vazio");
+            } else {
+                $idEstoque = $result[0]['id'];
+                if ($result[0]['uma']) {
+                    $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque);
+                } else {
+                    $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque);
+                }
+            }
+        } catch (Exception $e){
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->_redirect('mobile/ressuprimento/listar-picking');
         }
     }
 

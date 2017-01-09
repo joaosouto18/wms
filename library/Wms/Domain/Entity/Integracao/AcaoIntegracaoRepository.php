@@ -52,21 +52,31 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->getEntityManager()->rollback();
         }
 
-        if ($acaoEn->getIndUtilizaLog() == 'S') {
-            $andamentoEn = new AcaoIntegracaoAndamento();
-            $andamentoEn->setAcaoIntegracao($acaoEn);
-            $andamentoEn->setIndSucesso($sucess);
-            $andamentoEn->setDthAndamento(new \DateTime);
-            $andamentoEn->setObservacao($observacao);
-            $this->getEntityManager()->persist($andamentoEn);
+        try {
+            $this->getEntityManager()->beginTransaction();
+
+            if ($acaoEn->getIndUtilizaLog() == 'S') {
+                $andamentoEn = new AcaoIntegracaoAndamento();
+                $andamentoEn->setAcaoIntegracao($acaoEn);
+                $andamentoEn->setIndSucesso($sucess);
+                $andamentoEn->setDthAndamento(new \DateTime);
+                $andamentoEn->setObservacao($observacao);
+                $this->getEntityManager()->persist($andamentoEn);
+            }
+
+            if ($sucess=="S") {
+                $acaoEn->setDthUltimaExecucao(new \DateTime);
+                $this->getEntityManager()->persist($acaoEn);
+            }
+
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
+
+        } catch (\Exception $e) {
+            var_dump($e->getMessage());exit;
+            $this->getEntityManager()->rollback();
         }
 
-        if ($sucess=="S") {
-            $acaoEn->setDthUltimaExecucao(new \DateTime);
-            $this->getEntityManager()->persist($acaoEn);
-        }
-
-        $this->getEntityManager()->flush();
         return true;
     }
 }

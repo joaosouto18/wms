@@ -47,17 +47,15 @@ class Web_ConfiguracaoController extends Action
     }
 
 
-    public function getPadraoEnderecoClientAjaxAction()
+    public function getMaskEnderecoAjaxAction()
     {
-        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $paramRepo */
-        $paramRepo = $this->em->getRepository('wms:Sistema\Parametro');
+        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+        $mascara = \Wms\Util\Endereco::mascara($arrQtdDigitos,'9');
+        $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
 
-        $digito = '9';
-        $reverse = true;
+        $mask = implode('.', array_reverse($arrMasc,true));
 
-        $dscEndereco = $paramRepo->getConfigEndereco($digito, $reverse);
-
-        $this->_helper->json(array('dscEndereco' => $dscEndereco));
+        $this->_helper->json(array('mask' => $mask));
     }
 
 }

@@ -21,7 +21,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
         $coletorService = new \Wms\Service\Coletor;
         $codigoBarrasProduto = $coletorService->adequaCodigoBarras($codigoBarras);
 
-        /** @var \Wms\Domain\Entity\ReabastecimentoManualRepository $reabasteceRepo */
+        /** @var \Wms\Domain\Entity\Enderecamento\ReabastecimentoManualRepository $reabasteceRepo */
         $reabasteceRepo = $this->em->getRepository("wms:Enderecamento\ReabastecimentoManual");
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
@@ -47,7 +47,8 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             if ($consultaPreco)
                 $preco = $this->getPrecoView($codProduto);
 
-            $reabastEnt     = $reabasteceRepo->findOneBy(array('os' => $codOS, 'codProduto' => $codProduto));
+            /** @var \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual $reabastEnt */
+            $reabastEnt = $reabasteceRepo->findOneBy(array('os' => $codOS, 'codProduto' => $codProduto));
 
             $os = $this->getOs($codOS);
             $codOS = $os['codOS'];
@@ -72,25 +73,25 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 
         $codigoBarrasEndereco = $coletorService->retiraDigitoIdentificador($codigoBarras);
 
-        $endereco = null;
-        if (strlen($codigoBarrasEndereco) >5) {
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-            $endereco = $enderecoRepo->getEnderecoIdByDescricao($codigoBarrasEndereco);
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+        $endereco = \Wms\Util\Endereco::formatar($codigoBarrasEndereco);
+
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+        if (empty($enderecoEn)) {
+            throw new Exception("Endereço não encontrado");
         }
 
-        if ($endereco) {
-            $idEndereco = $endereco[0]['COD_DEPOSITO_ENDERECO'];
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $result = $enderecoRepo->getProdutoByEndereco($endereco[0]['DSC_DEPOSITO_ENDERECO'],false);
+        try {
+
+            $result = $enderecoRepo->getProdutoByEndereco($endereco,false);
 
             if (count($result) == 0)
             {
-                $this->addFlashMessage('error', 'Nenhum produto encontrado para este endereço');
-                $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
+                throw new Exception('error', 'Nenhum produto encontrado para este endereço');
             }
 
-            $reabastEnt = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $idEndereco));
+            $reabastEnt = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $enderecoEn));
 
             $codProduto = $result[0]['codProduto'];
             $produtoEn = $this->_em->getReference('wms:Produto', array('id' => $codProduto,'grade' => 'UNICA'));
@@ -103,7 +104,6 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $codOS = $os['codOS'];
             $this->somaConferenciaRepetida($reabastEnt,$qtd,$codOS, $preco);
 
-            $enderecoEn = $enderecoRepo->find($idEndereco);
             $contagem = new \Wms\Domain\Entity\Enderecamento\ReabastecimentoManual();
             $contagem->setProduto($produtoEn);
             $contagem->setCodProduto($codProduto);
@@ -118,6 +118,9 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             } else {
                 $this->addFlashMessage('success', "A quantidade $qtd foi adicionada à OS de reabastecimento $codOS para o produto $codProduto");
             }
+            $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 

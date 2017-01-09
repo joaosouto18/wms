@@ -3,12 +3,14 @@
 namespace Wms\Module\Armazenagem\Form\Movimentacao;
 
 use Wms\Module\Web\Form;
+use Wms\Util\Endereco;
 
 class FiltroRelatorio extends Form
 {
 
     public function init($utilizaGrade = 'S')
     {
+        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this
             ->setAttribs(array(
@@ -34,18 +36,22 @@ class FiltroRelatorio extends Form
         }
         $this->addElement('text', 'rua', array(
             'size' => 3,
+            'maxlength' => $arrQtdDigitos['rua'],
             'label' => 'Rua'
         ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
+                'maxlength' => $arrQtdDigitos['predio'],
                 'label' => 'Prédio',
             ))
             ->addElement('text', 'nivel', array(
                 'size' => 3,
+                'maxlength' => $arrQtdDigitos['nivel'],
                 'label' => 'Nível',
             ))
             ->addElement('text', 'apto', array(
                 'size' => 3,
+                'maxlength' => $arrQtdDigitos['apto'],
                 'label' => 'Apto',
             ))
             ->addElement('submit', 'imprimir', array(

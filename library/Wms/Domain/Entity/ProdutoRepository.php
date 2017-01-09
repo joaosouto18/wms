@@ -316,7 +316,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						//valida o endereco informado
 						if (!empty($endereco)) {
 							$endereco = EnderecoUtil::separar($endereco);
-							$enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
+							$enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
 							if (!$enderecoEntity) {
 								throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
@@ -374,7 +374,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						if (!empty($endereco)) {
 							$endereco = EnderecoUtil::separar($endereco);
 							$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-							$enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
+							$enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
 							if (!$enderecoEntity) {
 								throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);

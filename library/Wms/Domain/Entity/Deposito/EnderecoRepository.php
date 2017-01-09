@@ -129,10 +129,10 @@ class EnderecoRepository extends EntityRepository
                             }
 
                             $dscEndereco = array(
-                                'RUA' => $auxRua,
-                                'PREDIO' => $auxPredio,
-                                'NIVEL' => $auxNivel,
-                                'APTO' => $auxApto);
+                                'rua' => $auxRua,
+                                'predio' => $auxPredio,
+                                'nivel' => $auxNivel,
+                                'apto' => $auxApto);
 
                             $dscEndereco = EnderecoUtil::formatar($dscEndereco);
 
@@ -185,35 +185,9 @@ class EnderecoRepository extends EntityRepository
         return $auxRuauas->getQuery()->getResult();
     }
 
-    /**
-     * Verifica se existem o endereco informado
-     * @param String $endereco
-     * @return boolean Caso exista o endereco retorna true
-     */
-    public function verificarEndereco($endereco)
+    public function getEnderecoIdByDescricao ($descricao)
     {
-        $em = $this->getEntityManager();
-
-        $endereco = EnderecoUtil::separar($endereco);
-
-        $dql = $em->createQueryBuilder()
-            ->select('e.id')
-            ->from('wms:Deposito\Endereco', 'e')
-            ->where("e.rua = '" . $endereco['RUA'] . "'")
-            ->andWhere("e.predio = '" . $endereco['PREDIO'] . "'")
-            ->andWhere("e.nivel = '" . $endereco['NIVEL'] . "'")
-            ->andWhere("e.apartamento = '" . $endereco['APTO'] . "'");
-
-        $enderecos = $dql->getQuery()->getResult();
-
-        return (count($enderecos) > 0) ? true : false;
-    }
-
-    public function getEnderecoIdByDescricao ($descricao){
-        $tamanhoRua = $this->getSystemParameterValue('TAMANHO_CARACT_RUA');
-        $tamanhoPredio = $this->getSystemParameterValue('TAMANHO_CARACT_PREDIO');
-        $tamanhoNivel = $this->getSystemParameterValue('TAMANHO_CARACT_NIVEL');
-        $tamanhoApartamento = $this->getSystemParameterValue('TAMANHO_CARACT_APARTAMENTO');
+        list($tamanhoRua, $tamanhoPredio, $tamanhoNivel, $tamanhoApartamento) = array_values(EnderecoUtil::getQtdDigitos());
 
         $sql = " SELECT COD_DEPOSITO_ENDERECO, NUM_NIVEL, COD_CARACTERISTICA_ENDERECO, DSC_DEPOSITO_ENDERECO
                  FROM DEPOSITO_ENDERECO
@@ -367,25 +341,13 @@ class EnderecoRepository extends EntityRepository
     public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
     {
         $em = $this->getEntityManager();
-        $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
 
-        if (strlen($dscEndereco) < 8) {
-            $rua = 0;
-            $predio = 0;
-            $nivel = 0;
-            $apartamento = 0;
-        } else {
-            $dscEndereco = str_replace('.','',$dscEndereco);
-            if (strlen($dscEndereco) == 8){
-                $tempEndereco = "0" . $dscEndereco;
-            } else {
-                $tempEndereco = $dscEndereco;
-            }
-            $rua = intval( substr($tempEndereco,0,2));
-            $predio = intval(substr($tempEndereco,2,3));
-            $nivel =  intval(substr($tempEndereco,5,2));
-            $apartamento = intval(substr($tempEndereco,7,3));
+        $idCaracteristicaEndereco = null;
+        if ($picking) {
+            $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         }
+
+        $endereco = EnderecoUtil::formatar($dscEndereco);
 
         $dql = $em->createQueryBuilder()
             ->select('p.id as codProduto, p.grade, p.descricao' )
@@ -393,12 +355,9 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Produto\Volume", "pv")
             ->innerJoin("pv.endereco", "e")
             ->innerJoin("pv.produto", "p")
-            ->where("e.rua = $rua")
-            ->andWhere("e.predio = $predio")
-            ->andWhere("e.nivel = $nivel")
-            ->andWhere("e.apartamento = $apartamento");
+            ->where("e.descricao = $endereco");
 
-        if ($picking == true) {
+        if ($picking) {
             $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
         }
 
@@ -415,12 +374,9 @@ class EnderecoRepository extends EntityRepository
                 ->from("wms:Produto\Embalagem", "pe")
                 ->leftJoin("pe.endereco", "e")
                 ->leftJoin("pe.produto", "p")
-                ->where("e.rua = $rua")
-                ->andWhere("e.predio = $predio")
-                ->andWhere("e.nivel = $nivel")
-                ->andWhere("e.apartamento = $apartamento");
+                ->where("e.descricao = $endereco");
 
-            if ($picking == true) {
+            if ($picking) {
                 $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
             }
 //            $dql->orderBy("e.rua, e.predio, e.apartamento","ASC");

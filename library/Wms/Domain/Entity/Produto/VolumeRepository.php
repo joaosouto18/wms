@@ -59,7 +59,7 @@ class VolumeRepository extends EntityRepository
         if (!empty($endereco)) {
             $endereco = EnderecoUtil::separar($endereco);
             $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-            $enderecoEntity = $enderecoRepo->findOneBy(array('rua' => $endereco['RUA'], 'predio' => $endereco['PREDIO'], 'nivel' => $endereco['NIVEL'], 'apartamento' => $endereco['APTO']));
+            $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
             if (!$enderecoEntity) {
                 throw new \Exception('Não existe o Endereço informado no volume ' . $descricao);
@@ -69,6 +69,7 @@ class VolumeRepository extends EntityRepository
         }
 
         if (!empty($idNormaPaletizacao)) {
+            /** @var NormaPaletizacao $normaPaletizacaoEntity */
             $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
             $volumeEntity->setNormaPaletizacao($normaPaletizacaoEntity);
         }
