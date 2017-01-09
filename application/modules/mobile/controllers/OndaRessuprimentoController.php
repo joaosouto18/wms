@@ -124,44 +124,49 @@ class Mobile_OndaRessuprimentoController extends Action
 
     public function validarEnderecoAction()
     {
+
         $idOnda = $this->_getParam('idOnda');
         $idEnderecoPulmao = $this->_getParam('idEnderecoPulmao');
 
         $codigoBarras = $this->_getParam('codigoBarras');
         $nivel = $this->_getParam('nivel');
 
-        if ($codigoBarras) {
-          $LeituraColetor = new \Wms\Service\Coletor();
-          $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
-        }
+        try{
+            if ($codigoBarras) {
+              $LeituraColetor = new \Wms\Service\Coletor();
+              $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            }
 
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-        $enderecoEn = $enderecoRepo->getEnderecoIdByDescricao($codigoBarras);
-        
-        if (empty($enderecoEn)){
-            $this->addFlashMessage("error","Endereço selecionado não encontrado");
-            $this->_redirect('/mobile/onda-ressuprimento/selecionar-endereco/idOnda/'.$idOnda);
-        }
-        
-        $result = $estoqueRepo->getProdutoByNivel($enderecoEn[0]['DSC_DEPOSITO_ENDERECO'], $nivel);
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
 
-        if ($result == NULL)
-        {
-            $this->addFlashMessage("error","Endereço selecionado está vazio");
-            $this->_redirect('/mobile/onda-ressuprimento/selecionar-endereco/idOnda/'.$idOnda);
-        }
-        if ($result[0]['idEndereco'] != $idEnderecoPulmao) {
-            $this->addFlashMessage("error","Endereço selecionado errado");
-            $this->_redirect('/mobile/onda-ressuprimento/selecionar-endereco/idOnda/'.$idOnda);
-        }
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+            $endereco = \Wms\Util\Endereco::formatar($codigoBarras);
+            /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+            $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+            if (empty($enderecoEn)) {
+                throw new Exception("Endereço não encontrado");
+            }
 
-        if ($result[0]['uma']) {
-            $this->_redirect('/mobile/onda-ressuprimento/selecionar-uma/idOnda/' . $idOnda);
-        } else {
-            $this->_redirect('/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda );
+            $result = $estoqueRepo->getProdutoByNivel($endereco, $nivel);
+
+            if ($result == NULL)
+            {
+                throw new Exception("error","Endereço selecionado está vazio");
+            }
+            if ($result[0]['idEndereco'] != $idEnderecoPulmao) {
+                throw new Exception("error","Endereço selecionado errado");
+            }
+
+            if ($result[0]['uma']) {
+                $this->_redirect('/mobile/onda-ressuprimento/selecionar-uma/idOnda/' . $idOnda);
+            } else {
+                $this->_redirect('/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda );
+            }
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+            $this->_redirect('/mobile/onda-ressuprimento/selecionar-endereco/idOnda/'.$idOnda);
         }
     }
 

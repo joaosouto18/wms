@@ -958,10 +958,10 @@ class Importacao
     public function saveEndereco($em, $arrDados)
     {
         try {
-            $endereco = EnderecoUtil::formatar($arrDados['endereco']);
 
-            $arrEndereco = EnderecoUtil::separar($endereco);
-
+            $arrQtdDigitos = EnderecoUtil::getQtdDigitos();
+            $endereco = EnderecoUtil::formatar($arrDados['endereco'], $arrQtdDigitos);
+            $arrEndereco = EnderecoUtil::separar($endereco, $arrQtdDigitos);
             $arrDados = array_merge($arrDados, $arrEndereco);
 
             $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrEndereco);

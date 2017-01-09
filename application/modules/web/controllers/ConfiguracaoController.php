@@ -49,8 +49,9 @@ class Web_ConfiguracaoController extends Action
 
     public function getMaskEnderecoAjaxAction()
     {
-        $mascara = \Wms\Util\Endereco::mascara(null,'9');
-        $arrMasc = \Wms\Util\Endereco::separar($mascara);
+        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+        $mascara = \Wms\Util\Endereco::mascara($arrQtdDigitos,'9');
+        $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
 
         $mask = implode('.', array_reverse($arrMasc,true));
 

@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
     Core\Util\Produto as ProdutoUtil;
+use Wms\Util\Endereco;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -801,24 +802,15 @@ class EstoqueRepository extends EntityRepository
     public function getProdutoByNivel($dscEndereco, $nivel) {
 
         if (empty($nivel)) {
-            throw new \Exception('Nivel esperado');
+            throw new \Exception('Nivel não foi informado');
         }
 
         $em = $this->getEntityManager();
 
-        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
-        $totalDigitos = \Wms\Util\Endereco::getTotalDigitos($arrQtdDigitos, false);
-
-        if (strlen($dscEndereco) < $totalDigitos) {
-            $rua = 0;
-            $predio = 0;
-            $nivel = 0;
-            $apartamento = 0;
-        } else {
-            $endereco = \Wms\Util\Endereco::formatar($dscEndereco);
-            $arrEndereco = \Wms\Util\Endereco::separar($endereco,$arrQtdDigitos);
-            list($rua, $predio, , $apartamento) = array_values($arrEndereco);
-        }
+        $arrQtdDigitos = Endereco::getQtdDigitos();
+        $endereco = Endereco::formatar($dscEndereco, $arrQtdDigitos);
+        $arrEndereco = Endereco::separar($endereco,$arrQtdDigitos);
+        list($rua, $predio, , $apartamento) = array_values($arrEndereco);
 
         $dql = $em->createQueryBuilder()
             ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco' )

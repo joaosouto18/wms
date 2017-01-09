@@ -347,20 +347,7 @@ class EnderecoRepository extends EntityRepository
             $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
         }
 
-        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
-        $totalDigitos = \Wms\Util\Endereco::getTotalDigitos($arrQtdDigitos, false);
-
-        if (strlen($dscEndereco) < $totalDigitos) {
-            $rua = 0;
-            $predio = 0;
-            $nivel = 0;
-            $apartamento = 0;
-        } else {
-            $endereco = \Wms\Util\Endereco::formatar($dscEndereco);
-            $arrEndereco = \Wms\Util\Endereco::separar($endereco,$arrQtdDigitos);
-            list($rua, $predio, $nivel, $apartamento) = array_values($arrEndereco);
-        }
-
+        $endereco = EnderecoUtil::formatar($dscEndereco);
 
         $dql = $em->createQueryBuilder()
             ->select('p.id as codProduto, p.grade, p.descricao' )
@@ -368,10 +355,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Produto\Volume", "pv")
             ->innerJoin("pv.endereco", "e")
             ->innerJoin("pv.produto", "p")
-            ->where("e.rua = $rua")
-            ->andWhere("e.predio = $predio")
-            ->andWhere("e.nivel = $nivel")
-            ->andWhere("e.apartamento = $apartamento");
+            ->where("e.descricao = $endereco");
 
         if ($picking) {
             $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
@@ -390,10 +374,7 @@ class EnderecoRepository extends EntityRepository
                 ->from("wms:Produto\Embalagem", "pe")
                 ->leftJoin("pe.endereco", "e")
                 ->leftJoin("pe.produto", "p")
-                ->where("e.rua = $rua")
-                ->andWhere("e.predio = $predio")
-                ->andWhere("e.nivel = $nivel")
-                ->andWhere("e.apartamento = $apartamento");
+                ->where("e.descricao = $endereco");
 
             if ($picking) {
                 $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);

@@ -469,13 +469,11 @@ class Web_EnderecoController extends Crud
         );
 
         try {
-
             $enderecoFormatado = \Wms\Util\Endereco::formatar($endereco);
-            $arrEndereco = \Wms\Util\Endereco::separar($enderecoFormatado);
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-            $enderecoEn = $enderecoRepo->findBy($arrEndereco);
+            $enderecoEn = $enderecoRepo->findBy(array('descricao' => $enderecoFormatado));
 
             if (empty($enderecoEn)) {
                 throw new \Exception('Este Endereço não existe.');

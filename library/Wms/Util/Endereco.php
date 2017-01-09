@@ -14,6 +14,9 @@ namespace Wms\Util;
 class Endereco
 {
 
+    const FORMATO_DESCRICAO = 1;
+    const FORMATO_COD_BARRAS = 2;
+
     /**
      * Esta função retorna uma matriz associativa com a quantidade de digitos de cada elemento do endereço de acordo com os parametros definidos
      *
@@ -111,6 +114,7 @@ class Endereco
      * @param string $endereco
      * @param array|null $qtdDigitos
      * @return array Matriz associativa de (rua, predio, nivel, apto)
+     * @throws \Exception
      */
     public static function separar($endereco, $qtdDigitos = null)
     {
@@ -133,12 +137,18 @@ class Endereco
         //Se não tiver ponto "." o critério será a qtd de digitos para cada campo
         //de acordo com a configuração dos parametros de cada elemento
         else {
-
             $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
             $dgtRua = (int) $qtdDigitos['rua'];
             $dgtPredio = (int) $qtdDigitos['predio'];
             $dgtNivel = (int) $qtdDigitos['nivel'];
             $dgtApto = (int) $qtdDigitos['rua'];
+
+            $totalDigtos = self::getTotalDigitos($qtdDigitos);
+            if (($totalDigtos - strlen($endereco)) == 1) {
+                $endereco = '0' . $endereco;
+            } elseif (($totalDigtos - strlen($endereco)) > 1) {
+                throw new \Exception('Endereço não contém a quantidade mínima de dígitos');
+            }
 
             $result = array(
                 'rua' => (int) substr($endereco, 0, $dgtRua),
@@ -153,12 +163,22 @@ class Endereco
 
     /**
      * Retorna o endereco formatado de acordo com os parametros de endereço do sistema
+     * O parametro $formato recebe um inteiro das constantes FORMATO_DESCRICAO ou FORMATO_COD_BARRAS para
+     * definir em qual formato se espera o retorno, caso não definido o padrão é o formato de descrição
      *
      * Ex.:
      * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apto' => '1')
-     * $dgtComplementar = null (default ='0')
+     * $dgtComplementar = empty (default ='0')
+     * $formato = empty (default = FORMATO_DESCRICAO)
      *
      * retorno = '01.004.00.01'
+     *
+     *  Ex2.:
+     * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apto' => '1')
+     * $dgtComplementar = empty (default ='0')
+     * $formato = FORMATO_COD_BARRAS
+     *
+     * retorno = '010040001'
      *
      * O parametro $dgtComplementar não é obrigatório por padrão será o digito '0'
      * Define apenas qual o digito será utilizado para preencher o formato
@@ -166,19 +186,25 @@ class Endereco
      * Ex.:
      * $endereco = '2.03.2.1'
      * $dgtComplementar = '9' (default ='0')
+     * $formato = empty (default = FORMATO_DESCRICAO)
      *
      * retorno = '92.903.92.91'
      *
+     * O parametro $qtdDigitos recebe uma matriz associativa com a quantidade de digitos de cada elemento do endereço
+     * Caso não seja passado será aplicado o interno de acordo com a definições dos parametros
+     *
      * @param array|string $endereco
      * @param string $dgtComplementar
+     * @param int $formato
+     * @param array $qtdDigitos
      * @return string $dscEndereco
      * @throws \Exception Caso $endereco seja passado faltando algum parametro
      */
-    public static function formatar($endereco, $dgtComplementar = '0')
+    public static function formatar($endereco, $qtdDigitos = null, $dgtComplementar = '0', $formato = self::FORMATO_DESCRICAO)
     {
         $arrEndereco = (!is_array($endereco)) ? self::separar($endereco) : $endereco;
 
-        $qtdDigitos = self::getQtdDigitos();
+        $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
         $dscEndereco = array();
 
         if (isset($arrEndereco['rua'])) {
@@ -209,7 +235,16 @@ class Endereco
             throw new \Exception('Elemento "apto" não definido');
         }
 
-        return implode('.', $dscEndereco);
+        $result = null;
+        if ($formato == self::FORMATO_DESCRICAO) {
+            $result = implode('.', $dscEndereco);
+        } elseif ($formato == self::FORMATO_COD_BARRAS){
+            $result = implode('', $dscEndereco);
+        } else {
+            throw new \Exception("Formato de retorno fora do padrão");
+        }
+
+        return $result;
     }
 
     /**

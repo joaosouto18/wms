@@ -13,6 +13,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 class Endereco
 {
 
+    const ENDERECO_PICKING = 37;
+    const ENDERECO_PULMAO = 38;
+    const ENDERECO_PICKING_DINAMICO = 39;
+
     /**
      * @var integer $id
      *
