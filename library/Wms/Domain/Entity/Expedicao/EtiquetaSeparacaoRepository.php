@@ -696,7 +696,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
                         $cubagemProduto = str_replace(',','.',$dadoLogisticoEn->getCubagem());
-                        $cubagemPedido[$pedidoId][$codProduto][$grade] = (float)$cubagemProduto * (float)$quantidade;
+                        $cubagemPedido[$pedidoId][$codProduto][$grade] = (float)$cubagemProduto * ((float)$quantidade / number_format($embalagemAtual->getQuantidade(),3,'.',''));
                     }
                 }
             }

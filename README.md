@@ -58,6 +58,8 @@ DEFAULT TABLESPACE wms_develop;
 
 GRANT ALL PRIVILEGES TO wms_develop;
 
+GRANT DBA TO wms_develop;
+
 -- Desabilita expiração de senha no Oracle --
 ALTER PROFILE DEFAULT LIMIT
 FAILED_LOGIN_ATTEMPTS UNLIMITED

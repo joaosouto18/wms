@@ -415,7 +415,6 @@ class Expedicao_EtiquetaController  extends Action
     public function reimprimirEmbaladosAction()
     {
         $idExpedicao = $this->_getParam('id');
-        $existeItensPendentes = true;
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
@@ -427,7 +426,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->_redirect('/expedicao/index');
             }
             $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
-            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
+            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

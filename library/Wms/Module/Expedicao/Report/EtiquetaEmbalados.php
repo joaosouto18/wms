@@ -8,7 +8,7 @@ use Wms\Util\Barcode\eFPDF,
 class EtiquetaEmbalados extends eFPDF
 {
 
-    public function imprimirExpedicaoModelo1($volumePatrimonio,$existeItensPendentes)
+    public function imprimirExpedicaoModelo1($volumePatrimonio,$existeItensPendentes = true)
     {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
