@@ -8,7 +8,7 @@ use Wms\Util\Barcode\eFPDF,
 class EtiquetaEmbalados extends eFPDF
 {
 
-    public function imprimirExpedicaoModelo1($volumePatrimonio,$existeItensPendentes)
+    public function imprimirExpedicaoModelo1($volumePatrimonio,$existeItensPendentes = true)
     {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -31,12 +31,13 @@ class EtiquetaEmbalados extends eFPDF
         foreach ($volumes as $volume) {
             $this->AddPage();
             //monta o restante dos dados da etiqueta
-            $this->SetFont('Arial', '', 10);
+            $this->SetFont('Arial', 'B', 10);
             $impressao = utf8_decode(substr($volume['NOM_PESSOA']."\n",0,20));
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
             $this->SetFont('Arial', '', 10);
-            $impressao = utf8_decode(substr("EXPEDIÇÃO: ".$volume['COD_EXPEDICAO']."\n",0,50));
+            $impressao = utf8_decode(substr('ROTA: '.$volume['DSC_ITINERARIO']."\n",0,20));
+            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
             $this->SetFont('Arial', '', 10);
             $impressao = utf8_decode(substr('PLACA: '.$volume['DSC_PLACA_CARGA']."\n",0,20));
@@ -46,11 +47,6 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = utf8_decode(substr('CARGA: '.$volume['COD_CARGA_EXTERNO']."\n",0,20));
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', '', 10);
-            $impressao = utf8_decode(substr('ROTA: '.$volume['DSC_ITINERARIO']."\n",0,20));
-            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
-
-            $y = 12;
             $this->SetFont('Arial', 'B', 7);
 
             $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
@@ -59,10 +55,8 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']) , 18, 22 , 35);
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 3, 21 , 24);
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_quebec.jpg', 30, 17, 18, 5);
         }
-
-
     }
-
 }

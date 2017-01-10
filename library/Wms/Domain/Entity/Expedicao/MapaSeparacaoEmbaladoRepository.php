@@ -73,7 +73,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (count($qtdPendenteConferencia) <= 0) {
             $existeItensPendentes = false;
         }
-        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
+        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
         $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
 
     }
