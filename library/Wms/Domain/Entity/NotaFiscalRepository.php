@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository,
     Core\Util\Produto as ProdutoUtil;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 /**
  * NotaFiscal
@@ -520,7 +521,7 @@ class NotaFiscalRepository extends EntityRepository
         }
 
         if (isset($estoquePulmao) && !empty($estoquePulmao) && !($estoquePulmao == 'T')){
-            $caracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+            $caracteristicaPicking = Endereco::ENDERECO_PICKING;
             if ($estoquePulmao == 'S') {
                 $sql .= " AND (EXISTS (SELECT 'X'
                                          FROM ESTOQUE EX

@@ -17,8 +17,8 @@ class Mobile_EnderecamentoController extends Action
         $form->init();
         $this->view->form = $form;
         $codigoBarrasEndereco = $this->_getParam('codigoBarras');
-        $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
-        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
 
         if ($codigoBarrasEndereco) {
             try {
@@ -159,8 +159,8 @@ class Mobile_EnderecamentoController extends Action
     public function validarEndereco($paleteEn, $LeituraColetor, $paleteRepo)
     {
         $endereco   = $LeituraColetor->retiraDigitoIdentificador($this->_getParam("endereco"));
-        $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
-        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
 
 
         if (!isset($endereco)) {
@@ -316,8 +316,8 @@ class Mobile_EnderecamentoController extends Action
         $enderecoAntigo = $paleteEn->getDepositoEndereco();
         $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
         $unitizadorEn = $paleteEn->getUnitizador();
-        $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
-        $idCaracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
 
         if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {

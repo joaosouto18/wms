@@ -168,8 +168,8 @@ class Inventario
         $enderecoEn = $enderecoRepo->find($idEndereco);
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
 
-        $idPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
-        $idPickingDinamico = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+        $idPicking = Endereco::ENDERECO_PICKING;
+        $idPickingDinamico = Endereco::ENDERECO_PICKING_DINAMICO;
 
         $pickingCorreto = true;
         if($enderecoEn->getIdCaracteristica() == $idPickingDinamico ||

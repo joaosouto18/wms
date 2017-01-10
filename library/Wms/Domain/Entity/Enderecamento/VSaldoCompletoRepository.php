@@ -2,13 +2,14 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 class VSaldoCompletoRepository extends EntityRepository
 {
 
     public function saldo($params)
     {
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = Endereco::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
         ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao, MAX(pe.quantidade) quantidade')
         ->from("wms:Enderecamento\VSaldoCompleto","s")
