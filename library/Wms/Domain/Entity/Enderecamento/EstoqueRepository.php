@@ -807,19 +807,13 @@ class EstoqueRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $arrQtdDigitos = Endereco::getQtdDigitos();
-        $endereco = Endereco::formatar($dscEndereco, $arrQtdDigitos);
-        $arrEndereco = Endereco::separar($endereco,$arrQtdDigitos);
-        list($rua, $predio, , $apartamento) = array_values($arrEndereco);
+        $endereco = Endereco::formatar($dscEndereco, null, $nivel);
 
         $dql = $em->createQueryBuilder()
             ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco' )
             ->from("wms:Enderecamento\Estoque", "e")
             ->InnerJoin("e.depositoEndereco", "dep")
-            ->where("dep.rua = $rua")
-            ->andWhere("dep.predio = $predio")
-            ->andWhere("dep.nivel = $nivel")
-            ->andWhere("dep.apartamento =  $apartamento");
+            ->where("dep.descricao = $endereco");
 
         return $dql->getQuery()->getArrayResult();
     }

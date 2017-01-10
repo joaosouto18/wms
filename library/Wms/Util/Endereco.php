@@ -16,6 +16,7 @@ class Endereco
 
     const FORMATO_DESCRICAO = 1;
     const FORMATO_COD_BARRAS = 2;
+    const FORMATO_MATRIZ_ASSOC = 3;
 
     /**
      * Esta função retorna uma matriz associativa com a quantidade de digitos de cada elemento do endereço de acordo com os parametros definidos
@@ -141,7 +142,7 @@ class Endereco
             $dgtRua = (int) $qtdDigitos['rua'];
             $dgtPredio = (int) $qtdDigitos['predio'];
             $dgtNivel = (int) $qtdDigitos['nivel'];
-            $dgtApto = (int) $qtdDigitos['rua'];
+            $dgtApto = (int) $qtdDigitos['apto'];
 
             $totalDigtos = self::getTotalDigitos($qtdDigitos);
             if (($totalDigtos - strlen($endereco)) == 1) {
@@ -154,7 +155,7 @@ class Endereco
                 'rua' => (int) substr($endereco, 0, $dgtRua),
                 'predio' => (int) substr($endereco, $dgtRua, $dgtPredio),
                 'nivel' => (int) substr($endereco, ($dgtRua + $dgtPredio), $dgtNivel),
-                'apto' => (int) substr($endereco, ($dgtRua + $dgtPredio + $dgtNivel), $dgtApto),
+                'apto' => (int) substr($endereco, ($dgtRua + $dgtPredio + $dgtNivel), $dgtApto)
             );
 
         }
@@ -195,42 +196,41 @@ class Endereco
      *
      * @param array|string $endereco
      * @param string $dgtComplementar
+     * @param string|int $novoNivel
      * @param int $formato
      * @param array $qtdDigitos
-     * @return string $dscEndereco
+     * @return string|array $dscEndereco
      * @throws \Exception Caso $endereco seja passado faltando algum parametro
      */
-    public static function formatar($endereco, $qtdDigitos = null, $dgtComplementar = '0', $formato = self::FORMATO_DESCRICAO)
+    public static function formatar($endereco, $qtdDigitos = null, $novoNivel = null, $dgtComplementar = '0', $formato = self::FORMATO_DESCRICAO)
     {
-        $arrEndereco = (!is_array($endereco)) ? self::separar($endereco) : $endereco;
-
         $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
+        $arrEndereco = (!is_array($endereco)) ? self::separar($endereco, $qtdDigitos) : $endereco;
+
         $dscEndereco = array();
 
         if (isset($arrEndereco['rua'])) {
-            $rua = self::formatarRua($arrEndereco['rua'], (int)$qtdDigitos['rua'], $dgtComplementar);
-            $dscEndereco['rua'] = $rua;
+            $dscEndereco['rua'] = self::formatarRua($arrEndereco['rua'], (int)$qtdDigitos['rua'], $dgtComplementar);
         } else {
             throw new \Exception('Elemento "rua" não definido');
         }
 
         if (isset($arrEndereco['predio'])) {
-            $predio = self::formatarPredio($arrEndereco['predio'], (int) $qtdDigitos['predio'], $dgtComplementar);
-            $dscEndereco['predio'] = $predio;
+            $dscEndereco['predio'] = self::formatarPredio($arrEndereco['predio'], (int) $qtdDigitos['predio'], $dgtComplementar);
         } else {
             throw new \Exception('Elemento "$predio" não definido');
         }
 
-        if (isset($arrEndereco['nivel'])) {
-            $nivel = self::formatarNivel($arrEndereco['nivel'], (int) $qtdDigitos['nivel'], $dgtComplementar);
-            $dscEndereco['nivel'] = $nivel;
+        if (!empty($novoNivel)){
+            $dscEndereco['nivel'] = self::formatarNivel($novoNivel, (int) $qtdDigitos['nivel'], $dgtComplementar);
+        } elseif (isset($arrEndereco['nivel'])) {
+            $dscEndereco['nivel'] = self::formatarNivel($arrEndereco['nivel'], (int) $qtdDigitos['nivel'], $dgtComplementar);
         } else {
             throw new \Exception('Elemento "nivel" não definido');
         }
 
         if (isset($arrEndereco['apto'])) {
-            $apartamento = self::formatarApto($arrEndereco['apto'], (int) $qtdDigitos['apto'], $dgtComplementar);
-            $dscEndereco['apto'] = $apartamento;
+            $dscEndereco['apto'] = self::formatarApto($arrEndereco['apto'], (int) $qtdDigitos['apto'], $dgtComplementar);
         } else {
             throw new \Exception('Elemento "apto" não definido');
         }
@@ -240,6 +240,8 @@ class Endereco
             $result = implode('.', $dscEndereco);
         } elseif ($formato == self::FORMATO_COD_BARRAS){
             $result = implode('', $dscEndereco);
+        } elseif ($formato == self::FORMATO_MATRIZ_ASSOC){
+            $result = $dscEndereco;
         } else {
             throw new \Exception("Formato de retorno fora do padrão");
         }

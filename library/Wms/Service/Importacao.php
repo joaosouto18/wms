@@ -353,7 +353,7 @@ class Importacao
             if (isset($fornecedor['cidade']))
                 $fornecedor['enderecos'][0]['localidade'] = $fornecedor['cidade'];
             if (isset($fornecedor['numero']))
-                $fornecedor['enderecos'][0]['numero'] =  $fornecedor['numeor'];
+                $fornecedor['enderecos'][0]['numero'] =  $fornecedor['numero'];
             if (isset($fornecedor['cep']))
                 $fornecedor['enderecos'][0]['cep'] = $fornecedor['cep'];
             if (isset($entitySigla))
