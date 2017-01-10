@@ -177,9 +177,8 @@ class Mobile_RecebimentoController extends Action
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
-                //$dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
-                $dataValidade = date_format( $getDataValidadeUltimoProduto['dataValidade'] , 'dd/MM/YY' );
-                //$dataValidade = $dataValidade->toString();
+                $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
+                $dataValidade = $dataValidade->toString();
                 $this->view->dataValidade = $dataValidade;
             }
 
@@ -222,6 +221,7 @@ class Mobile_RecebimentoController extends Action
             $notaFiscalItemEntity = $notaFiscalItemRepo->find($idItem);
             $idProduto = $notaFiscalItemEntity->getProduto()->getId();
             $grade = $notaFiscalItemEntity->getGrade();
+            /** @var \Wms\Domain\Entity\Produto $produtoEn */
             $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
 
             if ($produtoEn->getValidade() == "S") {
@@ -232,6 +232,9 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $shelfLife = $produtoEn->getDiasVidaUtil();
+                if (empty($shelfLife))
+                    throw new Exception("Tempo de vida util do produto " . $produtoEn->getId() . " não foi especificado.");
+
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
 
