@@ -778,6 +778,7 @@ class Mobile_EnderecamentoController extends Action
             }
         }  catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
+            $this->_redirect('mobile/enderecamento/movimentacao');
         }
 
     }

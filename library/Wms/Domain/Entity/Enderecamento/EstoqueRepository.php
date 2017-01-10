@@ -813,7 +813,7 @@ class EstoqueRepository extends EntityRepository
             ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco' )
             ->from("wms:Enderecamento\Estoque", "e")
             ->InnerJoin("e.depositoEndereco", "dep")
-            ->where("dep.descricao = $endereco");
+            ->where("dep.descricao = '$endereco'");
 
         return $dql->getQuery()->getArrayResult();
     }
