@@ -177,8 +177,9 @@ class Mobile_RecebimentoController extends Action
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
-                $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
-                $dataValidade = $dataValidade->toString('dd/MM/YY');
+                //$dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
+                $dataValidade = date_format( $getDataValidadeUltimoProduto['dataValidade'] , 'dd/MM/YY' );
+                //$dataValidade = $dataValidade->toString();
                 $this->view->dataValidade = $dataValidade;
             }
 
