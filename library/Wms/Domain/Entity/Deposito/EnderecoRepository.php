@@ -379,8 +379,6 @@ class EnderecoRepository extends EntityRepository
             if ($picking) {
                 $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
             }
-//            $dql->orderBy("e.rua, e.predio, e.apartamento","ASC");
-//            $dql->orderBy("e.nivel","DESC");
 
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
