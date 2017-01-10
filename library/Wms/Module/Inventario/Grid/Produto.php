@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Inventario\Grid;
 
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Grid\Produto\DadoLogistico,
     Core\Util\Produto as UtilProduto;
 
@@ -12,7 +13,7 @@ class Produto extends DadoLogistico
     {
         extract($params);
 
-        $tipoPicking = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = Endereco::ENDERECO_PICKING;
 
         $source = $this->getEntityManager()->createQueryBuilder()
 

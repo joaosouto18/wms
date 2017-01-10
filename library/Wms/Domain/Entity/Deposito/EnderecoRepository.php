@@ -204,7 +204,7 @@ class EnderecoRepository extends EntityRepository
 
     public function getPicking()  {
         $em = $this->getEntityManager();
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = Endereco::ENDERECO_PICKING;
 
         $dql = $em->createQueryBuilder()
             ->select('e.descricao as DESCRICAO, MOD(e.predio,2) as lado')
@@ -344,7 +344,7 @@ class EnderecoRepository extends EntityRepository
 
         $idCaracteristicaEndereco = null;
         if ($picking) {
-            $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+            $idCaracteristicaEndereco = Endereco::ENDERECO_PICKING;
         }
 
         $endereco = EnderecoUtil::formatar($dscEndereco);
@@ -355,7 +355,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Produto\Volume", "pv")
             ->innerJoin("pv.endereco", "e")
             ->innerJoin("pv.produto", "p")
-            ->where("e.descricao = $endereco");
+            ->where("e.descricao = '$endereco'");
 
         if ($picking) {
             $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
@@ -374,7 +374,7 @@ class EnderecoRepository extends EntityRepository
                 ->from("wms:Produto\Embalagem", "pe")
                 ->leftJoin("pe.endereco", "e")
                 ->leftJoin("pe.produto", "p")
-                ->where("e.descricao = $endereco");
+                ->where("e.descricao = '$endereco'");
 
             if ($picking) {
                 $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
@@ -394,7 +394,7 @@ class EnderecoRepository extends EntityRepository
 
     public function getEnderecoesDisponivesByParam($params)
     {
-        $idCaracteristicaEndereco = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $idCaracteristicaEndereco = Endereco::ENDERECO_PICKING;
         $estruturaBlocado = \Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
         extract($params);
@@ -728,7 +728,7 @@ class EnderecoRepository extends EntityRepository
         $dataFinal = $params['dataInicial2'];
         $ruaInicial = $params['ruaInicial'];
         $ruaFinal   = $params['ruaFinal'];
-        $tipoPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $tipoPicking = Endereco::ENDERECO_PICKING;
 
         $sqlWhere = "";
         if (isset($ruaInicial) && !empty($ruaFinal)) {

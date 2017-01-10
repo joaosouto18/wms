@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\RelatoriosSimples as RelatoriosSimplesEntity;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 /**
  * RelatoriosSimples
@@ -323,7 +324,7 @@ class RelatoriosSimplesRepository extends EntityRepository {
             $dql->andWhere(" c.placaCarga = :placa ")
                 ->setParameter("placa",$params['placa']);
         }
-        $idCaracteristicaPicking = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING');
+        $idCaracteristicaPicking = Endereco::ENDERECO_PICKING;
         $dql->andWhere(" ed.descricao is not null ")
             ->andWhere("ed.idCaracteristica != $idCaracteristicaPicking");
 

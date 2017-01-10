@@ -221,7 +221,7 @@ class EstoqueRepository extends EntityRepository
     
     public function getEstoquePulmaoByProduto ($codProduto, $grade, $volume, $maxResult = 5)
     {
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
 
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
@@ -370,7 +370,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         if ($showPicking == false) {
-            $caracteristicaPicking = $this->getSystemParameterValue("ID_CARACTERISTICA_PICKING");
+            $caracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
         }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
@@ -417,7 +417,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoquePulmao($parametros)
     {
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
 
         $and="";
         $cond="";
@@ -554,7 +554,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueByRua($inicioRua, $fimRua, $grandeza = null,$exibePicking = 1, $exibePulmao = 1)
     {
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select("e.descricao, estq.codProduto, estq.grade, p.descricao nomeProduto")
@@ -591,7 +591,7 @@ class EstoqueRepository extends EntityRepository
 
     public function saldo($params)
     {
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select('estq.codProduto, estq.grade, ls.descricao, sum(estq.qtd) qtdestoque, NVL(depv.descricao, depe.descricao) enderecoPicking')
             ->from("wms:Enderecamento\Estoque",'estq')
@@ -634,7 +634,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getExisteEnderecoPulmao ($codProduto, $grade)
     {
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select('estq.codProduto, estq.grade')
             ->from("wms:Enderecamento\Estoque",'estq')
@@ -720,7 +720,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getSituacaoEstoque($params) {
 
-        $tipoPicking = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'ID_CARACTERISTICA_PICKING'))->getValor();
+        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
         ->select("de.descricao,

@@ -497,22 +497,22 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'endereco':
-                    $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
-                    $endereco = explode(".", $arrRegistro['endereco']);
-                    $stsEndereço = true;
-                    foreach ($endereco as $element) {
-                        if (strlen($element) < 1) {
-                            $arrErroRows[$linha] = "Endereço incompleto";
-                            $stsEndereço = false;
-                        }
-                    }
-                    if ($stsEndereço) {
+                    $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+                    $endereco = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], $arrQtdDigitos);
+                    $arrEndereco = \Wms\Util\Endereco::separar($endereco, $arrQtdDigitos);
+                    $arrRegistro = array_merge($arrRegistro, $arrEndereco);
+
+                    $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrEndereco);
+
+                    if (empty($entity)) {
                         $result = $importacaoService->saveEndereco($em, $arrRegistro);
                         if (is_string($result)) {
                             $arrErroRows['exception'] = $result;
                         } else {
                             $countFlush++;
                         }
+                    } else {
+                        $arrErroRows[$linha] = "Este endereço já foi cadastrado " . $endereco;
                     }
                     break;
                 case "carga":
