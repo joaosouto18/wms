@@ -1134,7 +1134,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
         $mapaSeparacaoQuebraRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
-        $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao, 'codStatus'=>EtiquetaSeparacao::STATUS_ETIQUETA_GERADA));
+        $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao, 'codStatus' => EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO));
 
         foreach ($mapasSeparacao as $mapaSeparacao) {
             $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'tipoQuebra' => 'T'));
