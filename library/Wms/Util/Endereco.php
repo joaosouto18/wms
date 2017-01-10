@@ -207,6 +207,8 @@ class Endereco
         $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
         $arrEndereco = (!is_array($endereco)) ? self::separar($endereco, $qtdDigitos) : $endereco;
 
+        $dgtComplementar = (is_null($dgtComplementar)) ? '0' : $dgtComplementar;
+
         $dscEndereco = array();
 
         if (isset($arrEndereco['rua'])) {
@@ -278,6 +280,7 @@ class Endereco
     public static function formatarRua($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
         $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['rua'] : (int) $qtdDigitos;
+        $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
@@ -310,6 +313,7 @@ class Endereco
     public static function formatarPredio($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
         $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['predio'] : (int) $qtdDigitos;
+        $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
@@ -342,6 +346,7 @@ class Endereco
     public static function formatarNivel($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
         $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['nivel'] : (int) $qtdDigitos;
+        $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
@@ -374,6 +379,7 @@ class Endereco
     public static function formatarApto($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
         $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['apto'] : (int) $qtdDigitos;
+        $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
