@@ -355,7 +355,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Produto\Volume", "pv")
             ->innerJoin("pv.endereco", "e")
             ->innerJoin("pv.produto", "p")
-            ->where("e.descricao = $endereco");
+            ->where("e.descricao = '$endereco'");
 
         if ($picking) {
             $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
@@ -374,13 +374,11 @@ class EnderecoRepository extends EntityRepository
                 ->from("wms:Produto\Embalagem", "pe")
                 ->leftJoin("pe.endereco", "e")
                 ->leftJoin("pe.produto", "p")
-                ->where("e.descricao = $endereco");
+                ->where("e.descricao = '$endereco'");
 
             if ($picking) {
                 $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
             }
-//            $dql->orderBy("e.rua, e.predio, e.apartamento","ASC");
-//            $dql->orderBy("e.nivel","DESC");
 
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();

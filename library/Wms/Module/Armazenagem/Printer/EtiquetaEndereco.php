@@ -54,8 +54,13 @@ class EtiquetaEndereco extends Pdf
                     if (count($produtos) <= 0){
                         $this->layoutModelo2(null,$codBarras);
                     } else {
+                        $produtoAnterior = null;
+                        $grade = null;
                         foreach ($produtos as $produto){
+                            if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
                             $this->layoutModelo2($produto,$codBarras);
+                            $produtoAnterior = $produto['codProduto'];
+                            $grade = $produto['grade'];
                         }
                     }
                     break;
