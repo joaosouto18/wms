@@ -100,6 +100,8 @@ class Mobile_ExpedicaoController extends Action
     public function lerEmbaladosMapaAction()
     {
         $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
+        $this->view->idExpedicao = $idExpedicao = $this->_getParam('expedicao');
+
         $submit = $this->_getParam('submit');
         $LeituraColetor = new LeituraColetor();
 
@@ -558,15 +560,27 @@ class Mobile_ExpedicaoController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+
 
         if ($quebraColetor == 'S') {
-            $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
-            $mapaEn = $mapaSeparacaoRepo->findOneBy(array('id'=>$idMapa));
-            if ($mapaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CONFERIDO) {
-                $this->addFlashMessage('success', "Mapa de Separação $idMapa Finalizado com sucesso!");
+            if (isset($idMapa) && !empty($idMapa)) {
+                $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
+                $mapaEn = $mapaSeparacaoRepo->findOneBy(array('id'=>$idMapa));
+                if ($mapaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CONFERIDO) {
+                    $this->addFlashMessage('success', "Mapa de Separação $idMapa Finalizado com sucesso!");
+                }
             }
         } else {
             $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
+        }
+
+        if (!is_string($result)) {
+            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
+                $this->addFlashMessage('error', 'Existem volumes embalados pendentes de CONFERENCIA!');
+                $this->_redirect("mobile/expedicao/index/idCentral/$central");
+            }
         }
 
         if (is_string($result)) {

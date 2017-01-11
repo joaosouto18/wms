@@ -518,7 +518,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -544,10 +544,6 @@ class ExpedicaoRepository extends EntityRepository
         if (isset($idMapa) && !empty($idMapa)) {
             if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
                 return 'Existem volumes embalados pendentes de FECHAMENTO!';
-            }
-        } else {
-            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
-                return 'Existem volumes embalados pendentes de CONFERENCIA!';
             }
         }
 
