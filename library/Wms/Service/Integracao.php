@@ -163,8 +163,7 @@ class Integracao
              * Persiste no banco de dados
              */
             foreach ($arrayFabricantes as $fabricante) {
-                $importacaoService->saveFabricante($this->_em,
-                                                   $fabricante['codFabricante'],
+                $importacaoService->saveFabricante($fabricante['codFabricante'],
                                                    $fabricante['dscFabricante'],
                                                    $repositorios);
             }
