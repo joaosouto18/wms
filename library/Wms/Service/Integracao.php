@@ -181,11 +181,13 @@ class Integracao
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
-                    $emb = new embalagem();
-                    $emb->codBarras = $embalagem['codBarras'];
-                    $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
-                    $emb->descricao = $embalagem['dscEmbalagem'];
-                    $embalagensObj[] = $emb;
+                    if ($embalagem['ativa'] == 'S') {
+                        $emb = new embalagem();
+                        $emb->codBarras = $embalagem['codBarras'];
+                        $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
+                        $emb->descricao = $embalagem['dscEmbalagem'];
+                        $embalagensObj[] = $emb;
+                    }
                 }
                 $importacaoService->saveProdutoWs($this->_em,
                                                   $repositorios,
