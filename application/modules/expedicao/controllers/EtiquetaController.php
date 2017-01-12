@@ -355,7 +355,7 @@ class Expedicao_EtiquetaController  extends Action
 
             if (count($pedidosProdutos) == 0) {
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
-                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
+                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressaoByExpedicao($idExpedicao)  <= 0))  {
                     $cargas = implode(',',$cargas);
                     echo 'errorEtiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas;
                     exit;
