@@ -749,4 +749,17 @@ class MapaSeparacaoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
+    public function getResumoConferenciaEmbalados($idExpedicao)
+    {
+        $sql = "SELECT MS.COD_MAPA_SEPARACAO, MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE, P.NOM_PESSOA, S.DSC_SIGLA
+                    FROM MAPA_SEPARACAO MS
+                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    INNER JOIN PESSOA P ON P.COD_PESSOA = MSC.COD_PESSOA
+                    INNER JOIN SIGLA S ON S.COD_SIGLA = MSC.COD_STATUS
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao
+                    ORDER BY MS.COD_MAPA_SEPARACAO ASC, MSC.COD_MAPA_SEPARACAO_EMB_CLIENTE ASC";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
