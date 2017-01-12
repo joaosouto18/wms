@@ -8,7 +8,7 @@ use Wms\Util\Barcode\eFPDF,
 class EtiquetaEmbalados extends eFPDF
 {
 
-    public function imprimirExpedicaoModelo1($volumePatrimonio,$existeItensPendentes = true)
+    public function imprimirExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo)
     {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -17,18 +17,23 @@ class EtiquetaEmbalados extends eFPDF
         $this->SetMargins(3, 1.5, 0);
         $this->SetAutoPageBreak(0,0);
 
-        self::bodyExpedicaoModelo1($volumePatrimonio,$existeItensPendentes);
+        self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
 
         $this->Output('Volume-Embalado.pdf','I');
         exit;
     }
 
-    private function bodyExpedicaoModelo1($volumes,$existeItensPendentes)
+    private function bodyExpedicaoModelo1($volumes,$mapaSeparacaoEmbaladoRepo)
     {
-        $this->SetFont('Arial', 'B', 20);
-        //coloca o cod barras
+//        $this->SetFont('Arial', 'B', 20);
 
         foreach ($volumes as $volume) {
+
+            $existeItensPendentes = true;
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S'));
+            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+                $existeItensPendentes = false;
+            }
             $this->AddPage();
             //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 10);
