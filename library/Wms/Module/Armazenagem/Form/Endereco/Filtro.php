@@ -38,8 +38,6 @@ class Filtro extends Form
                 
         $em = $this->getEm();
 
-        $arrQtdDigitos = Endereco::getQtdDigitos();
-
         $repoCaracteristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica');
         $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
         $unitiizador = $em->getRepository('wms:Armazenagem\Unitizador');
@@ -53,29 +51,25 @@ class Filtro extends Form
         //endereço
         $formIdentificacao->addElement('text', 'inicialRua', array(
                     'size' => 3,
-                    'maxlength' => $arrQtdDigitos['rua'],
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoRua',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalRua', array(
                     'size' => 3,
-                    'maxlength' => $arrQtdDigitos['rua'],
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoRua',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialNivel', array(
                     'size' => 3,
-                    'maxlength' => $arrQtdDigitos['nivel'],
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoNivel',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalNivel', array(
                     'size' => 3,
-                    'maxlength' => $arrQtdDigitos['nivel'],
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoNivel',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))

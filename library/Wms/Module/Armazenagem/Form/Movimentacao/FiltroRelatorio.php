@@ -10,7 +10,6 @@ class FiltroRelatorio extends Form
 
     public function init($utilizaGrade = 'S')
     {
-        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this
             ->setAttribs(array(
@@ -36,22 +35,22 @@ class FiltroRelatorio extends Form
         }
         $this->addElement('text', 'rua', array(
             'size' => 3,
-            'maxlength' => $arrQtdDigitos['rua'],
+            'alt' => 'enderecoRua',
             'label' => 'Rua'
         ))
             ->addElement('text', 'predio', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['predio'],
+                'alt' => 'enderecoPredio',
                 'label' => 'Prédio',
             ))
             ->addElement('text', 'nivel', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['nivel'],
+                'alt' => 'enderecoNivel',
                 'label' => 'Nível',
             ))
             ->addElement('text', 'apto', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apartamento'],
+                'alt' => 'enderecoApartamento',
                 'label' => 'Apto',
             ))
             ->addElement('submit', 'imprimir', array(

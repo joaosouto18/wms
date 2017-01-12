@@ -9,16 +9,15 @@ class FiltroProduto extends Form
 
     public function init()
     {
-        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this->addElement('text', 'ruaInicial', array(
             'size' => 20,
-            'maxlength' => $arrQtdDigitos['rua'],
+            'alt' => 'enderecoRua',
             'label' => 'Rua Inicial',
         ))
         ->addElement('text', 'ruaFinal', array(
             'size' => 20,
-            'maxlength' => $arrQtdDigitos['rua'],
+            'alt' => 'enderecoRua',
             'label' => 'Rua Final',
         ))
         ->addElement('select', 'tipoRelatorio', array(
