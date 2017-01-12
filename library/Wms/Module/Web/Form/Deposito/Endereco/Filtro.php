@@ -5,6 +5,7 @@ namespace Wms\Module\Web\Form\Deposito\Endereco;
 use Wms\Module\Web\Form,
     Core\Form\SubForm,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
+use Wms\Util\Endereco;
 
 /**
  * Description of SystemContextParam
@@ -19,69 +20,75 @@ class Filtro extends Form
                 
         $em = $this->getEm();
         $sessao = new \Zend_Session_Namespace('deposito');
-        $idDeposito = $sessao->idDepositoLogado;
 
         $repoCaracteristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica');
         $repoEstrutura = $em->getRepository('wms:Armazenagem\Estrutura\Tipo');
         $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
-        $repoUnitizador = $em->getRepository('wms:Armazenagem\Unitizador');
-        $repoExcedente = $em->getRepository('wms:Armazenagem\LinhaSeparacao');
         $repoArea = $em->getRepository('wms:Deposito\AreaArmazenagem');
         $area = $repoArea->getIdValue(array('idDeposito' => $sessao->idDepositoLogado));
+
+        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         //form's attr
         $this->setAttribs(array('id' => 'deposito-endereco-filtro-form', 'class' => 'saveForm'))
                 ->setMethod('get');
-
 
         $formIdentificacao = new SubForm;
 
         //endereço
         $formIdentificacao->addElement('text', 'inicialRua', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['rua'],
+                    'alt' => 'enderecoRua',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalRua', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['rua'],
+                    'alt' => 'enderecoRua',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialPredio', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['predio'],
+                    'alt' => 'enderecoPredio',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalPredio', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['predio'],
+                    'alt' => 'enderecoPredio',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialNivel', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['nivel'],
+                    'alt' => 'enderecoNivel',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalNivel', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['nivel'],
+                    'alt' => 'enderecoNivel',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialApartamento', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['apartamento'],
+                    'alt' => 'enderecoApartamento',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalApartamento', array(
                     'size' => 3,
-                    'alt' => 'depositoEndereco',
+                    'maxlength' => $arrQtdDigitos['apartamento'],
+                    'alt' => 'enderecoApartamento',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))

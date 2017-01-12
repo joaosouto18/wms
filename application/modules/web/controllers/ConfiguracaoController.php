@@ -55,7 +55,15 @@ class Web_ConfiguracaoController extends Action
 
         $mask = implode('.', array_reverse($arrMasc,true));
 
-        $this->_helper->json(array('mask' => $mask));
+        $result = array(
+            'mask' => $mask,
+            'enderecoRua' => $arrMasc['rua'],
+            'enderecoPredio' => $arrMasc['predio'],
+            'enderecoNivel' => $arrMasc['nivel'],
+            'enderecoApartamento' => $arrMasc['apartamento']
+        );
+
+        $this->_helper->json($result);
     }
 
 }

@@ -279,7 +279,10 @@ class Endereco
      */
     public static function formatarRua($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
-        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['rua'] : (int) $qtdDigitos;
+        if (empty($qtdDigitos) || !is_numeric($qtdDigitos)) {
+            $temp = self::getQtdDigitos();
+            $qtdDigitos = (int) $temp['rua'];
+        }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
@@ -312,7 +315,10 @@ class Endereco
      */
     public static function formatarPredio($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
-        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['predio'] : (int) $qtdDigitos;
+        if (empty($qtdDigitos) || !is_numeric($qtdDigitos)) {
+            $temp = self::getQtdDigitos();
+            $qtdDigitos = (int) $temp['predio'];
+        }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
@@ -345,7 +351,10 @@ class Endereco
      */
     public static function formatarNivel($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
-        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['nivel'] : (int) $qtdDigitos;
+        if (empty($qtdDigitos) || !is_numeric($qtdDigitos)) {
+            $temp = self::getQtdDigitos();
+            $qtdDigitos = (int) $temp['nivel'];
+        }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
@@ -378,7 +387,10 @@ class Endereco
      */
     public static function formatarApto($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
-        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['apartamento'] : (int) $qtdDigitos;
+        if (empty($qtdDigitos) || !is_numeric($qtdDigitos)) {
+            $temp = self::getQtdDigitos();
+            $qtdDigitos = (int) $temp['apartamento'];
+        }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }

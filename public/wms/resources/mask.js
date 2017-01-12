@@ -143,6 +143,10 @@
 				'numero'                        : { mask : '99999999999999999999'},
 				'number'                        : { mask : '99999999999999999999'},
 				'depositoEndereco'              : { mask : '999' },
+				'enderecoRua' 					: { mask : ''},
+				'enderecoPredio' 				: { mask : ''},
+				'enderecoNivel' 				: { mask : ''},
+				'enderecoApartamento' 			: { mask : ''},
 				'phoneNumber'                   : { mask : '9999-9999' },
 				'phone'				: { mask : '(99) 9999-9999' },
 				'phone-us'			: { mask : '(999) 999-9999' },
@@ -333,6 +337,10 @@
                     async: false,
                     success: function (data) {
                         obj.masks.endereco.mask = data.mask;
+                        obj.masks.enderecoRua.mask = data.enderecoRua;
+                        obj.masks.enderecoPredio.mask = data.enderecoPredio;
+                        obj.masks.enderecoNivel.mask = data.enderecoNivel;
+                        obj.masks.enderecoApartamento.mask = data.enderecoApartamento;
                     }
                 });
                 return obj;
