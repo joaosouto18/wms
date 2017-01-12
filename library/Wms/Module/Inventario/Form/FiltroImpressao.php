@@ -17,63 +17,54 @@ class FiltroImpressao extends Form
         $this->setAttribs(array('id' => 'filtro-impressao-form', 'class' => 'saveForm'))
             ->setMethod('get');
 
-        $arrQtdDigitos = Endereco::getQtdDigitos();
         $formIdentificacao = new SubForm;
 
         //endereço
         $formIdentificacao->addElement('text', 'inicialRua', array(
             'size' => 3,
-            'maxlength' => $arrQtdDigitos['rua'],
-            'alt' => 'depositoEndereco',
+            'alt' => 'enderecoRua',
             'decorators' => array('ViewHelper'),
             'title' => 'Obrigatório.',
         ))
             ->addElement('text', 'finalRua', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['rua'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoRua',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'inicialPredio', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['predio'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoPredio',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'finalPredio', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['predio'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoPredio',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'inicialNivel', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['nivel'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoNivel',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'finalNivel', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['nivel'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoNivel',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'inicialApartamento', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apartamento'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoApartamento',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'finalApartamento', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apartamento'],
-                'alt' => 'depositoEndereco',
+                'alt' => 'enderecoApartamento',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))

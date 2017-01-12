@@ -10,7 +10,6 @@ class Filtro extends Form {
 
     public function init()
     {
-        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this->setAttribs(array('id' => 'filtro-estoque-form',
                                 'method' => 'post',
@@ -18,29 +17,25 @@ class Filtro extends Form {
 
         $this->addElement('text', 'rua', array(
             //'style' => 'width: 22px',
-            'alt' => 'depositoEndereco',
-            'maxlength' => $arrQtdDigitos['rua'],
+            'alt' => 'enderecoRua',
             'size' => 3,
             'label' => 'Rua',
         ))
         ->addElement('text', 'predio', array(
             //'style' => 'width: 22px',
-            'alt' => 'depositoEndereco',
-            'maxlength' => $arrQtdDigitos['predio'],
+            'alt' => 'enderecoPredio',
             'size' => 3,
             'label' => 'Predio',
         ))
         ->addElement('text', 'nivel', array(
             //'style' => 'width: 22px',
-            'alt' => 'depositoEndereco',
-            'maxlength' => $arrQtdDigitos['nivel'],
+            'alt' => 'enderecoNivel',
             'size' => 3,
             'label' => 'Nivel',
         ))
         ->addElement('text', 'apartamento', array(
             //'style' => 'width: 22px',
-            'alt' => 'depositoEndereco',
-            'maxlength' => $arrQtdDigitos['apartamento'],
+            'alt' => 'enderecoApartamento',
             'size' => 3,
             'label' => 'Apartamento',
         ))
