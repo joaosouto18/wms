@@ -126,7 +126,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapas = $this->findBy(array('codExpedicao'=>$expedicaoEn->getid()));
         foreach ($mapas as $mapaEn) {
             if ($mapaEn->getCodStatus() != EtiquetaSeparacao::STATUS_CONFERIDO){
-                return 'Existem Mapas para conferir nesta Expedição';
+//                return 'Existem Mapas para conferir nesta Expedição';
             }
         }
 
@@ -137,7 +137,8 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 
-        $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, "A");
+//        $this->getEntityManager()->beginTransaction();
+        $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, 'A');
         foreach ($acertos as $acerto) {
             $idMapaSeparacaoProduto = $acerto['COD_MAPA_SEPARACAO_PRODUTO'];
             $mapaProdutoEn = $mapaSeparacaoProdutoRepo->findOneBy(array('id'=>$idMapaSeparacaoProduto));
@@ -157,10 +158,12 @@ class MapaSeparacaoRepository extends EntityRepository
                                                                          'indConferido'=>'N'));
             if (count($produtosPendentes) == 0) {
                 $mapaEn->setCodStatus(Etiquetaseparacao::STATUS_CONFERIDO);
+                $this->getEntityManager()->persist($mapaEn);
             }
         }
 
         $this->getEntityManager()->flush();
+//        $this->getEntityManager()->commit();
 
     }
 
@@ -168,6 +171,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaConferenciaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoConferencia");
 
+//        $this->getEntityManager()->beginTransaction();
         if ($idMapa != null) {
             $mapaSeparacaoEn = $mapaSeparacaoRepo->findBy(array('id' => $idMapa));
         } else {

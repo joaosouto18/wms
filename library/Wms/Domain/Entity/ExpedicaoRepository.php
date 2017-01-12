@@ -541,12 +541,6 @@ class ExpedicaoRepository extends EntityRepository
             return 'Existem etiquetas pendentes de corte nesta expedição';
         }
 
-        if (isset($idMapa) && !empty($idMapa)) {
-            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
-                return 'Existem volumes embalados pendentes de FECHAMENTO!';
-            }
-        }
-
         ini_set('max_execution_time', 3000);
         Try {
             $this->getEntityManager()->beginTransaction();
@@ -572,6 +566,12 @@ class ExpedicaoRepository extends EntityRepository
                 }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
+            }
+
+            if (isset($idMapa) && !empty($idMapa)) {
+                if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
+//                    return 'Existem volumes embalados pendentes de FECHAMENTO!';
+                }
             }
 
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
@@ -2693,6 +2693,7 @@ class ExpedicaoRepository extends EntityRepository
         $mapaSeparacaoPedidoRepo   = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoProdutoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaConferenciaRepo       = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        $mapaEmbaladoRepo          = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
         $entidadePedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido'=>$codPedido,
             'codProduto'=>$codProduto,
