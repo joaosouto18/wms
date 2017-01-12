@@ -173,7 +173,7 @@ class Mobile_ExpedicaoController extends Action
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa);
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
         if (count($produtosMapa) > 0) {
             $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
             $this->view->produtosMapa = $produtosMapa;
