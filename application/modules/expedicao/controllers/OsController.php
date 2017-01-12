@@ -198,6 +198,9 @@ class Expedicao_OsController extends Action
             $gridMapas = new \Wms\Module\Web\Grid\Expedicao\Mapas();
             $this->view->gridMapas = $gridMapas->init($mapas)->render();
         }
+        $embalados = $MapaSeparacaoRepo->getResumoConferenciaEmbalados($idExpedicao);
+        $embaladosGrid = new \Wms\Module\Web\Grid\Expedicao\Embalados();
+        $this->view->EmbaladosGrid = $embaladosGrid->init($embalados);
 
         $GridOs = new OsGrid();
         $this->view->gridOS = $GridOs->init($idExpedicao, $verificaReconferencia)

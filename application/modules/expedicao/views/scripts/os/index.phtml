@@ -99,6 +99,14 @@
                             </tr>
                         <?php }?>
 
+                        <?php if (isset($this->EmbaladosGrid)) : ?>
+                            <tr>
+                                <td colspan="4">
+                                    <?php echo $this->EmbaladosGrid ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+
                         <?php if (count($this->conferenciaVolumePatrimonio) > 0) : ?>
                             <tr>
                                 <td colspan="4">
