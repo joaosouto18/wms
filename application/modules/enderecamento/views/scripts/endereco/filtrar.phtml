@@ -1,11 +1,7 @@
 <style>
     form.filtro { margin-bottom: 0 }
 </style>
-<?php if('production' == APPLICATION_ENV): ?>
-    <script type="text/javascript" src="<?php echo $this->baseUrl('steal/steal.production.js?wms,production'); ?>"></script>
-<?php else: ?>
-    <script type="text/javascript" src="<?php echo $this->baseUrl('steal/steal.js?wms,development'); ?>"></script>
-<?php endif; ?>
+
 <?php if($this->parametros != true) : ?>
     <?php echo $this->form; ?>
 <?php endif ?>
