@@ -4,11 +4,13 @@ namespace Wms\Module\Armazenagem\Form\DisponibilidadeEstoque;
 
 use Wms\Module\Web\Form,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
+use Wms\Util\Endereco;
 
 class Filtro extends Form {
 
     public function init()
     {
+        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this->setAttribs(array('id' => 'filtro-estoque-form',
                                 'method' => 'post',
@@ -17,24 +19,28 @@ class Filtro extends Form {
         $this->addElement('text', 'rua', array(
             //'style' => 'width: 22px',
             'alt' => 'depositoEndereco',
+            'maxlength' => $arrQtdDigitos['rua'],
             'size' => 3,
             'label' => 'Rua',
         ))
         ->addElement('text', 'predio', array(
             //'style' => 'width: 22px',
             'alt' => 'depositoEndereco',
+            'maxlength' => $arrQtdDigitos['predio'],
             'size' => 3,
             'label' => 'Predio',
         ))
         ->addElement('text', 'nivel', array(
             //'style' => 'width: 22px',
             'alt' => 'depositoEndereco',
+            'maxlength' => $arrQtdDigitos['nivel'],
             'size' => 3,
             'label' => 'Nivel',
         ))
         ->addElement('text', 'apartamento', array(
             //'style' => 'width: 22px',
             'alt' => 'depositoEndereco',
+            'maxlength' => $arrQtdDigitos['apto'],
             'size' => 3,
             'label' => 'Apartamento',
         ))

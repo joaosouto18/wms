@@ -14,7 +14,7 @@ class EditarCamposImportacao extends Form
         $this->addElement('text','posicao', array(
             'label' => 'Posição do dado no arquivo:',
             'size' => 10,
-            'maxlenght' => 2
+            'maxlength' => 2
         ))
         ->addElement('text', 'tInicio', array(
             'label' => 'Tamanho no início (Campo usado apenas em importação de formato TXT)'

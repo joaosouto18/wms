@@ -905,6 +905,12 @@ class EnderecoRepository extends EntityRepository
                 $query = $query . " AND MOD(NUM_PREDIO,2) = 1";
         }
 
+        if ($params['opcao'] == 'sem'){
+            $query .= ' AND DEP.COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO FROM ESTOQUE)';
+        } elseif ($params['opcao'] == 'com') {
+            $query .= ' AND DEP.COD_DEPOSITO_ENDERECO IN (SELECT COD_DEPOSITO_ENDERECO FROM ESTOQUE)';
+        }
+
         $query = $query . " ORDER BY RUA, PREDIO, NIVEL, APARTAMENTO";
 
         $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
