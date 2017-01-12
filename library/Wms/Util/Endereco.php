@@ -280,7 +280,8 @@ class Endereco
     public static function formatarRua($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
         if (empty($qtdDigitos) || !is_numeric($qtdDigitos)) {
-            $qtdDigitos = (int) self::getQtdDigitos()['rua'];
+            $qtdDigitos = (int) self::getQtdDigitos();
+            $qtdDigitos = $qtdDigitos['rua'];
         } else {
             $qtdDigitos = (int) $qtdDigitos;
         }
