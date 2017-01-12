@@ -518,7 +518,7 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -544,10 +544,6 @@ class ExpedicaoRepository extends EntityRepository
         if (isset($idMapa) && !empty($idMapa)) {
             if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
                 return 'Existem volumes embalados pendentes de FECHAMENTO!';
-            }
-        } else {
-            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
-                return 'Existem volumes embalados pendentes de CONFERENCIA!';
             }
         }
 
@@ -2186,6 +2182,19 @@ class ExpedicaoRepository extends EntityRepository
                   FROM MAPA_SEPARACAO
                  WHERE COD_STATUS = 522
                    AND COD_MAPA_SEPARACAO IN ($codMapa)";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
+        if (count($result) >0) {
+            return $result['QTD'];
+        } else {
+            return 0;
+        }
+    }
+
+    public function getQtdMapasPendentesImpressaoByExpedicao($codExpedicao){
+        $SQL = "SELECT COUNT(COD_MAPA_SEPARACAO) as QTD
+                  FROM MAPA_SEPARACAO
+                 WHERE COD_STATUS = 522
+                   AND COD_EXPEDICAO IN ($codExpedicao)";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
         if (count($result) >0) {
             return $result['QTD'];

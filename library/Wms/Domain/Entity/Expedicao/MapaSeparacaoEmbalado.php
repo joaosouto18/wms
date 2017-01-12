@@ -45,6 +45,11 @@ class MapaSeparacaoEmbalado
     protected $sequencia;
 
     /**
+     * @Column(name="IND_ULTIMO_VOLUME", type="string", nullable=true)
+     */
+    protected $ultimoVolume;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -122,6 +127,22 @@ class MapaSeparacaoEmbalado
     public function setSequencia($sequencia)
     {
         $this->sequencia = $sequencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUltimoVolume()
+    {
+        return $this->ultimoVolume;
+    }
+
+    /**
+     * @param mixed $ultimoVolume
+     */
+    public function setUltimoVolume($ultimoVolume)
+    {
+        $this->ultimoVolume = $ultimoVolume;
     }
 
 }

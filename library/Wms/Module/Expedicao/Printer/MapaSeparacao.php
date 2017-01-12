@@ -694,7 +694,7 @@ class MapaSeparacao extends Pdf
                 }
                 if (isset($embalagemEn) && !empty($embalagemEn))
                     $codigoBarras = $embalagemEn->getCodigoBarras();
-                    $embalagem   = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
+                    $embalagem   = $embalagemEn->getDescricao() ;
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
@@ -801,7 +801,7 @@ class MapaSeparacao extends Pdf
 
             $this->SetY(-23);
             $this->SetFont('Arial','B',9);
-            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".utf8_decode($this->quebrasEtiqueta)), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".substr($this->quebrasEtiqueta,0,23)), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
             $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
@@ -809,17 +809,6 @@ class MapaSeparacao extends Pdf
             $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
             $this->Image($this->imgCodBarras, 143, 280, 50);
-
-            $this->SetY(-50);
-            $this->SetFont('Arial','B',9);
-            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".utf8_decode($this->quebrasEtiqueta)), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
-            $this->Image($this->imgCodBarras, 143, 253, 50);
 
             $this->InFooter = false;
 

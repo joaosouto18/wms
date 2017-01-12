@@ -355,7 +355,7 @@ class Expedicao_EtiquetaController  extends Action
 
             if (count($pedidosProdutos) == 0) {
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
-                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idExpedicao)  <= 0))  {
+                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressaoByExpedicao($idExpedicao)  <= 0))  {
                     $cargas = implode(',',$cargas);
                     echo 'errorEtiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas;
                     exit;
@@ -415,6 +415,7 @@ class Expedicao_EtiquetaController  extends Action
     public function reimprimirEmbaladosAction()
     {
         $idExpedicao = $this->_getParam('id');
+        $existeItensPendentes = true;
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
@@ -425,8 +426,8 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', 'Não existe volume embalado para ser reimpresso!');
                 $this->_redirect('/expedicao/index');
             }
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(110, 50));
-            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta);
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
+            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$mapaSeparacaoEmbaladoRepo);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

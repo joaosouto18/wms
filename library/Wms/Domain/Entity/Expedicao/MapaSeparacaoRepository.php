@@ -182,7 +182,7 @@ class MapaSeparacaoRepository extends EntityRepository
             }
         }
         $this->getEntityManager()->flush();
-        $this->getEntityManager()->commit();
+//        $this->getEntityManager()->commit();
 
     }
 

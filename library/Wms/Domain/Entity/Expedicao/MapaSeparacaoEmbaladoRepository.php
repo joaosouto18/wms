@@ -23,6 +23,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $mapaSeparacaoEmbalado->setPessoa($pessoaEn);
         $mapaSeparacaoEmbalado->setSequencia($sequencia);
         $mapaSeparacaoEmbalado->setStatus($siglaEn);
+        $mapaSeparacaoEmbalado->setUltimoVolume('N');
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
@@ -63,18 +64,24 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa)
     {
 
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
         if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
+        $this->getEntityManager()->beginTransaction();
         $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa,$idPessoa);
-        $existeItensPendentes = true;
         if (count($qtdPendenteConferencia) <= 0) {
-            $existeItensPendentes = false;
+            $mapaSeparacaoEmbaladoEn->setUltimoVolume('S');
         }
+        $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
+        $this->getEntityManager()->flush();
+        $this->getEntityManager()->commit();
+
         $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
-        $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$existeItensPendentes);
+        $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$mapaSeparacaoEmbaladoRepo);
 
     }
 
@@ -118,16 +125,17 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             $andWhere .= " AND MS.COD_EXPEDICAO = $idExpedicao ";
         }
         $sql = "SELECT E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE
-                    FROM MAPA_SEPARACAO_EMB_CLIENTE MSE
-                    INNER JOIN MAPA_SEPARACAO MS ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    FROM MAPA_SEPARACAO MS
+                    LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                     INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                     INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     INNER JOIN PEDIDO PED ON PED.COD_CARGA = C.COD_CARGA
                     INNER JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
                     INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
-                    INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA
+                    INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA AND P.COD_PESSOA = PED.COD_PESSOA
                 WHERE 1 = 1
                 $andWhere
+                AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE IS NOT NULL
                 GROUP BY E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -160,5 +168,25 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+//    public function getProdutosConferidosByExpedicao($idExpedicao)
+//    {
+//        $sql = "SELECT MS.COD_MAPA_SEPARACAO, MSCONF.COD_PESSOA, MAX(MSCONF.NUM_SEQUENCIA) NUM_SEQUENCIA, MAX(MSCONF.COD_MAPA_SEPARACAO_EMB_CLIENTE) COD_MAPA_SEPARACAO_EMB_CLIENTE
+//                FROM MAPA_SEPARACAO MS
+//                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+//                LEFT JOIN (
+//                  SELECT MS.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.NUM_SEQUENCIA, MSE.COD_PESSOA, SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) QTD_CONFERIDA
+//                  FROM MAPA_SEPARACAO MS
+//                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+//                  INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
+//                  WHERE MS.COD_EXPEDICAO = $idExpedicao
+//                  GROUP BY MS.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.COD_PESSOA, MSE.NUM_SEQUENCIA
+//                ) MSCONF ON MSCONF.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSCONF.COD_PRODUTO = MSP.COD_PRODUTO AND MSCONF.DSC_GRADE = MSP.DSC_GRADE
+//                WHERE MS.COD_EXPEDICAO = $idExpedicao
+//                GROUP BY MS.COD_MAPA_SEPARACAO, MSCONF.COD_PESSOA
+//                HAVING (SUM((MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) - NVL(MSP.QTD_CORTADO,0)) - NVL(SUM(MSCONF.QTD_CONFERIDA),0)) = 0";
+//
+//        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+//    }
 }
 
