@@ -137,7 +137,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 
-//        $this->getEntityManager()->beginTransaction();
+        $this->getEntityManager()->beginTransaction();
         $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, "A");
         foreach ($acertos as $acerto) {
             $idMapaSeparacaoProduto = $acerto['COD_MAPA_SEPARACAO_PRODUTO'];
@@ -163,7 +163,7 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         $this->getEntityManager()->flush();
-//        $this->getEntityManager()->commit();
+        $this->getEntityManager()->commit();
 
     }
 
