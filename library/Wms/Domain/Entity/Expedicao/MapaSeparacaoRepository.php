@@ -204,7 +204,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao',$this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO'));
         $andWhere = ' ';
         if ($setDivergencia == false) {
-//            $andWhere = " AND MSP.IND_DIVERGENCIA = 'S' ";
+            $andWhere = " AND MSP.IND_DIVERGENCIA = 'S' ";
         }
 
         if (isset($modeloSeparacaoEn) && !empty($modeloSeparacaoEn)) {
