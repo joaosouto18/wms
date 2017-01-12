@@ -51,7 +51,7 @@ class FiltroRelatorio extends Form
             ))
             ->addElement('text', 'apto', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                 'label' => 'Apto',
             ))
             ->addElement('submit', 'imprimir', array(

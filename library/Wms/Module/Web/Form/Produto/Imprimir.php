@@ -49,12 +49,12 @@ class Imprimir extends Form
             ))
             ->addElement('text', 'apartamento', array(
                     'label' => 'Apto Inicial',
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                     'size' => 4,
             ))
             ->addElement('text', 'apartamentofinal', array(
                 'label' => 'Apto Final',
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                 'size' => 4,
             ))
             ->addElement('submit', 'buscar', array(

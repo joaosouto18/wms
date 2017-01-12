@@ -58,7 +58,7 @@ class Filtro extends Form
         ))
         ->addElement('text', 'apto', array(
             'size' => 3,
-            'maxlength' => $arrQtdDigitos['apto'],
+            'maxlength' => $arrQtdDigitos['apartamento'],
             'label' => 'Apto',
         ))
         ->addElement('submit', 'submit', array(

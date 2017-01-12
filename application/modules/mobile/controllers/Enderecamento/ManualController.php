@@ -158,7 +158,7 @@ class Mobile_Enderecamento_ManualController extends Action
                     'rua' => $enderecoEn->getRua(),
                     'predio' => $enderecoEn->getPredio(),
                     'nivel' => $params['nivel'],
-                    'apto' => $enderecoEn->getApartamento()
+                    'apartamento' => $enderecoEn->getApartamento()
                 );
 
                 $endereco = \Wms\Util\Endereco::formatar($arrEndereco);
@@ -412,7 +412,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 'rua' => $enderecoEn->getRua(),
                 'predio' => $enderecoEn->getPredio(),
                 'nivel' => $this->_getParam('nivel'),
-                'apto' => $enderecoEn->getApartamento()
+                'apartamento' => $enderecoEn->getApartamento()
             );
 
             $endereco = \Wms\Util\Endereco::formatar($arrEndereco);

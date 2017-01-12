@@ -65,14 +65,14 @@ class FiltroImpressao extends Form
             ))
             ->addElement('text', 'inicialApartamento', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                 'alt' => 'depositoEndereco',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',
             ))
             ->addElement('text', 'finalApartamento', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                 'alt' => 'depositoEndereco',
                 'decorators' => array('ViewHelper'),
                 'title' => 'Obrigatório.',

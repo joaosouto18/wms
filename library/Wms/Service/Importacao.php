@@ -977,11 +977,10 @@ class Importacao
         try {
 
             $arrQtdDigitos = EnderecoUtil::getQtdDigitos();
-            $endereco = EnderecoUtil::formatar($arrDados['endereco'], $arrQtdDigitos);
-            $arrEndereco = EnderecoUtil::separar($endereco, $arrQtdDigitos);
-            $arrDados = array_merge($arrDados, $arrEndereco);
+            $endereco = EnderecoUtil::formatar($arrDados['endereco'], EnderecoUtil::FORMATO_MATRIZ_ASSOC, $arrQtdDigitos);
+            $arrDados = array_merge($arrDados, $endereco);
 
-            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrEndereco);
+            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($endereco);
 
             if (!$entity) {
             

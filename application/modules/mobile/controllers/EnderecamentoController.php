@@ -209,7 +209,7 @@ class Mobile_EnderecamentoController extends Action
             'rua' => $this->_getParam("rua"),
             'predio' => $this->_getParam("predio"),
             'nivel' => $this->_getParam("nivel"),
-            'apto' => $this->_getParam("apartamento"),
+            'apartamento' => $this->_getParam("apartamento"),
         );
 
         $endereco = \Wms\Util\Endereco::formatar($arrEndereco);
@@ -837,7 +837,7 @@ class Mobile_EnderecamentoController extends Action
         $enderecoParam = $this->_getParam('end');
         $nivel = $this->_getParam('nivelAntigo');
 
-        $endereco = EnderecoUtil::formatar($enderecoParam, null, $nivel);
+        $endereco = EnderecoUtil::formatar($enderecoParam, null, null, $nivel);
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
@@ -929,9 +929,8 @@ class Mobile_EnderecamentoController extends Action
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
 
-            $enderecoFrmt = EnderecoUtil::formatar($enderecoAntigo, null, null, null, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
-            $enderecoFrmt['apartamento'] = $enderecoFrmt['apto'];
-            unset($enderecoFrmt['apto']);
+            $enderecoFrmt = EnderecoUtil::formatar($enderecoAntigo, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoAntigo */
             $enderecoAntigo = $enderecoRepo->findOneBy($enderecoFrmt);
 
@@ -949,7 +948,7 @@ class Mobile_EnderecamentoController extends Action
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
 
-                    $enderecoNovoFrmt = EnderecoUtil::formatar($enderecoNovo, null, $nivelNovo);
+                    $enderecoNovoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
                     /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoNovoEn */
                     $params['endereco'] = $enderecoNovoEn = $enderecoRepo->findOneBy($enderecoNovoFrmt);
@@ -1097,9 +1096,8 @@ class Mobile_EnderecamentoController extends Action
                     $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
 
-                    $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, null, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
-                    $enderecoFrmt['apartamento'] = $enderecoFrmt['apto'];
-                    unset($enderecoFrmt['apto']);
+                    $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+
                     /** @var \Wms\Domain\Entity\Deposito\Endereco $newEndereco */
                     $newEndereco = $enderecoRepo->findOneBy($enderecoFrmt);
 
@@ -1227,9 +1225,8 @@ class Mobile_EnderecamentoController extends Action
                     foreach ($volumes as $volume) {
                         $params['qtd'] = $qtd;
 
-                        $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, null, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
-                        $enderecoFrmt['apartamento'] = $enderecoFrmt['apto'];
-                        unset($enderecoFrmt['apto']);
+                        $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+
                         /** @var \Wms\Domain\Entity\Deposito\Endereco $newEndereco */
                         $newEndereco = $enderecoRepo->findOneBy($enderecoFrmt);
 
@@ -1310,7 +1307,7 @@ class Mobile_EnderecamentoController extends Action
     private function getEnderecoNivel($dscEndereco, $nivel)
     {
 
-        $endereco = EnderecoUtil::formatar($dscEndereco, null, $nivel);
+        $endereco = EnderecoUtil::formatar($dscEndereco, null, null, $nivel);
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');

@@ -23,7 +23,7 @@ class Endereco
      *
      * Ex.:
      *
-     * retorno = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apto' => 2)
+     * retorno = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apartamento' => 2)
      *
      * @return array
      */
@@ -46,7 +46,7 @@ class Endereco
             'rua' => $arrParams['TAMANHO_CARACT_RUA'],
             'predio' => $arrParams['TAMANHO_CARACT_PREDIO'],
             'nivel' => $arrParams['TAMANHO_CARACT_NIVEL'],
-            'apto' => $arrParams['TAMANHO_CARACT_APARTAMENTO']
+            'apartamento' => $arrParams['TAMANHO_CARACT_APARTAMENTO']
         );
     }
 
@@ -78,7 +78,7 @@ class Endereco
      * Caso necessite da mascara em um digito específico, o mesmo deve ser passado no parametro como string $digito
      *
      * Ex.:
-     * $qtdDigitos = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apto' => 2)
+     * $qtdDigitos = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apartamento' => 2)
      * $digito = '9' (default = '0')
      *
      * retorno = '99.999.99.99'
@@ -95,7 +95,7 @@ class Endereco
             'rua' => self::formatarRua($digito, $qtdDigitos['rua'], $digito),
             'predio' => self::formatarPredio($digito, $qtdDigitos['predio'], $digito),
             'nivel' => self::formatarNivel($digito, $qtdDigitos['nivel'], $digito),
-            'apto' => self::formatarApto($digito, $qtdDigitos['apto'], $digito)
+            'apartamento' => self::formatarApto($digito, $qtdDigitos['apartamento'], $digito)
         );
 
         return implode('.', $arrParams);
@@ -108,13 +108,13 @@ class Endereco
      *
      * Ex.:
      * $endereco = 01.001.01.01
-     * $qtdDigitos = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apto' => 2)
+     * $qtdDigitos = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apartamento' => 2)
      *
-     * retorno = array('rua' => '01', 'predio' => '001', 'nivel' => '01', 'apto' => '01')
+     * retorno = array('rua' => '01', 'predio' => '001', 'nivel' => '01', 'apartamento' => '01')
      *
      * @param string $endereco
      * @param array|null $qtdDigitos
-     * @return array Matriz associativa de (rua, predio, nivel, apto)
+     * @return array Matriz associativa de (rua, predio, nivel, apartamento)
      * @throws \Exception
      */
     public static function separar($endereco, $qtdDigitos = null)
@@ -130,7 +130,7 @@ class Endereco
                 'rua' => $valor[0],
                 'predio' => $valor[1],
                 'nivel' => $valor[2],
-                'apto' => $valor[3],
+                'apartamento' => $valor[3],
             );
 
         }
@@ -142,7 +142,7 @@ class Endereco
             $dgtRua = (int) $qtdDigitos['rua'];
             $dgtPredio = (int) $qtdDigitos['predio'];
             $dgtNivel = (int) $qtdDigitos['nivel'];
-            $dgtApto = (int) $qtdDigitos['apto'];
+            $dgtApto = (int) $qtdDigitos['apartamento'];
 
             $totalDigtos = self::getTotalDigitos($qtdDigitos);
             if (($totalDigtos - strlen($endereco)) == 1) {
@@ -155,7 +155,7 @@ class Endereco
                 'rua' => (int) substr($endereco, 0, $dgtRua),
                 'predio' => (int) substr($endereco, $dgtRua, $dgtPredio),
                 'nivel' => (int) substr($endereco, ($dgtRua + $dgtPredio), $dgtNivel),
-                'apto' => (int) substr($endereco, ($dgtRua + $dgtPredio + $dgtNivel), $dgtApto)
+                'apartamento' => (int) substr($endereco, ($dgtRua + $dgtPredio + $dgtNivel), $dgtApto)
             );
 
         }
@@ -168,14 +168,14 @@ class Endereco
      * definir em qual formato se espera o retorno, caso não definido o padrão é o formato de descrição
      *
      * Ex.:
-     * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apto' => '1')
+     * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apartamento' => '1')
      * $dgtComplementar = empty (default ='0')
      * $formato = empty (default = FORMATO_DESCRICAO)
      *
      * retorno = '01.004.00.01'
      *
      *  Ex2.:
-     * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apto' => '1')
+     * $endereco = '1.4.0.1'  ou   $endereco = array('rua' => '1', 'predio' => '4', 'nivel' => '0', 'apartamento' => '1')
      * $dgtComplementar = empty (default ='0')
      * $formato = FORMATO_COD_BARRAS
      *
@@ -202,12 +202,12 @@ class Endereco
      * @return string|array $dscEndereco
      * @throws \Exception Caso $endereco seja passado faltando algum parametro
      */
-    public static function formatar($endereco, $qtdDigitos = null, $novoNivel = null, $dgtComplementar = '0', $formato = self::FORMATO_DESCRICAO)
+    public static function formatar($endereco, $formato = self::FORMATO_DESCRICAO , $qtdDigitos = null, $novoNivel = null, $dgtComplementar = '0')
     {
         $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
         $arrEndereco = (!is_array($endereco)) ? self::separar($endereco, $qtdDigitos) : $endereco;
-
         $dgtComplementar = (is_null($dgtComplementar)) ? '0' : $dgtComplementar;
+        $formato = (empty($formato)) ? self::FORMATO_DESCRICAO : $formato;
 
         $dscEndereco = array();
 
@@ -231,10 +231,10 @@ class Endereco
             throw new \Exception('Elemento "nivel" não definido');
         }
 
-        if (isset($arrEndereco['apto'])) {
-            $dscEndereco['apto'] = self::formatarApto($arrEndereco['apto'], (int) $qtdDigitos['apto'], $dgtComplementar);
+        if (isset($arrEndereco['apartamento'])) {
+            $dscEndereco['apartamento'] = self::formatarApto($arrEndereco['apartamento'], (int) $qtdDigitos['apartamento'], $dgtComplementar);
         } else {
-            throw new \Exception('Elemento "apto" não definido');
+            throw new \Exception('Elemento "apartamento" não definido');
         }
 
         $result = null;
@@ -378,7 +378,7 @@ class Endereco
      */
     public static function formatarApto($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
-        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['apto'] : (int) $qtdDigitos;
+        $qtdDigitos = (empty($qtdDigitos) || !is_numeric($qtdDigitos)) ? (int) self::getQtdDigitos()['apartamento'] : (int) $qtdDigitos;
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
         return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
