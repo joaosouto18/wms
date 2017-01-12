@@ -105,11 +105,14 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     {
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
+        $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO);
         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
+
         foreach ($mapaSeparacaoEmbaladoEn as $mapaSeparacaoEmbalado) {
             $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus()->getId();
-            if ($statusMapaEmbalado != MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
-                return false;
+            if ($statusMapaEmbalado == MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO) {
+                $mapaSeparacaoEmbalado->setStatus($siglaEn);
+                $mapaSeparacaoEmbalado->setUltimoVolume('S');
             }
         }
         return true;
