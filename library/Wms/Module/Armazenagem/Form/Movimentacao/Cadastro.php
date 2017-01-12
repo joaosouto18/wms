@@ -63,7 +63,7 @@ class Cadastro extends Form
             ))
             ->addElement('text', 'apto', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                 'label' => 'Apto',
                 'class' => 'ctrSize',
             ))
@@ -116,7 +116,7 @@ class Cadastro extends Form
             ))
             ->addElement('text', 'aptoDestino', array(
                 'size' => 3,
-                'maxlength' => $arrQtdDigitos['apto'],
+                'maxlength' => $arrQtdDigitos['apartamento'],
                 'label' => 'Apto Destino',
                 'class' => 'ctrSize',
             ))

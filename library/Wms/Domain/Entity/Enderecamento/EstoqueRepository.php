@@ -807,7 +807,7 @@ class EstoqueRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $endereco = Endereco::formatar($dscEndereco, null, $nivel);
+        $endereco = Endereco::formatar($dscEndereco, null, null, $nivel);
 
         $dql = $em->createQueryBuilder()
             ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco' )

@@ -40,7 +40,7 @@ class Filtro extends Form {
         ->addElement('text', 'apartamento', array(
             //'style' => 'width: 22px',
             'alt' => 'depositoEndereco',
-            'maxlength' => $arrQtdDigitos['apto'],
+            'maxlength' => $arrQtdDigitos['apartamento'],
             'size' => 3,
             'label' => 'Apartamento',
         ))

@@ -498,7 +498,7 @@ class Importacao_IndexController extends Action
                     break;
                 case 'endereco':
                     $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
-                    $endereco = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], $arrQtdDigitos);
+                    $endereco = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], null, $arrQtdDigitos);
                     $arrEndereco = \Wms\Util\Endereco::separar($endereco, $arrQtdDigitos);
                     $arrRegistro = array_merge($arrRegistro, $arrEndereco);
 
