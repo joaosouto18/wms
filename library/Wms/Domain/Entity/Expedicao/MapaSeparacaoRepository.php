@@ -138,14 +138,14 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 
         $this->getEntityManager()->beginTransaction();
-        $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, "A");
+        $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, "D");
         foreach ($acertos as $acerto) {
             $idMapaSeparacaoProduto = $acerto['COD_MAPA_SEPARACAO_PRODUTO'];
             $mapaProdutoEn = $mapaSeparacaoProdutoRepo->findOneBy(array('id'=>$idMapaSeparacaoProduto));
             $mapaProdutoEn->setIndConferido("S");
             $this->getEntityManager()->persist($mapaProdutoEn);
         }
-        $this->getEntityManager()->flush();
+//        $this->getEntityManager()->flush();
 
         if ($idMapa != null) {
             $mapas = $this->findBy(array('id'=>$idMapa));
