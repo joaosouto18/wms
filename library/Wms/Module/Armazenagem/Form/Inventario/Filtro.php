@@ -2,12 +2,14 @@
 namespace Wms\Module\Armazenagem\Form\Inventario;
 
 use Wms\Module\Web\Form;
+use Wms\Util\Endereco;
 
 class Filtro extends Form
 {
 
     public function init()
     {
+        $arrQtdDigitos = Endereco::getQtdDigitos();
         $repoLinhaSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
 
         $this
@@ -18,11 +20,13 @@ class Filtro extends Form
                 ))
                 ->addElement('text', 'inicioRua', array(
                     'size' => 4,
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'label' => 'Inicio Rua',
                     'class' => 'focus',
                 ))
                 ->addElement('text', 'fimRua', array(
                     'size' => 4,
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'label' => 'Fim Rua',
                 ))
                 ->addElement('multiselect', 'grandeza', array(

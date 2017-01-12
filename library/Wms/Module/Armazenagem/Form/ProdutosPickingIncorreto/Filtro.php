@@ -2,6 +2,7 @@
 namespace Wms\Module\Armazenagem\Form\ProdutosPickingIncorreto;
 
 use Wms\Module\Web\Form;
+use Wms\Util\Endereco;
 
 class Filtro extends Form
 {
@@ -9,6 +10,7 @@ class Filtro extends Form
     public function init()
     {
         $repoLinhaSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
+        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this
                 ->setAttribs(array(
@@ -18,11 +20,13 @@ class Filtro extends Form
                 ))
                 ->addElement('text', 'inicioRua', array(
                     'size' => 4,
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'label' => 'Inicio Rua',
                     'class' => 'focus',
                 ))
                 ->addElement('text', 'fimRua', array(
                     'size' => 4,
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'label' => 'Fim Rua',
                 ))
                 ->addElement('multiselect', 'grandeza', array(

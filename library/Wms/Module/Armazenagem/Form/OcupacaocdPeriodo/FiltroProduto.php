@@ -2,19 +2,23 @@
 namespace Wms\Module\Armazenagem\Form\OcupacaocdPeriodo;
 
 use Wms\Module\Web\Form;
+use Wms\Util\Endereco;
 
 class FiltroProduto extends Form
 {
 
     public function init()
     {
+        $arrQtdDigitos = Endereco::getQtdDigitos();
 
         $this->addElement('text', 'ruaInicial', array(
             'size' => 20,
+            'maxlength' => $arrQtdDigitos['rua'],
             'label' => 'Rua Inicial',
         ))
         ->addElement('text', 'ruaFinal', array(
             'size' => 20,
+            'maxlength' => $arrQtdDigitos['rua'],
             'label' => 'Rua Final',
         ))
         ->addElement('select', 'tipoRelatorio', array(

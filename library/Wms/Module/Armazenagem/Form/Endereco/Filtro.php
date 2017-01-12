@@ -5,6 +5,7 @@ namespace Wms\Module\Armazenagem\Form\Endereco;
 use Wms\Module\Web\Form,
     Core\Form\SubForm,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
+use Wms\Util\Endereco;
 
 /**
  * Description of SystemContextParam
@@ -37,6 +38,8 @@ class Filtro extends Form
                 
         $em = $this->getEm();
 
+        $arrQtdDigitos = Endereco::getQtdDigitos();
+
         $repoCaracteristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica');
         $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
         $unitiizador = $em->getRepository('wms:Armazenagem\Unitizador');
@@ -50,24 +53,28 @@ class Filtro extends Form
         //endereço
         $formIdentificacao->addElement('text', 'inicialRua', array(
                     'size' => 3,
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'alt' => 'depositoEndereco',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalRua', array(
                     'size' => 3,
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'alt' => 'depositoEndereco',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialNivel', array(
                     'size' => 3,
+                    'maxlength' => $arrQtdDigitos['nivel'],
                     'alt' => 'depositoEndereco',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalNivel', array(
                     'size' => 3,
+                    'maxlength' => $arrQtdDigitos['nivel'],
                     'alt' => 'depositoEndereco',
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
