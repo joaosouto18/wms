@@ -730,7 +730,7 @@ class Importacao
 
                 if ($encontrouEmbalagem == false) {
 
-                    $this->verificaCodigoBarrasDuplicado($embalagemWs->codBarras,$idProduto,$grade);
+                    $this->verificaCodigoBarrasDuplicado($em,$embalagemWs->codBarras,$idProduto,$grade);
 
                     $embalagemArray = array (
                         'acao' => 'incluir',
@@ -753,6 +753,23 @@ class Importacao
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
             $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
+        }
+        return true;
+    }
+
+    private function verificaCodigoBarrasDuplicado($em, $codBarras, $idProduto, $grade) {
+        $SQL = "SELECT P.COD_PRODUTO, P.DSC_PRODUTO
+                  FROM PRODUTO P
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                 WHERE NVL(PE.COD_BARRAS, PV.COD_BARRAS) = '$codBarras'
+                   AND P.COD_PRODUTO <> '$idProduto'
+                   AND P.DSC_GRADE <> '$grade'";
+
+        $produtos =  $em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($produtos) >0) {
+            $prod = $produtos[0];
+            throw new \Exception("A Embalagem " . $codBarras ." se encontra em uso no sistema para o produto " . $prod['COD_PRODUTO'] . "/" . $prod['DSC_PRODUTO']);
         }
         return true;
     }
