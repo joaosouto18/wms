@@ -46,30 +46,36 @@ class Filtro extends Form
         $this->setAttribs(array('id' => 'deposito-endereco-filtro-form', 'class' => 'saveForm'))
                 ->setMethod('get');
 
+        $arrQtdDigitos = Endereco::getQtdDigitos();
+
         $formIdentificacao = new SubForm;
 
         //endereço
         $formIdentificacao->addElement('text', 'inicialRua', array(
                     'size' => 3,
                     'alt' => 'enderecoRua',
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalRua', array(
                     'size' => 3,
                     'alt' => 'enderecoRua',
+                    'maxlength' => $arrQtdDigitos['rua'],
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialNivel', array(
                     'size' => 3,
                     'alt' => 'enderecoNivel',
+                    'maxlength' => $arrQtdDigitos['nivel'],
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalNivel', array(
                     'size' => 3,
                     'alt' => 'enderecoNivel',
+                    'maxlength' => $arrQtdDigitos['nivel'],
                     'decorators' => array('ViewHelper'),
                     'title' => 'Obrigatório.',
                 ))
