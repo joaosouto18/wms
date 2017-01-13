@@ -35,11 +35,11 @@ class Mobile_EnderecamentoController extends Action
                     throw new Exception('Endereço não encontrado');
                 }
 
-                $caracteristicaEndereco = $enderecoEn->getCaracteristica();
+                $caracteristicaEndereco = $enderecoEn->getCaracteristica()->getId();
 
-//                if ($caracteristicaEndereco != $idCaracteristicaPicking && $caracteristicaEndereco != $idCaracteristicaPickingRotativo) {
-//                    throw new Exception('Código bipado não é um endereço de picking');
-//                }
+                if ($caracteristicaEndereco != $idCaracteristicaPicking && $caracteristicaEndereco != $idCaracteristicaPickingRotativo) {
+                    throw new Exception('Código bipado não é um endereço de picking');
+                }
 
                 $result = $enderecoRepo->getProdutoByEndereco($endereco, false);
 
