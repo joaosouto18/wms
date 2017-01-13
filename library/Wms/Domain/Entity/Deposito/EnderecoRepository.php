@@ -128,13 +128,13 @@ class EnderecoRepository extends EntityRepository
                                     continue;
                             }
 
-                            $dscEndereco = array(
+                            $endereco = array(
                                 'rua' => $auxRua,
                                 'predio' => $auxPredio,
                                 'nivel' => $auxNivel,
-                                'apto' => $auxApto);
+                                'apartamento' => $auxApto);
 
-                            $dscEndereco = EnderecoUtil::formatar($dscEndereco);
+                            $dscEndereco = EnderecoUtil::formatar($endereco);
 
                             $enderecoEntity->setRua($auxRua)
                                 ->setPredio($auxPredio)

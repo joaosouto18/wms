@@ -40,49 +40,49 @@ class Endereco extends Form {
                 ))
                 ->addElement('text', 'inicialRua', array(
                     'style' => 'width: 22px',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoRua',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'finalRua', array(
                     'style' => 'width: 22px; margin-left:20px; margin-bottom: 10px;',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoRua',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'inicialPredio', array(
                     'style' => 'width: 22px',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoPredio',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'finalPredio', array(
                     'style' => 'width: 22px; margin-left:20px; margin-bottom: 10px;',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoPredio',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'inicialNivel', array(
                     'style' => 'width: 22px',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoNivel',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'finalNivel', array(
                     'style' => 'width: 22px; margin-left:20px; margin-bottom: 10px;',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoNivel',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'inicialApartamento', array(
                     'style' => 'width: 22px',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoApartamento',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
                 ->addElement('text', 'finalApartamento', array(
                     'style' => 'width: 22px; margin-left:20px; margin-bottom: 10px;',
-                    'alt' => 'depositoEndereco',
+                    'alt' => 'enderecoApartamento',
                     'decorators' => array('ViewHelper'),
                     'required' => true
                 ))
