@@ -162,9 +162,11 @@ class Mobile_ExpedicaoController extends Action
         $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
         $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
-        if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
-            //BLOQUEIA COLETOR
-        }
+        $Expedicao->validacaoExpedicao();
+        $Expedicao->osLiberada();
+//        if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
+//            //BLOQUEIA COLETOR
+//        }
 
         $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
@@ -562,7 +564,6 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-
 
         if ($quebraColetor == 'S') {
             if (isset($idMapa) && !empty($idMapa)) {
