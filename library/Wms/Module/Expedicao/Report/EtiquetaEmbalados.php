@@ -60,8 +60,8 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 21 , 24);
-            $this->Image(APPLICATION_PATH . '/../public/img/logo_quebec.jpg', 30, 17, 18, 5);
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 27, 8);
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_quebec.jpg', 32, 17, 18, 5);
         }
     }
 }

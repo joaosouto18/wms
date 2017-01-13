@@ -209,6 +209,9 @@ class Endereco
         $dgtComplementar = (is_null($dgtComplementar)) ? '0' : $dgtComplementar;
         $formato = (empty($formato)) ? self::FORMATO_DESCRICAO : $formato;
 
+        if (isset($arrEndereco['apto']) && !empty($arrEndereco['apto'])) {
+            $arrEndereco['apartamento'] = $arrEndereco['apto'];
+        }
         $dscEndereco = array();
 
         if (isset($arrEndereco['rua'])) {
