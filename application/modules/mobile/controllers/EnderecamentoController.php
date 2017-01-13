@@ -929,15 +929,14 @@ class Mobile_EnderecamentoController extends Action
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
 
-            $enderecoFrmt = EnderecoUtil::formatar($enderecoAntigo, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+            $enderecoFrmt = EnderecoUtil::formatar($enderecoAntigo, null, null, $nivelAntigo);
 
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoAntigo */
             $enderecoAntigo = $enderecoRepo->findOneBy($enderecoFrmt);
-
-            if ($enderecoAntigo) {
-                $enderecoFrmt['nivel'] = $nivelAntigo;
-                $enderecoAntigo = $enderecoRepo->findOneBy($enderecoFrmt);
+            if (empty($enderecoAntigo)) {
+                throw new Exception('Endereço antigo não encontrado!');
             }
+
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
@@ -952,9 +951,9 @@ class Mobile_EnderecamentoController extends Action
 
                     /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoNovoEn */
                     $params['endereco'] = $enderecoNovoEn = $enderecoRepo->findOneBy($enderecoNovoFrmt);
-                    if (empty($enderecoNovoEn)) {
+                    if (empty($enderecoNovoEn))
                         throw new Exception('Novo Endereço não Encontrado!');
-                    }
+
 
                     /** @var \Wms\Domain\Entity\Produto $produtoEn */
                     $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
@@ -1096,16 +1095,13 @@ class Mobile_EnderecamentoController extends Action
                     $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                     $params['qtd'] = $qtd;
 
-                    $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+                    $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
-                    /** @var \Wms\Domain\Entity\Deposito\Endereco $newEndereco */
-                    $newEndereco = $enderecoRepo->findOneBy($enderecoFrmt);
-
-                    if (empty($newEndereco))
-                        throw new \Exception("Novo Endereço não encontrado!");
-
-                    $enderecoFrmt['nivel'] = $nivelNovo;
+                    /** @var \Wms\Domain\Entity\Deposito\Endereco $endereco */
                     $params['endereco'] = $endereco = $enderecoRepo->findOneBy($enderecoFrmt);
+
+                    if (empty($endereco))
+                        throw new \Exception("Novo Endereço não encontrado!");
 
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
@@ -1225,16 +1221,14 @@ class Mobile_EnderecamentoController extends Action
                     foreach ($volumes as $volume) {
                         $params['qtd'] = $qtd;
 
-                        $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+                        $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
                         /** @var \Wms\Domain\Entity\Deposito\Endereco $newEndereco */
-                        $newEndereco = $enderecoRepo->findOneBy($enderecoFrmt);
-
-                        if (empty($newEndereco))
+                        $endereco = $enderecoRepo->findOneBy($enderecoFrmt);
+                        if (empty($endereco))
                             throw new \Exception("Novo Endereço não encontrado!");
 
-                        $enderecoFrmt['nivel'] = $nivelNovo;
-                        $params['endereco'] = $endereco = $enderecoRepo->findOneBy($enderecoFrmt);
+                        $params['endereco'] = $endereco;
                         $params['volume'] = $volume;
                         $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
 

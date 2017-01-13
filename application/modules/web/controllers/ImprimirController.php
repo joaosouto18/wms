@@ -31,29 +31,33 @@ class Web_ImprimirController extends Action
 
     public function imprimirAction()
     {
-        $params = $this->_getAllParams();
-        $enderecos = $params['enderecos'];
+        try {
+            $params = $this->_getAllParams();
 
-        if (($enderecos == null) || (count($enderecos)==0)) {
-            throw new \Exception("Nenhum endereço foi selecionado");
-        }
+            if (!isset($params['enderecos']) || ($params['enderecos'] == null) || (count($params['enderecos']) == 0)) {
+                throw new \Exception("Nenhum endereço foi selecionado");
+            }
 
-        $codEndereco = implode(",", $enderecos);
+            $codEndereco = implode(",", $params['enderecos']);
 
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
-        $EnderecoRepository   = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-        $endereco = $EnderecoRepository->getImprimirEndereco($codEndereco);
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
+            $EnderecoRepository = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+            $endereco = $EnderecoRepository->getImprimirEndereco($codEndereco);
 
-        $modelo =  $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
+            $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
             if (($modelo == 4) || ($modelo == 6)) {
                 $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
-            } elseif($modelo == 7) {
+            } elseif ($modelo == 7) {
                 $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 75));
-            } elseif($modelo == 9) {
+            } elseif ($modelo == 9) {
                 $etiqueta = new EtiquetaEndereco("L", 'mm', array(85, 30));
             } else {
                 $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
             }
-        $etiqueta->imprimir($endereco, $modelo);
+            $etiqueta->imprimir($endereco, $modelo);
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->_redirect('/imprimir');
+        }
     }
 }
