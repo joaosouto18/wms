@@ -569,9 +569,7 @@ class ExpedicaoRepository extends EntityRepository
             }
 
             if (isset($idMapa) && !empty($idMapa)) {
-                if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa) == false) {
-//                    return 'Existem volumes embalados pendentes de FECHAMENTO!';
-                }
+                $mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidosByMapa($idMapa);
             }
 
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
