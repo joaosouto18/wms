@@ -32,13 +32,12 @@ class Web_ImprimirController extends Action
     public function imprimirAction()
     {
         $params = $this->_getAllParams();
-        $enderecos = $params['enderecos'];
 
-        if (($enderecos == null) || (count($enderecos)==0)) {
+        if (!isset($params['enderecos']) || ($params['enderecos'] == null) || (count($params['enderecos'])==0)) {
             throw new \Exception("Nenhum endereço foi selecionado");
         }
 
-        $codEndereco = implode(",", $enderecos);
+        $codEndereco = implode(",", $params['enderecos']);
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $EnderecoRepository */
         $EnderecoRepository   = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
