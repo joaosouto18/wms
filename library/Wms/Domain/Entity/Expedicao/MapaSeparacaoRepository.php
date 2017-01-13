@@ -102,9 +102,44 @@ class MapaSeparacaoRepository extends EntityRepository
         return $result;
     }
 
+    /*
+    public function verificaMapaSeparacao($expedicaoEn, $idMapa){
+        $mapaSeparacaoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+
+        $conferenciaFinalizada = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, 'A');
+        $this->alteraStatusMapaAndMapaProdutos($expedicaoEn,$idMapa);
+
+        if ($this->getSystemParameterValue('RESETA_CONFERENCIA_MAPA') == 'S') {
+            $this->fechaConferencia($expedicaoEn, $idMapa);
+        }
+
+        if (count($conferenciaFinalizada) > 0) {
+            $mapaSeparacaoEn = $mapaSeparacaoRepo->findBy(array('expedicao' => $expedicaoEn));
+            foreach ($mapaSeparacaoEn as $mapaSeparacao) {
+                $mapaSeparacaoProdutos = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacao->getId()));
+                foreach ($mapaSeparacaoProdutos as $mapaProduto) {
+                    $mapaProduto->setDivergencia('N');
+                    $this->getEntityManager()->persist($mapaProduto);
+                }
+            }
+
+            foreach ($conferenciaFinalizada as $mapaSeparacaoProduto) {
+                $mapaSeparacaoProdutoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoProduto', (int)$mapaSeparacaoProduto['COD_MAPA_SEPARACAO_PRODUTO']);
+                $mapaSeparacaoProdutoEn->setDivergencia('S');
+                $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+            }
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
+            return 'Existem produtos para serem Conferidos nesta Expedição';
+        }
+        return true;
+    }
+    */
+
     public function verificaMapaSeparacao($expedicaoEn, $idMapa){
 
-        $divergencias = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa);
+        $divergencias = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, 'D');
         $this->alteraStatusMapaAndMapaProdutos($expedicaoEn,$idMapa);
 
         if ($this->getSystemParameterValue('RESETA_CONFERENCIA_MAPA') == 'S') {
@@ -137,7 +172,6 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 
-//        $this->getEntityManager()->beginTransaction();
         $acertos      = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, 'A');
         foreach ($acertos as $acerto) {
             $idMapaSeparacaoProduto = $acerto['COD_MAPA_SEPARACAO_PRODUTO'];
@@ -163,7 +197,6 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         $this->getEntityManager()->flush();
-//        $this->getEntityManager()->commit();
 
     }
 
