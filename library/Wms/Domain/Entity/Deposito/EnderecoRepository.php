@@ -906,9 +906,11 @@ class EnderecoRepository extends EntityRepository
         }
 
         if ($params['opcao'] == 'sem'){
-            $query .= ' AND DEP.COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO FROM ESTOQUE)';
+            $query .= ' AND DEP.COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO FROM PRODUTO_EMBALAGEM)';
+            $query .= ' AND DEP.COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO FROM PRODUTO_VOLUME)';
         } elseif ($params['opcao'] == 'com') {
-            $query .= ' AND DEP.COD_DEPOSITO_ENDERECO IN (SELECT COD_DEPOSITO_ENDERECO FROM ESTOQUE)';
+            $query .= ' AND (DEP.COD_DEPOSITO_ENDERECO IN (SELECT COD_DEPOSITO_ENDERECO FROM PRODUTO_EMBALAGEM)';
+            $query .= ' OR DEP.COD_DEPOSITO_ENDERECO IN (SELECT COD_DEPOSITO_ENDERECO FROM PRODUTO_VOLUME))';
         }
 
         $query = $query . " ORDER BY RUA, PREDIO, NIVEL, APARTAMENTO";

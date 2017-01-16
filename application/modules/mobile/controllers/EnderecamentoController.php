@@ -932,7 +932,7 @@ class Mobile_EnderecamentoController extends Action
             $enderecoFrmt = EnderecoUtil::formatar($enderecoAntigo, null, null, $nivelAntigo);
 
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoAntigo */
-            $enderecoAntigo = $enderecoRepo->findOneBy($enderecoFrmt);
+            $enderecoAntigo = $enderecoRepo->findOneBy(array('descricao' => $enderecoFrmt));
             if (empty($enderecoAntigo)) {
                 throw new Exception('Endereço antigo não encontrado!');
             }
@@ -950,7 +950,7 @@ class Mobile_EnderecamentoController extends Action
                     $enderecoNovoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
                     /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoNovoEn */
-                    $params['endereco'] = $enderecoNovoEn = $enderecoRepo->findOneBy($enderecoNovoFrmt);
+                    $params['endereco'] = $enderecoNovoEn = $enderecoRepo->findOneBy(array('descricao' => $enderecoNovoFrmt));
                     if (empty($enderecoNovoEn))
                         throw new Exception('Novo Endereço não Encontrado!');
 
@@ -1098,7 +1098,7 @@ class Mobile_EnderecamentoController extends Action
                     $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
                     /** @var \Wms\Domain\Entity\Deposito\Endereco $endereco */
-                    $params['endereco'] = $endereco = $enderecoRepo->findOneBy($enderecoFrmt);
+                    $params['endereco'] = $endereco = $enderecoRepo->findOneBy(array('descricao' => $enderecoFrmt));
 
                     if (empty($endereco))
                         throw new \Exception("Novo Endereço não encontrado!");
@@ -1224,7 +1224,7 @@ class Mobile_EnderecamentoController extends Action
                         $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
                         /** @var \Wms\Domain\Entity\Deposito\Endereco $newEndereco */
-                        $endereco = $enderecoRepo->findOneBy($enderecoFrmt);
+                        $endereco = $enderecoRepo->findOneBy(array('descricao' => $enderecoFrmt));
                         if (empty($endereco))
                             throw new \Exception("Novo Endereço não encontrado!");
 
