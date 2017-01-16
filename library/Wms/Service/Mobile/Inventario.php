@@ -764,8 +764,10 @@ class Inventario
         $countProdutosInventarioEndereco = 0;
         foreach ($estoqueEntities as $estoqueEn) {
             foreach($contagemEndEntities as $contagemEndEn) {
-                if ($estoqueEn->getCodProduto() == $contagemEndEn->getProduto()->getId() && $estoqueEn->getGrade() == $contagemEndEn->getGrade()) {
-                    $countProdutosInventarioEndereco++;
+                if (!is_null($contagemEndEn->getProduto())) {
+                    if ($estoqueEn->getCodProduto() == $contagemEndEn->getProduto()->getId() && $estoqueEn->getGrade() == $contagemEndEn->getGrade()) {
+                        $countProdutosInventarioEndereco++;
+                    }
                 }
             }
         }
