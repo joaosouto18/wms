@@ -241,6 +241,7 @@ class Inventario
         $produtoEn = $this->getEm()->getRepository('wms:Produto')
             ->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
 
+        $possuiValidade = null;
         if (isset($produtoEn) && !empty($produtoEn))
             $possuiValidade = $produtoEn->getValidade();
 
