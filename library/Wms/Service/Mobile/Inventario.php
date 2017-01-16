@@ -830,7 +830,7 @@ class Inventario
         $result            = $contagemEndRepo->getContagens($params);
 
         if ($params['regraContagem'] == 2) {
-            $posicaoArray = count($result['contagens']);
+            $posicaoArray = count($result);
             $result[$posicaoArray]['CONTAGEM'] = 2;
             $result[$posicaoArray]['DIVERGENCIA'] = null;
         }
