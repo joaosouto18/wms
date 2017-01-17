@@ -4,6 +4,7 @@ namespace Wms\Service\Mobile;
 
 
 use Core\Grid\Column\Filter\Render\Date;
+use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 
@@ -742,6 +743,47 @@ class Inventario
         return false;
     }
 
+    private function acertaContagensProdutosNaoConferidos( $contagemEndEntities, $validaEstoqueAtual) {
+
+        $maiorContagem = $contagemEndEntities[count($contagemEndEntities)-1]->getNumContagem();
+
+        $produtosObrigatorios = array();
+        if ($maiorContagem == 1) {
+            if ($validaEstoqueAtual == "S" ) {
+                /* verifica se todos os produtos do estoque foram conferidos */
+                $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
+                    ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
+                foreach ($estoqueEntities as $estoqueEn) {
+                    $produtosObrigatorios[$estoqueEn->getCodProduto()][$estoqueEn->getGrade()] = "S";
+                }
+            }
+        } else {
+            foreach ($contagemEndEntities as $contagemEn) {
+                if ($contagemEn->getDivergencia() == true) {
+                    if (!isset($produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()])) {
+                        $produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()] = "S";
+                    }
+                }
+            }
+        }
+
+        foreach( $produtosObrigatorios as $codProduto => $produto){
+            foreach($produto as $grade => $value){
+                $encontrouProduto = false;
+                foreach ($contagemEndEntities as $contagemEn) {
+                 if (($contagemEn->getNumContagem() == $maiorContagem) && ($contagemEn->getCodProduto() == $codProduto) && ($contagemEn->getGrade() == $grade)) {
+                     $encontrouProduto = true;
+                     break;
+                    }
+                }
+
+                if ($encontrouProduto == false) {
+                    throw new \Exception(("Não foi encontrada a conferencia do item " . $codProduto. " grade " . $grade));
+                }
+            }
+        }
+    }
+
     public function finalizaContagemEndereco($params, $paramsSystem)
     {
 
@@ -757,24 +799,10 @@ class Inventario
             return false;
         }
 
-        /* verifica se todos os produtos do estoque foram conferidos */
-        $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
-            ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
-
-        $countProdutosInventarioEndereco = 0;
-        foreach ($estoqueEntities as $estoqueEn) {
-            foreach($contagemEndEntities as $contagemEndEn) {
-                if (!is_null($contagemEndEn->getProduto())) {
-                    if ($estoqueEn->getCodProduto() == $contagemEndEn->getProduto()->getId() && $estoqueEn->getGrade() == $contagemEndEn->getGrade()) {
-                        $countProdutosInventarioEndereco++;
-                    }
-                }
-            }
-        }
-        if ($countProdutosInventarioEndereco < count($estoqueEntities)) return false;
-
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
+
+        $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
 
         foreach($contagemEndEntities as $contagemEndEn) {
 
@@ -785,23 +813,9 @@ class Inventario
             $params['codProdutoEmbalagem']  = $contagemEndEn->getCodProdutoEmbalagem();
             $params['codProdutoVolume']     = $contagemEndEn->getCodProdutoVolume();
 
-            /* @ToDo Parametro
-             * Pode virar parametro de acordo com o Ricardo
-             * Gera Posição do Estoque como primeira contagem?
-             */
-            //$estoqueValidado = false;
-
             $estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
 
-
-
-            /* @ToDo Parametro
-             * Pode virar parametro de acordo com o Ricardo
-             * Gera Posição do Estoque como primeira contagem?
-             */
-            //$regraContagem = $this->novaRegraContagem($params,$regraContagemParam);
             $regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
-
 
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 
