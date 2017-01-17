@@ -52,7 +52,7 @@ class Mobile_RessuprimentoController extends Action
             $result = $estoqueRepo->getProdutoByNivel($codigoBarras, $nivel);
 
             if (empty($result)) {
-                throw new Exception("error", "Endereço selecionado está vazio");
+                throw new Exception("Endereço selecionado está vazio");
             } else {
                 $idEstoque = $result[0]['id'];
                 if ($result[0]['uma']) {
