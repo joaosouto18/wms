@@ -22,8 +22,7 @@ class Mobile_EnderecamentoController extends Action
 
         if ($codigoBarrasEndereco) {
             try {
-                $LeituraColetor = new \Wms\Service\Coletor();
-                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
+                $codigoBarras = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -139,8 +138,7 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('error','Nenhum Palete Informado');
         }
 
-        $LeituraColetor = new \Wms\Service\Coletor();
-        $idPalete = $LeituraColetor->retiraDigitoIdentificador($idPalete);
+        $idPalete = \Wms\Util\Coletor::retiraDigitoIdentificador($idPalete);
 
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
@@ -153,12 +151,12 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('error','Palete cancelado');
         }
 
-        $this->validarEndereco($paleteEn, $LeituraColetor, $paleteRepo);
+        $this->validarEndereco($paleteEn, $paleteRepo);
     }
 
-    public function validarEndereco($paleteEn, $LeituraColetor, $paleteRepo)
+    public function validarEndereco($paleteEn, $paleteRepo)
     {
-        $endereco   = $LeituraColetor->retiraDigitoIdentificador($this->_getParam("endereco"));
+        $endereco   = \Wms\Util\Coletor::retiraDigitoIdentificador($this->_getParam("endereco"));
         $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
         $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
 

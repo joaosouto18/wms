@@ -2,19 +2,14 @@
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
-use Wms\Domain\Entity\Expedicao;
-use Wms\Service\Coletor;
-use Wms\Service\Recebimento as LeituraColetor;
+use Wms\Util\Coletor;
 
 class ConferenciaRecebimentoReentregaRepository extends EntityRepository
 {
 
     public function save($data)
     {
-        $serviceColetor = new Coletor();
-        $codBarras = $serviceColetor->adequaCodigoBarras($data['codBarras']);
-        $leituraColetor = new LeituraColetor();
+        $codBarras = Coletor::adequaCodigoBarras($data['codBarras']);
 
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
@@ -57,7 +52,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
 
             if ($data['modeloSeparacaoFracionado'] == 'E' || $data['modeloSeparacaoNaoFracionado'] == 'E') {
                 if (isset($data['etiqueta']) && !empty($data['etiqueta'])) {
-                    $etiqueta = $leituraColetor->retiraDigitoIdentificador($data['etiqueta']);
+                    $etiqueta = Coletor::retiraDigitoIdentificador($data['etiqueta']);
                     $etiquetaEn = $etiquetaRepo ->findOneBy(array('id' => $etiqueta, 'produtoEmbalagem' => $idEmbalagem, 'produtoVolume' => $idVolume));
                     if (!isset($etiquetaEn) || empty($etiquetaEn)) {
                         throw new \Exception(utf8_encode('Código da Etiqueta não confere com Código de Barras do Produto!'));

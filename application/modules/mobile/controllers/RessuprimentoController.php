@@ -63,7 +63,7 @@ class Mobile_RessuprimentoController extends Action
             }
         } catch (Exception $e){
             $this->addFlashMessage('error', $e->getMessage());
-            $this->_redirect('mobile/ressuprimento/listar-picking');
+            $this->_redirect('/mobile/ressuprimento/listar-picking');
         }
     }
 

@@ -1,5 +1,6 @@
 <?php
-use Wms\Controller\Action;
+use Wms\Controller\Action,
+    Wms\Util\Coletor;
 
 class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 {
@@ -18,8 +19,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             return false;
         }
 
-        $coletorService = new \Wms\Service\Coletor;
-        $codigoBarrasProduto = $coletorService->adequaCodigoBarras($codigoBarras);
+        $codigoBarrasProduto = Coletor::adequaCodigoBarras($codigoBarras);
 
         /** @var \Wms\Domain\Entity\Enderecamento\ReabastecimentoManualRepository $reabasteceRepo */
         $reabasteceRepo = $this->em->getRepository("wms:Enderecamento\ReabastecimentoManual");
@@ -71,7 +71,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
             $this->_redirect('/mobile/enderecamento_reabastecimento-manual/index/codOs/'.$codOS);
         }
 
-        $codigoBarrasEndereco = $coletorService->retiraDigitoIdentificador($codigoBarras);
+        $codigoBarrasEndereco = Coletor::retiraDigitoIdentificador($codigoBarras);
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
