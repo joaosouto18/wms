@@ -24,7 +24,7 @@ class EtiquetaEndereco extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(3, 0, 3);
-        $this->AddPage();
+//        $this->AddPage();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
 
@@ -56,8 +56,9 @@ class EtiquetaEndereco extends Pdf
                     } else {
                         $produtoAnterior = null;
                         $grade = null;
-                        foreach ($produtos as $produto){
+                        foreach ($produtos as $key => $produto){
                             if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
+//                            if (is_int($key % 10)) $this->AddPage();
                             $this->layoutModelo2($produto,$codBarras);
                             $produtoAnterior = $produto['codProduto'];
                             $grade = $produto['grade'];
@@ -179,7 +180,7 @@ class EtiquetaEndereco extends Pdf
         if($dscProduto == "") {
             $this->Cell(148.5,13,"             Rua      Predio     Nivel    Apto.",0,1);
         } else {
-            $this->Cell(148.5,13,'            '.$dscProduto. ' - '.$dscEndereco,0,1);
+            $this->Cell(148.5,13,'            '.$dscEndereco. ' - '.$dscProduto,0,1);
         }
 
         $posY = $this->GetY() - 3;
