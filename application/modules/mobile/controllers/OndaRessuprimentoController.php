@@ -1,7 +1,7 @@
 <?php
 use Wms\Controller\Action,
     Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
-    Wms\Service\Recebimento as LeituraColetor;
+    Wms\Util\Coletor;
 
 
 class Mobile_OndaRessuprimentoController extends Action
@@ -49,7 +49,6 @@ class Mobile_OndaRessuprimentoController extends Action
     }
 
     public function filtrarAction(){
-        $LeituraColetor = new LeituraColetor();
 
         $form = new PickingLeitura();
         $form->setControllerUrl("onda-ressuprimento");
@@ -68,8 +67,7 @@ class Mobile_OndaRessuprimentoController extends Action
             }
 
             //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM PRODUTO
-            $recebimentoService = new \Wms\Service\Recebimento;
-            $codBarrasProduto = $recebimentoService->analisarCodigoBarras($codigoBarras);
+            $codBarrasProduto = Coletor::adequaCodigoBarras($codigoBarras, true);
             $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
             $info = $produtoRepo->getProdutoByCodBarras($codBarrasProduto);
             if ($info!= null) {
@@ -78,7 +76,7 @@ class Mobile_OndaRessuprimentoController extends Action
 
             //VERIFICA SE FOI DIGITADO O CÓDIGO DE BARRAS DE UM ENDEREÇO DE PICKING
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-            $codBarrasEndereco = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            $codBarrasEndereco = Coletor::retiraDigitoIdentificador($codigoBarras);
             $result = $enderecoRepo->getProdutoByEndereco($codBarrasEndereco,false);
             if (count($result) > 0){
                 $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('codProduto'=>$result[0]['codProduto'], 'grade'=>$result[0]['grade']));
@@ -133,8 +131,7 @@ class Mobile_OndaRessuprimentoController extends Action
 
         try{
             if ($codigoBarras) {
-              $LeituraColetor = new \Wms\Service\Coletor();
-              $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+              $codigoBarras = Coletor::retiraDigitoIdentificador($codigoBarras);
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -291,13 +288,11 @@ class Mobile_OndaRessuprimentoController extends Action
             if ($ondaOsEn->getStatus()->getId() == \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO)
                 throw new \Exception("A onda neste endereço " . $enderecoEn->getDescricao() . ' já foi atendida!');
 
-            $LeituraColetor = new \Wms\Service\Coletor();
-
             $result = null;
             if ($codigoBarrasUMA)
             {
                 $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-uma/idOnda/'. $idOnda;
-                $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
+                $codigoBarrasUMA = Coletor::retiraDigitoIdentificador($codigoBarrasUMA);
 
                 $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $enderecoEn->getId());
                 if ($result == NULL) {
@@ -308,7 +303,7 @@ class Mobile_OndaRessuprimentoController extends Action
             if ($etiquetaProduto)
             {
                 $urlRedirect =  '/mobile/onda-ressuprimento/selecionar-produto/idOnda/' . $idOnda;
-                $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto);
+                $etiquetaProduto = Coletor::adequaCodigoBarras($etiquetaProduto);
 
                 $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $enderecoEn->getId());
                 if ($result == NULL) {

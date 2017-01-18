@@ -18,6 +18,7 @@ use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Deposito\Endereco\Caracteristica;
 use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Util\Coletor;
 
 /**
  *
@@ -1113,9 +1114,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	}
 
 	public function getProdutoByCodBarrasOrCodProduto($codigo) {
-		$LeituraColetor = new \Wms\Service\Coletor();
 
-		$codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+		$codigoBarrasProduto = Coletor::adequaCodigoBarras($codigo);
 
 		$info = $this->getProdutoByCodBarras($codigoBarrasProduto);
 		$produtoEn      = null;

@@ -6,6 +6,7 @@ namespace Wms\Service\Mobile;
 use Core\Grid\Column\Filter\Render\Date;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
+use Wms\Util\Coletor;
 
 class Inventario
 {
@@ -135,8 +136,7 @@ class Inventario
 
         if ($info == NULL) {
             $paleteRepo = $this->getEm()->getRepository('wms:Enderecamento\Palete');
-            $coletorService = new \Wms\Service\Coletor();
-            $paleteEn = $paleteRepo->find($coletorService->retiraDigitoIdentificador($codigoBarras));
+            $paleteEn = $paleteRepo->find(Coletor::retiraDigitoIdentificador($codigoBarras));
             if ($paleteEn == null) {
                 $result = array(
                     'status' => 'error',

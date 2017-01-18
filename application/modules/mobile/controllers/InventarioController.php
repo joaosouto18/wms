@@ -50,8 +50,7 @@ class Mobile_InventarioController extends Action
             $nivelParam = $this->_getParam('nivel', null);
             if (isset($codigoBarras) && !empty($codigoBarras)) {
 
-                $coletorService = new \Wms\Service\Coletor();
-                $codigoBarras = $coletorService->retiraDigitoIdentificador($codigoBarras);
+                $codigoBarras = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
                 if (($nivelParam != null)) {
                     $formNivel = new \Wms\Module\Mobile\Form\Nivel();
                     $formNivel->populate(array('codigoBarras' => $this->_getParam('codigoBarras')));
@@ -132,8 +131,7 @@ class Mobile_InventarioController extends Action
 
             $form =  new \Wms\Module\Mobile\Form\InventarioQuantidade();
 
-            $coletorService = new \Wms\Service\Coletor();
-            $codigoBarras = $coletorService->adequaCodigoBarras($codigoBarras);
+            $codigoBarras = \Wms\Util\Coletor::adequaCodigoBarras($codigoBarras);
             $params['codigoBarras'] = $codigoBarras;
             $this->view->parametroValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
             $embalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $codigoBarras));
