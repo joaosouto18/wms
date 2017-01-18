@@ -182,6 +182,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                     INNER JOIN CARGA C ON C.COD_CARGA = PED.COD_CARGA AND C.COD_EXPEDICAO = $idExpedicao
                     INNER JOIN SIGLA S ON S.COD_SIGLA = MSE.COD_STATUS
                 WHERE MS.COD_EXPEDICAO = $idExpedicao
+                GROUP BY MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, P.NOM_PESSOA, C.COD_CARGA_EXTERNO, MSE.NUM_SEQUENCIA, S.DSC_SIGLA
                 ORDER BY C.COD_CARGA_EXTERNO ASC, P.NOM_PESSOA ASC, MSE.NUM_SEQUENCIA ASC";
 
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
