@@ -1384,7 +1384,8 @@ class Mobile_EnderecamentoController extends Action
 
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
         $endereco = null;
-        if (!is_null($embalagemEn->getEndereco()) && !empty($embalagemEn->getEndereco()))
+        $enderecoEmbalagem = $embalagemEn->getEndereco();
+        if (isset($enderecoEmbalagem) && !empty($enderecoEmbalagem))
             $endereco = $embalagemEn->getEndereco()->getDescricao();
 
         $this->_helper->json(array('endereco'   => $endereco,
