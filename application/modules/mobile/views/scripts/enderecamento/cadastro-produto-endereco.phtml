@@ -15,6 +15,24 @@
         });
     });
 
+    function formatarEndereco(event){
+        var endereco = $('#endereco').val();
+        if (event.keyCode != 8) {
+            if (endereco.length == 2){
+                $('#endereco').val(endereco + ".");
+            }
+            if (endereco.length == 6){
+                $('#endereco').val(endereco + ".");
+            }
+            if (endereco.length == 9){
+                $('#endereco').val(endereco + ".");
+            }
+            if (endereco.length == 12) {
+                $('#endereco').val('');
+            }
+        }
+    }
+
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codigoBarras').value != "") {
@@ -74,20 +92,16 @@
         <label>Produto:</label>
         <input class="focus" type="text" name="codigoBarras" id="codigoBarras" onkeydown="nextInput(event)" />
     </div>
+
     <div>
-        <label>Endereco:</label>
-        <input type="text" name="endereco" id="endereco" value="" onkeydown="nextInputEndereco(event)" />
-    </div>
-    <div>
-        <label>Capacidade:</label>
+        <label>End: ------------------------- Cap:</label>
+        <input type="text" name="endereco" id="endereco" class="valid" size="12" maxlength="12" onkeypress="formatarEndereco(event)" onkeydown="nextInputEndereco(event)" />
         <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" onkeydown="nextInputCapacidade(event)" />
     </div>
+
     <div>
-        <label>Embalado?:</label>
+        <label>Emb: - Refer:</label>
         <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
-    </div>
-    <div>
-        <label>referencia:</label>
         <input type="text" name="referencia" id="referencia" value="" />
     </div>
 
