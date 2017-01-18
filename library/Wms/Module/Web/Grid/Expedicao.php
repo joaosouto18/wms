@@ -227,7 +227,7 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
-                'label' => 'Relatório Embalados Conferidos',
+                'label' => 'Relatório de Carg. de Embalados',
                 'target' => '_blank',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',
@@ -236,7 +236,7 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
-                'label' => 'Relatório Produtos Conferidos',
+                'label' => 'Relatório de Carg. por Produtos',
                 'target' => '_blank',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',
