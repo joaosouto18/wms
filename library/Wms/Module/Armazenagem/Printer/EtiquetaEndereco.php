@@ -34,7 +34,6 @@ class EtiquetaEndereco extends Pdf
         $this->y=0;
         $this->count = 0;
 
-        $count = 0;
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
 
@@ -51,7 +50,7 @@ class EtiquetaEndereco extends Pdf
                     break;
                 case 2:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
-                    if (is_int($key / 10) && $key > 0) $this->AddPage();
+//                    if (is_int($count / 8) && $key > 0) $this->AddPage();
                     if (count($produtos) <= 0){
                         continue;
 //                        $this->layoutModelo2(null,$codBarras);
@@ -61,6 +60,8 @@ class EtiquetaEndereco extends Pdf
                         foreach ($produtos as $produto){
 //                            if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
                             if (!isset($produto['capacidadePicking']) || empty($produto['capacidadePicking'])) continue;
+                            $count ++;
+                            if (is_int($count / 10) && $key > 0) $this->AddPage();
                             $this->layoutModelo2($produto,$codBarras);
                             $produtoAnterior = $produto['codProduto'];
                             $grade = $produto['grade'];
