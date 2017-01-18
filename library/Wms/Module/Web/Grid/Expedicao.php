@@ -236,6 +236,15 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Relatório Produtos Conferidos',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'relatorio-produtos-conferidos-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Relatório de Produtos sem Estoque',
                 'target' => '_blank',
                 'modelName' => 'expedicao',

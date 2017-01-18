@@ -472,4 +472,15 @@ class Expedicao_IndexController extends Action
         $this->exportPDF($resultado, 'embalados_conferidos', 'Embalados Conferidos por Carga', 'L');
     }
 
+    public function relatorioProdutosConferidosAjaxAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+        /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
+        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao);
+
+        $this->exportPDF($resultado, 'produtos_conferidos', 'Produtos Conferidos por Carga', 'L');
+
+    }
+
 }

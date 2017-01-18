@@ -188,6 +188,5 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-
 }
 
