@@ -764,7 +764,7 @@ class Inventario
                 }
             } else {
                 foreach ($produtosInventariar as $produto) {
-                    $produtosObrigatorios[$produto->getCodProduto()][$produto->getGrade()] = "S";
+                    $produtosObrigatorios[$produto->getCodProduto()][$produto->getProduto()->getGrade()] = "S";
                 }
             }
         } else {
