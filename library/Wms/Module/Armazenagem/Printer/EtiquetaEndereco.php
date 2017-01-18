@@ -29,8 +29,6 @@ class EtiquetaEndereco extends Pdf
         $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
 
         $this->lado = "E";
-        $inicio = true;
-        $count = 0;
         $this->y=0;
         $this->count = 0;
 
@@ -49,24 +47,20 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 2:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
-//                    if (is_int($count / 8) && $key > 0) $this->AddPage();
-                    if (count($produtos) <= 0){
-                        continue;
+                    $this->layoutModelo2(null,$codBarras);
+//                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+//                    if (count($produtos) <= 0){
 //                        $this->layoutModelo2(null,$codBarras);
-                    } else {
-                        $produtoAnterior = null;
-                        $grade = null;
-                        foreach ($produtos as $produto){
+//                    } else {
+//                        $produtoAnterior = null;
+//                        $grade = null;
+//                        foreach ($produtos as $produto){
 //                            if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
-                            if (!isset($produto['capacidadePicking']) || empty($produto['capacidadePicking'])) continue;
-                            $count ++;
-                            if (is_int($count / 10) && $key > 0) $this->AddPage();
-                            $this->layoutModelo2($produto,$codBarras);
-                            $produtoAnterior = $produto['codProduto'];
-                            $grade = $produto['grade'];
-                        }
-                    }
+//                            $this->layoutModelo2($produto,$codBarras);
+//                            $produtoAnterior = $produto['codProduto'];
+//                            $grade = $produto['grade'];
+//                        }
+//                    }
                     break;
                 case 3:
                     $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$codBarras));
