@@ -24,7 +24,7 @@ class EtiquetaEndereco extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(3, 0, 3);
-//        $this->AddPage();
+        $this->AddPage();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
 
