@@ -1043,6 +1043,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        $statusPendenteImpressao = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
 
         $idExpedicao = $expedicaoEntity->getId();
         $sql = "SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.NUM_CARRINHO, MS.COD_MAPA_SEPARACAO
@@ -1053,6 +1054,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     AND MS.COD_EXPEDICAO = $idExpedicao
                     AND MSP.NUM_CAIXA_PC_INI IS NOT NULL
                     AND MSP.NUM_CAIXA_PC_FIM IS NOT NULL
+                    AND MS.COD_STATUS = $statusPendenteImpressao
                     ORDER BY MSP.NUM_CARRINHO DESC, MSP.NUM_CAIXA_PC_FIM DESC, MSP.NUM_CAIXA_PC_INI DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

@@ -46,4 +46,19 @@ class EmbalagemRepository extends EntityRepository
         }
     }
 
+    public function updateEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado)
+    {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+
+        if (!isset($embalagemEn) || empty($embalagemEn)) {
+            throw new \Exception('Produto não encontrado');
+        }
+        $embalagemEn->setEndereco($enderecoEn);
+        $embalagemEn->setCapacidadePicking($capacidadePicking);
+        $embalagemEn->setEmbalado($embalado);
+        $this->getEntityManager()->persist($embalagemEn);
+        $this->getEntityManager()->flush();
+    }
+
 }

@@ -37,6 +37,10 @@ class Mobile_IndexController  extends Action
             8 => array(
                 'url' => '/mobile/recebimento-transbordo/produtividade',
                 'label' => 'PRODUTIVIDADE',
+            ),
+            9 => array(
+                'url' => '/mobile/enderecamento/cadastro-produto-endereco',
+                'label' => 'CADASTRO PRODUTO ENDERECO'
             )
 
         );

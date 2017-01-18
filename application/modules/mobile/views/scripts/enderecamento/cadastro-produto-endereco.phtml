@@ -1,0 +1,95 @@
+﻿<script>
+    $(document).ready(function(){
+
+        $('#codigoBarras').change(function () {
+            var codBarras = $('#codigoBarras').val();
+            $.ajax({
+                url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
+                success: function(data) {
+                    $('#endereco').val(data['endereco']);
+                    $('#capacidade').val(data['capacidade']);
+                    $('#embalado').val(data['embalado']);
+                    $('#referencia').val(data['referencia']);
+                }
+            });
+        });
+    });
+
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codigoBarras').value != "") {
+                endereco = document.getElementById('endereco');
+                if (endereco) {
+                    endereco.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function nextInputEndereco(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('endereco').value != "") {
+                capacidade   = document.getElementById('capacidade');
+                if (capacidade) {
+                    capacidade.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+
+            }
+        }
+        return true;
+    }
+
+    function nextInputCapacidade(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('capacidade').value != "") {
+                embalado   = document.getElementById('embalado');
+                if (embalado) {
+                    embalado.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+
+            }
+        }
+        return true;
+    }
+</script>
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
+
+    <div>
+        <label>Produto:</label>
+        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" onkeydown="nextInput(event)" />
+    </div>
+    <div>
+        <label>Endereco:</label>
+        <input type="text" name="endereco" id="endereco" value="" onkeydown="nextInputEndereco(event)" />
+    </div>
+    <div>
+        <label>Capacidade:</label>
+        <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" onkeydown="nextInputCapacidade(event)" />
+    </div>
+    <div>
+        <label>Embalado?:</label>
+        <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
+    </div>
+    <div>
+        <label>referencia:</label>
+        <input type="text" name="referencia" id="referencia" value="" />
+    </div>
+
+    <input type="submit" name="submit" id="submit" value="Cadastrar" />
+</form>

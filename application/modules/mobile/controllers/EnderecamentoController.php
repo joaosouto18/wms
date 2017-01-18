@@ -1341,5 +1341,59 @@ class Mobile_EnderecamentoController extends Action
         }
         $this->_helper->json(array('status' => 'Error', 'Msg' => 'Endereço não encontrado'));
     }
+
+    public function cadastroProdutoEnderecoAction()
+    {
+        $codBarras = $this->_getParam('codigoBarras');
+        $codigoBarrasEndereco = $this->_getParam('endereco');
+        $capacidadePicking = $this->_getParam('capacidade');
+        $embalado = trim($this->_getParam('embalado'));
+//        $referencia = $this->_getParam('referencia');
+
+        try {
+            if (isset($embalado) && !empty($embalado) && isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
+//                $LeituraColetor = new \Wms\Service\Coletor();
+//                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
+
+                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+                $endereco = EnderecoUtil::formatar($codigoBarrasEndereco);
+                /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
+                $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
+                if (!isset($enderecoEn) || empty($enderecoEn)) {
+                    throw new Exception('Endereço não encontrado');
+                }
+
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+                $embalagemRepo->updateEmbalagem($codBarras,$enderecoEn,$capacidadePicking,$embalado);
+
+                $this->addFlashMessage('success', 'Cadastrado com sucesso!');
+                $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
+            }
+
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
+        }
+
+    }
+
+    public function dadosEmbalagemAction()
+    {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $codBarras = $this->_getParam('codigoBarras');
+
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $endereco = null;
+        if (!is_null($embalagemEn->getEndereco()) && !empty($embalagemEn->getEndereco()))
+            $endereco = $embalagemEn->getEndereco()->getDescricao();
+
+        $this->_helper->json(array('endereco'   => $endereco,
+                                   'capacidade' => $embalagemEn->getCapacidadePicking(),
+                                   'embalado'   => $embalagemEn->getEmbalado(),
+                                   'referencia' => $embalagemEn->getProduto()->getReferencia()
+                            ));
+    }
 }
 
