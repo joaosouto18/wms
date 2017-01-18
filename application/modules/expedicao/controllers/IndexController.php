@@ -479,6 +479,8 @@ class Expedicao_IndexController extends Action
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
         $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao);
 
+
+
         $this->exportPDF($resultado, 'produtos_conferidos', 'Produtos Conferidos por Carga', 'P');
 
     }
