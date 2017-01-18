@@ -107,7 +107,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSC.COD_PRODUTO AND PROD.DSC_GRADE = MSC.DSC_GRADE
                 WHERE MS.COD_EXPEDICAO = $idExpedicao
                 GROUP BY MSC.COD_PRODUTO, C.COD_CARGA_EXTERNO, P.NOM_PESSOA, PROD.DSC_PRODUTO, PP.QUANTIDADE, PP.QTD_CORTADA
-                ORDER BY C.COD_CARGA_EXTERNO ASC, P.NOM_PESSOA ASC, MSC.COD_PRODUTO ASC;";
+                ORDER BY C.COD_CARGA_EXTERNO ASC, P.NOM_PESSOA ASC, MSC.COD_PRODUTO ASC";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
