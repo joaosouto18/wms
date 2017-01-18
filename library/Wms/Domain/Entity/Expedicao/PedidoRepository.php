@@ -425,7 +425,7 @@ class PedidoRepository extends EntityRepository
             ->innerJoin('c.expedicao', 'e')
             ->where("e.id = $idExpedicao")
             ->groupBy('p.id, pe.nome, i.descricao')
-            ->orderBy('p.id');
+            ->orderBy('pe.nome', 'asc');
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
