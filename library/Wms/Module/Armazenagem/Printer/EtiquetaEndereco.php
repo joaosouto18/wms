@@ -177,18 +177,28 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         if($dscProduto == "") {
-            $this->Cell(148.5,13," Rua      Predio     Nivel    Apto.",0,1);
+            $this->Cell(148.5,13,"             Rua      Predio     Nivel    Apto.",0,1);
         } else {
-            $this->Cell(148.5,13,$dscProduto,0,1);
+            $this->Cell(148.5,13,'            '.$dscProduto. ' - '.$dscEndereco,0,1);
         }
 
         $posY = $this->GetY() - 3;
 
         $this->SetFont('Arial', 'B', $fontSizeCodBarras);
-        $this->Cell($lenCodBarras,9,$codBarras,0,0);
+        $this->Cell($lenCodBarras,9,'     '.$codBarras,0,0);
 
         $this->SetFont('Arial', 'B', $fontSizeEndereco);
-        $this->Cell($lenEndereco,8,$dscEndereco,0,1);
+        $this->Cell($lenEndereco,8,'     ',0,1);
+
+        $posYSeta = $posY - 8;
+        $enderecos = explode(".",$codBarras);
+        $nivel = substr($enderecos[2],1);
+
+        if ($nivel == 0) {
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 5, $posYSeta, 13, 20);
+        } else if ($nivel == 1) {
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 5, $posYSeta, 13, 20);
+        }
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
 
