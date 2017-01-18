@@ -56,7 +56,7 @@ class Inventario_ParcialController extends Action
                 $InventarioRepo = $this->_em->getRepository('wms:Inventario');
                 $enInventario   = $InventarioRepo->save();
                 $InventarioRepo->vinculaEnderecos($values['mass-id'], $enInventario->getId());
-                $this->_helper->messenger('success', 'Endereços vinculados com sucesso ao inventário:'.$idInventario);
+                $this->_helper->messenger('success', 'Endereços vinculados com sucesso ao inventário:'.$enInventario->getId());
                 return $this->redirect('index','index','inventario');
             }
 

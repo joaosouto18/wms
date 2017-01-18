@@ -17,7 +17,10 @@ class Produto extends DadoLogistico
 
         $source = $this->getEntityManager()->createQueryBuilder()
 
-            ->select('e.id, s.codProduto, s.grade, p.descricao, e.descricao descricaoEnd')
+            ->select("CONCAT(CONCAT(CONCAT(e.id, '%#%'), CONCAT(s.codProduto,'%#%')), s.grade) as id,
+                      s.codProduto,
+                      s.grade,
+                      p.descricao, e.descricao descricaoEnd")
             ->from("wms:Enderecamento\VSaldoCompleto","s")
             ->leftJoin("s.produto","p")
             ->leftJoin("s.depositoEndereco", "e")
