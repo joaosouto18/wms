@@ -190,17 +190,10 @@ $attribs = $grid->getAttribs();
         $i = 0;
         foreach ($grid->getResult() as $row) { ?>
             <tr class="gTResultSet <?php if($grid->checkConditionalFeaturedByRow($row)) echo "gRowFeatured"; elseif ($i % 2) echo "gRowColor" ?>">
-                <?php
-                    if ($grid->getShowMassActions()) {
-                        if (is_array($grid->getPkIndex())){
-                            foreach ($grid->getPkIndex() as $key) {?>
-                <td class="gRowCheck"><input type="checkbox" name="mass-id[<?php echo $key ?>]" class="massaction-check-opt" value="<?php echo $row[$key]; ?>" /></td>
-                        <?php}
-                        } elseif (is_string($grid->getPkIndex())) { ?>
+                <?php if ($grid->getShowMassActions()) { ?>
                 <td class="gRowCheck"><input type="checkbox" name="mass-id[]" class="massaction-check-opt" value="<?php echo $row[$grid->getPkIndex()]; ?>" /></td>
-                    <?php}
-                    }
-                    if ($grid->getShowActions()) { ?>
+                <?php } ?>
+                <?php if ($grid->getShowActions()) { ?>
                 <td class="gTdOpcRow">
                     <div class="gOpcRow">
                         <ul>
