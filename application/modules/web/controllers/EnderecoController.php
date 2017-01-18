@@ -580,6 +580,8 @@ class Web_EnderecoController extends Crud
             $this->_em->persist($endereço);
         }
         $this->_em->flush();
-        $this->redirect('/');
+        $this->addFlashMessage('success', 'Endereços formatados');
+        $baseUrl = new Zend_View_Helper_BaseUrl();
+        $this->redirect($baseUrl->getBaseUrl());
     }
 }
