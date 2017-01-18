@@ -230,12 +230,20 @@ class Mobile_InventarioController extends Action
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
 
-        if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
-            $this->addFlashMessage('success', 'Contagem de endereço finalizada');
-        } else {
-            $this->addFlashMessage('warning', 'Contagem de endereço finalizada com divergência');
+        try {
+            if ($inventarioService->finalizaContagemEndereco($params,$paramsSystem)) {
+                $this->addFlashMessage('success', 'Contagem de endereço finalizada');
+            } else {
+                $this->addFlashMessage('warning', 'Contagem de endereço finalizada com divergência');
+            }
+
+            $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $params['idInventario'], 'numContagem' => $params['numContagem'], 'divergencia' => $params['divergencia']));
+
+        } catch (Exception $ex) {
+            $this->addFlashMessage('error',$ex->getMessage());
+            $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $params['idInventario'], 'numContagem' => $params['numContagem'], 'divergencia' => $params['divergencia']));
         }
-        $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $params['idInventario'], 'numContagem' => $params['numContagem'], 'divergencia' => $params['divergencia']));
+
     }
 
     public function reiniciarAction()

@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
+use Wms\Domain\Entity\Inventario\EnderecoProduto;
 use Wms\Service\Estoque;
 use Wms\Service\Mobile\Inventario as InventarioService;
 
@@ -199,27 +200,32 @@ class InventarioRepository extends EntityRepository
 
     public function vinculaEnderecos($codEnderecos, $codInventario)
     {
-        /** @var \Wms\Domain\Entity\Deposito\Endereco $depositoEnderecoRepo */
-        $depositoEnderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
         $enderecosSalvos = array();
-        foreach($codEnderecos as $codEndereco) {
-            $enDepositoEnd = $depositoEnderecoRepo->find($codEndereco);
-            if (!is_null($enDepositoEnd)) {
-                $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $enDepositoEnd->getId()));
+        foreach($codEnderecos as $chave) {
+
+            list ($codEndereco, $codProduto, $grade) = explode("%#%",$chave);
+
+                $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
                 //não adiciona 2x o mesmo endereço
                 if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos)) {
-                    $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
+                    $enderecoEn = $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
                     $enderecosSalvos[] = $codEndereco;
                 }
-            }
+
+                if (isset($codProduto) && ($codProduto != null)) {
+                    $endProd = new EnderecoProduto();
+                    $endProd->setCodProduto($codProduto);
+                    $endProd->setGrade($grade);
+                    $endProd->setProduto($this->_em->getRepository('wms:Produto')->findOneBy(array('id'=>$codProduto,'grade'=>$grade)));
+                    $endProd->setInventarioEndereco($enderecoEn);
+                    $this->_em->persist($endProd);
+                }
         }
 
-        if (!is_null($enDepositoEnd)) {
-            $this->_em->flush();
-        }
+        $this->_em->flush();
 
     }
 
