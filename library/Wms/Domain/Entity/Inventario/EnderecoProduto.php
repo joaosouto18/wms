@@ -12,10 +12,10 @@ class EnderecoProduto
 
     /**
      * @var int
-     * @Column(name="COD_INVENTARIO_ENDERECO_PRODUTO", type="integer", nullable=false)
+     * @Column(name="COD_INVENTARIO_END_PRODUTO", type="integer", nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_INVENTARIO_ENDERECO_PRODUTO_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_INVENTARIO_END_PROD_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 

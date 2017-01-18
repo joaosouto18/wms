@@ -746,15 +746,25 @@ class Inventario
     private function acertaContagensProdutosNaoConferidos( $contagemEndEntities, $validaEstoqueAtual) {
 
         $maiorContagem = $contagemEndEntities[count($contagemEndEntities)-1]->getNumContagem();
+        $idInventarioEndereco = $contagemEndEntities[count($contagemEndEntities)-1]->getInventarioEndereco();
+
+        $invEndProdRepo = $this->getEm()->getRepository("wms:Inventario\EnderecoProduto");
 
         $produtosObrigatorios = array();
         if ($maiorContagem == 1) {
-            if ($validaEstoqueAtual == "S" ) {
-                /* verifica se todos os produtos do estoque foram conferidos */
-                $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
-                    ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
-                foreach ($estoqueEntities as $estoqueEn) {
-                    $produtosObrigatorios[$estoqueEn->getCodProduto()][$estoqueEn->getGrade()] = "S";
+            $produtosInventariar = $invEndProdRepo->findBy(array('inventarioEndereco'=> $idInventarioEndereco));
+            if (count($produtosInventariar) == 0) {
+                if ($validaEstoqueAtual == "S" ) {
+                    /* verifica se todos os produtos do estoque foram conferidos */
+                    $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
+                        ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
+                    foreach ($estoqueEntities as $estoqueEn) {
+                        $produtosObrigatorios[$estoqueEn->getCodProduto()][$estoqueEn->getGrade()] = "S";
+                    }
+                }
+            } else {
+                foreach ($produtosInventariar as $produto) {
+                    $produtosObrigatorios[$produto->getCodProduto()][$produto->getGrade()] = "S";
                 }
             }
         } else {
