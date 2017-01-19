@@ -907,7 +907,11 @@ class Inventario
                         $alterou = true;
                     } else {
                         $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
-                        $dscProduto = $produtoEn->getDescricao();
+
+                        $dscProduto = "";
+                        if ($produtoEn != null) {
+                            $dscProduto = $produtoEn->getDescricao();
+                        }
                         throw new \Exception(("Não foi encontrada a conferencia do item $codProduto/$grade - $dscProduto - codBarras: $codBarras"));
                     }
                 }
