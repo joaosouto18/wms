@@ -1346,16 +1346,15 @@ class Mobile_EnderecamentoController extends Action
         $codigoBarrasEndereco = $this->_getParam('endereco');
         $capacidadePicking = $this->_getParam('capacidade');
         $embalado = trim($this->_getParam('embalado'));
-//        $referencia = $this->_getParam('referencia');
 
         try {
             if (isset($embalado) && !empty($embalado) && isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
-//                $LeituraColetor = new \Wms\Service\Coletor();
-//                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
+                $LeituraColetor = new \Wms\Service\Coletor();
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-                $endereco = EnderecoUtil::formatar($codigoBarrasEndereco);
+                $endereco = EnderecoUtil::formatar($codigoBarras);
                 /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
                 $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
                 if (!isset($enderecoEn) || empty($enderecoEn)) {
@@ -1383,6 +1382,10 @@ class Mobile_EnderecamentoController extends Action
         $codBarras = $this->_getParam('codigoBarras');
 
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $mensagem = null;
+        if (!isset($embalagemEn) || empty($embalagemEn)) {
+            $mensagem = 'Codigo de Barras nao encontrado!';
+        }
         $endereco = null;
         $enderecoEmbalagem = $embalagemEn->getEndereco();
         if (isset($enderecoEmbalagem) && !empty($enderecoEmbalagem))
@@ -1391,7 +1394,8 @@ class Mobile_EnderecamentoController extends Action
         $this->_helper->json(array('endereco'   => $endereco,
                                    'capacidade' => $embalagemEn->getCapacidadePicking(),
                                    'embalado'   => $embalagemEn->getEmbalado(),
-                                   'referencia' => $embalagemEn->getProduto()->getReferencia()
+                                   'referencia' => $embalagemEn->getProduto()->getReferencia(),
+                                   'mensagem'   => $mensagem,
                             ));
     }
 }

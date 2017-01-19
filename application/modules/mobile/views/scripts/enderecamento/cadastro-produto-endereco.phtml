@@ -6,6 +6,10 @@
             $.ajax({
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
+                    if (data['mensagem'] != null) {
+                        alert('Codigo de Barras nao encontrado!');
+                        return false;
+                    }
                     $('#endereco').val(data['endereco']);
                     $('#capacidade').val(data['capacidade']);
                     $('#embalado').val(data['embalado']);
@@ -27,7 +31,7 @@
             if (endereco.length == 9){
                 $('#endereco').val(endereco + ".");
             }
-            if (endereco.length == 12) {
+            if (endereco.length == 13) {
                 $('#endereco').val('');
             }
         }
@@ -95,7 +99,7 @@
 
     <div>
         <label>End: -------------------- Cap:</label>
-        <input type="text" name="endereco" id="endereco" class="valid" size="13" maxlength="12" onkeypress="formatarEndereco(event)" onkeydown="nextInputEndereco(event)" />
+        <input type="text" name="endereco" id="endereco" class="valid" size="15" maxlength="13" onkeypress="formatarEndereco(event)" onkeydown="nextInputEndereco(event)" />
         <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" onkeydown="nextInputCapacidade(event)" />
     </div>
 
