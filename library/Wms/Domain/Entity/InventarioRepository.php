@@ -208,21 +208,21 @@ class InventarioRepository extends EntityRepository
 
             list ($codEndereco, $codProduto, $grade) = explode("%#%",$chave);
 
-                $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
-                //não adiciona 2x o mesmo endereço
-                if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos)) {
-                    $enderecoEn = $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
-                    $enderecosSalvos[] = $codEndereco;
-                }
+            $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
+            //não adiciona 2x o mesmo endereço
+            if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos)) {
+                $enderecoEn = $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
+                $enderecosSalvos[] = $codEndereco;
+            }
 
-                if (isset($codProduto) && ($codProduto != null)) {
-                    $endProd = new EnderecoProduto();
-                    $endProd->setCodProduto($codProduto);
-                    $endProd->setGrade($grade);
-                    $endProd->setProduto($this->_em->getRepository('wms:Produto')->findOneBy(array('id'=>$codProduto,'grade'=>$grade)));
-                    $endProd->setInventarioEndereco($enderecoEn);
-                    $this->_em->persist($endProd);
-                }
+            if (isset($codProduto) && ($codProduto != null)) {
+                $endProd = new EnderecoProduto();
+                $endProd->setCodProduto($codProduto);
+                $endProd->setGrade($grade);
+                $endProd->setProduto($this->_em->getRepository('wms:Produto')->findOneBy(array('id'=>$codProduto,'grade'=>$grade)));
+                $endProd->setInventarioEndereco($enderecoEn);
+                $this->_em->persist($endProd);
+            }
         }
 
         $this->_em->flush();
