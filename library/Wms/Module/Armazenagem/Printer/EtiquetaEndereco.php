@@ -37,7 +37,7 @@ class EtiquetaEndereco extends Pdf
 
 //            var_dump($codBarras);
 //            var_dump(substr($codBarras,10,12)); exit;
-            if ((substr($codBarras,7,-3) != '01' and substr($codBarras,10,12) != '01') or (substr($codBarras,7,-3) != '00' and substr($codBarras,10,12) != 11)) continue;
+//            if ((substr($codBarras,7,-3) != '01' and substr($codBarras,10,12) != '01') or (substr($codBarras,7,-3) != '00' and substr($codBarras,10,12) != 11)) continue;
 
             switch ((int)$modelo) {
                 case 1:
