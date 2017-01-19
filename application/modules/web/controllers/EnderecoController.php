@@ -567,5 +567,21 @@ class Web_EnderecoController extends Crud
         $this->_helper->json($arrayMensagens, true);
     }
 
+    public function corrigirEnderecoAjaxAction()
+    {
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $endRepo */
+        $endRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+        $endereços = $endRepo->findAll();
 
+        /** @var \Wms\Domain\Entity\Deposito\Endereco $endereço */
+        foreach ($endereços as $endereço){
+            $formatado = \Wms\Util\Endereco::formatar($endereço->getDescricao());
+            $endereço->setDescricao($formatado);
+            $this->_em->persist($endereço);
+        }
+        $this->_em->flush();
+        $this->addFlashMessage('success', 'Endereços formatados');
+        $baseUrl = new Zend_View_Helper_BaseUrl();
+        $this->redirect($baseUrl->getBaseUrl());
+    }
 }

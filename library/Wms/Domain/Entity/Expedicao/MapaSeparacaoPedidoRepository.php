@@ -19,7 +19,8 @@ class MapaSeparacaoPedidoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->setParameter('mapa',$idMapa)
             ->where('mps.mapaSeparacao = :mapa')
-            ->groupBy('p.id, pe.nome, i.descricao');
+            ->groupBy('p.id, pe.nome, i.descricao')
+            ->orderBy('pe.nome', 'asc');
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");

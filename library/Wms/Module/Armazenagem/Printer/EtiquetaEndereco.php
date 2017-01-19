@@ -29,14 +29,15 @@ class EtiquetaEndereco extends Pdf
         $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
 
         $this->lado = "E";
-        $inicio = true;
-        $count = 0;
         $this->y=0;
         $this->count = 0;
 
-        $count = 0;
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
+
+//            var_dump($codBarras);
+//            var_dump(substr($codBarras,10,12)); exit;
+//            if ((substr($codBarras,7,-3) != '01' and substr($codBarras,10,12) != '01') or (substr($codBarras,7,-3) != '00' and substr($codBarras,10,12) != 11)) continue;
 
             switch ((int)$modelo) {
                 case 1:
@@ -50,19 +51,21 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 2:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
-                    if (count($produtos) <= 0){
-                        $this->layoutModelo2(null,$codBarras);
-                    } else {
-                        $produtoAnterior = null;
-                        $grade = null;
-                        foreach ($produtos as $produto){
-                            if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
-                            $this->layoutModelo2($produto,$codBarras);
-                            $produtoAnterior = $produto['codProduto'];
-                            $grade = $produto['grade'];
-                        }
-                    }
+                    if (is_int($key / 10) && $key > 0) $this->AddPage();
+                    $this->layoutModelo2(null,$codBarras);
+//                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+//                    if (count($produtos) <= 0){
+//                        $this->layoutModelo2(null,$codBarras);
+//                    } else {
+//                        $produtoAnterior = null;
+//                        $grade = null;
+//                        foreach ($produtos as $produto){
+//                            if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
+//                            $this->layoutModelo2($produto,$codBarras);
+//                            $produtoAnterior = $produto['codProduto'];
+//                            $grade = $produto['grade'];
+//                        }
+//                    }
                     break;
                 case 3:
                     $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$codBarras));
@@ -177,18 +180,28 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', 18);
         if($dscProduto == "") {
-            $this->Cell(148.5,14," Rua      Predio     Nivel    Apto.",0,1);
+            $this->Cell(148.5,13,"             Rua      Predio     Nivel    Apto.",0,1);
         } else {
-            $this->Cell(148.5,14,$dscProduto,0,1);
+            $this->Cell(148.5,13,'            '.$dscEndereco. ' - '.$dscProduto,0,1);
         }
 
         $posY = $this->GetY() - 3;
 
         $this->SetFont('Arial', 'B', $fontSizeCodBarras);
-        $this->Cell($lenCodBarras,4,$codBarras,0,0);
+        $this->Cell($lenCodBarras,9,'     '.$codBarras,0,0);
 
         $this->SetFont('Arial', 'B', $fontSizeEndereco);
-        $this->Cell($lenEndereco,8,$dscEndereco,0,1);
+        $this->Cell($lenEndereco,8,'     ',0,1);
+
+        $posYSeta = $posY - 8;
+        $enderecos = explode(".",$codBarras);
+        $nivel = substr($enderecos[2],1);
+
+        if ($nivel == 0) {
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 5, $posYSeta, 13, 20);
+        } else if ($nivel == 1) {
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 5, $posYSeta, 13, 20);
+        }
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
 

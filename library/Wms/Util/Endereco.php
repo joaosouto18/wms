@@ -284,7 +284,7 @@ class Endereco
             $qtdDigitos = (int) $temp['rua'];
         }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
-        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+        return str_pad((int)$elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
     /**
@@ -320,7 +320,7 @@ class Endereco
             $qtdDigitos = (int) $temp['predio'];
         }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
-        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+        return str_pad((int)$elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
     /**
@@ -356,7 +356,7 @@ class Endereco
             $qtdDigitos = (int) $temp['nivel'];
         }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
-        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+        return str_pad((int)$elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
     /**
@@ -392,7 +392,7 @@ class Endereco
             $qtdDigitos = (int) $temp['apartamento'];
         }
         $dgtSuplementar = (is_null($dgtSuplementar)) ? '0' : $dgtSuplementar;
-        return str_pad($elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
+        return str_pad((int)$elemento, $qtdDigitos, $dgtSuplementar, STR_PAD_LEFT);
     }
 
 }
