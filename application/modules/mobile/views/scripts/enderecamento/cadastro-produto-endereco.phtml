@@ -22,15 +22,6 @@
     function formatarEndereco(event){
         var endereco = $('#endereco').val();
         if (event.keyCode != 8) {
-            if (endereco.length == 2){
-                $('#endereco').val(endereco + ".");
-            }
-            if (endereco.length == 6){
-                $('#endereco').val(endereco + ".");
-            }
-            if (endereco.length == 9){
-                $('#endereco').val(endereco + ".");
-            }
             if (endereco.length == 15) {
                 $('#endereco').val('');
             }
