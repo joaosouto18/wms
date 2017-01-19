@@ -19,10 +19,12 @@ class InventarioQuantidade extends \Core\Form
                 ->addElement('hidden', 'idContagemOs')
                 ->addElement('hidden', 'codigoBarras')
                 ->addElement('hidden', 'idInventarioEnd')
+                ->addElement('hidden', 'idInventario')
                 ->addElement('hidden', 'codProdutoEmbalagem')
                 ->addElement('hidden', 'codProdutoVolume')
                 ->addElement('hidden', 'contagemEndId')
-                ->addElement('hidden', 'numContagem');
+                ->addElement('hidden', 'numContagem')
+                ->addElement('hidden', 'divergencia');
 
                 $text = new \Zend_Form_Element_Text('descricaoProduto');
                 $dscEmbalagem = new \Zend_Form_Element_Text('dscEmbalagem');

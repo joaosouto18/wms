@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Inventario\Grid;
 
+use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Grid\Produto\DadoLogistico,
     Core\Util\Produto as UtilProduto;
@@ -15,7 +16,10 @@ class Produto extends DadoLogistico
 
         $tipoPicking = Endereco::ENDERECO_PICKING;
 
-        $source = $this->getEntityManager()->createQueryBuilder()
+        /** @var EntityManager $em */
+        $em = $this->getEntityManager();
+
+        $source = $em->createQueryBuilder()
 
             ->select("CONCAT(CONCAT(CONCAT(e.id, '%#%'), CONCAT(s.codProduto,'%#%')), s.grade) as id,
                       s.codProduto,
@@ -24,7 +28,8 @@ class Produto extends DadoLogistico
             ->from("wms:Enderecamento\VSaldoCompleto","s")
             ->leftJoin("s.produto","p")
             ->leftJoin("s.depositoEndereco", "e")
-            ->leftJoin("wms:Armazenagem\Unitizador","u","WITH","u.id=s.codUnitizador");
+            ->leftJoin("wms:Armazenagem\Unitizador","u","WITH","u.id=s.codUnitizador")
+            ->distinct(true);
 
         if (!empty($params['idLinhaSeparacao'])) {
             $grandeza = $params['idLinhaSeparacao'];

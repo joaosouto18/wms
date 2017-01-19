@@ -10,6 +10,7 @@ class Produto extends Mobile
     public function init()
     {
         $this->addElement('hidden', 'idEndereco');
+        $this->addElement('hidden', 'codigoBarrasEndereco');
         $this->addElement('hidden', 'idContagemOs');
         $this->addElement('hidden', 'idInventarioEnd');
         $this->addElement('hidden', 'numContagem');

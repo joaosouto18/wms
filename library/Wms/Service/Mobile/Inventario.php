@@ -127,6 +127,7 @@ class Inventario
         $codigoBarras   = $params['codigoBarras'];
         $idInventario   = $params['idInventario'];
         $numContagem    = $params['numContagem'];
+        $divergencia = null;
         if (isset($params['divergencia'])) {
             $divergencia    = $params['divergencia'];
         }
@@ -185,10 +186,12 @@ class Inventario
             }
         }
         
-        $populateForm['pickinCorreto']     = $pickingCorreto;
+        $populateForm['pickinCorreto']      = $pickingCorreto;
         $populateForm['idProduto']          = $idProduto;
         $populateForm['grade']              = $grade;
-        $populateForm['idContagemOs']       = $params['idContagemOs'];
+        $populateForm['divergencia']        = $divergencia;
+        $populateForm['numContagem']        =  $params['numContagem'];
+        $populateForm['idInventario']       = $params['idInventario'];
         $populateForm['codigoBarras']       = $params['codigoBarras'];
         $populateForm['idInventarioEnd']    = $params['idInventarioEnd'];
         $populateForm['idEndereco']         = $params['idEndereco'];
@@ -238,6 +241,18 @@ class Inventario
         $numContagem = null;
         if (isset($params['numContagem']))
             $numContagem            = $params['numContagem'];
+        $codigoBarras = null;
+        if (isset($params['codigoBarras']))
+            $codigoBarras   = $params['codigoBarras'];
+        $idInventario = null;
+        if (isset($params['idInventario']))
+            $idInventario   = $params['idInventario'];
+        $divergencia = null;
+        if (isset($params['divergencia']))
+            $divergencia   = $params['divergencia'];
+        $idEndereco = null;
+        if (isset($params['idEndereco']))
+            $idEndereco   = $params['idEndereco'];
 
         $produtoEn = $this->getEm()->getRepository('wms:Produto')
             ->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
@@ -267,17 +282,13 @@ class Inventario
                 }
             }
             if ($dataValida == false) {
-                return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => 'mobile');
+                $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
+                return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => $url);
             } else {
                 $validade = new \Zend_Date($data);
                 $validade = $validade->toString('Y-MM-dd');
 
             }
-        }
-
-        $divergencia = null;
-        if (isset($params['divergencia'])) {
-            $divergencia            = $params['divergencia'];
         }
 
         if ($divergencia == 1) {
@@ -745,53 +756,188 @@ class Inventario
 
     private function acertaContagensProdutosNaoConferidos( $contagemEndEntities, $validaEstoqueAtual) {
 
-        $maiorContagem = $contagemEndEntities[count($contagemEndEntities)-1]->getNumContagem();
-        $idInventarioEndereco = $contagemEndEntities[count($contagemEndEntities)-1]->getInventarioEndereco();
-
+        /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
         $invEndProdRepo = $this->getEm()->getRepository("wms:Inventario\EnderecoProduto");
+        $produtoVolumeRepo = $this->getEm()->getRepository("wms:Produto\Volume");
+        $produtoRepo = $this->getEm()->getRepository("wms:Produto");
 
+        $maiorContagem = $contagemEndEntities[count($contagemEndEntities)-1]->getNumContagem();
+        $inventarioEnderecoEn = $contagemEndEntities[count($contagemEndEntities)-1]->getInventarioEndereco();
+        $idOs = $contagemEndEntities[count($contagemEndEntities)-1]->getContagemOs()->getId();
         $produtosObrigatorios = array();
+
+        /*
+         * Monta uma lista com os produtos obrigatórios a serem conferidos,
+         * Se a for a primeira contagem então monta a lista a partir do banco de dados (INVENTARIO_ENDERECO_PRODUTO) ou do estoque
+         * Se for uma contagem de divergencia, então a lista de produtos obrigatórios são os produtos divergentes.
+         * Assim obriga a bipar todos os produtos para poder finalizar a contagem
+         */
+
+        $alterou = false;
         if ($maiorContagem == 1) {
-            $produtosInventariar = $invEndProdRepo->findBy(array('inventarioEndereco'=> $idInventarioEndereco));
+            $produtosInventariar = $invEndProdRepo->findBy(array('inventarioEndereco'=> $inventarioEnderecoEn));
             if (count($produtosInventariar) == 0) {
                 if ($validaEstoqueAtual == "S" ) {
-                    /* verifica se todos os produtos do estoque foram conferidos */
+                    /*
+                     * verifica se todos os produtos do estoque foram conferidos
+                     * Pego o código de barras, embalagens e volumes a partir do que esta no estoque
+                     */
                     $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
                         ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
                     foreach ($estoqueEntities as $estoqueEn) {
-                        $produtosObrigatorios[$estoqueEn->getCodProduto()][$estoqueEn->getGrade()] = "S";
+                        $idEmbalagem = null;
+                        $idVolume = null;
+                        $codBarras = "";
+
+                        if ($estoqueEn->getProdutoEmbalagem() != null) {
+                            $idEmbalagem = $estoqueEn->getProdutoEmbalagem()->getId();
+                            $codBarras = $estoqueEn->getProdutoEmbalagem()->getCodigoBarras();
+                        }
+
+                        if ($estoqueEn->getProdutoVolume() != null) {
+                            $idVolume = $estoqueEn->getProdutoVolume()->getId();
+                            $codBarras = $estoqueEn->getProdutoVolume()->getCodigoBarras();
+                        }
+
+                        $produtosObrigatorios[$estoqueEn->getCodProduto()][$estoqueEn->getGrade()] = array(
+                            'codBarras' => $codBarras,
+                            'codProdutoEmbalagem' => $idEmbalagem,
+                            'codProdutoVolume'=> $idVolume
+                        );
                     }
                 }
             } else {
+                /*
+                 * Pego o código de barras, embalagens e volumes a partir do que esta no cadastro do produto
+                 */
                 foreach ($produtosInventariar as $produto) {
-                    $produtosObrigatorios[$produto->getCodProduto()][$produto->getProduto()->getGrade()] = "S";
+                    /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                    $produtoEn = $produto->getProduto();
+                    $volumes = $produtoEn->getVolumes();
+                    $embalagens = $produtoEn->getEmbalagens();
+                    if (count($volumes) >0) {
+                        foreach ($volumes as $volumeEn) {
+                            $produtosObrigatorios[$produto->getCodProduto()][$produto->getProduto()->getGrade()] = array(
+                                'codBarras' => $volumeEn->getCodigoBarras(),
+                                'codProdutoEmbalagem' => null,
+                                'codProdutoVolume'=> $volumeEn->getId()
+                            );
+                        }
+                    } else {
+                        if (count($embalagens) >0) {
+                            $menorEmbalagem = $embalagens[0];
+                            foreach ($embalagens as $embalagemEn) {
+                                if ($embalagemEn->getQuantidade() < $menorEmbalagem->getQuantidade()) {
+                                    $menorEmbalagem = $embalagemEn;
+                                }
+                            }
+                            $produtosObrigatorios[$produto->getCodProduto()][$produto->getProduto()->getGrade()] = array(
+                                'codBarras' => $menorEmbalagem->getCodigoBarras(),
+                                'codProdutoEmbalagem' => $menorEmbalagem->getId(),
+                                'codProdutoVolume'=> null
+                            );
+                        }
+                    }
                 }
             }
         } else {
             foreach ($contagemEndEntities as $contagemEn) {
+                /*
+                 * Pego o código de barras, embalagens e volumes a partir dos produtos que tiveram divergencia
+                 */
                 if ($contagemEn->getDivergencia() == true) {
+                    $idEmbalagem = $contagemEn->getCodProdutoEmbalagem();
+                    $idVolume = $contagemEn->getCodProdutoVolume();
+                    $codBarras = "";
+                    if ($idEmbalagem != null) {
+                        $embalagens = $contagemEn->getProduto()->getEmbalagens();
+                        $menorEmbalagem = $embalagens[0];
+                        foreach ($embalagens as $embalagemEn) {
+                            if ($embalagemEn->getQuantidade() < $menorEmbalagem->getQuantidade()) {
+                                $menorEmbalagem = $embalagemEn;
+                            }
+                        }
+                        $codBarras = $menorEmbalagem->getCodigoBarras();
+                    }
+                    if ($idVolume != null) {
+                        $codBarras = $produtoVolumeRepo->findOneBy(array('id'=>$idVolume))->getCodigoBarras();
+                    }
+
                     if (!isset($produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()])) {
-                        $produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()] = "S";
+                        $produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()] = array(
+                            'codBarras' => $codBarras,
+                            'codProdutoEmbalagem' => $idEmbalagem,
+                            'codProdutoVolume'=> $idVolume
+                        );
                     }
                 }
             }
         }
 
+        /*Verifica se todos os produtos obrigados a bipar foram realmente bipados na maior contagem*/
         foreach( $produtosObrigatorios as $codProduto => $produto){
-            foreach($produto as $grade => $value){
+            foreach($produto as $grade => $values){
                 $encontrouProduto = false;
+                $idVolume = $values['codProdutoVolume'];
+                $codBarras = $values['codBarras'];
+                if ($idVolume == null) {
+                    $idEmbalagem = 0;
+                } else {
+                    $idEmbalagem = null;
+                }
+
                 foreach ($contagemEndEntities as $contagemEn) {
                  if (($contagemEn->getNumContagem() == $maiorContagem) && ($contagemEn->getCodProduto() == $codProduto) && ($contagemEn->getGrade() == $grade)) {
-                     $encontrouProduto = true;
-                     break;
+                        if ((($contagemEn->getCodProdutoVolume == null) && ($idVolume == null)) || ($contagemEn->getCodProdutoVolume == $idVolume)) {
+                            $encontrouProduto = true;
+                            break;
+                        }
                     }
                 }
 
+                /*
+                 * Se for a primeira Contagem e não encontrou o produto da lista dos produtos obrigatorios,
+                 * então gera uma contagem com a qtd = 0 para que seja gerada uma divergencia.
+                 * Agora se for a contagem de divergencia, então obriga que o produto seja confirmado com a quantidade 0
+                 */
                 if ($encontrouProduto == false) {
-                    throw new \Exception(("Não foi encontrada a conferencia do item " . $codProduto. " grade " . $grade));
+                    if ($maiorContagem == 1) {
+                        $contagemEndRepo->save(array(
+                            'qtd' => 0,
+                            'idContagemOs' => $idOs,
+                            'idInventarioEnd' => $inventarioEnderecoEn->getId(),
+                            'qtdAvaria' => 0,
+                            'codProduto' => $codProduto,
+                            'grade' => $grade,
+                            'codProdutoEmbalagem' => $idEmbalagem,
+                            'codProdutoVolume' => $idVolume,
+                            'numContagem' => 1,
+                            'validade' => null
+                        ));
+                        $alterou = true;
+                    } else {
+                      /*  $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
+
+                        $dscProduto = "";
+                        if ($produtoEn != null) {
+                            $dscProduto = $produtoEn->getDescricao();
+                        }
+                        throw new \Exception(("Não foi encontrada a conferencia do item $codProduto/$grade - $dscProduto - codBarras: $codBarras"));
+                      */
+                    }
                 }
             }
         }
+
+        /*
+         * Se teve alguma alteração das contagens então retorna isso para que as contagens possam ser consultadas novamente
+         */
+        if ($alterou == true) {
+            $this->_em->flush();
+        }
+
+        return $alterou;
     }
 
     public function finalizaContagemEndereco($params, $paramsSystem)
@@ -812,7 +958,10 @@ class Inventario
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
 
-        $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
+        $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
+        if ($teveAlteracao == true) {
+            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
+        }
 
         foreach($contagemEndEntities as $contagemEndEn) {
 
