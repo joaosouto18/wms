@@ -127,6 +127,7 @@ class Inventario
         $codigoBarras   = $params['codigoBarras'];
         $idInventario   = $params['idInventario'];
         $numContagem    = $params['numContagem'];
+        $divergencia = null;
         if (isset($params['divergencia'])) {
             $divergencia    = $params['divergencia'];
         }
@@ -185,10 +186,12 @@ class Inventario
             }
         }
         
-        $populateForm['pickinCorreto']     = $pickingCorreto;
+        $populateForm['pickinCorreto']      = $pickingCorreto;
         $populateForm['idProduto']          = $idProduto;
         $populateForm['grade']              = $grade;
-        $populateForm['idContagemOs']       = $params['idContagemOs'];
+        $populateForm['divergencia']        = $divergencia;
+        $populateForm['numContagem']        =  $params['numContagem'];
+        $populateForm['idInventario']       = $params['idInventario'];
         $populateForm['codigoBarras']       = $params['codigoBarras'];
         $populateForm['idInventarioEnd']    = $params['idInventarioEnd'];
         $populateForm['idEndereco']         = $params['idEndereco'];
@@ -238,6 +241,18 @@ class Inventario
         $numContagem = null;
         if (isset($params['numContagem']))
             $numContagem            = $params['numContagem'];
+        $codigoBarras = null;
+        if (isset($params['codigoBarras']))
+            $codigoBarras   = $params['codigoBarras'];
+        $idInventario = null;
+        if (isset($params['idInventario']))
+            $idInventario   = $params['idInventario'];
+        $divergencia = null;
+        if (isset($params['divergencia']))
+            $divergencia   = $params['divergencia'];
+        $idEndereco = null;
+        if (isset($params['idEndereco']))
+            $idEndereco   = $params['idEndereco'];
 
         $produtoEn = $this->getEm()->getRepository('wms:Produto')
             ->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
@@ -267,17 +282,13 @@ class Inventario
                 }
             }
             if ($dataValida == false) {
-                return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => 'mobile');
+                $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
+                return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => $url);
             } else {
                 $validade = new \Zend_Date($data);
                 $validade = $validade->toString('Y-MM-dd');
 
             }
-        }
-
-        $divergencia = null;
-        if (isset($params['divergencia'])) {
-            $divergencia            = $params['divergencia'];
         }
 
         if ($divergencia == 1) {
