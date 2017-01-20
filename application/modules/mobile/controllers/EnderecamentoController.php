@@ -1350,11 +1350,11 @@ class Mobile_EnderecamentoController extends Action
         try {
             if (isset($embalado) && !empty($embalado) && isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
                 $LeituraColetor = new \Wms\Service\Coletor();
-//                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-                $endereco = EnderecoUtil::formatar($codigoBarrasEndereco);
+                $endereco = EnderecoUtil::formatar($codigoBarras);
                 /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
                 $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
                 if (!isset($enderecoEn) || empty($enderecoEn)) {
