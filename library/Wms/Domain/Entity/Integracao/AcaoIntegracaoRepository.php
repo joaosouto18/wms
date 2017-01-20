@@ -11,13 +11,14 @@ class AcaoIntegracaoRepository extends EntityRepository
     public function processaAcao($acaoEn) {
 
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-        $conexaoRepo = $this->getEntityManager()->getRepository('wms:integracao\ConexaoIntegracao');
+        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
 
+        $idAcao = $acaoEn->getId();
         $sucess = "S";
         $observacao = "";
 
         try {
-            $this->getEntityManager()->beginTransaction();
+            $this->_em->beginTransaction();
 
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
@@ -42,18 +43,24 @@ class AcaoIntegracaoRepository extends EntityRepository
                                                           'dados'=>$result));
                 $integracaoService->processaAcao();
 
-            $this->getEntityManager()->flush();
-            $this->getEntityManager()->commit();
+            $this->_em->flush();
+            $this->_em->commit();
 
         } catch (\Exception $e) {
                 $observacao = $e->getMessage() . " - QUERY: " . $query;
                 $sucess = "N";
 
-            $this->getEntityManager()->rollback();
+            $this->_em->rollback();
+            $this->_em->clear();
         }
 
         try {
-            $this->getEntityManager()->beginTransaction();
+            if ($this->_em->isOpen() == false) {
+                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+            }
+            $this->_em->beginTransaction();
+
+            $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
             if ($acaoEn->getIndUtilizaLog() == 'S') {
                 $andamentoEn = new AcaoIntegracaoAndamento();
@@ -61,20 +68,20 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $andamentoEn->setIndSucesso($sucess);
                 $andamentoEn->setDthAndamento(new \DateTime);
                 $andamentoEn->setObservacao($observacao);
-                $this->getEntityManager()->persist($andamentoEn);
+                $this->_em->persist($andamentoEn);
             }
 
             if ($sucess=="S") {
                 $acaoEn->setDthUltimaExecucao(new \DateTime);
-                $this->getEntityManager()->persist($acaoEn);
+                $this->_em->persist($acaoEn);
             }
 
-            $this->getEntityManager()->flush();
-            $this->getEntityManager()->commit();
+            $this->_em->flush();
+            $this->_em->commit();
 
         } catch (\Exception $e) {
             var_dump($e->getMessage());exit;
-            $this->getEntityManager()->rollback();
+            $this->_em->rollback();
         }
 
         return true;
