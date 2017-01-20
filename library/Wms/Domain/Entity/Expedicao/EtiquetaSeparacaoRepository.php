@@ -1043,7 +1043,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
-        $statusPendenteImpressao = EtiquetaSeparacao::STATUS_ETIQUETA_GERADA;
+        $statusPendenteImpressao = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
 
         $idExpedicao = $expedicaoEntity->getId();
         $sql = "SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.NUM_CARRINHO, MS.COD_MAPA_SEPARACAO
@@ -1100,6 +1100,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $mapaSeparacaoProdutoEn->setNumCaixaInicio($caixaInicio);
                     $mapaSeparacaoProdutoEn->setNumCaixaFim($caixaFim);
                     $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+
+                }
+                if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
+                    $this->getEntityManager()->remove($mapaSeparacao);
 
                 }
 
