@@ -3,10 +3,12 @@
 
         $('#codigoBarras').change(function () {
             var codBarras = $('#codigoBarras').val();
+            console.log(codBarras);
             $.ajax({
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
-//                    $('#endereco').val(data['endereco']);
+                    console.log('abc');
+                    $('#descricao').html(data['descricao']);
                     $('#capacidade').val(data['capacidade']);
                     $('#embalado').val(data['embalado']);
                     $('#referencia').val(data['referencia']);
@@ -29,12 +31,21 @@
                 }
             }
         }
-        return true;
     }
 
     function nextInputEndereco(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('endereco').value != "") {
+            if (document.getElementById('endereco').value == "") {
+                endereco   = document.getElementById('endereco');
+                if (endereco) {
+                    endereco.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            } else if (document.getElementById('endereco').value != "") {
                 capacidade   = document.getElementById('capacidade');
                 if (capacidade) {
                     capacidade.focus();
@@ -70,6 +81,7 @@
 </script>
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
 
+    <div id="descricao"></div>
     <div>
         <label>Produto:</label>
         <input class="focus" type="text" name="codigoBarras" id="codigoBarras" onkeydown="nextInput(event)" />

@@ -1367,6 +1367,8 @@ class Mobile_EnderecamentoController extends Action
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
+            } else {
+                $this->addFlashMessage('error', 'É Necessário preencher TODOS os campos!');
             }
 
         } catch (\Exception $e) {
@@ -1396,6 +1398,7 @@ class Mobile_EnderecamentoController extends Action
                                    'embalado'   => $embalagemEn->getEmbalado(),
                                    'referencia' => $embalagemEn->getProduto()->getReferencia(),
                                    'mensagem'   => $mensagem,
+                                   'descricao'  => $embalagemEn->getProduto()->getDescricao()
                             ));
     }
 }
