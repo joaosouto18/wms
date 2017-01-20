@@ -461,18 +461,6 @@ class Expedicao_IndexController extends Action
 
     }
 
-    /*
-    public function relatorioEmbaladosConferidosAjaxAction()
-    {
-        $idExpedicao = $this->_getParam('id');
-        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        $resultado = $mapaSeparacaoEmbaladoRepo->getEmbaladosByExpedicao($idExpedicao);
-
-
-        $this->exportPDF($resultado, 'embalados_conferidos', 'Embalados Conferidos por Carga', 'L');
-    }
-
-    */
     public function relatorioProdutosConferidosAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');

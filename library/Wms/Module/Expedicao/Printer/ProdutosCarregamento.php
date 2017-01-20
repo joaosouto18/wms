@@ -20,24 +20,32 @@ class ProdutosCarregamento extends Pdf
         $this->Cell(45, 10, utf8_decode("CONSULTAR CARREGAMENTO POR EXPEDICAO"),0,1);
     }
 
-    private function bodyPage($data, $embalagemRepo){
+    private function bodyPage($data, $embalagemRepo, $dataEmb = null){
 
-        $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE']), array('quantidade' => 'DESC'));
+        if (isset($dataEmb) && !empty($dataEmb)) {
+            $this->SetFont('Arial',  '', 10);
+            $this->Cell(20, 15, utf8_decode($dataEmb['SEQUENCIA']),0,0);
+            $this->Cell(30, 15, utf8_decode($dataEmb['QUANTIDADE_CONFERIDA']),0,0);
+            $this->Cell(40, 15, utf8_decode(substr($dataEmb['COD_MAPA_SEPARACAO_EMB_CLIENTE'],0,27)),0,0);
+            $this->Cell(70, 15, $dataEmb['NOM_PESSOA'],0,1);
+        } else {
+            $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE']), array('quantidade' => 'DESC'));
 
-        $this->SetFont('Arial',  '', 10);
-        $this->Cell(20, 15, utf8_decode($data['SEQUENCIA']),0,0);
-        $this->Cell(20, 15, utf8_decode($data['COD_PRODUTO']),0,0);
-        $this->Cell(70, 15, utf8_decode(substr($data['DSC_PRODUTO'],0,27)),0,0);
-        $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
-        foreach ($embalagemEntities as $embalagemEntity) {
-            $this->Cell(30, 15, utf8_decode(floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade()) . ' ' . $embalagemEntity->getDescricao()),0,0);
-            $data['QUANTIDADE_CONFERIDA'] = $data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade();
+            $this->SetFont('Arial',  '', 10);
+            $this->Cell(20, 15, utf8_decode($data['SEQUENCIA']),0,0);
+            $this->Cell(20, 15, utf8_decode($data['COD_PRODUTO']),0,0);
+            $this->Cell(70, 15, utf8_decode(substr($data['DSC_PRODUTO'],0,27)),0,0);
+            $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
+            foreach ($embalagemEntities as $embalagemEntity) {
+                $this->Cell(30, 15, utf8_decode(floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade()) . ' ' . $embalagemEntity->getDescricao()),0,0);
+                $data['QUANTIDADE_CONFERIDA'] = $data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade();
+            }
+            if (count($embalagemEntities) < 2) {
+                $this->Cell(30, 15, '',0,0);
+            }
+
+            $this->Cell(30, 15, $qtdTotal.' und.',0,1);
         }
-        if (count($embalagemEntities) < 2) {
-            $this->Cell(30, 15, '',0,0);
-        }
-
-        $this->Cell(30, 15, $qtdTotal.' und.',0,1);
 
     }
 
@@ -52,6 +60,7 @@ class ProdutosCarregamento extends Pdf
         /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
         $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao);
+        $embalados = $mapaSeparacaoConferenciaRepo->getEmbaladosConferidosByExpedicao($idExpedicao);
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
         $produtoRepo = $em->getRepository('wms:Produto');
 
@@ -98,6 +107,29 @@ class ProdutosCarregamento extends Pdf
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];
             $sequenciaAnt      = $valor['SEQUENCIA'];
 
+        }
+
+        foreach ($embalados as $embalado) {
+            $this->startPage();
+            $dataExpedicao = new \DateTime($embalado['DTH_INICIO']);
+            $dataExpedicao = $dataExpedicao->format('d/m/Y');
+            $this->SetFont('Arial',  "B", 12);
+            $this->Line(10,20,200,20);
+            $this->Cell(45, 10, utf8_decode("Expedição: $idExpedicao"),0,0);
+            $this->Cell(45, 10, utf8_decode("Data: $dataExpedicao"),0,1);
+            $this->Cell(20, 10, utf8_decode("Linha de Separação: $embalado[DSC_QUEBRA]"),0,1);
+            $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
+            $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,1);
+
+            $this->Line(10,70,200,70);
+
+            $this->SetFont('Arial',  "B", 8);
+            $this->Cell(20, 15, utf8_decode("Sequência:"),0,0);
+            $this->Cell(30, 15, utf8_decode("Qtd. Conferir:"),0,0);
+            $this->Cell(40, 15, utf8_decode("Cod. Embalado:"),0,0);
+            $this->Cell(70, 15, utf8_decode("Cliente:"),0,1);
+
+            $this->bodyPage(null, null, $embalado);
         }
 
         $this->Output('consultaCarregamento.pdf','D');
