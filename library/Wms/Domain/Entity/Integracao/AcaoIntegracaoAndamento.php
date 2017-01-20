@@ -9,7 +9,7 @@ use Wms\Domain\Configurator;
  * @Table(name="ACAO_INTEGRACAO_ANDAMENTO")
  * @Entity(repositoryClass="Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository")
  */
-class AcaoIntegracaoAndamento
+class   AcaoIntegracaoAndamento
 {
 
     /**
