@@ -109,25 +109,31 @@ class ProdutosCarregamento extends Pdf
 
         }
 
+        $mapaAnterior = null;
         foreach ($embalados as $embalado) {
-            $this->startPage();
-            $dataExpedicao = new \DateTime($embalado['DTH_INICIO']);
-            $dataExpedicao = $dataExpedicao->format('d/m/Y');
-            $this->SetFont('Arial',  "B", 12);
-            $this->Line(10,20,200,20);
-            $this->Cell(45, 10, utf8_decode("Expedição: $idExpedicao"),0,0);
-            $this->Cell(45, 10, utf8_decode("Data: $dataExpedicao"),0,1);
-            $this->Cell(20, 10, utf8_decode("Linha de Separação: $embalado[DSC_QUEBRA]"),0,1);
-            $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
-            $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,1);
+            if ($mapaAnterior != $embalado['COD_MAPA_SEPARACAO']) {
+                $this->startPage();
+                $dataExpedicao = new \DateTime($embalado['DTH_INICIO']);
+                $dataExpedicao = $dataExpedicao->format('d/m/Y');
+                $this->SetFont('Arial',  "B", 12);
+                $this->Line(10,20,200,20);
+                $this->Cell(45, 10, utf8_decode("Expedição: $idExpedicao"),0,0);
+                $this->Cell(45, 10, utf8_decode("Data: $dataExpedicao"),0,1);
+                $this->Cell(20, 10, utf8_decode("Linha de Separação: $embalado[DSC_QUEBRA]"),0,1);
+                $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
+                $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,1);
 
-            $this->Line(10,70,200,70);
+                $this->Line(10,70,200,70);
 
-            $this->SetFont('Arial',  "B", 8);
-            $this->Cell(20, 15, utf8_decode("Sequência:"),0,0);
-            $this->Cell(30, 15, utf8_decode("Qtd. Conferir:"),0,0);
-            $this->Cell(40, 15, utf8_decode("Cod. Embalado:"),0,0);
-            $this->Cell(70, 15, utf8_decode("Cliente:"),0,1);
+                $this->SetFont('Arial',  "B", 8);
+                $this->Cell(20, 15, utf8_decode("Sequência:"),0,0);
+                $this->Cell(30, 15, utf8_decode("Qtd. Conferir:"),0,0);
+                $this->Cell(40, 15, utf8_decode("Cod. Embalado:"),0,0);
+                $this->Cell(70, 15, utf8_decode("Cliente:"),0,1);
+
+                $mapaAnterior = $embalado['COD_MAPA_SEPARACAO'];
+            }
+
 
             $this->bodyPage(null, null, $embalado);
         }
