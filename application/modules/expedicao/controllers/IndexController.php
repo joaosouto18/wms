@@ -480,10 +480,6 @@ class Expedicao_IndexController extends Action
         $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
         $pdf->imprimir($idExpedicao);
 
-
-//        $this->exportPDF($resultado, 'produtos_conferidos', 'Produtos Conferidos por Carga', 'L');
-
     }
-
 
 }

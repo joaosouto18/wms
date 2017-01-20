@@ -235,15 +235,15 @@ class Expedicao extends Grid
 //                'cssClass' => 'pdf',
 //                'pkIndex' => 'id'
 //            ))
-//            ->addAction(array(
-//                'label' => 'Relatório de Carg. por Produtos',
-//                'target' => '_blank',
-//                'moduleName' => 'expedicao',
-//                'controllerName' => 'index',
-//                'actionName' => 'relatorio-produtos-conferidos-ajax',
-//                'cssClass' => 'pdf',
-//                'pkIndex' => 'id'
-//            ))
+            ->addAction(array(
+                'label' => 'Relatório de Carg. por Produtos',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'relatorio-produtos-conferidos-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
             ->addAction(array(
                 'label' => 'Relatório de Produtos sem Estoque',
                 'target' => '_blank',
