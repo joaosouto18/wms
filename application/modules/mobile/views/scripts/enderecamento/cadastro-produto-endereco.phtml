@@ -3,11 +3,9 @@
 
         $('#codigoBarras').change(function () {
             var codBarras = $('#codigoBarras').val();
-            console.log(codBarras);
             $.ajax({
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
-                    console.log('abc');
                     $('#descricao').html(data['descricao']);
                     $('#capacidade').val(data['capacidade']);
                     $('#embalado').val(data['embalado']);
@@ -23,6 +21,16 @@
                 endereco = document.getElementById('endereco');
                 if (endereco) {
                     endereco.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            } else if (document.getElementById('codigoBarras').value == "") {
+                endereco = document.getElementById('codigoBarras');
+                if (codigoBarras) {
+                    codigoBarras.focus();
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
