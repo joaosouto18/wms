@@ -27,11 +27,34 @@
                         event.returnValue = false;
                     }
                 }
-            } else if (document.getElementById('codigoBarras').value == "") {
+            }
+            if (document.getElementById('codigoBarras').value == "") {
                 endereco = document.getElementById('codigoBarras');
                 if (codigoBarras) {
                     codigoBarras.focus();
                     if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('endereco').value == "") {
+                endereco   = document.getElementById('endereco');
+                if (endereco) {
+                    endereco.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('endereco').value != "") {
+                capacidade   = document.getElementById('capacidade');
+                if (capacidade) {
+                    capacidade.focus();
+                    if(event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
