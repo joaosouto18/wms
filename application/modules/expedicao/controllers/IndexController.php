@@ -461,10 +461,10 @@ class Expedicao_IndexController extends Action
 
     }
 
+    /*
     public function relatorioEmbaladosConferidosAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');
-        /** @var Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $resultado = $mapaSeparacaoEmbaladoRepo->getEmbaladosByExpedicao($idExpedicao);
 
@@ -472,19 +472,18 @@ class Expedicao_IndexController extends Action
         $this->exportPDF($resultado, 'embalados_conferidos', 'Embalados Conferidos por Carga', 'L');
     }
 
+    */
     public function relatorioProdutosConferidosAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');
-        /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
-        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao);
 
-//        $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
-//        $pdf->imprimir($resultado);
+        $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
+        $pdf->imprimir($idExpedicao);
 
 
-        $this->exportPDF($resultado, 'produtos_conferidos', 'Produtos Conferidos por Carga', 'L');
+//        $this->exportPDF($resultado, 'produtos_conferidos', 'Produtos Conferidos por Carga', 'L');
 
     }
+
 
 }

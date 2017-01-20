@@ -172,6 +172,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /*
     public function getEmbaladosByExpedicao($idExpedicao)
     {
         $SQL = "SELECT C.COD_CARGA_EXTERNO CARREGAMENTO, P.NOM_PESSOA CLIENTE, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE COD_EMBALADO, MSE.NUM_SEQUENCIA SEQUENCIA
@@ -187,6 +188,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
+    */
 
 }
 
