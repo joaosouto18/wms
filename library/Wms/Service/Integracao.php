@@ -3,6 +3,8 @@
 namespace Wms\Service;
 
 
+use Doctrine\ORM\EntityManager;
+use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 
 class embalagem {
@@ -18,10 +20,13 @@ class Integracao
 {
     protected $_acao;
     protected $_dados;
+
+    /** @var EntityManager _em */
     protected $_em;
 
     public function __construct($em,$params)
     {
+
         $this->_em = $em;
         \Zend\Stdlib\Configurator::configure($this, $params);
     }
@@ -62,12 +67,63 @@ class Integracao
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_PRODUTO:
-                    $this->processaProdutos($this->_dados);
-                    return;
+                    return $this->processaProdutos($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_ESTOQUE:
+                    return $this->processaEstoque($this->_dados);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    public function processaEstoque($dados){
+
+        $produtoRepo    = $this->_em->getRepository('wms:Produto');
+
+        /*
+         * Removo os estoques antigos
+         */
+        $query = $this->_em->createQuery("DELETE FROM wms:Enderecamento\EstoqueErp");
+        $query->execute();
+
+        /*
+         * Insiro o novo estoque retornado pela query
+         */
+        $qtdIteracoes = 0;
+        foreach ($dados as $valorEstoque) {
+            $qtdIteracoes = $qtdIteracoes + 1;
+
+            $codProduto = $valorEstoque['COD_PRODUTO'];
+            $grade= "UNICA";
+
+            if (isset($valorEstoque['GRADE'])) {
+                $grade = $valorEstoque['GRADE'];
+            }
+            $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+            if ($produtoEn!= null) {
+                $estoqueErp = new EstoqueErp();
+                $estoqueErp->setProduto($produtoEn);
+                $estoqueErp->setCodProduto($codProduto);
+                $estoqueErp->setGrade($grade);
+                $estoqueErp->setEstoqueDisponivel(str_replace(',','.',$valorEstoque['ESTOQUE_DISPONIVEL']));
+                $estoqueErp->setEstoqueGerencial(str_replace(',','.',$valorEstoque['ESTOQUE_GERENCIAL']));
+                $estoqueErp->setFatorUnVenda(str_replace(',','.',$valorEstoque['FATOR_UNIDADE_VENDA']));
+                $estoqueErp->setUnVenda($valorEstoque['DSC_UNIDADE']);
+                $estoqueErp->setVlrEstoqueTotal(str_replace(',','.',$valorEstoque['VALOR_ESTOQUE']));
+                $estoqueErp->setVlrEstoqueUnitario(str_replace(',','.',$valorEstoque['CUSTO_UNITARIO']));
+                $this->_em->persist($estoqueErp);
+            }
+
+            if ($qtdIteracoes == 100) {
+                $this->_em->flush();
+                $this->_em->clear();
+                $qtdIteracoes = 0;
+            }
+
+        }
+
+        $this->_em->flush();
+        return true;
     }
 
     public function processaProdutos($dados){
@@ -202,6 +258,7 @@ class Integracao
 
             }
             $this->_em->flush();
+            return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
