@@ -105,12 +105,12 @@ class Integracao
                 $estoqueErp->setProduto($produtoEn);
                 $estoqueErp->setCodProduto($codProduto);
                 $estoqueErp->setGrade($grade);
-                $estoqueErp->setEstoqueDisponivel((double) $valorEstoque['ESTOQUE_DISPONIVEL']);
-                $estoqueErp->setEstoqueGerencial((double) $valorEstoque['ESTOQUE_GERENCIAL']);
-                $estoqueErp->setFatorUnVenda((double) $valorEstoque['FATOR_UNIDADE_VENDA']);
+                $estoqueErp->setEstoqueDisponivel(str_replace(',','.',$valorEstoque['ESTOQUE_DISPONIVEL']));
+                $estoqueErp->setEstoqueGerencial(str_replace(',','.',$valorEstoque['ESTOQUE_GERENCIAL']));
+                $estoqueErp->setFatorUnVenda(str_replace(',','.',$valorEstoque['FATOR_UNIDADE_VENDA']));
                 $estoqueErp->setUnVenda($valorEstoque['DSC_UNIDADE']);
-                $estoqueErp->setVlrEstoqueTotal((double) $valorEstoque['VALOR_ESTOQUE']);
-                $estoqueErp->setVlrEstoqueUnitario((double) $valorEstoque['CUSTO_UNITARIO']);
+                $estoqueErp->setVlrEstoqueTotal(str_replace(',','.',$valorEstoque['VALOR_ESTOQUE']));
+                $estoqueErp->setVlrEstoqueUnitario(str_replace(',','.',$valorEstoque['CUSTO_UNITARIO']));
                 $this->_em->persist($estoqueErp);
             }
 
