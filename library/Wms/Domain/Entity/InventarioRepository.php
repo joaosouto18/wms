@@ -470,7 +470,7 @@ class InventarioRepository extends EntityRepository
         $params['qtd']          = $qtd;
         $params['volume']       = $estoqueEn->getProdutoVolume();
         $params['embalagem']    = 0;
-        $params['validade']      = $contagemEndEn->getValidade();
+        $params['validade']     = null;
         $params['tipo']         = 'I';
         $params['observacoes']  = 'Mov. correção inventário';
         $params['os']           = $osEn;
