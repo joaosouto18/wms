@@ -392,6 +392,7 @@ class Expedicao_IndexController extends Action
 
     public function relatorioCodigoBarrasProdutosAction()
     {
+        ini_set('max_execution_time', 3000);
         $idExpedicao     = $this->_getParam('id',0);
         $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\EtiquetaCodigoBarras();
         $gerarEtiqueta->init($idExpedicao);
