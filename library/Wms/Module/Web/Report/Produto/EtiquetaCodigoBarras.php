@@ -41,7 +41,7 @@ class EtiquetaCodigoBarras extends eFPDF
             $this->SetFont('Arial','',10);
             $this->Cell(15, 20, $produto['id'], 0, 0);
             $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
-            $this->Cell(90, 20, $produto['endereco'], 0, 1);
+            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
             //$this->Cell(20, 20, '', 0, 1);
             //$this->Cell(20, 10, '', 0, 1,'C');
 
