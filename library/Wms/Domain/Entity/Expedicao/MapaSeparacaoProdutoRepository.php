@@ -49,13 +49,14 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     public function getMapaProdutoByExpedicao($idExpedicao)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id, p.descricao, NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, NVL(pe.descricao, pv.descricao) unidadeMedida')
+            ->select('p.id, p.descricao, NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, NVL(pe.descricao, pv.descricao) unidadeMedida, de.descricao endereco')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
             ->innerJoin('msp.produto', 'p')
             ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade AND msp.produtoEmbalagem = pe.id')
             ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade AND msp.produtoVolume = pv.id')
-            ->where("ms.expedicao = $idExpedicao")
+            ->leftJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de.id = pe.endereco')
+//            ->where("ms.expedicao = $idExpedicao")
             ->andWhere("pe.imprimirCB = 'S'");
 
         return $sql->getQuery()->getResult();
