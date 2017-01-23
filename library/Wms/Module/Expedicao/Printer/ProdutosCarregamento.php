@@ -29,7 +29,7 @@ class ProdutosCarregamento extends Pdf
             $this->Cell(40, 6, utf8_decode(substr($dataEmb['COD_MAPA_SEPARACAO_EMB_CLIENTE'],0,27)),0,0);
             $this->Cell(70, 6, $dataEmb['NOM_PESSOA'],0,1);
         } else {
-            $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE']), array('quantidade' => 'DESC'));
+            $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
 
             $this->SetFont('Arial',  '', 10);
             $this->Cell(20, 6, utf8_decode($data['SEQUENCIA']),0,0);
