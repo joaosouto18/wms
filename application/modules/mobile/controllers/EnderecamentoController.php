@@ -1345,16 +1345,15 @@ class Mobile_EnderecamentoController extends Action
         $codBarras = $this->_getParam('codigoBarras');
         $codigoBarrasEndereco = $this->_getParam('endereco');
         $capacidadePicking = $this->_getParam('capacidade');
-        $embalado = trim($this->_getParam('embalado'));
 
         try {
-            if (isset($embalado) && !empty($embalado) && isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
+            if (isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
                 $LeituraColetor = new \Wms\Service\Coletor();
-                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
+//                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-                $endereco = EnderecoUtil::formatar($codigoBarras);
+                $endereco = EnderecoUtil::formatar($codigoBarrasEndereco);
                 /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
                 $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
                 if (!isset($enderecoEn) || empty($enderecoEn)) {
@@ -1363,7 +1362,7 @@ class Mobile_EnderecamentoController extends Action
 
                 /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                 $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-                $embalagemRepo->updateEmbalagem($codBarras,$enderecoEn,$capacidadePicking,$embalado);
+                $embalagemRepo->updateEmbalagem($codBarras,$enderecoEn,$capacidadePicking);
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
