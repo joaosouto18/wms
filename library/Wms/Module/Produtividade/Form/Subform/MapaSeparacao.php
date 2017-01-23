@@ -22,12 +22,17 @@ class MapaSeparacao extends SubForm
                 'label' => 'Mapa Separação',
                 'class' => 'inptText'
             ))
+            ->addElement('text', 'rua', array(
+                'size' => 5,
+                'label' => 'Rua',
+                'class' => 'inptText'
+            ))
             ->addElement('button', 'salvarMapa', array(
                 'label' => 'Buscar',
                 'class' => 'btn btnSearch',
                 'decorators' => array('ViewHelper'),
             ))
-            ->addDisplayGroup(array('codMapaSeparacao','pessoa','salvarMapa'), 'identificacao', array('legend' => 'Vincular Mapa Separação')
+            ->addDisplayGroup(array('codMapaSeparacao','pessoa','rua','salvarMapa'), 'identificacao', array('legend' => 'Vincular Mapa Separação')
             );
     }
 
