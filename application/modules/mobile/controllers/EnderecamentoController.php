@@ -744,7 +744,7 @@ class Mobile_EnderecamentoController extends Action
             if (empty($codigoBarras))
                 throw new \Exception ("Necessário informar o Endereço");
 
-            if (empty($nivel) && !isset($nivel))
+            if (is_null($nivel) || $nivel == '')
                 throw new \Exception ("Necessário informar o Nivel");
 
             $LeituraColetor = new LeituraColetor();

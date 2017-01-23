@@ -801,7 +801,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getProdutoByNivel($dscEndereco, $nivel) {
 
-        if (empty($nivel)) {
+        if (is_null($nivel) || $nivel == '') {
             throw new \Exception('Nivel não foi informado');
         }
 
