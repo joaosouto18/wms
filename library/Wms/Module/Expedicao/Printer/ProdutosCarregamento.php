@@ -37,8 +37,8 @@ class ProdutosCarregamento extends Pdf
             $this->Cell(70, 6, utf8_decode(substr($data['DSC_PRODUTO'],0,27)),0,0);
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
             foreach ($embalagemEntities as $embalagemEntity) {
-                $this->Cell(30, 6, utf8_decode(floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade()) . ' ' . $embalagemEntity->getDescricao()),0,0);
-                $data['QUANTIDADE_CONFERIDA'] = $data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade();
+                $this->Cell(30, 6, utf8_decode(floor(number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') / number_format($embalagemEntity->getQuantidade(),3,'.','')) . ' ' . $embalagemEntity->getDescricao()),0,0);
+                $data['QUANTIDADE_CONFERIDA'] = number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') % number_format($embalagemEntity->getQuantidade(),3,'.','');
             }
             if (count($embalagemEntities) < 2) {
                 $this->Cell(30, 6, '',0,0);
