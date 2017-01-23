@@ -110,9 +110,9 @@ class ProdutosCarregamento extends Pdf
 
         }
 
-        $mapaAnterior = null;
+        $sequencia = null;
         foreach ($embalados as $embalado) {
-            if ($mapaAnterior != $embalado['COD_MAPA_SEPARACAO']) {
+            if ($sequencia != $embalado['SEQUENCIA']) {
                 $this->startPage();
                 $dataExpedicao = new \DateTime($embalado['DTH_INICIO']);
                 $dataExpedicao = $dataExpedicao->format('d/m/Y');
@@ -132,7 +132,7 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(40, 15, utf8_decode("Cod. Embalado:"),0,0);
                 $this->Cell(70, 15, utf8_decode("Cliente:"),0,1);
 
-                $mapaAnterior = $embalado['COD_MAPA_SEPARACAO'];
+                $sequencia = $embalado['COD_MAPA_SEPARACAO'];
             }
 
 

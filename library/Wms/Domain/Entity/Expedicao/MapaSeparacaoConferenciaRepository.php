@@ -140,7 +140,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     INNER JOIN PESSOA P ON P.COD_PESSOA = CONF.COD_PESSOA AND P.COD_PESSOA = MSE.COD_PESSOA
                     WHERE MS.COD_EXPEDICAO = $idExpedicao
                     GROUP BY PP.SEQUENCIA, P.NOM_PESSOA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, C.COD_CARGA_EXTERNO, MS.DSC_QUEBRA, E.DTH_INICIO, P.COD_PESSOA, MS.COD_MAPA_SEPARACAO
-                    ORDER BY P.NOM_PESSOA, PP.SEQUENCIA";
+                    ORDER BY PP.SEQUENCIA";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
