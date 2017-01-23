@@ -6,10 +6,9 @@
             $.ajax({
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
+                    $('#descricao').html(data['descricao']);
                     $('#endereco').val(data['endereco']);
                     $('#capacidade').val(data['capacidade']);
-                    $('#embalado').val(data['embalado']);
-                    $('#referencia').val(data['referencia']);
                 }
             });
         });
@@ -46,13 +45,55 @@
                     }
                 }
             }
+            if (document.getElementById('codigoBarras').value == "") {
+                endereco = document.getElementById('codigoBarras');
+                if (codigoBarras) {
+                    codigoBarras.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('endereco').value == "") {
+                endereco   = document.getElementById('endereco');
+                if (endereco) {
+                    endereco.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('endereco').value != "") {
+                capacidade   = document.getElementById('capacidade');
+                if (capacidade) {
+                    capacidade.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
         }
-        return true;
     }
 
     function nextInputEndereco(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('endereco').value != "") {
+            if (document.getElementById('endereco').value == "") {
+                endereco   = document.getElementById('endereco');
+                if (endereco) {
+                    endereco.focus();
+                    if(event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            } else if (document.getElementById('endereco').value != "") {
                 capacidade   = document.getElementById('capacidade');
                 if (capacidade) {
                     capacidade.focus();
@@ -68,26 +109,27 @@
         return true;
     }
 
-    function nextInputCapacidade(event) {
-        if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('capacidade').value != "") {
-                embalado   = document.getElementById('embalado');
-                if (embalado) {
-                    embalado.focus();
-                    if(event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-
-            }
-        }
-        return true;
-    }
+//    function nextInputCapacidade(event) {
+//        if (event.which == 13 || event.keyCode == 13) {
+//            if (document.getElementById('capacidade').value != "") {
+//                embalado   = document.getElementById('embalado');
+//                if (embalado) {
+//                    embalado.focus();
+//                    if(event.preventDefault) {
+//                        event.preventDefault();
+//                    } else {
+//                        event.returnValue = false;
+//                    }
+//                }
+//
+//            }
+//        }
+//        return true;
+//    }
 </script>
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
 
+    <div id="descricao"></div>
     <div>
         <label>Produto:</label>
         <input class="focus" type="text" name="codigoBarras" id="codigoBarras" onkeydown="nextInput(event)" />
@@ -95,14 +137,8 @@
 
     <div>
         <label>End: -------------------- Cap:</label>
-        <input type="text" name="endereco" id="endereco" class="valid" size="13" maxlength="12" onkeypress="formatarEndereco(event)" onkeydown="nextInputEndereco(event)" />
-        <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" onkeydown="nextInputCapacidade(event)" />
-    </div>
-
-    <div>
-        <label>Emb: - Refer:</label>
-        <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
-        <input type="text" name="referencia" id="referencia" value="" />
+        <input type="text" name="endereco" id="endereco" class="valid" onkeypress="formatarEndereco(event)" onkeydown="nextInputEndereco(event)" />
+        <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" />
     </div>
 
     <input type="submit" name="submit" id="submit" value="Cadastrar" />

@@ -24,6 +24,10 @@ class Carregamento extends Grid
                     'index' => 'carga',
                 ))
                 ->addColumn(array(
+                    'label' => 'Pedido.',
+                    'index' => 'pedido',
+                ))
+                ->addColumn(array(
                     'label' => 'Itinerario',
                     'index' => 'itinerario',
                 ))

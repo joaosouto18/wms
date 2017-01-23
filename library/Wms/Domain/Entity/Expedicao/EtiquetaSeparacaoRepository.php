@@ -1102,6 +1102,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
 
                 }
+                if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
+                    $this->getEntityManager()->remove($mapaSeparacao);
+
+                }
 
             }
         }

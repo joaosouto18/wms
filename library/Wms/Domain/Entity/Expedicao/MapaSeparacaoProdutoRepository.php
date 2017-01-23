@@ -48,6 +48,15 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function getMapaProdutoByExpedicao($idExpedicao)
     {
+//        $sql = $this->getEntityManager()->createQueryBuilder()
+//            ->select('p.id, p.descricao, pe.codigoBarras codigoBarras, e.descricao endereco')
+//            ->from('wms:Produto\Embalagem', 'pe')
+//            ->innerJoin('pe.endereco', 'e')
+//            ->innerJoin('pe.produto', 'p')
+//            ->where("pe.imprimirCB = 'S'");
+
+
+
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('p.id, p.descricao, NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, NVL(pe.descricao, pv.descricao) unidadeMedida')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')

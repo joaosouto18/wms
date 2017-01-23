@@ -13,6 +13,7 @@ class AcaoIntegracao
 {
 
     const INTEGRACAO_PRODUTO = "600";
+    const INTEGRACAO_ESTOQUE = "601";
 
     /**
      * @Id

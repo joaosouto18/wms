@@ -226,15 +226,15 @@ class Expedicao extends Grid
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
-            ->addAction(array(
-                'label' => 'Relatório de Carg. de Embalados',
-                'target' => '_blank',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'index',
-                'actionName' => 'relatorio-embalados-conferidos-ajax',
-                'cssClass' => 'pdf',
-                'pkIndex' => 'id'
-            ))
+//            ->addAction(array(
+//                'label' => 'Relatório de Carg. de Embalados',
+//                'target' => '_blank',
+//                'moduleName' => 'expedicao',
+//                'controllerName' => 'index',
+//                'actionName' => 'relatorio-embalados-conferidos-ajax',
+//                'cssClass' => 'pdf',
+//                'pkIndex' => 'id'
+//            ))
             ->addAction(array(
                 'label' => 'Relatório de Carg. por Produtos',
                 'target' => '_blank',

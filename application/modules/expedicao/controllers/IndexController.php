@@ -392,6 +392,8 @@ class Expedicao_IndexController extends Action
 
     public function relatorioCodigoBarrasProdutosAction()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
         $idExpedicao     = $this->_getParam('id',0);
         $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\EtiquetaCodigoBarras();
         $gerarEtiqueta->init($idExpedicao);
@@ -461,29 +463,12 @@ class Expedicao_IndexController extends Action
 
     }
 
-    public function relatorioEmbaladosConferidosAjaxAction()
-    {
-        $idExpedicao = $this->_getParam('id');
-        /** @var Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        $resultado = $mapaSeparacaoEmbaladoRepo->getEmbaladosByExpedicao($idExpedicao);
-
-
-        $this->exportPDF($resultado, 'embalados_conferidos', 'Embalados Conferidos por Carga', 'L');
-    }
-
     public function relatorioProdutosConferidosAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');
-        /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
-        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao);
 
-//        $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
-//        $pdf->imprimir($resultado);
-
-
-        $this->exportPDF($resultado, 'produtos_conferidos', 'Produtos Conferidos por Carga', 'L');
+        $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
+        $pdf->imprimir($idExpedicao);
 
     }
 
