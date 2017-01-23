@@ -657,7 +657,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $produtoEntity  = $pedidoProduto->getProduto();
                 $quantidade     = $pedidoProduto->getQuantidade() - $pedidoProduto->getQtdCortada();
                 $depositoEnderecoEn = null;
-
+                $enderecosPulmao = null;
                 $pedidoEntity->setIndEtiquetaMapaGerado("S");
                 $this->getEntityManager()->persist($pedidoEntity);
 
