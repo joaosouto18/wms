@@ -718,7 +718,7 @@ class MapaSeparacao extends Pdf
                     $this->SetFont('Arial','B',10);
 //                    $this->Cell(20, 2, utf8_decode("ROTA: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 2, utf8_decode($linhaSeparacao), 0, 1);
+//                    $this->Cell(20, 2, utf8_decode($linhaSeparacao), 0, 1);
 
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 2, '', 0, 1);
