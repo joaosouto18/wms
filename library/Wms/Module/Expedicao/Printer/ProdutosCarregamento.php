@@ -24,27 +24,27 @@ class ProdutosCarregamento extends Pdf
 
         if (isset($dataEmb) && !empty($dataEmb)) {
             $this->SetFont('Arial',  '', 10);
-            $this->Cell(20, 15, utf8_decode($dataEmb['SEQUENCIA']),0,0);
-            $this->Cell(30, 15, utf8_decode($dataEmb['QUANTIDADE_CONFERIDA']),0,0);
-            $this->Cell(40, 15, utf8_decode(substr($dataEmb['COD_MAPA_SEPARACAO_EMB_CLIENTE'],0,27)),0,0);
-            $this->Cell(70, 15, $dataEmb['NOM_PESSOA'],0,1);
+            $this->Cell(20, 6, utf8_decode($dataEmb['SEQUENCIA']),0,0);
+            $this->Cell(30, 6, utf8_decode($dataEmb['QUANTIDADE_CONFERIDA']),0,0);
+            $this->Cell(40, 6, utf8_decode(substr($dataEmb['COD_MAPA_SEPARACAO_EMB_CLIENTE'],0,27)),0,0);
+            $this->Cell(70, 6, $dataEmb['NOM_PESSOA'],0,1);
         } else {
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE']), array('quantidade' => 'DESC'));
 
             $this->SetFont('Arial',  '', 10);
-            $this->Cell(20, 15, utf8_decode($data['SEQUENCIA']),0,0);
-            $this->Cell(20, 15, utf8_decode($data['COD_PRODUTO']),0,0);
-            $this->Cell(70, 15, utf8_decode(substr($data['DSC_PRODUTO'],0,27)),0,0);
+            $this->Cell(20, 6, utf8_decode($data['SEQUENCIA']),0,0);
+            $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0);
+            $this->Cell(70, 6, utf8_decode(substr($data['DSC_PRODUTO'],0,27)),0,0);
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
             foreach ($embalagemEntities as $embalagemEntity) {
-                $this->Cell(30, 15, utf8_decode(floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade()) . ' ' . $embalagemEntity->getDescricao()),0,0);
+                $this->Cell(30, 6, utf8_decode(floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade()) . ' ' . $embalagemEntity->getDescricao()),0,0);
                 $data['QUANTIDADE_CONFERIDA'] = $data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade();
             }
             if (count($embalagemEntities) < 2) {
-                $this->Cell(30, 15, '',0,0);
+                $this->Cell(30, 6, '',0,0);
             }
 
-            $this->Cell(30, 15, $qtdTotal.' und.',0,1);
+            $this->Cell(30, 6, $qtdTotal.' und.',0,1);
         }
 
     }
@@ -88,6 +88,7 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(45, 10, utf8_decode("Expedição: $idExpedicao"),0,0);
                 $this->Cell(45, 10, utf8_decode("Data: $dataExpedicao"),0,0);
                 $this->Cell(20, 10, utf8_decode("Linha de Separação: $valor[DSC_LINHA_SEPARACAO]"),0,1);
+                $this->Cell(45, 10, utf8_decode("Placa: $valor[DSC_PLACA_CARGA]"),0,0);
                 $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
                 $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,1);
 
