@@ -17,7 +17,7 @@ class Inventario_IndexController  extends Action
 
     public function indexAction()
     {
-        ini_set('max_execution_time', 3000);
+        ini_set('max_execution_time', -1);
         $grid =  new \Wms\Module\Inventario\Grid\Inventario();
         $this->view->grid = $grid->init();
         $id = $this->_getParam('id');
