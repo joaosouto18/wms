@@ -6,31 +6,32 @@
             $.ajax({
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
-                    $('#descricao').html(data['descricao']);
-                    $('#endereco').val(data['endereco']);
+                    $('#descricao').html(data['descricao']+' - '+data['endereco']);
+//                    $('#endereco').val(data['endereco']);
                     $('#capacidade').val(data['capacidade']);
                 }
             });
         });
     });
 
-    function formatarEndereco(event){
-        var endereco = $('#endereco').val();
-        if (event.keyCode != 8) {
-            if (endereco.length == 2){
-                $('#endereco').val(endereco + ".");
-            }
-            if (endereco.length == 6){
-                $('#endereco').val(endereco + ".");
-            }
-            if (endereco.length == 9){
-                $('#endereco').val(endereco + ".");
-            }
-            if (endereco.length == 12) {
-                $('#endereco').val('');
-            }
-        }
-    }
+//    function formatarEndereco(event){
+//        var endereco = $('#endereco').val();
+//        if (event.keyCode != 8) {
+//            if (endereco.length == 2){
+//                $('#endereco').val(endereco + ".");
+//            }
+//            if (endereco.length == 6){
+//                $('#endereco').val(endereco + ".");
+//            }
+//
+//            if (endereco.length == 9){
+//                $('#endereco').val(endereco + ".");
+//            }
+//            if (endereco.length == 12) {
+//                $('#endereco').val('');
+//            }
+//        }
+//    }
 
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
@@ -137,7 +138,7 @@
 
     <div>
         <label>End: -------------------- Cap:</label>
-        <input type="text" name="endereco" id="endereco" class="valid" onkeypress="formatarEndereco(event)" onkeydown="nextInputEndereco(event)" />
+        <input type="text" name="endereco" id="endereco" class="valid" onkeydown="nextInputEndereco(event)" />
         <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" />
     </div>
 
