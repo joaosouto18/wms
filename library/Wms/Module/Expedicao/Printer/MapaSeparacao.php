@@ -694,7 +694,7 @@ class MapaSeparacao extends Pdf
                 }
                 if (isset($embalagemEn) && !empty($embalagemEn))
                     $codigoBarras = $embalagemEn->getCodigoBarras();
-                    $embalagem   = $embalagemEn->getDescricao() ;
+                    $embalagem   = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
