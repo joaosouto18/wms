@@ -132,7 +132,7 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(40, 15, utf8_decode("Cod. Embalado:"),0,0);
                 $this->Cell(70, 15, utf8_decode("Cliente:"),0,1);
 
-                $sequencia = $embalado['COD_MAPA_SEPARACAO'];
+                $sequencia = $embalado['SEQUENCIA'];
             }
 
 
