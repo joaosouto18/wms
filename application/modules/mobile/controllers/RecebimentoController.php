@@ -232,7 +232,7 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $shelfLife = $produtoEn->getDiasVidaUtil();
-                if (is_null($shelfLife) || $shelfLife == '')
+                if (is_null($shelfLife) || $shelfLife === '')
                     throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
 
                 $hoje = new Zend_Date;
