@@ -127,7 +127,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (isset($idExpedicao) && !empty($idExpedicao)) {
             $andWhere .= " AND MS.COD_EXPEDICAO = $idExpedicao ";
         }
-        $sql = "SELECT E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE
+        $sql = "SELECT E.COD_EXPEDICAO, MAX(C.COD_CARGA_EXTERNO), I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE
                     FROM MAPA_SEPARACAO MS
                     LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                     INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -139,7 +139,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 WHERE 1 = 1
                 $andWhere
                 AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE IS NOT NULL
-                GROUP BY E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE";
+                GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
