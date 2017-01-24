@@ -627,7 +627,7 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= utf8_decode("$etiqueta[endereco]\n");
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
                 if ($reentrega == false) {
-                    $impressao = utf8_decode("$etiqueta[endereco]\n");
+//                    $impressao = utf8_decode("$etiqueta[endereco]\n");
                     $this->MultiCell(100, 3.9, $impressao, 0, 'L');
                     $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
                 } else {
@@ -656,7 +656,7 @@ class EtiquetaSeparacao extends Pdf
                 $impressao = utf8_decode("$etiqueta[endereco]\n");
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
                 if ($reentrega == false) {
-                    $impressao = utf8_decode("$etiqueta[endereco]\n");
+//                    $impressao = utf8_decode("$etiqueta[endereco]\n");
                     $this->MultiCell(90, 3.9, $impressao, 0, 'L');
                     $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68, 17);
                 } else {
