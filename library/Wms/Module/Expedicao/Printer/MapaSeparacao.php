@@ -828,7 +828,7 @@ class MapaSeparacao extends Pdf
         $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
 
         $this->AddPage();
-        $x = 150;
+        $x = 140;
         $y = 15;
         $count = 1;
         foreach ($produtos as $produto)
