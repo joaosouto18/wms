@@ -686,10 +686,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     if ($embalagemAtual->getEmbalado() == 'S') {
                         $embalado = true;
                     }
-                } else {
-                    if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
-                        $embalado = true;
-                    }
                 }
 
                 if ($embalado === true) {
