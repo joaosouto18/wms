@@ -1,6 +1,6 @@
 <?php
 use Wms\Controller\Action,
-    Wms\Util\Coletor as ColetorUtil;
+    Wms\Service\Recebimento as LeituraColetor;
 
 
 class Mobile_RessuprimentoController extends Action
@@ -43,7 +43,8 @@ class Mobile_RessuprimentoController extends Action
             $this->view->codigoBarras = $codigoBarras;
 
             if ($codigoBarras) {
-                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
+                $LeituraColetor = new LeituraColetor();
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -124,7 +125,8 @@ class Mobile_RessuprimentoController extends Action
 
         if ($codigoBarrasUMA)
         {
-            $codigoBarrasUMA = ColetorUtil::retiraDigitoIdentificador($codigoBarrasUMA);
+            $LeituraColetor = new LeituraColetor();
+            $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
 
             $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $idEndereco);
             if ($result == NULL) {
@@ -153,7 +155,8 @@ class Mobile_RessuprimentoController extends Action
 
         if ($etiquetaProduto)
         {
-            $etiquetaProduto = ColetorUtil::adequaCodigoBarras($etiquetaProduto, true);
+            $LeituraColetor = new LeituraColetor();
+            $etiquetaProduto = $LeituraColetor->analisarCodigoBarras($etiquetaProduto);
 
             $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco);
             if ($result == NULL) {

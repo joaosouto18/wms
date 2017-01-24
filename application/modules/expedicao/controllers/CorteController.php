@@ -1,6 +1,6 @@
 <?php
 use Wms\Module\Web\Controller\Action,
-    \Wms\Util\Coletor as ColetorUtil;
+    Wms\Service\Recebimento as LeituraColetor;
 
 class Expedicao_CorteController  extends Action
 {
@@ -20,6 +20,7 @@ class Expedicao_CorteController  extends Action
 
     public function salvarAction()
     {
+        $LeituraColetor = new LeituraColetor();
         $request = $this->getRequest();
         $idExpedicao = $this->getRequest()->getParam('id');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
@@ -37,8 +38,7 @@ class Expedicao_CorteController  extends Action
                     $this->addFlashMessage('error', 'É necessário preencher todos os campos');
                     $this->_redirect('/expedicao');
                 }
-                $codBarra = ColetorUtil::retiraDigitoIdentificador($codBarra);
-                $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $codBarra));
+                $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $LeituraColetor->retiraDigitoIdentificador($codBarra)));
                 if ($etiquetaEntity == null ) {
                     $this->addFlashMessage('error', 'Etiqueta não encontrada');
                     $this->_redirect('/expedicao');
@@ -58,7 +58,7 @@ class Expedicao_CorteController  extends Action
                 }
 
                 if ($encontrouEtiqueta == false) {
-                    $this->addFlashMessage('error', 'A Etiqueta código ' . $codBarra . ' não pertence a expedição ' . $idExpedicao);
+                    $this->addFlashMessage('error', 'A Etiqueta código ' . $LeituraColetor->retiraDigitoIdentificador($codBarra) . ' não pertence a expedição ' . $idExpedicao);
                     $this->_redirect('/expedicao');
                 }
                 if ($etiquetaEntity->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
@@ -76,7 +76,7 @@ class Expedicao_CorteController  extends Action
 
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Etiqueta '. $codBarra .' cortada', $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
+                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                 $this->addFlashMessage('success', 'Etiqueta cortada com sucesso');
 
             }else {
@@ -103,7 +103,7 @@ class Expedicao_CorteController  extends Action
 
         if (isset($idMapa) && !empty($idMapa))
             $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa,$codProduto,$grade);
-         else
+        else
             $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();

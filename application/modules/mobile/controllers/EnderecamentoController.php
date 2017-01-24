@@ -1,8 +1,8 @@
 <?php
 use Wms\Controller\Action,
     \Wms\Util\Endereco as EnderecoUtil,
-    \Wms\Util\Coletor as ColetorUtil,
     Wms\Domain\Entity\Enderecamento\Palete as Palete,
+    Wms\Service\Recebimento as LeituraColetor,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
     Wms\Domain\Entity\Enderecamento\Estoque;
@@ -22,7 +22,7 @@ class Mobile_EnderecamentoController extends Action
 
         if ($codigoBarrasEndereco) {
             try {
-                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarrasEndereco);
+                $codigoBarras = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -747,7 +747,8 @@ class Mobile_EnderecamentoController extends Action
             if (is_null($nivel) || $nivel == '')
                 throw new \Exception ("Necessário informar o Nivel");
 
-            $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
+            $LeituraColetor = new LeituraColetor();
+            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
 
             $endereco = EnderecoUtil::formatar($codigoBarras);
 
@@ -827,7 +828,8 @@ class Mobile_EnderecamentoController extends Action
 
     public function enderecoDestinoAction()
     {
-        $this->view->codigoBarrasUMA = $codBarrasUma = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasUMA'));
+        $LeituraColetor = new LeituraColetor();
+        $this->view->codigoBarrasUMA = $codBarrasUma = $LeituraColetor->retiraDigitoIdentificador($this->_getParam('codigoBarrasUMA'));
         $this->view->etiquetaProduto = $codBarras = $this->_getParam('etiquetaProduto');
         $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
         $enderecoParam = $this->_getParam('end');
@@ -918,7 +920,8 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->beginTransaction();
 
             if ($enderecoNovo) {
-                $enderecoNovo = ColetorUtil::retiraDigitoIdentificador($enderecoNovo);
+                $LeituraColetor = new LeituraColetor();
+                $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
             }
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
@@ -1079,7 +1082,8 @@ class Mobile_EnderecamentoController extends Action
                     $estoqueRepo->movimentaEstoque($params);
                 }
             } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
-                $params['etiquetaProduto'] = ColetorUtil::adequaCodigoBarras($params['etiquetaProduto'], true);
+                $LeituraColetor = new LeituraColetor();
+                $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
 
                 $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
@@ -1345,7 +1349,8 @@ class Mobile_EnderecamentoController extends Action
 
         try {
             if (isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
-                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarrasEndereco);
+                $LeituraColetor = new \Wms\Service\Coletor();
+                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -1389,12 +1394,12 @@ class Mobile_EnderecamentoController extends Action
             $endereco = $embalagemEn->getEndereco()->getDescricao();
 
         $this->_helper->json(array('endereco'   => $endereco,
-                                   'capacidade' => $embalagemEn->getCapacidadePicking(),
-                                   'embalado'   => $embalagemEn->getEmbalado(),
-                                   'referencia' => $embalagemEn->getProduto()->getReferencia(),
-                                   'mensagem'   => $mensagem,
-                                   'descricao'  => $embalagemEn->getProduto()->getDescricao()
-                            ));
+            'capacidade' => $embalagemEn->getCapacidadePicking(),
+            'embalado'   => $embalagemEn->getEmbalado(),
+            'referencia' => $embalagemEn->getProduto()->getReferencia(),
+            'mensagem'   => $mensagem,
+            'descricao'  => $embalagemEn->getProduto()->getDescricao()
+        ));
     }
 }
 

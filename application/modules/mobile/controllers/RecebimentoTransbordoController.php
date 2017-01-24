@@ -112,7 +112,8 @@ class Mobile_RecebimentoTransbordoController extends Action
         $idExpedicao                 = $this->getRequest()->getParam('idExpedicao');
         $codigoBarras                = $this->getRequest()->getParam('etiquetaSeparacao');
 
-        $codigoBarras   = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
+        $LeituraColetor = new LeituraColetor();
+        $codigoBarras   = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
 
         /** @var \Wms\Domain\Entity\Expedicao\VEtiquetaSeparacaoRepository $vEtiquetaRepo */
         $vEtiquetaRepo  = $this->em->getRepository('wms:Expedicao\VEtiquetaSeparacao');

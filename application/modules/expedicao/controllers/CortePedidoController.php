@@ -1,5 +1,6 @@
 <?php
-use Wms\Module\Web\Controller\Action;
+use Wms\Module\Web\Controller\Action,
+    Wms\Service\Recebimento as LeituraColetor;
 
 class Expedicao_CortePedidoController  extends Action
 {
