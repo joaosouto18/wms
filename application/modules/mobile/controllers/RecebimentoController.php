@@ -159,10 +159,8 @@ class Mobile_RecebimentoController extends Action
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
 
-            $recebimentoService = new \Wms\Service\Recebimento;
-
             // testa codigo de barras
-            $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
+            $codigoBarras = \Wms\Util\Coletor::adequaCodigoBarras($codigoBarras, true);
 
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 

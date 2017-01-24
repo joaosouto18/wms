@@ -1,15 +1,15 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository;
-use Wms\Util\Coletor;
+use Doctrine\ORM\EntityRepository,
+    Wms\Util\Coletor;
 
 class ConferenciaRecebimentoReentregaRepository extends EntityRepository
 {
 
     public function save($data)
     {
-        $codBarras = Coletor::adequaCodigoBarras($data['codBarras']);
+        $codBarras = Coletor::adequaCodigoBarras($data['codBarras'],true);
 
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");

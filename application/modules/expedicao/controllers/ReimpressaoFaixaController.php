@@ -1,6 +1,5 @@
 <?php
 use Wms\Module\Web\Controller\Action,
-    Wms\Service\Recebimento as LeituraColetor,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta;
 
 class Expedicao_ReimpressaoFaixaController  extends Action
@@ -8,7 +7,6 @@ class Expedicao_ReimpressaoFaixaController  extends Action
     public function indexAction() {
         $codBarrasInicial = $this->getRequest()->getParam('codBarrasInicial');
         $codBarrasFinal = $this->getRequest()->getParam('codBarrasFinal');
-        $LeituraColetor = new LeituraColetor();
 
         $motivo = $this->view->codBarras = $this->getRequest()->getParam('motivo');
         $senha = $this->view->codBarras = $this->getRequest()->getParam('senha');
@@ -26,8 +24,8 @@ class Expedicao_ReimpressaoFaixaController  extends Action
         }
 
         if (($codBarrasInicial != NULL) && ($codBarrasFinal != NULL)) {
-            $codBarrasInicial = $LeituraColetor->retiraDigitoIdentificador($codBarrasInicial);
-            $codBarrasFinal = $LeituraColetor->retiraDigitoIdentificador($codBarrasFinal);
+            $codBarrasInicial =  Wms\Util\Coletor::retiraDigitoIdentificador($codBarrasInicial);
+            $codBarrasFinal =  Wms\Util\Coletor::retiraDigitoIdentificador($codBarrasFinal);
             if ($EtiquetaRepo->checkAutorizacao($senha)) {
                 $etiquetas = $EtiquetaRepo->getEtiquetasReimpressaoByFaixa($codBarrasInicial,$codBarrasFinal);
                 if (count($etiquetas) >0) {
