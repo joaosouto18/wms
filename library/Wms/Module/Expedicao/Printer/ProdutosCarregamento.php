@@ -32,19 +32,19 @@ class ProdutosCarregamento extends Pdf
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
 
             $this->SetFont('Arial',  '', 10);
-            $this->Cell(20, 6, utf8_decode($data['SEQUENCIA']),0,0);
-            $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0);
-            $this->Cell(70, 6, utf8_decode(substr($data['DSC_PRODUTO'],0,27)),0,0);
+            $this->Cell(10, 6, utf8_decode($data['SEQUENCIA']),0,0);
+            $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0,'R');
+            $this->Cell(100, 6, utf8_decode($data['DSC_PRODUTO']),0,0);
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
             foreach ($embalagemEntities as $embalagemEntity) {
-                $this->Cell(30, 6, utf8_decode(floor(number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') / number_format($embalagemEntity->getQuantidade(),3,'.','')) . ' ' . $embalagemEntity->getDescricao()),0,0);
+                $this->Cell(20, 6, utf8_decode(floor(number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') / number_format($embalagemEntity->getQuantidade(),3,'.','')) . ' ' . $embalagemEntity->getDescricao()),0,0);
                 $data['QUANTIDADE_CONFERIDA'] = number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') % number_format($embalagemEntity->getQuantidade(),3,'.','');
             }
             if (count($embalagemEntities) < 2) {
-                $this->Cell(30, 6, '',0,0);
+                $this->Cell(20, 6, '',0,0);
             }
 
-            $this->Cell(30, 6, $qtdTotal.' und.',0,1);
+            $this->Cell(20, 6, $qtdTotal.' und.',0,1,'R');
         }
 
     }
@@ -95,12 +95,12 @@ class ProdutosCarregamento extends Pdf
                 $this->Line(10,60,200,60);
 
                 $this->SetFont('Arial',  "B", 8);
-                $this->Cell(20, 15, utf8_decode("Sequência:"),0,0);
+                $this->Cell(10, 15, utf8_decode("Seq.:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Cód. Prod.:"),0,0);
-                $this->Cell(70, 15, utf8_decode("Produto:"),0,0);
-                $this->Cell(30, 15, utf8_decode("Caixa Master:"),0,0);
-                $this->Cell(30, 15, utf8_decode("Unidade:"),0,0);
-                $this->Cell(30, 15, utf8_decode("Total:"),0,1);
+                $this->Cell(100, 15, utf8_decode("Produto:"),0,0);
+                $this->Cell(20, 15, utf8_decode("Caixa Master:"),0,0);
+                $this->Cell(20, 15, utf8_decode("Unidade:"),0,0);
+                $this->Cell(20, 15, utf8_decode("Total:"),0,1);
             }
 
             $this->bodyPage($valor, $embalagemRepo);
