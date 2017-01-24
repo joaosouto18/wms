@@ -159,8 +159,10 @@ class Mobile_RecebimentoController extends Action
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
 
+            $recebimentoService = new \Wms\Service\Recebimento;
+
             // testa codigo de barras
-            $codigoBarras = \Wms\Util\Coletor::adequaCodigoBarras($codigoBarras, true);
+            $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
 
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
@@ -286,11 +288,11 @@ class Mobile_RecebimentoController extends Action
 
                     $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
 
-                        if ( !empty($volumes) && count($volumes)!=0 ){
-                            $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
-                        } else {
-                            $params['numPeso'] = (float)$params['numPeso'];
-                        }
+                    if ( !empty($volumes) && count($volumes)!=0 ){
+                        $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
+                    } else {
+                        $params['numPeso'] = (float)$params['numPeso'];
+                    }
 //                    }
                 }
             } else {

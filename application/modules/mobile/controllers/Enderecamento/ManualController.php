@@ -1,6 +1,6 @@
 <?php
 use Wms\Controller\Action,
-    Wms\Util\Coletor as ColetorUtil,
+    Wms\Service\Recebimento as LeituraColetor,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     \Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
 
@@ -94,7 +94,8 @@ class Mobile_Enderecamento_ManualController extends Action
 
     public function validarEndereco($codBarraEndereco, $params, $urlOrigem, $urlDestino) {
         try{
-            $codigoBarras   = ColetorUtil::retiraDigitoIdentificador($codBarraEndereco);
+            $LeituraColetor = new LeituraColetor();
+            $codigoBarras   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
 
             if (empty($codigoBarras)) {
                 throw new \Exception('Nenhum Endereço Informado');
@@ -391,6 +392,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $codBarraEndereco = $this->_getParam('id');
         $codEndereco = $this->_getParam('endereco');
 
+        $LeituraColetor = new LeituraColetor();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
         $data = false;
@@ -399,10 +401,10 @@ class Mobile_Enderecamento_ManualController extends Action
 
         //VALIDO PARA A PRIMEIRA TELA
         if (isset($codBarraEndereco) && !empty($codBarraEndereco)) {
-            $endereco   = ColetorUtil::retiraDigitoIdentificador($codBarraEndereco);
+            $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
             $endereco = \Wms\Util\Endereco::formatar($endereco);
             $primeiraTela = true;
-        //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
+            //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
         } elseif (isset($codEndereco) && !empty($codEndereco)) {
             $enderecoEn = $enderecoRepo->find($codEndereco);
 

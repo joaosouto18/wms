@@ -1,6 +1,7 @@
 <?php
 use Wms\Controller\Action,
-    Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura;
+    Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
+    Wms\Domain\Entity\Expedicao;
 
 class Mobile_ConsultaProdutoController extends Action
 {
@@ -20,7 +21,8 @@ class Mobile_ConsultaProdutoController extends Action
         $this->view->exibe = false;
         if ($codigoBarras != NULL) {
             $this->view->exibe = true;
-            $codigoBarras = \Wms\Util\Coletor::adequaCodigoBarras($codigoBarras, true);
+            $recebimentoService = new \Wms\Service\Recebimento;
+            $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
 
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
