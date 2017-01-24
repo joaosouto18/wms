@@ -110,7 +110,7 @@ class ProdutosCarregamento extends Pdf
 
         }
 
-        $sequencia = null;
+        $sequencia = 99999;
         foreach ($embalados as $embalado) {
             if ($sequencia != $embalado['SEQUENCIA']) {
                 $this->startPage();
