@@ -51,7 +51,8 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                        SUM(AP.QTD_CUBAGEM) as QTD_CUBAGEM,
                        SUM(AP.QTD_PESO)    as QTD_PESO,
                        SUM(AP.QTD_PALETES) as QTD_PALETES,
-                       SUM(AP.QTD_CARGA)   as QTD_CARGA
+                       SUM(AP.QTD_CARGA)   as QTD_CARGA,
+                       SUM(AP.NUM_RUA)     as QTD_RUA
                    FROM APONTAMENTO_PRODUTIVIDADE AP
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
                   WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')

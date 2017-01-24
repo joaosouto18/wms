@@ -9,6 +9,7 @@
                     $('#descricao').html(data['descricao']+' - '+data['endereco']);
 //                    $('#endereco').val(data['endereco']);
                     $('#capacidade').val(data['capacidade']);
+                    $('#embalado').val(data['embalado']);
                 }
             });
         });
@@ -140,6 +141,11 @@
         <label>End: -------------------- Cap:</label>
         <input type="text" name="endereco" id="endereco" class="valid" onkeydown="nextInputEndereco(event)" />
         <input type="text" name="capacidade" id="capacidade" size=3 maxlength=3 value="" />
+    </div>
+
+    <div>
+        <label>Emb:</label>
+        <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
     </div>
 
     <input type="submit" name="submit" id="submit" value="Cadastrar" />
