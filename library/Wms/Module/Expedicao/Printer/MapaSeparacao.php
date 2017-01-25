@@ -751,10 +751,10 @@ class MapaSeparacao extends Pdf
                     } else {
                         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
                         $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-                        $this->Cell(95, 5, utf8_decode("Produto") ,1, 0);
+                        $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
                         $this->Cell(30, 5, utf8_decode("Cod. Barras") ,1, 0);
-                        $this->Cell(12, 5, utf8_decode("Quant.") ,1, 0);
-                        $this->Cell(15, 5, utf8_decode("Emb.:") ,1, 1);
+                        $this->Cell(15, 5, utf8_decode("Quant.") ,1, 0);
+                        $this->Cell(18, 5, utf8_decode("Emb.:") ,1, 1);
                     }
 
                     $this->Cell(20, 1, "", 0, 1);
@@ -775,10 +775,11 @@ class MapaSeparacao extends Pdf
                     $this->SetFont('Arial', "", 8);
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(95, 4, substr($descricao,0,57) ,0, 0);
-                    $this->Cell(30, 4, $codigoBarras, 0, 0);
+                    $this->Cell(90, 4, substr($descricao,0,57) ,0, 0);
+                    $this->Cell(25, 4, $codigoBarras, 0, 0);
                     $this->SetFont('Arial', "B", 10);
                     $this->Cell(20, 4, $quantidade ,0, 0, 'C');
+                    $this->SetFont('Arial', '', 10);
                     $this->Cell(12, 4, $embalagem ,0, 1);
                 }
                 $ruaAnterior = $rua;
