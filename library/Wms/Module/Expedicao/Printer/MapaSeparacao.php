@@ -826,34 +826,6 @@ class MapaSeparacao extends Pdf
             $em->persist($ExpedicaoEntity);
         }
 
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
-        $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
-
-        $this->AddPage();
-        $x = 140;
-        $y = 15;
-        $count = 1;
-        foreach ($produtos as $produto)
-        {
-            if($count > 12){
-                $this->AddPage();
-                $count = 1;
-                $y = 30;
-            }
-
-            $this->SetFont('Arial','',10);
-            $this->Cell(15, 20, $produto['id'], 0, 0);
-            $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
-            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
-
-            $LeituraColetor = new LeituraColetor();
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($produto['codigoBarras']);
-            $data = @CodigoBarras::gerarNovo($codBarras);
-            $this->Image($data, $x, $y, 50);
-            $y = $y + 20;
-            $count++;
-        }
         $this->Output('Mapa Separação-'.$idExpedicao.'.pdf','D');
 
         $em->flush();
