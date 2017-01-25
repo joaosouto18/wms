@@ -218,7 +218,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
     {
         try{
-            throw new \Exception("Teste1");
             $em = $this->__getDoctrineContainer()->getEntityManager();
 
             $idFornecedor = trim($idFornecedor);
@@ -241,6 +240,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 }
                 $itens = $itensNf;
             }
+            throw new \Exception("Teste2");
 
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
