@@ -210,7 +210,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param array|itens $itens
+     * @param array $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
@@ -247,6 +247,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
+            throw new \Exception(gettype($itens));
+
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
 
@@ -258,6 +260,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
                     if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
                         $itemWs['peso'] = trim($itemNf->quantidade);
+
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
