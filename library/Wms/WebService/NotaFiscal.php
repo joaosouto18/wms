@@ -264,7 +264,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
 
             if (count($itens) == 0) {
-                throw new \Exception('A Nota fiscal deve ter ao menos um item');
+                throw new \Exception('A Nota fiscal deve ter ao menos um item - teste');
             }
 
             //VERIFICO SE É UMA NOTA NOVA OU SE É ALTERAÇÃO DE ALGUMA NOTA JA EXISTENTE
