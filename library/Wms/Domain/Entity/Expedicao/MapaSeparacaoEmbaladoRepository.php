@@ -121,8 +121,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     public function getDadosEmbalado($idMapaSeparacaoEmabalado = null, $idExpedicao = null)
     {
         $andWhere = '';
+        $status = MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO;
         if (isset($idMapaSeparacaoEmabalado) && !empty($idMapaSeparacaoEmabalado)) {
             $andWhere .= " AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = $idMapaSeparacaoEmabalado ";
+            $andWhere .= " AND MSE.COD_STATUS <> $status ";
         }
         if (isset($idExpedicao) && !empty($idExpedicao)) {
             $andWhere .= " AND MS.COD_EXPEDICAO = $idExpedicao ";
