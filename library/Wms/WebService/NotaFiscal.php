@@ -249,15 +249,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
+
                 $itensNf = array();
-                foreach ($itens->itens as $itemNf) {
+                foreach ($itens->itens as $itemNf){
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
                     $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
                     $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
                     if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
                         $itemWs['peso'] = trim($itemNf->quantidade);
-
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
