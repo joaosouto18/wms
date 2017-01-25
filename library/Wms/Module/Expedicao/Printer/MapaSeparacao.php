@@ -5,6 +5,7 @@ namespace Wms\Module\Expedicao\Printer;
 use
     Core\Pdf,
     Wms\Util\CodigoBarras,
+    Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao;
 use Wms\Util\Barcode\Barcode;
 
@@ -833,11 +834,6 @@ class MapaSeparacao extends Pdf
         $count = 1;
         foreach ($produtos as $produto)
         {
-            $height   = 8;
-            $angle    = 0;
-            $type     = 'code128';
-            $black    = '000000';
-
             if($count > 12){
                 $this->AddPage();
                 $count = 1;
@@ -848,14 +844,11 @@ class MapaSeparacao extends Pdf
             $this->Cell(15, 20, $produto['id'], 0, 0);
             $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
             $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
-            //$this->Cell(20, 20, '', 0, 1);
-            //$this->Cell(20, 10, '', 0, 1,'C');
 
-            $data = @CodigoBarras::gerarNovo($produto['codigoBarras']);
+            $LeituraColetor = new LeituraColetor();
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($produto['codigoBarras']);
+            $data = @CodigoBarras::gerarNovo($codBarras);
             $this->Image($data, $x, $y, 50);
-//            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
-//            $len = $this->GetStringWidth($data['hri']);
-//            $this->Text(($x-$height) + (($height - $len)/2) + 3, $y + 8,$produto['codigoBarras']);
             $y = $y + 20;
             $count++;
         }
