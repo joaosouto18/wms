@@ -679,8 +679,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (!is_null($embalagemAtual->getDataInativacao()))
                     continue;
 
-                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
-
                 $embalado = false;
                 if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == 'P') {
                     if ($embalagemAtual->getEmbalado() == 'S') {
@@ -714,6 +712,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (float)$cubagemProduto * ((float)$quantidadeRestantePedido / number_format($embalagemAtual->getQuantidade(),3,'.',''));
                     }
                 }
+                $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
             }
         }
 
