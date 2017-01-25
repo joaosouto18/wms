@@ -308,18 +308,26 @@ class Mobile_ExpedicaoController extends Action
 
     public function fechaMapaEmbaladoAction()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
         $idMapa = $this->_getParam('idMapa');
         $idPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam('idExpedicao');
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
 
         try {
             $this->getEntityManager()->beginTransaction();
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            $mapaSeparacaoConferenciaEntity = $mapaSeparacaoConferenciaRepo->findOneBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
 
             if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
+                if (count($mapaSeparacaoConferenciaEntity) <= 0) {
+                    $this->addFlashMessage('error', 'Não é possível imprimir etiqueta sem produtos conferidos!');
+                    $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+                }
                 $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
                 $this->getEntityManager()->commit();
                 $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa);
