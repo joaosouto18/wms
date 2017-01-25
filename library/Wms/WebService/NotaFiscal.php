@@ -243,7 +243,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao);
+            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao,0);
                 return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
