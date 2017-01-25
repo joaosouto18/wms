@@ -247,7 +247,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
-            throw new \Exception(gettype($itens));
+            //throw new \Exception(gettype($itens));
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
@@ -256,11 +256,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 foreach ($itens->itens as $itemNf){
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
-                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
-                    if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
-                        $itemWs['peso'] = trim($itemNf->quantidade);
-
+                    $itemWs['quantidade'] = trim($itemNf->quantidade);
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
