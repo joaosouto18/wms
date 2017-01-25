@@ -131,6 +131,11 @@ class Mobile_RecebimentoController extends Action
         $idRecebimento = $this->getRequest()->getParam('idRecebimento');
         $codigoBarras = $this->getRequest()->getParam('codigoBarras');
 
+        $recebimentoService = new \Wms\Service\Recebimento;
+
+        // testa codigo de barras
+        $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
+
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
         $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
@@ -158,11 +163,6 @@ class Mobile_RecebimentoController extends Action
 
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
-
-            $recebimentoService = new \Wms\Service\Recebimento;
-
-            // testa codigo de barras
-            $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
 
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
