@@ -917,9 +917,9 @@ class NotaFiscalRepository extends EntityRepository
             $em->persist($notaFiscalEntity);
 
             $em->flush();
-            throw new \Exception("Teste5");
-
             $em->commit();
+            throw new \Exception("Teste6");
+
         } catch (\Exception $e) {
             $em->rollback();
             throw new \Exception($e->getMessage());
