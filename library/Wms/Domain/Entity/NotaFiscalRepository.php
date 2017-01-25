@@ -857,7 +857,6 @@ class NotaFiscalRepository extends EntityRepository
                 throw new \Exception('Indicação de bonificação inválida. Deve ser N para não ou S para sim.');
 
             $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
-            throw new \Exception("Teste3");
 
             //inserção de nova NF
             $notaFiscalEntity = new NotaFiscalEntity;
@@ -913,6 +912,8 @@ class NotaFiscalRepository extends EntityRepository
             } else {
                 throw new \Exception("Nenhum item informado na nota");
             }
+            throw new \Exception("Teste4");
+
             $notaFiscalEntity->setPesoTotal($pesoTotal);
             $em->persist($notaFiscalEntity);
             $em->flush();
