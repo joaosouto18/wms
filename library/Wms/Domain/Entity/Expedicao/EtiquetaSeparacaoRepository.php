@@ -696,13 +696,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
                         $cubagemProduto = str_replace(',','.',$dadoLogisticoEn->getCubagem());
-                        if (array_key_exists($pedidoId,$cubagemPedido)) {
-                            if (array_key_exists($embalagemAtual->getId(), $cubagemPedido[$pedidoId])) {
-                                if ($cubagemPedido[$pedidoId][$embalagemAtual->getId()] > 0) {
+//                        if (isset($cubagemPedido[$pedidoId])) {
+                            if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
+//                                if ($cubagemPedido[$pedidoId][$embalagemAtual->getId()] > 0) {
                                     continue;
-                                }
+//                                }
                             }
-                        }
+//                        }
                         $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (float)$cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.',''));
                     }
                 }
@@ -1638,11 +1638,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->getEntityManager()->persist($mapaPedidoEn);
         }
 
-        if (array_key_exists($pedidoProduto->getPedido()->getId(), $cubagem)) {
-            if (array_key_exists($embalagemEntity->getId(),$cubagem[$pedidoProduto->getPedido()->getId()])) {
+//        if (isset($cubagem[$pedidoProduto->getPedido()->getId()])) {
+            if (isset($cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()])) {
                 $cubagem = $cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()];
             }
-        }
+//        }
 
         if ($mapaProduto == null) {
             $mapaProduto = new MapaSeparacaoProduto();
