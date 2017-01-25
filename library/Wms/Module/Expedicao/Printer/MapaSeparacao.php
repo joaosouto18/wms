@@ -768,8 +768,9 @@ class MapaSeparacao extends Pdf
                     $this->Cell(80, 4, substr($descricao,0,45) ,0, 0);
                     $this->Cell(30, 4, $codigoBarras, 0, 0);
                     $this->SetFont('Arial', "B", 10);
-                    $this->Cell(20, 4, $quantidade ,0, 0);
-                    $this->Cell(12, 4, $embalagem ,0, 0);
+                    $this->Cell(12, 4, $quantidade ,0, 0);
+                    $this->SetFont('Arial', '', 10);
+                    $this->Cell(16, 4, $embalagem ,0, 0);
                     $this->Cell(15, 4, $caixas ,0, 1, 'C');
                 } else {
                     $this->SetFont('Arial', "", 8);
