@@ -211,6 +211,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->getEntityManager()->persist($ExpedicaoEntity);
                 $this->getEntityManager()->flush();
             }
+            exit;
         }
     }
 

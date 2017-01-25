@@ -93,12 +93,16 @@ class EtiquetaSeparacao extends Pdf
 
         foreach($etiquetas as $etiqueta) {
             $this->etqMae = false;
-            $this->layoutEtiqueta($etiqueta['id'], count($etiquetas), false, $modelo, true);
+            $this->layoutEtiqueta($etiqueta, count($etiquetas), false, $modelo, true);
+        }
 
-            $etiquetaSeparacaoReentregaEn = $etiquetaSeparacaoReentregaRepo->find($etiqueta['id']);
-            $etiquetaSeparacaoReentregaEn->setStatus(Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+        foreach ($pendencias as $pendencia) {
+            $etiquetaSeparacaoReentregaEn = $etiquetaSeparacaoReentregaRepo->find($pendencia['COD_ES_REENTREGA']);
+            $siglaEn = $em->find("wms:Util\Sigla",Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+            $etiquetaSeparacaoReentregaEn->setStatus($siglaEn);
             $em->persist($etiquetaSeparacaoReentregaEn);
         }
+
         $em->flush();
         $this->Output('Etiquetas-reentrega-'.$idExpedicao.'.pdf','D');
     }

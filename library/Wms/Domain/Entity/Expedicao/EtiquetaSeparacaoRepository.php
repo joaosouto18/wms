@@ -297,7 +297,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
-            ->innerJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
+            ->leftJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftjoin('etq.codDepositoEndereco', 'de')
             ->distinct(true);
 
@@ -2233,6 +2233,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getEtiquetasReentrega($idExpedicao, $codStatus = null, $central = null) {
         $SQL = "
         SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
+               ESR.COD_ES_REENTREGA,
                PROD.COD_PRODUTO,
                PROD.DSC_PRODUTO PRODUTO,
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
@@ -2273,6 +2274,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                    PES.NOM_PESSOA,
                    P.COD_PEDIDO,
                    C.COD_CARGA_EXTERNO,
+                   ESR.COD_ES_REENTREGA,
                    CA.COD_CARGA_EXTERNO";
 
         $SQL = $SQL . " ORDER BY ES.COD_ETIQUETA_SEPARACAO";
