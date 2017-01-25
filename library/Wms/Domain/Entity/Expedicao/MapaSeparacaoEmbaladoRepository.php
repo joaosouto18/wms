@@ -124,10 +124,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $status = MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO;
         if (isset($idMapaSeparacaoEmabalado) && !empty($idMapaSeparacaoEmabalado)) {
             $andWhere .= " AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = $idMapaSeparacaoEmabalado ";
-            $andWhere .= " AND MSE.COD_STATUS <> $status ";
         }
         if (isset($idExpedicao) && !empty($idExpedicao)) {
             $andWhere .= " AND MS.COD_EXPEDICAO = $idExpedicao ";
+            $andWhere .= " AND MSE.COD_STATUS <> $status ";
         }
         $sql = "SELECT E.COD_EXPEDICAO, MAX(C.COD_CARGA_EXTERNO) COD_CARGA_EXTERNO, I.DSC_ITINERARIO, C.DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE
                     FROM MAPA_SEPARACAO MS
