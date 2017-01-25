@@ -918,8 +918,6 @@ class NotaFiscalRepository extends EntityRepository
 
             $em->flush();
             $em->commit();
-            throw new \Exception("Teste6");
-
         } catch (\Exception $e) {
             $em->rollback();
             throw new \Exception($e->getMessage());
