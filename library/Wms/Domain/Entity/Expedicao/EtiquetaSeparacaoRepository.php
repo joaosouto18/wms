@@ -745,6 +745,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
                 $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos,$modeloSeparacaoEn);
             }
+            var_dump($cubagemPedidos); exit;
 
             $arrMapasEmbPP = array();
             $this->qtdIteracoesMapa = 0;
