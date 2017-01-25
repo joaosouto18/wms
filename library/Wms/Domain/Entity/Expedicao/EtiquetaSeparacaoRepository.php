@@ -482,7 +482,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
 
     public function geraEtiquetaReentrega ($etiquetaSeparacanEn, $reentregaEn) {
-        $statusReentrega = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+        $statusReentrega = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
 
         $etiquetaSeparacanEn->setReentrega($reentregaEn);
         $etiquetaSeparacanEn->setCodReentrega($reentregaEn->getId());
@@ -596,7 +596,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $produtos = $reentregaRepo->getItemNotasByExpedicao($idExpedicao);
         $expedicaoEn = $expedicaoRepo->find($idExpedicao);
-
+        $gerouReentrega = false;
         foreach ($produtos as $produto) {
             $numNF = $produto['COD_NOTA_FISCAL_SAIDA'];
             $qtdReentregue = $produto['QUANTIDADE'];

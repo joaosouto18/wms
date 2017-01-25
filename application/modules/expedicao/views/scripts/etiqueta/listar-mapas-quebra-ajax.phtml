@@ -82,3 +82,10 @@
         <input type="button" class="btn imprimir-etiquetas" id="imprimir-etiqueta" value="Imprimir Etiquetas" name="imprimir-etiquetas">
     <?php endif; ?>
 </div>
+
+<div class="padding-top">
+    <?php if ($this->reentrega =='S') : ?>
+        <a class="btn" href="/expedicao/etiqueta/gerar-pdf-ajax/idExpedicao/<?php echo $this->idExpedicao; ?>/tipo/reentrega/todas/N/">Etiquetas de Reentrega</a>
+    <?php endif; ?>
+</div>
+
