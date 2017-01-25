@@ -240,7 +240,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 }
                 $itens = $itensNf;
             }
-            throw new \Exception("Teste2");
 
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
