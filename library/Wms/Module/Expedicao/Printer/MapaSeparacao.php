@@ -674,7 +674,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 1, "", 0, 1);
 
             $total = 0;
-            $ruaAnterior = null;
+            $ruaAnterior = 99999;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
