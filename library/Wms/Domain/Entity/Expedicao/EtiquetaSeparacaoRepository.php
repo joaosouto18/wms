@@ -701,14 +701,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                         }
-
-                        if ($pedidoId == 123005142 && $embalagemAtual->getId() == 1042) {
-                            var_dump((float)$cubagemProduto);
-                            var_dump((float)$quantidadeRestantePedido);
-                            var_dump(number_format($embalagemAtual->getQuantidade(),3,'.',''));
-                            exit;
-
-                        }
                         $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (float)$cubagemProduto * ((float)$quantidadeRestantePedido / number_format($embalagemAtual->getQuantidade(),3,'.',''));
                     }
                 }
