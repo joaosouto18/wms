@@ -21,9 +21,9 @@
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codigoBarras').value != "") {
-                codigoBarras = document.getElementById('codigoBarras');
-                if (codigoBarras) {
-                    codigoBarras.focus();
+                submit = document.getElementById('submit');
+                if (submit) {
+                    submit.focus();
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
