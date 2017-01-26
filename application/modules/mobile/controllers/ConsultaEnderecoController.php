@@ -18,7 +18,7 @@ class Mobile_ConsultaEnderecoController extends Action
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
             if (!isset($enderecoEn) || empty($enderecoEn)) {
-                $produtos = array(0 => 'Endereço não encontrado');
+                $produtos = array(0 => array('COD_PRODUTO' => 'Endereço não encontrado', 'DSC_PRODUTO' => ''));
                 $this->_helper->json(array('produtos' => $produtos));
             }
 
@@ -31,7 +31,7 @@ class Mobile_ConsultaEnderecoController extends Action
             $codProdutos = implode(',',$codProduto);
 
             if (!isset($codProdutos) || empty($codProdutos)){
-                $produtos = array(0 => 'Não Existe produto nesse endereço');
+                $produtos = array(0 => array('COD_PRODUTO' => 'Não Existe produto nesse endereço', 'DSC_PRODUTO' => ''));
                 $this->_helper->json(array('produtos' => $produtos));
             }
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
