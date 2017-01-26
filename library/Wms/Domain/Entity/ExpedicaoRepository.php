@@ -270,6 +270,7 @@ class ExpedicaoRepository extends EntityRepository
                         PEDIDO.COD_PRODUTO AS Codigo,
                         PEDIDO.DSC_GRADE AS Grade,
                         PROD.DSC_PRODUTO as Produto,
+                        DE.DSC_DEPOSITO_ENDERECO as Picking,
                         NVL(E.QTD,0) AS Estoque,
                         (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
                    FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
@@ -301,6 +302,12 @@ class ExpedicaoRepository extends EntityRepository
                      ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
               LEFT JOIN PRODUTO PROD
                      ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
+              LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PROD.COD_PRODUTO
+                                         AND PV.DSC_GRADE = PROD.DSC_GRADE
+              LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = PROD.COD_PRODUTO
+                                            AND PE.DSC_GRADE = PROD.DSC_GRADE
+              LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+                                             OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
                   WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
                     AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
                   ORDER BY Codigo, Grade, Produto
