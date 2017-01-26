@@ -12,6 +12,7 @@
                     }
                     $('#lista-endereco').html(produto);
                     $('#codigoBarras').val('');
+                    $('#codigoBarras').focus();
                 }
             });
         });
@@ -20,9 +21,9 @@
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codigoBarras').value != "") {
-                submit = document.getElementById('submit');
-                if (submit) {
-                    submit.focus();
+                codigoBarras = document.getElementById('codigoBarras');
+                if (codigoBarras) {
+                    codigoBarras.focus();
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
