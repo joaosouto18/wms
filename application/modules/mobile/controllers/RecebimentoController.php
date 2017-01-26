@@ -172,6 +172,9 @@ class Mobile_RecebimentoController extends Action
             if ($itemNF == null)
                 throw new \Exception('Nenhum produto encontrado no Recebimento com este Código de Barras. - ' . $codigoBarras);
 
+            if ($pesoVariavel == '')
+                throw new \Exception("O produto $idProduto não tem definição se possui ou não peso variável.");
+
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
 

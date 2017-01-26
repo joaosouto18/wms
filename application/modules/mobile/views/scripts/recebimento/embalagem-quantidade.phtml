@@ -35,13 +35,13 @@
         <tr class="title">
             <td>Unidades Por Emb.</td>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <td><label class="field required" for="dataValidade">Data Validade</label></td>
+            <td><label class="field required" for="dataValidade">Data Validade</label></td>
             <?php endif; ?>
             <?php if ($this->pesoVariavel == 'N') : ?>
-                <td><label class="field required" for="qtdConferida">Quantidade</label></td>
+            <td><label class="field required" for="qtdConferida">Quantidade</label></td>
             <?php endif; ?>
             <?php if ( $this->pesoVariavel == 'S' ) : ?>
-                <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
+            <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
             <?php endif; ?>
             <td>Total Unidades</td>
         </tr>
@@ -49,17 +49,13 @@
         <tr>
             <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
+            <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
             <?php endif; ?>
             <?php if ($this->pesoVariavel == 'N') : ?>
-                <td><input type="text" maxlength="15" value="" size="10" class=" required
-                <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif?>
-                " id="qtdConferida" name="qtdConferida" value="" /></td>
+            <td><input type="text" maxlength="15" size="10" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif?>" id="qtdConferida" name="qtdConferida" /></td>
             <?php endif; ?>
             <?php if ( $this->pesoVariavel == 'S' ) : ?>
-                <td>
-                    <input type="text" maxlength="15" value="" size="10" class="required focus" id="numPeso" name="numPeso"/>
-                </td>
+            <td><input type="text" maxlength="15" size="10" class="required focus" id="numPeso" name="numPeso"/></td>
             <?php endif; ?>
             <td><span id="totalQuantidade">0</span></td>
         </tr>
