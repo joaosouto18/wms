@@ -1609,4 +1609,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
+
+	public function getProdutos($codProduto)
+	{
+		$sql = "SELECT COD_PRODUTO, DSC_GRADE, DSC_PRODUTO
+					FROM PRODUTO P
+					WHERE P.COD_PRODUTO IN ($codProduto)";
+		return $this->_em->getConnection()->query($sql)->fetchAll();
+
+	}
 }

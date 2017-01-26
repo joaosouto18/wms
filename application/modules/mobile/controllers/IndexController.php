@@ -41,7 +41,12 @@ class Mobile_IndexController  extends Action
             9 => array(
                 'url' => '/mobile/enderecamento/cadastro-produto-endereco',
                 'label' => 'CADASTRO PRODUTO ENDERECO'
+            ),
+            10 => array(
+                'url' => '/mobile/consulta-endereco',
+                'label' => 'CONSULTA ENDEREÇO'
             )
+
 
         );
         $this->view->menu = $menu;

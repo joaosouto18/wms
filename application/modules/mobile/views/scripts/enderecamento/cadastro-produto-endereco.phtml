@@ -7,32 +7,12 @@
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
                     $('#descricao').html(data['descricao']+' - '+data['endereco']);
-//                    $('#endereco').val(data['endereco']);
                     $('#capacidade').val(data['capacidade']);
                     $('#embalado').val(data['embalado']);
                 }
             });
         });
     });
-
-//    function formatarEndereco(event){
-//        var endereco = $('#endereco').val();
-//        if (event.keyCode != 8) {
-//            if (endereco.length == 2){
-//                $('#endereco').val(endereco + ".");
-//            }
-//            if (endereco.length == 6){
-//                $('#endereco').val(endereco + ".");
-//            }
-//
-//            if (endereco.length == 9){
-//                $('#endereco').val(endereco + ".");
-//            }
-//            if (endereco.length == 12) {
-//                $('#endereco').val('');
-//            }
-//        }
-//    }
 
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
@@ -111,23 +91,6 @@
         return true;
     }
 
-//    function nextInputCapacidade(event) {
-//        if (event.which == 13 || event.keyCode == 13) {
-//            if (document.getElementById('capacidade').value != "") {
-//                embalado   = document.getElementById('embalado');
-//                if (embalado) {
-//                    embalado.focus();
-//                    if(event.preventDefault) {
-//                        event.preventDefault();
-//                    } else {
-//                        event.returnValue = false;
-//                    }
-//                }
-//
-//            }
-//        }
-//        return true;
-//    }
 </script>
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
 

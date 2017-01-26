@@ -144,23 +144,10 @@ class MapaSeparacaoRepository extends EntityRepository
         $result = $this->alteraStatusMapaAndMapaProdutos($expedicaoEn,$idMapa);
         if (is_string($result))
             return $result;
-//        $divergencias = $this->validaConferencia($expedicaoEn->getId(), true, $idMapa, 'D');
 
         if ($this->getSystemParameterValue('RESETA_CONFERENCIA_MAPA') == 'S') {
             $this->fechaConferencia($expedicaoEn, $idMapa);
         }
-
-//        if (count($divergencias) > 0) {
-//            if ($idMapa == null) {
-//                return 'Existem produtos para serem Conferidos nesta Expedição';
-//            } else {
-//                return 'Existem produtos para serem Conferidos neste Mapa';
-//            }
-//        } else {
-//            if ($this->getSystemParameterValue('RESETA_CONFERENCIA_MAPA') == 'N') {
-//                $this->fechaConferencia($expedicaoEn, $idMapa);
-//            }
-//        }
 
         $mapas = $this->findBy(array('codExpedicao'=>$expedicaoEn->getid()));
         foreach ($mapas as $mapaEn) {
