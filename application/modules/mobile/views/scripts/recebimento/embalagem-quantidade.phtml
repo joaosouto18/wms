@@ -51,7 +51,7 @@
             <?php if ($this->itemNF['validade'] == 'S') : ?>
             <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
             <?php endif; ?>
-            <?php if ($this->pesoVariavel == 'N') : ?>
+            <?php if ($this->pesoVariavel == 'N' || $this->pesoVariavel == '') : ?>
             <td><input type="text" maxlength="15" size="10" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif?>" id="qtdConferida" name="qtdConferida" /></td>
             <?php endif; ?>
             <?php if ( $this->pesoVariavel == 'S' ) : ?>
