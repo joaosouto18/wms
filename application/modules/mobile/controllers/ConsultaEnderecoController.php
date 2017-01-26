@@ -30,13 +30,13 @@ class Mobile_ConsultaEnderecoController extends Action
             }
             $codProdutos = implode(',',$codProduto);
 
+            if (!isset($codProdutos) || empty($codProdutos)){
+                $produtos = 'Não Existe produto nesse endereço';
+                $this->_helper->json(array('produtos' => $produtos));
+            }
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
             $produtos = $produtoRepo->getProdutos($codProdutos);
-
-            if (!isset($produtos) || empty($produtos)){
-                $produtos = 'Não Existe produto nesse endereço';
-            }
 
             $this->_helper->json(array('produtos' => $produtos));
 
