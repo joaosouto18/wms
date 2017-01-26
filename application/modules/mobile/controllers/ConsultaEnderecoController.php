@@ -25,15 +25,17 @@ class Mobile_ConsultaEnderecoController extends Action
             /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
             $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
             $embalagemEntities = $embalagemRepo->findBy(array('endereco' => $enderecoEn));
+
+            if (!isset($embalagemEntities) || empty($embalagemEntities)){
+                $produtos = array(0 => array('COD_PRODUTO' => 'Não Existe produto nesse endereço', 'DSC_PRODUTO' => ''));
+                $this->_helper->json(array('produtos' => $produtos));
+            }
+
             foreach ($embalagemEntities as $key => $embalagemEn) {
                 $codProduto[$key] = $embalagemEn->getCodProduto();
             }
             $codProdutos = implode(',',$codProduto);
 
-            if (!isset($codProdutos) || empty($codProdutos)){
-                $produtos = array(0 => array('COD_PRODUTO' => 'Não Existe produto nesse endereço', 'DSC_PRODUTO' => ''));
-                $this->_helper->json(array('produtos' => $produtos));
-            }
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
             $produtos = $produtoRepo->getProdutos($codProdutos);
