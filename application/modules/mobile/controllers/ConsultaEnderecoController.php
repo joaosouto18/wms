@@ -18,7 +18,8 @@ class Mobile_ConsultaEnderecoController extends Action
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
             if (!isset($enderecoEn) || empty($enderecoEn)) {
-                throw new Exception('Endereço não encontrado');
+                $produtos = 'Endereço não encontrado';
+                $this->_helper->json(array('produtos' => $produtos));
             }
 
             /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
@@ -32,6 +33,10 @@ class Mobile_ConsultaEnderecoController extends Action
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
             $produtos = $produtoRepo->getProdutos($codProdutos);
+
+            if (!isset($produtos) || empty($produtos)){
+                $produtos = 'Não Existe produto nesse endereço';
+            }
 
             $this->_helper->json(array('produtos' => $produtos));
 
