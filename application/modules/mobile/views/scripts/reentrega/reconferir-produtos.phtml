@@ -53,6 +53,27 @@
 
 </script>
 
+<table class="info">
+    <?php
+    if (isset($this->listaProdutos)):
+        ?>
+        <tr>
+            <td colspan="2"><b>Produtos a serem conferidos</b></td>
+        </tr>
+        <tr>
+            <td>
+                <div id="carousel">
+                    <?php foreach ($this->listaProdutos as $produto): ?>
+                        <div id="lista-produto<?php echo $produto['COD_PRODUTO'] ?>"><?php echo $produto['DSC_PRODUTO'] ?> - <?php echo $produto['DSC_VOLUME'] ?> - <?php echo $produto['DSC_GRADE'] ?></div>
+                    <?php endforeach; ?>
+                </div>
+            </td>
+        </tr>
+    <?php
+    endif;
+    ?>
+</table>
+
 <form id="conferir-produtos-form" enctype="application/x-www-form-urlencoded" class="saveForm" action="/mobile/reentrega/reconferir-produtos/id/<?php echo $this->id;?>" method="post">
     <input type="hidden" name="numeroNota" value="" id="numeroNota">
     <fieldset id="fieldset-reconferir">

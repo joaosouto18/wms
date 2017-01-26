@@ -101,8 +101,9 @@ class ProdutosSemConferencia extends Pdf
                 $this->Cell(95, 5, utf8_decode("Descrição"), "TB");
                 $this->Cell(25, 5, "Volume", "TB");
                 $this->Cell(70, 5, "Cliente", "TB");
-                $this->Cell(20, 5, "Carga", "TB");
-                $this->Cell(43, 5, "Estoque", "TB");
+                $this->cell(22 ,5, utf8_decode("Endereço"),"TB");
+                $this->Cell(18, 5, "Carga", "TB");
+                $this->Cell(15, 5, "Estoque", "TB");
                 $this->Ln();
             }
 
@@ -111,6 +112,7 @@ class ProdutosSemConferencia extends Pdf
             $this->Cell(95, 5, utf8_decode($produto["produto"]), 0);
             $this->Cell(25, 5, utf8_decode($produto["embalagem"])    , 0);
             $this->Cell(70, 5, utf8_decode($produto["cliente"])  , 0);
+            $this->Cell(22, 5, utf8_decode($produto["endereco"])  , 0);
             $this->Cell(20, 5, utf8_decode($produto["codCargaExterno"])  , 0);
             $this->Cell(43, 5, utf8_decode($produto["codEstoque"]), 0);
             $cargaAntiga = $novaCarga;

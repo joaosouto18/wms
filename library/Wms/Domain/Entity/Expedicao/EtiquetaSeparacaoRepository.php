@@ -232,6 +232,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.codCargaExterno,
                       es.grade,
                       es.codEstoque,
+                      de.descricao as endereco,
                       es.pontoTransbordo,
                       CASE WHEN es.codStatus = 522 THEN 'PENDENTE DE IMPRESSÃO'
                            WHEN es.codStatus = 523 THEN 'PENDENTE DE CONFERENCIA'
@@ -244,6 +245,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('etq.produto','p')
             ->leftJoin('etq.produtoEmbalagem','emb')
             ->leftJoin('etq.produtoVolume','vol')
+            ->leftjoin('wms:Deposito\Endereco','de','WITH','etq.codDepositoEndereco = de.id')
             ->where('es.codExpedicao = :idExpedicao')
             ->andWhere('es.codStatus IN (' . $status . ')');
 
