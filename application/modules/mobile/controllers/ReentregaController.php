@@ -130,6 +130,11 @@ class Mobile_ReentregaController extends Action
 
     }
 
+    public function visualizarDivergenciaAction()
+    {
+
+    }
+
     public function cancelarConferenciaAction(){
 
         try {
