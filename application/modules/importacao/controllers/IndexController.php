@@ -956,7 +956,7 @@ class Importacao_IndexController extends Action
                 foreach ($files as $file) {
                     $handle = $dir.'/\/'.$file;
 
-                    //DEFINI��O DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                    //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                     switch ($file) {
                         case 'expedicao.csv':
                             $this->importExpedicao($handle, $params, 'csv');

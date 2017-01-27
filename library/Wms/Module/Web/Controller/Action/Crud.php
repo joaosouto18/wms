@@ -187,7 +187,7 @@ abstract class Crud extends \Wms\Module\Web\Controller\Action {
             foreach($params['mass-id'] as $id) {
                 $invetarioEn = $inventarioRepo->findOneBy(array('depositoEndereco' => $id));
                 if ($invetarioEn) {
-                    throw new \Exception("O endereco " . $invetarioEn->getDepositoEndereco()->getDescricao() . utf8_encode(" está ocupado"));
+                    throw new \Exception("O endereco " . $invetarioEn->getDepositoEndereco()->getDescricao() . utf8_encode(" estÃ¡ ocupado"));
                 } else {
                     $this->repository->remove($id);
                 }

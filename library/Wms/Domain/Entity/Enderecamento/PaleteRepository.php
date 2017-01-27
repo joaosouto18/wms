@@ -96,7 +96,7 @@ class PaleteRepository extends EntityRepository
             $filter = true;
         }
 
-        if ($filter == true) {$query = $query . $queryWhere;}
+        if ($filter == true) {$query = $query . $queryWhere . " ORDER BY R.COD_RECEBIMENTO";}
 
         $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;

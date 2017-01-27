@@ -42,13 +42,13 @@ class ConferenciaRecebimentoReentrega
      *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
      *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
      * })
-     * @var Wms\Domain\Entity\Produto $produto Produto que o volumes est· relacionado a
+     * @var Wms\Domain\Entity\Produto $produto Produto que o volumes est√° relacionado a
      */
     protected $produto;
 
     /**
      * @Column(name="COD_PRODUTO", type="string", nullable=false)
-     * @var string CÛdigo do produto
+     * @var string C√≥digo do produto
      */
     protected $codProduto;
 
