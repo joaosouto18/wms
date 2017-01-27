@@ -212,16 +212,20 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param array $itens
+     * @param itens $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
     {
+        $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
-            $em = $this->__getDoctrineContainer()->getEntityManager();
+            $em->beginTransaction();
 
+
+            //PREPARANDO AS INFORMAÇÔES PRA FORMATAR CORRETAMENTE
+            //BEGIN
             $idFornecedor = trim($idFornecedor);
             $numero = (int) trim($numero);
             $serie = trim($serie);
@@ -229,28 +233,70 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
 
+            if ($bonificacao == "E") {
+                //NOTA DE ENTRADA NORMAL
+            }
+            if ($bonificacao == "D") {
+                //NOTA DE DEVOLUÇÃO
+            }
+            $bonificacao = "N";
+            $pesoTotal = trim ($pesoTotal);
+
+            $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
+            $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
+
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
+            if ($fornecedorEntity == null)
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
-
                 $itensNf = array();
-                foreach ($itens->itens as $itemNf){
+                foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = trim($itemNf->grade);
-                    $itemWs['quantidade'] = trim($itemNf->quantidade);
+                    $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
+                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
+                    if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
+                        $itemWs['peso'] = trim($itemNf->quantidade);
+
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
             }
 
+            if (count($itens) == 0) {
+                throw new \Exception('A Nota fiscal deve ter ao menos um item');
+            }
+
+            //VERIFICO SE É UMA NOTA NOVA OU SE É ALTERAÇÃO DE ALGUMA NOTA JA EXISTENTE
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-            $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, $observacao,0);
-                return true;
+            /** @var NotaFiscalEntity $notaFiscalEn */
+            $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $fornecedorEntity->getId()));
+
+            if ($notaFiscalEn != null) {
+                $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
+                if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
+                    throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." cancelada ou já recebida");
+                }
+
+                //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
+                $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
+
+                //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
+                $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em);
+
+            } else {
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
+            }
+
+            $em->commit();
+            return true;
         } catch (\Exception $e) {
+            $em->rollback();
             throw new \Exception($e->getMessage());
         }
-
     }
 
     /**
