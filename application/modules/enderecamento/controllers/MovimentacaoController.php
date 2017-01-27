@@ -175,8 +175,13 @@ class Enderecamento_MovimentacaoController extends Action
                     echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso'));
                 }
             } else {
-                $this->addFlashMessage('success','Movimentação realizada com sucesso');
-                $this->_redirect('/enderecamento/movimentacao');
+                $msg = "Movimentação realizada com sucesso";
+                if ($data['quantidade'] >0) {
+                    $msg .= ' - <a href="'.$link.'" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir UMA</a>';
+                }
+                $this->addFlashMessage('success',$msg);
+
+                $this->_redirect('/enderecamento/movimentacao/');
                 $form->populate($data);
             }
         } catch(Exception $e) {
