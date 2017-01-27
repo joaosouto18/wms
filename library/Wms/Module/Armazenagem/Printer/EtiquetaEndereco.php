@@ -288,7 +288,8 @@ class EtiquetaEndereco extends Pdf
 
     public function layoutModelo6 ($codBarras){
         $this->Cell(5,3,"",0,1);
-        $codBarras = Endereco::formatar($codBarras);
+        $arrEndereco = Endereco::separar($codBarras);
+        $codBarras = implode('.',$arrEndereco);
         $this->SetX(5);
         $this->SetFont('Arial', 'B', 12);
         $this->Cell(7,13,"",0,0);
@@ -304,7 +305,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 4, $this->GetY()+5 , 100);
         $this->Cell(95,5," ",0,1);
-        if ($nivel == 0) {
+        if ($arrEndereco['nivel'] == 0) {
             $this->Image(APPLICATION_PATH . '/../data/seta1.png', 88, $this->GetY()-22 , 13,20);
         } else {
             $this->Image(APPLICATION_PATH . '/../data/seta2.png', 88, $this->GetY()-23 , 13,20);
