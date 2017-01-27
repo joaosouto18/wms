@@ -6,6 +6,7 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
+use Wms\Util\Endereco;
 
 class EtiquetaEndereco extends Pdf
 {
@@ -287,12 +288,7 @@ class EtiquetaEndereco extends Pdf
 
     public function layoutModelo6 ($codBarras){
         $this->Cell(5,3,"",0,1);
-        $enderecos = explode(".",$codBarras);
-        $rua = substr($enderecos[0],0);
-        $predio = substr($enderecos[1],1);
-        $nivel = substr($enderecos[2],1);
-        $apartamento = substr($enderecos[3],0);
-        $codBarras = "$rua.$predio.$nivel.$apartamento";
+        $codBarras = Endereco::formatar($codBarras);
         $this->SetX(5);
         $this->SetFont('Arial', 'B', 12);
         $this->Cell(7,13,"",0,0);
