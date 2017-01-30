@@ -189,8 +189,13 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'fornecedor';
-                    $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
                     
+                    if (isset($arrRegistro['verificador']) and $arrRegistro['verificador'] == 'N') {
+                        break;
+                    }
+
+                    $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
+
                     if (strlen($cpf_cnpjFormatado) == 11) {
                         $arrErroRows[$linha] = 'Proibido importar fornecedor por CPF ' . $arrRegistro['cpf_cnpj'];
                         break;
