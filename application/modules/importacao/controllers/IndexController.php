@@ -157,6 +157,11 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'fornecedor';
+
+                    if (isset($arrRegistro['verificador']) and $arrRegistro['verificador'] == 'N') {
+                        break;
+                    }
+
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
                     
                     if (strlen($cpf_cnpjFormatado) == 11) {
