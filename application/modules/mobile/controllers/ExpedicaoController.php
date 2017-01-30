@@ -163,9 +163,6 @@ class Mobile_ExpedicaoController extends Action
         $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
         $Expedicao->validacaoExpedicao();
         $Expedicao->osLiberada();
-//        if ( ($Expedicao->validacaoExpedicao() == false) || ($Expedicao->osLiberada() == false)) {
-//            //BLOQUEIA COLETOR
-//        }
 
         $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
@@ -178,6 +175,11 @@ class Mobile_ExpedicaoController extends Action
         if (count($produtosMapa) > 0) {
             $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
             $this->view->produtosMapa = $produtosMapa;
+        }
+        $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
+        if (count($produtosClientes) > 0) {
+            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+            $this->view->produtosClientes = $produtosClientes;
         }
 
 
