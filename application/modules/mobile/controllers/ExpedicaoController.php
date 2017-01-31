@@ -206,10 +206,12 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
-
         /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
         $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
-        if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'I' && $mapaQuebraEn->getTipoQuebra() == 'T') {
+        if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'I' && ($mapaQuebraEn->getTipoQuebra() == 'T' || (isset($idVolume) && !empty($idVolume)))) {
+            $qtd = 1;
+        }
+        if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "I" && $mapaQuebraEn->getTipoQuebra() != 'T') {
             $qtd = 1;
         }
 
@@ -281,8 +283,9 @@ class Mobile_ExpedicaoController extends Action
                     $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
                     if (isset($qtd) && ($qtd != null)) {
-                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
-                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
+//                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
+//                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
+                        $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa.'/qtd/'.$qtd);
                     } else {
                         $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
                     }
@@ -294,15 +297,15 @@ class Mobile_ExpedicaoController extends Action
 
         $this->view->dscVolume = $dscVolume;
         $this->view->exibeQtd = false;
-        if ((isset($idVolume)) && ($idVolume != null)) {
-            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "I") {
-                $this->view->exibeQtd = true;
-            }
-        } else {
-            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "I") {
-                $this->view->exibeQtd = true;
-            }
-        }
+//        if ((isset($idVolume)) && ($idVolume != null)) {
+//            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "I") {
+//                $this->view->exibeQtd = true;
+//            }
+//        } else {
+//            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "I") {
+//                $this->view->exibeQtd = true;
+//            }
+//        }
     }
 
     public function fechaVolumePatrimonioMapaAction(){
