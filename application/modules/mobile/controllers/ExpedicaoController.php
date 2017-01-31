@@ -113,7 +113,7 @@ class Mobile_ExpedicaoController extends Action
         }
     }
 
-/*
+
     public function lerEmbaladosMapaAction()
     {
         $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
@@ -134,7 +134,7 @@ class Mobile_ExpedicaoController extends Action
         }
 
     }
-*/
+
 
     public function lerProdutoMapaAction() {
 
