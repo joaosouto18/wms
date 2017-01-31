@@ -280,7 +280,7 @@ class Mobile_ExpedicaoController extends Action
                         throw new \Exception($resultado['message']);
                     }
                     $idMapa = $resultado['idMapa'];
-                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+//                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
                     if (isset($qtd) && ($qtd != null)) {
 //                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
