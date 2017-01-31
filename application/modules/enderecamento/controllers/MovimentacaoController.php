@@ -132,8 +132,8 @@ class Enderecamento_MovimentacaoController extends Action
             }
             if (isset($params['validade']) && !empty($params['validade'])) {
                 $hoje = new DateTime();
-                $data = date_create_from_format('d/m/Y',$params['validade']);
-                if ($data <= $hoje) {
+                $dataParam = date_create_from_format('d/m/Y',$params['validade']);
+                if ($dataParam <= $hoje) {
                     $this->addFlashMessage('error',"Data de Validade deve ser maior que ".$hoje->format('d/m/Y'));
                     $this->_redirect('/enderecamento/movimentacao');
                 }
