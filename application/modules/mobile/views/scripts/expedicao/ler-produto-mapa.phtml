@@ -122,12 +122,14 @@
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-            <?php if ($this->mapaSeparacaoEmbalado === true) : ?>
+            <?php if ($this->mapaSeparacaoEmbalado == true) : ?>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/cliente/' .$this->idPessoa ?>" >Fechar Caixa</a></td>
             <?php endif; ?>
 
         </fieldset>
     </dd>
-    <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao . '/idMapa/' .$this->idMapa .'/mapa/S' ?>" >Finalizar</a></td>
-    <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/'. $this->central ?>" >Alt. Mapa</a></td>
+    <?php if ($this->mapaSeparacaoEmbalado == false) : ?>
+        <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao . '/idMapa/' .$this->idMapa .'/mapa/S' ?>" >Finalizar</a></td>
+        <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/'. $this->central ?>" >Alt. Mapa</a></td>
+    <?php endif; ?>
 </form>

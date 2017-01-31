@@ -44,6 +44,22 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaEmbaladoRepo */
+//        $mapaEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+//        $mapaEmbaladoEntities = $mapaEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapaSeparacao, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+//        foreach ($mapaEmbaladoEntities as $mapaEmbaladoEn) {
+//            $codClienteEtiqueta = $mapaEmbaladoEn->getPessoa()->getId();
+//            $existeCliente = false;
+//            foreach ($clientes as $codCliente) {
+//                if ($codCliente['COD_PESSOA'] == $codClienteEtiqueta) {
+//                    $existeCliente = true;
+//                }
+//            }
+//            if ($existeCliente == false) {
+//                $this->getEntityManager()->remove($mapaEmbaladoEn);
+//            }
+//        }
+//        $this->getEntityManager()->flush();
 
         foreach ($clientes as $key => $cliente) {
             $numeroCaixas = explode(',',$cliente['NUM_CAIXA_PC_INI']);
@@ -97,6 +113,7 @@ class Mobile_ExpedicaoController extends Action
         }
     }
 
+/*
     public function lerEmbaladosMapaAction()
     {
         $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
@@ -104,7 +121,6 @@ class Mobile_ExpedicaoController extends Action
 
         $submit = $this->_getParam('submit');
 
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         try {
             $conferir = 'Conferir';
@@ -118,6 +134,7 @@ class Mobile_ExpedicaoController extends Action
         }
 
     }
+*/
 
     public function lerProdutoMapaAction() {
 
@@ -136,18 +153,11 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
 
         $statusMapaEmbalado = false;
-        if (isset($codPessoa) && !empty($codPessoa)) {
-            if (count($mapaSeparacaoEmbaladoEn) <= 0) {
-                $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
-            } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
-                $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
-            }
 
-            if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-                $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-                if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                    $statusMapaEmbalado = true;
-                }
+        if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
+            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
+                $statusMapaEmbalado = true;
             }
         }
 
@@ -176,12 +186,13 @@ class Mobile_ExpedicaoController extends Action
             $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
             $this->view->produtosMapa = $produtosMapa;
         }
-        $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
-        if (count($produtosClientes) > 0) {
-            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-            $this->view->produtosClientes = $produtosClientes;
+        if (isset($codPessoa) && !empty($codPessoa)) {
+            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
+            if (count($produtosClientes) > 0) {
+                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                $this->view->produtosClientes = $produtosClientes;
+            }
         }
-
 
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
@@ -477,6 +488,18 @@ class Mobile_ExpedicaoController extends Action
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                 }
                 $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+                $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+                $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+
+                if (isset($codPessoa) && !empty($codPessoa)) {
+                    if (count($mapaSeparacaoEmbaladoEn) <= 0) {
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+                    } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
+                    }
+                }
 
                 $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
                 $listaQtdProdutosConferidos = $mapaSeparacaoRepo->verificaConferenciaProduto($idMapa,$embalagemEn,$volumeEn);

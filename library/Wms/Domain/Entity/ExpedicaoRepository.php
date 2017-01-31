@@ -2244,9 +2244,9 @@ class ExpedicaoRepository extends EntityRepository
             if ((substr($codBarras,0,2)) == "13") {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
             }
-            if (substr($codBarras,0,2) == '14') {
-                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO;
-            }
+//            if (substr($codBarras,0,2) == '14') {
+//                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO;
+//            }
         }
 
         //ETIQUETA DE VOLUME
@@ -2453,16 +2453,16 @@ class ExpedicaoRepository extends EntityRepository
             $url = "/mobile/expedicao/ler-produto-mapa/idMapa/$codBarras/idExpedicao/$idExpedicao";
             return array('operacao'=>$operacao,'url'=>$url, 'expedicao'=>$idExpedicao);
         }
-        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO) {
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
-            $mapaSeparacaoEmbalado = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoEmbalado',$codBarras);
-            if ($mapaSeparacaoEmbalado == null) throw new \Exception("Nenhum volume embalado encontrado com o códgo ". $codBarras);
-            $idMapa = $mapaSeparacaoEmbalado->getMapaSeparacao()->getId();
-            $idExpedicao = $mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getId();
-            $operacao = "Conferencia dos volumes embalados do Mapa cód. $idMapa";
-            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao";
-            return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
-        }
+//        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO) {
+//            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
+//            $mapaSeparacaoEmbalado = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacaoEmbalado',$codBarras);
+//            if ($mapaSeparacaoEmbalado == null) throw new \Exception("Nenhum volume embalado encontrado com o códgo ". $codBarras);
+//            $idMapa = $mapaSeparacaoEmbalado->getMapaSeparacao()->getId();
+//            $idExpedicao = $mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getId();
+//            $operacao = "Conferencia dos volumes embalados do Mapa cód. $idMapa";
+//            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao";
+//            return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
+//        }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
             //ETIQUETA DE VOLUME
             $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
