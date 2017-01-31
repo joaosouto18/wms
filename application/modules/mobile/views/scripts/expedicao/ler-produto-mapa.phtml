@@ -2,10 +2,10 @@
 
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('etiquetaSeparacao').value != "") {
-                etiquetaProduto   = document.getElementById('etiquetaProduto');
-                if (etiquetaProduto) {
-                    etiquetaProduto.focus();
+            if (document.getElementById('codigoBarras').value != "") {
+                qtd   = document.getElementById('qtd');
+                if (qtd) {
+                    qtd.focus();
                     if(event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -46,16 +46,6 @@
             <td style="width: 20%"> <button id="next"> >| </button></td>
         </tr>
     <?php endif; ?>
-
-
-
-
-
-
-
-
-
-
 
     <?php if(count($this->produtosClientes) > 0) : ?>
         <script type="text/javascript">
@@ -100,22 +90,28 @@
 
                     <table>
                         <tr>
+                            <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
                             <?php if ($this->exibeQtd == true) : ?>
                                 <td><label for="qtd" class="field required">*Qtd</label></td>
                             <?php endif; ?>
-                            <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
                         </tr>
                         <tr>
-                            <?php if ($this->exibeQtd == true) : ?>
+                            <?php if ($this->exibeQtd == false) : ?>
                                 <td>
-                                    <input type="text" name="qtd" id="qtd" value="1" size="7" maxlength="100" style="width: 80%"></div>
+                                    <input type="text" name="codigoBarras" id="codigoBarras" value="" class="required focus" size="40" maxlength="100" style="width: 99%">
                                 </td>
                             <?php endif; ?>
-                            <td>
-                                <input type="text" name="codigoBarras" id="codigoBarras" value="" class="required focus" size="40" maxlength="100" style="width: 99%"></div>
-                            </td>
+                            <?php if ($this->exibeQtd == true) : ?>
+                                <td>
+                                    <input type="text" name="codigoBarras" id="codigoBarras" value="" class="required focus" size="40" maxlength="100" onkeydown="nextInput(event)" style="width: 99%">
+                                </td>
+                                <td>
+                                    <input type="text" name="qtd" id="qtd" value="1" size="7" maxlength="100" style="width: 80%">
+                                </td>
+                            <?php endif; ?>
                         </tr>
                     </table>
+                </div>
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <?php if ($this->idVolume != "") :?>
