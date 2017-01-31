@@ -150,10 +150,9 @@ class Mobile_ExpedicaoController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
 
+        /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
         $statusMapaEmbalado = false;
-
         if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
             $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
             if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
@@ -179,13 +178,16 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
         $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
         if (count($produtosMapa) > 0) {
             $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
             $this->view->produtosMapa = $produtosMapa;
         }
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
         if (isset($codPessoa) && !empty($codPessoa)) {
             $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
             if (count($produtosClientes) > 0) {
@@ -203,6 +205,13 @@ class Mobile_ExpedicaoController extends Action
 
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+
+
+        /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
+        $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
+        if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'I' && $mapaQuebraEn->getTipoQuebra() == 'T') {
+            $qtd = 1;
+        }
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
@@ -246,7 +255,6 @@ class Mobile_ExpedicaoController extends Action
 
                     $codQuebra = 0;
                     if ($modeloSeparacaoEn->getTipoQuebraVolume() == 'C') {
-                        $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
                         $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => 'C'));
                         if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
                             $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
@@ -275,7 +283,7 @@ class Mobile_ExpedicaoController extends Action
                     if (isset($qtd) && ($qtd != null)) {
                         $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd);
                         $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
-                    } else{
+                    } else {
                         $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
                     }
                 }
