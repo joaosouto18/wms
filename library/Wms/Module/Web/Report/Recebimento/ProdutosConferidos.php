@@ -72,6 +72,10 @@ class ProdutosConferidos extends Report
         $pdf->addLabel(4, 2, '', '', 0, 'L');
         $pdf->addLabel(5, 28, 'Qtd. Conferida', 'B', 0, 'L');
         $pdf->addLabel(5, 2, '', '', 0, 'L');
+
+        $pdf->addLabel(5, 28, 'Data Validade', 'B', 0, 'L');
+        $pdf->addLabel(5, 2, '', '', 0, 'L');
+
         $pdf->addLabel(6, 22, 'Qtd. Avaria', 'B', 0, 'L');
         $pdf->addLabel(6, 2, '', '', 0, 'L');
         $pdf->addLabel(7, 25, 'Qtd. Diverg.', 'B', 0, 'L');
@@ -121,6 +125,15 @@ class ProdutosConferidos extends Report
             $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
             $pdf->addCol(6, 27, $dataConf->format('d/m/y H:i'), $border, 0, 'L');
             $pdf->addCol(7, 28, $item['QTD_CONFERIDA'], $border, 0, 'C');
+
+            if (!is_null($item['DTH_VALIDADE'])) {
+                $dataValidade = new \DateTime($item['DTH_VALIDADE']);
+                $pdf->addCol(7, 28, $dataValidade->format('d/m/y'), $border, 0, 'C');
+            } else {
+                $pdf->addCol(7, 28, '-', $border, 0, 'C');
+            }
+
+
             $pdf->addCol(8, 24, $item['QTD_AVARIA'], $border, 0, 'C');
             $pdf->addCol(9, 27, $item['QTD_DIVERGENCIA'], $border, 0, 'C');
             $pdf->addCol(10, 2, '', $border, 0, 'L');
