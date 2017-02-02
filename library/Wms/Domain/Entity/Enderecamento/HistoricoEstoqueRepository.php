@@ -108,7 +108,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                 LEFT JOIN NORMA_PALETIZACAO N ON N.COD_NORMA_PALETIZACAO = PPROD.COD_NORMA_PALETIZACAO
                 LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = PA.COD_UNITIZADOR
                     WHERE ((HIST.DTH_MOVIMENTACAO >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
-                       AND (HIST.DTH_MOVIMENTACAO <= TO_DATE('$dataFim 00:00', 'DD-MM-YYYY HH24:MI')))
+                       AND (HIST.DTH_MOVIMENTACAO <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
                  GROUP BY
                        HIST.COD_PRODUTO ,
                           HIST.DSC_GRADE ,
