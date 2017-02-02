@@ -23,7 +23,7 @@ class EtiquetaCodigoBarras extends eFPDF
 
         $this->AddPage();
         $x = 170;
-        $y = 30;
+        $y = 50;
         $count = 1;
 
         $this->Cell(15, 20, "CODIGO", 0, 0);
@@ -45,10 +45,10 @@ class EtiquetaCodigoBarras extends eFPDF
             }
 
             $this->SetFont('Arial','',10);
-            $this->Cell(15, 20, $produto['id'], 0, 0);
+            $this->Cell(20, 20, $produto['id'], 0, 0);
             $this->Cell(20, 20, $this->SetStringByMaxWidth($produto['grade'],20), 0, 0);
             $this->Cell(80, 20, $this->SetStringByMaxWidth($produto['descricao'],80), 0, 0);
-            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
+            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1, 'C');
             //$this->Cell(20, 20, '', 0, 1);
             //$this->Cell(20, 10, '', 0, 1,'C');
 
