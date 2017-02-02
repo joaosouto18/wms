@@ -23,7 +23,7 @@ class EtiquetaCodigoBarras extends eFPDF
 
         $this->AddPage();
         $x = 170;
-        $y = 40;
+        $y = 50;
         $count = 1;
 
         $this->Cell(20, 20, "CODIGO", 0, 0);
@@ -41,7 +41,7 @@ class EtiquetaCodigoBarras extends eFPDF
             if($count > 12){
                 $this->AddPage();
                 $count = 1;
-                $y = 30;
+                $y = 50;
             }
 
             $this->SetFont('Arial','',10);
