@@ -68,6 +68,7 @@ class MapaSeparacao extends Pdf
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo = $em->getRepository('wms:Expedicao');
+            $txtCarga = 'CARGA';
             $cargasSelecionadas = $this->getCargasSelecionadas();
             if (empty($cargasSelecionadas)) {
                 $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
@@ -78,16 +79,19 @@ class MapaSeparacao extends Pdf
                         $stringCargas .= ',';
                     }
                     $stringCargas .= implode(',', $carga);
+                    $txtCarga = (count($cargas) > 1) ? 'CARGAS' : 'CARGA';
                 }
             } else {
                 if (is_array($cargasSelecionadas)) {
                     $stringCargas = implode(',', $cargasSelecionadas);
+                    if (count($cargasSelecionadas) > 1) $txtCarga = 'CARGAS';
                 } else {
                     $stringCargas = $cargasSelecionadas;
                 }
             }
 
             //Select Arial bold 8
+
             $this->SetFont('Arial','B',10);
             $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1,"C");
             $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
@@ -95,7 +99,7 @@ class MapaSeparacao extends Pdf
             $this->SetFont('Arial','B',10);
             $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
             $this->SetFont('Arial',null,10);
-            $this->Cell(4, 4, utf8_decode( $this->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
+            $this->Cell(4, 4, utf8_decode( $this->idExpedicao) . ' - '.$txtCarga.': ' . $stringCargas, 0, 1);
             $this->SetFont('Arial','B',10);
             $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial',null,10);
