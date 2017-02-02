@@ -678,8 +678,7 @@ class Importacao_IndexController extends Action
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
                                     } else {
-                                        $arrErroRows[$linha] = "Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.";
-                                        break;
+                                        throw new Exception("Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.");
                                     }
                                 }
                             }
