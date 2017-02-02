@@ -22,7 +22,7 @@ class EtiquetaCodigoBarras extends eFPDF
         $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
 
         $this->AddPage();
-        $x = 170;
+        $x = 180;
         $y = 50;
         $count = 1;
 
