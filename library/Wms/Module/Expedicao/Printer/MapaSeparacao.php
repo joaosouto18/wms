@@ -151,7 +151,7 @@ class MapaSeparacao extends Pdf
                 } else {
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(20, 4, $this->SetStringByMaxWidth($grade,25) ,0, 0);
+                    $this->Cell(25, 4, $this->SetStringByMaxWidth($grade,25) ,0, 0);
                     $this->Cell(90, 4, $this->SetStringByMaxWidth($descricao,80) ,0, 0);
                     $this->Cell(20, 4, $embalagem ,0, 0);
                     $this->Cell(20, 4, $quantidade ,0, 1, 'C');
