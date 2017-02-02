@@ -34,7 +34,7 @@ class ProdutosAVencer extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
         $cellWidth = 126;
-        $str = self::setStringByMaxWidth(utf8_decode("Descrição: $produto[DESCRICAO]"),$cellWidth);
+        $str = self::SetStringByMaxWidth(utf8_decode("Descrição: $produto[DESCRICAO]"),$cellWidth);
         $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
 
         $this->SetFont('Arial', 'B', 9);
@@ -46,7 +46,7 @@ class ProdutosAVencer extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
         $cellWidth = 106;
-        $str = self::setStringByMaxWidth(utf8_decode("Linha de separação: $produto[LINHA_SEPARACAO]"), $cellWidth);
+        $str = self::SetStringByMaxWidth(utf8_decode("Linha de separação: $produto[LINHA_SEPARACAO]"), $cellWidth);
         $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
 
         $this->SetFont('Arial', 'B', 9);
@@ -63,7 +63,7 @@ class ProdutosAVencer extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
         $cellWidth = 120;
-        $str = self::setStringByMaxWidth(utf8_decode("Fornecedor: $produto[FORNECEDOR]"), $cellWidth);
+        $str = self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[FORNECEDOR]"), $cellWidth);
         $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
 
         $this->SetFont('Arial', 'B', 9);

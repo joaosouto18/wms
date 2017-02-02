@@ -1222,7 +1222,7 @@ class Pdf
         return $this->h;
     }
 
-    public function setStringByMaxWidth($string, $w)
+    public function SetStringByMaxWidth($string, $w)
     {
         $strW = self::GetStringWidth($string);
         if ($strW > $w){

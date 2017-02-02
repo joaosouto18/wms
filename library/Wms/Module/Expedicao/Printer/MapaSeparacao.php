@@ -6,6 +6,7 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Produto;
 use Wms\Util\Barcode\Barcode;
 
 class MapaSeparacao extends Pdf
@@ -105,24 +106,29 @@ class MapaSeparacao extends Pdf
             if ($tipoQebra == true) {
                 $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
                 $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-                $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
-                $this->Cell(30, 5, utf8_decode("Embalagem") ,1, 0);
+                $this->Cell(20, 5, utf8_decode("Grade") ,1, 0);
+                $this->Cell(80, 5, utf8_decode("Produto") ,1, 0);//20
+                $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);//10
                 $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 0);
                 $this->Cell(15, 5, utf8_decode("Caixas") ,1, 1);
                 $this->Cell(20, 1, "", 0, 1);
+                //195
             }else {
                 $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
                 $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-                $this->Cell(100, 5, utf8_decode("Produto") ,1, 0);
-                $this->Cell(35, 5, utf8_decode("Embalagem") ,1, 0);
+                $this->Cell(25, 5, utf8_decode("Grade") ,1, 0);
+                $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);//10
+                $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);//15
                 $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
                 $this->Cell(20, 1, "", 0, 1);
             }
 
+            /** @var Expedicao\MapaSeparacaoProduto $produto */
             foreach ($produtos as $produto) {
                 $dscEndereco = "";
                 $embalagem   = $produto->getProdutoEmbalagem();
                 $codProduto  = $produto->getCodProduto();
+                $grade       = $produto->getDscGrade();
                 $descricao   = utf8_decode($produto->getProduto()->getDescricao());
                 $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
                 $quantidade  = $produto->getQtdSeparar();
@@ -135,8 +141,9 @@ class MapaSeparacao extends Pdf
                 if ($tipoQebra == true) {
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(90, 4,substr($descricao,0,54) ,0, 0);
-                    $this->Cell(30, 4, $embalagem ,0, 0);
+                    $this->Cell(20, 4, $this->SetStringByMaxWidth($grade, 20) ,0, 0);
+                    $this->Cell(80, 4, $this->SetStringByMaxWidth($descricao,80) ,0, 0);
+                    $this->Cell(20, 4, $embalagem ,0, 0);
                     $this->Cell(20, 4, $quantidade ,0, 0);
                     $this->Cell(15, 4, $caixas ,0, 1, 'C');
                     $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
@@ -144,8 +151,9 @@ class MapaSeparacao extends Pdf
                 } else {
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(100, 4,substr($descricao,0,54) ,0, 0);
-                    $this->Cell(35, 4, $embalagem ,0, 0);
+                    $this->Cell(20, 4, $this->SetStringByMaxWidth($grade,25) ,0, 0);
+                    $this->Cell(90, 4, $this->SetStringByMaxWidth($descricao,80) ,0, 0);
+                    $this->Cell(20, 4, $embalagem ,0, 0);
                     $this->Cell(20, 4, $quantidade ,0, 1, 'C');
                     $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                     $this->Cell(20, 1, "", 0, 1);
