@@ -86,10 +86,10 @@ class Enderecamento_MovimentacaoController extends Action
             if ($estoqueEn != null) {
                 $unitizadorEstoque = $estoqueEn->getUnitizador();
             }
-            if ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque) {
+            if (!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque)) {
                 $this->addFlashMessage('error','É necessário informar o Unitizador!');
                 $this->_redirect('/enderecamento/movimentacao');
-            } else if ($data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
+            } else if (isset($data['idNormaPaletizacao']) && $data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
                 $idUnitizador = $data['idNormaPaletizacao'];
                 $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                 $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));

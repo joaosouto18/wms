@@ -146,7 +146,7 @@ class Web_ProdutoController extends Crud {
         try {
             $params = $this->getRequest()->getParams();
 
-            if (($params['id'] == null) && ($params['grade'] == null))
+            if (!isset($params['id']) || $params['id'] == null || isset($params['grade']) || $params['grade'] == null)
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
             $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
