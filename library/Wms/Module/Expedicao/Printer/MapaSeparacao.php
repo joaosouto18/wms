@@ -11,7 +11,7 @@ use Wms\Util\Barcode\Barcode;
 
 use Wms\Util\Barcode\eFPDF;
 
-class MapaSeparacao extends Pdf
+class MapaSeparacao extends eFPDF
 {
     private $idMapa;
     private $idExpedicao;
@@ -801,8 +801,8 @@ class MapaSeparacao extends Pdf
             $this->mapa = $mapa;
 
             $this->InFooter = true;
-            $pageSizeA4 = $this->_getpagesize('A4');
-            $wPage = $pageSizeA4[0]/12;
+//            $pageSizeA4 = $this->_getpagesize('A4');
+            $wPage = 595.28/12;
 
             $this->SetY(-23);
             $this->SetFont('Arial','B',9);
@@ -818,6 +818,46 @@ class MapaSeparacao extends Pdf
             $this->InFooter = false;
 
         }
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+        $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
+
+        $this->AddPage();
+        //Select Arial bold 8
+        $this->SetFont('Arial','B',10);
+        $this->Cell(20, 10, utf8_decode("RELATÓRIO DE CODIGO DE BARRAS DE PRODUTOS DA EXPEDIÇÃO ". $this->idExpedicao), 0, 1);
+
+        $x = 170;
+        $y = 30;
+        $count = 1;
+        foreach ($produtos as $produto)
+        {
+            $height   = 8;
+            $angle    = 0;
+            $type     = 'code128';
+            $black    = '000000';
+
+            if($count > 12){
+                $this->AddPage();
+                $count = 1;
+                $y = 30;
+            }
+
+            $this->SetFont('Arial','',10);
+            $this->Cell(15, 20, $produto['id'], 0, 0);
+            $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
+            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
+            //$this->Cell(20, 20, '', 0, 1);
+            //$this->Cell(20, 10, '', 0, 1,'C');
+
+            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
+            $len = $this->GetStringWidth($data['hri']);
+            $this->Text(($x-$height) + (($height - $len)/2) + 3, $y + 8,$produto['codigoBarras']);
+            $y = $y + 20;
+            $count++;
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity    = $expedicaoRepo->find($idExpedicao);
         if ($ExpedicaoEntity->getCodStatus() == EXPEDICAO::STATUS_INTEGRADO) {
