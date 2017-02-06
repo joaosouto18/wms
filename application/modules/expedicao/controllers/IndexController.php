@@ -72,6 +72,8 @@ class Expedicao_IndexController extends Action
             unset($params['control']);
         }
 
+        $params['usaDeclaracaoVP'] = $this->getSystemParameterValue('USA_DECLARACAO_DE_VOLUME_PATRIMONIO');
+
         $form->populate($params);
 
         $Grid = new ExpedicaoGrid();
