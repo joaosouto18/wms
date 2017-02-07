@@ -805,6 +805,11 @@ class MapaSeparacao extends eFPDF
             $wPage = 595.28/12;
 
             $this->SetY(-23);
+            $this->SetFont('Arial','B',10);
+            $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial',null,10);
+            $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+            $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
             $this->SetFont('Arial','B',9);
             $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".substr($this->quebrasEtiqueta,0,23)), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
