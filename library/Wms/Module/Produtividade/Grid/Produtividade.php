@@ -53,11 +53,6 @@ class Produtividade extends Grid
                     'render' => 'N2'
                 ));
                 $this->addColumn(array(
-                    'label' => 'Ruas',
-                    'index' => 'QTD_RUA',
-                    'render' => 'N2'
-                ));
-                $this->addColumn(array(
                     'label' => 'Paletes',
                     'index' => 'QTD_PALETES',
                     'render' => 'N2'
