@@ -292,24 +292,28 @@ class EtiquetaVolume extends eFPDF
         $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
         $this->SetFont('Arial', 'B', 7);
-        $impressao = utf8_decode("Código                          Produto                                                                                   Qtd.\n");
-        $this->SetXY(5,14);
-        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        $this->SetXY(3, 14);
+        $this->Cell(11, 3.9, utf8_decode("Código"));
+        $this->Cell(16, 3.9, utf8_decode("Grade"));
+        $this->Cell(66, 3.9, utf8_decode("Produto"));
+        $this->Cell(20, 3.9, utf8_decode("Qtd"));
 
         //linha horizontal entre codigo produto quantidade e a descricao dos dados
         $this->Line(0, 18, 150, 18);
         //linha horizontal terminal da listagem de produtos
         $this->Line(0, 60, 150, 60);
 
-        //linha vertical entre o codigo e a descrição do produto
-        $this->Line(19, 18, 19, 60);
+        //linha vertical entre o codigo e a grade do produto
+        $this->Line(14, 18, 14, 60);
+        //linha vertical entre a grade e a descrição do produto
+        $this->Line(30, 18, 30, 60);
         //linha vertical entre a descrição do produto e a quantidade
         $this->Line(96, 18, 96, 60);
     }
 
     private function listProdutosEtiquetaModelo3($volume)
     {
-        $y = 14;
+        $y = 19;
         $this->SetFont('Arial', 'B', 7);
         $countProd = 0;
 
@@ -317,35 +321,25 @@ class EtiquetaVolume extends eFPDF
             if ( $countProd == 13) {
                 $this->footerEtiquetaModelo3($volume);
                 $this->bodyEtiquetaModelo3($volume);
-                $y = 14;
-                $this->SetFont('Arial', 'B', 7);
+                $y = 19;
                 $countProd = 0;
             }
 
-            $impressao = utf8_decode($produtos['codProduto']);
             $this->SetX(3);
             $this->SetY($y);
-            $this->MultiCell(150, $y, $impressao, 0, 'L');
+            $this->Cell(11, 3, utf8_decode($produtos['codProduto']));
+            $this->Cell(16, 3, utf8_decode($this->SetStringByMaxWidth($produtos['dscGrade'],15)));
 
-            if (isset($produtos['descricaoEmbalagem']) && !empty($produtos['descricaoEmbalagem'])) {
-                $produtos['descricaoEmbalagem'] = '('.$produtos['descricaoEmbalagem'].')';
-            } else {
-                $produtos['descricaoEmbalagem'] = null;
-            }
+            $dscProduto = $this->SetStringByMaxWidth($produtos['descricao'],62);
 
-            $dscProduto = $produtos['descricao'];
-            if (strlen($dscProduto) > 48)
-                $dscProduto = substr($dscProduto, 0, 44) . "...";
+            $und = null;
+            if (isset($produtos['descricaoEmbalagem']) && !empty($produtos['descricaoEmbalagem']))
+                $und = '('.$produtos['descricaoEmbalagem'].')';
 
-            $impressao = utf8_decode($dscProduto." ".$produtos['descricaoEmbalagem']);
-            $this->SetXY(19, $y);
-            $this->MultiCell(150, $y, $impressao, 0, 'L');
+            $this->Cell(66, 3, utf8_decode("$dscProduto $und"));
+            $this->Cell(20, 3, $produtos['quantidade']);
 
-            $impressao = $produtos['quantidade'];
-            $this->SetXY(97, $y);
-            $this->Cell(97, $y, $impressao, 0, 'L');
-
-            $y = $y + 2;
+            $y = $y + 3.1;
             $countProd++;
         }
     }
