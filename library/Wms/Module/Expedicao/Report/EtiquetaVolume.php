@@ -330,7 +330,7 @@ class EtiquetaVolume extends eFPDF
             $this->Cell(11, 3, utf8_decode($produtos['codProduto']));
             $this->Cell(16, 3, utf8_decode($this->SetStringByMaxWidth($produtos['dscGrade'],15)));
 
-            $dscProduto = $this->SetStringByMaxWidth($produtos['descricao'],60);
+            $dscProduto = $this->SetStringByMaxWidth($produtos['descricao'],61);
 
             $und = null;
             if (isset($produtos['descricaoEmbalagem']) && !empty($produtos['descricaoEmbalagem']))
