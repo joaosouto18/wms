@@ -684,7 +684,7 @@ class Importacao
                         $descricaoEmbalagem =  $embalagemWs->descricao;
 
                         if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
-                            throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
+                            throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem . " - Produto: " . $idProduto);
                         }
 
                         continue;
