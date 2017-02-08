@@ -805,19 +805,14 @@ class MapaSeparacao extends eFPDF
             $wPage = 595.28/12;
 
             $this->SetY(-23);
-            $this->SetFont('Arial','B',10);
-            $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
-            $this->SetFont('Arial',null,10);
-            $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
-            $this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
             $this->SetFont('Arial','B',9);
-            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".substr($this->quebrasEtiqueta,0,23)), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
-//            $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+            $this->Cell(16 * 4, 6, utf8_decode("QUEBRAS: ".substr($this->quebrasEtiqueta,0,23)), 0, 0);
+            $this->Cell(14 * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
+            $this->Cell(10 * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+            $this->Cell(16 * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell(10 * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
+            $this->Cell(16 * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
+            $this->Cell(10 * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
             $this->Image($this->imgCodBarras, 143, 280, 50);
 
             $this->InFooter = false;
