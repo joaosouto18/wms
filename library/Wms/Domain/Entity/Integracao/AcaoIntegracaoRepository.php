@@ -54,7 +54,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->rollback();
             $this->_em->clear();
         }
-
+        var_dump("Teste");exti;
         try {
             if ($this->_em->isOpen() == false) {
                 $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
