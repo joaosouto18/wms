@@ -341,14 +341,13 @@ class Expedicao_IndexController extends Action
                             throw new \Exception("Conferente $cpf não encontrado!");
 
                         $codMapaSeparacao = $params['mapa'];
-                        $rua = $params['rua'];
                         $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
                         if (is_null($mapaSeparacaoEn))
                             throw new \Exception("Mapa de Separação $codMapaSeparacao não encontrado!");
 
-                        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn, 'rua' => $rua));
+                        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
                         if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
-                            $apontamentoMapaRepo->save($mapaSeparacaoEn, $usuarioEn->getId(),$rua);
+                            $apontamentoMapaRepo->save($mapaSeparacaoEn, $usuarioEn->getId());
                     }
                 }
                 $this->_helper->json(array('result' => 'Ok'));

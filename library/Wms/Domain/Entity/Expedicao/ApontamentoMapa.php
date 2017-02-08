@@ -40,11 +40,6 @@ class ApontamentoMapa
     protected $dataConferencia;
 
     /**
-     * @Column(name="NUM_RUA", type="string")
-     */
-    protected $rua;
-
-    /**
      * @return mixed
      */
     public function getId()
@@ -122,22 +117,6 @@ class ApontamentoMapa
     public function setMapaSeparacao($mapaSeparacao)
     {
         $this->mapaSeparacao = $mapaSeparacao;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRua()
-    {
-        return $this->rua;
-    }
-
-    /**
-     * @param mixed $rua
-     */
-    public function setRua($rua)
-    {
-        $this->rua = $rua;
     }
 
 }

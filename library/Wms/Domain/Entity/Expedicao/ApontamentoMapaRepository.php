@@ -7,7 +7,7 @@ use Doctrine\ORM\Query;
 class ApontamentoMapaRepository extends EntityRepository
 {
 
-    public function save($mapaSeparacao,$codUsuario,$rua)
+    public function save($mapaSeparacao,$codUsuario)
     {
         $em = $this->getEntityManager();
         $apontamentoEn = new ApontamentoMapa();
@@ -15,7 +15,6 @@ class ApontamentoMapaRepository extends EntityRepository
         $apontamentoEn->setCodMapaSeparacao($mapaSeparacao->getId());
         $apontamentoEn->setCodUsuario($codUsuario);
         $apontamentoEn->setMapaSeparacao($mapaSeparacao);
-        $apontamentoEn->setRua($rua);
 
         $em->persist($apontamentoEn);
         $em->flush();

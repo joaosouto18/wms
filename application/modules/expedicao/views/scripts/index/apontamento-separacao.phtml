@@ -24,7 +24,7 @@
         text-align: center;
         text-shadow: #9d9d9d;
     }
-    
+
     .btnSearch{
         height: 40px;
         width: 110px;
@@ -220,7 +220,6 @@
         $('#mapas-salvarMapa').click(function () {
             var mapa = $('#mapas-codMapaSeparacao').val();
             var cpf = $('#mapas-pessoa').val();
-            var rua = $('#mapas-rua').val();
 
             if (mapa == null || mapa == ""){
                 alert("Informe o mapa a ser vinculado");
@@ -235,7 +234,7 @@
                 return false;
             }
 
-            var result = {mapa:mapa.substring(0,(mapa.length - 1)), cpf:cpf, pessoa:null, rua:rua};
+            var result = {mapa:mapa.substring(0,(mapa.length - 1)), cpf:cpf, pessoa:null};
 
             $.ajax({
                 url: 'conferente-apontamento-separacao-ajax/cpf/'+cpf,
@@ -246,6 +245,9 @@
                     } else if (data.result = 'Error'){
                         alert(data.msg);
                     }
+                    $('#mapas-codMapaSeparacao').val('');
+                    $('#mapas-pessoa').val('');
+                    $('#mapas-codMapaSeparacao').focus();
                 }
             });
         });
@@ -305,20 +307,17 @@
             var total = null;
             var mapa = null;
             var tipo = null;
-            var rua = null;
 
             if (data.hasOwnProperty('mapa')){
                 mapa = data.mapa;
                 intervalo = "N/D";
                 total = "N/D";
                 tipo = "Mapa";
-                rua = data.rua;
             } else {
                 intervalo = data.intervalo;
                 total = data.total;
                 mapa = "N/D";
                 tipo = "Etiquetas";
-                rua = '';
             }
 
             var cpf = data.cpf;
@@ -331,7 +330,6 @@
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
             tr.append($('<td class="mapa">').text(mapa));
-            tr.append($('<td class="rua">').text(rua));
             tr.append($('<td class="intervalo">').text(intervalo));
             tr.append($('<td>').text(total));
             tr.append($('<td class="tipo">').text(tipo));
@@ -388,8 +386,7 @@
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
-                var rua = $(this).children(".rua").text();
-                data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo, rua:rua});
+                data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo});
             });
 
             if (data.length > 0) {
@@ -425,13 +422,12 @@ echo $this->form;
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
             <td></td>
-            <td width="27%">Nome</td>
+            <td width="30%">Nome</td>
             <td width="13%">CPF</td>
-            <td width="12%">Mapa</td>
-            <td width="8%">Rua</td>
+            <td width="14%">Mapa</td>
             <td width="19%">Etiqueta Inicial - Final</td>
-            <td width="5%">Intervalo</td>
-            <td width="8%">Tipo Conferência</td>
+            <td width="6%">Intervalo</td>
+            <td width="10%">Tipo Conferência</td>
             <td width="4%" style="text-align: center">X</td>
         </tr>
         <tbody id="tbResult" class="tbFont">
