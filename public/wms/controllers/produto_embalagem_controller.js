@@ -635,11 +635,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 return false;
             }
 
-            if (endereco.length < 12 || endereco.length > 13){
-                alert('Formato inválido de Endereço.');
-                return false;
-            }
-
             //Verifica se a embalagem esta sendo editada e o codigo é igual
             if((acao == 'alterar') && (endereco == enderecoAntigo)){
                 this.salvarDadosEmbalagem();
