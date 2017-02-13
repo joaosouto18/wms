@@ -7,6 +7,7 @@ use
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
+use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Util\Barcode\Barcode;
 
 class MapaSeparacao extends Pdf
@@ -48,6 +49,13 @@ class MapaSeparacao extends Pdf
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
+        /** @var Parametro $param */
+        $param = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => "UTILIZA_GRADE"));
+        if (!empty($param)){
+            $usaGrade = $param->getValor();
+        } else {
+            $usaGrade = 'N';
+        }
 
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
@@ -107,24 +115,44 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 4, "", 0, 1);
 
             $this->SetFont('Arial', 'B', 8);
-            if ($tipoQebra == true) {
-                $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
-                $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-                $this->Cell(20, 5, utf8_decode("Grade") ,1, 0);
-                $this->Cell(80, 5, utf8_decode("Produto") ,1, 0);//20
-                $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);//10
-                $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 0);
-                $this->Cell(15, 5, utf8_decode("Caixas") ,1, 1);
-                $this->Cell(20, 1, "", 0, 1);
-                //195
-            }else {
-                $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
-                $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-                $this->Cell(20, 5, utf8_decode("Grade") ,1, 0);
-                $this->Cell(95, 5, utf8_decode("Produto") ,1, 0);//10
-                $this->Cell(20, 5, utf8_decode("Embalagem") ,1, 0);//15
-                $this->Cell(20, 5, utf8_decode("Quantidade") ,1, 1);
-                $this->Cell(20, 1, "", 0, 1);
+
+            if ($usaGrade === 'N') {
+                if ($tipoQebra == true) {
+                    $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Cod.Produto"), 1, 0);
+                    $this->Cell(90, 5, utf8_decode("Produto"), 1, 0);
+                    $this->Cell(30, 5, utf8_decode("Embalagem"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Quantidade"), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                } else {
+                    $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Cod.Produto"), 1, 0);
+                    $this->Cell(100, 5, utf8_decode("Produto"), 1, 0);
+                    $this->Cell(35, 5, utf8_decode("Embalagem"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Quantidade"), 1, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                }
+            } else {
+                if ($tipoQebra == true) {
+                    $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Cod.Produto"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Grade"), 1, 0);
+                    $this->Cell(80, 5, utf8_decode("Produto"), 1, 0);//20
+                    $this->Cell(20, 5, utf8_decode("Embalagem"), 1, 0);//10
+                    $this->Cell(20, 5, utf8_decode("Quantidade"), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                    //195
+                } else {
+                    $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Cod.Produto"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Grade"), 1, 0);
+                    $this->Cell(95, 5, utf8_decode("Produto"), 1, 0);//10
+                    $this->Cell(20, 5, utf8_decode("Embalagem"), 1, 0);//15
+                    $this->Cell(20, 5, utf8_decode("Quantidade"), 1, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                }
             }
 
             /** @var Expedicao\MapaSeparacaoProduto $produto */
@@ -142,25 +170,46 @@ class MapaSeparacao extends Pdf
                     $dscEndereco = $endereco->getDescricao();
 
                 $this->SetFont('Arial',  null, 8);
-                if ($tipoQebra == true) {
-                    $this->Cell(20, 4, $dscEndereco ,0, 0);
-                    $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(20, 4, $this->SetStringByMaxWidth($grade, 20) ,0, 0);
-                    $this->Cell(80, 4, $this->SetStringByMaxWidth($descricao,80) ,0, 0);
-                    $this->Cell(20, 4, $embalagem ,0, 0);
-                    $this->Cell(20, 4, $quantidade ,0, 0);
-                    $this->Cell(15, 4, $caixas ,0, 1, 'C');
-                    $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-                    $this->Cell(20, 1, "", 0, 1);
+                if ($usaGrade === "S") {
+                    if ($tipoQebra == true) {
+                        $this->Cell(20, 4, $dscEndereco, 0, 0);
+                        $this->Cell(20, 4, $codProduto, 0, 0);
+                        $this->Cell(20, 4, $this->SetStringByMaxWidth($grade, 20), 0, 0);
+                        $this->Cell(80, 4, $this->SetStringByMaxWidth($descricao, 80), 0, 0);
+                        $this->Cell(20, 4, $embalagem, 0, 0);
+                        $this->Cell(20, 4, $quantidade, 0, 0);
+                        $this->Cell(15, 4, $caixas, 0, 1, 'C');
+                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    } else {
+                        $this->Cell(20, 4, $dscEndereco, 0, 0);
+                        $this->Cell(20, 4, $codProduto, 0, 0);
+                        $this->Cell(20, 4, $this->SetStringByMaxWidth($grade, 25), 0, 0);
+                        $this->Cell(95, 4, $this->SetStringByMaxWidth($descricao, 95), 0, 0);
+                        $this->Cell(20, 4, $embalagem, 0, 0);
+                        $this->Cell(20, 4, $quantidade, 0, 1, 'C');
+                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    }
                 } else {
-                    $this->Cell(20, 4, $dscEndereco ,0, 0);
-                    $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(20, 4, $this->SetStringByMaxWidth($grade,25) ,0, 0);
-                    $this->Cell(95, 4, $this->SetStringByMaxWidth($descricao,95) ,0, 0);
-                    $this->Cell(20, 4, $embalagem ,0, 0);
-                    $this->Cell(20, 4, $quantidade ,0, 1, 'C');
-                    $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-                    $this->Cell(20, 1, "", 0, 1);
+                    if ($tipoQebra == true) {
+                        $this->Cell(20, 4, $dscEndereco ,0, 0);
+                        $this->Cell(20, 4, $codProduto ,0, 0);
+                        $this->Cell(90, 4,substr($descricao,0,54) ,0, 0);
+                        $this->Cell(30, 4, $embalagem ,0, 0);
+                        $this->Cell(20, 4, $quantidade ,0, 0);
+                        $this->Cell(15, 4, $caixas ,0, 1, 'C');
+                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    } else {
+                        $this->Cell(20, 4, $dscEndereco ,0, 0);
+                        $this->Cell(20, 4, $codProduto ,0, 0);
+                        $this->Cell(100, 4,substr($descricao,0,54) ,0, 0);
+                        $this->Cell(35, 4, $embalagem ,0, 0);
+                        $this->Cell(20, 4, $quantidade ,0, 1, 'C');
+                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    }
                 }
             }
 
