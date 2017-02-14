@@ -789,7 +789,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 } else {
                                     $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                                     if ($filial == null) {
-                                        echo "errorFilial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada";
+                                        echo "error Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada";
                                         exit;
                                     }
                                     if ($filial->getIndUtilizaRessuprimento() == "S") {
@@ -823,7 +823,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                                 if ($filial == null) {
-                                    echo 'errorFilial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
+                                    echo 'error Filial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
                                     exit;
                                 }
                                 if ($filial->getIndUtilizaRessuprimento() == "S") {
@@ -860,7 +860,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno'=> $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
-                                echo 'errorFilial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
+                                echo 'error Filial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
                                 exit;
                             }
                             if ($filial->getIndUtilizaRessuprimento() == "S") {
@@ -998,7 +998,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 } else {
                     $view = \Zend_layout::getMvcInstance()->getView();
                     $link = '<a href="' . $view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
-                    echo 'errorExistem produtos sem definição de volume. Clique para exibir ' . $link;
+                    echo 'error Existem produtos sem definição de volume. Clique para exibir ' . $link;
                     exit;
                 }
             }
