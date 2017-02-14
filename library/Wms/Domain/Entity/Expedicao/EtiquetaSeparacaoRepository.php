@@ -667,7 +667,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     }
                     if ($embalagemAtual == null) {
-                        echo 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+                        echo 'error Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
                         exit;
 //                        $mensagem = 'Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
 //                        throw new \Exception($mensagem);
@@ -897,7 +897,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                             if ($embalagemAtual == null) {
-                                echo 'errorNão existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
+                                echo 'error Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
                                 exit;
                             }
                         } else {
