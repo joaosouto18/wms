@@ -36,7 +36,7 @@ class EtiquetaEmbalados extends eFPDF
             }
             $this->AddPage();
             //monta o restante dos dados da etiqueta
-            $this->SetFont('Arial', 'B', 10);
+            $this->SetFont('Arial', '', 10);
             $impressao = utf8_decode(substr($volume['NOM_PESSOA']."\n",0,20));
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
@@ -52,7 +52,7 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = utf8_decode(substr('CARGA: '.$volume['COD_CARGA_EXTERNO']."\n",0,20));
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 7);
+            $this->SetFont('Arial', '', 7);
 
             $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
             if ($existeItensPendentes == false)
