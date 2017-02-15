@@ -1034,7 +1034,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $produto = $resultadoConsistencia[0]['COD_PRODUTO'];
                     $qtdMapa = $resultadoConsistencia[0]['QTD_MAPA'];
                     $qtdPedido= $resultadoConsistencia[0]['QTD_PEDIDO'];
-                    throw new \Exception('Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto:' .$produto. " Qtd.Pedido:" . $qtdPedido . " Qtd.Gerado:" . $qtdMapa);
+                    echo 'error Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto:' .$produto. " Qtd.Pedido:" . $qtdPedido . " Qtd.Gerado:" . $qtdMapa;
+                    exit;
+//                    throw new \Exception('Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto:' .$produto. " Qtd.Pedido:" . $qtdPedido . " Qtd.Gerado:" . $qtdMapa);
                 }
             }
 
