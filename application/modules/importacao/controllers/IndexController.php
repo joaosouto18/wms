@@ -189,7 +189,7 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'fornecedor';
-                    
+
                     if (isset($arrRegistro['verificador']) and $arrRegistro['verificador'] == 'N') {
                         break;
                     }
@@ -719,8 +719,7 @@ class Importacao_IndexController extends Action
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
                                     } else {
-                                        $arrErroRows[$linha] = "Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.";
-                                        break;
+                                        throw new Exception("Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.");
                                     }
                                 }
                             }

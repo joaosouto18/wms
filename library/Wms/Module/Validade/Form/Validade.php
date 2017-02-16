@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Validade\Form;
 
+use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Module\Web\Form;
 
 class Validade extends Form
@@ -17,6 +18,17 @@ class Validade extends Form
             $arr[$linha->getId()] = $linha->getDescricao();
         }
 
+        $paramRepo = $this->getEm()->getRepository('wms:Sistema\Parametro');
+        /** @var Parametro $param */
+        $param = $paramRepo->findOneBy(array('constante' => "UTILIZA_GRADE"));
+
+        $yDsc = 45;
+        $yForn = 45;
+        if ($param->getValor() === "S"){
+            $yDsc = 37;
+            $yForn = 30;
+        }
+
         $this
             ->setAction($this->getView()->url(array('module' =>'validade', 'controller' => 'consulta', 'action' => 'index')))
             ->setAttribs(array(
@@ -30,7 +42,7 @@ class Validade extends Form
             ))
             ->addElement('text', 'descricao', array(
                 'label' => 'Descrição',
-                'size' => 45,
+                'size' => $yDsc,
             ))
             ->addElement('select', 'linhaSeparacao', array(
                 'label' => 'Linha de separação',
@@ -38,7 +50,7 @@ class Validade extends Form
             ))
             ->addElement('text', 'fornecedor', array(
                 'label' => 'Fornecedor',
-                'size' => 45,
+                'size' => $yForn,
             ))
             ->addElement('date', 'dataReferencia', array(
                 'label' => 'Data de Referência',
@@ -54,17 +66,36 @@ class Validade extends Form
                 'label' => 'Gerar relatório',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
-            ))
-            ->addDisplayGroup(array(
+            ));
+
+        $arr = array(
+            'codProduto',
+            'descricao',
+            'linhaSeparacao',
+            'br',
+            'fornecedor',
+            'dataReferencia',
+            'submit',
+            'gerarPdf');
+
+        if ($param->getValor() === 'S'){
+            $this->addElement('text', 'grade', array(
+                'label' => 'Grade',
+                'size' => 8,
+            ));
+            $arr = array(
                 'codProduto',
+                'grade',
                 'descricao',
                 'linhaSeparacao',
                 'br',
                 'fornecedor',
                 'dataReferencia',
                 'submit',
-                'gerarPdf'),
-                'formulario', array('legend' => 'Formulário'));
+                'gerarPdf');
+        }
+
+        $this->addDisplayGroup($arr, 'formulario', array('legend' => 'Formulário'));
     }
 
 }

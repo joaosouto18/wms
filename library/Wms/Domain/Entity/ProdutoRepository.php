@@ -1201,6 +1201,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			return $result;
 
 		$produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+		if (empty($produtoEntity))
+		    throw new \Exception("Nenhum produto ou norma foi encontrado para $codProduto de grade $grade");
 		$volumes = $produtoEntity->getVolumes();
 
 		$idNorma = NULL;

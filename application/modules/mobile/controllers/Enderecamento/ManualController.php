@@ -179,8 +179,9 @@ class Mobile_Enderecamento_ManualController extends Action
                 unset($params['nivel']);
 
                 $this->redirect($urlDestino,'enderecamento_manual','mobile', $params);
+            } else {
+                $this->addFlashMessage('info', "Informe um nível");
             }
-            $this->addFlashMessage('info', "Informe um nível");
 
         } catch (\Exception $ex) {
             $this->addFlashMessage('error', $ex->getMessage());
@@ -340,7 +341,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
         $idProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
-        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, 'UNICA');
+        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
         $idNorma = $result[0]['idNorma'];
 
         if ($idNorma == null) {

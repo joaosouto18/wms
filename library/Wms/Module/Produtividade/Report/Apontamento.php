@@ -168,7 +168,7 @@ class Apontamento extends Pdf
     {
         $this->Cell($this->offsetListW, $lineH);
         $cellWidth = $this->colIndexW;
-        $str = self::setStringByMaxWidth(utf8_decode($index),$cellWidth);
+        $str = self::SetStringByMaxWidth(utf8_decode($index),$cellWidth);
         $this->Cell($cellWidth, $lineH, $str,0,0);
         $this->Cell($this->colProdutoW, $lineH, number_format($qtdProduto,2),0,0);
         //$this->Cell($this->colCubagemW, $lineH, $qtdCubagem,0,0);
