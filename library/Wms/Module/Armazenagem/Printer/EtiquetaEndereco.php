@@ -5,7 +5,8 @@ namespace Wms\Module\Armazenagem\Printer;
 use
     Core\Pdf,
     Wms\Util\CodigoBarras,
-    Wms\Util\Endereco;
+    Wms\Domain\Entity\Expedicao;
+use Wms\Util\Endereco;
 
 class EtiquetaEndereco extends Pdf
 {
