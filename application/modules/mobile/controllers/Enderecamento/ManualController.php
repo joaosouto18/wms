@@ -1,8 +1,8 @@
 <?php
 use Wms\Controller\Action,
-Wms\Service\Recebimento as LeituraColetor,
-Wms\Domain\Entity\Recebimento as RecebimentoEntity,
-\Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
+    Wms\Service\Recebimento as LeituraColetor,
+    Wms\Domain\Entity\Recebimento as RecebimentoEntity,
+    \Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
 
 class Mobile_Enderecamento_ManualController extends Action
 {
@@ -404,7 +404,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
             $endereco = \Wms\Util\Endereco::formatar($endereco);
             $primeiraTela = true;
-        //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
+            //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
         } elseif (isset($codEndereco) && !empty($codEndereco)) {
             $enderecoEn = $enderecoRepo->find($codEndereco);
 

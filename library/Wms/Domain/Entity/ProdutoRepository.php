@@ -18,7 +18,6 @@ use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Deposito\Endereco\Caracteristica;
 use Wms\Domain\Entity\Produto\Embalagem;
-use Wms\Util\Coletor;
 
 /**
  *
@@ -171,8 +170,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
 			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
 
-            if (isset($values['fornecedor']) && !empty($values['fornecedor']))
-			    $this->saveFornecedorReferencia($em, $values, $produtoEntity);
+			if (isset($values['fornecedor']) && !empty($values['fornecedor']))
+				$this->saveFornecedorReferencia($em, $values, $produtoEntity);
 
 			$em->persist($produtoEntity);
 
@@ -180,7 +179,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				case ProdutoEntity::TIPO_UNITARIO:
 					// gravo embalagens
 					$result = $this->persistirEmbalagens($produtoEntity, $values);
-					
+
 					if (is_string($result)){
 						$em->rollback();
 						return $result;
@@ -264,25 +263,25 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			}
 
 			if ($repositorios == null) {
-                /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
-                $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
+				/** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
+				$andamentoRepo = $em->getRepository('wms:Produto\Andamento');
 
-                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+				/** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+				$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
 
-                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+				/** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+				$embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
-            } else {
-                /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
-                $andamentoRepo = $repositorios['produtoAndamentoRepo'];
+			} else {
+				/** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
+				$andamentoRepo = $repositorios['produtoAndamentoRepo'];
 
-                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo = $repositorios['enderecoRepo'];
+				/** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+				$enderecoRepo = $repositorios['enderecoRepo'];
 
-                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $repositorios['embalagemRepo'];
-            }
+				/** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+				$embalagemRepo = $repositorios['embalagemRepo'];
+			}
 
 
 			//embalagens do produto
@@ -293,7 +292,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
 				if (!isset($itemEmbalagem['quantidade']) || empty($itemEmbalagem['quantidade']))
 					$itemEmbalagem['quantidade'] = 1;
-				
+
 				$itemEmbalagem['quantidade'] = str_replace(',','.',$itemEmbalagem['quantidade']);
 				extract($itemEmbalagem);
 				switch ($itemEmbalagem['acao']) {
@@ -345,7 +344,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						}
 
 						$em->persist($embalagemEntity);
-                        if ($flush == true) $em->flush();
+						if ($flush == true) $em->flush();
 
 						if ($embalagemEntity->getIsPadrao() === 'S') {
 							$result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
@@ -426,12 +425,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 						$em->persist($embalagemEntity);
 
-                        if ($embalagemEntity->getIsPadrao() === 'S') {
-                            $result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
-                            if (!is_bool($result))
-                                throw $result;
-                        }
-                        
+						if ($embalagemEntity->getIsPadrao() === 'S') {
+							$result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
+							if (!is_bool($result))
+								throw $result;
+						}
+
 						break;
 					case 'excluir':
 
@@ -442,7 +441,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						}
 						try {
 							$em->remove($embalagemEntity);
-                            if ($flush == true) $em->flush();
+							if ($flush == true) $em->flush();
 						}catch (\Exception $e) {
 							$previus = $e->getPrevious();
 							if ($previus->getCode() == 2292){
@@ -1114,8 +1113,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	}
 
 	public function getProdutoByCodBarrasOrCodProduto($codigo) {
+		$LeituraColetor = new \Wms\Service\Coletor();
 
-		$codigoBarrasProduto = Coletor::adequaCodigoBarras($codigo);
+		$codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
 
 		$info = $this->getProdutoByCodBarras($codigoBarrasProduto);
 		$produtoEn      = null;
@@ -1384,7 +1384,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(de1.descricao, de2.descricao) picking,
                         NVL(pv.codigoSequencial, \'\') sequenciaVolume,
                         NVL(p.diasVidaUtil, \'0\') diasVidaUtil'
-				)
+			)
 			->from('wms:Produto', 'p')
 			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
 			->leftJoin('p.linhaSeparacao', 'ls')
@@ -1608,5 +1608,14 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                   ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
 		return $this->_em->getConnection()->query($query)->fetchAll();
+	}
+
+	public function getProdutos($codProduto)
+	{
+		$sql = "SELECT COD_PRODUTO, DSC_GRADE, DSC_PRODUTO
+					FROM PRODUTO P
+					WHERE P.COD_PRODUTO IN ($codProduto)";
+		return $this->_em->getConnection()->query($sql)->fetchAll();
+
 	}
 }

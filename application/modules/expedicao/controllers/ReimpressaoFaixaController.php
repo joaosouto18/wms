@@ -34,7 +34,7 @@ class Expedicao_ReimpressaoFaixaController  extends Action
                     try {
                         $Etiqueta->reimprimirFaixa  ($etiquetas, $motivo, $modelo);
                     } catch(\Exception $e) {
-                            $msg = "Falha na reimpressao. Motivo:" . $e->getMessage();
+                        $msg = "Falha na reimpressao. Motivo:" . $e->getMessage();
                         $this->addFlashMessage('error',$msg);
                         $this->redirect('index','reimpressao-faixa','expedicao');
                     }

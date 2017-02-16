@@ -103,7 +103,7 @@ class Expedicao_CorteController  extends Action
 
         if (isset($idMapa) && !empty($idMapa))
             $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa,$codProduto,$grade);
-         else
+        else
             $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();

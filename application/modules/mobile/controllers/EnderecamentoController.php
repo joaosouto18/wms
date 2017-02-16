@@ -1345,6 +1345,7 @@ class Mobile_EnderecamentoController extends Action
         $codBarras = $this->_getParam('codigoBarras');
         $codigoBarrasEndereco = $this->_getParam('endereco');
         $capacidadePicking = $this->_getParam('capacidade');
+        $embalado = $this->_getParam('embalado');
 
         try {
             if (isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
@@ -1362,7 +1363,7 @@ class Mobile_EnderecamentoController extends Action
 
                 /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                 $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-                $embalagemRepo->updateEmbalagem($codBarras,$enderecoEn,$capacidadePicking);
+                $embalagemRepo->updateEmbalagem($codBarras,$enderecoEn,$capacidadePicking,$embalado);
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
@@ -1393,12 +1394,12 @@ class Mobile_EnderecamentoController extends Action
             $endereco = $embalagemEn->getEndereco()->getDescricao();
 
         $this->_helper->json(array('endereco'   => $endereco,
-                                   'capacidade' => $embalagemEn->getCapacidadePicking(),
-                                   'embalado'   => $embalagemEn->getEmbalado(),
-                                   'referencia' => $embalagemEn->getProduto()->getReferencia(),
-                                   'mensagem'   => $mensagem,
-                                   'descricao'  => $embalagemEn->getProduto()->getDescricao()
-                            ));
+            'capacidade' => $embalagemEn->getCapacidadePicking(),
+            'embalado'   => $embalagemEn->getEmbalado(),
+            'referencia' => $embalagemEn->getProduto()->getReferencia(),
+            'mensagem'   => $mensagem,
+            'descricao'  => $embalagemEn->getProduto()->getDescricao()
+        ));
     }
 }
 

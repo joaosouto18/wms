@@ -30,7 +30,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
 
                 if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
-                    $query = str_replace("and p.dtultaltcom >= :dthExecucao", "" ,$query);
+                    $query = str_replace("and p.dtcadastro>=:dthExecucao", "" ,$query);
+                    $query = str_replace("AND (log.datainicio >= :dthExecucao OR p.dtultaltcom >= :dthExecucao)", "" ,$query);
                 } else {
                     $query = str_replace(":dthExecucao", $dthExecucao ,$query);
                 }

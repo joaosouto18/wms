@@ -16,6 +16,12 @@ class ApontamentoMapaRepository extends EntityRepository
         $apontamentoEn->setCodUsuario($codUsuario);
         $apontamentoEn->setMapaSeparacao($mapaSeparacao);
 
+        $apontamentosByUsuario = $this->findBy(array('codUsuario' => $codUsuario, 'dataFimConferencia' => null), array('id' => 'DESC'));
+        if (count($apontamentosByUsuario) > 0) {
+            $ultimoApontamentoByUsuario = $apontamentosByUsuario[0];
+            $ultimoApontamentoByUsuario->setDataFimConferencia(new \DateTime());
+        }
+
         $em->persist($apontamentoEn);
         $em->flush();
 

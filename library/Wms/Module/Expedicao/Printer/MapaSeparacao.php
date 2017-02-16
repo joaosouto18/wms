@@ -5,10 +5,13 @@ namespace Wms\Module\Expedicao\Printer;
 use
     Core\Pdf,
     Wms\Util\CodigoBarras,
+    Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao;
 use Wms\Util\Barcode\Barcode;
 
-class MapaSeparacao extends Pdf
+use Wms\Util\Barcode\eFPDF;
+
+class MapaSeparacao extends eFPDF
 {
     private $idMapa;
     private $idExpedicao;
@@ -671,7 +674,7 @@ class MapaSeparacao extends Pdf
             $this->Cell(20, 1, "", 0, 1);
 
             $total = 0;
-            $ruaAnterior = null;
+            $ruaAnterior = 99999;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
@@ -694,7 +697,7 @@ class MapaSeparacao extends Pdf
                 }
                 if (isset($embalagemEn) && !empty($embalagemEn))
                     $codigoBarras = $embalagemEn->getCodigoBarras();
-                    $embalagem   = $embalagemEn->getDescricao() ;
+                    $embalagem   = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
@@ -716,9 +719,9 @@ class MapaSeparacao extends Pdf
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 2, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-                    $this->Cell(20, 2, utf8_decode("ROTA: "), 0, 0);
+//                    $this->Cell(20, 2, utf8_decode("ROTA: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-                    $this->Cell(20, 2, utf8_decode($linhaSeparacao), 0, 1);
+//                    $this->Cell(20, 2, utf8_decode($linhaSeparacao), 0, 1);
 
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 2, '', 0, 1);
@@ -748,10 +751,10 @@ class MapaSeparacao extends Pdf
                     } else {
                         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
                         $this->Cell(20, 5, utf8_decode("Cod.Produto") ,1, 0);
-                        $this->Cell(95, 5, utf8_decode("Produto") ,1, 0);
+                        $this->Cell(90, 5, utf8_decode("Produto") ,1, 0);
                         $this->Cell(30, 5, utf8_decode("Cod. Barras") ,1, 0);
-                        $this->Cell(12, 5, utf8_decode("Quant.") ,1, 0);
-                        $this->Cell(15, 5, utf8_decode("Emb.:") ,1, 1);
+                        $this->Cell(15, 5, utf8_decode("Quant.") ,1, 0);
+                        $this->Cell(18, 5, utf8_decode("Emb.:") ,1, 1);
                     }
 
                     $this->Cell(20, 1, "", 0, 1);
@@ -765,17 +768,19 @@ class MapaSeparacao extends Pdf
                     $this->Cell(80, 4, substr($descricao,0,45) ,0, 0);
                     $this->Cell(30, 4, $codigoBarras, 0, 0);
                     $this->SetFont('Arial', "B", 10);
-                    $this->Cell(20, 4, $quantidade ,0, 0);
-                    $this->Cell(12, 4, $embalagem ,0, 0);
+                    $this->Cell(12, 4, $quantidade ,0, 0);
+                    $this->SetFont('Arial', '', 10);
+                    $this->Cell(16, 4, $embalagem ,0, 0);
                     $this->Cell(15, 4, $caixas ,0, 1, 'C');
                 } else {
                     $this->SetFont('Arial', "", 8);
                     $this->Cell(20, 4, $dscEndereco ,0, 0);
                     $this->Cell(20, 4, $codProduto ,0, 0);
-                    $this->Cell(95, 4, substr($descricao,0,57) ,0, 0);
-                    $this->Cell(30, 4, $codigoBarras, 0, 0);
+                    $this->Cell(90, 4, substr($descricao,0,57) ,0, 0);
+                    $this->Cell(25, 4, $codigoBarras, 0, 0);
                     $this->SetFont('Arial', "B", 10);
                     $this->Cell(20, 4, $quantidade ,0, 0, 'C');
+                    $this->SetFont('Arial', '', 10);
                     $this->Cell(12, 4, $embalagem ,0, 1);
                 }
                 $ruaAnterior = $rua;
@@ -796,23 +801,63 @@ class MapaSeparacao extends Pdf
             $this->mapa = $mapa;
 
             $this->InFooter = true;
-            $pageSizeA4 = $this->_getpagesize('A4');
-            $wPage = $pageSizeA4[0]/12;
+//            $pageSizeA4 = $this->_getpagesize('A4');
+            $wPage = 595.28/12;
 
             $this->SetY(-23);
             $this->SetFont('Arial','B',9);
-            $this->Cell($wPage * 4, 6, utf8_decode("QUEBRAS: ".substr($this->quebrasEtiqueta,0,23)), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+            $this->Cell(16 * 4, 6, utf8_decode("QUEBRAS: ".substr($this->quebrasEtiqueta,0,23)), 0, 0);
+            $this->Cell(14 * 4, 6, utf8_decode("EXPEDICAO " . $this->idExpedicao), 0, 0);
+            $this->Cell(10 * 4, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+            $this->Cell(16 * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell(10 * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
+            $this->Cell(16 * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
+            $this->Cell(10 * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
             $this->Image($this->imgCodBarras, 143, 280, 50);
 
             $this->InFooter = false;
 
         }
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+        $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
+
+        $this->AddPage();
+        //Select Arial bold 8
+        $this->SetFont('Arial','B',10);
+        $this->Cell(20, 10, utf8_decode("RELATÓRIO DE CODIGO DE BARRAS DE PRODUTOS DA EXPEDIÇÃO ". $this->idExpedicao), 0, 1);
+
+        $x = 170;
+        $y = 30;
+        $count = 1;
+        foreach ($produtos as $produto)
+        {
+            $height   = 8;
+            $angle    = 0;
+            $type     = 'code128';
+            $black    = '000000';
+
+            if($count > 12){
+                $this->AddPage();
+                $count = 1;
+                $y = 30;
+            }
+
+            $this->SetFont('Arial','',10);
+            $this->Cell(15, 20, $produto['id'], 0, 0);
+            $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
+            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
+            //$this->Cell(20, 20, '', 0, 1);
+            //$this->Cell(20, 10, '', 0, 1,'C');
+
+            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
+            $len = $this->GetStringWidth($data['hri']);
+            $this->Text(($x-$height) + (($height - $len)/2) + 3, $y + 8,$produto['codigoBarras']);
+            $y = $y + 20;
+            $count++;
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity    = $expedicaoRepo->find($idExpedicao);
         if ($ExpedicaoEntity->getCodStatus() == EXPEDICAO::STATUS_INTEGRADO) {

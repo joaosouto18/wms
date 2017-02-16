@@ -24,7 +24,7 @@
         text-align: center;
         text-shadow: #9d9d9d;
     }
-    
+
     .btnSearch{
         height: 40px;
         width: 110px;
@@ -245,6 +245,9 @@
                     } else if (data.result = 'Error'){
                         alert(data.msg);
                     }
+                    $('#mapas-codMapaSeparacao').val('');
+                    $('#mapas-pessoa').val('');
+                    $('#mapas-codMapaSeparacao').focus();
                 }
             });
         });

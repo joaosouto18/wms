@@ -474,4 +474,13 @@ class Expedicao_IndexController extends Action
 
     }
 
+    public function relatorioProdutosClientesConferidosAjaxAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+
+        $pdf = new \Wms\Module\Expedicao\Printer\ProdutosClienteCarregamento();
+        $pdf->imprimir($idExpedicao);
+
+    }
+
 }

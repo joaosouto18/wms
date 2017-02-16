@@ -40,6 +40,11 @@ class ApontamentoMapa
     protected $dataConferencia;
 
     /**
+     * @Column(name="DTH_FIM_CONFERENCIA", type="datetime", nullable=true)
+     */
+    protected $dataFimConferencia;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -117,6 +122,22 @@ class ApontamentoMapa
     public function setMapaSeparacao($mapaSeparacao)
     {
         $this->mapaSeparacao = $mapaSeparacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataFimConferencia()
+    {
+        return $this->dataFimConferencia;
+    }
+
+    /**
+     * @param mixed $dataFimConferencia
+     */
+    public function setDataFimConferencia($dataFimConferencia)
+    {
+        $this->dataFimConferencia = $dataFimConferencia;
     }
 
 }
