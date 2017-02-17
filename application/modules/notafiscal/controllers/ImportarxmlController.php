@@ -83,8 +83,10 @@ class Notafiscal_ImportarxmlController extends Crud
                 } else {
                     $this->addFlashMessage("error","Falhas importando nota fiscal");
                 }
-            } catch (Zend_File_Transfer_Exception $e) {
-                echo $e->message();
+            } catch (Exception $e) {
+                $this->addFlashMessage("error","Falhas importando nota fiscal");
+                $this->isValid = false;
+                $this->falhas[] = $e->getMessage();
             }
         }
         $this->view->isValid = $this->isValid;
