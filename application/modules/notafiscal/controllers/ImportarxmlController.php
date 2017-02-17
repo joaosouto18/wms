@@ -123,6 +123,10 @@ class Notafiscal_ImportarxmlController extends Crud
             print_r($dados); die();
             */
 
+            if (!isset($dados["NFe"])){
+                throw new Exception("O arquivo não corresponde à uma Nota Fiscal de Recebimento");
+            }
+
             $versao=$dados["NFe"]["infNFe"]['versao'];
 
             //verificação se o XML é uma NF-e
