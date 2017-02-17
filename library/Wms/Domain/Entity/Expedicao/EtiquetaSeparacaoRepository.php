@@ -1740,18 +1740,40 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getDadosEtiquetaByEtiquetaId($idEtiqueta)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('es.id, es.codProduto, p.id as pedido, es.codOS, p.centralEntrega, p.pontoTransbordo, es.reimpressao,
-            es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, e.dataInicio, c.codCargaExterno as tipoCarga,
-            prod.id as produto, prod.descricao, pe.descricao as embalagem, i.descricao as itinerario, pess.nome as clienteNome,
-            es.dataConferencia, es.dataConferenciaTransbordo, es.codOSTransbordo, cli.codClienteExterno, usuarioPessoa.login,
-            siglaEpx.sigla as siglaEpxedicao')
+            ->select('es.id,
+                      es.codProduto,
+                      p.id as pedido,
+                      es.codOS,
+                      p.centralEntrega,
+                      p.pontoTransbordo,
+                      es.reimpressao,
+                      es.codStatus,
+                      es.dscGrade,
+                      s.sigla,
+                      e.id as idExpedicao,
+                      e.dataInicio,
+                      c.codCargaExterno as tipoCarga,
+                      prod.id as produto,
+                      prod.descricao,
+                      pe.descricao as embalagem,
+                      i.descricao as itinerario,
+                      pess.nome as clienteNome,
+                      es.dataConferencia,
+                      es.dataConferenciaTransbordo,
+                      es.codOSTransbordo,
+                      cli.codClienteExterno,
+                      usuarioPessoa.login,
+                      usuarioTransbordo.login as loginTransbordo,
+                      siglaEpx.sigla as siglaEpxedicao')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin('es.pedido', 'p')
             ->innerJoin('p.itinerario', 'i')
             ->innerJoin('p.pessoa', 'cli')
             ->innerJoin('cli.pessoa', 'pess')
             ->leftJoin('wms:OrdemServico', 'os', 'WITH', 'es.codOS = os.id')
+            ->leftJoin('wms:OrdemServico', 'osT', 'WITH', 'es.codOSTransbordo = osT.id')
             ->leftJoin('wms:Usuario', 'usuarioPessoa', 'WITH', 'os.pessoa = usuarioPessoa.pessoa')
+            ->leftJoin('wms:Usuario', 'usuarioTransbordo', 'WITH', 'osT.pessoa = usuarioTransbordo.pessoa')
             ->leftJoin('es.produto', 'prod')
             ->leftJoin('p.carga', 'c')
             ->leftJoin('c.expedicao', 'e')
