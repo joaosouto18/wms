@@ -217,7 +217,7 @@ class Mobile_ExpedicaoController extends Action
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
-                $codBarrasProcessado = (float) $codBarras;
+                $codBarrasProcessado = $codBarras;
 
                 $tipoProvavelCodBarras = 'embalagem';
                 $embalagens = null;
@@ -285,9 +285,26 @@ class Mobile_ExpedicaoController extends Action
                     if (isset($qtd) && ($qtd != null)) {
 //                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
 //                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
-                        $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa.'/qtd/'.$qtd);
+                        $arr = array(
+                            'idMapa' => $idMapa,
+                            'idExpedicao' => $idExpedicao,
+                            'codBarras' => $codBarras,
+                            'idVolume' => $idVolume,
+                            'cliente' => $codPessoa,
+                            'qtd' => $qtd
+                        );
+                        //$this->_redirect('mobile/expedicao/informa-qtd -mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa.'/qtd/'.$qtd);
+                        $this->_forward('informa-qtd-mapa','expedicao','mobile', $arr);
                     } else {
-                        $this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
+                        $arr = array(
+                            'idMapa' => $idMapa,
+                            'idExpedicao' => $idExpedicao,
+                            'codBarras' => $codBarras,
+                            'idVolume' => $idVolume,
+                            'cliente' => $codPessoa
+                        );
+                        //$this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
+                        $this->_forward('informa-qtd-mapa','expedicao','mobile', $arr);
                     }
                 }
             } catch (\Exception $e) {
