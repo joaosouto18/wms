@@ -5,62 +5,50 @@ namespace Wms\Module\Produtividade\Grid;
 use Core\Grid\Pager;
 use Wms\Module\Web\Grid;
 
-class Produtividade extends Grid
+class ProdutividadeDetalhada extends Grid
 {
-    public function init($params, $sort)
+    public function init($params)
     {
 
-        $this->setAttrib('title','apontamento-separacao');
+        $this->setAttrib('title','produtividade-detalhada');
         $this->setSource(new \Core\Grid\Source\ArraySource($params));
-                if ($sort == 'atividade') {
-                    $this->addColumn(array(
-                        'label' => 'Atividade',
-                        'index' => 'DSC_ATIVIDADE',
-                    ));
-                    $this->addColumn(array(
-                        'label' => 'Usuario',
-                        'index' => 'NOM_PESSOA',
-                    ));
-                } else {
-                    $this->addColumn(array(
-                        'label' => 'Usuario',
-                        'index' => 'NOM_PESSOA',
-                    ));
-                    $this->addColumn(array(
-                        'label' => 'Atividade',
-                        'index' => 'DSC_ATIVIDADE',
-                    ));
-                }
 
                 $this->addColumn(array(
-                    'label' => 'Volumes',
-                    'index' => 'QTD_VOLUMES',
-                    'render' => 'N2'
+                    'label' => utf8_encode('Usuário'),
+                    'index' => 'NOM_PESSOA',
+                ));
+                $this->addColumn(array(
+                    'label' => utf8_encode('Expedição'),
+                    'index' => 'COD_EXPEDICAO',
+                ));
+                $this->addColumn(array(
+                    'label' => utf8_encode('Mapa Separação'),
+                    'index' => 'COD_MAPA_SEPARACAO',
                 ));
                 $this->addColumn(array(
                     'label' => 'Peso',
-                    'index' => 'QTD_PESO',
+                    'index' => 'NUM_PESO',
                     'render' => 'N2'
                 ));
                 $this->addColumn(array(
-                    'label' => 'Cubagem',
-                    'index' => 'QTD_CUBAGEM',
-                    'render' => 'N2'
+                    'label' => 'Volumes',
+                    'index' => 'VOLUMES',
                 ));
                 $this->addColumn(array(
-                    'label' => 'Produtos',
+                    'label' => 'Qtd. Produtos',
                     'index' => 'QTD_PRODUTOS',
-                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
-                    'label' => 'Paletes',
-                    'index' => 'QTD_PALETES',
-                    'render' => 'N2'
+                    'label' => 'Data Inicio',
+                    'index' => 'DTH_INICIO',
                 ));
                 $this->addColumn(array(
-                    'label' => 'Cargas',
-                    'index' => 'QTD_CARGA',
-                    'render' => 'N2'
+                    'label' => 'Data Fim',
+                    'index' => 'DTH_FIM',
+                ));
+                $this->addColumn(array(
+                    'label' => 'Tempo Gasto',
+                    'index' => 'TEMPO_GASTO',
                 ));
 
         $this->setShowExport(true);

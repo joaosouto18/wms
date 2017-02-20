@@ -1,3 +1,27 @@
 <?php
 echo $this->form;
 echo $this->grid;
+?>
+<script>
+$(document).ready(function(){
+    $('#horaInicio').keyup(function (e) {
+        var v = $('#horaInicio').val();
+        var key = e.which;
+        if (key != 5) {
+            if (v.match(/^\d{2}$/) !== null) {
+                $('#horaInicio').val(v + ':');
+            }
+        }
+    });
+    $('#horaFim').keyup(function (e) {
+        var v = $('#horaFim').val();
+        var key = e.which;
+        if (key != 5) {
+            if (v.match(/^\d{2}$/) !== null) {
+                $('#horaFim').val(v + ':');
+            }
+        }
+    });
+});
+
+</script>

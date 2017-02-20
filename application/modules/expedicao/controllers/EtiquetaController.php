@@ -357,7 +357,7 @@ class Expedicao_EtiquetaController  extends Action
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
                      && ($ExpedicaoRepo->getQtdMapasPendentesImpressaoByExpedicao($idExpedicao)  <= 0))  {
                     $cargas = implode(',',$cargas);
-                    echo 'errorEtiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas;
+                    echo 'error Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas;
                     exit;
 //                    $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
                 }
