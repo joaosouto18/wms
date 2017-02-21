@@ -76,14 +76,14 @@ class Expedicao_EtiquetaController  extends Action
             if ($filialEn->getIndUtilizaRessuprimento() == "S") {
                 $pedidosSemOnda = $ExpedicaoRepo->getPedidoProdutoSemOnda($idExpedicao,$central);
                 if (count($pedidosSemOnda)) {
-                    echo 'errorExistem pedidos sem onda de ressuprimento gerada na expedição ' . $idExpedicao;
+                    echo 'error Existem pedidos sem onda de ressuprimento gerada na expedição ' . $idExpedicao;
                     exit;
                 }
             }
 
             if (count($ExpedicaoRepo->getProdutosSemDadosByExpedicao($idExpedicao)) > 0) {
                 $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
-                echo 'errorExistem produtos sem definição de volume. Clique para exibir ' . $link;
+                echo 'error Existem produtos sem definição de volume. Clique para exibir ' . $link;
                 exit;
             } else {
                 $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
