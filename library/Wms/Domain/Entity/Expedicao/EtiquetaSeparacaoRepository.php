@@ -1023,7 +1023,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
             $this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
-            $this->removeMapaSeparacaoVazio($idExpedicao);
+//            $this->removeMapaSeparacaoVazio($idExpedicao);
 
 //            $this->_em->flush();
 //            $this->_em->clear();
@@ -1125,6 +1125,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $mapaSeparacaoProdutoEn->setNumCaixaInicio($caixaInicio);
                         $mapaSeparacaoProdutoEn->setNumCaixaFim($caixaFim);
                         $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
+                    }
+                    if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
+                        $this->getEntityManager()->remove($mapaSeparacao);
+
                     }
                 }
             }

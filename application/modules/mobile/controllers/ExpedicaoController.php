@@ -507,7 +507,7 @@ class Mobile_ExpedicaoController extends Action
                 if (isset($codPessoa) && !empty($codPessoa)) {
                     if (count($mapaSeparacaoEmbaladoEn) <= 0) {
                         $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
-                    } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
+                    } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
                         $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
                     }
                 }
