@@ -157,6 +157,12 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                   APONT.DTH_FIM_CONFERENCIA";
 
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
+        $qtdRows = count($result);
+        $pesoTotal = 0;
+        $volumeTotal = 0;
+        $quantidadeTotal = 0;
+        $tempoTotal = 0;
+        $seconds = 0;
 
         foreach ($result as $key => $value) {
             $tempoFinal = DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_FIM']);
@@ -168,7 +174,30 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
             $intervalo = date_diff($tempoInicial,$tempoFinal);
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%h Hora(s) %i Minuto(s) %s Segundo(s)');
+//            $value['TEMPO_GASTO'] = $intervalo->format('%h:%i:%s');
+            $pesoTotal = $pesoTotal + $value['NUM_PESO'];
+            $volumeTotal = $volumeTotal + $value['VOLUMES'];
+            $quantidadeTotal = $quantidadeTotal + $value['QTD_PRODUTOS'];
+            list($h,$i,$s) = explode(':',$intervalo->format('%h:%i:%s'));
+            $seconds += $h * 3600;
+            $seconds += $i * 60;
+            $seconds += $s;
         }
+
+        $hours = floor($seconds / 3600);
+        $seconds -= $hours * 3600;
+        $minutes = floor($seconds / 60);
+        $seconds -= $minutes * 60;
+
+        $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
+        $result[$qtdRows]['COD_EXPEDICAO'] = '-';
+        $result[$qtdRows]['COD_MAPA_SEPARACAO'] = '-';
+        $result[$qtdRows]['NUM_PESO'] = $pesoTotal;
+        $result[$qtdRows]['VOLUMES'] = $volumeTotal;
+        $result[$qtdRows]['QTD_PRODUTOS'] = $quantidadeTotal;
+        $result[$qtdRows]['DTH_INICIO'] = '-';
+        $result[$qtdRows]['DTH_FIM'] = '-';
+        $result[$qtdRows]['TEMPO_GASTO'] = "$hours Hora(s) $minutes Minuto(s) $seconds Segundo(s)";
 
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
         $this->view->grid = $grid->init($result);
