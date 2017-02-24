@@ -11,7 +11,7 @@ class FormProdutividadeDetalhada extends Form
     public function init()
     {
         /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
-        $UsuarioRepo                = $this->getEm()->getRepository('wms:Usuario');
+        $UsuarioRepo = $this->getEm()->getRepository('wms:Usuario');
         $usuario     = $UsuarioRepo->selectUsuario('AUXILIAR EXPEDICAO');
 
         $this->setAction(
@@ -23,7 +23,8 @@ class FormProdutividadeDetalhada extends Form
         );
         $this->setAttribs(array(
             'method' => 'get',
-            'class' => 'filtro'
+            'class' => 'filtro',
+            'id' => 'filtro-expedicao-mercadoria-form',
         ));
         $this->addElement('select', 'usuario', array(
             'mostrarSelecione' => false,
@@ -36,42 +37,44 @@ class FormProdutividadeDetalhada extends Form
         ));
         $this->addElement('text', 'expedicao', array(
             'label' => 'Expedição',
-            'size' => 10
+            'size' => 10,
+            'decorators' => array('ViewHelper'),
         ));
         $this->addElement('text', 'mapaSeparacao', array(
             'label' => 'Mapa Separação',
-            'size' => 10
+            'size' => 10,
+            'decorators' => array('ViewHelper'),
         ));
         $this->addElement('date', 'dataInicio', array(
-                'label' => 'Data inicial',
-                'size' => 10
+            'label' => 'Data Inicial',
+            'size' => 10,
+            'decorators' => array('ViewHelper'),
         ));
         $this->addElement('text', 'horaInicio', array(
-            'label' => 'Hora Início',
+            'label' => 'Hora Inícial',
             'size' => 5,
-            'maxlength' => 5
-
+            'maxlength' => 5,
+            'decorators' => array('ViewHelper'),
         ));
         $this->addElement('date', 'dataFim', array(
-                'label' => 'Data final',
+                'label' => 'Data Final',
                 'size' => 10,
+            'decorators' => array('ViewHelper'),
         ));
         $this->addElement('text', 'horaFim', array(
             'label' => 'Hora Final',
             'size' => 5,
-            'maxlength' => 5
+            'maxlength' => 5,
+            'decorators' => array('ViewHelper'),
         ));
         $this->addElement('submit', 'submit', array(
             'label' => 'Buscar',
             'class' => 'btn',
             'decorators' => array('ViewHelper'),
         ))
-//        $this->addElement('submit', 'gerarPdf', array(
-//            'label' => 'Gerar relatório',
-//            'class' => 'btn',
-//            'decorators' => array('ViewHelper')
-//        ))
-        ->addDisplayGroup(array('usuario', 'expedicao', 'carga', 'mapaSeparacao', 'dataInicio', 'horaInicio', 'dataFim', 'horaFim', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de produtividade Detalhada')
+        ->addDisplayGroup($this->getElements(), 'apontamento', array('legend' => 'Relatório de produtividade Detalhada')
         );
+
+        $this->setDecorators(array(array('ViewScript', array('viewScript' => 'relatorio/indicadores/filtro.phtml'))));
     }
 }

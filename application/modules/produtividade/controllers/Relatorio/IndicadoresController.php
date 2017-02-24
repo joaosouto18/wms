@@ -103,6 +103,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $horaInicio = $this->_getParam('horaInicio');
         $dataFim = $this->_getParam('dataFim');
         $horaFim = $this->_getParam('horaFim');
+        $params = $this->_getAllParams();
         $andWhere = ' ';
         if (isset($idUsuario) && !empty($idUsuario))
             $andWhere .= " AND P.COD_PESSOA = $idUsuario";
@@ -150,6 +151,9 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                   E.COD_EXPEDICAO,
                   MS.COD_MAPA_SEPARACAO,
                   APONT.DTH_CONFERENCIA,
+                  APONT.DTH_FIM_CONFERENCIA
+                ORDER BY P.NOM_PESSOA,
+                  APONT.DTH_CONFERENCIA,
                   APONT.DTH_FIM_CONFERENCIA";
 
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
@@ -168,5 +172,6 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
         $this->view->grid = $grid->init($result);
+        $form->populate($params);
     }
 }
