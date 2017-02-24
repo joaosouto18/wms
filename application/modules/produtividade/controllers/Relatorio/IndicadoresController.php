@@ -161,7 +161,6 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $pesoTotal = 0;
         $volumeTotal = 0;
         $quantidadeTotal = 0;
-        $tempoTotal = 0;
         $seconds = 0;
 
         foreach ($result as $key => $value) {
@@ -174,7 +173,6 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
             $intervalo = date_diff($tempoInicial,$tempoFinal);
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%h Hora(s) %i Minuto(s) %s Segundo(s)');
-//            $value['TEMPO_GASTO'] = $intervalo->format('%h:%i:%s');
             $pesoTotal = $pesoTotal + $value['NUM_PESO'];
             $volumeTotal = $volumeTotal + $value['VOLUMES'];
             $quantidadeTotal = $quantidadeTotal + $value['QTD_PRODUTOS'];
