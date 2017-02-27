@@ -105,39 +105,50 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $horaFim = $this->_getParam('horaFim');
         $params = $this->_getAllParams();
         $andWhere = ' ';
-        if (isset($idUsuario) && !empty($idUsuario))
-            $andWhere .= " AND P.COD_PESSOA = $idUsuario";
+        $andWhereConf = ' ';
+        if (isset($idUsuario) && !empty($idUsuario)) {
+            $andWhere     .= " AND P.COD_PESSOA = $idUsuario";
+            $andWhereConf .= " AND P.COD_PESSOA = $idUsuario";
+        }
 
-        if (isset($idExpedicao) && !empty($idExpedicao))
-            $andWhere .= " AND E.COD_EXPEDICAO = $idExpedicao";
+        if (isset($idExpedicao) && !empty($idExpedicao)) {
+            $andWhere     .= " AND E.COD_EXPEDICAO = $idExpedicao";
+            $andWhereConf .= " AND E.COD_EXPEDICAO = $idExpedicao";
+        }
 
-        if (isset($idMapaSeparacao) && !empty($idMapaSeparacao))
-            $andWhere .= " AND MS.COD_MAPA_SEPARACAO = $idMapaSeparacao";
+        if (isset($idMapaSeparacao) && !empty($idMapaSeparacao)) {
+            $andWhere     .= " AND MS.COD_MAPA_SEPARACAO = $idMapaSeparacao";
+            $andWhereConf .= " AND MS.COD_MAPA_SEPARACAO = $idMapaSeparacao";
+        }
 
         if (isset($dataInicio) && !empty($dataInicio)) {
             if (isset($horaInicio) && !empty($horaInicio)) {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') > '$dataInicio $horaInicio:00'";
+                $andWhere     .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') > '$dataInicio $horaInicio:00'";
+                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') > '$dataInicio $horaInicio:00'";
             } else {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') > '$dataInicio 00:00:00'";
+                $andWhere     .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') > '$dataInicio 00:00:00'";
+                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') > '$dataInicio 00:00:00'";
             }
         }
 
         if (isset($dataFim) && !empty($dataFim)) {
             if (isset($horaFim) && !empty($horaFim)) {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') < '$dataFim $horaFim:00'";
+                $andWhere .= " AND TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') < '$dataFim $horaFim:59'";
+                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') < '$dataFim $horaFim:59'";
             } else {
                 $andWhere .= " AND TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') < '$dataFim 23:59:59'";
+                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') < '$dataFim 23:59:59'";
             }
         }
 
         $sql = "SELECT P.NOM_PESSOA,
-                        E.COD_EXPEDICAO,
-                        MS.COD_MAPA_SEPARACAO,
-                        SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA * SPP.NUM_PESO) NUM_PESO,
-                        TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
-                        TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
-                        COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
-                        SUM(MSC.QTD_CONFERIDA) VOLUMES
+                    E.COD_EXPEDICAO,
+                    MS.COD_MAPA_SEPARACAO,
+                    SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA * SPP.NUM_PESO) NUM_PESO,
+                    TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
+                    TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
+                    COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
+                    SUM(MSC.QTD_CONFERIDA) VOLUMES
                 FROM APONTAMENTO_SEPARACAO_MAPA APONT
                   INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = APONT.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -152,9 +163,27 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                   MS.COD_MAPA_SEPARACAO,
                   APONT.DTH_CONFERENCIA,
                   APONT.DTH_FIM_CONFERENCIA
-                ORDER BY P.NOM_PESSOA,
-                  APONT.DTH_CONFERENCIA,
-                  APONT.DTH_FIM_CONFERENCIA";
+            UNION
+                SELECT P.NOM_PESSOA,
+                    E.COD_EXPEDICAO,
+                    MS.COD_MAPA_SEPARACAO,
+                    SUM(CONF.QTD_EMBALAGEM * CONF.QTD_CONFERIDA * SPP.NUM_PESO) NUM_PESO,
+                    TO_CHAR(MIN(CONF.DTH_CONFERENCIA), 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
+                    TO_CHAR(MAX(CONF.DTH_CONFERENCIA), 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
+                    COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
+                    SUM(CONF.QTD_CONFERIDA) VOLUMES
+                FROM MAPA_SEPARACAO_CONFERENCIA CONF
+                  INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = CONF.COD_MAPA_SEPARACAO
+                  INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = CONF.COD_PRODUTO AND PROD.DSC_GRADE = CONF.DSC_GRADE
+                  INNER JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PROD.COD_PRODUTO AND SPP.DSC_GRADE = PROD.DSC_GRADE
+                  INNER JOIN ORDEM_SERVICO OS ON OS.COD_OS = CONF.COD_OS
+                  INNER JOIN PESSOA P ON P.COD_PESSOA = OS.COD_PESSOA
+                WHERE 1 = 1
+                  $andWhereConf
+                GROUP BY P.NOM_PESSOA,
+                  E.COD_EXPEDICAO,
+                  MS.COD_MAPA_SEPARACAO";
 
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
         $qtdRows = count($result);
