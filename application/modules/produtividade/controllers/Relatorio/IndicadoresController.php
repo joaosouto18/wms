@@ -99,6 +99,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $idUsuario = $this->_getParam('usuario');
         $idExpedicao = $this->_getParam('expedicao');
         $idMapaSeparacao = $this->_getParam('mapaSeparacao');
+        $tipoQuebra = $this->_getParam('tipoQuebra');
         $dataInicio = $this->_getParam('dataInicio');
         $horaInicio = $this->_getParam('horaInicio');
         $dataFim = $this->_getParam('dataFim');
@@ -109,6 +110,11 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         if (isset($idUsuario) && !empty($idUsuario)) {
             $andWhere     .= " AND P.COD_PESSOA = $idUsuario";
             $andWhereConf .= " AND P.COD_PESSOA = $idUsuario";
+        }
+        
+        if (isset($tipoQuebra) && !empty($tipoQuebra)) {
+            $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
+            $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
         }
 
         if (isset($idExpedicao) && !empty($idExpedicao)) {
@@ -151,6 +157,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                     SUM(MSC.QTD_CONFERIDA) VOLUMES
                 FROM APONTAMENTO_SEPARACAO_MAPA APONT
                   INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = APONT.COD_MAPA_SEPARACAO
+                  INNER JOIN MAPA_SEPARACAO_QUEBRA QUEBRA ON QUEBRA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                   INNER JOIN PESSOA P ON P.COD_PESSOA = APONT.COD_USUARIO
                   INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
@@ -174,6 +181,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                     SUM(CONF.QTD_CONFERIDA) VOLUMES
                 FROM MAPA_SEPARACAO_CONFERENCIA CONF
                   INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = CONF.COD_MAPA_SEPARACAO
+                  INNER JOIN MAPA_SEPARACAO_QUEBRA QUEBRA ON QUEBRA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                   INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = CONF.COD_PRODUTO AND PROD.DSC_GRADE = CONF.DSC_GRADE
                   INNER JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PROD.COD_PRODUTO AND SPP.DSC_GRADE = PROD.DSC_GRADE

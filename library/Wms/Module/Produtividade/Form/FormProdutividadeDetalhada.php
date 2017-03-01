@@ -45,6 +45,16 @@ class FormProdutividadeDetalhada extends Form
             'size' => 10,
             'decorators' => array('ViewHelper'),
         ));
+        $this->addElement('select', 'tipoQuebra', array(
+            'mostrarSelecione' => false,
+            'class' => 'medio',
+            'multiOptions' => array(
+                'firstOpt' => 'Todos',
+                'options' => array(
+                    '1' => 'Mapa de Separação Consolidado'
+                )),
+                'decorators' => array('ViewHelper')
+        ));
         $this->addElement('date', 'dataInicio', array(
             'label' => 'Data Inicial',
             'size' => 10,
