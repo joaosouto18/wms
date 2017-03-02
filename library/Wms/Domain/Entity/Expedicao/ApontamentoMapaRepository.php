@@ -28,4 +28,13 @@ class ApontamentoMapaRepository extends EntityRepository
         return $apontamentoEn;
     }
 
+    public function update($apontamentoMapaEn)
+    {
+        $em = $this->getEntityManager();
+        $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
+        $em->persist($apontamentoMapaEn);
+        $em->flush();
+        return true;
+    }
+
 }

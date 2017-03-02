@@ -287,6 +287,11 @@ class Expedicao_IndexController extends Action
                     ),
                 ),
                 array(
+                    'label' => 'Última Separação',
+                    'cssClass' => 'btn updateSeparacao',
+                    'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
+                ),
+                array(
                     'label' => 'Salvar',
                     'cssClass' => 'btn save',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
@@ -359,6 +364,43 @@ class Expedicao_IndexController extends Action
         }
 
         $this->view->form = $form;
+    }
+
+    public function fechaConferenciaAjaxAction()
+    {
+        $params = $this->_getAllParams();
+        $cpf = str_replace(array('.','-'),'',$params['cpf']);
+        $LeituraColetor = new LeituraColetor();
+        $codMapaSeparacao = $params['mapa'];
+
+        $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+
+        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+
+        if (empty($usuarioEn)){
+            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+            $this->_helper->json($response);
+        }
+
+        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($LeituraColetor->retiraDigitoIdentificador($codMapaSeparacao));
+        if (is_null($mapaSeparacaoEn)) {
+            $response = array('result' => 'Error', 'msg' => "Mapa de Separação $codMapaSeparacao não encontrado!");
+            $this->_helper->json($response);
+        }
+
+        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
+        if (isset($apontamentoMapaEn) && !empty($apontamentoMapaEn)) {
+            $result = $apontamentoMapaRepo->update($apontamentoMapaEn);
+            if ($result == true) {
+                $response = array('result' => 'success', 'msg' => "Apontamento finalizado com sucesso!");
+                $this->_helper->json($response);
+            }
+        } else {
+            $response = array('result' => 'Error', 'msg' => "Apontamento não cadastrado anteriormente!");
+            $this->_helper->json($response);
+        }
     }
 
     public function conferenteApontamentoSeparacaoAjaxAction()

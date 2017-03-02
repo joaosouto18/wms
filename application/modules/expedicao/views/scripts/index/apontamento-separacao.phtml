@@ -405,6 +405,22 @@
             }
         });
 
+        $('.updateSeparacao').click(function () {
+            var mapa = $('#mapas-codMapaSeparacao').val();
+            var cpf = $('#mapas-pessoa').val();
+            $.ajax({
+                url: 'fecha-conferencia-ajax/cpf/'+cpf+'/mapa/'+mapa,
+                success: function (data) {
+                    if (data.result === "Ok") {
+                        result.pessoa = data.pessoa;
+                        addRow(result);
+                    } else if (data.result = 'Error'){
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
         $(".removeRow").live('click', function () {
             if (confirm('Deseja realmente remover esse apontamento?')) {
                 $(this).parent().parent().remove();
