@@ -141,7 +141,6 @@ class Mobile_ExpedicaoController extends Action
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
-        $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
         $codPessoa = $this->_getParam('cliente');
 
@@ -205,50 +204,38 @@ class Mobile_ExpedicaoController extends Action
 
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+        $confereQtd = false;
 
         /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
         $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
-        if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'I' && ($mapaQuebraEn->getTipoQuebra() == 'T' || (isset($idVolume) && !empty($idVolume)))) {
-            $qtd = 1;
-        }
-        if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "I" && $mapaQuebraEn->getTipoQuebra() != 'T') {
-            $qtd = 1;
+        if (($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'Q' && ($mapaQuebraEn->getTipoQuebra() == 'T' || !empty($idVolume)))
+            || ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q" && $mapaQuebraEn->getTipoQuebra() != 'T')) {
+            $confereQtd = true;
         }
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
-                $codBarrasProcessado = $codBarras;
-
-                $tipoProvavelCodBarras = 'embalagem';
-                $embalagens = null;
-
+                $codBarrasProcessado = intval($codBarras);
+                $tipoProvavelCodBarras = 'produto';
                 $produtoEmbalagenEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
                 $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codBarras));
-                if ((isset($produtoEmbalagenEn) && !empty($produtoEmbalagenEn)) || (isset($produtoVolumeEn) && !empty($produtoVolumeEn))) {
-                    $tipoProvavelCodBarras = 'embalagem';
+
+                if (!empty($produtoEmbalagenEn) || !empty($produtoVolumeEn)) {
+                    $tipoProvavelCodBarras = 'produto';
                 } else if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     if (empty($volumePatrimonioEn)) {
                         $tipoProvavelCodBarras = 'volume';
-                    } else {
-                        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-                        $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
-                        /** @var Expedicao\VolumePatrimonio $novoVolumeEn */
-                        $novoVolumeEn = $volumePatrimonioRepo->find($codBarrasProcessado);
-
-                        if (empty($embalagens) && !empty($novoVolumeEn)) {
-                            throw new \Exception("Já existe um volume patrimonio, feche a caixa " . $novoVolumeEn->getId() . " antes de abrir um novo volume.");
-                        } else if (empty($embalagens) && empty($novoVolumeEn)) {
-                            throw new \Exception("Código de barras inválido para volume-patrimonio tanto quanto embalagens.");
-                        }
                     }
                 }
 
                 if ($tipoProvavelCodBarras === 'volume') {
-                    $idVolume = $codBarras;
+                    if (!empty($volumePatrimonioEn)){
+                        throw new \Exception("Já existe um volume patrimonio aberto, feche a caixa " . $volumePatrimonioEn->getId() . " antes de abrir um novo volume.");
+                    }
+                    $idVolume = $codBarrasProcessado;
                     $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                     if (empty($volumePatrimonioEn)) {
-                        $this->addFlashMessage('error',"Nenhum volume-patrimônio foi encontrado com o código $idVolume");
-                        $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/cliente/$codPessoa");
+                        throw new \Exception("Nenhum volume-patrimônio foi encontrado com o código $idVolume");
                     }
 
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
@@ -266,60 +253,38 @@ class Mobile_ExpedicaoController extends Action
                     $this->view->idVolume = $codBarras;
                     $this->addFlashMessage('info', 'Volume ' . $codBarrasProcessado . ' vinculada a expedição');
 
-                } else if ($tipoProvavelCodBarras === 'embalagem') {
+                } else if ($tipoProvavelCodBarras === 'produto') {
 
-                    if (empty($embalagens)) {
-                        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-                        $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
-                    }
-                    $embalagemEn = $embalagens['embalagem'];
-                    $volumeEn = $embalagens['volume'];
+                    $embalagemEn = $produtoEmbalagenEn;
+                    $volumeEn = $produtoVolumeEn;
+                    list($idEmbVol, $tipo) = (!empty($embalagemEn)) ? array($embalagemEn->getId(), 'Embalagem') : array($volumeEn->getId(), 'Volume');
 
                     $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn,$codPessoa);
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
                     $idMapa = $resultado['idMapa'];
-//                    $mapaEn = $mapaSeparacaoRepo->find($idMapa);
 
-                    if (isset($qtd) && ($qtd != null)) {
-//                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
-//                        $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
-                        $arr = array(
-                            'idMapa' => $idMapa,
-                            'idExpedicao' => $idExpedicao,
-                            'codBarras' => $codBarras,
-                            'idVolume' => $idVolume,
-                            'cliente' => $codPessoa,
-                            'qtd' => $qtd
-                        );
-                        //$this->_redirect('mobile/expedicao/informa-qtd -mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa.'/qtd/'.$qtd);
-                        $this->_forward('informa-qtd-mapa','expedicao','mobile', $arr);
+                    if ($confereQtd) {
+                        $this->_redirect("mobile/expedicao/informa-qtd-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/idEmbVol/$idEmbVol/tipo/$tipo/idVolume/$idVolume/cliente/$codPessoa");
                     } else {
-                        $arr = array(
-                            'idMapa' => $idMapa,
-                            'idExpedicao' => $idExpedicao,
-                            'codBarras' => $codBarras,
-                            'idVolume' => $idVolume,
-                            'cliente' => $codPessoa
-                        );
-                        //$this->_redirect('mobile/expedicao/informa-qtd-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/codBarras/' . $codBarras . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
-                        $this->_forward('informa-qtd-mapa','expedicao','mobile', $arr);
+                        $this->_redirect("mobile/expedicao/informa-qtd-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/idEmbVol/$idEmbVol/tipo/$tipo/idVolume/$idVolume/cliente/$codPessoa/qtd/1");
                     }
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
+                $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/cliente/$codPessoa");
             }
         }
 
         $this->view->dscVolume = $dscVolume;
         $this->view->exibeQtd = false;
 //        if ((isset($idVolume)) && ($idVolume != null)) {
-//            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "I") {
+//            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "Q") {
 //                $this->view->exibeQtd = true;
 //            }
 //        } else {
-//            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "I") {
+//            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q") {
 //                $this->view->exibeQtd = true;
 //            }
 //        }
@@ -480,36 +445,44 @@ class Mobile_ExpedicaoController extends Action
     {
         $idVolume = $this->_getParam('idVolume');
         $idMapa = $this->_getParam('idMapa');
-        $codBarras = $this->_getParam('codBarras');
+        $idEmbVol = $this->_getParam('idEmbVol');
+        $tipo = $this->_getParam('tipo');
         $qtd = $this->_getParam('qtd');
         $idExpedicao = $this->_getParam('idExpedicao');
         $codPessoa = $this->_getParam('cliente');
 
-        $embalagens = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codigoBarras'=>$codBarras));
-        $embalagemEntity = $embalagens[0];
-        $this->view->codProduto = $embalagemEntity->getProduto()->getId();
-        $this->view->grade = $embalagemEntity->getProduto()->getGrade();
-        $this->view->descricao = $embalagemEntity->getProduto()->getDescricao();
-        $this->view->embalagem = $embalagemEntity->getDescricao() . "(" . $embalagemEntity->getQuantidade() . ")";
-        $this->view->fator = $embalagemEntity->getQuantidade();
+        /** @var \Wms\Domain\Entity\Produto\Embalagem|\Wms\Domain\Entity\Produto\Volume $embVolEnt */
+        $embVolEnt = $this->getEntityManager()->find('wms:Produto\\'.$tipo, $idEmbVol);
+
+        $produto = $embVolEnt->getProduto();
+
+        $this->view->codProduto = $produto->getId();
+        $this->view->grade = $produto->getGrade();
+        $this->view->descricao = $produto->getDescricao();
+        $this->view->embalagem = $embVolEnt->getDescricao() . (is_a($embVolEnt,'\Wms\Domain\Entity\Produto\Embalagem'))? "(" . $embVolEnt->getQuantidade() . ")": "";
+        $this->view->fator = (is_a($embVolEnt,"\Wms\Domain\Entity\Produto\Embalagem"))? "(" . $embVolEnt->getQuantidade() . ")": 1 ;
         $this->view->idVolume = $idVolume;
-        $this->view->codBarras = $codBarras;
+        $this->view->idEmbVol = $idEmbVol;
+        $this->view->tipo = $tipo;
+        $this->view->codBarras = $embVolEnt->getCodigoBarras();
         $this->view->idMapa = $idMapa;
         $this->view->idExpedicao = $idExpedicao;
         $this->view->idPessoa = $codPessoa;
         $this->view->urlVoltar = '/mobile/expedicao/ler-produto-mapa/idMapa/'.$idMapa.'/idExpedicao/'.$idExpedicao.'/cliente/'.$codPessoa;
 
-        if (isset($qtd) && ($qtd > 0)) {
+        if (!empty($qtd)) {
             try {
                 $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
                 $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-                /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-                $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
 
-                $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
-                $embalagemEn = $embalagens['embalagem'];
-                $volumeEn = $embalagens['volume'];
+                $embalagemEn = null;
+                $volumeEn = null;
+                if (!empty($embVolEnt) and $tipo === 'Embalagem'){
+                    $embalagemEn = $embVolEnt;
+                } elseif (!empty($embVolEnt) and $tipo === 'Volume'){
+                    $volumeEn = $embVolEnt;
+                }
 
                 $volumePatrimonioEn = null;
                 if ((isset($idVolume)) && ($idVolume != null)) {
@@ -548,7 +521,7 @@ class Mobile_ExpedicaoController extends Action
                     }
                 }
 
-                $this->addFlashMessage('info','Produto conferido com sucesso');
+                $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
 
                 if ($todosProdutosConferidos == true)
                     $this->addFlashMessage('success', 'Todos os Produtos ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foram conferidos com sucesso!');

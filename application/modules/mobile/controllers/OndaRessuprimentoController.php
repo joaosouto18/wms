@@ -150,10 +150,10 @@ class Mobile_OndaRessuprimentoController extends Action
 
             if ($result == NULL)
             {
-                throw new Exception("error","Endereço selecionado está vazio");
+                throw new Exception("Endereço selecionado está vazio");
             }
             if ($result[0]['idEndereco'] != $idEnderecoPulmao) {
-                throw new Exception("error","Endereço selecionado errado");
+                throw new Exception("Endereço selecionado errado");
             }
 
             if ($result[0]['uma']) {
