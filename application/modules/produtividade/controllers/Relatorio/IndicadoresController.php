@@ -94,6 +94,8 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
     public function relatorioDetalhadoAction()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
         $form = new \Wms\Module\Produtividade\Form\FormProdutividadeDetalhada();
         $this->view->form = $form;
         $idUsuario = $this->_getParam('usuario');
@@ -111,7 +113,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
             $andWhere     .= " AND P.COD_PESSOA = $idUsuario";
             $andWhereConf .= " AND P.COD_PESSOA = $idUsuario";
         }
-        
+
         if (isset($tipoQuebra) && !empty($tipoQuebra)) {
             $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
             $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
