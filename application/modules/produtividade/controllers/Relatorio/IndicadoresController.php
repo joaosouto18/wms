@@ -152,10 +152,10 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         if (isset($dataFim) && !empty($dataFim)) {
             if (isset($horaFim) && !empty($horaFim)) {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim $horaFim:59'";
+                $andWhere .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim $horaFim:59'";
                 $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim $horaFim:59'";
             } else {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim 23:59:59'";
+                $andWhere .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim 23:59:59'";
                 $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim 23:59:59'";
             }
         }
@@ -204,7 +204,10 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                   $andWhereConf
                 GROUP BY P.NOM_PESSOA,
                   E.COD_EXPEDICAO,
-                  MS.COD_MAPA_SEPARACAO";
+                  MS.COD_MAPA_SEPARACAO
+                ORDER BY NOM_PESSOA,
+                  DTH_INICIO,
+                  DTH_FIM";
 
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
         $qtdRows = count($result);
