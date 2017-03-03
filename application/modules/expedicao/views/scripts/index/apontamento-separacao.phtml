@@ -406,21 +406,23 @@
         });
 
         $('.updateSeparacao').click(function () {
-            var mapa = $('#mapas-codMapaSeparacao').val();
-            var cpf = $('#mapas-pessoa').val();
-            $.ajax({
-                url: 'fecha-conferencia-ajax/cpf/'+cpf+'/mapa/'+mapa,
-                success: function (data) {
-                    if (data.result === "Ok") {
-                        result.pessoa = data.pessoa;
-                        addRow(result);
-                    } else if (data.result = 'Error'){
-                        alert(data.msg);
+            $.each($('#tbResult').children(), function () {
+                var mapa = $(this).children(".mapa").text();
+                var cpf = $(this).children(".identifica").text();
+
+                $.ajax({
+                    url: 'fecha-conferencia-ajax/cpf/'+cpf+'/mapa/'+mapa,
+                    success: function (data) {
+                        if (data.result === "Ok") {
+                            result.pessoa = data.pessoa;
+                            addRow(result);
+                        } else if (data.result = 'Error'){
+                            alert(data.msg);
+                        }
+                        window.location.href = 'apontamento-separacao';
                     }
-                }
+                });
             });
-            $('#mapas-codMapaSeparacao').val('');
-            $('#mapas-pessoa').val('');
         });
 
         $(".removeRow").live('click', function () {

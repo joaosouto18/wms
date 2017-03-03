@@ -370,7 +370,6 @@ class Expedicao_IndexController extends Action
     {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.','-'),'',$params['cpf']);
-        $LeituraColetor = new LeituraColetor();
         $codMapaSeparacao = $params['mapa'];
 
         $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
@@ -384,7 +383,7 @@ class Expedicao_IndexController extends Action
             $this->_helper->json($response);
         }
 
-        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($LeituraColetor->retiraDigitoIdentificador($codMapaSeparacao));
+        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
         if (is_null($mapaSeparacaoEn)) {
             $response = array('result' => 'Error', 'msg' => "Mapa de Separação $codMapaSeparacao não encontrado!");
             $this->_helper->json($response);
