@@ -148,18 +148,6 @@ class Mobile_ExpedicaoController extends Action
         $sessao = new \Zend_Session_Namespace('coletor');
         $central = $sessao->centralSelecionada;
 
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-
-        /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
-        $statusMapaEmbalado = false;
-        if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                $statusMapaEmbalado = true;
-            }
-        }
-
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $dscVolume = "";
         $this->view->idVolume = $idVolume;
@@ -167,7 +155,6 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idExpedicao = $idExpedicao;
         $this->view->central = $central;
         $this->view->idPessoa = $codPessoa;
-        $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
         $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
         $Expedicao->validacaoExpedicao();
@@ -281,6 +268,18 @@ class Mobile_ExpedicaoController extends Action
                     }
                     $idMapa = $resultado['idMapa'];
 
+                    /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+                    $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+
+                    if (isset($codPessoa) && !empty($codPessoa)) {
+                        if (count($mapaSeparacaoEmbaladoEn) <= 0) {
+                            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+                        } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
+                        }
+                    }
+
                     if (isset($qtd) && ($qtd != null)) {
                         $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
                         $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
@@ -293,6 +292,19 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+
+        /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
+        $statusMapaEmbalado = false;
+        if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
+            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
+                $statusMapaEmbalado = true;
+            }
+        }
+        $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
+        
         $this->view->dscVolume = $dscVolume;
         $this->view->exibeQtd = false;
         if ((isset($idVolume)) && ($idVolume != null)) {
