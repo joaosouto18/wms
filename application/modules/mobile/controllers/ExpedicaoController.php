@@ -168,21 +168,6 @@ class Mobile_ExpedicaoController extends Action
         $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
-        if (count($produtosMapa) > 0) {
-            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-            $this->view->produtosMapa = $produtosMapa;
-        }
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-        if (isset($codPessoa) && !empty($codPessoa)) {
-            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
-            if (count($produtosClientes) > 0) {
-                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                $this->view->produtosClientes = $produtosClientes;
-            }
-        }
-
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
             $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
@@ -304,7 +289,22 @@ class Mobile_ExpedicaoController extends Action
             }
         }
         $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
-        
+
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+        if (count($produtosMapa) > 0) {
+            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+            $this->view->produtosMapa = $produtosMapa;
+        }
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
+        if (isset($codPessoa) && !empty($codPessoa)) {
+            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
+            if (count($produtosClientes) > 0) {
+                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                $this->view->produtosClientes = $produtosClientes;
+            }
+        }
+
         $this->view->dscVolume = $dscVolume;
         $this->view->exibeQtd = false;
         if ((isset($idVolume)) && ($idVolume != null)) {
