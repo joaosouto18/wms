@@ -142,21 +142,21 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         if (isset($dataInicio) && !empty($dataInicio)) {
             if (isset($horaInicio) && !empty($horaInicio)) {
-                $andWhere     .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') >= '$dataInicio $horaInicio:00'";
-                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') >= '$dataInicio $horaInicio:00'";
+                $andWhere     .= " AND APONT.DTH_CONFERENCIA >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
+                $andWhereConf .= " AND CONF.DTH_CONFERENCIA >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
             } else {
-                $andWhere     .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') >= '$dataInicio 00:00:00'";
-                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') >= '$dataInicio 00:00:00'";
+                $andWhere     .= " AND APONT.DTH_CONFERENCIA >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
+                $andWhereConf .= " AND CONF.DTH_CONFERENCIA >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
             }
         }
 
         if (isset($dataFim) && !empty($dataFim)) {
             if (isset($horaFim) && !empty($horaFim)) {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim $horaFim:59'";
-                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim $horaFim:59'";
+                $andWhere .= " AND APONT.DTH_CONFERENCIA <= TO_DATE('$dataFim $horaFim', 'DD-MM-YYYY HH24:MI') ";
+                $andWhereConf .= " AND CONF.DTH_CONFERENCIA <= TO_DATE('$dataFim $horaFim', 'DD-MM-YYYY HH24:MI') ";
             } else {
-                $andWhere .= " AND TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim 23:59:59'";
-                $andWhereConf .= " AND TO_CHAR(CONF.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') <= '$dataFim 23:59:59'";
+                $andWhere .= " AND APONT.DTH_CONFERENCIA <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI') ";
+                $andWhereConf .= " AND CONF.DTH_CONFERENCIA <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI') ";
             }
         }
 
