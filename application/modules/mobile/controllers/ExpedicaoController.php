@@ -1026,23 +1026,6 @@ class Mobile_ExpedicaoController extends Action
 
     }
 
-    public function confirmaConferenciaAction()
-    {
-        $idExpedicao    = $this->getRequest()->getParam('idExpedicao');
-        $idEtiqueta     = $this->getRequest()->getParam('idEtiqueta');
-        $produto        = $this->getRequest()->getParam('produto');
-        $placa = $this->getRequest()->getParam('placa',null);
-
-        $this->confereEtiqueta($idEtiqueta);
-
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        $andamentoRepo->save('Botão confirmar conferência '.$produto, $idExpedicao);
-
-        $this->addFlashMessage('success', 'Produto conferido com sucesso');
-        $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
-    }
-
     /**
      * @param $idEtiqueta
      */
