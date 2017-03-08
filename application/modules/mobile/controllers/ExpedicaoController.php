@@ -265,11 +265,9 @@ class Mobile_ExpedicaoController extends Action
                         }
                     }
 
-                    if (isset($qtd) && ($qtd != null)) {
-                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
-                        $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn,$produtoEn->getId(),$produtoEn->getGrade());
-                        $this->addFlashMessage('success', $msg);
-                    }
+                    $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
+                    $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn,$produtoEn->getId(),$produtoEn->getGrade());
+                    $this->addFlashMessage('success', $msg);
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
