@@ -27,7 +27,6 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
-        $this->getEntityManager()->flush();
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
@@ -42,7 +41,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $mapaSeparacaoEmbaladoEn;
     }
 
-    /** ocorre quando o conferente está bipando nos volumes ja lacrados */
+    /** ocorre quando o conferente estï¿½ bipando nos volumes ja lacrados */
     public function conferirVolumeEmbalado($idEmbalado)
     {
         $mapaSeparacaoEmbaladoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->findOneBy(array('id' => $idEmbalado));
@@ -68,7 +67,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
         if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
-            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
+            throw new \Exception(utf8_encode('Nï¿½o existe produtos conferidos para esse volume embalado!'));
         }
 
         $this->getEntityManager()->beginTransaction();
