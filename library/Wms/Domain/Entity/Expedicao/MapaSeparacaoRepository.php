@@ -6,7 +6,7 @@ use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
-use Wms\Module\Produtividade\Form\Subform\EtiquetaSeparacao;
+use Wms\Module\Produtividade\Form\Subform\EtiquetaSeparacao as EtqSeparacao;
 
 class MapaSeparacaoRepository extends EntityRepository
 {
@@ -141,7 +141,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $mapas = $this->findBy(array('codExpedicao'=>$expedicaoEn->getid()));
         foreach ($mapas as $mapaEn) {
-            if ($mapaEn->getCodStatus() != EtiquetaSeparacao::STATUS_CONFERIDO){
+            if ($mapaEn->getCodStatus() != EtqSeparacao::STATUS_CONFERIDO){
                 $this->getEntityManager()->commit();
                 return 'Existem Mapas para conferir nesta Expedição';
             }
@@ -192,7 +192,7 @@ class MapaSeparacaoRepository extends EntityRepository
         foreach ($mapas as $mapaEn){
             $produtosPendentes = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaEn,  'divergencia' => 'S'));
             if (count($produtosPendentes) == 0) {
-                $mapaEn->setCodStatus(Etiquetaseparacao::STATUS_CONFERIDO);
+                $mapaEn->setCodStatus(EtqSeparacao::STATUS_CONFERIDO);
                 $this->getEntityManager()->persist($mapaEn);
             }
         }
@@ -507,7 +507,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         if ($todoMapaConferido == true) {
             $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $idMapa);
-            $mapaSeparacaoEn->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
+            $mapaSeparacaoEn->setCodStatus(EtqSeparacao::STATUS_CONFERIDO);
             $this->getEntityManager()->persist($mapaSeparacaoEn);
             $this->getEntityManager()->flush();
         }
@@ -527,7 +527,7 @@ class MapaSeparacaoRepository extends EntityRepository
                 $this->getEntityManager()->persist($produtoEn);
             }
 
-            $mapa->setCodStatus(EtiquetaSeparacao::STATUS_CONFERIDO);
+            $mapa->setCodStatus(EtqSeparacao::STATUS_CONFERIDO);
             $this->getEntityManager()->persist($mapa);
         }
 
