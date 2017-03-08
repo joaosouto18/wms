@@ -5,6 +5,8 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
+use WMs\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
+use Wms\Module\Produtividade\Form\Subform\EtiquetaSeparacao;
 
 class MapaSeparacaoRepository extends EntityRepository
 {
@@ -386,6 +388,42 @@ class MapaSeparacaoRepository extends EntityRepository
         return $qtdCortada;
     }
 
+    public function verificaConferenciaProduto($mapaEn, $idProduto, $grade) {
+        $idMapa = $mapaEn->getId();
+        $SQL = "SELECT SEP.COD_PRODUTO, SEP.DSC_GRADE, SEP.QTD_SEP, CONF.QTD_CONF, SEP.QTD_SEP - CONF.QTD_CONF as QTD_PEND
+                  FROM (SELECT COD_PRODUTO, DSC_GRADE, SUM((QTD_EMBALAGEM* QTD_SEPARAR)- QTD_CORTADO) as QTD_SEP
+                          FROM MAPA_SEPARACAO_PRODUTO
+                         WHERE COD_MAPA_SEPARACAO = $idMapa
+                         GROUP BY COD_PRODUTO, DSC_GRADE) SEP
+                 INNER JOIN (SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONF
+                               FROM MAPA_SEPARACAO_CONFERENCIA
+                              WHERE COD_MAPA_SEPARACAO = $idMapa
+                              GROUP BY COD_PRODUTO, DSC_GRADE) CONF
+                    ON CONF.COD_PRODUTO = SEP.COD_PRODUTO AND CONF.DSC_GRADE = SEP.DSC_GRADE
+                 WHERE SEP.QTD_SEP - CONF.QTD_CONF > 0";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) == 0) {
+            $status = $this->getEntityManager()->find('wms:Sigla', Etiqueta::STATUS_CONFERIDO);
+            $mapaEn->setStatus($status);
+            $this->getEntityManager()->persist($mapaEn);
+            $this->getEntityManager()->flush();
+            return array('result'=> true ,
+                         'msg' => 'Todo o Mapa foi conferido com sucesso!');
+        }
+
+        foreach ($result as $produto) {
+            if (($produto['COD_PRODUTO'] == $idProduto) && ($produto['DSC_GRADE'] == $grade)) {
+                return array('result'=> true ,
+                             'msg' => 'Quantidade conferida com sucesso');
+            }
+        }
+
+        return array('result'=> true ,
+                     'msg' => 'Todos os Produtos ' . $idProduto .' - '. $grade. ' foram conferidos com sucesso!');
+
+    }
+
     public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null){
 
         $numConferencia = 1;
@@ -663,32 +701,6 @@ class MapaSeparacaoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
-    public function verificaConferenciaProduto($idMapaSeparacao,$embalagem,$volume)
-    {
-        $sql = "SELECT SUM(NVL(MSP.QTD_SEPARAR, 0)) - SUM(NVL(MSC.QTD_CONFERIDA, 0)) AS QTD_PRODUTO_CONFERIR
-                FROM MAPA_SEPARACAO MS
-                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                LEFT JOIN (
-                  SELECT SUM(MSC.QTD_CONFERIDA) QTD_CONFERIDA, MS1.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE
-                  FROM MAPA_SEPARACAO MS1
-                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS1.COD_MAPA_SEPARACAO
-                  GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS1.COD_MAPA_SEPARACAO
-                  ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND (MSC.COD_PRODUTO = MSP.COD_PRODUTO) AND (MSC.DSC_GRADE = MSP.DSC_GRADE)
-                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao ";
-
-        if (isset($embalagem) && !is_null($embalagem)) {
-            $produto = $embalagem->getCodProduto();
-            $grade = $embalagem->getGrade();
-            $sql .= " AND MSP.COD_PRODUTO = '$produto' AND MSP.DSC_GRADE = '$grade'";
-        }
-
-
-        if (isset($volume) && !is_null($volume))
-            $sql .= " AND MSP.COD_PRODUTO_VOLUME = " . $volume->getId();
-
-        $sql .= " GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE";
-        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-    }
 
     public function verificaConferenciaMapa($idMapaSeparacao)
     {

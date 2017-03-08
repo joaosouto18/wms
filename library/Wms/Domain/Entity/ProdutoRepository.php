@@ -1347,21 +1347,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	}
 
 	public function getEmbalagensByCodBarras($codBarras){
-		$sql = "SELECT NVL(PE.COD_PRODUTO_EMBALAGEM,0) as EMBALAGEM,
-                       NVL(PV.COD_PRODUTO_VOLUME,0) as VOLUME
-                  FROM PRODUTO P
-                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO = P.COD_PRODUTO) AND (PE.DSC_GRADE = P.DSC_GRADE) AND (PE.DTH_INATIVACAO IS NULL)
-                  LEFT JOIN PRODUTO_VOLUME    PV ON (PV.COD_PRODUTO = P.COD_PRODUTO) AND (PV.DSC_GRADE = P.DSC_GRADE) AND (PV.DTH_INATIVACAO IS NULL)
-                 WHERE PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras'";
-		$result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-		$embalagenEn = null;
-		$volumeEn = null;
-		if (count($result) >0){
-			$embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->find($result[0]['EMBALAGEM']);
-			$volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->find($result[0]['VOLUME']);
-		}
+        $embalagenEn =null;
+        $volumeEn = null;
+        $produtoEn = null;
+        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras'=>$codBarras));
+        if ($embalagenEn == null) {
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras'=>$codBarras));
+            $produtoEn = $volumeEn->getProduto();
+        } else {
+            $produtoEn = $embalagenEn->getProduto();
+        }
+
 		return array('embalagem'=>$embalagenEn,
-			'volume'=>$volumeEn);
+        	         'volume'=>$volumeEn,
+                     'produto'=>$produtoEn);
 	}
 
 	public function getProdutoByCodBarras($codigoBarras)
