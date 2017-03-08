@@ -2446,7 +2446,7 @@ class ExpedicaoRepository extends EntityRepository
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO) {
             //MAPA DE SEPARAÇÃO
             $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
-            $mapaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codBarras);
+            $mapaSeparacao = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $codBarras);
             if ($mapaSeparacao == NULL) throw new \Exception("Nenhum mapa de separação encontrado com o códgo ". $codBarras);
             $idExpedicao = $mapaSeparacao->getExpedicao()->getId();
             $operacao = "Conferencia do Mapa cód. $codBarras";

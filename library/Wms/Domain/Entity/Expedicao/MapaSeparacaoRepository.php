@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
-use WMs\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
+use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
 use Wms\Module\Produtividade\Form\Subform\EtiquetaSeparacao;
 
 class MapaSeparacaoRepository extends EntityRepository
@@ -395,16 +395,16 @@ class MapaSeparacaoRepository extends EntityRepository
                           FROM MAPA_SEPARACAO_PRODUTO
                          WHERE COD_MAPA_SEPARACAO = $idMapa
                          GROUP BY COD_PRODUTO, DSC_GRADE) SEP
-                 INNER JOIN (SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONF
+                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONF
                                FROM MAPA_SEPARACAO_CONFERENCIA
                               WHERE COD_MAPA_SEPARACAO = $idMapa
                               GROUP BY COD_PRODUTO, DSC_GRADE) CONF
                     ON CONF.COD_PRODUTO = SEP.COD_PRODUTO AND CONF.DSC_GRADE = SEP.DSC_GRADE
-                 WHERE SEP.QTD_SEP - CONF.QTD_CONF > 0";
+                 WHERE SEP.QTD_SEP - NVL(CONF.QTD_CONF,0) > 0";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (count($result) == 0) {
-            $status = $this->getEntityManager()->find('wms:Sigla', Etiqueta::STATUS_CONFERIDO);
+            $status = $this->getEntityManager()->find('wms:Util\Sigla', Etiqueta::STATUS_CONFERIDO);
             $mapaEn->setStatus($status);
             $this->getEntityManager()->persist($mapaEn);
             $this->getEntityManager()->flush();

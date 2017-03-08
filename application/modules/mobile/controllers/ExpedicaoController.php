@@ -44,22 +44,6 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaEmbaladoRepo */
-//        $mapaEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-//        $mapaEmbaladoEntities = $mapaEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapaSeparacao, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-//        foreach ($mapaEmbaladoEntities as $mapaEmbaladoEn) {
-//            $codClienteEtiqueta = $mapaEmbaladoEn->getPessoa()->getId();
-//            $existeCliente = false;
-//            foreach ($clientes as $codCliente) {
-//                if ($codCliente['COD_PESSOA'] == $codClienteEtiqueta) {
-//                    $existeCliente = true;
-//                }
-//            }
-//            if ($existeCliente == false) {
-//                $this->getEntityManager()->remove($mapaEmbaladoEn);
-//            }
-//        }
-//        $this->getEntityManager()->flush();
 
         foreach ($clientes as $key => $cliente) {
             $numeroCaixas = explode(',',$cliente['NUM_CAIXA_PC_INI']);
@@ -267,7 +251,7 @@ class Mobile_ExpedicaoController extends Action
 
                     $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
                     $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn,$produtoEn->getId(),$produtoEn->getGrade());
-                    $this->addFlashMessage('success', $msg);
+                    $this->addFlashMessage('success', $msg['msg']);
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
