@@ -684,7 +684,8 @@ class Importacao
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
 
-                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                            $quantidadeWms = str_replace('.',',',$embalagemCadastrada->getQuantidade());
+                            if ($embalagemWs->qtdEmbalagem != $quantidadeWms) {
                                 throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade com código de barras " . $embalagemWs->codBarras . " para " . $embalagemWs->qtdEmbalagem . " - Produto: " . $idProduto);
                             }
 

@@ -233,7 +233,7 @@ class Integracao
                                                $repositorios);
             }
             $this->_em->flush();
-            ini_set('max_execution_time', 300);
+            ini_set('max_execution_time', '-1');
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
