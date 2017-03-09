@@ -393,31 +393,42 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
 
 
-						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-							if ($webservice == true) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
-							} elseif (is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(new \DateTime());
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
-							}
-						} else {
-							if ($webservice == true) {
-								if (is_null($embalagemEntity->getDataInativacao())) {
-									$embalagemEntity->setDataInativacao(new \DateTime());
-									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
-								}
-							} else {
-								if (!is_null($embalagemEntity->getDataInativacao())) {
-									$embalagemEntity->setDataInativacao(null);
-									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
-								}
-							}
+						if ($itemEmbalagem['ativarDesativar'] == false) {
+							$embalagemEntity->setDataInativacao(new \DateTime());
+							$embalagemEntity->setUsuarioInativacao(null);
+							$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
+						} elseif ($itemEmbalagem['ativarDesativar'] == true) {
+							$embalagemEntity->setDataInativacao(null);
+							$embalagemEntity->setUsuarioInativacao(null);
+							$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
 						}
+
+
+//						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
+//							if ($webservice == true) {
+//								$embalagemEntity->setDataInativacao(null);
+//								$embalagemEntity->setUsuarioInativacao($idUsuario);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
+//							} elseif (is_null($embalagemEntity->getDataInativacao())) {
+//								$embalagemEntity->setDataInativacao(new \DateTime());
+//								$embalagemEntity->setUsuarioInativacao($idUsuario);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
+//							}
+//						} else {
+//							if ($webservice == true) {
+//								if (is_null($embalagemEntity->getDataInativacao())) {
+//									$embalagemEntity->setDataInativacao(new \DateTime());
+//									$embalagemEntity->setUsuarioInativacao(null);
+//									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
+//								}
+//							} else {
+//								if (!is_null($embalagemEntity->getDataInativacao())) {
+//									$embalagemEntity->setDataInativacao(null);
+//									$embalagemEntity->setUsuarioInativacao(null);
+//									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
+//								}
+//							}
+//						}
 
 						if (isset($descricao) && ($descricao != null)) {
 							$embalagemEntity->setDescricao($descricao);
