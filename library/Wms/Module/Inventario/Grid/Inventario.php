@@ -2,6 +2,8 @@
 
 namespace Wms\Module\Inventario\Grid;
 
+use Doctrine\ORM\EntityManager;
+use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Module\Web\Grid;
 
 class Inventario extends Grid
@@ -9,8 +11,14 @@ class Inventario extends Grid
 
     public function init()
     {
+        /** @var EntityManager $em */
+        $em = $this->getEntityManager();
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        /** @var Parametro $impInventERP */
+        $impInventERP = $parametroRepo->findOneBy(array('constante' => 'IMPORTA_INVENTARIO'));
+
         $this->setAttrib('title','Inventario');
-        $source = $this->getEntityManager()->getRepository('wms:Inventario')->getInventarios();
+        $source = $em->getRepository('wms:Inventario')->getInventarios();
 
         $this->setSource(new \Core\Grid\Source\ArraySource($source))
             ->setId('monitoramento-inventario');
@@ -25,8 +33,21 @@ class Inventario extends Grid
                         'range' => true,
                     ),
                 ),
-             ))
-            ->addColumn(array(
+             ));
+        if ($impInventERP->getValor() === 'S'){
+            $this->addColumn(array(
+                    'label' => 'Código no ERP',
+                    'index' => 'codInvERP',
+                    'filter' => array(
+                        'render' => array(
+                            'type' => 'centesimal',
+                            'range' => true,
+                        ),
+                    ),
+                ));
+        }
+
+        $this->addColumn(array(
                 'label' => 'Qtd Endereços',
                 'index' => 'qtdEndereco',
                 'filter' => array(
@@ -200,6 +221,16 @@ class Inventario extends Grid
                     return $row['status'] == "LIBERADO";
                 },
             ))
+            ->addAction(array(
+                'label' => 'Exportar Inventario',
+                'modelName' => 'inventario',
+                'controllerName' => 'index',
+                'actionName' => 'export-inventario-ajax',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return $row['status'] == "FINALIZADO";
+                },
+            ))
             /*->addAction(array(
                 'label' => 'Digitação Inventário Manual',
                 'modelName' => 'inventario',
@@ -211,6 +242,16 @@ class Inventario extends Grid
                 },
             ))*/
             ->setHasOrdering(true);
+
+        if ($impInventERP->getValor() === 'S') {
+            $this->addAction(array(
+                'label' => 'Vincular inventário do ERP',
+                'title' => 'Vincula o número do inventário do ERP',
+                'actionName' => 'view-vincular-cod-erp-ajax',
+                'cssClass' => 'view-andamento dialogAjax',
+                'pkIndex' => 'id'
+            ));
+        }
 
         return $this;
     }

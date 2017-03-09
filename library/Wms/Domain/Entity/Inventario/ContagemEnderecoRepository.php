@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Inventario;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Inventario;
 
 
 class ContagemEnderecoRepository extends EntityRepository
@@ -135,4 +136,17 @@ class ContagemEnderecoRepository extends EntityRepository
 
     }
 
+    public function getProdutosInventariados($id)
+    {
+
+        $status = Inventario::STATUS_FINALIZADO;
+        $sql = "SELECT SUM(ice.qtd_contada), ice.cod_produto, ice.dsc_grade, NUM_CONTAGEM
+                FROM (SELECT COD_PRODUTO, DSC_GRADE, QTD_CONTADA, MAX(NUM_CONTAGEM) AS NUM_CONTAGEM, COD_INVENTARIO_CONTAGEM_OS 
+                      FROM INVENTARIO_CONTAGEM_ENDERECO
+                      GROUP BY COD_PRODUTO, DSC_GRADE, QTD_CONTADA, COD_PRODUTO_VOLUME, COD_INVENTARIO_CONTAGEM_OS) ICE
+                INNER JOIN INVENTARIO_CONTAGEM_OS ICO ON ICE.COD_INVENTARIO_CONTAGEM_OS = ICO.COD_INVENTARIO_CONTAGEM_OS
+                INNER JOIN INVENTARIO I ON I.COD_INVENTARIO = ICO.COD_INVENTARIO
+                WHERE I.COD_INVENTARIO = $id AND I.COD_STATUS = $status
+                GROUP BY ICE.COD_PRODUTO, ICE.DSC_GRADE, ICE.NUM_CONTAGEM ";
+    }
 }

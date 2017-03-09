@@ -124,6 +124,70 @@ class Inventario_IndexController  extends Action
         $this->view->grid = $grid->init($this->_getAllParams());
     }
 
+    public function exportInventarioAjaxAction()
+    {
+        $id = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
+        $inventarioEn = $this->em->find('wms:Inventario', $id);
+
+        /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $prodContEnd */
+        $prodContEnd = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
+
+        $produtosInventariados = $prodContEnd->getDetalhesByInventarioEndereco($id);
+        
+        $codInvErp = $inventarioEn->getCodInventarioERP();
+        $dataExport = date('d-m-Y_H:m');
+        $filename = "Exp_Inventario_$id($codInvErp)_$dataExport.txt";
+        
+        
+        
+        $handler = fopen($filename,'w');
+
+        $txtCodInventario = str_pad($codInvErp,4,' ',STR_PAD_RIGHT);
+        $txtContagem = "VALOR_DA_CONTAGEM";
+        $txtCodBarras = str_pad("COD_BARRAS",14,'0',STR_PAD_LEFT);
+        $txtQtd = str_pad("QTD",8,'0',STR_PAD_LEFT);
+        $txtCodProduto = str_pad("COD_PROD",5,'0',STR_PAD_LEFT);
+
+
+        $fTxt = '';
+
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-Length: " . filesize( $filename ) );
+        header("Content-disposition: attachment; filename=" . $filename );
+        header("Pragma: no-cache");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Expires: 0");
+        readfile($filename);
+        flush();
+    }
+
+    public function viewVincularCodErpAjaxAction()
+    {
+        try {
+            $id = $this->_getParam('id');
+            $codInventarioErp = $this->_getParam('codInventarioErp');
+            $form = new \Wms\Module\Inventario\Form\FormCodInventarioERP();
+            $form->setDefault('id', $id);
+
+            if (!empty($codInventarioErp)) {
+                /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
+                $inventarioRepo = $this->em->getRepository('wms:Inventario');
+                $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
+
+                $this->addFlashMessage('success', 'Código vinculado com sucesso!');
+                $this->redirect('index');
+            }
+
+            $this->view->form = $form;
+        } catch (Exception $e){
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->redirect('index');
+        }
+    }
+
     public function viewRuaAjaxAction()
     {
         $grid =  new \Wms\Module\Inventario\Grid\Rua();

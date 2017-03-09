@@ -1,0 +1,14 @@
+<?php
+echo $this->form;
+?>
+<script>
+    $(function () {
+        $('#form-cod-inventario-erp').submit(function () {
+            var codInvenErp = $('#codInventarioErp').val();
+            if (codInvenErp == '' || codInvenErp == null) {
+                alert('É preciso informar o código do inventário!');
+                return false;
+            }
+        })
+    })
+</script>
