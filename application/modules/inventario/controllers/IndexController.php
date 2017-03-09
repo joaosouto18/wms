@@ -133,25 +133,25 @@ class Inventario_IndexController  extends Action
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $prodContEnd */
         $prodContEnd = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
 
-        $produtosInventariados = $prodContEnd->getDetalhesByInventarioEndereco($id);
-        
+        $produtosInventariados = $prodContEnd->getProdutosInventariados($id);
+
         $codInvErp = $inventarioEn->getCodInventarioERP();
         $dataExport = date('d-m-Y_H:m');
         $filename = "Exp_Inventario_$id($codInvErp)_$dataExport.txt";
-        
-        
-        
-        $handler = fopen($filename,'w');
-
-        $txtCodInventario = str_pad($codInvErp,4,' ',STR_PAD_RIGHT);
-        $txtContagem = "VALOR_DA_CONTAGEM";
-        $txtCodBarras = str_pad("COD_BARRAS",14,'0',STR_PAD_LEFT);
-        $txtQtd = str_pad("QTD",8,'0',STR_PAD_LEFT);
-        $txtCodProduto = str_pad("COD_PROD",5,'0',STR_PAD_LEFT);
 
 
-        $fTxt = '';
+        $file = fopen($filename,'w');
 
+        foreach ($produtosInventariados as $item) {
+            $txtCodInventario = str_pad($codInvErp,4,' ',STR_PAD_RIGHT);
+            $txtContagem = $item['NUM_CONTAGEM'];
+            $txtCodBarras = str_pad($item['COD_BARRAS'],14,'0',STR_PAD_LEFT);
+            $txtQtd = str_pad($item["QTD_INV"],8,'0',STR_PAD_LEFT);
+            $txtCodProduto = str_pad($item["COD_PRODUTO"],5,'0',STR_PAD_LEFT);
+            $linha = "$txtCodInventario,$txtContagem,$txtCodBarras,$txtQtd,$txtCodProduto\n";
+            fwrite($file,$linha,strlen($linha));
+        }
+        fpassthru($file);
 
         header("Content-Type: application/force-download");
         header("Content-type: application/octet-stream;");
