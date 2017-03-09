@@ -27,6 +27,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
+        $this->getEntityManager()->flush();
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
