@@ -704,6 +704,7 @@ class Importacao
                         'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
                         'CBInterno' => $embalagemCadastrada->getCBInterno(),
                         'embalado' => $embalagemCadastrada->getEmbalado(),
+                        'quantidade' => $embalagemCadastrada->getQuantidade(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
                         'descricao' => $descricaoEmbalagem
