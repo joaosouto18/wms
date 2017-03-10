@@ -704,12 +704,6 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 return false;
             }
 
-            if (endereco.length != 12){
-                alert('Formato inválido de Endereço.');
-                $('#volume-endereco').focus();
-                return false;
-            }
-
             //Verifica se o volume esta sendo editado e o endereco é igual
             if((acao == 'alterar') && (endereco == enderecoAntigo)){
                 this.salvarDadosVolume();

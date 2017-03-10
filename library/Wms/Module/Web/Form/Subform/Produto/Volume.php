@@ -15,6 +15,8 @@ class Volume extends SubForm
 
     public function init()
     {
+        $placeholder = Endereco::mascara();
+
         $this->addElement('hidden', 'id')
                 ->addElement('hidden', 'idNormaPaletizacao')
                 ->addElement('hidden', 'codigoBarrasAntigo')
@@ -79,7 +81,7 @@ class Volume extends SubForm
                     'label' => 'Endereço',
                     'alt' => 'endereco',
                     'size' => 20,
-                    'placeholder' => '00.000.00.00',
+                    'placeholder' => $placeholder,
                 ))
                 ->addElement('numeric', 'pontoReposicao', array(
                     'label' => 'Ponto de Reposição',
