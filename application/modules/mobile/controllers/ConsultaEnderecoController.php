@@ -24,21 +24,28 @@ class Mobile_ConsultaEnderecoController extends Action
 
             /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
             $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-            $embalagemEntities = $embalagemRepo->findBy(array('endereco' => $enderecoEn));
+            $itens = $embalagemRepo->findBy(array('endereco' => $enderecoEn));
 
-            if (!isset($embalagemEntities) || empty($embalagemEntities)){
+            if (empty($itens)){
+                $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
+                $itens = $volumeRepo->findBy(array('endereco' => $enderecoEn));
+            }
+
+            if (empty($itens)){
                 $produtos = array(0 => array('COD_PRODUTO' => 'Não Existe produto nesse endereço', 'DSC_PRODUTO' => ''));
                 $this->_helper->json(array('produtos' => $produtos));
             }
-
-            foreach ($embalagemEntities as $key => $embalagemEn) {
-                $codProduto[$key] = $embalagemEn->getCodProduto();
+            $produtos = array();
+            /** @var \Wms\Domain\Entity\Produto\Embalagem|\Wms\Domain\Entity\Produto\Volume $item */
+            foreach ($itens as $item) {
+                $produtoEn = $item->getProduto();
+                $produto = array(
+                    'COD_PRODUTO' => $produtoEn->getId(),
+                    'DSC_GRADE' => $produtoEn->getGrade(),
+                    'DSC_PRODUTO' => $produtoEn->getDescricao()
+                );
+                $produtos[] = $produto;
             }
-            $codProdutos = implode(',',$codProduto);
-
-            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-            $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-            $produtos = $produtoRepo->getProdutos($codProdutos);
 
             $this->_helper->json(array('produtos' => $produtos));
 
