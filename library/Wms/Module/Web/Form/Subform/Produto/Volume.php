@@ -4,6 +4,7 @@ namespace Wms\Module\Web\Form\Subform\Produto;
 
 use Wms\Domain\Entity\Produto,
     Core\Form\SubForm;
+use Wms\Util\Endereco;
 
 /**
  * Description of Volume
