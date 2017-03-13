@@ -759,6 +759,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $produtoEntity  = $pedidoProduto->getProduto();
                 $quantidade     = (float)$pedidoProduto->getQuantidade() - (float)$pedidoProduto->getQtdCortada();
                 $depositoEnderecoEn     = null;
+                $enderecosPulmao = null;
 
                 $pedidoEntity->setIndEtiquetaMapaGerado("S");
                 $this->getEntityManager()->persist($pedidoEntity);
@@ -1978,41 +1979,51 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function getEtiquetasByCargaExterno($idCargaExterno, $idTipoCarga, $statusEtiqueta = null)
     {
-        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        try{
 
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select(' c.codCargaExterno as idCarga, tc.sigla as tipoCarga, tp.sigla as tipoPedido, es.codEntrega as codPedido, es.codBarras as codEtiqueta, es.codProduto, es.grade,
-                   es.tipoComercializacao as dscVolume, es.dthConferencia, es.codStatus, s.sigla as status, es.reimpressao, es.codBarrasProduto
-                ')
-            ->from('wms:Expedicao\VEtiquetaSeparacao','es')
-            ->innerJoin('wms:Util\Sigla', 'tc', 'WITH', 'es.codTipoCarga = tc.id')
-            ->innerJoin('wms:Util\Sigla', 'tp', 'WITH', 'es.codTipoPedido = tp.id')
-            ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'es.codStatus = s.id')
-            ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'es.codCarga = c.id')
-            ->where('c.codCargaExterno = :idCarga')
-            ->andWhere('es.codTipoCarga = :codTipoCarga')
-            ->setParameter('idCarga', $idCargaExterno)
-            ->setParameter('codTipoCarga', $idTipoCarga);
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $SQL = " SELECT C.COD_CARGA_EXTERNO as idCarga,
+                        TC.DSC_SIGLA as tipoCarga,
+                        TP.DSC_SIGLA as tipoPedido,
+                        ES.COD_PEDIDO as codPedido,
+                        ES.COD_ETIQUETA_SEPARACAO AS codEtiqueta,
+                        ES.COD_PRODUTO as codProduto,
+                        ES.DSC_GRADE as grade,
+                        NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as dscVolume,
+                        ES.dth_conferencia as dthConferencia,
+                        ES.COD_STATUS as codStatus, 
+                        SE.DSC_SIGLA as status,
+                        ES.DSC_REIMPRESSAO as reimpressao,
+                        NVL(PE.COD_BARRAS, PV.COD_BARRAS) as codBarrasProduto
+                   FROM ETIQUETA_SEPARACAO ES
+                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                   LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                   LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
+                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
+                   LEFT JOIN SIGLA TC ON TC.COD_SIGLA = C.COD_TIPO_CARGA
+                   LEFT JOIN SIGLA TP ON TP.COD_SIGLA = P.COD_TIPO_PEDIDO
+                   LEFT JOIN SIGLA SE ON SE.COD_SIGLA = ES.COD_STATUS
+                  WHERE C.COD_CARGA_EXTERNO = $idCargaExterno AND C.COD_TIPO_CARGA = $idTipoCarga ";
 
         if (is_array($statusEtiqueta)) {
             $status = implode(',',$statusEtiqueta);
-            $dql->andWhere("es.codStatus in ($status)");
+            $SQL = $SQL & " AND ES.COD_STATUS IN ($status) ";
         }else if ($statusEtiqueta) {
-            $dql->andWhere("es.codStatus = :statusEtiqueta")
-                ->setParameter('statusEtiqueta', $statusEtiqueta);
+            $SQL = $SQL & " AND ES.COD_STATUS = $statusEtiqueta ";
         }
 
-        $resultSet = $dql->getQuery()->getResult();
+        $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $etqArray = array();
-        foreach ($resultSet as $row) {
-            $idEtiquetaSeparacao = $row['codEtiqueta'];
+        foreach ($result as $row) {
+            $idEtiquetaSeparacao = $row['CODETIQUETA'];
             $etqSeparacaoEn = $this->find($idEtiquetaSeparacao);
             $embalagemEn = $etqSeparacaoEn->getProdutoEmbalagem();
 
             $codBarrasArray = array();
             if ($embalagemEn == null) {
-                $codBarrasArray[] = $row['codBarrasProduto'];
+                $codBarrasArray[] = $row['CODBARRASPRODUTO'];
             } else {
                 $embalagensEn = $embalagemRepo->findBy(array(
                     'codProduto'=>$embalagemEn->getCodProduto(),
@@ -2023,25 +2034,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $codBarrasArray[] = $emb->getCodigoBarras();
                 }
             }
+
             $value = array(
-                'idCarga'=>$row['idCarga'],
-                'tipoCarga'=>$row['tipoCarga'],
-                'tipoPedido'=>$row['tipoPedido'],
-                'codPedido'=>$row['codPedido'],
-                'codEtiqueta'=>$row['codEtiqueta'],
-                'codProduto'=>$row['codProduto'],
-                'grade'=>$row['grade'],
-                'dscVolume'=>$row['dscVolume'],
-                'dthConferencia'=>$row['dthConferencia'],
-                'codStatus'=>$row['codStatus'],
-                'status'=>$row['status'],
-                'reimpressao'=>$row['reimpressao'],
+                'idCarga'=>$row['IDCARGA'],
+                'tipoCarga'=>$row['TIPOCARGA'],
+                'tipoPedido'=>$row['TIPOPEDIDO'],
+                'codPedido'=>$row['CODPEDIDO'],
+                'codEtiqueta'=>$row['CODETIQUETA'],
+                'codProduto'=>$row['CODPRODUTO'],
+                'grade'=>$row['GRADE'],
+                'dscVolume'=>$row['DSCVOLUME'],
+                'dthConferencia'=>$row['DTHCONFERENCIA'],
+                'codStatus'=>$row['CODSTATUS'],
+                'status'=>$row['STATUS'],
+                'reimpressao'=>$row['REIMPRESSAO'],
                 'codBarrasProduto'=>$codBarrasArray
             );
+
             $etqArray[] = $value;
+
         }
 
         return $etqArray;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+
     }
 
     public function getEtiquetasByExpedicaoAndVolumePatrimonio($idExpedicao, $volumePatrimonio)
@@ -2196,18 +2215,40 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getDadosEtiquetaByEtiquetaId($idEtiqueta)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('es.id, es.codProduto, p.id as pedido, es.codOS, p.centralEntrega, p.pontoTransbordo, es.reimpressao,
-            es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao, e.dataInicio, c.codCargaExterno as tipoCarga,
-            prod.id as produto, prod.descricao, pe.descricao as embalagem, i.descricao as itinerario, pess.nome as clienteNome,
-            es.dataConferencia, es.dataConferenciaTransbordo, es.codOSTransbordo, cli.codClienteExterno, usuarioPessoa.login,
-            siglaEpx.sigla as siglaEpxedicao')
+            ->select('es.id,
+                      es.codProduto,
+                      p.id as pedido,
+                      es.codOS,
+                      p.centralEntrega,
+                      p.pontoTransbordo,
+                      es.reimpressao,
+                      es.codStatus,
+                      es.dscGrade,
+                      s.sigla,
+                      e.id as idExpedicao,
+                      e.dataInicio,
+                      c.codCargaExterno as tipoCarga,
+                      prod.id as produto,
+                      prod.descricao,
+                      pe.descricao as embalagem,
+                      i.descricao as itinerario,
+                      pess.nome as clienteNome,
+                      es.dataConferencia,
+                      es.dataConferenciaTransbordo,
+                      es.codOSTransbordo,
+                      cli.codClienteExterno,
+                      usuarioPessoa.login,
+                      usuarioTransbordo.login as loginTransbordo,
+                      siglaEpx.sigla as siglaEpxedicao')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->innerJoin('es.pedido', 'p')
             ->innerJoin('p.itinerario', 'i')
             ->innerJoin('p.pessoa', 'cli')
             ->innerJoin('cli.pessoa', 'pess')
             ->leftJoin('wms:OrdemServico', 'os', 'WITH', 'es.codOS = os.id')
+            ->leftJoin('wms:OrdemServico', 'osT', 'WITH', 'es.codOSTransbordo = osT.id')
             ->leftJoin('wms:Usuario', 'usuarioPessoa', 'WITH', 'os.pessoa = usuarioPessoa.pessoa')
+            ->leftJoin('wms:Usuario', 'usuarioTransbordo', 'WITH', 'osT.pessoa = usuarioTransbordo.pessoa')
             ->leftJoin('es.produto', 'prod')
             ->leftJoin('p.carga', 'c')
             ->leftJoin('c.expedicao', 'e')
