@@ -1,4 +1,16 @@
-﻿<script>
+﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
+
+    <div id="descricao"></div>
+    <div>
+        <label>Endereco:</label>
+        <input class="focus" type="text" name="codigoBarras" id="codigoBarras"/>
+    </div>
+    <input type="submit" name="submit" id="submit" value="Buscar" />
+</form>
+<br>
+<div id="lista-endereco"></div>
+
+<script>
     $(function(){
 
         $('#formulario').submit( function(e) {
@@ -21,7 +33,11 @@
                     success: function (data) {
                         if (data.status === 'ok') {
                             $.each(data.result, function (key, value) {
-                                var txt = value.produto + ' (' + value.grade + ') - ' + value.desc + ' </br>';
+                                var txt = value.produto;
+                                if (value.grade != ''){
+                                    txt += ' (' + value.grade + ')';
+                                }
+                                txt += ' - ' + value.desc + ' <br>';
                                 $('#lista-endereco').html(txt)
                             });
                         } else {
@@ -41,16 +57,3 @@
         }
     });
 </script>
-
-
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
-
-    <div id="descricao"></div>
-    <div>
-        <label>Endereco:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras"/>
-    </div>
-    <input type="submit" name="submit" id="submit" value="Buscar" />
-</form>
-
-<div id="lista-endereco"></div>

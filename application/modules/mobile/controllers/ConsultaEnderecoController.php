@@ -38,7 +38,7 @@ class Mobile_ConsultaEnderecoController extends Action
                     $produtoEn = $item->getProduto();
                     $produto = array(
                         'produto' => $produtoEn->getId(),
-                        'grade' => $produtoEn->getGrade(),
+                        'grade' => ($usaGrade === 'S') ? $produtoEn->getGrade(): '',
                         'desc' => $produtoEn->getDescricao()
                     );
                     $result[] = $produto;
