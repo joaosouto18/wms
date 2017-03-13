@@ -22,6 +22,17 @@ $(document).ready(function(){
             }
         }
     });
+    $('#btnRelatorio').click(function () {
+        var dataInicio = $('#dataInicio').val();
+        dataInicio = dataInicio.replace('/','-');
+        dataInicio = dataInicio.replace('/','-');
+
+        var dataFim =$ ('#dataFim').val();
+        dataFim = dataFim.replace('/','-');
+        dataFim = dataFim.replace('/','-');
+
+        window.location.href = URL_MODULO + '/relatorio_indicadores/relatorio-relatorio-detalhado-ajax/usuario/'+$('#usuario').val()+'/expedicao/'+$('#expedicao').val()+'/mapaSeparacao/'+$('#mapaSeparacao').val()+'/tipoQuebra/'+$('#tipoQuebra').val()+'/dataInicio/'+dataInicio+'/horaInicio/'+$('#horaInicio').val()+'/horaFim/'+$('#horaFim').val()+'/dataFim/'+dataFim;
+    })
 });
 
 </script>

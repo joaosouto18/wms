@@ -211,18 +211,7 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
-    public function etiquetaCarrefourAjaxAction()
-    {
-        $form = $this->view->form = new \Wms\Module\Expedicao\Form\Carrefour();
-        $params = $this->_getAllParams();
-
-        if (isset($params) && !empty($params)) {
-            $etiqueta = new \Wms\Module\Expedicao\Printer\Carrefour('P', 'mm', array(430,300));
-            $imprimir = $etiqueta->imprimir($params);
-        }
-    }
-
-    public function reimprimirAction() 
+    public function reimprimirAction()
     {
         Page::configure(array(
             'buttons' => array(
