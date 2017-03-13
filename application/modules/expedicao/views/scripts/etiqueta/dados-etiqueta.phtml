@@ -13,7 +13,7 @@
                 </tr>
                 <tr>
                     <td><input type="text" value="<?php echo $expedicao['idExpedicao']; ?>" disabled/></td>
-                    <td><input type="text" value="<?php echo (is_object($expedicao['dataInicio'])) ? $expedicao['dataInicio']->format('d/m/Y') : null;?>" disabled/></td>
+                    <td><input type="text" value="<?php echo (is_object($expedicao['dataInicio'])) ? $expedicao['dataInicio']->format('d/m/Y H:i:s') : null;?>" disabled/></td>
                     <td><input type="text" value="<?php echo $expedicao['siglaEpxedicao']; ?>" disabled/></td>
                     <td><input type="text" value="<?php echo $expedicao['tipoCarga']; ?>" disabled/></td>
                     <td><input type="text" value="<?php echo $expedicao['pedido']; ?>" disabled/></td>
@@ -67,7 +67,7 @@
                     <tr>
                         <td><input type="text" value="<?php echo $expedicao['codOS']; ?>" disabled/></td>
                         <td><input type="text" value="<?php echo $expedicao['login']; ?>" disabled/></td>
-                        <td><input type="text" value="<?php echo (is_object($expedicao['dataConferencia'])) ? $expedicao['dataConferencia']->format('d/m/Y') : null;?>" disabled/></td>
+                        <td><input type="text" value="<?php echo (is_object($expedicao['dataConferencia'])) ? $expedicao['dataConferencia']->format('d/m/Y H:i:s') : null;?>" disabled/></td>
                     </tr>
                 </table>
             </fieldset>
@@ -81,8 +81,8 @@
                     </tr>
                     <tr>
                         <td><input type="text" value="<?php echo $expedicao['codOSTransbordo']; ?>" disabled/></td>
-                        <td><input type="text" value="<?php echo $expedicao['login']; ?>" disabled/></td>
-                        <td><input type="text" value="<?php echo (is_object($expedicao['dataConferenciaTransbordo'])) ? $expedicao['dataConferenciaTransbordo']->format('d/m/Y') : null;?>" disabled/></td>
+                        <td><input type="text" value="<?php echo $expedicao['loginTransbordo']; ?>" disabled/></td>
+                        <td><input type="text" value="<?php echo (is_object($expedicao['dataConferenciaTransbordo'])) ? $expedicao['dataConferenciaTransbordo']->format('d/m/Y H:i:s') : null;?>" disabled/></td>
                     </tr>
                 </table>
             </fieldset>
