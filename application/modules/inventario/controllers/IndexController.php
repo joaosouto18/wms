@@ -127,41 +127,52 @@ class Inventario_IndexController  extends Action
     public function exportInventarioAjaxAction()
     {
         $id = $this->_getParam('id');
-        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
-        $inventarioEn = $this->em->find('wms:Inventario', $id);
 
-        /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $prodContEnd */
-        $prodContEnd = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
+        try {
+            /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
+            $inventarioEn = $this->em->find('wms:Inventario', $id);
 
-        $produtosInventariados = $prodContEnd->getProdutosInventariados($id);
+            /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $prodContEnd */
+            $prodContEnd = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
 
-        $codInvErp = $inventarioEn->getCodInventarioERP();
-        $dataExport = date('d-m-Y_H:m');
-        $filename = "Exp_Inventario_$id($codInvErp)_$dataExport.txt";
+            $produtosInventariados = $prodContEnd->getProdutosInventariados($id);
 
+            $codInvErp = $inventarioEn->getCodInventarioERP();
+            if (empty($codInvErp)){
+                throw new Exception("Este inventário não tem o código do inventário respectivo no ERP");
+            }
 
-        $file = fopen($filename,'w');
+            $filename = "Exp_Inventario_$id($codInvErp).txt";
 
-        foreach ($produtosInventariados as $item) {
-            $txtCodInventario = str_pad($codInvErp,4,' ',STR_PAD_RIGHT);
-            $txtContagem = $item['NUM_CONTAGEM'];
-            $txtCodBarras = str_pad($item['COD_BARRAS'],14,'0',STR_PAD_LEFT);
-            $txtQtd = str_pad($item["QTD_INV"],8,'0',STR_PAD_LEFT);
-            $txtCodProduto = str_pad($item["COD_PRODUTO"],5,'0',STR_PAD_LEFT);
-            $linha = "$txtCodInventario,$txtContagem,$txtCodBarras,$txtQtd,$txtCodProduto\n";
-            fwrite($file,$linha,strlen($linha));
+            $file = fopen($filename, 'w');
+            foreach ($produtosInventariados as $item) {
+                $txtCodInventario = str_pad($codInvErp, 4, ' ', STR_PAD_RIGHT);
+                $txtContagem = $item['NUM_CONTAGEM'];
+                $txtCodBarras = str_pad($item['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+                $txtQtd = str_pad($item["QTD_INV"], 8, '0', STR_PAD_LEFT);
+                $txtCodProduto = str_pad($item["COD_PRODUTO"], 5, '0', STR_PAD_LEFT);
+                $linha = "$txtCodInventario,$txtContagem,$txtCodBarras,$txtQtd,$txtCodProduto\n";
+                fwrite($file, $linha, strlen($linha));
+            }
+            fclose($file);
+
+            header("Content-Type: application/force-download");
+            header("Content-type: application/octet-stream;");
+            header("Content-disposition: attachment; filename=" . $filename);
+            header("Expires: 0");
+            header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+            header("Pragma: no-cache");
+
+            readfile($filename);
+            flush();
+
+            unlink($filename);
+            exit;
+
+        } catch (Exception $e){
+            $this->addFlashMessage('error', $e->getMessage());
+            $this->redirect('index');
         }
-        fpassthru($file);
-
-        header("Content-Type: application/force-download");
-        header("Content-type: application/octet-stream;");
-        header("Content-Length: " . filesize( $filename ) );
-        header("Content-disposition: attachment; filename=" . $filename );
-        header("Pragma: no-cache");
-        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
-        header("Expires: 0");
-        readfile($filename);
-        flush();
     }
 
     public function viewVincularCodErpAjaxAction()
