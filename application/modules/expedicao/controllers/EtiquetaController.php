@@ -67,8 +67,8 @@ class Expedicao_EtiquetaController  extends Action
             $this->getEntityManager()->beginTransaction();
 
             if (!isset($cargas)) {
-                echo 'errorÉ Necessário informar uma carga';
-                exit;
+                $msg = "É Necessário informar uma carga";
+                throw new \Wms\Util\WMS_Exception($msg);
             }
 
             //verifica se vai utilizar Ressuprimento
@@ -76,26 +76,28 @@ class Expedicao_EtiquetaController  extends Action
             if ($filialEn->getIndUtilizaRessuprimento() == "S") {
                 $pedidosSemOnda = $ExpedicaoRepo->getPedidoProdutoSemOnda($idExpedicao,$central);
                 if (count($pedidosSemOnda)) {
-                    echo 'errorExistem pedidos sem onda de ressuprimento gerada na expedição ' . $idExpedicao;
-                    exit;
+                    $msg = "Existem pedidos sem onda de ressuprimento gerada na expedição $idExpedicao";
+                    throw new \Wms\Util\WMS_Exception($msg);
                 }
             }
 
             if (count($ExpedicaoRepo->getProdutosSemDadosByExpedicao($idExpedicao)) > 0) {
-                $link = '<a href="' . $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Dados Logísticos</a>';
-                echo 'errorExistem produtos sem definição de volume. Clique para exibir ' . $link;
-                exit;
+                $link = $this->view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao));
+                $msg = "Existem produtos sem definição de volume. Deseja exibir?";
+                throw new \Wms\Util\WMS_Exception($msg, $link);
             } else {
                 $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
             }
 
             $this->getEntityManager()->commit();
-
-        } catch (\Exception $e) {
+            $this->_helper->json(array('status' => 'success'));
+        } catch (\Wms\Util\WMS_Exception $e) {
             $this->getEntityManager()->rollback();
-            $this->_helper->messenger('error', $e->getMessage());
+            $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => $e->getLink()));
+        } catch (Exception $e2) {
+            $this->getEntityManager()->rollback();
+            $this->addFlashMessage('error', $e2->getMessage());
         }
-        exit;
     }
 
     public function listarMapasQuebraAjaxAction()
@@ -362,7 +364,7 @@ class Expedicao_EtiquetaController  extends Action
             $EtiquetaRepo = $arrayRepositorios['etiquetaSeparacao'];
 
             if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
-                $EtiquetaRepo->gerarMapaEtiquetaReentrega($idExpedicao,$arrayRepositorios);
+                $EtiquetaRepo->gerarMapaEtiquetaReentrega($idExpedicao, $arrayRepositorios);
             }
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
@@ -374,18 +376,20 @@ class Expedicao_EtiquetaController  extends Action
             $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
             $qtdReentregaPendente = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
 
-            if (count($pedidosProdutos) == 0) {
+            if (empty($pedidosProdutos)) {
                 if (($ExpedicaoRepo->getQtdEtiquetasPendentesImpressao($idExpedicao) <= 0)
-                     && ($ExpedicaoRepo->getQtdMapasPendentesImpressaoByExpedicao($idExpedicao)  <= 0)
-                     && (count($qtdReentregaPendente) <= 0))  {
-                    $cargas = implode(',',$cargas);
-                    echo 'errorEtiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas;
-                    exit;
-//                    $this->addFlashMessage('error', 'Etiquetas não existem ou já foram geradas na expedição:'.$idExpedicao.' central:'.$central.' com a[s] cargas:'.$cargas );
+                    && ($ExpedicaoRepo->getQtdMapasPendentesImpressaoByExpedicao($idExpedicao) <= 0)
+                    && (count($qtdReentregaPendente) <= 0))
+                {
+                    $cargas = implode(',', $cargas);
+                    $msg = "Etiquetas não existem ou já foram geradas na expedição: $idExpedicao central: $central com a(s) carga(s): $cargas";
+                    throw new \Wms\Util\WMS_Exception($msg);
                 }
             } else {
-                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos,null,$idModeloSeparacaoPadrao, $arrayRepositorios);
+                $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos, null, $idModeloSeparacaoPadrao, $arrayRepositorios);
             }
+        } catch (\Wms\Util\WMS_Exception $WMS_Exception) {
+            throw new \Wms\Util\WMS_Exception($WMS_Exception->getMessage(), $WMS_Exception->getLink());
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
