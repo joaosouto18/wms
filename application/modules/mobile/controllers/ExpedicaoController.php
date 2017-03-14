@@ -100,17 +100,18 @@ class Mobile_ExpedicaoController extends Action
 
     public function lerEmbaladosMapaAction()
     {
-        $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
+        $this->view->idEmbalado  = $idEmbalado = $this->_getParam('embalado');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('expedicao');
+        $this->view->idMapa      = $idMapa = $this->_getParam('idMapa');
+        $submit                  = $this->_getParam('submit');
 
-        $submit = $this->_getParam('submit');
-
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         try {
             $conferir = 'Conferir';
             if (isset($submit) || isset($conferir)) {
                 $idEmbalado = \Wms\Util\Coletor::retiraDigitoIdentificador($idEmbalado);
-                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado);
+                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado,$idExpedicao,$idMapa);
                 $this->addFlashMessage('success',"Volume embalado $idEmbalado conferido com sucesso!");
             }
         } catch (\Exception $e) {

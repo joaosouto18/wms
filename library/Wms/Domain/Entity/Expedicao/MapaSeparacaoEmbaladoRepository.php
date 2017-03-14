@@ -42,23 +42,33 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $mapaSeparacaoEmbaladoEn;
     }
 
-    /** ocorre quando o conferente est� bipando nos volumes ja lacrados */
-    public function conferirVolumeEmbalado($idEmbalado)
+    /** ocorre quando o conferente está bipando nos volumes ja lacrados */
+    public function conferirVolumeEmbalado($idEmbalado,$idExpedicao,$idMapa)
     {
-        $mapaSeparacaoEmbaladoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->findOneBy(array('id' => $idEmbalado));
-        if (!isset($mapaSeparacaoEmbaladoEn) || empty($mapaSeparacaoEmbaladoEn)) {
-            throw new \Exception(utf8_encode('Volume Embalado nao encontrado!'));
+//        $mapaSeparacaoEmbaladoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado')->findOneBy(array('id' => $idEmbalado));
+
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('mse')
+            ->from('wms:Expedicao\MapaSeparacaoEmbalado','mse')
+            ->innerJoin('mse.mapaSeparacao', 'ms')
+            ->innerJoin('ms.expedicao', 'e')
+            ->where("mse.id = $idEmbalado")
+            ->andWhere("e.id = $idExpedicao");
+
+        $mapaSeparacaoEmbaladoEntities = $sql->getQuery()->getResult();
+
+        if (count($mapaSeparacaoEmbaladoEntities) <= 0) {
+            throw new \Exception(utf8_encode('Volume Embalado nao encontrado ou nao pertencente a expedicao '.$idExpedicao));
         }
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO);
 
-        $mapaSeparacaoEmbaladoEn->setStatus($siglaEn);
-
-        $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
+        foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
+            $mapaSeparacaoEmbaladoEntity->setStatus($siglaEn);
+            $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEntity);
+        }
         $this->getEntityManager()->flush();
 
-        return $mapaSeparacaoEmbaladoEn;
-
-
+        return true;
     }
 
     public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa)

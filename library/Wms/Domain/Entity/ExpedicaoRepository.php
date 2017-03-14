@@ -2460,7 +2460,7 @@ class ExpedicaoRepository extends EntityRepository
             $idMapa = $mapaSeparacaoEmbalado->getMapaSeparacao()->getId();
             $idExpedicao = $mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getId();
             $operacao = "Conferencia dos volumes embalados do Mapa cód. $idMapa";
-            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao";
+            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao/idMapa/$idMapa";
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
