@@ -146,7 +146,7 @@ class Inventario_IndexController  extends Action
 
             $file = fopen($filename, 'w');
             foreach ($produtosInventariados as $item) {
-                $txtCodInventario = str_pad($codInvErp, 4, ' ', STR_PAD_RIGHT);
+                $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
                 $txtContagem = $item['NUM_CONTAGEM'];
                 $txtCodBarras = str_pad($item['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
                 $txtQtd = str_pad($item["QTD_INV"], 8, '0', STR_PAD_LEFT);
