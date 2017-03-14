@@ -51,7 +51,7 @@
             <?php if ($this->itemNF['validade'] == 'S') : ?>
             <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
             <?php endif; ?>
-            <?php if ($this->pesoVariavel == 'N' || $this->pesoVariavel == '') : ?>
+            <?php if ($this->pesoVariavel == 'N') : ?>
             <td><input type="text" maxlength="15" size="10" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif?>" id="qtdConferida" name="qtdConferida" /></td>
             <?php endif; ?>
             <?php if ( $this->pesoVariavel == 'S' ) : ?>
@@ -118,8 +118,6 @@
                 var hj = new Date();
                 var validade = gerarData(data);
                 if (validade <= hj) {
-                    console.log(validade);
-                    console.log(hj);
                     alert("A data de validade não pode ser menor ou igual a data atual");
                     obj.val('');
                     return false;

@@ -138,25 +138,42 @@ class Mobile_RecebimentoController extends Action
 
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+        /** @var \Wms\Domain\Entity\Produto\Volume $produtoVolumeEn */
         $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $produtoEmbEn */
         $produtoEmbEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
 
-        if (isset($produtoEmbEn) && !empty($produtoEmbEn)) {
-            $idProduto = $produtoEmbEn->getProduto()->getId();
-            $grade = $produtoEmbEn->getProduto()->getGrade();
-            $pesoVariavel = $produtoEmbEn->getProduto()->getPossuiPesoVariavel();
-        } else if (isset($produtoVolumeEn) && !empty($produtoVolumeEn)){
-            $idProduto = $produtoVolumeEn->getCodProduto();
-            $grade = $produtoVolumeEn->getGrade();
-            $pesoVariavel = $produtoVolumeEn->getProduto()->getPossuiPesoVariavel();
+        $pesoVariavel = null;
+
+        if (!empty($produtoEmbEn)) {
+            $produto = $produtoEmbEn->getProduto();
+            $idProduto = $produto->getId();
+            $grade = $produto->getGrade();
+            $pesoVariavel = $produto->getPossuiPesoVariavel();
+            if (empty($pesoVariavel)){
+                $pesoVariavel = 'N';
+                $produto->setPossuiPesoVariavel($pesoVariavel);
+                $this->_em->flush($produto);
+            }
+        } else if (!empty($produtoVolumeEn)){
+            $produto = $produtoVolumeEn->getProduto();
+            $idProduto = $produto->getId();
+            $grade = $produto->getGrade();
+            $pesoVariavel = $produto->getPossuiPesoVariavel();
+            if (empty($pesoVariavel)){
+                $pesoVariavel = 'N';
+                $produto->setPossuiPesoVariavel($pesoVariavel);
+                $this->_em->flush($produto);
+            }
         } else {
             $this->addFlashMessage('error', 'Código de Barras inválido');
             $this->redirect('ler-codigo-barras','recebimento','mobile', array('idRecebimento' => $idRecebimento));
         }
         $form = new ProdutoQuantidadeForm;
 
+        $recebimentoEntity = null;
         try {
             $recebimentoEntity = $this->em->getReference('wms:Recebimento', $idRecebimento);
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
@@ -171,9 +188,6 @@ class Mobile_RecebimentoController extends Action
 
             if ($itemNF == null)
                 throw new \Exception('Nenhum produto encontrado no Recebimento com este Código de Barras. - ' . $codigoBarras);
-
-/*            if ($pesoVariavel == '')
-                throw new \Exception("O produto $idProduto não tem definição se possui ou não peso variável.");*/
 
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
