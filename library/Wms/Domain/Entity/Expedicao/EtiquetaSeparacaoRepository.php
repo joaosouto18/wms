@@ -650,6 +650,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     break;
                 }
             }
+            if (!isset($embalagensEn[count($embalagensEn) -1]) || empty($embalagensEn[count($embalagensEn) -1])) {
+                echo 'error Não existe embalagem ativa para atender o PRODUTO '.$codProduto.' GRADE '.$grade;
+                exit;
+            }
             $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
             $count = 0;
