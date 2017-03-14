@@ -920,7 +920,7 @@ class Mobile_ExpedicaoController extends Action
     {
         $codBarras = "";
         foreach ($etiquetas as $etiqueta) {
-            $codBarras = $codBarras . '-' . $etiqueta['codBarrasProduto'];
+            $codBarras = $codBarras . '-' . trim($etiqueta['codBarrasProduto']);
         }
         return $codBarras;
     }
