@@ -85,4 +85,12 @@ class CargaRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    public function removeCarga($idCarga)
+    {
+        $cargaEntity = $this->find($idCarga);
+        $this->getEntityManager()->remove($cargaEntity);
+        $this->getEntityManager()->flush();
+        return true;
+    }
 }

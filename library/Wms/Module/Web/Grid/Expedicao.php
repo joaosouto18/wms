@@ -245,6 +245,14 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Cancelar Expedição',
+//                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'cancelar-expedicao-ajax',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Relatório de Produtos sem Estoque',
                 'target' => '_blank',
                 'modelName' => 'expedicao',
