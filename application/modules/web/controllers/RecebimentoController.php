@@ -423,6 +423,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
      */
     public function conferenciaColetorAjaxAction()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+
         $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
 
         $idOrdemServico = $this->getRequest()->getParam('idOrdemServico');
