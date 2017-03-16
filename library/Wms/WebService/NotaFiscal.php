@@ -277,8 +277,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             if ($notaFiscalEn != null) {
                 $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
-                if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
-                    throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." cancelada ou já recebida");
+                if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
+                    throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." já recebida");
                 }
 
                 //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
