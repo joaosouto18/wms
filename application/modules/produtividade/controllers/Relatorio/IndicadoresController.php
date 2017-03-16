@@ -131,6 +131,6 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
 
-        $this->exportPDF($result,'Relatório Detalhado',"Relatório Detalhado","L");
+        $this->exportPDF($result,'Relatório Detalhado',utf8_encode('Relatório Detalhado'),"L");
     }
 }

@@ -69,7 +69,6 @@ class ApontamentoMapaRepository extends EntityRepository
         }
 
         if (isset($tipoQuebra) && !empty($tipoQuebra)) {
-            $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
             $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
         }
 
@@ -158,6 +157,10 @@ class ApontamentoMapaRepository extends EntityRepository
         $volumeTotal = 0;
         $quantidadeTotal = 0;
         $seconds = 0;
+        $countExpedicao = 0;
+        $countMapaSeparacao = 0;
+        $idExpedicaoAnterior = null;
+        $idMapaSeparacaoAnterior = null;
 
         foreach ($result as $key => $value) {
             $tempoFinal = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_FIM']);
@@ -166,6 +169,14 @@ class ApontamentoMapaRepository extends EntityRepository
                 $result[$key]['TEMPO_GASTO'] = utf8_encode('Conferência em Andamento!');
                 continue;
             }
+            if ($value['COD_EXPEDICAO'] != $idExpedicaoAnterior) {
+                $countExpedicao = $countExpedicao + 1;
+            }
+            if ($value['COD_MAPA_SEPARACAO'] != $idMapaSeparacaoAnterior) {
+                $countMapaSeparacao = $countMapaSeparacao + 1;
+            }
+            $idExpedicaoAnterior = $value['COD_EXPEDICAO'];
+            $idMapaSeparacaoAnterior = $value['COD_MAPA_SEPARACAO'];
 
             $intervalo = date_diff($tempoInicial,$tempoFinal);
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%h Hora(s) %i Minuto(s) %s Segundo(s)');
@@ -184,8 +195,8 @@ class ApontamentoMapaRepository extends EntityRepository
         $seconds -= $minutes * 60;
 
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
-        $result[$qtdRows]['COD_EXPEDICAO'] = '-';
-        $result[$qtdRows]['COD_MAPA_SEPARACAO'] = '-';
+        $result[$qtdRows]['COD_EXPEDICAO'] = $countExpedicao;
+        $result[$qtdRows]['COD_MAPA_SEPARACAO'] = $countMapaSeparacao;
         $result[$qtdRows]['NUM_PESO'] = $pesoTotal;
         $result[$qtdRows]['VOLUMES'] = $volumeTotal;
         $result[$qtdRows]['QTD_PRODUTOS'] = $quantidadeTotal;
