@@ -713,7 +713,14 @@ class Importacao_IndexController extends Action
                             if (($coluna == null) || ($tColunas - 1 < $coluna)) {
                                 $valorCampo = trim($campo->getValorPadrao());
                             } else {
-                                $valorCampo = trim($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue());
+                                $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+                                if ((strtolower($campo->getNomeCampo()) != "cpf_cnpj")
+                                    or (strtolower($campo->getNomeCampo()) != "cpf")
+                                    or (strtolower($campo->getNomeCampo()) != "cnpj"))
+                                {
+                                    $valorCampo = trim($valorCampo);
+                                }
+
                                 $valorCampo = utf8_encode($valorCampo);
                                 if (empty($valorCampo)) {
                                     if ($campo->getPreenchObrigatorio() === "n") {
