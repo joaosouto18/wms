@@ -34,6 +34,10 @@ class Mobile_ReentregaController extends Action
             $result = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
 
             if (count($result) > 0) {
+                $this->view->selecionado = "N";
+                if (!empty($params['codEtiqueta']) && isset($params['codEtiqueta'])) {
+                    $this->view->selecionado = "S";
+                }
                 $this->view->notasFiscaisByCarga = $result;
             } else {
                 $this->addFlashMessage('error', 'Nenhuma nota fiscal encontrada!');

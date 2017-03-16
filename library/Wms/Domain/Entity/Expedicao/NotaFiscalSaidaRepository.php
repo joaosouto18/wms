@@ -3,6 +3,7 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Wms\Service\Recebimento as LeituraColetor;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 
@@ -29,6 +30,13 @@ class NotaFiscalSaidaRepository extends EntityRepository
             $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
             $sql->andWhere("c.codCargaExterno = $data[carga]");
+        }
+
+        if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {
+            $LeituraColetor = new LeituraColetor();
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($data['codEtiqueta']);
+            $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','p.id = etq.pedido');
+            $sql->andWhere("etq.id = $codBarras");
         }
         $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id','pj.cnpj','pes.nome');
 
