@@ -69,6 +69,7 @@ class ApontamentoMapaRepository extends EntityRepository
         }
 
         if (isset($tipoQuebra) && !empty($tipoQuebra)) {
+            $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
             $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
         }
 
