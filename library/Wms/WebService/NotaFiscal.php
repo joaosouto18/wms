@@ -281,16 +281,24 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." já recebida");
                 }
 
+                if ($notaFiscalEn->getStatus()->getId() == NotaFiscalEntity::STATUS_CANCELADA) {
+                    $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
+                    $notaFiscalEn->setStatus($statusEntity);
+                    $em->persist($notaFiscalEn);
+                }
+
                 //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
                 $this->compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em);
 
                 //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
                 $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em);
 
+
             } else {
                 $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
             }
 
+            $em->flush();
             $em->commit();
             return true;
         } catch (\Exception $e) {
