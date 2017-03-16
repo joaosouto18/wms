@@ -798,6 +798,7 @@ class Mobile_ExpedicaoController extends Action
             }
         } else {
             if ($etiqueta[0]['codEstoque'] != $idCentral) {
+                $msg = 'Etiqueta não pertence a central ' . $idCentral;
                 $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
                 $this->bloqueioOs($idExpedicao, 'Etiqueta não pertence a central ' . $idCentral, false);
                 if ($this->_request->isXmlHttpRequest()) {
