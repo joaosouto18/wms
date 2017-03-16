@@ -229,6 +229,7 @@ class InventarioRepository extends EntityRepository
                 $enderecosSalvos[] = $codEndereco;
             }
 
+            /*
             if (isset($codProduto) && ($codProduto != null)) {
                 $endProd = new EnderecoProduto();
                 $endProd->setCodProduto($codProduto);
@@ -237,6 +238,7 @@ class InventarioRepository extends EntityRepository
                 $endProd->setInventarioEndereco($enderecoEn);
                 $this->_em->persist($endProd);
             }
+            */
         }
 
         $this->_em->flush();
