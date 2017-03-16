@@ -75,7 +75,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus)
     {
-        throw new \Exception("Teste6");
 
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
