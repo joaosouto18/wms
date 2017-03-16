@@ -475,6 +475,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             )
         ));
 
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+        
         try {
 
             $params = $this->getRequest()->getParams();
