@@ -966,10 +966,12 @@ class Inventario
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
 
+        /*
         $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
         if ($teveAlteracao == true) {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
         }
+        */
 
         foreach($contagemEndEntities as $contagemEndEn) {
 
