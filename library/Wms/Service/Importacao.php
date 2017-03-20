@@ -675,6 +675,7 @@ class Importacao
                 $embalagensArray = array();
 
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
+                /*
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
@@ -717,7 +718,8 @@ class Importacao
                     $embalagensArray[] = $embalagemArray;
 
                 }
-
+                */
+                
                 //DEPOIS INCLUO AS NOVAS EMBALAGENS
                 foreach ($embalagens as $embalagemWs) {
 
