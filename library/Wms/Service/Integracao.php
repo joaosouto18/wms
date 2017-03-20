@@ -70,6 +70,8 @@ class Integracao
                     return $this->processaProdutos($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_ESTOQUE:
                     return $this->processaEstoque($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                    return $this->processaPedido($this->_dados);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -125,6 +127,94 @@ class Integracao
         $this->_em->flush();
         return true;
     }
+
+    public function processaPedido($dados) {
+        try {
+            $cargas = array();
+            $pedidos = array();
+            $produtos = array();
+
+            $idCargaAnterior = null;
+            $idPedidoAnterior = null;
+
+            foreach ($dados as $key => $row) {
+                $idPedido = $row['PEDIDO'];
+                $idCarga = $row['CARGA'];
+
+                $produto = array(
+                    'codProduto' => $row['PRODUTO'],
+                    'grade'      => $row['GRADE'],
+                    'quantidade' => $row['QTD'],
+                    'valorVenda' => $row['VALOR_VENDA']
+                );
+                $produtos[] = $produto;
+
+                if (($idPedido != $idPedidoAnterior) || ($key == count($dados)-1)) {
+
+                    $itinerario = array (
+                        'idItinerario' => $row['COD_ROTA'],
+                        'nomeItinerario' => $row['DSC_ROTA']
+                    );
+
+                    $cliente = array(
+                        'codCliente'  => $row['COD_CLIENTE'],
+                        'bairro'      => $row['BAIRRO'],
+                        'cidade'      => $row['CIDADE'],
+                        'complemento' => $row['COMPLEMENTO'],
+                        'cpf_cnpj'    => $row['CPF_CNPJ'],
+                        'logradouro'  => $row['LOGRADOURO'],
+                        'nome'        => $row['NOME'],
+                        'numero'      => $row['NUMERO'],
+                        'referencia'  => $row['REFERENCIA'],
+                        'tipoPessoa'  => $row['TIPO_PESSOA'],
+                        'uf'          => $row['UF'],
+                        'cep'         => $row['CEP']
+                    );
+
+                    $pedido = array(
+                        'codPedido'    => $idPedido,
+                        'cliente'      => $cliente,
+                        'itinerario'   => $itinerario,
+                        'produtos'     => $produtos,
+                        'linhaEntrega' => $row['DSC_ROTA']
+                    );
+
+                    $pedidos[] = $pedido;
+
+                    unset($produtos);
+                    $produtos = array();
+                }
+
+
+                if (($idCarga != $idCargaAnterior) || ($key == count($dados)-1)) {
+
+                    $carga = array(
+                        'idCarga' => $idCarga,
+                        'placaExpedicao' => $row['PLACA'],
+                        'placa' => $row['PLACA'],
+                        'pedidos' => $pedidos
+                    );
+                    $cargas[] = $carga;
+
+                    unset($pedidos);
+                    $pedidos = array();
+
+                }
+
+                $idCargaAnterior = $idCarga;
+                $idPedidoAnterior = $idPedido;
+            }
+
+            $wsExpedicao = new \Wms_WebService_Expedicao();
+            $wsExpedicao->enviar($cargas);
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
+            return false;
+        }
+
+    }
+
 
     public function processaProdutos($dados){
         ini_set('memory_limit', '-1');
