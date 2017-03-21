@@ -48,10 +48,10 @@
             for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
                 arr[i] = $('input[name="cargas"]:checked')[i].value;
             }
-            if (arr.length == 0){
-                alert("Selecione uma carga!");
-                return false;
-            }
+//            if (arr.length == 0){
+//                alert("Selecione uma carga!");
+//                return false;
+//            }
             $.ajax({
                 url: URL_MODULO + '/' + $('#controller').val() + '/' + $('#action').val() + '/id/' + $('#expedicao').val() + '/central/' + $(this).attr('id'),
                 type: 'POST',

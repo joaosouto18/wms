@@ -13,7 +13,7 @@ use Wms\Util\Barcode\Barcode;
 
 use Wms\Util\Barcode\eFPDF;
 
-class MapaSeparacao extends Pdf
+class MapaSeparacao extends eFPDF
 {
     private $idMapa;
     private $idExpedicao;
