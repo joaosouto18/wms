@@ -79,13 +79,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $andamentoEn = new AcaoIntegracaoAndamento();
                 $andamentoEn->setAcaoIntegracao($acaoEn);
                 $andamentoEn->setIndSucesso($sucess);
-                $andamentoEn->setDthAndamento(new \DateTime);
+                $andamentoEn->setDthAndamento(new \DateTime());
                 $andamentoEn->setObservacao($observacao);
                 $this->_em->persist($andamentoEn);
             }
 
             if ($sucess=="S") {
-                $acaoEn->setDthUltimaExecucao(new \DateTime);
+                $acaoEn->setDthUltimaExecucao($integracaoService->getMaxDate());
                 $this->_em->persist($acaoEn);
             }
 

@@ -79,6 +79,26 @@ class Integracao
         $this->_options = $options;
     }
 
+    public function getMaxDate() {
+        if (!(($this->getAcao()->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)
+            ||($this->getAcao()->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS))){
+            return new \DateTime();
+        }
+
+        $maxDate = null;
+        foreach ($this->_dados as $row) {
+            if ($maxDate == null) {
+                $maxDate = $row['DTH'];
+            }
+
+            if ($row['DTH'] > $maxDate) {
+                $maxDate = $row['DTH'];
+            }
+        }
+        return $maxDate;
+    }
+
+
     public function processaAcao() {
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
