@@ -317,6 +317,66 @@ class ExpedicaoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function campareResumoConferenciaByCarga ($qtd, $idCargaExterno) {
+        $SQL = "SELECT  C.COD_CARGA_EXTERNO as CARGA,
+                                SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
+                           FROM PEDIDO_PRODUTO PP
+                           LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                           LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                          WHERE C.COD_CARGA_EXTERNO = $idCargaExterno
+                          GROUP BY COD_CARGA_EXTERNO";
+
+
+        $values = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        if (count($values) == 0) {
+            throw new \Exception("Carga $idCargaExterno não encontrada no WMS");
+        }
+        if ($values[0]['QTD'] == $qtd) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function compareConferenciaByCarga($dados,$idCargaExterno) {
+        $SQL = "SELECT C.COD_CARGA_EXTERNO as CARGA,
+                       P.COD_PEDIDO,
+                       PP.COD_PRODUTO,
+                       PP.DSC_GRADE,
+                       SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                  WHERE C.COD_CARGA_EXTERNO = $idCargaExterno
+                  GROUP BY COD_CARGA_EXTERNO,
+                           P.COD_PEDIDO,
+                           PP.COD_PRODUTO,
+                           PP.DSC_GRADE
+                  ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
+        $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($pedidosWMS as $pedidoProdutoWms) {
+            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
+                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
+                $encontrouProduto = false;
+                foreach ($pedidoERP as $produtoERP) {
+                    if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
+                        $encontrouProduto = true;
+                        if ($produtoERP['qtd'] != $pedidoProdutoWms['QTD']) {
+                            throw new \Exception("Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]");
+                        }
+                    }
+                }
+
+                if ($encontrouProduto == false) {
+                    throw new \Exception("Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]");
+                }
+            } else {
+                throw new \Exception("Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP");
+            }
+        }
+
+        throw new \Exception("Divergencia de conferencia com o ERP na carga " . $idCargaExterno);
+    }
 
     public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
     {
@@ -587,6 +647,13 @@ class ExpedicaoRepository extends EntityRepository
                     return $result;
                 }
 
+                if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+                    $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                    if (is_string($result)) {
+                        return $result;
+                    }
+                }
+
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
@@ -665,6 +732,46 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         $this->getEntityManager()->flush();
+    }
+
+    public function validaConferenciaERP ($idExpedicao) {
+        try{
+            $idAcaoResumo = $this->getSystemParameterValue("COD_ACAO_INTEGRACAO_RESUMO_CONFERENCIA_EXPEDICAO");
+            $idAcaoConferencia = $this->getSystemParameterValue("COD_ACAO_INTEGRACAO_CONFERENCIA_EXPEDICAO");
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+            $cargas = $this->getEntityManager()->getRepository("wms:Expedicao\Carga")->findBy(array('codExpedicao'=>$idExpedicao));
+
+            $acaoResumoEn = $acaoIntRepo->find($idAcaoResumo);
+            $acaoConferenciaEn = $acaoIntRepo->find($idAcaoConferencia);
+
+            if ($acaoResumoEn == null) {
+                throw new \Exception("Ação de Verificação de Resumo da Conferencia não encontrada no sistema");
+            }
+
+            if ($acaoConferenciaEn == null) {
+                throw new \Exception("Ação de Verificação de Conferencia não encontrada no sistema");
+            }
+
+            foreach ($cargas as $cargaEn) {
+                $options = array();
+                $options[] = $cargaEn->getCodCargaExterno();
+                $result = $acaoIntRepo->processaAcao($acaoResumoEn,$options);
+                if (!($result === false)) {
+                    $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options);
+                    if (!($result === true)) {
+                        throw new \Exception($result);
+                    }
+                }
+            }
+
+        } catch(\Exception $e) {
+            return $e->getMessage();
+        }
+
+        return true;
     }
 
     public function validaVolumesPatrimonio($idExpedicao){

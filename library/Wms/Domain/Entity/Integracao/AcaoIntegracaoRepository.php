@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Integracao;
 
+use Composer\DependencyResolver\Transaction;
 use Doctrine\ORM\EntityRepository;
 use Wms\Service\Integracao;
 
@@ -23,6 +24,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
 
+                //PARAMETRIZA A DATA DE ULTIMA EXECUÇÃO DA QUERY
                 if ($acaoEn->getDthUltimaExecucao() == null) {
                     $dthExecucao = '01/01/1900 01:01:01';
                     if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
@@ -35,15 +37,20 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
+                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÇÂO PARA INTEGRAÇÔES NO WINTHOR
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
-                foreach ($options as $key => $value) {
-                    $query = str_replace(":?" . $key ,$value ,$query);
+
+                //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
+                if ((isset($options)) && ($options!= null)) {
+                    foreach ($options as $key => $value) {
+                        $query = str_replace(":?" . ($key+1) ,$value ,$query);
+                    }
                 }
 
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
                 $integracaoService = new Integracao($this->getEntityManager(),
                                                     array('acao'=>$acaoEn,
-                                                          'optiions'=>$options,
+                                                          'options'=>$options,
                                                           'dados'=>$result));
                 $result = $integracaoService->processaAcao();
 
@@ -53,6 +60,8 @@ class AcaoIntegracaoRepository extends EntityRepository
         } catch (\Exception $e) {
                 $observacao = $e->getMessage() . " - QUERY: " . $query;
                 $sucess = "N";
+
+            $result = $e->getMessage();
 
             $this->_em->rollback();
             $this->_em->clear();
@@ -84,6 +93,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->commit();
 
         } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
             var_dump($e->getMessage());exit;
             $this->_em->rollback();
         }

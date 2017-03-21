@@ -27,7 +27,6 @@ class Integracao
 
     public function __construct($em,$params)
     {
-
         $this->_em = $em;
         \Zend\Stdlib\Configurator::configure($this, $params);
     }
@@ -91,13 +90,15 @@ class Integracao
                     return $this->processaPedido($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_RESUMO_CONFERENCIA:
                     return $this->comparaResumoConferenciaExpedicao($this->_dados, $this->_options);
+                case AcaoIntegracao::INTEGRACAO_CONFERENCIA:
+                    return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
     }
 
-    public function comparaResumoConferenciaExpedicao ($dados, $options) {
+    public function comparaConferenciaExpedicao ($dados, $options) {
         $idCarga = null;
         if (isset($options[0]) && ($options[0] != null)) {
             $idCarga = $options[0];
@@ -105,19 +106,55 @@ class Integracao
             throw new \Exception("Carga não definida nos parametros da consulta");
         }
 
-        $encontrou = false;
-        $result = false;
-        foreach ($dados as $row) {
-            if ($row['CARGA'] == $idCarga) {
-                $encontrou = true;
-                
+        $expedicaoRepo    = $this->_em->getRepository('wms:Expedicao');
+
+        $idPedidoAnterior = null;
+        $produtos = array();
+        $pedidos = array();
+        $cargas = array();
+        foreach ($dados as $key => $row) {
+            $idCarga = $row['CARGA'];
+            $idPedido = $row['PEDIDO'];
+
+            $produto = array(
+                'idProduto' => $row['PRODUTO'],
+                'grade' => $row['GRADE'],
+                'qtd' =>$row['QTD']
+            );
+            $produtos[] = $produto;
+
+            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
+                $pedidos[$idPedido] = $produtos;
+                unset($produtos);
+                $produtos = array();
+            }
+
+            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
+                $cargas[$idCarga] = $pedidos;
+                unset($pedidos);
+                $pedidos = array();
             }
         }
 
-        if ($encontrou == false) {
-            throw new \Exception("Carga não encontrada na consulta do ERP");
+        return $expedicaoRepo->compareConferenciaByCarga($cargas,$idCarga);
+    }
+
+    public function comparaResumoConferenciaExpedicao ($dados, $options) {
+        $expedicaoRepo    = $this->_em->getRepository('wms:Expedicao');
+
+        $idCarga = null;
+        if (isset($options[0]) && ($options[0] != null)) {
+            $idCarga = $options[0];
+        } else {
+            throw new \Exception("Carga não definida nos parametros da consulta");
         }
 
+        foreach ($dados as $row) {
+            if ($row['CARGA'] == $idCarga) {
+                return $expedicaoRepo->campareResumoConferenciaByCarga($row['QTD'], $idCarga);
+            }
+        }
+        throw new \Exception("Carga não encontrada na consulta do ERP");
     }
 
     public function processaEstoque($dados){
@@ -172,12 +209,10 @@ class Integracao
 
     public function processaPedido($dados) {
         try {
+
             $cargas = array();
             $pedidos = array();
             $produtos = array();
-
-            $idCargaAnterior = null;
-            $idPedidoAnterior = null;
 
             foreach ($dados as $key => $row) {
                 $idPedido = $row['PEDIDO'];
@@ -191,8 +226,7 @@ class Integracao
                 );
                 $produtos[] = $produto;
 
-                if (($idPedido != $idPedidoAnterior) || ($key == count($dados)-1)) {
-
+                if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idPedido != $dados[$key+1]['PEDIDO']))) {
                     $itinerario = array (
                         'idItinerario' => $row['COD_ROTA'],
                         'nomeItinerario' => $row['DSC_ROTA']
@@ -228,8 +262,7 @@ class Integracao
                 }
 
 
-                if (($idCarga != $idCargaAnterior) || ($key == count($dados)-1)) {
-
+                if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
                         'idCarga' => $idCarga,
                         'placaExpedicao' => $row['PLACA'],
@@ -240,11 +273,7 @@ class Integracao
 
                     unset($pedidos);
                     $pedidos = array();
-
                 }
-
-                $idCargaAnterior = $idCarga;
-                $idPedidoAnterior = $idPedido;
             }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
