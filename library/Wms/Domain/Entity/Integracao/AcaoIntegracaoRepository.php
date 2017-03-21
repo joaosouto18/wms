@@ -36,8 +36,11 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
-                foreach ($options as $key => $value) {
-                    $query = str_replace(":?" . $key ,$value ,$query);
+
+                if (!is_null($options)) {
+                    foreach ($options as $key => $value) {
+                        $query = str_replace(":?" . $key ,$value ,$query);
+                    }
                 }
 
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
