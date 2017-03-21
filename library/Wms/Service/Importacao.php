@@ -675,7 +675,6 @@ class Importacao
                 $embalagensArray = array();
 
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
-                /*
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
@@ -685,9 +684,9 @@ class Importacao
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
 
-                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
-                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade com código de barras " . $embalagemWs->codBarras . " para " . $embalagemWs->qtdEmbalagem . " - Produto: " . $idProduto);
-                            }
+//                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+//                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade com código de barras " . $embalagemWs->codBarras . " para " . $embalagemWs->qtdEmbalagem . " - Produto: " . $idProduto);
+//                            }
 
                             continue;
                         }
@@ -704,13 +703,14 @@ class Importacao
                         'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
                         'CBInterno' => $embalagemCadastrada->getCBInterno(),
                         'embalado' => $embalagemCadastrada->getEmbalado(),
+                        'quantidade' => $embalagemCadastrada->getQuantidade(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
                         'descricao' => $descricaoEmbalagem
                     );
 
                     if ($encontrouEmbalagem == false) {
-                        $embalagemArray['ativarDesativar'] = false;
+                        $embalagemArray['ativarDesativar'] = true;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
@@ -718,7 +718,6 @@ class Importacao
                     $embalagensArray[] = $embalagemArray;
 
                 }
-                */
 
                 //DEPOIS INCLUO AS NOVAS EMBALAGENS
                 foreach ($embalagens as $embalagemWs) {

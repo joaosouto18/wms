@@ -32,7 +32,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $query = str_replace("AND (log.datainicio >= :dthExecucao OR p.dtultaltcom >= :dthExecucao)", "" ,$query);
                     }
                 } else {
-                    $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
+                    $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YY HH24:MI:SS')";
                 }
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
@@ -41,7 +41,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
 
                 //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
-                if ((isset($options)) && ($options!= null)) {
+                if (!is_null($options)) {
                     foreach ($options as $key => $value) {
                         $query = str_replace(":?" . ($key+1) ,$value ,$query);
                     }
