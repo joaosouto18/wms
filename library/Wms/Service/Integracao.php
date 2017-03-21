@@ -20,6 +20,7 @@ class Integracao
 {
     protected $_acao;
     protected $_dados;
+    protected $_options;
 
     /** @var EntityManager _em */
     protected $_em;
@@ -63,6 +64,22 @@ class Integracao
         $this->_dados = $dados;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getOptions()
+    {
+        return $this->_options;
+    }
+
+    /**
+     * @param mixed $options
+     */
+    public function setOptions($options)
+    {
+        $this->_options = $options;
+    }
+
     public function processaAcao() {
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
@@ -72,10 +89,35 @@ class Integracao
                     return $this->processaEstoque($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
                     return $this->processaPedido($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_RESUMO_CONFERENCIA:
+                    return $this->comparaResumoConferenciaExpedicao($this->_dados, $this->_options);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    public function comparaResumoConferenciaExpedicao ($dados, $options) {
+        $idCarga = null;
+        if (isset($options[0]) && ($options[0] != null)) {
+            $idCarga = $options[0];
+        } else {
+            throw new \Exception("Carga não definida nos parametros da consulta");
+        }
+
+        $encontrou = false;
+        $result = false;
+        foreach ($dados as $row) {
+            if ($row['CARGA'] == $idCarga) {
+                $encontrou = true;
+                
+            }
+        }
+
+        if ($encontrou == false) {
+            throw new \Exception("Carga não encontrada na consulta do ERP");
+        }
+
     }
 
     public function processaEstoque($dados){

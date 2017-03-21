@@ -8,7 +8,7 @@ use Wms\Service\Integracao;
 class AcaoIntegracaoRepository extends EntityRepository
 {
     /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
-    public function processaAcao($acaoEn) {
+    public function processaAcao($acaoEn, $options = null) {
 
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
@@ -25,24 +25,27 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 if ($acaoEn->getDthUltimaExecucao() == null) {
                     $dthExecucao = '01/01/1900 01:01:01';
+                    if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
+                        $query = str_replace("and p.dtcadastro>=:dthExecucao", "" ,$query);
+                        $query = str_replace("AND (log.datainicio >= :dthExecucao OR p.dtultaltcom >= :dthExecucao)", "" ,$query);
+                    }
                 } else {
                     $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
                 }
 
-                if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
-                    $query = str_replace("and p.dtcadastro>=:dthExecucao", "" ,$query);
-                    $query = str_replace("AND (log.datainicio >= :dthExecucao OR p.dtultaltcom >= :dthExecucao)", "" ,$query);
-                } else {
-                    $query = str_replace(":dthExecucao", $dthExecucao ,$query);
-                }
+                $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
+                foreach ($options as $key => $value) {
+                    $query = str_replace(":?" . $key ,$value ,$query);
+                }
 
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
                 $integracaoService = new Integracao($this->getEntityManager(),
                                                     array('acao'=>$acaoEn,
+                                                          'optiions'=>$options,
                                                           'dados'=>$result));
-                $integracaoService->processaAcao();
+                $result = $integracaoService->processaAcao();
 
             $this->_em->flush();
             $this->_em->commit();
@@ -85,6 +88,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->rollback();
         }
 
-        return true;
+        return $result;
     }
 }
