@@ -710,7 +710,7 @@ class Importacao
                     );
 
                     if ($encontrouEmbalagem == false) {
-                        $embalagemArray['ativarDesativar'] = true;
+                        $embalagemArray['ativarDesativar'] = false;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
