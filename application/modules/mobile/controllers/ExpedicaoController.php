@@ -126,6 +126,7 @@ class Mobile_ExpedicaoController extends Action
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
+        $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
         $codPessoa = $this->_getParam('cliente');
 
