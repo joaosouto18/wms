@@ -1,50 +1,59 @@
-﻿<script>
-    $(document).ready(function(){
-
-        $('#codigoBarras').change(function () {
-            var codBarras = $('#codigoBarras').val();
-            var produto = '';
-            $.ajax({
-                url:  '/mobile/consulta-endereco/index/codigoBarras/'+codBarras,
-                success: function(data) {
-                    for (var x = 0; x < data['produtos'].length; x++) {
-                        produto += data['produtos'][x]['COD_PRODUTO']+'-'+data['produtos'][x]['DSC_PRODUTO']+'</br>';
-                    }
-                    $('#lista-endereco').html(produto);
-                    $('#codigoBarras').val('');
-                    $('#codigoBarras').focus();
-                }
-            });
-        });
-    });
-
-    function nextInput(event) {
-        if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('codigoBarras').value != "") {
-                submit = document.getElementById('submit');
-                if (submit) {
-                    submit.focus();
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-            }
-        }
-    }
-</script>
-
-
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
+﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
 
     <div id="descricao"></div>
     <div>
         <label>Endereco:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" onkeydown="nextInput(event)" />
+        <input class="focus" type="text" name="codigoBarras" id="codigoBarras"/>
     </div>
-
-    <div id="lista-endereco"></div>
-
     <input type="submit" name="submit" id="submit" value="Buscar" />
 </form>
+<br>
+<div id="lista-endereco"></div>
+
+<script>
+    $(function(){
+
+        $('#formulario').submit( function(e) {
+            e.preventDefault();
+            consultar();
+        });
+
+        $('#codigoBarras').keypress( function(e) {
+            if(e.which == 13 || e.keyCode == 13) {
+                consultar();
+            }
+        });
+
+        function consultar() {
+            var codBarras = $('#codigoBarras');
+            var val = codBarras.val();
+            if (val != '') {
+                $.ajax({
+                    url: '/mobile/consulta-endereco/index/codigoBarras/' + val,
+                    success: function (data) {
+                        if (data.status === 'ok') {
+                            $.each(data.result, function (key, value) {
+                                var txt = value.produto;
+                                if (value.grade != ''){
+                                    txt += ' (' + value.grade + ')';
+                                }
+                                txt += ' - ' + value.desc + ' <br>';
+                                $('#lista-endereco').html(txt)
+                            });
+                        } else {
+                            showErro(data.msg)
+                        }
+
+                        codBarras.val('').focus();
+                    }
+                });
+            } else {
+                showErro("Informe um endereço");
+            }
+        }
+
+        function showErro(msg) {
+            $('#lista-endereco').text(msg)
+        }
+    });
+</script>

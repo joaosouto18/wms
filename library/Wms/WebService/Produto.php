@@ -75,7 +75,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             $produto = $produtoService->findOneBy(array('id' => $idProduto, 'grade'=> $grade));
 
             if ($produto == null) {
-                throw new \Exception('Produto não encontrado');
+                throw new \Exception("Produto $idProduto grade $grade não encontrado");
             }
 
             $prod = new produto();

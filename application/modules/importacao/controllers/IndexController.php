@@ -189,8 +189,13 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'fornecedor';
+
+                    if (isset($arrRegistro['verificador']) and $arrRegistro['verificador'] == 'N') {
+                        break;
+                    }
+
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
-                    
+
                     if (strlen($cpf_cnpjFormatado) == 11) {
                         $arrErroRows[$linha] = 'Proibido importar fornecedor por CPF ' . $arrRegistro['cpf_cnpj'];
                         break;
@@ -708,14 +713,20 @@ class Importacao_IndexController extends Action
                             if (($coluna == null) || ($tColunas - 1 < $coluna)) {
                                 $valorCampo = trim($campo->getValorPadrao());
                             } else {
-                                $valorCampo = trim($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue());
+                                $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+                                if ((strtolower($campo->getNomeCampo()) != "cpf_cnpj")
+                                    or (strtolower($campo->getNomeCampo()) != "cpf")
+                                    or (strtolower($campo->getNomeCampo()) != "cnpj"))
+                                {
+                                    $valorCampo = trim($valorCampo);
+                                }
+
                                 $valorCampo = utf8_encode($valorCampo);
                                 if (empty($valorCampo)) {
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
                                     } else {
-                                        $arrErroRows[$linha] = "Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.";
-                                        break;
+                                        throw new Exception("Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.");
                                     }
                                 }
                             }
@@ -956,7 +967,7 @@ class Importacao_IndexController extends Action
                 foreach ($files as $file) {
                     $handle = $dir.'/\/'.$file;
 
-                    //DEFINI��O DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                    //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                     switch ($file) {
                         case 'expedicao.csv':
                             $this->importExpedicao($handle, $params, 'csv');

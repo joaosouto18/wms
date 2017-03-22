@@ -19,7 +19,7 @@ class PaleteRepository extends EntityRepository
         SELECT R.COD_RECEBIMENTO,
                R.DTH_INICIO_RECEB,
                R.DTH_FINAL_RECEB,
-               F.FORNECEDORES,
+               '' as FORNECEDORES,
                CASE WHEN R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
                S.DSC_SIGLA END as STATUS,
                QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
@@ -31,7 +31,7 @@ class PaleteRepository extends EntityRepository
                        FROM (SELECT SUM (QTD) as QTD, COD_RECEBIMENTO
                                FROM V_QTD_RECEBIMENTO
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
-                      GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                      GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD_TOTAL.QTD_TOTAL > 0
           LEFT JOIN (SELECT SUM(PP.QTD) as QTD, P.COD_RECEBIMENTO
                        FROM (SELECT MIN(QTD) as QTD, COD_PRODUTO, DSC_GRADE, UMA 
                                FROM (SELECT SUM(PP.QTD) as QTD, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM), PP.UMA
@@ -40,12 +40,7 @@ class PaleteRepository extends EntityRepository
                               GROUP BY COD_PRODUTO, DSC_GRADE, UMA) PP
                       LEFT JOIN PALETE P ON P.UMA = PP.UMA
                      WHERE P.COD_STATUS = 536
-                     GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-          LEFT JOIN (SELECT NF.COD_RECEBIMENTO,
-                            LISTAGG(P.NOM_PESSOA, ', ')  WITHIN GROUP (ORDER BY P.NOM_PESSOA) FORNECEDORES
-                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_FORNECEDOR FROM NOTA_FISCAL) NF
-                       LEFT JOIN PESSOA P ON NF.COD_FORNECEDOR = P.COD_PESSOA
-                      GROUP BY NF.COD_RECEBIMENTO) F ON F.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
+                     GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
 
         $queryWhere = " WHERE ";
         $filter = false;
@@ -96,10 +91,34 @@ class PaleteRepository extends EntityRepository
             $filter = true;
         }
 
-        if ($filter == true) {$query = $query . $queryWhere;}
+        if ($filter == false) {$queryWhere = "";}
 
-        $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-        return $array;
+        $query = $query . $queryWhere . " ORDER BY R.COD_RECEBIMENTO";
+
+        $queryFornecedores = "
+                      SELECT NF.COD_RECEBIMENTO,
+                            LISTAGG(P.NOM_PESSOA, ', ')  WITHIN GROUP (ORDER BY P.NOM_PESSOA) FORNECEDORES
+                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_FORNECEDOR FROM NOTA_FISCAL) NF
+                       LEFT JOIN PESSOA P ON NF.COD_FORNECEDOR = P.COD_PESSOA
+                       LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                       $queryWhere
+                      GROUP BY NF.COD_RECEBIMENTO
+        ";
+
+
+        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
+        $resultFornecedores = $this->getEntityManager()->getConnection()->query($queryFornecedores)->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($result as $key => $recebimento) {
+            foreach ($resultFornecedores as $fornecedor) {
+                if ($recebimento['COD_RECEBIMENTO'] == $fornecedor['COD_RECEBIMENTO']) {
+                    $result[$key]['FORNECEDORES'] = $fornecedor['FORNECEDORES'];
+                    break;
+                }
+            }
+        }
+
+        return $result;
 
     }
 

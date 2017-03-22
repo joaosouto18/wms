@@ -146,6 +146,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
     {
+
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
         $serie = trim($serie);
@@ -213,6 +214,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param itens $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
+     * @param double $pesoTotal Peso Total dos Itens na Nota
      * @return boolean
      */
     public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
@@ -275,8 +277,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             if ($notaFiscalEn != null) {
                 $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
-                if (($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA) && ($statusNotaFiscal != \Wms\Domain\Entity\NotaFiscal::STATUS_EM_RECEBIMENTO)) {
-                    throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." cancelada ou já recebida");
+                if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
+                    throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." já recebida");
+                }
+
+                if ($notaFiscalEn->getStatus()->getId() == NotaFiscalEntity::STATUS_CANCELADA) {
+                    $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
+                    $notaFiscalEn->setStatus($statusEntity);
+                    $em->persist($notaFiscalEn);
                 }
 
                 //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
@@ -285,10 +293,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
                 $this->compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em);
 
+
             } else {
                 $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
             }
 
+            $em->flush();
             $em->commit();
             return true;
         } catch (\Exception $e) {

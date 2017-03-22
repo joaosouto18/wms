@@ -47,20 +47,24 @@ class CargaRepository extends EntityRepository
     /**
      * @param int $idCargaExterno
      * @param Sigla $siglaTipoCarga
+     * @throws \Exception
      */
     public function cancelar($idCargaExterno, Sigla $siglaTipoCarga)
     {
-        $cargaEntity = $this->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));
-        $idCarga = $cargaEntity->getId();
-        $pedidos = $this->getPedidos($idCarga);
+        try {
+            $cargaEntity = $this->findOneBy(array('codCargaExterno' => $idCargaExterno, 'tipoCarga' => $siglaTipoCarga->getId()));
+            $idCarga = $cargaEntity->getId();
+            $pedidos = $this->getPedidos($idCarga);
 
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
-        $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
+            $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
-        foreach($pedidos as $pedido) {
-            $PedidoRepo->cancelar($pedido->getId());
+            foreach ($pedidos as $pedido) {
+                $PedidoRepo->cancelar($pedido->getId());
+            }
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-
     }
 
     public function getPedidos($idCarga)

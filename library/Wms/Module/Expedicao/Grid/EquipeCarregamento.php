@@ -15,7 +15,7 @@ class EquipeCarregamento extends Grid
         $this->setAttrib('title','Equipe-Carregamento');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
-                    'label' => utf8_encode('Expedição'),
+                    'label' => utf8_encode('ExpediÃ§Ã£o'),
                     'index' => 'expedicao',
                 ))
                 ->addColumn(array(

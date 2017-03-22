@@ -913,10 +913,11 @@ class NotaFiscalRepository extends EntityRepository
             } else {
                 throw new \Exception("Nenhum item informado na nota");
             }
+
             $notaFiscalEntity->setPesoTotal($pesoTotal);
             $em->persist($notaFiscalEntity);
-            $em->flush();
 
+            $em->flush();
             $em->commit();
         } catch (\Exception $e) {
             $em->rollback();

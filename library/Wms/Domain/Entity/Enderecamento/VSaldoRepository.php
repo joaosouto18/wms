@@ -18,7 +18,7 @@ class VSaldoRepository extends EntityRepository
         ->leftJoin("s.produto","p")
         ->leftJoin('p.tipoComercializacao','tp')
         ->leftJoin("s.depositoEndereco", "e")
-        ->orderBy("e.rua, e.predio, lado, e.nivel, e.apartamento, s.codProduto, s.grade, s.volume");
+        ->orderBy("e.rua, lado, e.nivel, e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
 
         if (!empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];

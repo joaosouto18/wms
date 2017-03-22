@@ -597,6 +597,24 @@ class FPDF
         $this->PageLinks[$this->page][]=array($x*$this->k, $this->hPt-$y*$this->k, $w*$this->k, $h*$this->k, $link);
     }
 
+    public function SetStringByMaxWidth($string, $w)
+    {
+        $strW = self::GetStringWidth($string);
+        if ($strW > $w){
+            $newStr = "";
+            $endStr = "...";
+            foreach (str_split($string) as $kw){
+                if (self::GetStringWidth($newStr.$kw.$endStr) < ($w - 0.88265)){
+                    $newStr .= $kw;
+                } else {
+                    $newStr .= $endStr;
+                    return $newStr;
+                }
+            }
+        }
+        return $string;
+    }
+
     function Text($x, $y, $txt)
     {
 //Output a string

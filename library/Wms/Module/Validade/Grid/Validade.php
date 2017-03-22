@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Validade\Grid;
 
+use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Module\Web\Grid;
 
 class Validade extends Grid
@@ -9,14 +10,27 @@ class Validade extends Grid
 
     public function init($produtos)
     {
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $paramRepo = $em->getRepository('wms:Sistema\Parametro');
+        /** @var Parametro $param */
+        $param = $paramRepo->findOneBy(array('constante' => "UTILIZA_GRADE"));
+
         $this->setAttrib('title','Consulta');
         $this->setSource(new \Core\Grid\Source\ArraySource($produtos));
         $this->setShowExport(false);
         $this->addColumn(array(
                 'label' => 'Cód. Produto',
                 'index' => 'COD_PRODUTO'
-            ))
-            ->addColumn(array(
+            ));
+
+        if ($param->getValor() === "S"){
+            $this->addColumn(array(
+                'label' => 'Grade',
+                'index' => 'GRADE',
+            ));
+        }
+
+        $this->addColumn(array(
                 'label' => 'Descrição',
                 'index' => 'DESCRICAO',
             ))

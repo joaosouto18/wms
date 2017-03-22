@@ -821,7 +821,7 @@ class EstoqueRepository extends EntityRepository
     public function getProdutoByUMA($codigoBarrasUMA, $idEndereco)
     {
         $em = $this->getEntityManager();
-        $sql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p2_.QTD_EMBALAGEM, 1) AS qtd, d3_.DSC_DEPOSITO_ENDERECO AS endereco, p2_.DSC_EMBALAGEM, p2_.COD_PRODUTO_EMBALAGEM, p2_.QTD_EMBALAGEM
+        $sql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, NVL(e1_.QTD / NVL(p2_.QTD_EMBALAGEM, 1),'1') AS qtd, d3_.DSC_DEPOSITO_ENDERECO AS endereco, NVL(p2_.DSC_EMBALAGEM,'VOLUMES') as DSC_EMBALAGEM, NVL(p2_.COD_PRODUTO_EMBALAGEM,0) as COD_PRODUTO_EMBALAGEM, p2_.QTD_EMBALAGEM
                 FROM ESTOQUE e1_
                 INNER JOIN DEPOSITO_ENDERECO d3_ ON e1_.COD_DEPOSITO_ENDERECO = d3_.COD_DEPOSITO_ENDERECO
                 INNER JOIN PRODUTO p0_ ON e1_.COD_PRODUTO = p0_.COD_PRODUTO AND e1_.DSC_GRADE = p0_.DSC_GRADE

@@ -167,8 +167,11 @@ class Inventario
         $idEndereco = $params['idEndereco'];
         $enderecoRepo = $this->getEm()->getRepository('wms:Deposito\Endereco');
         $embalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
+        $volumeRepo = $this->getEm()->getRepository('wms:Produto\Volume');
+
         $enderecoEn = $enderecoRepo->find($idEndereco);
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
+        $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
 
         $idPicking = Endereco::ENDERECO_PICKING;
         $idPickingDinamico = Endereco::ENDERECO_PICKING_DINAMICO;
@@ -197,7 +200,12 @@ class Inventario
         $populateForm['idEndereco']         = $params['idEndereco'];
         $populateForm['dscEndereco']        = $enderecoEn->getDescricao();
         $populateForm['descricaoProduto']   = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
-        $populateForm['dscEmbalagem']       = '<b>Embalagem ' . $embalagemEn->getDescricao().' - Fator '.number_format($embalagemEn->getQuantidade(),2,',','') . '</b>';
+        if ($embalagemEn == null) {
+            $populateForm['dscEmbalagem']       = '<b>Volume ' . $volumeEn->getDescricao().' - Sequencia '.number_format($volumeEn->getCodigoSequencial(),0,',','') . '</b>';
+
+        } else {
+            $populateForm['dscEmbalagem']       = '<b>Embalagem ' . $embalagemEn->getDescricao().' - Fator '.number_format($embalagemEn->getQuantidade(),2,',','') . '</b>';
+        }
         if ($dscVolume != null) {
             $populateForm['codProdutoVolume'] = $idVolume;
         } else {
@@ -958,10 +966,12 @@ class Inventario
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
 
+        /*
         $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
         if ($teveAlteracao == true) {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
         }
+        */
 
         foreach($contagemEndEntities as $contagemEndEn) {
 

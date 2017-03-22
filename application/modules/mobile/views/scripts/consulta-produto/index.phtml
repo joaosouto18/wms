@@ -115,12 +115,15 @@
             <td><b>Endereço</b></td>
             <td><b>U.M.A</b></td>
             <td><b>Qtd.Estoque</b></td>
+            <td><b>Validade</b></td>
         </tr>
         <?php foreach($this->pulmoes as $pulmao) : ?>
         <tr>
             <td><?php echo $pulmao['ENDERECO'] ?></td>
             <td><?php echo $pulmao['UMA'] ?></td>
             <td><?php echo $pulmao['QTD'] ?></td>
+            <?php $dataValidade = new Zend_Date($pulmao['DTH_VALIDADE']); ?>
+            <td><?php echo $dataValidade->toString('dd/MM/YY') ?></td>
         </tr>
         <?php endforeach; ?>
         </tbody>

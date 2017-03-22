@@ -150,7 +150,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $this->view->endereco = $enderecoEn->getDescricao();
             $this->view->caracteristica = $enderecoEn->getIdCaracteristica();
 
-            if (isset($params['nivel']) && !empty($params['nivel'])) {
+            if (isset($params['nivel']) and trim($params['nivel']) != "") {
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -179,8 +179,9 @@ class Mobile_Enderecamento_ManualController extends Action
                 unset($params['nivel']);
 
                 $this->redirect($urlDestino,'enderecamento_manual','mobile', $params);
+            } else {
+                $this->addFlashMessage('info', "Informe um nível");
             }
-            $this->addFlashMessage('info', "Informe um nível");
 
         } catch (\Exception $ex) {
             $this->addFlashMessage('error', $ex->getMessage());
@@ -340,7 +341,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
         $idProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
-        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, 'UNICA');
+        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
         $idNorma = $result[0]['idNorma'];
 
         if ($idNorma == null) {

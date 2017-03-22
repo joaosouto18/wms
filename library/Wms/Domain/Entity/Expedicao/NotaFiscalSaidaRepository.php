@@ -3,6 +3,7 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Wms\Service\Recebimento as LeituraColetor;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 
@@ -29,6 +30,13 @@ class NotaFiscalSaidaRepository extends EntityRepository
             $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
             $sql->andWhere("c.codCargaExterno = $data[carga]");
+        }
+
+        if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {
+            $LeituraColetor = new LeituraColetor();
+            $codBarras = $LeituraColetor->retiraDigitoIdentificador($data['codEtiqueta']);
+            $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','p.id = etq.pedido');
+            $sql->andWhere("etq.id = $codBarras");
         }
         $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id','pj.cnpj','pes.nome');
 
@@ -76,6 +84,50 @@ class NotaFiscalSaidaRepository extends EntityRepository
              WHERE NFPROD.COD_RECEBIMENTO_REENTREGA = $idRecebimentoReentrega
                AND NVL(CONF.QTD_CONFERIDA,0) <> NVL(NFPROD.QTD_NOTA,0)
         ";
+
+        $SQL = "SELECT DISTINCT
+                   CONF.COD_PRODUTO_VOLUME,
+                   CONF.DSC_VOLUME,
+                   NFPROD.COD_PRODUTO,
+                   NFPROD.DSC_GRADE,
+                   P.DSC_PRODUTO,
+                   NVL(CONF.QTD_CONFERIDA,0) AS QTD_CONFERIDA,
+                   NVL(NFPROD.QTD_NOTA,0)  AS QTD_NF
+              FROM (SELECT COD_PRODUTO, DSC_GRADE, SUM(QUANTIDADE) AS QTD_NOTA, COD_RECEBIMENTO_REENTREGA
+                      FROM RECEBIMENTO_REENTREGA_NF R
+                      LEFT JOIN NOTA_FISCAL_SAIDA_PRODUTO NFSP ON NFSP.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL
+                     GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO_REENTREGA) NFPROD
+              LEFT JOIN (SELECT MAXC.COD_PRODUTO, MAXC.DSC_GRADE, MAXC.DSC_VOLUME, MAXC.COD_PRODUTO_VOLUME, MAXC.COD_RECEBIMENTO_REENTREGA, SUM(NVL(CONF.QTD_CONFERIDA,0)) AS QTD_CONFERIDA
+
+                           FROM (SELECT PROD.COD_PRODUTO, PROD.DSC_GRADE, PROD.COD_RECEBIMENTO_REENTREGA,
+                                NVL(PROD.COD_PRODUTO_VOLUME,0) AS COD_PRODUTO_VOLUME,
+                                NVL(PROD.DSC_VOLUME,0) as DSC_VOLUME,
+                                MAX(NVL(CONF.NUM_CONFERENCIA,0)) AS NUM_CONFERENCIA
+                          FROM (SELECT DISTINCT C.COD_PRODUTO, C.DSC_GRADE, NVL(PV.COD_PRODUTO_VOLUME,0) AS COD_PRODUTO_VOLUME, NVL(PV.DSC_VOLUME,0) as DSC_VOLUME, C.COD_RECEBIMENTO_REENTREGA
+                                  FROM CONF_RECEB_REENTREGA C
+                                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = C.COD_PRODUTO AND C.DSC_GRADE = PV.DSC_GRADE
+                                 WHERE C.COD_RECEBIMENTO_REENTREGA = $idRecebimentoReentrega) PROD
+                          LEFT JOIN CONF_RECEB_REENTREGA CONF
+                            ON CONF.COD_PRODUTO = PROD.COD_PRODUTO
+                           AND CONF.DSC_GRADE = PROD.DSC_GRADE
+                           AND NVL(CONF.COD_PRODUTO_VOLUME,0) = PROD.COD_PRODUTO_VOLUME
+                           AND CONF.COD_RECEBIMENTO_REENTREGA = PROD.COD_RECEBIMENTO_REENTREGA
+                         GROUP BY PROD.COD_PRODUTO, PROD.DSC_GRADE, PROD.DSC_VOLUME, PROD.COD_RECEBIMENTO_REENTREGA, CONF.COD_PRODUTO_VOLUME, PROD.COD_PRODUTO_VOLUME) MAXC
+
+                           LEFT JOIN CONF_RECEB_REENTREGA CONF
+                             ON CONF.NUM_CONFERENCIA = MAXC.NUM_CONFERENCIA
+                            AND CONF.COD_PRODUTO = MAXC.COD_PRODUTO
+                            AND CONF.DSC_GRADE = MAXC.DSC_GRADE
+                            AND NVL(CONF.COD_PRODUTO_VOLUME,0) = MAXC.COD_PRODUTO_VOLUME
+                            AND CONF.COD_RECEBIMENTO_REENTREGA = MAXC.COD_RECEBIMENTO_REENTREGA
+                          GROUP BY MAXC.COD_PRODUTO, MAXC.DSC_VOLUME, MAXC.DSC_GRADE, MAXC.COD_PRODUTO_VOLUME, MAXC.COD_RECEBIMENTO_REENTREGA) CONF
+                ON CONF.COD_PRODUTO = NFPROD.COD_PRODUTO
+               AND CONF.DSC_GRADE = NFPROD.DSC_GRADE
+               AND CONF.COD_RECEBIMENTO_REENTREGA = NFPROD.COD_RECEBIMENTO_REENTREGA
+              LEFT JOIN PRODUTO P ON P.COD_PRODUTO = NFPROD.COD_PRODUTO AND P.DSC_GRADE = NFPROD.DSC_GRADE
+             WHERE NFPROD.COD_RECEBIMENTO_REENTREGA = $idRecebimentoReentrega
+               AND NVL(CONF.QTD_CONFERIDA,0) <> NVL(NFPROD.QTD_NOTA,0)
+               ORDER BY NFPROD.COD_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

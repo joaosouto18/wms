@@ -667,7 +667,7 @@ class Importacao
             $em->persist($produto);
 
             $parametroRepo = $repositorios['parametroRepo'];
-            $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS'));
+            $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS_BANCO'));
 
             //VERIFICA SE VAI RECEBER AS EMBALAGENS OU NÃO
             if ($parametro->getValor() == 'S') {

@@ -20,7 +20,7 @@
     function nextInputCodBarras(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codBarras').value != "") {
-                etiquetaProduto   = document.getElementById('etiqueta');
+                etiquetaProduto   = document.getElementById('qtd');
                 if (etiquetaProduto) {
                     etiquetaProduto.focus();
                     if(event.preventDefault) {
@@ -37,7 +37,7 @@
     function nextInputEtiqueta(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiqueta').value != "") {
-                etiquetaProduto   = document.getElementById('qtd');
+                etiquetaProduto   = document.getElementById('codBarras');
                 if (etiquetaProduto) {
                     etiquetaProduto.focus();
                     if(event.preventDefault) {
@@ -53,22 +53,43 @@
 
 </script>
 
+<table class="info">
+    <?php
+    if (isset($this->listaProdutos)):
+        ?>
+        <tr>
+            <td colspan="2"><b>Produtos a serem conferidos</b></td>
+        </tr>
+        <tr>
+            <td>
+                <div id="carousel">
+                    <?php foreach ($this->listaProdutos as $produto): ?>
+                        <div id="lista-produto<?php echo $produto['COD_PRODUTO'] ?>"><?php echo $produto['DSC_PRODUTO'] ?> - <?php echo $produto['DSC_VOLUME'] ?> - <?php echo $produto['DSC_GRADE'] ?></div>
+                    <?php endforeach; ?>
+                </div>
+            </td>
+        </tr>
+    <?php
+    endif;
+    ?>
+</table>
+
 <form id="conferir-produtos-form" enctype="application/x-www-form-urlencoded" class="saveForm" action="/mobile/reentrega/reconferir-produtos/id/<?php echo $this->id;?>" method="post">
     <input type="hidden" name="numeroNota" value="" id="numeroNota">
     <fieldset id="fieldset-reconferir">
         <legend>Recebimento nº <?php echo $this->id; ?></legend>
         <table style="width: 100%">
         <tr>
-            <td style="padding-bottom: 2pt; padding-top: 3pt">*Código de Barras</td>
             <?php if ($this->modeloSeparacaoFracionado == 'E' || $this->modeloSeparacaoNaoFracionado == 'E') : ?>
-                <td style="padding-bottom: 2pt; padding-top: 3pt">*Etiqueta</td>
+                <td style="padding-bottom: 2pt; padding-top: 3pt">*Etq. Separação</td>
             <?php endif; ?>
+            <td style="padding-bottom: 2pt; padding-top: 3pt">*Etq. Produto</td>
             <td style="padding-bottom: 2pt; padding-top: 3pt">*Qtde.</td>
         </tr>
         <tr style="padding-bottom: 5pt">
             <?php if ($this->modeloSeparacaoFracionado == 'E' || $this->modeloSeparacaoNaoFracionado == 'E') : ?>
-                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInputCodBarras(event)"></td>
-                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="etiqueta" id="etiqueta" value="" class="required etiqueta" onkeydown="nextInputEtiqueta(event)"></td>
+                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="etiqueta" id="etiqueta" value="" class="required etiqueta focus" onkeydown="nextInputEtiqueta(event)"></td>
+                <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras" onkeydown="nextInputCodBarras(event)"></td>
             <?php else : ?>
                 <td style="width: 70%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
             <?php endif; ?>

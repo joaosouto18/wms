@@ -112,24 +112,23 @@ class PedidoRepository extends EntityRepository
     /**
      * @param $idPedido
      * @param $status
-     * @return bool
      * @throws \Exception
      */
     public function gerarEtiquetasById($idPedido, $status)
     {
-        $pedidosProdutos = $this->findPedidosProdutosSemEtiquetaById($idPedido);
-        if ($pedidosProdutos != null) {
-            /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
-            $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-            $pedidoEn = $this->findOneBy(array('id'=>$idPedido));
-            $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+        try {
+            $pedidosProdutos = $this->findPedidosProdutosSemEtiquetaById($idPedido);
+            if ($pedidosProdutos != null) {
+                /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
+                $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+                $pedidoEn = $this->findOneBy(array('id' => $idPedido));
+                $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
-            if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao) > 0 ) {
-                throw new \Exception ("Existem produtos sem definição de volume");
+                $EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status, $idModeloSeparacaoPadrao);
             }
-            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-        return false;
     }
 
 
@@ -176,7 +175,7 @@ class PedidoRepository extends EntityRepository
             $this->cancelaPedido($idPedido);
             $this->removeReservaEstoque($idPedido);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage();
         }
 

@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Web\Grid;
 
+use Doctrine\ORM\EntityManager;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Expedicao as ExpedicaoEntity;
 
@@ -29,8 +30,8 @@ class Expedicao extends Grid
         $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
 
         $this->setAttrib('title','Expedição');
-        $this->setSource(new \Core\Grid\Source\ArraySource($result))
-            ->setId('expedicao-index-grid')
+        $source = $this->setSource(new \Core\Grid\Source\ArraySource($result));
+        $source->setId('expedicao-index-grid')
             ->setAttrib('class', 'grid-expedicao')
             ->addColumn(array(
                 'label' => 'Expedição',
@@ -277,8 +278,10 @@ class Expedicao extends Grid
                 'actionName' => 'imprimir',
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
-            ))
-            ->addAction(array(
+            ));
+
+        if ($params['usaDeclaracaoVP'] === 'S'){
+            $source->addAction(array(
                 'label' => 'Declaração dos Volumes Patrimônio',
                 'target' => '_blank',
                 'moduleName' => 'expedicao',
@@ -286,8 +289,10 @@ class Expedicao extends Grid
                 'actionName' => 'declaracao-ajax',
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
-            ))
-            ->setShowExport(true)
+            ));
+        }
+
+        $source->setShowExport(true)
             ->setShowMassActions($params);
 
         return $this;

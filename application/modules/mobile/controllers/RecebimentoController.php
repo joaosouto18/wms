@@ -131,38 +131,55 @@ class Mobile_RecebimentoController extends Action
         $idRecebimento = $this->getRequest()->getParam('idRecebimento');
         $codigoBarras = $this->getRequest()->getParam('codigoBarras');
 
+        $recebimentoService = new \Wms\Service\Recebimento;
+
+        // testa codigo de barras
+        $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
+
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+        /** @var \Wms\Domain\Entity\Produto\Volume $produtoVolumeEn */
         $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codigoBarras));
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $produtoEmbEn */
         $produtoEmbEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
 
-        if (isset($produtoEmbEn) && !empty($produtoEmbEn)) {
-            $idProduto = $produtoEmbEn->getProduto()->getId();
-            $grade = $produtoEmbEn->getProduto()->getGrade();
-            $pesoVariavel = $produtoEmbEn->getProduto()->getPossuiPesoVariavel();
-        } else if (isset($produtoVolumeEn) && !empty($produtoVolumeEn)){
-            $idProduto = $produtoVolumeEn->getCodProduto();
-            $grade = $produtoVolumeEn->getGrade();
-            $pesoVariavel = $produtoVolumeEn->getProduto()->getPossuiPesoVariavel();
+        $pesoVariavel = null;
+
+        if (!empty($produtoEmbEn)) {
+            $produto = $produtoEmbEn->getProduto();
+            $idProduto = $produto->getId();
+            $grade = $produto->getGrade();
+            $pesoVariavel = $produto->getPossuiPesoVariavel();
+            if (empty($pesoVariavel)){
+                $pesoVariavel = 'N';
+                $produto->setPossuiPesoVariavel($pesoVariavel);
+                $this->_em->flush($produto);
+            }
+        } else if (!empty($produtoVolumeEn)){
+            $produto = $produtoVolumeEn->getProduto();
+            $idProduto = $produto->getId();
+            $grade = $produto->getGrade();
+            $pesoVariavel = $produto->getPossuiPesoVariavel();
+            if (empty($pesoVariavel)){
+                $pesoVariavel = 'N';
+                $produto->setPossuiPesoVariavel($pesoVariavel);
+                $this->_em->flush($produto);
+            }
         } else {
             $this->addFlashMessage('error', 'Código de Barras inválido');
             $this->redirect('ler-codigo-barras','recebimento','mobile', array('idRecebimento' => $idRecebimento));
         }
         $form = new ProdutoQuantidadeForm;
 
+        $recebimentoEntity = null;
         try {
             $recebimentoEntity = $this->em->getReference('wms:Recebimento', $idRecebimento);
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
 
             if (!$recebimentoEntity)
                 throw new \Exception('Recebimento não encontrado');
-
-            $recebimentoService = new \Wms\Service\Recebimento;
-
-            // testa codigo de barras
-            $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
 
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
@@ -232,7 +249,7 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $shelfLife = $produtoEn->getDiasVidaUtil();
-                if (is_null($shelfLife) || $shelfLife === '')
+                if (is_null($shelfLife) || $shelfLife == '')
                     throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
 
                 $hoje = new Zend_Date;

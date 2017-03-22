@@ -38,7 +38,7 @@
     <?php if ($this->mapasSeparacao) : ?>
         <p><b>Selecione o Mapa para Impressão</b>
 
-        <p><b>Selecione Todos</b> - <input style="vertical-align: middle" type="checkbox" id="seleciona-todos-mapas"> Selecione Todos<br></p>
+        <p><b>Selecione Todos</b> - <label><input style="vertical-align: middle" type="checkbox" id="seleciona-todos-mapas"> Selecione Todos</label><br></p>
 
         <div id="mapas">
             <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
@@ -51,7 +51,7 @@
                     value="<?php echo $mapaSeparacao->getId(); ?>"
                     >
                 Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
-                </label>
+                </label><br />
             <?php endforeach ?>
         </div>
         <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
@@ -82,3 +82,10 @@
         <input type="button" class="btn imprimir-etiquetas" id="imprimir-etiqueta" value="Imprimir Etiquetas" name="imprimir-etiquetas">
     <?php endif; ?>
 </div>
+
+<div class="padding-top">
+    <?php if ($this->reentrega =='S') : ?>
+        <a class="btn" href="/expedicao/etiqueta/gerar-pdf-ajax/idExpedicao/<?php echo $this->idExpedicao; ?>/tipo/reentrega/todas/N/">Etiquetas de Reentrega</a>
+    <?php endif; ?>
+</div>
+
