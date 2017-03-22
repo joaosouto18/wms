@@ -47,6 +47,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
 
+            echo $query; exit;
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
                 $integracaoService = new Integracao($this->getEntityManager(),
                                                     array('acao'=>$acaoEn,
