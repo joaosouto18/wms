@@ -95,6 +95,9 @@ class Integracao
                 $maxDate = $row['DTH'];
             }
         }
+        var_dump(new \DateTime());
+        var_dump($maxDate);exit;
+
         return $maxDate;
     }
 
