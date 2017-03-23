@@ -47,6 +47,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
 
+            var_dump($acaoEn->getTipoAcao()->getId());
             var_dump($acaoEn->getDthUltimaExecucao());
             echo $query; exit;
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
