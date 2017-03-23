@@ -24,7 +24,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
 
-                //PARAMETRIZA A DATA DE ULTIMA EXECUÃ‡ÃƒO DA QUERY
+                //PARAMETRIZA A DATA DE ULTIMA EXECUÇÃO DA QUERY
                 if ($acaoEn->getDthUltimaExecucao() == null) {
                     $dthExecucao = '01/01/1900 01:01:01';
                     if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
@@ -47,6 +47,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
 
+            var_dump($acaoEn->getDthUltimaExecucao()); exit;
+            echo $query; exit;
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
                 $integracaoService = new Integracao($this->getEntityManager(),
                                                     array('acao'=>$acaoEn,
