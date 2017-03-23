@@ -37,7 +37,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
-                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÃ‡Ã‚O PARA INTEGRAÃ‡Ã”ES NO WINTHOR
+                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÇÃO PARA INTEGRAÇÕES NO WINTHOR
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
 
                 //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
@@ -85,8 +85,11 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if ($sucess=="S") {
-                $acaoEn->setDthUltimaExecucao($integracaoService->getMaxDate());
-                $this->_em->persist($acaoEn);
+                $maxDate = $integracaoService->getMaxDate();
+                if (!is_null($maxDate)) {
+                    $acaoEn->setDthUltimaExecucao($integracaoService->getMaxDate());
+                    $this->_em->persist($acaoEn);
+                }
             }
 
             $this->_em->flush();
