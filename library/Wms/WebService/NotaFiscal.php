@@ -455,7 +455,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param $recebimentoConferenciaRepo
      * @param $notaFiscalEn
      * @param $em
-     * @return array
+     * @return bool
      * @throws Exception
      */
     private function compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em)
@@ -520,6 +520,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param $notaItensBDEn
      * @param $itemWs
      * @param $notaFiscalRepo
+     * @return bool
+     * @throws Exception
      */
     private function compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em)
     {
@@ -557,10 +559,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
                     $itensNf[] = $itemWs;
                 }
+            }            if (count($itensNf) > 0) {
+                $notaFiscalRepo->salvarItens($itensNf, $notaFiscalEn);
+                $notaFiscalEn->setPesoTotal($pesoTotal);
+                $em->persist($notaFiscalEn);
+                $em->flush($notaFiscalEn);
             }
-            $notaFiscalRepo->salvarItens($itensNf, $notaFiscalEn);
-            $notaFiscalEn->setPesoTotal($pesoTotal);
-            $em->persist($notaFiscalEn);$em->flush($notaFiscalEn);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
