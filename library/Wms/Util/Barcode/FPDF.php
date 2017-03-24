@@ -1076,6 +1076,16 @@ class FPDF
         return '';
     }
 
+    public function _getpagesize()
+    {
+        $size = array($this->w, $this->h);
+        if ($size[0] > $size[1])
+            return array($size[1], $size[0]);
+        else
+            return $size;
+
+    }
+
     /*******************************************************************************
      * *
      * Protected methods *

@@ -230,7 +230,7 @@ class MapaSeparacao extends eFPDF
             $this->Image($imgCodBarras, 150, 280, 50);
 
             $this->InFooter = true;
-            $pageSizeA4 = $this->_getpagesize('A4');
+            $pageSizeA4 = $this->_getpagesize();
             $wPage = $pageSizeA4[0]/12;
 
             $this->SetY(-23);
@@ -426,7 +426,7 @@ class MapaSeparacao extends eFPDF
             $this->mapa = $mapa;
 
             $this->InFooter = true;
-            $pageSizeA4 = $this->_getpagesize('A4');
+            $pageSizeA4 = $this->_getpagesize();
             $wPage = $pageSizeA4[0]/12;
 
             $this->SetY(-23);
@@ -623,7 +623,7 @@ class MapaSeparacao extends eFPDF
             $this->mapa = $mapa;
 
             $this->InFooter = true;
-            $pageSizeA4 = $this->_getpagesize('A4');
+            $pageSizeA4 = $this->_getpagesize();
             $wPage = $pageSizeA4[0]/12;
 
             $this->SetY(-23);
