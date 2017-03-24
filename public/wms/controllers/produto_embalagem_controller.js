@@ -182,6 +182,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 success: function (data) {
                     if (data === 'N') {
                         $('#fieldset-embalagem #embalagem-codigoBarras').attr("disabled", true);
+                        $('#fieldset-embalagem #embalagem-quantidade').attr("disabled", true);
                     }
                 }
             });
