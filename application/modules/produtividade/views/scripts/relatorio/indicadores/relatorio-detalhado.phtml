@@ -1,3 +1,38 @@
 <?php
 echo $this->form;
 echo $this->grid;
+?>
+<script>
+$(document).ready(function(){
+    $('#horaInicio').keyup(function (e) {
+        var v = $('#horaInicio').val();
+        var key = e.which;
+        if (key != 5) {
+            if (v.match(/^\d{2}$/) !== null) {
+                $('#horaInicio').val(v + ':');
+            }
+        }
+    });
+    $('#horaFim').keyup(function (e) {
+        var v = $('#horaFim').val();
+        var key = e.which;
+        if (key != 5) {
+            if (v.match(/^\d{2}$/) !== null) {
+                $('#horaFim').val(v + ':');
+            }
+        }
+    });
+    $('#btnRelatorio').click(function () {
+        var dataInicio = $('#dataInicio').val();
+        dataInicio = dataInicio.replace('/','-');
+        dataInicio = dataInicio.replace('/','-');
+
+        var dataFim =$ ('#dataFim').val();
+        dataFim = dataFim.replace('/','-');
+        dataFim = dataFim.replace('/','-');
+
+        window.location.href = URL_MODULO + '/relatorio_indicadores/relatorio-relatorio-detalhado-ajax/usuario/'+$('#usuario').val()+'/expedicao/'+$('#expedicao').val()+'/mapaSeparacao/'+$('#mapaSeparacao').val()+'/tipoQuebra/'+$('#tipoQuebra').val()+'/dataInicio/'+dataInicio+'/horaInicio/'+$('#horaInicio').val()+'/horaFim/'+$('#horaFim').val()+'/dataFim/'+dataFim;
+    })
+});
+
+</script>

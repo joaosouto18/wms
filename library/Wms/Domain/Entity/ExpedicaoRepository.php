@@ -2585,7 +2585,7 @@ class ExpedicaoRepository extends EntityRepository
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO) {
             //MAPA DE SEPARAÇÃO
             $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
-            $mapaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codBarras);
+            $mapaSeparacao = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $codBarras);
             if ($mapaSeparacao == NULL) throw new \Exception("Nenhum mapa de separação encontrado com o códgo ". $codBarras);
             $idExpedicao = $mapaSeparacao->getExpedicao()->getId();
             $operacao = "Conferencia do Mapa cód. $codBarras";
@@ -2599,7 +2599,7 @@ class ExpedicaoRepository extends EntityRepository
             $idMapa = $mapaSeparacaoEmbalado->getMapaSeparacao()->getId();
             $idExpedicao = $mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getId();
             $operacao = "Conferencia dos volumes embalados do Mapa cód. $idMapa";
-            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao";
+            $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao/idMapa/$idMapa";
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {

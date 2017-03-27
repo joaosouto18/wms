@@ -20,16 +20,16 @@ class Carregamento extends Grid
                     'render' => 'Input'
                 ))
                 ->addColumn(array(
-                    'label' => 'Carga',
-                    'index' => 'carga',
-                ))
-                ->addColumn(array(
                     'label' => 'Pedido.',
                     'index' => 'pedido',
                 ))
                 ->addColumn(array(
                     'label' => 'Itinerario',
                     'index' => 'itinerario',
+                ))
+                ->addColumn(array(
+                    'label' => 'Carga',
+                    'index' => 'carga',
                 ))
                 ->addColumn(array(
                     'label' => 'Cidade',

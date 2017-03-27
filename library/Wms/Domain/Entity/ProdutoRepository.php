@@ -392,7 +392,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$embalagemEntity->setCapacidadePicking($capacidadePicking);
 						$embalagemEntity->setPontoReposicao($pontoReposicao);
 
-
 						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
 							if ($webservice == true) {
 								$embalagemEntity->setDataInativacao(null);
@@ -1348,6 +1347,27 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ORDER BY PICKING";
 
 		return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+	}
+
+	public function getEmbalagensByCodBarras($codBarras){
+        $embalagenEn =null;
+        $volumeEn = null;
+        $produtoEn = null;
+        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras'=>$codBarras));
+        if ($embalagenEn == null) {
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras'=>$codBarras));
+			if ($volumeEn == null) {
+				throw new \Exception("Produto não encontrado para o código de barras $codBarras.");
+			} else {
+				$produtoEn = $volumeEn->getProduto();
+			}
+        } else {
+            $produtoEn = $embalagenEn->getProduto();
+        }
+
+		return array('embalagem'=>$embalagenEn,
+        	         'volume'=>$volumeEn,
+                     'produto'=>$produtoEn);
 	}
 
 	public function getProdutoByCodBarras($codigoBarras)

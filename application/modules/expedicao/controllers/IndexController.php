@@ -278,6 +278,11 @@ class Expedicao_IndexController extends Action
                     ),
                 ),
                 array(
+                    'label' => 'Última Separação',
+                    'cssClass' => 'btn updateSeparacao',
+                    'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
+                ),
+                array(
                     'label' => 'Salvar',
                     'cssClass' => 'btn save',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
@@ -350,6 +355,42 @@ class Expedicao_IndexController extends Action
         }
 
         $this->view->form = $form;
+    }
+
+    public function fechaConferenciaAjaxAction()
+    {
+        $params = $this->_getAllParams();
+        $cpf = str_replace(array('.','-'),'',$params['cpf']);
+        $codMapaSeparacao = $params['mapa'];
+
+        $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+
+        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+
+        if (empty($usuarioEn)){
+            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+            $this->_helper->json($response);
+        }
+
+        $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
+        if (is_null($mapaSeparacaoEn)) {
+            $response = array('result' => 'Error', 'msg' => "Mapa de Separação $codMapaSeparacao não encontrado!");
+            $this->_helper->json($response);
+        }
+
+        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
+        if (isset($apontamentoMapaEn) && !empty($apontamentoMapaEn)) {
+            $result = $apontamentoMapaRepo->update($apontamentoMapaEn);
+            if ($result == true) {
+                $response = array('result' => 'success', 'msg' => "Apontamento finalizado com sucesso!");
+                $this->_helper->json($response);
+            }
+        } else {
+            $response = array('result' => 'Error', 'msg' => "Apontamento não cadastrado anteriormente!");
+            $this->_helper->json($response);
+        }
     }
 
     public function conferenteApontamentoSeparacaoAjaxAction()
@@ -472,4 +513,39 @@ class Expedicao_IndexController extends Action
 
     }
 
+    public function cancelarExpedicaoAjaxAction()
+
+    {
+        $idExpedicao = $this->_getParam('id',0);
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+        $expedicaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+        $expedicaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+        $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        $cargaEntities = $expedicaoRepository->getCargas($idExpedicao);
+        $idCargas = null;
+        foreach ($cargaEntities as $key => $cargaEntity) {
+            if (count($cargaEntities) > $key + 1) {
+                $idCargas .= $cargaEntity->getCodCargaExterno().',';
+            } else {
+                $idCargas .= $cargaEntity->getCodCargaExterno();
+            }
+            $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
+            foreach ($pedidoEntities as $rowPedido) {
+                $pedidoEntity = $pedidoRepository->find($rowPedido->getId());
+                $pedidoRepository->removeReservaEstoque($rowPedido->getId());
+                $pedidoRepository->remove($pedidoEntity,true);
+            }
+            $cargaRepository->removeCarga($cargaEntity->getId());
+        }
+        $expedicaoEntity = $expedicaoRepository->find($idExpedicao);
+        $expedicaoRepository->alteraStatus($expedicaoEntity,Expedicao::STATUS_CANCELADO);
+        $expedicaoAndamentoRepository->save("cargas $idCargas removidas",$idExpedicao);
+        $this->addFlashMessage('success', "cargas $idCargas da expedicao $idExpedicao removidas com sucesso");
+        $this->_redirect('expedicao');
+    }
 }

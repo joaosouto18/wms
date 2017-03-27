@@ -44,22 +44,6 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaEmbaladoRepo */
-//        $mapaEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-//        $mapaEmbaladoEntities = $mapaEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapaSeparacao, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-//        foreach ($mapaEmbaladoEntities as $mapaEmbaladoEn) {
-//            $codClienteEtiqueta = $mapaEmbaladoEn->getPessoa()->getId();
-//            $existeCliente = false;
-//            foreach ($clientes as $codCliente) {
-//                if ($codCliente['COD_PESSOA'] == $codClienteEtiqueta) {
-//                    $existeCliente = true;
-//                }
-//            }
-//            if ($existeCliente == false) {
-//                $this->getEntityManager()->remove($mapaEmbaladoEn);
-//            }
-//        }
-//        $this->getEntityManager()->flush();
 
         foreach ($clientes as $key => $cliente) {
             $numeroCaixas = explode(',',$cliente['NUM_CAIXA_PC_INI']);
@@ -116,17 +100,18 @@ class Mobile_ExpedicaoController extends Action
 
     public function lerEmbaladosMapaAction()
     {
-        $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
+        $this->view->idEmbalado  = $idEmbalado = $this->_getParam('embalado');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('expedicao');
+        $this->view->idMapa      = $idMapa = $this->_getParam('idMapa');
+        $submit                  = $this->_getParam('submit');
 
-        $submit = $this->_getParam('submit');
-
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         try {
             $conferir = 'Conferir';
             if (isset($submit) || isset($conferir)) {
                 $idEmbalado = \Wms\Util\Coletor::retiraDigitoIdentificador($idEmbalado);
-                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado);
+                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado,$idExpedicao,$idMapa);
                 $this->addFlashMessage('success',"Volume embalado $idEmbalado conferido com sucesso!");
             }
         } catch (\Exception $e) {
@@ -141,23 +126,12 @@ class Mobile_ExpedicaoController extends Action
         $idMapa = $this->_getParam("idMapa");
         $idVolume = $this->_getParam("idVolume");
         $idExpedicao = $this->_getParam("idExpedicao");
+        $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
         $codPessoa = $this->_getParam('cliente');
 
         $sessao = new \Zend_Session_Namespace('coletor');
         $central = $sessao->centralSelecionada;
-
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-
-        /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
-        $statusMapaEmbalado = false;
-        if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                $statusMapaEmbalado = true;
-            }
-        }
 
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $dscVolume = "";
@@ -166,7 +140,6 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idExpedicao = $idExpedicao;
         $this->view->central = $central;
         $this->view->idPessoa = $codPessoa;
-        $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
         $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
         $Expedicao->validacaoExpedicao();
@@ -179,21 +152,6 @@ class Mobile_ExpedicaoController extends Action
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
-
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
-        if (count($produtosMapa) > 0) {
-            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-            $this->view->produtosMapa = $produtosMapa;
-        }
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-        if (isset($codPessoa) && !empty($codPessoa)) {
-            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
-            if (count($produtosClientes) > 0) {
-                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                $this->view->produtosClientes = $produtosClientes;
-            }
-        }
 
         $volumePatrimonioEn = null;
         if ((isset($idVolume)) && ($idVolume != null)) {
@@ -211,6 +169,8 @@ class Mobile_ExpedicaoController extends Action
         if (($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'Q' && ($mapaQuebraEn->getTipoQuebra() == 'T' || !empty($idVolume)))
             || ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q" && $mapaQuebraEn->getTipoQuebra() != 'T')) {
             $confereQtd = true;
+        } else {
+            $qtd = 1;
         }
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
@@ -255,21 +215,34 @@ class Mobile_ExpedicaoController extends Action
 
                 } else if ($tipoProvavelCodBarras === 'produto') {
 
-                    $embalagemEn = $produtoEmbalagenEn;
-                    $volumeEn = $produtoVolumeEn;
-                    list($idEmbVol, $tipo) = (!empty($embalagemEn)) ? array($embalagemEn->getId(), 'Embalagem') : array($volumeEn->getId(), 'Volume');
-
+                    if (empty($embalagens)) {
+                        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+                        $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
+                    }
+                    $embalagemEn = $embalagens['embalagem'];
+                    $volumeEn = $embalagens['volume'];
+                    $produtoEn = $embalagens['produto'];
                     $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn,$codPessoa);
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
                     $idMapa = $resultado['idMapa'];
 
-                    if ($confereQtd) {
-                        $this->_redirect("mobile/expedicao/informa-qtd-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/idEmbVol/$idEmbVol/tipo/$tipo/idVolume/$idVolume/cliente/$codPessoa");
-                    } else {
-                        $this->_redirect("mobile/expedicao/informa-qtd-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/idEmbVol/$idEmbVol/tipo/$tipo/idVolume/$idVolume/cliente/$codPessoa/qtd/1");
+                    /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+                    $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+
+                    if (isset($codPessoa) && !empty($codPessoa)) {
+                        if (count($mapaSeparacaoEmbaladoEn) <= 0) {
+                            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+                        } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
+                        }
                     }
+
+                    $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
+                    $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn,$produtoEn->getId(),$produtoEn->getGrade());
+                    $this->addFlashMessage('success', $msg['msg']);
                 }
             } catch (\Exception $e) {
                 $this->addFlashMessage('error',$e->getMessage());
@@ -277,17 +250,36 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+
+        /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
+        $statusMapaEmbalado = false;
+        if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
+            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
+                $statusMapaEmbalado = true;
+            }
+        }
+        $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
+
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+        if (count($produtosMapa) > 0) {
+            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+            $this->view->produtosMapa = $produtosMapa;
+        }
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
+        if (isset($codPessoa) && !empty($codPessoa)) {
+            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
+            if (count($produtosClientes) > 0) {
+                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                $this->view->produtosClientes = $produtosClientes;
+            }
+        }
+
         $this->view->dscVolume = $dscVolume;
-        $this->view->exibeQtd = false;
-//        if ((isset($idVolume)) && ($idVolume != null)) {
-//            if ($modeloSeparacaoEn->getTipoConferenciaEmbalado() == "Q") {
-//                $this->view->exibeQtd = true;
-//            }
-//        } else {
-//            if ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q") {
-//                $this->view->exibeQtd = true;
-//            }
-//        }
+        $this->view->exibeQtd = $confereQtd;
     }
 
     public function fechaVolumePatrimonioMapaAction(){
@@ -539,6 +531,7 @@ class Mobile_ExpedicaoController extends Action
             $this->addFlashMessage('info','Informe uma Quantidade');
         }
     }
+
 
     public function tipoConferenciaAction()
     {
@@ -1005,23 +998,6 @@ class Mobile_ExpedicaoController extends Action
         $this->view->form = $form;
         $this->render('bloqueio');
 
-    }
-
-    public function confirmaConferenciaAction()
-    {
-        $idExpedicao    = $this->getRequest()->getParam('idExpedicao');
-        $idEtiqueta     = $this->getRequest()->getParam('idEtiqueta');
-        $produto        = $this->getRequest()->getParam('produto');
-        $placa = $this->getRequest()->getParam('placa',null);
-
-        $this->confereEtiqueta($idEtiqueta);
-
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-        $andamentoRepo->save('Botão confirmar conferência '.$produto, $idExpedicao);
-
-        $this->addFlashMessage('success', 'Produto conferido com sucesso');
-        $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
     }
 
     /**

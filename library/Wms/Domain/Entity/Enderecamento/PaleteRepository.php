@@ -204,7 +204,7 @@ class PaleteRepository extends EntityRepository
                          WHERE ((PE.COD_PRODUTO = '$idProduto' AND PE.DSC_GRADE = '$grade')
                             OR (PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$grade'))
                            AND P.COD_RECEBIMENTO = '$idRecebimento'
-                           AND P.COD_STATUS <> ". Palete::STATUS_EM_RECEBIMENTO . "
+                           AND (P.IND_IMPRESSO <> 'N' OR P.COD_STATUS <> ". Palete::STATUS_EM_RECEBIMENTO . ")
                      GROUP BY
                         P.UMA, PP.QTD,PP.COD_NORMA_PALETIZACAO
                            ) QTD
@@ -370,6 +370,7 @@ class PaleteRepository extends EntityRepository
             ->innerJoin("pa.status", "s")
             ->where("r.id = '$idRecebimento'")
             ->andWhere("s.id = '$statusRecebimento'")
+            ->andWhere("pa.impresso = 'N'")
             ->andWhere("(pv.codProduto = '$idProduto' AND pv.grade = '$grade') OR (pe.codProduto = '$idProduto' AND pe.grade = '$grade')");
         $paletes = $query->getQuery()->getResult();
         foreach ($paletes as $key => $palete) {
@@ -536,6 +537,7 @@ class PaleteRepository extends EntityRepository
         }
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find($codStatus);
 
+        $this->deletaPaletesEmRecebimento($recebimentoEn->getId(),$idProduto,$grade);
         $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(),$idProduto,$grade);
         if(count($produtoEn->getVolumes()) == 0) {
             $tipo = "E";
@@ -569,7 +571,6 @@ class PaleteRepository extends EntityRepository
             }
         }
 
-        $this->deletaPaletesEmRecebimento($recebimentoEn->getId(),$idProduto,$grade);
         $qtdLimite = null;
         if ($recebimentoFinalizado == false) {
             $qtdLimite = $this->getQtdLimiteRecebimento($recebimentoEn->getId(),$idProduto,$grade,$qtdRecebida,$qtdEnderecada, $tipo);
@@ -681,7 +682,6 @@ class PaleteRepository extends EntityRepository
                             $peso = (float) $peso + $pesoLimite[$idNorma];
                         }
                     } else {
-                        $qtdLimite = $qtdLimite - $qtd;
                         if ($qtdLimite < 0) {
                             $qtd = $qtd + $qtdLimite;
                         }
@@ -694,7 +694,6 @@ class PaleteRepository extends EntityRepository
                 }
 
                 $qtdPaletes         = $qtd / $unitizador['NUM_NORMA'];
-//                $qtdUltimoPalete    = $qtd % $unitizador['NUM_NORMA'];
                 $qtdUltimoPalete    = fmod($qtd, $unitizador['NUM_NORMA']);
                 $unitizadorEn       = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->find($unitizador['COD_UNITIZADOR']);
 

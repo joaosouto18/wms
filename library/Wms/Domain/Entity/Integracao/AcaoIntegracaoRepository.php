@@ -24,7 +24,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
 
-                //PARAMETRIZA A DATA DE ULTIMA EXECUÃ‡ÃƒO DA QUERY
+                //PARAMETRIZA A DATA DE ULTIMA EXECUÇÃO DA QUERY
                 if ($acaoEn->getDthUltimaExecucao() == null) {
                     $dthExecucao = '01/01/1900 01:01:01';
                     if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
@@ -37,7 +37,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
-                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÃ‡Ã‚O PARA INTEGRAÃ‡Ã”ES NO WINTHOR
+                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÇÃO PARA INTEGRAÇÕES NO WINTHOR
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
 
                 //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
@@ -85,17 +85,20 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if ($sucess=="S") {
-                $acaoEn->setDthUltimaExecucao($integracaoService->getMaxDate());
-                $this->_em->persist($acaoEn);
+                $maxDate = $integracaoService->getMaxDate();
+                if (!is_null($maxDate)) {
+                    $acaoEn->setDthUltimaExecucao($integracaoService->getMaxDate());
+                    $this->_em->persist($acaoEn);
+                }
             }
 
             $this->_em->flush();
             $this->_em->commit();
 
         } catch (\Exception $e) {
+            $this->_em->rollback();
             throw new \Exception($e->getMessage());
             var_dump($e->getMessage());exit;
-            $this->_em->rollback();
         }
 
         return $result;
