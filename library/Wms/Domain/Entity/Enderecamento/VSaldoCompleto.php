@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Enderecamento;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 /**
  *
@@ -141,7 +142,7 @@ class VSaldoCompleto
     }
 
     /**
-     * @return mixed
+     * @return Endereco
      */
     public function getDepositoEndereco()
     {

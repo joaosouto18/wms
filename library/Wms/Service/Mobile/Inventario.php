@@ -768,7 +768,7 @@ class Inventario
         $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
         $invEndProdRepo = $this->getEm()->getRepository("wms:Inventario\EnderecoProduto");
         $produtoVolumeRepo = $this->getEm()->getRepository("wms:Produto\Volume");
-        $produtoRepo = $this->getEm()->getRepository("wms:Produto");
+        $produtoEmbaRepo = $this->getEm()->getRepository("wms:Produto\Embalagem");
 
         $maiorContagem = $contagemEndEntities[count($contagemEndEntities)-1]->getNumContagem();
         $inventarioEnderecoEn = $contagemEndEntities[count($contagemEndEntities)-1]->getInventarioEndereco();
@@ -888,9 +888,8 @@ class Inventario
             foreach($produto as $grade => $values){
                 $encontrouProduto = false;
                 $idVolume = $values['codProdutoVolume'];
-                $codBarras = $values['codBarras'];
                 if ($idVolume == null) {
-                    $idEmbalagem = 0;
+                    $idEmbalagem = $values['codProdutoEmbalagem'];
                 } else {
                     $idEmbalagem = null;
                 }

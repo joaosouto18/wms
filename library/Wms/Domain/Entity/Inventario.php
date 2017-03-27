@@ -44,6 +44,12 @@ class Inventario
     protected $dataFinalizacao;
 
     /**
+     * @var int
+     * @Column(name="COD_INVENTARIO_ERP", type="integer", nullable=true)
+     */
+    protected $codInventarioERP;
+
+    /**
      * @return mixed
      */
     public function getCodStatus()
@@ -123,6 +129,20 @@ class Inventario
         $this->status = $status;
     }
 
+    /**
+     * @return int
+     */
+    public function getCodInventarioERP()
+    {
+        return $this->codInventarioERP;
+    }
 
+    /**
+     * @param int $codInventarioERP
+     */
+    public function setCodInventarioERP($codInventarioERP)
+    {
+        $this->codInventarioERP = $codInventarioERP;
+    }
 
 }

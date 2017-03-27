@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Inventario;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Inventario;
 
 
 class ContagemEnderecoRepository extends EntityRepository
@@ -135,4 +136,26 @@ class ContagemEnderecoRepository extends EntityRepository
 
     }
 
+    public function getProdutosInventariados($id)
+    {
+
+        $status = Inventario::STATUS_FINALIZADO;
+        $sql = "SELECT SUM(ICE.QTD_CONTADA) QTD_INV, ICE.COD_PRODUTO, ICE.DSC_GRADE, NUM_CONTAGEM, NVL(PE.COD_BARRAS,0) COD_BARRAS
+                FROM (SELECT COD_PRODUTO, DSC_GRADE, QTD_CONTADA, MAX(NUM_CONTAGEM) AS NUM_CONTAGEM, COD_INVENTARIO_CONTAGEM_OS 
+                      FROM INVENTARIO_CONTAGEM_ENDERECO
+                      GROUP BY COD_PRODUTO, DSC_GRADE, QTD_CONTADA, COD_PRODUTO_VOLUME, COD_INVENTARIO_CONTAGEM_OS) ICE
+                INNER JOIN INVENTARIO_CONTAGEM_OS ICO ON ICE.COD_INVENTARIO_CONTAGEM_OS = ICO.COD_INVENTARIO_CONTAGEM_OS
+                INNER JOIN INVENTARIO I ON I.COD_INVENTARIO = ICO.COD_INVENTARIO
+                LEFT JOIN ( SELECT PE2.COD_PRODUTO_EMBALAGEM, PE2.COD_PRODUTO, PE2.DSC_GRADE, PE2.COD_BARRAS
+                            FROM PRODUTO_EMBALAGEM PE2
+                            INNER JOIN ( SELECT COD_PRODUTO, DSC_GRADE, MIN(QTD_EMBALAGEM) QTD_EMB
+                                         FROM PRODUTO_EMBALAGEM
+                                         GROUP BY COD_PRODUTO, DSC_GRADE
+                                       ) PE3 ON PE3.COD_PRODUTO = PE2.COD_PRODUTO AND PE3.DSC_GRADE = PE2.DSC_GRADE AND PE3.QTD_EMB = PE2.QTD_EMBALAGEM
+                          ) PE ON ICE.COD_PRODUTO = PE.COD_PRODUTO AND ICE.DSC_GRADE = PE.DSC_GRADE
+                WHERE I.COD_INVENTARIO = $id AND I.COD_STATUS = $status
+                GROUP BY ICE.COD_PRODUTO, ICE.DSC_GRADE, ICE.NUM_CONTAGEM, PE.COD_BARRAS";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

@@ -7,12 +7,16 @@ use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Query;
 use Wms\Domain\Entity\Armazenagem\Unitizador;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Enderecamento\VSaldoCompleto;
+use Wms\Domain\Entity\Enderecamento\VSaldoCompletoRepository;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
+use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
 use Wms\Domain\Entity\Pessoa\Juridica;
@@ -684,9 +688,11 @@ class Importacao
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
 
-//                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                            $quantidadeWs = str_replace(',','.',$embalagemWs->qtdEmbalagem);
+                            if ($quantidadeWs != $embalagemCadastrada->getQuantidade()) {
+                                var_dump($idProduto.'--'.$embalagemWs->codBarras.'--'.$embalagemCadastrada->getQuantidade().'--'.$quantidadeWs);
 //                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade com código de barras " . $embalagemWs->codBarras . " para " . $embalagemWs->qtdEmbalagem . " - Produto: " . $idProduto);
-//                            }
+                            }
 
                             continue;
                         }
@@ -777,6 +783,67 @@ class Importacao
             throw new \Exception("A Embalagem " . $codBarras ." se encontra em uso no sistema para o produto " . $prod['COD_PRODUTO'] . "/" . $prod['DSC_PRODUTO']);
         }
         return true;
+    }
+
+    /**
+     * @param $em EntityManager
+     * @param $produto
+     * @param $repositorios
+     * @return bool|string
+     */
+    public function saveInventarioProduto ($em, $produto, $repositorios)
+    {
+        try{
+            /** @var Inventario\EnderecoRepository $invEnderecoRepo */
+            $invEnderecoRepo = $repositorios['invEnderecoRepo'];
+
+            /** @var Inventario\EnderecoProdutoRepository $invEndProdRepo */
+            $invEndProdRepo = $repositorios['invEndProdRepo'];
+
+            /** @var VSaldoCompletoRepository $vSaldoCompletoRepo */
+            $vSaldoCompletoRepo = $repositorios['vSaldoCompletoRepo'];
+
+            $saldos = null;
+            if (isset($produto['codBarras']) and !empty($produto['codBarras'])) {
+                $stmt = $em->createQueryBuilder()
+                    ->select('vsc')
+                    ->from('wms:Enderecamento\VSaldoCompleto', 'vsc')
+                    ->innerJoin('vsc.produto', 'p')
+                    ->leftJoin('wms:Produto\Embalagem', 'e', 'WITH', 'e.codProduto = p.id and e.grade = p.grade')
+                    ->leftJoin('wms:Produto\Volume', 'v', 'WITH', 'v.codProduto = p.id and v.grade = p.grade')
+                    ->where("v.codigoBarras = '$produto[codBarras]'")
+                    ->orWhere("e.codigoBarras = '$produto[codBarras]'");
+
+                $saldos = $stmt->getQuery()->getResult();
+            } elseif (isset($produto['codProduto']) and !empty($produto['codProduto'])) {
+                $saldos = $vSaldoCompletoRepo->findBy(array('codProduto' => $produto['codProduto'], 'grade' => $produto['grade']));
+            }
+
+            if (empty($saldos)) throw new \Exception("Nenhum produto foi encontrado!");
+
+            $enderecosSalvos[] = array();
+
+            /** @var VSaldoCompleto $saldo */
+            foreach ($saldos as $saldo){
+                $enderecoEn = $saldo->getDepositoEndereco();
+                $codProduto = $saldo->getCodProduto();
+                $grade = $saldo->getGrade();
+                if (!in_array($enderecoEn->getId(), $enderecosSalvos)) {
+                    $enderecoEn = $invEnderecoRepo->save(array('inventarioEn' => $produto['inventarioEn'], 'depositoEnderecoEn' => $enderecoEn));
+                    $enderecosSalvos[] = $enderecoEn->getId();
+                }
+
+                if (isset($codProduto) && ($codProduto != null)) {
+                    $invEndProdRepo->save($codProduto, $grade, $enderecoEn, $saldo->getProduto());
+                }
+            }
+
+
+            return true;
+        } catch (\Exception $e){
+            return $e->getMessage();
+        }
+
     }
 
     public function saveProduto($em, $produto, $repositorios)

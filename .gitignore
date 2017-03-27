@@ -7,6 +7,7 @@ library/Core/Pdf/font/unifont/*.cw.dat
 library/Core/Pdf/font/unifont/*.cw127.php
 data/CodigoBarras/
 data/profiler
+data/log/
 .project
 .buildpath
 .settings/

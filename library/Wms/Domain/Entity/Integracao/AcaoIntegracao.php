@@ -12,7 +12,7 @@ use Wms\Domain\Configurator;
 class AcaoIntegracao
 {
 
-    const INTEGRACAO_PRODUTO = "600";
+    const INTEGRACAO_PRODUTO = 600;
     const INTEGRACAO_ESTOQUE = "601";
     const INTEGRACAO_PEDIDOS = "602";
     const INTEGRACAO_RESUMO_CONFERENCIA = "603";

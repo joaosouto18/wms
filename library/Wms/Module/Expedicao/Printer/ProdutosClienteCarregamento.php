@@ -90,7 +90,7 @@ class ProdutosClienteCarregamento extends Pdf
                 $this->Line(10,20,200,20);
                 $this->Cell(25, 6, utf8_decode('Expedição: '),0,0);
                 $this->SetFont('Arial', '', 12);
-                $this->Cell(45, 6, utf8_decode($idExpedicao),0,0);
+                $this->Cell(45, 6, utf8_decode($idExpedicao.' - '.$valor['COD_PEDIDO']),0,0);
                 $this->SetFont('Arial', "B", 12);
                 $this->Cell(12, 6, utf8_decode('Data: '),0,0);
                 $this->SetFont('Arial',  '', 12);

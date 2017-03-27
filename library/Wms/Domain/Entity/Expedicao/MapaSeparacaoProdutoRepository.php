@@ -64,8 +64,8 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->innerJoin('msp.produto', 'p')
             ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade AND msp.produtoEmbalagem = pe.id')
             ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade AND msp.produtoVolume = pv.id')
-            ->where("ms.expedicao = $idExpedicao");
-            //->andWhere("pe.imprimirCB = 'S'");
+            ->where("ms.expedicao = $idExpedicao")
+            ->andWhere("pe.imprimirCB = 'S'");
 
         return $sql->getQuery()->getResult();
     }

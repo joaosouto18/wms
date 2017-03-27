@@ -195,7 +195,104 @@ class PedidoRepository extends EntityRepository
     /**
      * @param Pedido $pedidoEntity
      */
-    public function remove(Pedido $pedidoEntity, $runFlush = true) {
+    public function remove(Pedido $pedidoEntity, $runFlush = true)
+    {
+
+        //REPOSITORIOS
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaProdutoRepo */
+        $mapaSeparacaProdutoRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepository */
+        $mapaSeparacaoConferenciaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
+        $mapaSeparacaoQuebraRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $etiquetaConferenciaRepository */
+        $etiquetaConferenciaRepository = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+        $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepository */
+        $pedidoEnderecoRepository = $this->_em->getRepository('wms:Expedicao\PedidoEndereco');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoPedidoRepository */
+        $mapaSeparacaoPedidoRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepository */
+        $mapaSeparacaoEmbaladoRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaRessuprimentoPedidoRepo */
+        $ondaRessuprimentoPedidoRepo = $this->_em->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
+
+
+        // APAGA ETIQUETA_CONFERENCIA E ETIQUETA_SEPARACAO CASO EXISTA
+        $etiquetaEntities = $EtiquetaRepo->findBy(array('pedido'=>$pedidoEntity));
+        foreach($etiquetaEntities as $etiquetaEntity) {
+            $etiquetaConferenciaEntities = $etiquetaConferenciaRepository->findBy(array('codEtiquetaSeparacao' => $etiquetaEntity->getId()));
+            foreach ($etiquetaConferenciaEntities as $etiquetaConferenciaEntity) {
+                $this->_em->remove($etiquetaConferenciaEntity);
+            }
+            $this->_em->remove($etiquetaEntity);
+        }
+
+        //APAGA MAPA_SEPARACAO_CONFERENCIA & MAPA_SEPARACAO_PRODUTO & MAPA_SEPARACAO_PEDIDO & MAPA_SEPARACAO_QUEBRA & MAPA_SEPARACAO_EMB_CLIENTE & MAPA_SEPARACAO CASO EXISTAM
+        $pedidoProdutoEntities = $pedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity));
+        foreach ($pedidoProdutoEntities as $pedidoProdutoEntity) {
+            $mapaSeparacaoPedidoEntities = $mapaSeparacaoPedidoRepository->findBy(array('pedidoProduto' => $pedidoProdutoEntity));
+            foreach ($mapaSeparacaoPedidoEntities as $mapaSeparacaoPedidoEntity) {
+                $mapaSeparacaoEntity = $mapaSeparacaoPedidoEntity->getMapaSeparacao();
+
+                $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+                foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
+                    $this->_em->remove($mapaSeparacaoConferenciaEntity);
+                }
+
+                $mapaSeparacaoEmbaladoEntities = $mapaSeparacaoEmbaladoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+                foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
+                    $this->_em->remove($mapaSeparacaoEmbaladoEntity);
+                }
+
+                $mapaSeparacaoProdutoEntities = $mapaSeparacaProdutoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+                foreach ($mapaSeparacaoProdutoEntities as $mapaSeparacaoProdutoEntity) {
+                    $this->_em->remove($mapaSeparacaoProdutoEntity);
+                }
+
+                $mapaSeparacaoQuebraEntities = $mapaSeparacaoQuebraRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+                foreach ($mapaSeparacaoQuebraEntities as $mapaSeparacaoQuebraEntity) {
+                    $this->_em->remove($mapaSeparacaoQuebraEntity);
+                }
+
+                $this->_em->remove($mapaSeparacaoPedidoEntity);
+                $this->_em->remove($mapaSeparacaoEntity);
+            }
+
+            //APAGA PEDIDO_PRODUTO
+            $this->_em->remove($pedidoProdutoEntity);
+        }
+
+        //APAGA ONDA DE RESSUPRIMENTO PEDIDO
+        $ondaRessuprimentoPedidoEntity = $ondaRessuprimentoPedidoRepo->findOneBy(array('pedido' => $pedidoEntity));
+        if (isset($ondaRessuprimentoPedidoEntity) && !empty($ondaRessuprimentoPedidoEntity)) {
+            $this->_em->remove($ondaRessuprimentoPedidoEntity);
+        }
+
+        //APAGA PEDIDO_ENDERECO
+        $pedidoEnderecoEntity = $pedidoEnderecoRepository->findOneBy(array('pedido' => $pedidoEntity));
+        if (isset($pedidoEnderecoEntity) && !empty($pedidoEnderecoEntity)) {
+            $this->_em->remove($pedidoEnderecoEntity);
+        }
+
+        //APAGA PEDIDO
+        $this->_em->remove($pedidoEntity);
+
+        //FAZ ALTERAÇÕES NO BD
+        if ($runFlush == true) {
+            $this->_em->flush();
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Pedido $pedidoEntity
+     */
+    public function removeOld(Pedido $pedidoEntity, $runFlush = true) {
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');

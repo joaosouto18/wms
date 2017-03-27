@@ -91,4 +91,46 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         }
         return $groupBy;
     }
+
+    public function relatorioDetalhadoAction()
+    {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+        $form = new \Wms\Module\Produtividade\Form\FormProdutividadeDetalhada();
+        $this->view->form = $form;
+        $params = $this->_getAllParams();
+
+        if (empty($params['dataInicio'])) {
+            $hoje = new \DateTime();
+            $hoje->sub(new \DateInterval('P01D'));
+            $params['dataInicio'] = $dataInicio = $hoje->format('d/m/Y');
+        }
+        if (empty($params['dataFim'])) {
+            $hoje = new \DateTime();
+            $params['dataFim'] = $dataFim = $hoje->format('d/m/Y');
+        }
+
+        $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
+        if(isset($params['submit'])) {
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
+            $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+            $this->view->grid = $grid->init($result);
+
+        }
+        $form->populate($params);
+    }
+
+    public function relatorioRelatorioDetalhadoAjaxAction()
+    {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+        $params = $this->_getAllParams();
+
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
+        $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+        $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+
+        $this->exportPDF($result,'Relatório Detalhado',utf8_encode('Relatório Detalhado'),"L");
+    }
 }

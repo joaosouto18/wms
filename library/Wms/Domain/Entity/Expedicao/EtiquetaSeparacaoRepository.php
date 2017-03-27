@@ -653,6 +653,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     break;
                 }
             }
+            if (!isset($embalagensEn[count($embalagensEn) -1]) || empty($embalagensEn[count($embalagensEn) -1])) {
+                echo 'error Não existe embalagem ATIVA para o PRODUTO '.$codProduto.' GRADE '.$grade;
+                exit;
+            }
             $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
             $count = 0;
@@ -1023,9 +1027,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
             $this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
+//            $this->removeMapaSeparacaoVazio($idExpedicao);
 
-            $this->_em->flush();
-            $this->_em->clear();
+//            $this->_em->flush();
+//            $this->_em->clear();
 
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
@@ -1045,6 +1050,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             throw new WMS_Exception($WMS_Exception->getMessage(), $WMS_Exception->getLink());
         }catch (\Exception $e) {
             throw new \Exception($e->getMessage());
+        }
+    }
+
+    private function removeMapaSeparacaoVazio($idExpedicao)
+    {
+        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $mapaSeparacaoEntities = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
+        foreach ($mapaSeparacaoEntities as $mapaSeparacaoEntity) {
+            $mapaSeparacaoProdutoEntity = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+            if (!isset($mapaSeparacaoProdutoEntity) || empty($mapaSeparacaoProdutoEntity)) {
+                $this->getEntityManager()->remove($mapaSeparacaoEntity);
+            }
         }
     }
 
@@ -1111,18 +1129,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $mapaSeparacaoProdutoEn->setNumCaixaInicio($caixaInicio);
                         $mapaSeparacaoProdutoEn->setNumCaixaFim($caixaFim);
                         $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
-
                     }
                     if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
                         $this->getEntityManager()->remove($mapaSeparacao);
 
                     }
-
                 }
             }
         }
 
-        $this->getEntityManager()->flush();
+//        $this->getEntityManager()->flush();
     }
 
     private function atualizaMapaSeparacaoProduto($idExpedicao, $arrRepo = null)
