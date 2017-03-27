@@ -62,8 +62,11 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
         $cargaRepo = $repositorios['cargaRepo'];
 
-        /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
-        $classeRepo = $repositorios['classeRepo'];
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEnderecoRepo */
+        $invEnderecoRepo = $repositorios['invEnderecoRepo'];
+
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoProdutoRepository $invEndProdRepo */
+        $invEndProdRepo = $repositorios['invEndProdRepo'];
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
         $clienteRepo = $repositorios['clienteRepo'];
@@ -189,8 +192,13 @@ class Importacao_IndexController extends Action
                     }
                     break;
                 case 'fornecedor';
+
+                    if (isset($arrRegistro['verificador']) and $arrRegistro['verificador'] == 'N') {
+                        break;
+                    }
+
                     $cpf_cnpjFormatado = \Core\Util\String::retirarMaskCpfCnpj($arrRegistro['cpf_cnpj']);
-                    
+
                     if (strlen($cpf_cnpjFormatado) == 11) {
                         $arrErroRows[$linha] = 'Proibido importar fornecedor por CPF ' . $arrRegistro['cpf_cnpj'];
                         break;
@@ -541,6 +549,31 @@ class Importacao_IndexController extends Action
                         $arrErroRows[$linha] = "Esta carga já foi cadastrada " . $registro;
                     }
                     break;
+
+                case "inventarioProduto":
+
+                    $inventarioEn = $arrRegistro['inventarioEn'];
+                    unset($arrRegistro['inventarioEn']);
+
+                    $registro = http_build_query($arrRegistro, '', ' ');
+
+                    if (!in_array($registro, $checkArray)) {
+                        array_push($checkArray, $registro);
+                    } else {
+                        $arrErroRows[$linha] = "Item repetido no inventario: " . $registro;
+                        break;
+                    }
+
+                    $arrRegistro['inventarioEn'] = $inventarioEn;
+
+                    $result = $importacaoService->saveInventarioProduto($em, $arrRegistro, $repositorios);
+                    if (is_string($result)) {
+                        $arrErroRows['exception'] = $result;
+                    } else {
+                        $countFlush++;
+                    }
+                    break;
+
                 default:
                     break;
             }
@@ -577,6 +610,7 @@ class Importacao_IndexController extends Action
             $fabricanteRepo = $em->getRepository('wms:Fabricante');
             $classeRepo = $em->getRepository('wms:Produto\Classe');
             $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+            $volumeRepo = $em->getRepository('wms:Produto\Volume');
             $camposRepo = $em->getRepository('wms:Importacao\Campos');
             $pJuridicaRepo = $em->getRepository('wms:Pessoa\Juridica');
             $pFisicaRepo = $em->getRepository('wms:Pessoa\Fisica');
@@ -587,6 +621,10 @@ class Importacao_IndexController extends Action
             $cargaRepo  = $em->getRepository('wms:Expedicao\Carga');
             $impArquivoRepo = $em->getRepository('wms:Importacao\Arquivo');
             $clienteRepo = $em->getRepository('wms:Pessoa\Papel\Cliente');
+            $invEnderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+            $invEndProdRepo = $this->_em->getRepository('wms:Inventario\EnderecoProduto');
+            $inventarioRepo = $this->_em->getRepository('wms:Inventario');
+            $vSaldoCompletoRepo = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
 
             $repositorios = array(
                 'produtoRepo' => $produtoRepo,
@@ -594,6 +632,7 @@ class Importacao_IndexController extends Action
                 'fabricanteRepo' => $fabricanteRepo,
                 'classeRepo' => $classeRepo,
                 'embalagemRepo' => $embalagemRepo,
+                'volumeRepo' => $volumeRepo,
                 'pjRepo' => $pJuridicaRepo,
                 'pfRepo' => $pFisicaRepo,
                 'fornecedorRepo' => $fornecedorRepo,
@@ -602,6 +641,9 @@ class Importacao_IndexController extends Action
                 'dadoLogisticoRepo' => $dadoLogisticoRepo,
                 'cargaRepo' => $cargaRepo,
                 'clienteRepo' => $clienteRepo,
+                'invEnderecoRepo' => $invEnderecoRepo,
+                'invEndProdRepo' => $invEndProdRepo,
+                'vSaldoCompletoRepo' => $vSaldoCompletoRepo
             );
 
             $files = explode('-', $this->getRequest()->getParam('files'));
@@ -646,6 +688,11 @@ class Importacao_IndexController extends Action
                 $cabecalho = $arquivo->getCabecalho();
                 $tabelaDestino = $arquivo->getTabelaDestino();
 
+                $inventarioEn = null;
+                if ($tabelaDestino === "inventarioProduto") {
+                    $inventarioEn = $inventarioRepo->save();
+                }
+
                 $arrErroRows = array();
                 $numPedido = null;
                 $checkArray = array();
@@ -680,15 +727,6 @@ class Importacao_IndexController extends Action
                     for ($linha = 1; $linha <= $tLinhas; $linha++) {
 
                         if (ucfirst($cabecalho) == 'S' && $linha == 1) {
-                            /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
-                            /*foreach ($camposArquivo as $campo){
-                                $coluna = $campo->getPosicaoTxt();
-                                if (!empty($coluna)){
-//                                    if (empty($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue())){
-//                                        throw new Exception("O cabeçalho não está na primeira linha ou não está conforme a configuração necessária");
-//                                    }
-                                }
-                            }*/
                             continue;
                         }
 
@@ -698,9 +736,11 @@ class Importacao_IndexController extends Action
                             $this->statusProgress["iLinha"] = $linha;
                         }
 
-
-
                         $arrRegistro = array();
+
+                        if (!empty($inventarioEn)) {
+                            $arrRegistro['inventarioEn'] = $inventarioEn;
+                        }
 
                         /** @var \Wms\Domain\Entity\Importacao\Campos $campo */
                         foreach ($camposArquivo as $campo) {
@@ -708,14 +748,20 @@ class Importacao_IndexController extends Action
                             if (($coluna == null) || ($tColunas - 1 < $coluna)) {
                                 $valorCampo = trim($campo->getValorPadrao());
                             } else {
-                                $valorCampo = trim($objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue());
+                                $valorCampo = $objExcel->getActiveSheet()->getCellByColumnAndRow($coluna, $linha)->getFormattedValue();
+                                if ((strtolower($campo->getNomeCampo()) != "cpf_cnpj")
+                                    or (strtolower($campo->getNomeCampo()) != "cpf")
+                                    or (strtolower($campo->getNomeCampo()) != "cnpj"))
+                                {
+                                    $valorCampo = trim($valorCampo);
+                                }
+
                                 $valorCampo = utf8_encode($valorCampo);
                                 if (empty($valorCampo)) {
                                     if ($campo->getPreenchObrigatorio() === "n") {
                                         $valorCampo = trim($campo->getValorPadrao());
                                     } else {
-                                        $arrErroRows[$linha] = "Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.";
-                                        break;
+                                        throw new Exception("Campo: " . $campo->getNomeCampo() . " - não pode ser nulo.");
                                     }
                                 }
                             }
@@ -860,6 +906,7 @@ class Importacao_IndexController extends Action
             if (count($arrErros) > 0) {
                 $this->statusProgress["error"] = $arrErros;
             };
+            $this->statusProgress["success"] = true;
             $this->progressBar->update(null, $this->statusProgress);
             $this->progressBar->finish();
             $em->commit();
@@ -956,7 +1003,7 @@ class Importacao_IndexController extends Action
                 foreach ($files as $file) {
                     $handle = $dir.'/\/'.$file;
 
-                    //DEFINI��O DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
+                    //DEFINIÇÃO DE ARQUIVO E METODO ADEQUADO PARA LEITURA DE DADOS
                     switch ($file) {
                         case 'expedicao.csv':
                             $this->importExpedicao($handle, $params, 'csv');

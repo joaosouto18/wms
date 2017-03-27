@@ -25,7 +25,7 @@ function mask($val, $mask){
         </tr>
         <?php foreach($this->notasFiscaisByCarga as $notaFiscal) : ?>
             <tr style="margin-bottom: 10pt; padding-bottom: 10pt">
-                <td><input type="checkbox" value="<?php echo $notaFiscal['id'] ?>" name="mass-id[]"></td>
+                <td><input type="checkbox" <?php if($this->selecionado == "S") {echo "checked";}?> value="<?php echo $notaFiscal['id'] ?>" name="mass-id[]"></td>
                 <td style="text-align:left; padding-right: 10pt;">&nbsp;<?php echo $notaFiscal['numeroNf']. "/" . $notaFiscal['serieNf']?></td>
                 <td style="text-align:center; padding-right: 10pt;">&nbsp;<?php echo $notaFiscal['carga'] ?></td>
                 <td style="text-align:center; padding-right: 10pt;">&nbsp;<?php echo mask($notaFiscal['cnpj'],'##.###.###/####-##') . " " . $notaFiscal['nome'] ?></td>

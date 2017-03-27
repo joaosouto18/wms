@@ -203,7 +203,7 @@ ALTER TABLE WMS_ADM.PEDIDO_PRODUTO
 ;
 
 
--- Relat�rio do Resumo do Oracle SQL Developer Data Modeler: 
+-- Relatório do Resumo do Oracle SQL Developer Data Modeler:
 -- 
 -- CREATE TABLE                             4
 -- CREATE INDEX                             0

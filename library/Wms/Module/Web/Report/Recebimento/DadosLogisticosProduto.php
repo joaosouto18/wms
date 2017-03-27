@@ -49,13 +49,17 @@ class DadosLogisticosProduto extends Report
             $pdf->addLabel(0, 70, $dscVazio, 0, 1, 'L');
         } else {
             // header
+            $pdf->SetFont('Arial');
             $pdf->addLabel(0, 6, '', 0, 0, 'L');
             $pdf->addLabel(0, 20, utf8_decode('Código'), 0, 0, 'L');
             $pdf->addLabel(0, 30, 'Grade', 0, 0, 'L');
-            $pdf->addLabel(0, 100, utf8_decode('Descrição'), 0, 0, 'L');
-            $pdf->addLabel(0, 70, utf8_decode('Cód. Barras'), 0, 0, 'L');
-            $pdf->addLabel(0, 30, 'Altura', 0, 0, 'L');
-            $pdf->addLabel(0, 30, 'Largura', 0, 1, 'L');
+            $pdf->addLabel(0, 90, utf8_decode('Descrição'), 0, 0, 'L');
+            $pdf->addLabel(0, 32, utf8_decode('Cód. Barras'), 0, 0, 'L');
+            $pdf->addLabel(0, 25, utf8_decode('Descrição'), 0, 0, 'L');
+            $pdf->addLabel(0, 17, 'Altura', 0, 0, 'L');
+            $pdf->addLabel(0, 17, 'Largura', 0, 0, 'L');
+            $pdf->addLabel(0, 20, 'Profund.', 0, 0, 'L');
+            $pdf->addLabel(0, 17, 'Peso', 0, 1, 'L');
 
 
             foreach ($produtos as $produto) {
@@ -63,16 +67,20 @@ class DadosLogisticosProduto extends Report
                 $pdf->addCol(0, 1, '', 0, 0, 'L');
                 $pdf->addCol(0, 20, $produto['COD_PRODUTO'],  0, 0, 'TB');
                 $pdf->addCol(0, 30, $produto['DSC_GRADE'], 0, 0, 'L');
-                $pdf->addCol(0, 100, substr($produto['DSC_PRODUTO'], 0, 40) , 0, 0, 'L');
-                $pdf->addCol(0, 70, $produto['COD_BARRAS'], 0, 0, 'L');
-                $pdf->addCol(0, 30,  $produto['ALTURA'], 0, 0, 'L');
-                $pdf->addCol(0, 30, $produto['LARGURA'], 0, 1, 'L');
-                $pdf->addCol(0, 40, 'Profundidade: ' . $produto['PROFUNDIDADE'], 0, 0, 'L');
-                $pdf->addCol(0, 30, 'Peso: ' . $produto['PESO'], 0, 0, 'L');
-                $pdf->addCol(0, 30, 'Lastro: ' . $produto['LASTRO'], 0, 0, 'L');
-                $pdf->addCol(0, 30, 'Camada: ' .$produto['CAMADA'], 0, 0, 'L');
-                $pdf->addCol(0, 70, 'Palete: ' .$produto['UNITIZADOR'], 0, 0, 'L');
-                $pdf->addCol(0, 50, utf8_decode('Descrição:') . $produto['DESCRICAO'], 0, 1, 'L');;
+                $pdf->addCol(0, 90, $pdf->SetStringByMaxWidth($produto['DSC_PRODUTO'], 120) , 0, 0, 'L');
+                $pdf->addCol(0, 35, $produto['COD_BARRAS'], 0, 0, 'L');
+                $pdf->addCol(0, 25, $produto['DESCRICAO'], 0, 0, 'L');
+                $pdf->addCol(0, 17, $produto['ALTURA'], 0, 0, 'L');
+                $pdf->addCol(0, 17, $produto['LARGURA'], 0, 0, 'L');
+                $pdf->addCol(0, 20, $produto['PROFUNDIDADE'], 0, 0, 'L');
+                $pdf->addCol(0, 17, $produto['PESO'], 0, 1, 'L');
+                $pdf->addCol(0, 8,'', 0, 0, 'L');
+                $pdf->addCol(0, 55, "Palete: $produto[UNITIZADOR]", 0, 0, 'L');
+                $pdf->addCol(0, 40, "Lastro: $produto[LASTRO]", 0, 0, 'L');
+                $pdf->addCol(0, 40, "Camada: $produto[CAMADA]", 0, 0, 'L');
+                $pdf->addCol(0, 40, "Picking: $produto[PICKING]", 0, 0, 'L');
+                $pdf->addCol(0, 40, "Capacidade: $produto[CAPACIDADE]", 0, 0, 'L');
+                $pdf->addCol(0, 40, utf8_decode("Ponto de reposição: $produto[PONTO_REPOSICAO]"), 0, 1, 'L');
                 $pdf->addCol(0, 70, '-------------------------------------------------------------------', 0, 0, 'L');
                 $pdf->addCol(70, 70, '-------------------------------------------------------------------', 0, 0, 'L');
                 $pdf->addCol(140, 70, '-------------------------------------------------------------------', 0, 0, 'L');

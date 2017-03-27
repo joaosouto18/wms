@@ -72,6 +72,8 @@ class Expedicao_IndexController extends Action
             unset($params['control']);
         }
 
+        $params['usaDeclaracaoVP'] = $this->getSystemParameterValue('USA_DECLARACAO_DE_VOLUME_PATRIMONIO');
+
         $form->populate($params);
 
         $Grid = new ExpedicaoGrid();
@@ -246,17 +248,6 @@ class Expedicao_IndexController extends Action
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
         $result = $ExpedicaoRepo->getVolumesExpedicaoByExpedicao($idExpedicao);
-
-        foreach ($result as $key => $resultado) {
-            if ($key + 1 == count($result)) {
-                $result[$key + 1]['VOLUME'] = null;
-                $result[$key + 1]['DESCRIÇÃO'] = null;
-                $result[$key + 1]['ITINERÁRIO'] = null;
-                $result[$key + 1]['CLIENTE'] = 'TOTAL DE CAIXAS FECHADAS';
-                $result[$key + 1]['QTD_CAIXA'] = $result[$key]['QTD_CAIXA'];
-            }
-            $result[$key]['QTD_CAIXA'] = null;
-        }
 
         $this->exportPDF($result,'volume-patrimonio','Relatório de Volumes Patrimônio da Expedição '.$idExpedicao,'L');
     }

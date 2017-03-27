@@ -964,7 +964,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 	private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
 		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
 			->from('wms:Produto\DadoLogistico', 'pdl')
 			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 			->where('pe.codProduto = ?1')
@@ -980,7 +980,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 		if (empty($dadosLogisticosEmbalagens)) {
 			$dql = $this->getEntityManager()->createQueryBuilder()
-				->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade ')
+			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
 				->from('wms:Produto\DadoLogistico', 'pdl')
 				->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
 				->where('pe.codProduto = ?1')
@@ -1010,12 +1010,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				'peso' => $embalagem['peso'],
 				'descricao' => $embalagem['descricao'],
 				'quantidade' => $embalagem['quantidade'],
+		        'codigoBarras' =>$embalagem['codigoBarras']
 			);
 
 			$i++;
 		}
 
-		return $client->salvar((string) $produtoEntity->getId(), $dadosLogisticos);
+	return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticos);
 	}
 
 	private function enviaDadosLogisticosVolumes($produtoEntity, array $values = array()) {
@@ -1040,11 +1041,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
 				'peso' => \Core\Util\Converter::brToEn($peso, 3),
 				'descricao' => $descricao,
-				'quantidade' => 1
+                'quantidade' => 1,
+		        'codigoBarras' => $codigoBarras
 			);
 			$i++;
 		}
-		return $client->salvar((string) $produtoEntity->getId(), $dadosLogisticosVolume);
+	return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticosVolume);
 	}
 
 	private function getSoapClient() {
@@ -1125,7 +1127,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		}
 
 		if (!isset($produtoEn)) {
-			throw new \Exception('Produto não encontrado');
+			throw new \Exception("Produto não encontrado");
 		}
 
 		return $produtoEn;
@@ -1200,6 +1202,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			return $result;
 
 		$produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+		if (empty($produtoEntity))
+		    throw new \Exception("Nenhum produto ou norma foi encontrado para $codProduto de grade $grade");
 		$volumes = $produtoEntity->getVolumes();
 
 		$idNorma = NULL;
@@ -1609,6 +1613,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY')
                   ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
+		echo $query;exit;
 		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
 

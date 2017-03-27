@@ -22,9 +22,33 @@ class Soap_IndexController extends Core\Controller\Action\WebService
     public function init()
     {
         parent::init();
-        $idUsuario = APPLICATION_ENV == 'development' ? 142 : 1;
 
-        $usuario = $this->em->getReference('wms:Usuario', $idUsuario);
+        $parametroRepo = $this->em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'ID_USER_ERP'));
+
+        if (!empty($parametro)){
+            $idUsuario = $parametro->getValor();
+        } else {
+            $idUsuario = APPLICATION_ENV == 'development' ? 142 : 1;
+        }
+
+        $usuario = $this->em->find('wms:Usuario', $idUsuario);
+
+        if (empty($usuario)) {
+            throw new \Exception("Usuário código: $idUsuario para webservice não cadastrado");
+        }
+
+        $perfis = array();
+        foreach ($usuario->getPerfis() as $perfil) {
+            $perfis[$perfil->getId()] = $perfil->getNome();
+        }
+        //ordeno crescentemente pelos codigos do perfil
+        ksort($perfis);
+        //gero o perfil
+        $perfil = implode('-', $perfis);
+        //seto o RoleId para o zf
+        $usuario->setRoleId($perfil);
+
         $auth = \Zend_Auth::getInstance();
         $storage = $auth->getStorage();
         $storage->clear();

@@ -307,17 +307,21 @@ class UMA extends Pdf
         $this->SetXY(145,55);
         $this->Cell(25,20,'Nota',0,1);
 
-        $this->SetFont('Arial', 'B', 55);
-        $this->SetXY(173,55);
-        $this->Cell(25,20,$params['notaFiscal']->getNumero(),0,1);
+        if ((isset($params['notaFiscal'])) && ($params['notaFiscal'] != null)) {
+            $this->SetFont('Arial', 'B', 55);
+            $this->SetXY(173,55);
+            $this->Cell(25,20,$params['notaFiscal']->getNumero(),0,1);
+        }
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(145,77);
         $this->Cell(25,20,'Entrada da Nota',0,1);
 
-        $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(235,77);
-        $this->Cell(25,20,$params['notaFiscal']->getDataEntrada()->format('d/m/Y'),0,1);
+        if ((isset($params['notaFiscal'])) && ($params['notaFiscal'] != null)) {
+            $this->SetFont('Arial', 'B', 32);
+            $this->SetXY(235,77);
+            $this->Cell(25,20,$params['notaFiscal']->getDataEntrada()->format('d/m/Y'),0,1);
+        }
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(210,110);

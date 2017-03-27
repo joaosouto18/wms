@@ -16,7 +16,7 @@ class ListaCamposImportacao extends Grid
             ->select('c.id, a.tabelaDestino, c.nomeCampo, c.posicaoTxt, c.tamanhoInicio, c.tamanhoFim, c.valorPadrao, c.preenchObrigatorio')
             ->from('wms:Importacao\Campos','c')
             ->innerJoin('c.arquivo', 'a')
-            ->orderBy('c.id')
+            ->orderBy('c.posicaoTxt, c.id')
             ->where('c.arquivo = :idArquivo')
             ->setParameter('idArquivo',$idArquivo );
 

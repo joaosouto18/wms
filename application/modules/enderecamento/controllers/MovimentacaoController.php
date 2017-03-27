@@ -90,10 +90,10 @@ class Enderecamento_MovimentacaoController extends Action
             if ($estoqueEn != null) {
                 $unitizadorEstoque = $estoqueEn->getUnitizador();
             }
-            if ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque) {
+            if (!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque)) {
                 $this->addFlashMessage('error','É necessário informar o Unitizador!');
                 $this->_redirect('/enderecamento/movimentacao');
-            } else if ($data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
+            } else if (isset($data['idNormaPaletizacao']) && $data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
                 $idUnitizador = $data['idNormaPaletizacao'];
                 $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
                 $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
@@ -174,8 +174,13 @@ class Enderecamento_MovimentacaoController extends Action
                     echo $this->_helper->json(array('status' => 'success', 'msg' => 'Movimentação realizada com sucesso'));
                 }
             } else {
-                $this->addFlashMessage('success','Movimentação realizada com sucesso');
-                $this->_redirect('/enderecamento/movimentacao');
+                $msg = "Movimentação realizada com sucesso";
+                if ($data['quantidade'] >0) {
+                    $msg .= ' - <a href="'.$link.'" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir UMA</a>';
+                }
+                $this->addFlashMessage('success',$msg);
+
+                $this->_redirect('/enderecamento/movimentacao/');
                 $form->populate($data);
             }
         } catch(Exception $e) {

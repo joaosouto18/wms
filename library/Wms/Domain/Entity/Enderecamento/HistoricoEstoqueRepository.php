@@ -20,6 +20,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                        usu.login nomePessoa,
                        un.id as Unitizador,
                        NVL(vol.descricao, 'PRODUTO UNITÁRIO') as volume,
+                       e.validade,
                        un.descricao as Norma")
              ->from("wms:Enderecamento\HistoricoEstoque",'hist')
              ->innerJoin("hist.produto", "prod")
@@ -27,6 +28,7 @@ class HistoricoEstoqueRepository extends EntityRepository
              ->innerJoin("hist.usuario", "usu")
              ->leftJoin("hist.unitizador", "un")
              ->leftJoin("hist.produtoVolume","vol")
+             ->innerJoin('wms:Enderecamento\Estoque','e', 'WITH', "e.codProduto = prod.id AND e.grade = prod.grade AND e.depositoEndereco = dep.id")
              ->groupBy("hist.codProduto,
                         hist.grade,
                         hist.observacao,
@@ -37,6 +39,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                         usu.login,
                         un.id,
                         vol.descricao,
+                        e.validade,
                         un.descricao");
 
          if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
@@ -108,7 +111,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                 LEFT JOIN NORMA_PALETIZACAO N ON N.COD_NORMA_PALETIZACAO = PPROD.COD_NORMA_PALETIZACAO
                 LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = PA.COD_UNITIZADOR
                     WHERE ((HIST.DTH_MOVIMENTACAO >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
-                       AND (HIST.DTH_MOVIMENTACAO <= TO_DATE('$dataFim 00:00', 'DD-MM-YYYY HH24:MI')))
+                       AND (HIST.DTH_MOVIMENTACAO <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
                  GROUP BY
                        HIST.COD_PRODUTO ,
                           HIST.DSC_GRADE ,

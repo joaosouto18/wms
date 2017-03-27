@@ -91,6 +91,7 @@ class InventarioRepository extends EntityRepository
                        QTD_DIV_TOTAL,
                        QTD_INV_TOTAL,
                        DTH_INICIO,
+                       COD_INVENTARIO_ERP,
                        DTH_FINALIZACAO,
                        CASE WHEN STATUS = 'GERADO' THEN 1
                             WHEN STATUS = 'LIBERADO' THEN 2
@@ -108,7 +109,8 @@ class InventarioRepository extends EntityRepository
                        NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
                        NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
                        TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
-                       TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO
+                       TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO,
+                       I.COD_INVENTARIO_ERP
                   FROM INVENTARIO I
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
                   LEFT JOIN (SELECT COUNT(*) as QTD,
@@ -161,7 +163,8 @@ class InventarioRepository extends EntityRepository
                 'andamento' =>  $andamento,
                 'dataInicio' => $dataInicio,
                 'dataFinalizacao' => $dataFinal,
-                'status' => $row['STATUS']);
+                'status' => $row['STATUS'],
+                'codInvERP' => $row['COD_INVENTARIO_ERP']);
             $result[] = $values;
         }
 
@@ -203,6 +206,9 @@ class InventarioRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoProdutoRepository $enderecoProdutoRepo */
+        $enderecoProdutoRepo = $this->_em->getRepository('wms:Inventario\EnderecoProduto');
+
         $enderecosSalvos = array();
         foreach($codEnderecos as $chave) {
 
@@ -229,14 +235,11 @@ class InventarioRepository extends EntityRepository
                 $enderecosSalvos[] = $codEndereco;
             }
 
+            /*
             if (isset($codProduto) && ($codProduto != null)) {
-                $endProd = new EnderecoProduto();
-                $endProd->setCodProduto($codProduto);
-                $endProd->setGrade($grade);
-                $endProd->setProduto($this->_em->getRepository('wms:Produto')->findOneBy(array('id'=>$codProduto,'grade'=>$grade)));
-                $endProd->setInventarioEndereco($enderecoEn);
-                $this->_em->persist($endProd);
+                $enderecoProdutoRepo->save($codProduto, $grade, $enderecoEn);
             }
+            */
         }
 
         $this->_em->flush();
@@ -683,4 +686,19 @@ class InventarioRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function setCodInventarioERP($idInventario, $codInventarioERP)
+    {
+        if (!empty($idInventario) and !empty($codInventarioERP)) {
+            /** @var Inventario $inventarioEn */
+            $inventarioEn = $this->find($idInventario);
+            if (!empty($inventarioEn)){
+                $inventarioEn->setCodInventarioERP($codInventarioERP);
+                $this->_em->flush($inventarioEn);
+            } else {
+                throw new \Exception("Nenhum inventário encontrado com o código $idInventario!");
+            }
+        } else {
+            throw new \Exception("O número de inventário ou do código no ERP não foi informado!");
+        }
+    }
 }

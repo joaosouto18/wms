@@ -20,13 +20,13 @@ class Integracao
 {
     protected $_acao;
     protected $_dados;
+    protected $_options;
 
     /** @var EntityManager _em */
     protected $_em;
 
     public function __construct($em,$params)
     {
-
         $this->_em = $em;
         \Zend\Stdlib\Configurator::configure($this, $params);
     }
@@ -63,6 +63,43 @@ class Integracao
         $this->_dados = $dados;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getOptions()
+    {
+        return $this->_options;
+    }
+
+    /**
+     * @param mixed $options
+     */
+    public function setOptions($options)
+    {
+        $this->_options = $options;
+    }
+
+    public function getMaxDate() {
+        if (!(($this->getAcao()->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)
+            ||($this->getAcao()->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS))){
+            return new \DateTime();
+        }
+
+        $maxDate = null;
+        foreach ($this->_dados as $row) {
+
+            $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
+            if ($maxDate == null) {
+                $maxDate = $data;
+            }
+            if ($data > $maxDate) {
+                $maxDate = $data;
+            }
+        }
+        return $maxDate;
+    }
+
+
     public function processaAcao() {
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
@@ -70,10 +107,75 @@ class Integracao
                     return $this->processaProdutos($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_ESTOQUE:
                     return $this->processaEstoque($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                    return $this->processaPedido($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_RESUMO_CONFERENCIA:
+                    return $this->comparaResumoConferenciaExpedicao($this->_dados, $this->_options);
+                case AcaoIntegracao::INTEGRACAO_CONFERENCIA:
+                    return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    public function comparaConferenciaExpedicao ($dados, $options) {
+        $idCarga = null;
+        if (isset($options[0]) && ($options[0] != null)) {
+            $idCarga = $options[0];
+        } else {
+            throw new \Exception("Carga não definida nos parametros da consulta");
+        }
+
+        $expedicaoRepo    = $this->_em->getRepository('wms:Expedicao');
+
+        $idPedidoAnterior = null;
+        $produtos = array();
+        $pedidos = array();
+        $cargas = array();
+        foreach ($dados as $key => $row) {
+            $idCarga = $row['CARGA'];
+            $idPedido = $row['PEDIDO'];
+
+            $produto = array(
+                'idProduto' => $row['PRODUTO'],
+                'grade' => $row['GRADE'],
+                'qtd' =>$row['QTD']
+            );
+            $produtos[] = $produto;
+
+            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
+                $pedidos[$idPedido] = $produtos;
+                unset($produtos);
+                $produtos = array();
+            }
+
+            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
+                $cargas[$idCarga] = $pedidos;
+                unset($pedidos);
+                $pedidos = array();
+            }
+        }
+
+        return $expedicaoRepo->compareConferenciaByCarga($cargas,$idCarga);
+    }
+
+    public function comparaResumoConferenciaExpedicao ($dados, $options) {
+        $expedicaoRepo    = $this->_em->getRepository('wms:Expedicao');
+
+        $idCarga = null;
+        if (isset($options[0]) && ($options[0] != null)) {
+            $idCarga = $options[0];
+        } else {
+            throw new \Exception("Carga não definida nos parametros da consulta");
+        }
+
+        foreach ($dados as $row) {
+            if ($row['CARGA'] == $idCarga) {
+                return $expedicaoRepo->campareResumoConferenciaByCarga($row['QTD'], $idCarga);
+            }
+        }
+        throw new \Exception("Carga não encontrada na consulta do ERP");
     }
 
     public function processaEstoque($dados){
@@ -125,6 +227,86 @@ class Integracao
         $this->_em->flush();
         return true;
     }
+
+    public function processaPedido($dados) {
+        try {
+
+            $cargas = array();
+            $pedidos = array();
+            $produtos = array();
+
+            foreach ($dados as $key => $row) {
+                $idPedido = $row['PEDIDO'];
+                $idCarga = $row['CARGA'];
+
+                $produto = array(
+                    'codProduto' => $row['PRODUTO'],
+                    'grade'      => $row['GRADE'],
+                    'quantidade' => $row['QTD'],
+                    'valorVenda' => $row['VALOR_VENDA']
+                );
+                $produtos[] = $produto;
+
+                if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idPedido != $dados[$key+1]['PEDIDO']))) {
+                    $itinerario = array (
+                        'idItinerario' => $row['COD_ROTA'],
+                        'nomeItinerario' => $row['DSC_ROTA']
+                    );
+
+                    $cliente = array(
+                        'codCliente'  => $row['COD_CLIENTE'],
+                        'bairro'      => $row['BAIRRO'],
+                        'cidade'      => $row['CIDADE'],
+                        'complemento' => $row['COMPLEMENTO'],
+                        'cpf_cnpj'    => $row['CPF_CNPJ'],
+                        'logradouro'  => $row['LOGRADOURO'],
+                        'nome'        => $row['NOME'],
+                        'numero'      => $row['NUMERO'],
+                        'referencia'  => $row['REFERENCIA'],
+                        'tipoPessoa'  => $row['TIPO_PESSOA'],
+                        'uf'          => $row['UF'],
+                        'cep'         => $row['CEP']
+                    );
+
+                    $pedido = array(
+                        'codPedido'    => $idPedido,
+                        'cliente'      => $cliente,
+                        'itinerario'   => $itinerario,
+                        'produtos'     => $produtos,
+                        'linhaEntrega' => $row['DSC_ROTA']
+                    );
+
+                    $pedidos[] = $pedido;
+
+                    unset($produtos);
+                    $produtos = array();
+                }
+
+
+                if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
+                    $carga = array(
+                        'idCarga' => $idCarga,
+                        'placaExpedicao' => $row['PLACA'],
+                        'placa' => $row['PLACA'],
+                        'pedidos' => $pedidos
+                    );
+                    $cargas[] = $carga;
+
+                    unset($pedidos);
+                    $pedidos = array();
+                }
+            }
+
+            $wsExpedicao = new \Wms_WebService_Expedicao();
+            $wsExpedicao->enviar($cargas);
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
+            return false;
+        }
+
+    }
+
 
     public function processaProdutos($dados){
         ini_set('memory_limit', '-1');

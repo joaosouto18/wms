@@ -1452,7 +1452,7 @@ class RecebimentoRepository extends EntityRepository
                   LEFT JOIN SIGLA                    SUMA  ON UMA.COD_STATUS = SUMA.COD_SIGLA
                   LEFT JOIN DEPOSITO_ENDERECO           DE ON UMA.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                       WHERE ((REC.DTH_INICIO_RECEB >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))
-                        AND (REC.DTH_FINAL_RECEB <= TO_DATE('$dataFim 00:00', 'DD-MM-YYYY HH24:MI')))
+                        AND (REC.DTH_FINAL_RECEB <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI')))
                         AND REC.COD_STATUS = $statusFinalizado
                   ORDER BY REC.COD_RECEBIMENTO,
 				           NF.NUM_NOTA_FISCAL,

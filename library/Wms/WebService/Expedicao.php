@@ -74,8 +74,28 @@ class carga {
     public $tipo;
     /** @var string */
     public $situacao;
+    /** @var string */
+    public $veiculo;
+    /** @var string */
+    public $dataFechamento;
     /** @var pedido[] */
     public $pedidos = array();
+    /** @var string */
+    public $motorista;
+    /** @var string */
+    public $linhaEntrega;
+    /** @var double */
+    public $peso;
+    /** @var double */
+    public $cubagem;
+    /** @var double */
+    public $valor;
+    /** @var int */
+    public $volumes;
+    /** @var int */
+    public $entregas;
+    /** @var int */
+    public $qtdPedidos;
 }
 
 class pedidoFaturado {
@@ -105,7 +125,7 @@ class notaFiscalProduto {
     public $codProduto;
     /** @var string */
     public $grade;
-    /** @var string */
+    /** @var integer */
     public $qtd;
     /** @var double */
     public $valorVenda;
@@ -1027,7 +1047,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
                     }
 
-                    $nfPedidoEntity->setCodPedido($notaFiscal->pedido);
+                    $nfPedidoEntity->setCodPedido($pedidoEn->getId());
                     $nfPedidoEntity->setPedido($pedidoEn);
                     $this->_em->persist($nfPedidoEntity);
                 }
@@ -1152,5 +1172,44 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         return true;
     }
+
+
+    /**
+     * Informa a listagem de cargas por data
+     *
+     * @param string $dataInicial
+     * @param string $dataFinal
+     * @return carga[]
+     */
+    public function listCargas($dataInicial, $dataFinal) {
+        try{
+
+            $expedicaoRepo = $this->_em->getRepository('wms:Expedicao');
+            $cargas = $expedicaoRepo->getCargasFechadasByData($dataInicial,$dataFinal);
+
+            $objCargas = array();
+            foreach ($cargas as $carga) {
+                $objCarga = new carga();
+                $objCarga->codCarga = $carga['COD_CARGA_EXTERNO'];
+                $objCarga->veiculo = $carga['DSC_PLACA_EXPEDICAO'];
+                $objCarga->motorista = $carga['NOM_MOTORISTA'];
+                $objCarga->linhaEntrega = $carga['DSC_LINHA_ENTREGA'];
+                $objCarga->peso = $carga['NUM_PESO'];
+                $objCarga->cubagem = $carga['NUM_CUBAGEM'];
+                $objCarga->valor = $carga['VLR_CARGA'];
+                $objCarga->dataFechamento = $carga['DTH_FINALIZACAO'];
+                $objCarga->volumes = $carga['VOLUMES'];
+                $objCarga->entregas = $carga['ENTREGAS'];
+                $objCarga->qtdPedidos = $carga['QTD_PEDIDOS'];
+
+                $objCargas[] = $objCarga;
+            }
+            return $objCargas;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+
+}
 
 }

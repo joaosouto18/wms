@@ -270,13 +270,15 @@ class ExpedicaoRepository extends EntityRepository
                         PEDIDO.COD_PRODUTO AS Codigo,
                         PEDIDO.DSC_GRADE AS Grade,
                         PROD.DSC_PRODUTO as Produto,
+                        DE.DSC_DEPOSITO_ENDERECO as Picking,
                         NVL(E.QTD,0) AS Estoque,
                         (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
                    FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
                            FROM PEDIDO P
                           INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                          LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
                           INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-                          WHERE P.CENTRAL_ENTREGA = $central
+                          WHERE P.CENTRAL_ENTREGA = $central  AND ORP.COD_PEDIDO IS NULL
                           GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
               LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
                            FROM PRODUTO P
@@ -301,6 +303,12 @@ class ExpedicaoRepository extends EntityRepository
                      ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
               LEFT JOIN PRODUTO PROD
                      ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
+              LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PROD.COD_PRODUTO
+                                         AND PV.DSC_GRADE = PROD.DSC_GRADE
+              LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = PROD.COD_PRODUTO
+                                            AND PE.DSC_GRADE = PROD.DSC_GRADE
+              LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+                                             OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
                   WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
                     AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
                   ORDER BY Codigo, Grade, Produto
@@ -309,6 +317,66 @@ class ExpedicaoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function campareResumoConferenciaByCarga ($qtd, $idCargaExterno) {
+        $SQL = "SELECT  C.COD_CARGA_EXTERNO as CARGA,
+                                SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
+                           FROM PEDIDO_PRODUTO PP
+                           LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                           LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                          WHERE C.COD_CARGA_EXTERNO = $idCargaExterno
+                          GROUP BY COD_CARGA_EXTERNO";
+
+
+        $values = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        if (count($values) == 0) {
+            throw new \Exception("Carga $idCargaExterno não encontrada no WMS");
+        }
+        if ($values[0]['QTD'] == $qtd) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function compareConferenciaByCarga($dados,$idCargaExterno) {
+        $SQL = "SELECT C.COD_CARGA_EXTERNO as CARGA,
+                       P.COD_PEDIDO,
+                       PP.COD_PRODUTO,
+                       PP.DSC_GRADE,
+                       SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                  WHERE C.COD_CARGA_EXTERNO = $idCargaExterno
+                  GROUP BY COD_CARGA_EXTERNO,
+                           P.COD_PEDIDO,
+                           PP.COD_PRODUTO,
+                           PP.DSC_GRADE
+                  ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
+        $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($pedidosWMS as $pedidoProdutoWms) {
+            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
+                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
+                $encontrouProduto = false;
+                foreach ($pedidoERP as $produtoERP) {
+                    if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
+                        $encontrouProduto = true;
+                        if ($produtoERP['qtd'] != $pedidoProdutoWms['QTD']) {
+                            throw new \Exception("Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]");
+                        }
+                    }
+                }
+
+                if ($encontrouProduto == false) {
+                    throw new \Exception("Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]");
+                }
+            } else {
+                throw new \Exception("Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP");
+            }
+        }
+
+        throw new \Exception("Divergencia de conferencia com o ERP na carga " . $idCargaExterno);
+    }
 
     public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
     {
@@ -347,10 +415,10 @@ class ExpedicaoRepository extends EntityRepository
                                     p.descricao";
                 break;
             case 2:
-                $order = " ORDER BY ls.descricao,
+                $order = " ORDER BY e.nivel,
+                                    ls.descricao,
                                     e.rua,
                                     e.predio,
-                                    e.nivel,
                                     e.apartamento,
                                     p.descricao";
                 break;
@@ -451,7 +519,27 @@ class ExpedicaoRepository extends EntityRepository
             ->distinct(true)
             ->setParameter('idExpedicao', $idExpedicao);
 
-        return $source->getQuery()->getArrayResult();
+        $result = $source->getQuery()->getArrayResult();
+
+        if (count($result) == 0) {
+            $source = $this->getEntityManager()->createQueryBuilder()
+                ->select('r.codCarga')
+                ->from('wms:Expedicao', 'e')
+                ->innerJoin('wms:Expedicao\Carga', 'c', 'WITH', 'e.id = c.expedicao')
+                ->innerJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'c.id = r.carga')
+                ->where('e.id = :idExpedicao')
+                ->distinct(true)
+                ->setParameter('idExpedicao', $idExpedicao);
+            if (count($source->getQuery()->getArrayResult()) >0) {
+                $sessao = new \Zend_Session_Namespace('deposito');
+                $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+                $central = $deposito->getFilial()->getCodExterno();
+
+                $result =array(0=>array('centralEntrega'=>$central));
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -559,6 +647,13 @@ class ExpedicaoRepository extends EntityRepository
                     return $result;
                 }
 
+                if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+                    $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                    if (is_string($result)) {
+                        return $result;
+                    }
+                }
+
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
@@ -637,6 +732,46 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         $this->getEntityManager()->flush();
+    }
+
+    public function validaConferenciaERP ($idExpedicao) {
+        try{
+            $idAcaoResumo = $this->getSystemParameterValue("COD_ACAO_INTEGRACAO_RESUMO_CONFERENCIA_EXPEDICAO");
+            $idAcaoConferencia = $this->getSystemParameterValue("COD_ACAO_INTEGRACAO_CONFERENCIA_EXPEDICAO");
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+            $cargas = $this->getEntityManager()->getRepository("wms:Expedicao\Carga")->findBy(array('codExpedicao'=>$idExpedicao));
+
+            $acaoResumoEn = $acaoIntRepo->find($idAcaoResumo);
+            $acaoConferenciaEn = $acaoIntRepo->find($idAcaoConferencia);
+
+            if ($acaoResumoEn == null) {
+                throw new \Exception("Ação de Verificação de Resumo da Conferencia não encontrada no sistema");
+            }
+
+            if ($acaoConferenciaEn == null) {
+                throw new \Exception("Ação de Verificação de Conferencia não encontrada no sistema");
+            }
+
+            foreach ($cargas as $cargaEn) {
+                $options = array();
+                $options[] = $cargaEn->getCodCargaExterno();
+                $result = $acaoIntRepo->processaAcao($acaoResumoEn,$options);
+                if (!($result === false)) {
+                    $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options);
+                    if (!($result === true)) {
+                        throw new \Exception($result);
+                    }
+                }
+            }
+
+        } catch(\Exception $e) {
+            return $e->getMessage();
+        }
+
+        return true;
     }
 
     public function validaVolumesPatrimonio($idExpedicao){
@@ -1819,7 +1954,11 @@ class ExpedicaoRepository extends EntityRepository
                 LEFT JOIN ESTOQUE ES2 ON ES2.COD_PRODUTO = MSC.COD_PRODUTO AND ES2.COD_PRODUTO_VOLUME = VOL.COD_PRODUTO_VOLUME
                 INNER JOIN PESSOA CONF ON EVP.COD_USUARIO = CONF.COD_PESSOA
                 INNER JOIN VOLUME_PATRIMONIO VP ON MSC.COD_VOLUME_PATRIMONIO = VP.COD_VOLUME_PATRIMONIO
-                WHERE MSC.COD_VOLUME_PATRIMONIO = $idVolume AND MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (523,526,531,532)" ;
+                WHERE  MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_STATUS IN (523,526,531,532)" ;
+
+        if ($idVolume != null) {
+            $sql = $sql . " AND MSC.COD_VOLUME_PATRIMONIO = $idVolume";
+        }
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -2794,5 +2933,41 @@ class ExpedicaoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
 
     }
+
+    public function getCargasFechadasByData($dataInicial, $dataFinal) {
+        $SQL =" SELECT  C.COD_CARGA_EXTERNO,
+                        C.DSC_PLACA_EXPEDICAO,
+                        '' as NOM_MOTORISTA,
+                        L.DSC_LINHA_ENTREGA,
+                        NVL(SUM(PROD.NUM_PESO * PP.QUANTIDADE),0) as NUM_PESO,
+                        NVL(SUM(PROD.NUM_CUBAGEM * PP.QUANTIDADE),0) as NUM_CUBAGEM,
+                        NVL(SUM(NVL(PP.VALOR_VENDA,0)),0) as VLR_CARGA,
+                        NVL(SUM(PP.QUANTIDADE),0) as VOLUMES,
+                        NVL(COUNT(DISTINCT(P.COD_PEDIDO)),0) as QTD_PEDIDOS,
+                        NVL(COUNT(DISTINCT(P.COD_PESSOA)),0) as ENTREGAS,
+                        TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO
+                  FROM CARGA C
+                  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN (SELECT MAX(NUM_PESO), DSC_LINHA_ENTREGA, COD_CARGA FROM (
+                                    SELECT SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO, P.DSC_LINHA_ENTREGA, P.COD_CARGA
+                                      FROM PEDIDO P
+                                      LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                                      LEFT JOIN SUM_PESO_PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                                      GROUP BY P.DSC_LINHA_ENTREGA, P.COD_CARGA) GROUP BY COD_CARGA, DSC_LINHA_ENTREGA) L
+                         ON L.COD_CARGA = C.COD_CARGA
+                  WHERE 1 = 1
+                  AND E.DTH_FINALIZACAO >= TO_DATE('$dataInicial','DD/MM/YYYY HH24:MI')
+                  AND E.DTH_FINALIZACAO <= TO_DATE('$dataFinal','DD/MM/YYYY HH24:MI')
+                  AND E.COD_STATUS IN (530,465)
+                  GROUP BY C.COD_CARGA_EXTERNO, C.DSC_PLACA_EXPEDICAO, E.DTH_FINALIZACAO, L.DSC_LINHA_ENTREGA";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
+    }
+
 
 }

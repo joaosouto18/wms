@@ -78,7 +78,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
         if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
-            throw new \Exception(utf8_encode('N�o existe produtos conferidos para esse volume embalado!'));
+            throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
         $this->getEntityManager()->beginTransaction();

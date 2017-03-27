@@ -1,49 +1,8 @@
-<script>
-    $(document).ready(function(){
-        $('#todos').live('click',function(){
-            var checked_status = this.checked;
-            $("input").each(function()
-            {
-                this.checked = checked_status;
-            });
-        });
-
-        $('.btn').click(function (a) {
-            var arr = [];
-            for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
-                arr[i] = $('input[name="cargas"]:checked')[i].value;
-            }
-            $.ajax({
-                url: URL_MODULO + '/' + $('#controller').val() + '/' + $('#action').val() + '/id/' + $('#expedicao').val() + '/central/' + $(this).attr('id'),
-                type: 'POST',
-                data: {
-                    cargas: arr
-                },
-                success: function(data){
-                    if (data.substring(0,5) == 'error') {
-                        alert('ERRO: ' + data.substring(6));
-                        return
-                    }
-                    a.preventDefault();
-                    $.wmsDialogAjax({
-                        width: 750,
-                        height: 450,
-                        url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/'+$('#expedicao').val(),
-                        title: 'Mapas Pendentes de Impressão'
-                    });
-                }
-            });
-
-        });
-
-    });
-</script>
-
 <h2>Expedição: <?php echo $this->expedicao ?></h2>
 <div class="padding-top">
 
     <?php if ($this->cargas) : ?>
-        <p><b>Selecione as cargas</b> - <input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas<br></p>
+        <p><b>Selecione as cargas</b> - <label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label><br></p>
 
         <div id="cargas">
             <?php foreach($this->cargas as $carga) : ?>
@@ -56,7 +15,7 @@
                        value="<?php echo $carga['codCargaExterno']?>"
                        >
                 Carga <?php echo $carga['codCargaExterno']?>
-                </label>
+                </label><br />
             <?php endforeach ?>
         </div>
     <?php endif; ?>
@@ -73,3 +32,50 @@
         <?php endforeach; ?>
     </ul>
 </div>
+
+<script>
+    $(function(){
+
+        $('#todos').click(function () {
+            var checked_status = this.checked;
+            $(".checkBoxClass").each(function() {
+                this.checked = checked_status;
+            });
+        });
+
+        $('.btn').click(function (a) {
+            var arr = [];
+            for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
+                arr[i] = $('input[name="cargas"]:checked')[i].value;
+            }
+//            if (arr.length == 0){
+//                alert("Selecione uma carga!");
+//                return false;
+//            }
+            $.ajax({
+                url: URL_MODULO + '/' + $('#controller').val() + '/' + $('#action').val() + '/id/' + $('#expedicao').val() + '/central/' + $(this).attr('id'),
+                type: 'POST',
+                data: { cargas: arr },
+                success: function(data){
+                    if (data.status == 'error') {
+                        if (data.link == ''){
+                            alert(data.msg);
+                        } else {
+                            if(confirm(data.msg)){
+                                window.open(data.link,'_blank')
+                            }
+                        }
+                        return
+                    }
+                    a.preventDefault();
+                    $.wmsDialogAjax({
+                        width: 750,
+                        height: 450,
+                        url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/'+$('#expedicao').val(),
+                        title: 'Mapas Pendentes de Impressão'
+                    });
+                }
+            });
+        });
+    });
+</script>

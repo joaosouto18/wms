@@ -182,6 +182,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 success: function (data) {
                     if (data === 'N') {
                         $('#fieldset-embalagem #embalagem-codigoBarras').attr("disabled", true);
+                        $('#fieldset-embalagem #embalagem-quantidade').attr("disabled", true);
                     }
                 }
             });
@@ -632,11 +633,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                         }
                     }
                 });
-                return false;
-            }
-
-            if (endereco.length < 12 || endereco.length > 13){
-                alert('Formato inválido de Endereço.');
                 return false;
             }
 
