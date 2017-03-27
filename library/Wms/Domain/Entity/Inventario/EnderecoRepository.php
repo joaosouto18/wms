@@ -15,12 +15,12 @@ class EnderecoRepository extends EntityRepository
     public function save($params)
     {
 
-        if (empty($params['codInventario'])) {
-            throw new \Exception("codInventario não pode ser vazio");
+        if (empty($params['codInventario']) and empty($params['inventarioEn'])) {
+            throw new \Exception("O inventário não foi especificado");
         }
 
-        if (empty($params['codDepositoEndereco'])) {
-            throw new \Exception("codDepositoEndereco não pode ser vazio");
+        if (empty($params['codDepositoEndereco']) and empty($params['depositoEnderecoEn'])) {
+            throw new \Exception("O endereço não foi especificado");
         }
 
         $em = $this->getEntityManager();
@@ -29,9 +29,18 @@ class EnderecoRepository extends EntityRepository
 
             $enInvEndereco = new Endereco();
 
-            $inventarioEntity = $em->getReference('wms:Inventario',$params['codInventario']);
+            if (isset($params['inventarioEn']) and !empty($params['inventarioEn'])) {
+                $inventarioEntity = $params['inventarioEn'];
+            } else {
+                $inventarioEntity = $em->getReference('wms:Inventario',$params['codInventario']);
+            }
             $enInvEndereco->setInventario($inventarioEntity);
-            $enderecoEntity = $em->getReference('wms:Deposito\Endereco',$params['codDepositoEndereco']);
+
+            if (isset($params['depositoEnderecoEn']) and !empty($params['depositoEnderecoEn'])) {
+                $enderecoEntity = $params['depositoEnderecoEn'];
+            } else {
+                $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $params['codDepositoEndereco']);
+            }
             $enInvEndereco->setDepositoEndereco($enderecoEntity);
 
             $em->persist($enInvEndereco);

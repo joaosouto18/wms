@@ -48,6 +48,9 @@ $tL1 = 0;
             </div>
         </div>
     </div>
+    <div id="importEnd" style="display: none; padding: 13px">
+        <p style="color: darkgreen; font-size:20px">Importação Concluída!</p>
+    </div>
     <div id="tbError" style="display: none">
         <p>Ocorrêcia(s) durante a importação:</p>
         <table class="table" style="width: 740px;">
@@ -115,6 +118,9 @@ $tL1 = 0;
             if (status.exception != null){
                 $("<h2>").text("Linha: "+status.iLinha+ "  -  " + status.exception ).appendTo("#excptMsg");
                 $("#excptRw").show();
+            }
+            if (status.success === true){
+                $("#importEnd").show();
             }
         }
     }
