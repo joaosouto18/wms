@@ -113,6 +113,8 @@ class Integracao
                     return $this->comparaResumoConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_CONFERENCIA:
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
+                case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS;
+                    return $this->processaNotasFiscais($this->_dados);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -307,6 +309,27 @@ class Integracao
 
     }
 
+    public function processaNotasFiscais($dados)
+    {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
+
+        $importacaoService = new Importacao(true);
+        $fornecedoresArray = array();
+        foreach ($dados as $notaFiscal) {
+            if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedoresArray)) {
+                $fornecedoresArray[$notaFiscal['COD_FORNECEDOR']] = array(
+                    'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                    'cpf_cnpj' => $notaFiscal['CPF_CNPJ'],
+                    'nome' => $notaFiscal['NOM_FORNECEDOR']
+                    );
+            }
+
+        }
+
+
+    }
+
 
     public function processaProdutos($dados){
         ini_set('memory_limit', '-1');
@@ -317,7 +340,7 @@ class Integracao
                 'classeRepo'            => $this->_em->getRepository('wms:Produto\Classe'),
                 'parametroRepo'         => $this->_em->getRepository('wms:Sistema\Parametro'),
                 'produtoAndamentoRepo'  => $this->_em->getRepository('wms:Produto\Andamento'),
-                'produtoRepo'  => $this->_em->getRepository('wms:Produto'),
+                'produtoRepo'           => $this->_em->getRepository('wms:Produto'),
                 'enderecoRepo'          => $this->_em->getRepository('wms:Deposito\Endereco'),
                 'embalagemRepo'         => $this->_em->getRepository('wms:Produto\Embalagem')
             );
