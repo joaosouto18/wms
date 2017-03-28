@@ -341,13 +341,10 @@ class Integracao
                 'quantidade' => $notaFiscal['QTD_ITEM'],
                 'peso' => $notaFiscal['QTD_ITEM']
             );
+
             $importacaoService->saveNotaFiscal($em, $notaFiscal['COD_FORNECEDOR'], $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
         }
-
-
-
     }
-
 
     public function processaProdutos($dados){
         ini_set('memory_limit', '-1');
