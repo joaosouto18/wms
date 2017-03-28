@@ -112,6 +112,7 @@ class PedidoRepository extends EntityRepository
     /**
      * @param $idPedido
      * @param $status
+     * @return bool
      * @throws \Exception
      */
     public function gerarEtiquetasById($idPedido, $status)
@@ -124,10 +125,36 @@ class PedidoRepository extends EntityRepository
                 $pedidoEn = $this->findOneBy(array('id' => $idPedido));
                 $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
-                $EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status, $idModeloSeparacaoPadrao);
+                $em = $this->getEntityManager();
+
+                $arrayRepositorios = array(
+                    'expedicao'           => $em->getRepository('wms:Expedicao'),
+                    'filial'              => $em->getRepository('wms:Filial'),
+                    'etiquetaSeparacao'   => $em->getRepository('wms:Expedicao\EtiquetaSeparacao'),
+                    'depositoEndereco'    => $em->getRepository('wms:Deposito\Endereco'),
+                    'modeloSeparacao'     => $em->getRepository('wms:Expedicao\ModeloSeparacao'),
+                    'etiquetaConferencia' => $em->getRepository('wms:Expedicao\EtiquetaConferencia'),
+                    'produtoEmbalagem'    => $em->getRepository('wms:Produto\Embalagem'),
+                    'mapaSeparacaoProduto'=> $em->getRepository('wms:Expedicao\MapaSeparacaoProduto'),
+                    'mapaSeparacaoPedido' => $em->getRepository('wms:Expedicao\MapaSeparacaoPedido'),
+                    'cliente'             => $em->getRepository('wms:Pessoa\Papel\Cliente'),
+                    'praca'               => $em->getRepository('wms:MapaSeparacao\Praca'),
+                    'mapaSeparacao'       => $em->getRepository('wms:Expedicao\MapaSeparacao'),
+                    'andamentoNf'         => $em->getRepository('wms:Expedicao\NotaFiscalSaidaAndamento'),
+                    'reentrega'           => $em->getRepository('wms:Expedicao\Reentrega'),
+                    'pedidoProduto'       => $em->getRepository('wms:Expedicao\PedidoProduto'),
+                    'nfPedido'            => $em->getRepository('wms:Expedicao\NotaFiscalSaidaPedido'),
+                    'nfSaida'             => $em->getRepository('wms:Expedicao\NotaFiscalSaida'),
+                    'produto'             => $em->getRepository('wms:Produto')
+                );
+
+                if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao, $arrayRepositorios) > 0 ) {
+                    throw new \Exception ("Existem produtos sem definição de volume");
+                }
+                return true;
             }
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw new \Exception ($e->getMessage());
         }
     }
 
