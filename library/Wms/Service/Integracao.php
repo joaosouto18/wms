@@ -3,6 +3,7 @@
 namespace Wms\Service;
 
 
+use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
@@ -314,18 +315,35 @@ class Integracao
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', '-1');
 
-        $importacaoService = new Importacao(true);
-        $fornecedoresArray = array();
-        foreach ($dados as $notaFiscal) {
-            if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedoresArray)) {
-                $fornecedoresArray[$notaFiscal['COD_FORNECEDOR']] = array(
-                    'idExterno' => $notaFiscal['COD_FORNECEDOR'],
-                    'cpf_cnpj' => $notaFiscal['CPF_CNPJ'],
-                    'nome' => $notaFiscal['NOM_FORNECEDOR']
-                    );
-            }
 
+        $em = $this->_em;
+        $importacaoService = new Importacao(true);
+        $itens = array();
+        foreach ($dados as $notaFiscal) {
+            $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
+            if (strlen($cpf_cnpj) == 11) {
+                $tipoPessoa = 'F';
+            } else {
+                $tipoPessoa = 'J';
+            }
+            $fornecedorArray = array(
+                'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                'cpf_cnpj' => $cpf_cnpj,
+                'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                'tipoPessoa' => $tipoPessoa
+            );
+            $importacaoService->saveFornecedor($em,$fornecedorArray);
+
+            $itens[] = array(
+                'idProduto' => $notaFiscal['COD_PRODUTO'],
+                'grade' => $notaFiscal['DSC_GRADE'],
+                'quantidade' => $notaFiscal['QTD_ITEM'],
+                'peso' => $notaFiscal['QTD_ITEM']
+            );
+            $importacaoService->saveNotaFiscal($em, $notaFiscal['COD_FORNECEDOR'], $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
         }
+
 
 
     }
