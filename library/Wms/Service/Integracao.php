@@ -114,7 +114,7 @@ class Integracao
                     return $this->comparaResumoConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_CONFERENCIA:
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
-                case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS;
+                case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     return $this->processaNotasFiscais($this->_dados);
             }
         } catch (\Exception $e) {
@@ -344,6 +344,8 @@ class Integracao
 
             $importacaoService->saveNotaFiscal($em, $notaFiscal['COD_FORNECEDOR'], $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
         }
+
+        return true;
     }
 
     public function processaProdutos($dados){
