@@ -23,7 +23,7 @@ class Soap_IndexController extends Core\Controller\Action\WebService
     {
         parent::init();
 
-/*        $parametroRepo = $this->em->getRepository('wms:Sistema\Parametro');
+        $parametroRepo = $this->em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'ID_USER_ERP'));
 
         if (!empty($parametro)){
@@ -47,15 +47,7 @@ class Soap_IndexController extends Core\Controller\Action\WebService
         //gero o perfil
         $perfil = implode('-', $perfis);
         //seto o RoleId para o zf
-        $usuario->setRoleId($perfil);*/
-
-        $idUsuario = APPLICATION_ENV == 'development' ? 142 : 1;
-
-        $usuario = $this->em->getReference('wms:Usuario', $idUsuario);
-        $auth = \Zend_Auth::getInstance();
-        $storage = $auth->getStorage();
-        $storage->clear();
-        $storage->write($usuario);
+        $usuario->setRoleId($perfil);
 
         $auth = \Zend_Auth::getInstance();
         $storage = $auth->getStorage();
