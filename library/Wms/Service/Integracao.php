@@ -317,6 +317,8 @@ class Integracao
 
 
         $em = $this->_em;
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
+        $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
         $importacaoService = new Importacao(true);
         $itens = array();
         foreach ($dados as $notaFiscal) {
@@ -335,6 +337,10 @@ class Integracao
             );
             $importacaoService->saveFornecedor($em,$fornecedorArray);
 
+            if (isset($notaFiscal['COD_FORNECEDOR'])) {
+                $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $notaFiscal['COD_FORNECEDOR']));
+            }
+
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
                 'grade' => $notaFiscal['DSC_GRADE'],
@@ -342,7 +348,7 @@ class Integracao
                 'peso' => $notaFiscal['QTD_ITEM']
             );
 
-            $importacaoService->saveNotaFiscal($em, $notaFiscal['COD_FORNECEDOR'], $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
+            $importacaoService->saveNotaFiscal($em, $entityFornecedor->getId(), $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
         }
 
         return true;
