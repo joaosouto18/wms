@@ -388,7 +388,12 @@ class Importacao
     {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-        $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $idFornecedor));
+        /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
+        $fornecedorRepo = $em->getRepository('wms:Pessoa\Papel\Fornecedor');
+        if (isset($idFornecedor)) {
+            $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $idFornecedor));
+        }
+        $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $entityFornecedor->getId()));
 
         if (!$notaFiscalEn) {
             $entityNotaFiscal = $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao);
