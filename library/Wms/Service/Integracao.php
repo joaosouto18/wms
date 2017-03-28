@@ -3,6 +3,7 @@
 namespace Wms\Service;
 
 
+use Core\Util\String;
 use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
@@ -113,6 +114,8 @@ class Integracao
                     return $this->comparaResumoConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_CONFERENCIA:
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
+                case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS;
+                    return $this->processaNotasFiscais($this->_dados);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -307,6 +310,41 @@ class Integracao
 
     }
 
+    public function processaNotasFiscais($dados)
+    {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
+
+
+        $em = $this->_em;
+        $importacaoService = new Importacao(true);
+        $itens = array();
+        foreach ($dados as $notaFiscal) {
+            $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
+            if (strlen($cpf_cnpj) == 11) {
+                $tipoPessoa = 'F';
+            } else {
+                $tipoPessoa = 'J';
+            }
+            $fornecedorArray = array(
+                'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                'cpf_cnpj' => $cpf_cnpj,
+                'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                'tipoPessoa' => $tipoPessoa
+            );
+            $importacaoService->saveFornecedor($em,$fornecedorArray);
+
+            $itens[] = array(
+                'idProduto' => $notaFiscal['COD_PRODUTO'],
+                'grade' => $notaFiscal['DSC_GRADE'],
+                'quantidade' => $notaFiscal['QTD_ITEM'],
+                'peso' => $notaFiscal['QTD_ITEM']
+            );
+
+            $importacaoService->saveNotaFiscal($em, $notaFiscal['COD_FORNECEDOR'], $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
+        }
+    }
 
     public function processaProdutos($dados){
         ini_set('memory_limit', '-1');
@@ -317,7 +355,7 @@ class Integracao
                 'classeRepo'            => $this->_em->getRepository('wms:Produto\Classe'),
                 'parametroRepo'         => $this->_em->getRepository('wms:Sistema\Parametro'),
                 'produtoAndamentoRepo'  => $this->_em->getRepository('wms:Produto\Andamento'),
-                'produtoRepo'  => $this->_em->getRepository('wms:Produto'),
+                'produtoRepo'           => $this->_em->getRepository('wms:Produto'),
                 'enderecoRepo'          => $this->_em->getRepository('wms:Deposito\Endereco'),
                 'embalagemRepo'         => $this->_em->getRepository('wms:Produto\Embalagem')
             );

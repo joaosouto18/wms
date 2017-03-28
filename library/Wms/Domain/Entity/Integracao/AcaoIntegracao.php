@@ -17,6 +17,7 @@ class AcaoIntegracao
     const INTEGRACAO_PEDIDOS = "602";
     const INTEGRACAO_RESUMO_CONFERENCIA = "603";
     const INTEGRACAO_CONFERENCIA = "604";
+    const INTEGRACAO_NOTAS_FISCAIS = 605;
 
     /**
      * @Id
