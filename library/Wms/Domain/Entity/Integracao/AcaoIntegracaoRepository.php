@@ -24,12 +24,12 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
 
-                //PARAMETRIZA A DATA DE ULTIMA EXECUÇÃO DA QUERY
+                //PARAMETRIZA A DATA DE ULTIMA EXECUï¿½ï¿½O DA QUERY
                 if ($acaoEn->getDthUltimaExecucao() == null) {
-                    $dthExecucao = '01/01/1900 01:01:01';
+                    $dthExecucao = "TO_DATE('01/01/1900 01:01:01','DD/MM/YY HH24:MI:SS')";
                     if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
-                        $query = str_replace("and p.dtcadastro>=:dthExecucao", "" ,$query);
-                        $query = str_replace("AND (log.datainicio >= :dthExecucao OR p.dtultaltcom >= :dthExecucao)", "" ,$query);
+                        $query = str_replace("and p.dtcadastro > :dthExecucao", "" ,$query);
+                        $query = str_replace("AND (log.datainicio > :dthExecucao OR p.dtultaltcom > :dthExecucao)", "" ,$query);
                     }
                 } else {
                     $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YY HH24:MI:SS')";
@@ -37,7 +37,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
-                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÇÃO PARA INTEGRAÇÕES NO WINTHOR
+                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAï¿½ï¿½O PARA INTEGRAï¿½ï¿½ES NO WINTHOR
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
 
                 //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
@@ -87,7 +87,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             if ($sucess=="S") {
                 $maxDate = $integracaoService->getMaxDate();
                 if (!is_null($maxDate)) {
-                    $acaoEn->setDthUltimaExecucao($integracaoService->getMaxDate());
+                    $acaoEn->setDthUltimaExecucao($maxDate);
                     $this->_em->persist($acaoEn);
                 }
             }
