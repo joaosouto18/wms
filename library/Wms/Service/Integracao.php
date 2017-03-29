@@ -375,6 +375,9 @@ class Integracao
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
+            if ($nf['codFornecedor'] == 559) {
+                var_dump($nf['codFornecedor']); exit;
+            }
             $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N');
             if ($count == 50) {
                 $count =0;
