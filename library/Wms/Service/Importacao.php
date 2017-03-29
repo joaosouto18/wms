@@ -295,6 +295,8 @@ class Importacao
 
         $entityPessoa = null;
 
+        var_dump($fornecedor['tipoPessoa']);
+        var_dump($entityFornecedor); exit;
         if ($entityFornecedor == null) {
 
             switch ($fornecedor['tipoPessoa']) {

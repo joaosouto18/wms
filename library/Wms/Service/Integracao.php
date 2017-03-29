@@ -371,8 +371,7 @@ class Integracao
         foreach ($fornecedores as $fornecedor){
             $importacaoService->saveFornecedor($em,$fornecedor);
         }
-        var_dump($fornecedores); exit;
-        $em->flush();      
+        $em->flush();
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
