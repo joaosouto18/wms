@@ -295,8 +295,6 @@ class Importacao
 
         $entityPessoa = null;
 
-        var_dump($fornecedor['tipoPessoa']);
-        var_dump($entityFornecedor); exit;
         if ($entityFornecedor == null) {
 
             switch ($fornecedor['tipoPessoa']) {
@@ -342,11 +340,10 @@ class Importacao
                 /** @var SiglaRepository $SiglaRepo */
                 $SiglaRepo = $em->getRepository('wms:Util\Sigla');
                 $entitySigla = $SiglaRepo->findOneBy(array('referencia' => $fornecedor['uf']));
+                $fornecedor['cep'] = (isset($fornecedor['cep']) && !empty($fornecedor['cep']) ? $fornecedor['cep'] : '');
+                $fornecedor['enderecos'][0]['acao'] = 'incluir';
+                $fornecedor['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::COMERCIAL;
             }
-
-            $fornecedor['cep'] = (isset($fornecedor['cep']) && !empty($fornecedor['cep']) ? $fornecedor['cep'] : '');
-            $fornecedor['enderecos'][0]['acao'] = 'incluir';
-            $fornecedor['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::COMERCIAL;
 
             if (isset($fornecedor['complemento']))
                 $fornecedor['enderecos'][0]['complemento'] = $fornecedor['complemento'];
