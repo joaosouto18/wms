@@ -448,6 +448,7 @@ class Integracao
                                                    $repositorios);
             }
             $this->_em->flush();
+            $this->_em->clear();
 
             foreach ($arrayClasses as $classe) {
                 $importacaoService->saveClasse($classe['codClasse'],
@@ -456,6 +457,8 @@ class Integracao
                                                $repositorios);
             }
             $this->_em->flush();
+            $this->_em->clear();
+
             ini_set('max_execution_time', '-1');
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
@@ -481,6 +484,7 @@ class Integracao
 
             }
             $this->_em->flush();
+            $this->_em->clear();
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
