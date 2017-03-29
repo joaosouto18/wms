@@ -316,25 +316,33 @@ class Integracao
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', '-1');
 
-
         $em = $this->_em;
         $importacaoService = new Importacao(true);
+        $fornecedores = array();
         $itens = array();
-        foreach ($dados as $notaFiscal) {
+        $notasFiscais = array();
+
+        foreach ($dados as $key => $notaFiscal) {
             $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
             if (strlen($cpf_cnpj) == 11) {
                 $tipoPessoa = 'F';
             } else {
                 $tipoPessoa = 'J';
             }
-            $fornecedorArray = array(
-                'idExterno' => $notaFiscal['COD_FORNECEDOR'],
-                'cpf_cnpj' => $cpf_cnpj,
-                'nome' => $notaFiscal['NOM_FORNECEDOR'],
-                'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
-                'tipoPessoa' => $tipoPessoa
-            );
-            $importacaoService->saveFornecedor($em,$fornecedorArray);
+
+            if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
+                $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
+                    'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                    'cpf_cnpj' => $cpf_cnpj,
+                    'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                    'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                    'tipoPessoa' => $tipoPessoa
+                );
+            }
+
+            $numNota = $notaFiscal['NUM_NOTA_FISCAL'];
+            $serie = $notaFiscal['COD_SERIE_NOTA_FISCAL'];
+            $codFornecedor = $notaFiscal['COD_FORNECEDOR'];
 
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
@@ -343,9 +351,41 @@ class Integracao
                 'peso' => $notaFiscal['QTD_ITEM']
             );
 
-            $importacaoService->saveNotaFiscal($em, $notaFiscal['COD_FORNECEDOR'], $notaFiscal['NUM_NOTA_FISCAL'], $notaFiscal['COD_SERIE_NOTA_FISCAL'], $notaFiscal['DAT_EMISSAO'], $notaFiscal['DSC_PLACA_VEICULO'], $itens, 'N');
+            if (($key == count($dados)-1) || (isset($dados[$key+1]) && (  ($numNota != $dados[$key+1]['NUM_NOTA_FISCAL'])
+                                                                        &&($serie != $dados[$key+1]['COD_SERIE_NOTA_FISCAL'])
+                                                                        &&($codFornecedor != $dados[$key+1]['COD_FORNECEDOR'])))) {
+                $notasFiscais[] = array(
+                    'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
+                    'numNota' => $notaFiscal['NUM_NOTA_FISCAL'],
+                    'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],
+                    'dtEmissao' => $notaFiscal['DAT_EMISSAO'],
+                    'placaVeiculo' => $notaFiscal['DSC_PLACA_VEICULO'],
+                    'itens'=> $itens
+                );
+                unset($itens);
+                $itens = array();
+
+            }
         }
 
+        foreach ($fornecedores as $fornecedor){
+            $importacaoService->saveFornecedor($em,$fornecedor);
+        }
+        $em->flush();      
+
+        $count = 0;
+        foreach ($notasFiscais as $nf) {
+            $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N');
+            if ($count == 50) {
+                $count =0;
+                $em->flush();
+                $em->clear();
+            } else {
+                $count=$count +1;
+            }
+        }
+
+        $em->flush();
         return true;
     }
 
