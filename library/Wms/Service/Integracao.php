@@ -119,7 +119,7 @@ class Integracao
                     return $this->processaNotasFiscais($this->_dados);
             }
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
     }
 
