@@ -340,9 +340,8 @@ class Integracao
                 );
             }
 
-            $numNota = $notaFiscal['NUM_NOTA_FISCAL'];
-            $serie = $notaFiscal['COD_SERIE_NOTA_FISCAL'];
-            $codFornecedor = $notaFiscal['COD_FORNECEDOR'];
+
+
 
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
@@ -351,9 +350,24 @@ class Integracao
                 'peso' => $notaFiscal['QTD_ITEM']
             );
 
-            if (($key == count($dados)-1) || (isset($dados[$key+1]) && (  ($numNota != $dados[$key+1]['NUM_NOTA_FISCAL'])
-                                                                        || ($serie != $dados[$key+1]['COD_SERIE_NOTA_FISCAL'])
-                                                                        || ($codFornecedor != $dados[$key+1]['COD_FORNECEDOR'])))) {
+            $numNfAtual = $notaFiscal['NUM_NOTA_FISCAL'];
+            $serieNfAtual = $notaFiscal['COD_SERIE_NOTA_FISCAL'];
+            $codFornecedorNfAtual = $notaFiscal['COD_FORNECEDOR'];
+
+            $FimNotaAtual = false;
+            if (isset($dados[$key+1])) {
+                $numProxNfNota = $dados[$key+1]['NUM_NOTA_FISCAL'];
+                $serieProxNfNota = $dados[$key+1]['COD_SERIE_NOTA_FISCAL'];
+                $codFornecedorProxNf = $dados[$key+1]['COD_FORNECEDOR'];
+
+                if (($numNfAtual != $numProxNfNota) || ($serieNfAtual != $serieProxNfNota) || ($codFornecedorNfAtual != $codFornecedorProxNf)) {
+                    $FimNotaAtual = true;
+                }
+            } else {
+                $FimNotaAtual = true;
+            }
+
+            if ($FimNotaAtual == true) {
                 $notasFiscais[] = array(
                     'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
                     'numNota' => $notaFiscal['NUM_NOTA_FISCAL'],
