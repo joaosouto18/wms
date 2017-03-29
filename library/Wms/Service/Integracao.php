@@ -368,6 +368,7 @@ class Integracao
             }
         }
 
+        var_dump($fornecedores); exit;
         foreach ($fornecedores as $fornecedor){
             $importacaoService->saveFornecedor($em,$fornecedor);
         }
