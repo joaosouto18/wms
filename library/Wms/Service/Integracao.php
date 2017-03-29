@@ -352,8 +352,8 @@ class Integracao
             );
 
             if (($key == count($dados)-1) || (isset($dados[$key+1]) && (  ($numNota != $dados[$key+1]['NUM_NOTA_FISCAL'])
-                                                                        &&($serie != $dados[$key+1]['COD_SERIE_NOTA_FISCAL'])
-                                                                        &&($codFornecedor != $dados[$key+1]['COD_FORNECEDOR'])))) {
+                                                                        || ($serie != $dados[$key+1]['COD_SERIE_NOTA_FISCAL'])
+                                                                        || ($codFornecedor != $dados[$key+1]['COD_FORNECEDOR'])))) {
                 $notasFiscais[] = array(
                     'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
                     'numNota' => $notaFiscal['NUM_NOTA_FISCAL'],
