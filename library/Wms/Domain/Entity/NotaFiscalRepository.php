@@ -830,7 +830,7 @@ class NotaFiscalRepository extends EntityRepository
 
         return $entity;
     }
-    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $pesototal = null) {
+    public function salvarNota ($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
