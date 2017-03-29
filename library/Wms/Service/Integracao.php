@@ -367,7 +367,6 @@ class Integracao
 
             }
         }
-        var_dump($notasFiscais); exit;
 
         foreach ($fornecedores as $fornecedor){
             $importacaoService->saveFornecedor($em,$fornecedor);
