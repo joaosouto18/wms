@@ -481,7 +481,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     return false;
                 }
 
-                if ( (qtdItemEmbalagemRecebimento % qtdItensEmbalagem) != 0 ) {
+                //multiplicacao para transformar itens em inteiro para nao ter erro de divisao causado pela linguagem
+                qtdItemEmbalagemRecebimento = qtdItemEmbalagemRecebimento * 100;
+                qtdItensEmbalagem = qtdItensEmbalagem * 100;
+                if ( ((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) != 0 ) {
                     alert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
                     return false;
                 }
@@ -489,6 +492,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
             return true;
         },
+
+
 
         /**
          * Shows a produto_embalagem's information.
