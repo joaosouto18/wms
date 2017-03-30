@@ -1613,7 +1613,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY')
                   ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
-		echo $query;exit;
 		return $this->_em->getConnection()->query($query)->fetchAll();
 	}
 
