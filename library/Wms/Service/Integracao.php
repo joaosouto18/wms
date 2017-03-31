@@ -234,7 +234,6 @@ class Integracao
 
     public function processaPedido($dados) {
         try {
-            var_dump($dados); exit;
 
             $cargas = array();
             $pedidos = array();
