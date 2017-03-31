@@ -887,11 +887,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (isset($cliente['referencia']))
                 $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
             if (isset($cliente['bairro']))
-                $cliente['enderecos'][0]['bairro'];
+                $cliente['enderecos'][0]['bairro'] = $cliente['bairro'];
             if (isset($cliente['cidade']))
                 $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
             if (isset($cliente['numero']))
-                $cliente['enderecos'][0]['numero'];
+                $cliente['enderecos'][0]['numero'] = $cliente['numero'];
             if (isset($cliente['cep']))
                 $cliente['enderecos'][0]['cep'] = $cliente['cep'];
             if (isset($entitySigla))
