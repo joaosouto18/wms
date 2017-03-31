@@ -262,7 +262,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas)
     {
-        var_dump($cargas); exit;
         $this->trimArray($cargas);
         ini_set('max_execution_time', 300);
         try {
