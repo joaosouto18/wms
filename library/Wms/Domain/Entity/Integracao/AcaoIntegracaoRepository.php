@@ -64,6 +64,18 @@ class AcaoIntegracaoRepository extends EntityRepository
             $sucess = "N";
 
             $trace = $e->getTraceAsString();
+
+            $prev = $e->getPrevious();
+            if ($prev != null) {
+                $trace = $prev->getTraceAsString() . '-'. $trace;
+            }
+            while($prev != null) {
+                $prev = $prev->getPrevious();
+                if ($prev != null) {
+                    $trace = $prev->getTraceAsString() . '-'. $trace;
+                }
+            }
+
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 

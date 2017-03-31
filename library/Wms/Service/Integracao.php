@@ -305,7 +305,6 @@ class Integracao
             $wsExpedicao->enviar($cargas);
             return true;
         } catch (\Exception $e) {
-
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
             return false;
         }
