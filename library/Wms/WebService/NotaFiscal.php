@@ -283,6 +283,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
                 if ($notaFiscalEn->getStatus()->getId() == NotaFiscalEntity::STATUS_CANCELADA) {
                     $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
+                    $notaFiscalEn->setRecebimento(null);
                     $notaFiscalEn->setStatus($statusEntity);
                     $em->persist($notaFiscalEn);
                 }
