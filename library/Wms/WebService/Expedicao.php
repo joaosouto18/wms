@@ -704,7 +704,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         $cliente = $pedido['cliente'];
-        if (is_array($cliente[0])) {
+        if (isset($cliente[0]) && is_array($cliente[0])) {
             $cliente = $cliente[0];
         }
 
@@ -720,7 +720,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'itinerario' => $entityItinerario,
             'pessoa' => $entityCliente,
             'pontoTransbordo' => $pedido['pontoTransbordo'],
-            'envioParaLoja' => $pedido['envioParaLoja']
+            'envioParaLoja' => (isset($pedido['envioParaLoja'])) ? $pedido['envioParaLoja'] : null
         );
 
         $entityPedido  = $this->findPedidoById($repositorios, $arrayPedido);
