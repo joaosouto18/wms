@@ -63,7 +63,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $observacao = $e->getMessage();
             $sucess = "N";
 
-            $trace = $e->getTrace();
+            $trace = $e->getTraceAsString();
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
