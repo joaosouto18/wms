@@ -69,8 +69,9 @@ class ApontamentoMapaRepository extends EntityRepository
         }
 
         if (isset($tipoQuebra) && !empty($tipoQuebra)) {
-            $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
-            $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = 'T'";
+            $quebra = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
+            $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = '$quebra'";
+            $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = '$quebra'";
         }
 
         if (isset($idExpedicao) && !empty($idExpedicao)) {
@@ -167,7 +168,7 @@ class ApontamentoMapaRepository extends EntityRepository
             $tempoFinal = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_FIM']);
             $tempoInicial = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_INICIO']);
             if ($tempoFinal == null) {
-                $result[$key]['TEMPO_GASTO'] = utf8_encode('Conferência em Andamento!');
+                $result[$key]['TEMPO_GASTO'] = utf8_encode('Conferï¿½ncia em Andamento!');
                 continue;
             }
             if ($value['COD_EXPEDICAO'] != $idExpedicaoAnterior) {

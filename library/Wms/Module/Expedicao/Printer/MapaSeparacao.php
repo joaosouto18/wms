@@ -62,7 +62,7 @@ class MapaSeparacao extends eFPDF
 
         foreach ($mapaSeparacao as $mapa) {
             $produtos        = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'T'));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
             $quebras         = $mapa->getDscQuebra();
             $tipoQebra       = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
@@ -284,7 +284,7 @@ class MapaSeparacao extends eFPDF
 
         foreach ($mapaSeparacao as $mapa) {
 
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'T'));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
             $tipoQebra = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
                 $tipoQebra = true;
@@ -481,7 +481,7 @@ class MapaSeparacao extends eFPDF
 
         foreach ($mapaSeparacao as $mapa) {
 
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'T'));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
             $tipoQebra = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
                 $tipoQebra = true;
@@ -676,7 +676,7 @@ class MapaSeparacao extends eFPDF
 
         foreach ($mapaSeparacao as $mapa) {
 
-            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => 'T'));
+            $mapaQuebra      = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
             $tipoQebra = false;
             if (isset($mapaQuebra) && !empty($mapaQuebra))
                 $tipoQebra = true;

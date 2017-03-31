@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Module\Expedicao\Form;
 
+use Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebra;
 use Wms\Module\Web\Form,
     Core\Form\SubForm;
 
@@ -34,54 +35,67 @@ class ModeloSeparacao extends Form
             'checkedValue' => 'S',
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
-            'multiOptions' => array('N' => 'Não utiliza', 'C' => 'Por Cliente', 'P' => 'Por Praça'),
+            'multiOptions' => array(
+                'N' => 'Não utiliza',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => 'Por Cliente',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA => 'Por Praça'),
         ))->addElement('select', 'tipoQuebraVolume', array(
             'label' => 'Tipo de Quebra no Volume',
-            'multiOptions' => array('C' => 'Por Cliente', 'A' => 'Por Carga'),
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE => 'Por Cliente',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CARGA => 'Por Carga'),
         ))->addElement('select', 'separacaoPc', array(
             'label' => 'Separação com carrinho',
             'multiOptions' => array('S' => 'Sim', 'N' => 'Não'),
         ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
-            'multiOptions' => array('P' => 'Por Produto', 'F' => 'Todos os fracionados'),
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO => 'Por Produto',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_FRACIONADOS => 'Todos os fracionados'),
         ))->addElement('select', 'tipoConferenciaEmbalado', array(
             'label' => 'Tipo de Conferência para Embalados',
-            'multiOptions' => array('I' => 'Item a Item', 'Q' => 'Informando a quantidade'),
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM => 'Item a Item',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE => 'Informando a quantidade'),
         ))->addElement('select', 'tipoConferenciaNaoEmbalado', array(
             'label' => 'Tipo de Conferência para Não Embalados',
-            'multiOptions' => array('I' => 'Item a Item', 'Q' => 'Informando a quantidade'),
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM => 'Item a Item',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE => 'Informando a quantidade'),
         ))->addElement('select', 'tipoSeparacaoFracionado', array(
             'label' => 'Tipo de Separação',
-            'multiOptions' => array('M' => 'Mapa de Separação', 'E' => 'Etiqueta de Separação'),
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa de Separação',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta de Separação'),
         ))->addElement('select', 'tipoSeparacaoNaoFracionado', array(
             'label' => 'Tipo de Separação',
-            'multiOptions' => array('M' => 'Mapa de Separação', 'E' => 'Etiqueta de Separação'),
-
-
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa de Separação',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta de Separação'),
         ))->addElement('checkbox', 'ruaFracionados', array(
             'label' => 'Rua',
-            'checkedValue' => 'R'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_RUA
         ))->addElement('checkbox', 'linhaDeSeparacaoFracionados', array(
             'label' => 'Linha de Separação',
-            'checkedValue' => 'L'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO
         ))->addElement('checkbox', 'pracaFracionados', array(
             'label' => 'Praça',
-            'checkedValue' => 'P'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_PRACA
         ))->addElement('checkbox', 'clienteFracionados', array(
             'label' => 'Cliente',
-            'checkedValue' => 'C'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_CLIENTE
         ))->addElement('checkbox', 'ruaNaoFracionados', array(
             'label' => 'Rua',
-            'checkedValue' => 'R'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_RUA
         ))->addElement('checkbox', 'linhaDeSeparacaoNaoFracionados', array(
             'label' => 'Linha de Separação',
-            'checkedValue' => 'L'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO
         ))->addElement('checkbox', 'pracaNaoFracionados', array(
             'label' => 'Praça',
-            'checkedValue' => 'P'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_PRACA
         ))->addElement('checkbox', 'clienteNaoFracionados', array(
             'label' => 'Cliente',
-            'checkedValue' => 'C'
+            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_CLIENTE
         ));
 
         $form->addDisplayGroup(array('descricao',

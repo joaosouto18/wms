@@ -10,6 +10,13 @@ namespace Wms\Domain\Entity\Expedicao;
 class MapaSeparacaoQuebra
 {
 
+    const QUEBRA_RUA = "R";
+    const QUEBRA_LINHA_SEPARACAO = "L";
+    const QUEBRA_PRACA = "P";
+    const QUEBRA_CLIENTE = "C";
+    const QUEBRA_CARRINHO = "T";
+    const QUEBRA_REENTREGA = "RE";
+
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")

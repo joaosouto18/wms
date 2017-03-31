@@ -30,10 +30,8 @@ class Mobile_ExpedicaoController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
-        if (isset($mapaSeparacaoQuebraEn) && !empty($mapaSeparacaoQuebraEn)) {
-            if ($mapaSeparacaoQuebraEn->getTipoQuebra() == 'T') {
-                $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/'.$codBarras);
-            }
+        if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/'.$codBarras);
         }
         $this->_redirect('mobile/expedicao/confirmar-operacao/codigoBarras/'.$this->_getParam('codigoBarras'));
     }
@@ -166,8 +164,8 @@ class Mobile_ExpedicaoController extends Action
 
         /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
         $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
-        if (($modeloSeparacaoEn->getTipoConferenciaEmbalado() == 'Q' && ($mapaQuebraEn->getTipoQuebra() == 'T' || !empty($idVolume)))
-            || ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == "Q" && $mapaQuebraEn->getTipoQuebra() != 'T')) {
+        if (($modeloSeparacaoEn->getTipoConferenciaEmbalado() == Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE && ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO || !empty($idVolume)))
+            || ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE && $mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO)) {
             $confereQtd = true;
         } else {
             $qtd = 1;
@@ -203,8 +201,8 @@ class Mobile_ExpedicaoController extends Action
                     $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
 
                     $codQuebra = 0;
-                    if ($modeloSeparacaoEn->getTipoQuebraVolume() == 'C') {
-                        $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => 'C'));
+                    if ($modeloSeparacaoEn->getTipoQuebraVolume() == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
+                        $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE));
                         if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
                             $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
                     }
