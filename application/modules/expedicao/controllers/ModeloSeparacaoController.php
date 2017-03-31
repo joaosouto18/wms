@@ -125,13 +125,13 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $entityModeloSeparacaoTipoQuebraFracionado = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacaoTipoQuebraFracionado")->findBy(array('modeloSeparacao' => $id));
 
             foreach ($entityModeloSeparacaoTipoQuebraFracionado as $tipoFracionado) {
-                if ($tipoFracionado->getTipoQuebra() == 'R') {
+                if ($tipoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_RUA) {
                     $dados['ruaFracionados'] = $tipoFracionado->getTipoQuebra();
-                } elseif ($tipoFracionado->getTipoQuebra() == 'L') {
+                } elseif ($tipoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
                     $dados['linhaDeSeparacaoFracionados'] = $tipoFracionado->getTipoQuebra();
-                } elseif ($tipoFracionado->getTipoQuebra() == 'P') {
+                } elseif ($tipoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_PRACA) {
                     $dados['pracaFracionados'] = $tipoFracionado->getTipoQuebra();
-                } elseif ($tipoFracionado->getTipoQuebra() == 'C') {
+                } elseif ($tipoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE) {
                     $dados['clienteFracionados'] = $tipoFracionado->getTipoQuebra();
                 }
             }
@@ -139,13 +139,13 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $entityModeloSeparacaoTipoQuebraNaoFracionado = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado")->findBy(array('modeloSeparacao' => $id));
 
             foreach ($entityModeloSeparacaoTipoQuebraNaoFracionado as $tipoNaoFracionado) {
-                if ($tipoNaoFracionado->getTipoQuebra() == 'R') {
+                if ($tipoNaoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_RUA) {
                     $dados['ruaNaoFracionados'] = $tipoNaoFracionado->getTipoQuebra();
-                } elseif ($tipoNaoFracionado->getTipoQuebra() == 'L') {
+                } elseif ($tipoNaoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
                     $dados['linhaDeSeparacaoNaoFracionados'] = $tipoNaoFracionado->getTipoQuebra();
-                } elseif ($tipoNaoFracionado->getTipoQuebra() == 'P') {
+                } elseif ($tipoNaoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_PRACA) {
                     $dados['pracaNaoFracionados'] = $tipoNaoFracionado->getTipoQuebra();
-                } elseif ($tipoNaoFracionado->getTipoQuebra() == 'C') {
+                } elseif ($tipoNaoFracionado->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE) {
                     $dados['clienteNaoFracionados'] = $tipoNaoFracionado->getTipoQuebra();
                 }
             }

@@ -9,6 +9,22 @@ namespace Wms\Domain\Entity\Expedicao;
  */
 class ModeloSeparacao
 {
+
+    const DEFAULT_EMBALADO_PRODUTO = "P";
+    const DEFAULT_EMBALADO_FRACIONADOS = "F";
+
+    const QUEBRA_VOLUME_CARGA = "A";
+    const QUEBRA_VOLUME_CLIENTE = "C";
+
+    const QUEBRA_PULMAO_DOCA_CLIENTE = "C";
+    const QUEBRA_PULMAO_DOCA_PRACA = "P";
+
+    const CONFERENCIA_ITEM_A_ITEM = "I";
+    const CONFERENCIA_QUANTIDADE = "Q";
+
+    const TIPO_SEPARACAO_ETIQUETA = "E";
+    const TIPO_SEPARACAO_MAPA = "M";
+
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")

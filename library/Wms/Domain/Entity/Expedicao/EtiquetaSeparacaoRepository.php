@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
+use Wms\Domain\Entity\Enderecamento\Modelo;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\NotaFiscal;
 use Wms\Util\WMS_Exception;
@@ -533,7 +534,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $modeloSeparacaoRepo = $arrayRepositorios['modeloSeparacao'];
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $quebras = array(0=>array('tipoQuebra'=>'RE'));
+        $quebras = array(0=>array('tipoQuebra'=>MapaSeparacaoQuebra::QUEBRA_REENTREGA));
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
         $codProduto = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
@@ -687,7 +688,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
 
                 $embalado = false;
-                if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == 'P') {
+                if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO) {
                     if ($embalagemAtual->getEmbalado() == 'S') {
                         $embalado = true;
                     }
@@ -926,7 +927,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
+                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
                                     $quebrasNaoFracionado = array();
                                 }
@@ -939,7 +940,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
                                     $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
                                     $quebrasNaoFracionado = array();
-                                    $quebrasNaoFracionado[]['tipoQuebra'] = 'T';
+                                    $quebrasNaoFracionado[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
                                 }
 
@@ -963,7 +964,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                         } else {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == "E") {
+                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
@@ -974,7 +975,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
                                     $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
                                     $quebrasFracionado = array();
-                                    $quebrasFracionado[]['tipoQuebra'] = 'T';
+                                    $quebrasFracionado[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
                                 }
                                 $encontrouPP = false;
@@ -1072,13 +1073,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $statusPendenteImpressao = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
+        $quebraCarrinho = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
 
         $idExpedicao = $expedicaoEntity->getId();
         $sql = "SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.NUM_CARRINHO, MS.COD_MAPA_SEPARACAO
                     FROM MAPA_SEPARACAO MS
                     INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                     INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MSQ.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
-                    WHERE  MSQ.IND_TIPO_QUEBRA = 'T'
+                    WHERE  MSQ.IND_TIPO_QUEBRA = $quebraCarrinho
                     AND MS.COD_EXPEDICAO = $idExpedicao
                     AND MSP.NUM_CAIXA_PC_INI IS NOT NULL
                     AND MSP.NUM_CAIXA_PC_FIM IS NOT NULL
@@ -1102,7 +1104,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $mapaQuebra = new MapaSeparacaoQuebra();
                 $mapaQuebra->setMapaSeparacao($mapaSeparacaoEn);
-                $mapaQuebra->setTipoQuebra('T');
+                $mapaQuebra->setTipoQuebra($quebraCarrinho);
                 $mapaQuebra->setCodQuebra($numCarrinho);
                 $this->getEntityManager()->persist($mapaQuebra);
 
@@ -1172,7 +1174,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao, 'codStatus' => EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO));
 
         foreach ($mapasSeparacao as $mapaSeparacao) {
-            $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'tipoQuebra' => 'T'));
+            $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'tipoQuebra' => MapaSeparacaoQuebra::QUEBRA_CARRINHO));
             if (isset($mapaSeparacaoQuebraEn) && !empty($mapaSeparacaoQuebraEn))
                 continue;
 
@@ -1263,7 +1265,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         foreach ($quebras as $quebra) {
             //CLIENTE
             $quebra = $quebra['tipoQuebra'];
-            if ($quebra == "C")  {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
                 $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
                 $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
@@ -1274,7 +1276,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             //RUA
-            if ($quebra == "R") {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_RUA) {
                 $numRua = 0;
                 $embalagens = $pedidoProduto->getProduto()->getEmbalagens();
                 if (count($embalagens) >0) $endereco = $embalagens[0]->getEndereco();
@@ -1295,7 +1297,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             //LINHA DE SEPARAÇÃO
-            if ($quebra == "L") {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
                 $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
                 $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
                 if ($qtdQuebras != 0) {
@@ -1306,7 +1308,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             //PRAÇA
-            if ($quebra == "P") {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
                 $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
                 if ($codPraca == 0){
@@ -1366,19 +1368,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dscQuebra = $dscQuebra . ", ";
                 }
 
-                if ($quebra == "C")  {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
                     $codQuebra = $codCliente;
                     $dscQuebra = $dscQuebra . "CLIENTE: " . $codCliente . " - " .$nomCliente;
                 }
-                if ($quebra == "R") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_RUA) {
                     $dscQuebra = $dscQuebra . "RUA: " . $dscRua;
                     $codQuebra = $numRua;
                 }
-                if ($quebra == "L") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
                     $dscQuebra = $dscQuebra . "LINHA: " . $codLinhaSeparacao . " - " . $nomLinha;
                     $codQuebra = $codLinhaSeparacao;
                 }
-                if ($quebra == "P") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
                     $dscQuebra = $dscQuebra . "PRACA: " . $codPraca . " - " . $nomPraca;
                     $codQuebra = $codPraca;
                 }
@@ -1417,30 +1419,30 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($quebra == null) continue;
 
             //MAPA DE REENTREGA
-            if ($quebras == "RE") {
+            if ($quebras == MapaSeparacaoQuebra::QUEBRA_REENTREGA) {
                 $SQL_Quebras = $SQL_Quebras . "(Q.IND_TIPO_QUEBRA = 'RE')";
                 $qtdQuebras = $qtdQuebras + 1;
             }
 
             //UTILIZA CARRINHO
-            if ($quebra == 'T') {
-                $SQL_Quebras = $SQL_Quebras . "Q.IND_TIPO_QUEBRA = 'T'";
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $SQL_Quebras = $SQL_Quebras . "Q.IND_TIPO_QUEBRA = " . MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                 $qtdQuebras = $qtdQuebras + 1;
             }
 
             //CLIENTE
-            if ($quebra == "C")  {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
                 $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
                 $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getPessoa()->getNome();
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
-                $SQL_Quebras = $SQL_Quebras . "(Q.IND_TIPO_QUEBRA = 'C' and Q.COD_QUEBRA = '" . $codCliente."')";
+                $SQL_Quebras = $SQL_Quebras . "(Q.IND_TIPO_QUEBRA = ". MapaSeparacaoQuebra::QUEBRA_CLIENTE ." and Q.COD_QUEBRA = '" . $codCliente."')";
                 $qtdQuebras = $qtdQuebras + 1;
             }
 
             //RUA
-            if ($quebra == "R") {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_RUA) {
                 $numRua = 0;
                 $embalagens = $pedidoProduto->getProduto()->getEmbalagens();
                 $volumes = $pedidoProduto->getProduto()->getVolumes();
@@ -1456,12 +1458,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
-                $SQL_Quebras = $SQL_Quebras. "(Q.IND_TIPO_QUEBRA = 'R' and Q.COD_QUEBRA = '".$numRua."')";
+                $SQL_Quebras = $SQL_Quebras. "(Q.IND_TIPO_QUEBRA = ". MapaSeparacaoQuebra::QUEBRA_RUA ." and Q.COD_QUEBRA = '".$numRua."')";
                 $qtdQuebras = $qtdQuebras + 1;
             }
 
             //LINHA DE SEPARAÇÃO
-            if ($quebra == "L") {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
 
                 $codLinhaSeparacao = 0;
                 $nomLinha = "(SEM LINHA DE SEPARACAO)";
@@ -1473,12 +1475,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
-                $SQL_Quebras = $SQL_Quebras ."(Q.IND_TIPO_QUEBRA = 'L' and Q.COD_QUEBRA = '".$codLinhaSeparacao."')";
+                $SQL_Quebras = $SQL_Quebras ."(Q.IND_TIPO_QUEBRA = ". MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO ." and Q.COD_QUEBRA = '".$codLinhaSeparacao."')";
                 $qtdQuebras = $qtdQuebras + 1;
             }
 
             //PRAÇA
-            if ($quebra == "P") {
+            if ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
                 $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
                 $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
                 if ($codPraca == 0){
@@ -1491,7 +1493,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if ($qtdQuebras != 0) {
                     $SQL_Quebras = $SQL_Quebras . " OR ";
                 }
-                $SQL_Quebras = $SQL_Quebras ."(Q.IND_TIPO_QUEBRA = 'P' and Q.COD_QUEBRA = '".$codPraca."')";
+                $SQL_Quebras = $SQL_Quebras ."(Q.IND_TIPO_QUEBRA = ". MapaSeparacaoQuebra::QUEBRA_PRACA ." and Q.COD_QUEBRA = '".$codPraca."')";
                 $qtdQuebras = $qtdQuebras + 1;
             }
         }
@@ -1544,29 +1546,29 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dscQuebra = $dscQuebra . ", ";
                 }
 
-                if ($quebra == "RE") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_REENTREGA) {
                     $dscQuebra = $dscQuebra . "MAPA DE REENTREGAS";
                     $codQuebra = "";
                 }
 
-                if ($quebra == "T") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
                     $dscQuebra = $dscQuebra . "MAPA DE SEPARAÇÃO CONSOLIDADA";
                     $codQuebra = 1;
                 }
 
-                if ($quebra == "C")  {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
                     $dscQuebra = $dscQuebra . "CLIENTE: " . $codCliente . " - " .$nomCliente;
                     $codQuebra = $codCliente;
                 }
-                if ($quebra == "R") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_RUA) {
                     $dscQuebra = $dscQuebra . "RUA: " . $dscRua;
                     $codQuebra = $numRua;
                 }
-                if ($quebra == "L") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
                     $dscQuebra = $dscQuebra . "LINHA: " . $codLinhaSeparacao . " - " . $nomLinha;
                     $codQuebra = $codLinhaSeparacao;
                 }
-                if ($quebra == "P") {
+                if ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
                     $dscQuebra = $dscQuebra . "PRACA: " . $codPraca . " - " . $nomPraca;
                     $codQuebra = $codPraca;
                 }
@@ -1793,7 +1795,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->where("es.id >= $codBarrasInicial AND es.id <= $codBarrasFinal");
 
         if ($apontamento)
-            $dql->andWhere("es.status <> 525");
+            $dql->andWhere("es.status <> " . EtiquetaSeparacao::STATUS_CORTADO);
 
         return $dql->getQuery()->getResult();
     }
