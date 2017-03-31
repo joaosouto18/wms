@@ -109,6 +109,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $this->_em->persist($acaoEn);
                 }
             }
+            var_dump($acaoEn);
+            exit;
 
             $this->_em->flush();
             $this->_em->commit();
