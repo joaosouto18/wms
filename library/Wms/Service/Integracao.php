@@ -305,7 +305,7 @@ class Integracao
             $wsExpedicao->enviar($cargas);
             return true;
         } catch (\Exception $e) {
-            var_dump($e->getMessage());exit;
+
             throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
             return false;
         }

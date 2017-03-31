@@ -97,8 +97,9 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage());
             var_dump($e->getMessage());exit;
+            throw new \Exception($e->getMessage());
+
         }
 
         return $result;
