@@ -247,7 +247,7 @@ class Integracao
                     'codProduto' => $row['PRODUTO'],
                     'grade'      => $row['GRADE'],
                     'quantidade' => $row['QTD'],
-                    'valorVenda' => $row['VALOR_VENDA']
+                    'valorVenda' => $row['VLR_VENDA']
                 );
                 $produtos[] = $produto;
 
