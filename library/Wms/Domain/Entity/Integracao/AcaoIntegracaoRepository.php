@@ -104,7 +104,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if ($sucess=="S") {
                 $maxDate = $integracaoService->getMaxDate();
-                if (!is_null($maxDate)) {
+                if (!empty($maxDate)) {
                     $acaoEn->setDthUltimaExecucao($maxDate);
                     $this->_em->persist($acaoEn);
                 }
