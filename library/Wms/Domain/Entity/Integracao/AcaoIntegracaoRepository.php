@@ -56,11 +56,23 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->flush();
             $this->_em->commit();
-
+            $errNumber = "";
+            $trace = "";
+            $query = "";
         } catch (\Exception $e) {
-                $observacao = $e->getMessage() . ' - ' . $e->getTraceAsString()  . " - QUERY: " . $query;
-                $sucess = "N";
+            $observacao = $e->getMessage();
+            $sucess = "N";
 
+            $prev = $e->getPrevious();
+            $trace = $prev->getTraceAsString();
+            while($prev != null) {
+                $prev = $prev->getPrevious();
+                if ($prev != null) {
+                    $trace = $prev->getTraceAsString();
+                }
+            }
+
+            $errNumber = $e->getCode();
             $result = $e->getMessage();
 
             $this->_em->rollback();
@@ -81,6 +93,11 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $andamentoEn->setIndSucesso($sucess);
                 $andamentoEn->setDthAndamento(new \DateTime());
                 $andamentoEn->setObservacao($observacao);
+                $andamentoEn->setErrNumber($errNumber);
+                $andamentoEn->setTrace($trace);
+                if ($sucess != "S") {
+                    $andamentoEn->setQuery($query);
+                }
                 $this->_em->persist($andamentoEn);
             }
 
@@ -97,8 +114,9 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         } catch (\Exception $e) {
             $this->_em->rollback();
+            //var_dump($e->getMessage());exit;
             throw new \Exception($e->getMessage());
-            var_dump($e->getMessage());exit;
+
         }
 
         return $result;

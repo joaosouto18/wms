@@ -302,7 +302,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             return true;
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
+            throw new \Exception($e->getMessage(), $e->getCode(), $e);
             return false;
         }
     }

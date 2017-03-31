@@ -43,6 +43,68 @@ class   AcaoIntegracaoAndamento
     protected $observacao;
 
     /**
+     * @Column(name="TRACE", type="string", nullable=true)
+     */
+    protected $trace;
+
+    /**
+     * @Column(name="QUERY", type="string", nullable=true)
+     */
+    protected $query;
+
+    /**
+     * @Column(name="ERR_NUMBER", type="string", nullable=true)
+     */
+    protected $errNumber;
+
+    /**
+     * @param mixed $errNumber
+     */
+    public function setErrNumber($errNumber)
+    {
+        $this->errNumber = $errNumber;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getErrNumber()
+    {
+        return $this->errNumber;
+    }
+
+    /**
+     * @param mixed $query
+     */
+    public function setQuery($query)
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    /**
+     * @param mixed $trace
+     */
+    public function setTrace($trace)
+    {
+        $this->trace = $trace;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTrace()
+    {
+        return $this->trace;
+    }
+    /**
      * @return mixed
      */
     public function getId()
