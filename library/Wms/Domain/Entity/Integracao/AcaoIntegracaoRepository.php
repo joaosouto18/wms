@@ -64,11 +64,12 @@ class AcaoIntegracaoRepository extends EntityRepository
             $sucess = "N";
 
             $prev = $e->getPrevious();
-            $trace = $prev->getTraceAsString();
-            while($prev != null) {
-                $prev = $prev->getPrevious();
-                if ($prev != null) {
-                    $trace = $prev->getTraceAsString();
+            if ( !empty($prev) ) {
+                while ($prev != null) {
+                    $prev = $prev->getPrevious();
+                    if ($prev != null) {
+                        $trace = $prev->getTraceAsString();
+                    }
                 }
             }
 
@@ -103,7 +104,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if ($sucess=="S") {
                 $maxDate = $integracaoService->getMaxDate();
-                if (!is_null($maxDate)) {
+                if (!empty($maxDate)) {
                     $acaoEn->setDthUltimaExecucao($maxDate);
                     $this->_em->persist($acaoEn);
                 }

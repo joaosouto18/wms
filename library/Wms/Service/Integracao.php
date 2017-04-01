@@ -247,7 +247,7 @@ class Integracao
                     'codProduto' => $row['PRODUTO'],
                     'grade'      => $row['GRADE'],
                     'quantidade' => $row['QTD'],
-                    'valorVenda' => $row['VALOR_VENDA']
+                    'valorVenda' => $row['VLR_VENDA']
                 );
                 $produtos[] = $produto;
 
@@ -306,7 +306,6 @@ class Integracao
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
-            return false;
         }
 
     }
