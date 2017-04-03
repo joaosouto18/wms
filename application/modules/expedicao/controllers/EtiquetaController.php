@@ -52,6 +52,7 @@ class Expedicao_EtiquetaController  extends Action
         );
 
         ini_set('max_execution_time', 3000);
+        ini_set('memory_limit', '-1');
         $idExpedicao    = $this->getRequest()->getParam('id');
         $central        = $this->getRequest()->getParam('central');
         $cargas         = $this->getRequest()->getParam('cargas');
