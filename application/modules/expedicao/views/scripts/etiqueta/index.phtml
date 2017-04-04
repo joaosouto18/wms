@@ -57,9 +57,11 @@
                 type: 'POST',
                 data: { cargas: arr },
                 success: function(data){
-                    if (data.substring(0,5) == 'error') {
-                        alert('ERRO: ' + data.substring(6));
-                        return
+                    if (typeof(data) == 'string') {
+                        if (data.substring(0,5) == 'error') {
+                            alert('ERRO: ' + data.substring(6));
+                            return
+                        }
                     }
                     a.preventDefault();
                     $.wmsDialogAjax({
