@@ -19,6 +19,7 @@ class PedidoEnderecoRepository extends EntityRepository
             $SiglaRepo      = $this->_em->getRepository('wms:Util\Sigla');
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $pedidoCliente['uf']));
 
+            $enPedidoEndereco->setCodPedido($pedidoEntity->getId());
             $enPedidoEndereco->setPedido($pedidoEntity);
             $enPedidoEndereco->setIdTipo(\Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA);
             $enPedidoEndereco->setUf($entitySigla);
