@@ -28,7 +28,7 @@ class HistoricoEstoqueRepository extends EntityRepository
              ->innerJoin("hist.usuario", "usu")
              ->leftJoin("hist.unitizador", "un")
              ->leftJoin("hist.produtoVolume","vol")
-             ->innerJoin('wms:Enderecamento\Estoque','e', 'WITH', "e.codProduto = prod.id AND e.grade = prod.grade AND e.depositoEndereco = dep.id")
+             ->leftJoin('wms:Enderecamento\Estoque','e', 'WITH', "e.codProduto = prod.id AND e.grade = prod.grade AND e.depositoEndereco = dep.id")
              ->groupBy("hist.codProduto,
                         hist.grade,
                         hist.observacao,
