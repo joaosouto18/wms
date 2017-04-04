@@ -32,6 +32,15 @@ class Wms_WebService
         /*foreach($array as &$value)
             is_array($value) ? $this->trimArray($value):$value=trim($value);
         unset($value);*/
-        return array_map('trim',$array);
+        foreach ($array as $key => $value){
+            if (is_array($value)){
+                $array[$key] = self::trimArray($value);
+            } else {
+                $array[$key] = trim($value);
+            }
+        }
+
+        return $array;
+        //return array_map('trim',$array);
     }
 }

@@ -178,12 +178,12 @@ class Mobile_ExpedicaoController extends Action
                 $produtoEmbalagenEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
                 $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codBarras));
 
-                if (!empty($produtoEmbalagenEn) || !empty($produtoVolumeEn)) {
-                    $tipoProvavelCodBarras = 'produto';
-                } else if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
+                if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     if (empty($volumePatrimonioEn)) {
                         $tipoProvavelCodBarras = 'volume';
                     }
+                } elseif (!empty($produtoEmbalagenEn) || !empty($produtoVolumeEn)) {
+                    $tipoProvavelCodBarras = 'produto';
                 }
 
                 if ($tipoProvavelCodBarras === 'volume') {
