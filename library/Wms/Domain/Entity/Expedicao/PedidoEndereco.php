@@ -19,7 +19,7 @@ class PedidoEndereco
      */
     protected $id;
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Pedido", cascade={"persist"})
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Pedido")
      * @JoinColumn(name="COD_PEDIDO", referencedColumnName="COD_PEDIDO")
      */
     protected $pedido;
