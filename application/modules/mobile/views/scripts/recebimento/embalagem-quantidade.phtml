@@ -117,6 +117,8 @@
                 }
                 var hj = new Date();
                 var validade = gerarData(data);
+                console.log(hj);
+                console.log(validade);
                 if (validade <= hj) {
                     alert("A data de validade não pode ser menor ou igual a data atual");
                     obj.val('');
