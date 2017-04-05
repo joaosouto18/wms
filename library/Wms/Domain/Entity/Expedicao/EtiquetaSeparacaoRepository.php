@@ -566,7 +566,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if ($embalagem->getQuantidade() <= $quantidadeAtender) {
+                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
@@ -669,7 +669,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if ($embalagem->getQuantidade() <= $quantidadeAtender) {
+                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
@@ -896,7 +896,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
-                                if ($embalagem->getQuantidade() <= $quantidadeAtender) {
+                                if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
                                     $embalagemAtual = $embalagem;
                                     break;
                                 }
