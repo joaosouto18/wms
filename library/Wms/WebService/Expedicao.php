@@ -674,9 +674,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $arrayCarga['idExpedicao'] = $entityExpedicao;
         $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
 
+        $i = 0;
         foreach ($carga['pedidos'] as $pedido) {
             $this->savePedido($repositorios, $pedido, $entityCarga);
             $this->_em->flush();
+            $i++;
+            if ($i == 50) $this->_em->clear();
+
         }
     }
 
