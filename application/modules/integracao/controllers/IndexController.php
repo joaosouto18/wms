@@ -26,6 +26,9 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
     }
     public function runAction()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
+
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 

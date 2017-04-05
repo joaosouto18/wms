@@ -1043,10 +1043,11 @@ class ExpedicaoRepository extends EntityRepository
 
     /**
      * @param $placaExpedicao
+     * @param $runFlush
      * @return Expedicao
      * @throws \Exception
      */
-    public function save($placaExpedicao)
+    public function save($placaExpedicao, $runFlush = true)
     {
 
         if (empty($placaExpedicao)) {
@@ -1055,7 +1056,9 @@ class ExpedicaoRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $em->beginTransaction();
+        if ($runFlush)
+            $em->beginTransaction();
+
         try {
 
             $enExpedicao = new ExpedicaoEntity;
@@ -1066,11 +1069,14 @@ class ExpedicaoRepository extends EntityRepository
             $enExpedicao->setDataInicio(new \DateTime);
 
             $em->persist($enExpedicao);
-            $em->flush();
-            $em->commit();
+            if ($runFlush) {
+                $em->flush();
+                $em->commit();
+            }
 
         } catch(\Exception $e) {
-            $em->rollback();
+            if ($runFlush)
+                $em->rollback();
             throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 
