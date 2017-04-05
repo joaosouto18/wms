@@ -943,7 +943,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $ExpedicaoRepo      = $repositorios['expedicaoRepo'];
         $entityExpedicao    = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
         if ($entityExpedicao == null) {
-            $entityExpedicao= $ExpedicaoRepo->save($placaExpedicao);
+            $entityExpedicao= $ExpedicaoRepo->save($placaExpedicao, false);
         }
 
         if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
