@@ -38,11 +38,11 @@ class Mobile_IndexController  extends Action
                 'url' => '/mobile/recebimento-transbordo/produtividade',
                 'label' => 'PRODUTIVIDADE',
             ),
-//            9 => array(
-//                'url' => '/mobile/enderecamento/cadastro-produto-endereco',
-//                'label' => 'CADASTRO PRODUTO ENDERECO'
-//            ),
             9 => array(
+                'url' => '/mobile/enderecamento/cadastro-produto-endereco',
+                'label' => 'CADASTRO PRODUTO ENDERECO'
+            ),
+            10 => array(
                 'url' => '/mobile/consulta-endereco',
                 'label' => 'CONSULTA ENDEREÇO'
             )
