@@ -1,28 +1,31 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository,
-   Wms\Domain\Entity\Expedicao\Itinerario;
+use Doctrine\ORM\EntityRepository;
 
 class ItinerarioRepository extends EntityRepository
 {
 
-    public function save($itinerario) {
+    public function save($itinerario, $runFlush) {
 
         $em = $this->getEntityManager();
 
-        $em->beginTransaction();
+        if ($runFlush)
+            $em->beginTransaction();
         try {
             $enItinerario = new Itinerario;
             $enItinerario->setId($itinerario['idItinerario']);
             $enItinerario->setDescricao($itinerario['nomeItinerario']);
 
             $em->persist($enItinerario);
-            $em->flush();
-            $em->commit();
+            if ($runFlush) {
+                $em->flush();
+                $em->commit();
+            }
 
         } catch(\Exception $e) {
-            $em->rollback();
+            if ($runFlush)
+                $em->rollback();
             throw new \Exception($e->getMessage());
         }
 

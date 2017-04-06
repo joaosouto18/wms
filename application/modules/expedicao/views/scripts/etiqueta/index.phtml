@@ -57,11 +57,15 @@
                 type: 'POST',
                 data: { cargas: arr },
                 success: function(data){
-                    if (typeof(data) == 'string') {
-                        if (data.substring(0,5) == 'error') {
-                            alert('ERRO: ' + data.substring(6));
-                            return
+                    if (data.status == 'error') {
+                        if (data.link == ''){
+                            alert(data.msg);
+                        } else {
+                            if(confirm(data.msg)){
+                                window.open(data.link,'_blank')
+                            }
                         }
+                        return
                     }
                     a.preventDefault();
                     $.wmsDialogAjax({

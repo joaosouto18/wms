@@ -572,8 +572,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     }
                     if ($embalagemAtual == null) {
-                        echo 'error Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
-                        exit;
+                        $mensagem = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
+                        throw new \Exception($mensagem);
                     }
                 } else {
                     $embalagemAtual = $menorEmbalagem;
@@ -655,8 +655,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
             if (!isset($embalagensEn[count($embalagensEn) -1]) || empty($embalagensEn[count($embalagensEn) -1])) {
-                echo 'error Não existe embalagem ATIVA para o PRODUTO '.$codProduto.' GRADE '.$grade;
-                exit;
+                $msg = "Não existe embalagem ATIVA para o PRODUTO $codProduto GRADE $grade";
+                throw new WMS_Exception($msg);
             }
             $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
@@ -675,8 +675,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     }
                     if ($embalagemAtual == null) {
-                        echo 'error Não existe embalagem para Atender o PRODUTO '.$codProduto.' GRADE '.$grade.' com a quantidade restante de '.$quantidadeAtender.' produtos';
-                        exit;
+                        $msg = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
+                        throw new WMS_Exception($msg);
                     }
                 } else {
                     $embalagemAtual = $menorEmbalagem;
@@ -795,8 +795,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 } else {
                                     $filial = $filialRepository->findOneBy(array('codExterno' => $pedidoProduto->getPedido()->getCentralEntrega()));
                                     if ($filial == null) {
-                                        echo "error Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada";
-                                        exit;
+                                        $msg = "Filial " . $pedidoProduto->getPedido()->getCentralEntrega() . " não encontrada";
+                                        throw new WMS_Exception($msg);
                                     }
                                     if ($filial->getIndUtilizaRessuprimento() == "S") {
                                         $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
@@ -829,8 +829,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $filial = $filialRepository->findOneBy(array('codExterno' => $pedidoProduto->getPedido()->getCentralEntrega()));
                                 if ($filial == null) {
-                                    echo 'error Filial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
-                                    exit;
+                                    $msg = 'Filial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
+                                    throw new WMS_Exception($msg);
                                 }
                                 if ($filial->getIndUtilizaRessuprimento() == "S") {
                                     $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao, $volumeEntity->getId());
@@ -865,8 +865,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         } else {
                             $filial = $filialRepository->findOneBy(array('codExterno' => $pedidoProduto->getPedido()->getCentralEntrega()));
                             if ($filial == null) {
-                                echo 'error Filial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
-                                exit;
+                                $msg = 'Filial ' . $pedidoProduto->getPedido()->getCentralEntrega() . ' não encontrada';
+                                throw new WMS_Exception($msg);
                             }
                             if ($filial->getIndUtilizaRessuprimento() == "S") {
                                 $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
@@ -902,8 +902,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                             if ($embalagemAtual == null) {
-                                echo 'error Não existe embalagem para Atender o PRODUTO ' . $codProduto . ' GRADE ' . $grade . ' com a quantidade restante de ' . $quantidadeAtender . ' produtos';
-                                exit;
+                                $msg = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
+                                throw new WMS_Exception($msg);
                             }
                         } else {
                             $embalagemAtual = $menorEmbalagem;
@@ -1003,8 +1003,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 } else {
                     $view = \Zend_layout::getMvcInstance()->getView();
                     $link = $view->url(array('controller' => 'relatorio_produtos-expedicao', 'action' => 'sem-dados', 'id' => $idExpedicao));
-                    echo 'error Existem produtos sem definição de volume. Deseja exibir ?';
-                    exit;
+                    $msg = 'Existem produtos sem definição de volume. Deseja exibir ?';
+                    throw new WMS_Exception($msg, $link);
                 }
             }
 
@@ -1040,8 +1040,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $produto = $resultadoConsistencia[0]['COD_PRODUTO'];
                     $qtdMapa = $resultadoConsistencia[0]['QTD_MAPA'];
                     $qtdPedido = $resultadoConsistencia[0]['QTD_PEDIDO'];
-                    echo 'error Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto:' . $produto . " Qtd.Pedido:" . $qtdPedido . " Qtd.Gerado:" . $qtdMapa;
-                    exit;
+                    $msg = "Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto: $produto  Qtd.Pedido: $qtdPedido Qtd.Gerado: $qtdMapa";
+                    throw new WMS_Exception($msg);
                 }
             }
 
