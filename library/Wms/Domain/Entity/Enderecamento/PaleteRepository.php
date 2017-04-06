@@ -15,35 +15,9 @@ class PaleteRepository extends EntityRepository
     {
         extract($params);
 
-        $query = "
-        SELECT R.COD_RECEBIMENTO,
-               R.DTH_INICIO_RECEB,
-               R.DTH_FINAL_RECEB,
-               '' as FORNECEDORES,
-               CASE WHEN R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
-               S.DSC_SIGLA END as STATUS,
-               QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
-               NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
-               ROUND(NVL(QTD_END.QTD,0)/NVL(QTD_TOTAL.QTD_TOTAL,1) * 100,2) as PERCENTUAL
-          FROM RECEBIMENTO R
-          LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
-          LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
-                       FROM (SELECT SUM (QTD) as QTD, COD_RECEBIMENTO
-                               FROM V_QTD_RECEBIMENTO
-                              GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
-                      GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD_TOTAL.QTD_TOTAL > 0
-          LEFT JOIN (SELECT SUM(PP.QTD) as QTD, P.COD_RECEBIMENTO
-                       FROM (SELECT MIN(QTD) as QTD, COD_PRODUTO, DSC_GRADE, UMA 
-                               FROM (SELECT SUM(PP.QTD) as QTD, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM), PP.UMA
-                                       FROM PALETE_PRODUTO PP
-                                      GROUP BY PP.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM))
-                              GROUP BY COD_PRODUTO, DSC_GRADE, UMA) PP
-                      LEFT JOIN PALETE P ON P.UMA = PP.UMA
-                     WHERE P.COD_STATUS = 536
-                     GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
+        $filter = false;
 
         $queryWhere = " WHERE ";
-        $filter = false;
 
         if (isset($dataInicial1) && (!empty($dataInicial1))) {
             if ($filter == true) {$queryWhere = $queryWhere . " AND ";}
@@ -74,7 +48,7 @@ class PaleteRepository extends EntityRepository
             if ($status != 536) {
                 $queryWhere = $queryWhere . " R.COD_STATUS = $status";
             } else {
-                $queryWhere .= " R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) ";
+                $queryWhere .= " R.COD_STATUS = 457 ";
             }
             $filter = true;
         }
@@ -91,20 +65,73 @@ class PaleteRepository extends EntityRepository
             $filter = true;
         }
 
-        if ($filter == false) {$queryWhere = "";}
+        $recebimentosSQL = " SELECT COD_RECEBIMENTO FROM RECEBIMENTO R";
+        if ($filter == true) {$recebimentosSQL .= $queryWhere;}
+        $resultRecebimentos = $this->getEntityManager()->getConnection()->query($recebimentosSQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        $query = $query . $queryWhere . " ORDER BY R.COD_RECEBIMENTO";
+        $recebimentos = "";
+        foreach ($resultRecebimentos as $row) {
+            $separador = ",";
+            if ($recebimentos == "") {$separador = "";}
+            $recebimentos .= $separador . $row['COD_RECEBIMENTO'];
+        }
+
+        $whereCodRecebimento = "";
+        if ($filter == true) {
+            if (count($resultRecebimentos)>0) {
+                $whereCodRecebimento = " WHERE R.COD_RECEBIMENTO IN (" . $recebimentos . ")";
+            } else {
+                $whereCodRecebimento = " WHERE R.COD_RECEBIMENTO IN (0)";
+            }
+        }
+
+        $query = "
+        SELECT R.COD_RECEBIMENTO,
+               R.DTH_INICIO_RECEB,
+               R.DTH_FINAL_RECEB,
+               '' as FORNECEDORES,
+               CASE WHEN R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
+               S.DSC_SIGLA END as STATUS,
+               QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
+               NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
+               ROUND(NVL(QTD_END.QTD,0)/NVL(QTD_TOTAL.QTD_TOTAL,1) * 100,2) as PERCENTUAL
+          FROM RECEBIMENTO R
+          LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
+          LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
+                       FROM (SELECT SUM (QTD) as QTD, COD_RECEBIMENTO
+                               FROM V_QTD_RECEBIMENTO R
+                               $whereCodRecebimento
+                              GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
+                      GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD_TOTAL.QTD_TOTAL > 0
+          LEFT JOIN (SELECT SUM(PP.QTD) as QTD, P.COD_RECEBIMENTO
+                       FROM (SELECT MIN(QTD) as QTD, COD_PRODUTO, DSC_GRADE, UMA 
+                               FROM (SELECT SUM(PP.QTD) as QTD, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM), PP.UMA
+                                       FROM PALETE_PRODUTO PP
+                                       LEFT JOIN PALETE R ON R.UMA = PP.UMA
+                                       $whereCodRecebimento
+                                      GROUP BY PP.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM))
+                              GROUP BY COD_PRODUTO, DSC_GRADE, UMA) PP
+                      LEFT JOIN PALETE P ON P.UMA = PP.UMA
+                     WHERE P.COD_STATUS = 536
+                     GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
+        $query = $query . $whereCodRecebimento;
+
+        if (isset($status) && (!empty($status))) {
+            if ($status == 536) {
+                $query.= " AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) ";
+            }
+        }
+
+        $query = $query  . " ORDER BY R.COD_RECEBIMENTO";
 
         $queryFornecedores = "
-                      SELECT NF.COD_RECEBIMENTO,
+                      SELECT R.COD_RECEBIMENTO,
                             LISTAGG(P.NOM_PESSOA, ', ')  WITHIN GROUP (ORDER BY P.NOM_PESSOA) FORNECEDORES
-                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_FORNECEDOR FROM NOTA_FISCAL) NF
-                       LEFT JOIN PESSOA P ON NF.COD_FORNECEDOR = P.COD_PESSOA
-                       LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-                       $queryWhere
-                      GROUP BY NF.COD_RECEBIMENTO
+                       FROM (SELECT DISTINCT COD_RECEBIMENTO, COD_FORNECEDOR FROM NOTA_FISCAL) R
+                       LEFT JOIN PESSOA P ON R.COD_FORNECEDOR = P.COD_PESSOA
+                       $whereCodRecebimento
+                      GROUP BY R.COD_RECEBIMENTO
         ";
-
 
         $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         $resultFornecedores = $this->getEntityManager()->getConnection()->query($queryFornecedores)->fetchAll(\PDO::FETCH_ASSOC);
