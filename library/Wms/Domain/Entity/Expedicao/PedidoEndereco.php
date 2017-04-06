@@ -18,6 +18,12 @@ class PedidoEndereco
      * @SequenceGenerator(sequenceName="SQ_PEDIDO_ENDERECO_01", initialValue=1, allocationSize=1)
      */
     protected $id;
+
+    /**
+     * @Column(name="COD_PEDIDO", type="integer", nullable=false)
+     */
+    protected $codPedido;
+
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Pedido")
      * @JoinColumn(name="COD_PEDIDO", referencedColumnName="COD_PEDIDO")
@@ -92,17 +98,6 @@ class PedidoEndereco
     public function getId()
     {
 	return $this->id;
-    }
-
-    public function getIdPessoa()
-    {
-	return $this->idPessoa;
-    }
-
-    public function setIdPessoa($idPessoa)
-    {
-	$this->idPessoa = $idPessoa;
-        return $this;
     }
 
     public function getIdLocalidade()
@@ -261,6 +256,22 @@ class PedidoEndereco
     public function getIdTipo()
     {
         return $this->idTipo;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPedido()
+    {
+        return $this->codPedido;
+    }
+
+    /**
+     * @param mixed $codPedido
+     */
+    public function setCodPedido($codPedido)
+    {
+        $this->codPedido = $codPedido;
     }
 
 }

@@ -928,7 +928,7 @@ class RecebimentoRepository extends EntityRepository
                               GROUP BY R.COD_PRODUTO, R.DSC_GRADE, P.IND_POSSUI_PESO_VARIAVEL) CONFERIDO
                     ON CONFERIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND CONFERIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -938,7 +938,8 @@ class RecebimentoRepository extends EntityRepository
                                                      PP.COD_PRODUTO, 
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
-                                                     P.COD_STATUS
+                                                     P.COD_STATUS,
+                                                     PP.COD_NORMA_PALETIZACAO
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
@@ -947,7 +948,7 @@ class RecebimentoRepository extends EntityRepository
                                       GROUP BY COD_PRODUTO, DSC_GRADE) RECEBIDO
                     ON RECEBIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND RECEBIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -957,7 +958,8 @@ class RecebimentoRepository extends EntityRepository
                                                      PP.COD_PRODUTO, 
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
-                                                     P.COD_STATUS
+                                                     P.COD_STATUS,
+                                                     PP.COD_NORMA_PALETIZACAO
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
@@ -966,7 +968,7 @@ class RecebimentoRepository extends EntityRepository
                                       GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECADO
                     ON ENDERECADO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECADO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -976,7 +978,8 @@ class RecebimentoRepository extends EntityRepository
                                                      PP.COD_PRODUTO, 
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
-                                                     P.COD_STATUS
+                                                     P.COD_STATUS,
+                                                     PP.COD_NORMA_PALETIZACAO
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
@@ -985,7 +988,7 @@ class RecebimentoRepository extends EntityRepository
                                       GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECAMENTO
                     ON ENDERECAMENTO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECAMENTO.DSC_GRADE = V.DSC_GRADE   
-                  LEFT JOIN (SELECT SUM(QTD) as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
                                     COD_PRODUTO,
                                     DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -995,7 +998,8 @@ class RecebimentoRepository extends EntityRepository
                                                      PP.COD_PRODUTO, 
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
-                                                     P.COD_STATUS
+                                                     P.COD_STATUS,
+                                                     PP.COD_NORMA_PALETIZACAO
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
