@@ -6,9 +6,21 @@
             $.ajax({
                 url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
                 success: function(data) {
-                    $('#descricao').html(data['descricao']+' - '+data['endereco']);
-                    $('#capacidade').val(data['capacidade']);
-                    $('#embalado').val(data['embalado']);
+                    if (data.status === 'ok'){
+                        $('#isEmbalagem').val(data.result['isEmbalagem']);
+                        if (data.result['isEmbalagem'] === true) {
+                            $('#descricao').html(data['descricao']+' - '+data['endereco']);
+                            $('#capacidade').val(data['capacidade']);
+                            $('#embalado').val(data['embalado']).show();
+                        } else {
+                            $('#descricao').html(data['descricao']+' - '+data['endereco']);
+                            $('#capacidade').val(data['capacidade']);
+                            $('#embalado').enable(false).hide();
+                        }
+                    } else {
+                        $('#descricao').html("Erro: " + data.msg);
+                    }
+
                 }
             });
         });
@@ -97,18 +109,19 @@
     <div id="descricao"></div>
     <div>
         <label>Produto:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" onkeydown="nextInput(event)" />
+        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" required onkeydown="nextInput(event)" />
+        <input type="hidden" name="isEmbalagem" id="isEmbalagem" />
     </div>
 
     <div>
         <label>End: -------------------- Cap:</label>
-        <input type="text" name="endereco" id="endereco" class="valid" onkeydown="nextInputEndereco(event)" />
-        <input type="text" name="capacidade" id="capacidade" size=6 maxlength=5 value="" />
+        <input type="text" name="endereco" id="endereco" class="valid" required onkeydown="nextInputEndereco(event)" />
+        <input type="text" name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
     </div>
 
     <div>
         <label>Emb:</label>
-        <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
+        <input type="text" style="display: none" name="embalado" id="embalado" size=1 maxlength=1 value="" />
     </div>
 
     <input type="submit" name="submit" id="submit" value="Cadastrar" />
