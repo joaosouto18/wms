@@ -1362,7 +1362,7 @@ class Mobile_EnderecamentoController extends Action
                     throw new Exception('Endereço não encontrado');
                 }
 
-                if ($isEmbalagem) {
+                if (filter_var($isEmbalagem, FILTER_VALIDATE_BOOLEAN)) {
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
                     $embalagemRepo->setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado);

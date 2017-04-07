@@ -3,26 +3,36 @@
 
         $('#codigoBarras').change(function () {
             var codBarras = $('#codigoBarras').val();
-            $.ajax({
-                url:  '/mobile/enderecamento/dados-embalagem/codigoBarras/'+codBarras,
-                success: function(data) {
-                    if (data.status === 'ok'){
-                        $('#isEmbalagem').val(data.result['isEmbalagem']);
-                        if (data.result['isEmbalagem'] === true) {
-                            $('#descricao').html(data['descricao']+' - '+data['endereco']);
-                            $('#capacidade').val(data['capacidade']);
-                            $('#embalado').val(data['embalado']).show();
-                        } else {
-                            $('#descricao').html(data['descricao']+' - '+data['endereco']);
-                            $('#capacidade').val(data['capacidade']);
-                            $('#embalado').enable(false).hide();
-                        }
-                    } else {
-                        $('#descricao').html("Erro: " + data.msg);
-                    }
+            if (codBarras !== null && codBarras !== '') {
+                $.ajax({
+                    url: '/mobile/enderecamento/dados-embalagem/codigoBarras/' + codBarras,
+                    success: function (data) {
+                        if (data.status === 'ok') {
+                            var dsc = data.result.descricao;
+                            var endereco = data.result.endereco;
+                            if (endereco || $.trim(endereco) !== "") {
+                                dsc += ' - ' + data.result.endereco;
+                                $('#endereco').val(data.result.endereco);
+                            } else {
+                                dsc += ' - Sem picking';
+                            }
 
-                }
-            });
+                            $('#descricao').html(dsc);
+                            $('#capacidade').val(data.result.capacidade);
+                            $('#isEmbalagem').val(data.result.isEmbalagem);
+
+                            if (data.result['isEmbalagem'] === true) {
+                                $('#embalado').val(data.result.embalado);
+                                $('#divEmb').show()
+                            } else {
+                                $('#divEmb').hide();
+                            }
+                        } else {
+                            $('#descricao').html("Erro: " + data.msg);
+                        }
+                    }
+                });
+            }
         });
     });
 
@@ -119,9 +129,9 @@
         <input type="text" name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
     </div>
 
-    <div>
+    <div id="divEmb" style="display: none">
         <label>Emb:</label>
-        <input type="text" style="display: none" name="embalado" id="embalado" size=1 maxlength=1 value="" />
+        <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
     </div>
 
     <input type="submit" name="submit" id="submit" value="Cadastrar" />
