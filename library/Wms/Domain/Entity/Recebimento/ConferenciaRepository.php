@@ -170,10 +170,11 @@ class ConferenciaRepository extends EntityRepository
                         P.IND_POSSUI_PESO_VARIAVEL
                    FROM RECEBIMENTO_CONFERENCIA RC
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = RC.COD_PRODUTO AND P.DSC_GRADE = RC.DSC_GRADE
-                   LEFT JOIN V_QTD_RECEBIMENTO V ON V.COD_PRODUTO = RC.COD_PRODUTO
-                                                AND V.DSC_GRADE = RC.DSC_GRADE
-                                                AND V.COD_OS = RC.COD_OS
-                                                AND V.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
+                   LEFT JOIN (SELECT * FROM V_QTD_RECEBIMENTO V WHERE COD_OS = $idOrdemServico) V
+                          ON V.COD_PRODUTO = RC.COD_PRODUTO
+                         AND V.DSC_GRADE = RC.DSC_GRADE
+                         AND V.COD_OS = RC.COD_OS
+                         AND V.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
                   INNER JOIN (SELECT SUM(NUM_PESO) PESO,
                                     NFI.COD_PRODUTO,
                                     NFI.DSC_GRADE,
