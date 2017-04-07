@@ -50,11 +50,13 @@ class EmbalagemRepository extends EntityRepository
     {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
-        $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
-
-        if (!isset($embalagemEn) || empty($embalagemEn)) {
+        
+        if (empty($embalagemEn)) {
             throw new \Exception('Produto não encontrado');
         }
+
+        $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
+
         foreach ($embalagemEntities as $embalagem) {
             $embalagem->setEndereco($enderecoEn);
             $this->getEntityManager()->persist($embalagemEn);
