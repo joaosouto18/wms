@@ -377,6 +377,9 @@ class Volume
         return $this;
     }
 
+    /**
+     * @return \Wms\Domain\Entity\Deposito\Endereco
+     */
     public function getEndereco()
     {
         return $this->endereco;
