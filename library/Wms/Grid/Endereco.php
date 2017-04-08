@@ -22,25 +22,25 @@ class Endereco extends Grid
             ->innerJoin('e.tipoEndereco', 'te')
             ->orderBy('e.descricao');
 
-        if (!empty($inicialRua) && !empty($finalRua)) {
+        if (!is_null($inicialRua) && !is_null($finalRua)) {
             $source->andWhere("e.rua BETWEEN :inicilaRua AND :finalRua")
                 ->setParameter('inicilaRua', $inicialRua)
                 ->setParameter('finalRua', $finalRua);
         }
 
-        if (!empty($inicialPredio) && !empty($finalPredio)) {
+        if (!is_null($inicialPredio) && !is_null($finalPredio)) {
             $source->andWhere("e.predio BETWEEN :inicilaPredio AND :finalPredio")
                 ->setParameter('inicilaPredio', $inicialPredio)
                 ->setParameter('finalPredio', $finalPredio);
         }
 
-        if (!empty($inicialNivel) && !empty($finalNivel)) {
+        if (!is_null($inicialNivel) && !is_null($finalNivel)) {
             $source->andWhere("e.nivel BETWEEN :inicilaNivel AND :finalNivel")
                 ->setParameter('inicilaNivel', $inicialNivel)
                 ->setParameter('finalNivel', $finalNivel);
         }
 
-        if (!empty($inicialApartamento) && !empty($finalApartamento)) {
+        if (!is_null($inicialApartamento) && !is_null($finalApartamento)) {
             $source->andWhere("e.apartamento BETWEEN :inicilaApartamento AND :finalApartamento")
                 ->setParameter('inicilaApartamento', $inicialApartamento)
                 ->setParameter('finalApartamento', $finalApartamento);
