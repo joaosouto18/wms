@@ -209,8 +209,6 @@ class Web_EnderecoController extends Crud
     public function editAction()
     {
 
-
-
         //finds the form class from the entity name
         $form = new Wms\Module\Web\Form\Deposito\Endereco;
         //bloqueio elementos na edicao
@@ -243,10 +241,10 @@ class Web_EnderecoController extends Crud
         try {
             if (!empty($massId)) {
                 if ($this->getRequest()->isPost() && $form->isValid($parms)) {
+                    $arrayParams = $this->getRequest()->getParams();
                     foreach ($massId as $id) {
-                        $entity = $this->repository->findOneBy(array($this->pkField => $id));
-                        $this->repository->save($entity, $this->getRequest()->getParams());
-                        $this->em->persist($entity);
+                        $arrayParams['identificacao']['id'] = $id;
+                        $this->repository->save(null, $arrayParams);
                     }
                     $this->em->flush();
                     $this->_helper->messenger('success', 'Registros alterados com sucesso');

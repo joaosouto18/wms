@@ -83,19 +83,7 @@ class EnderecoRepository extends EntityRepository
         //echo $ativo;exit;
 
         //caso edicao
-
-        if (!empty($enderecoEntity)){
-            $enderecoEntity->setSituacao($situacao);
-            $enderecoEntity->setDeposito($deposito);
-            $enderecoEntity->setCaracteristica($caracteristica);
-            $enderecoEntity->setEstruturaArmazenagem($estruturaArmazenagem);
-            $enderecoEntity->setTipoEndereco($tipoEndereco);
-            $enderecoEntity->setStatus($status);
-            $enderecoEntity->setAtivo($ativo);
-            $enderecoEntity->setAreaArmazenagem($areaArmazenagem);
-
-            $em->persist($enderecoEntity);
-        }elseif (!empty($id)) {
+        if (!empty($id)) {
             $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $id);
 
             $enderecoEntity->setSituacao($situacao);
