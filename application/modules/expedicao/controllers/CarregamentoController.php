@@ -2,7 +2,7 @@
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Page;
 
-class Expedicao_CarregamentoController  extends Action
+class Expedicao_CarregamentoController extends Action
 {
 
     public function indexAction()
@@ -61,6 +61,17 @@ class Expedicao_CarregamentoController  extends Action
         $this->view->form = $form;
     }
 
+    public function imprimirAjaxAction()
+    {
+        $request = $this->getRequest();
+        $params = $request->getParams();
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expRepo */
+        $expRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+        $result = $expRepo->getCarregamentoByExpedicao($params['codExpedicao']);
+
+        $this->exportPDF($result,'relatorio-sequenciamento','Imprimir','L');
+    }
+
     public function buttons($codExpedicao)
     {
         if ($codExpedicao) {
@@ -73,6 +84,16 @@ class Expedicao_CarregamentoController  extends Action
                             'controller' => 'relatorio_carregamento',
                             'action' => 'imprimir',
                             'id' => $codExpedicao
+                        ),
+                        'tag' => 'a'
+                    ),
+                    array(
+                        'label' => 'Imprimir Sequenciamento',
+                        'urlParams' => array(
+                            'module' => 'expedicao',
+                            'controller' => 'carregamento',
+                            'action' => 'imprimir-ajax',
+                            'codExpedicao' => $codExpedicao
                         ),
                         'tag' => 'a'
                     )

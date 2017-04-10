@@ -2098,15 +2098,15 @@ class ExpedicaoRepository extends EntityRepository
     public function getCarregamentoByExpedicao($codExpedicao, $codStatus = null, $codCargaExterno = null)
     {
         $source = $this->_em->createQueryBuilder()
-            ->select("ped.id              as pedido,
+            ->select("
+                      ped.sequencia,
+                      ped.id              as pedido,
                       it.descricao        as itinerario,
+                      car.codCargaExterno as carga,
                       endere.localidade   as cidade,
                       endere.bairro       as bairro,
                       endere.descricao    as rua,
-                      pessoa.nome         as cliente,
-                      ped.sequencia,
-                      car.codCargaExterno              as carga
-             ")
+                      pessoa.nome         as cliente")
             ->from("wms:Expedicao\PedidoProduto", "pp")
             ->leftJoin("pp.produto"         ,"prod")
             ->leftJoin("pp.pedido"          ,"ped")
