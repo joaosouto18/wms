@@ -54,7 +54,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $form->setControllerUrl("onda-ressuprimento");
         $form->setActionUrl("filtrar");
         $form->setLabel("Busca de Produto/Picking");
-        $form->setLabelElement("Código de Barras do Produto");
+        $form->setLabelElement("Código de Barras ou Código do Produto");
 
         $codigoBarras = $this->_getParam('codigoBarras');
         if ($codigoBarras != NULL) {
