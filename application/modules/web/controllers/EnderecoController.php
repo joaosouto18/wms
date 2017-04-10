@@ -74,6 +74,7 @@ class Web_EnderecoController extends Crud
                     ->setParameter(3, $idAreaArmazenagem);
 
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
+            $grid->addMassAction('edit', 'Editar');
             $grid->addMassAction('mass-delete', 'Remover');
             $grid->addMassAction('bloquear', 'Bloquear');
             $grid->addMassAction('desbloquear', 'Desbloquear');
@@ -208,41 +209,6 @@ class Web_EnderecoController extends Crud
     public function editAction()
     {
 
-        //adding default buttons to the page
-        Page::configure(array(
-            'buttons' => array(
-                array(
-                    'label' => 'Voltar',
-                    'cssClass' => 'btnBack',
-                    'urlParams' => array(
-                        'action' => 'index',
-                        'id' => null
-                    ),
-                    'tag' => 'a'
-                ),
-                array(
-                    'label' => 'Adicionar novo',
-                    'cssClass' => 'btnAdd',
-                    'urlParams' => array(
-                        'action' => 'add'
-                    ),
-                    'tag' => 'a'
-                ),
-                array(
-                    'label' => 'Excluir',
-                    'cssClass' => 'btnDelete',
-                    'urlParams' => array(
-                        'action' => 'delete'
-                    ),
-                    'tag' => 'a'
-                ),
-                array(
-                    'label' => 'Salvar',
-                    'cssClass' => 'btnSave'
-                )
-            )
-        ));
-
         //finds the form class from the entity name
         $form = new Wms\Module\Web\Form\Deposito\Endereco;
         //bloqueio elementos na edicao
@@ -257,25 +223,85 @@ class Web_EnderecoController extends Crud
         $elements['finalApartamento']->setAttrib('readonly', 'readonly');
         $elements['lado']->setAttrib('disabled', 'disabled');
 
+        $hasId = false;
+
+        $id = $this->_getParam('id');
+        if (!empty($id)){
+            $hasId = true;
+        }
+        $parms = $this->getRequest()->getPost();
+        if (isset($parms['identificacao']) && empty($id)){
+            $id = $parms['identificacao']['id'];
+        }
+        $massId = $this->_getParam('mass-id');
+        if (!empty($id) && empty($massId)){
+            $massId = explode('-', $id);
+        }
+
         try {
-            $id = $this->getRequest()->getParam('id');
-
-            if ($id == null)
-                throw new \Exception('Id must be provided for the edit action');
-
-            $entity = $this->repository->findOneBy(array($this->pkField => $id));
-
-            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-                $this->repository->save($entity, $this->getRequest()->getParams());
-                $this->em->flush();
-                $this->_helper->messenger('success', 'Registro alterado com sucesso');
-                return $this->redirect('index');
+            if (!empty($massId)) {
+                if ($this->getRequest()->isPost() && $form->isValid($parms)) {
+                    $arrayParams = $this->getRequest()->getParams();
+                    foreach ($massId as $id) {
+                        $arrayParams['identificacao']['id'] = $id;
+                        $this->repository->save(null, $arrayParams);
+                    }
+                    $this->em->flush();
+                    $this->_helper->messenger('success', 'Registros alterados com sucesso');
+                    $this->redirect('index');
+                }
+                $form->setMassDefaultsFromEntity($massId, $this->repository);
+                //array('id' => implode('-',$massId))
+            } else {
+                throw new Exception('Selecione ao menos um endereço');
             }
-            $form->setDefaultsFromEntity($entity);
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
+            $this->redirect('index');
         }
         $this->view->form = $form;
+
+        //adding default buttons to the page
+
+        $arr = array(
+            array(
+                'label' => 'Voltar',
+                'cssClass' => 'btnBack',
+                'urlParams' => array(
+                    'action' => 'index',
+                    'id' => null
+                ),
+                'tag' => 'a'
+            ),
+            array(
+                'label' => 'Adicionar novo',
+                'cssClass' => 'btnAdd',
+                'urlParams' => array(
+                    'action' => 'add'
+                ),
+                'tag' => 'a'
+            ),
+            array(
+                'label' => 'Excluir',
+                'cssClass' => 'btnDelete',
+                'urlParams' => array(
+                    'action' => 'delete'
+                ),
+                'tag' => 'a'
+            ),
+            array(
+                'label' => 'Salvar',
+                'cssClass' => 'btnSave'
+            )
+        );
+
+        if ($hasId == false) {
+            unset($arr[2]);
+        }
+
+        Page::configure(array(
+            'buttons' => $arr
+        ));
     }
 
     /**

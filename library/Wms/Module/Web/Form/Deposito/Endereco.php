@@ -2,6 +2,9 @@
 
 namespace Wms\Module\Web\Form\Deposito;
 
+use Doctrine\ORM\EntityManager;
+use Wms\Domain\Entity\Deposito\EnderecoRepository;
+use Wms\Domain\EntityRepository;
 use Wms\Module\Web\Form,
     Core\Form\SubForm,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
@@ -24,10 +27,8 @@ class Endereco extends Form {
         $repoCaracteristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica');
         $repoEstrutura = $em->getRepository('wms:Armazenagem\Estrutura\Tipo');
         $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
-        $repoUnitizador = $em->getRepository('wms:Armazenagem\Unitizador');
-        $repoExcedente = $em->getRepository('wms:Armazenagem\LinhaSeparacao');
         $repoArea = $em->getRepository('wms:Deposito\AreaArmazenagem');
-        $area = $repoArea->getIdValue(array('idDeposito' => $sessao->idDepositoLogado));
+        $area = $repoArea->getIdValue(array('idDeposito' => $idDeposito));
         $id = $this->getRequest()->getParam('id');
 
         //formulário
@@ -36,7 +37,7 @@ class Endereco extends Form {
         //depósito
         $formIdentificacao->addElement('hidden', 'id')
                 ->addElement('hidden', 'idDeposito', array(
-                    'value' => $sessao->idDepositoLogado,
+                    'value' => $idDeposito,
                 ))
                 ->addElement('text', 'inicialRua', array(
                     'style' => 'width: 22px',
@@ -95,71 +96,63 @@ class Endereco extends Form {
 
 
         //dados do endereço
-        if ($id == null) {
-            $formIdentificacao->addElement('select', 'situacao', array(
-                'multiOptions' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado'),
-                'label' => 'Situação',
+        $formIdentificacao->addElement('select', 'situacao', array(
+            'multiOptions' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado'),
+            'label' => 'Situação',
+            'required' => true,
+                ))
+            ->addElement('hidden', 'status', array(
+                'mostrarSelecione' => false,
+                'multiOptions' => array('D' => 'Disponível', 'O' => 'Ocupado'),
+                'decorators' => array('ViewHelper'),
+            ))
+            ->addElement('select', 'ativo', array(
+                'multiOptions' => array('S' => 'Ativo', 'N' => 'Inativo'),
+                'label' => 'Disponibilidade',
                 'required' => true,
-            ));
-        } else {
-            $formIdentificacao->addElement('select', 'situacao', array(
-                'multiOptions' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado'),
-                'label' => 'Situação',
-                'required' => true,
-            ));
-        }
-        $formIdentificacao->addElement('hidden', 'status', array(
-                    'mostrarSelecione' => false,
-                    'multiOptions' => array('D' => 'Disponível', 'O' => 'Ocupado'),
-                    'decorators' => array('ViewHelper'),
-                ))
-                ->addElement('select', 'ativo', array(
-                    'multiOptions' => array('S' => 'Ativo', 'N' => 'Inativo'),
-                    'label' => 'Disponibilidade',
-                    'required' => true,
-                ))
-                 ->addElement('select', 'idCaracteristica', array(
-                    'multiOptions' => $repoCaracteristica->getIdValue(),
-                    'label' => 'Característica',
-                    'required' => true
-                ))
-                ->addElement('select', 'idEstruturaArmazenagem', array(
-                    'multiOptions' => $repoEstrutura->getIdValue(),
-                    'label' => 'Estrutura de Armazenagem',
-                    'required' => true
-                ))
-                ->addElement('select', 'idTipoEndereco', array(
-                    'multiOptions' => $repoTipo->getIdValue(),
-                    'label' => 'Tipo do Endereço',
-                    'required' => true
-                ))
-                ->addElement('select', 'idAreaArmazenagem', array(
-                    'multiOptions' => $area,
-                    'label' => 'Área de Armazenagem',
-                    'required' => true
-                ))
-                ->addDisplayGroup(array(
-                    'inicialRua',
-                    'finalRua',
-                    'inicialPredio',
-                    'finalPredio',
-                    'inicialNivel',
-                    'finalNivel',
-                    'inicialApartamento',
-                    'finalApartamento',
-                    'lado'
-                        ), 'endereco', array('legend' => 'Endereço'))
-                ->addDisplayGroup(array(
-                    'id',
-                    'idDeposito',
-                    'idAreaArmazenagem',
-                    'idCaracteristica',
-                    'idTipoEndereco',
-                    'idEstruturaArmazenagem',
-                    'status',
-                    'situacao',
-                    'ativo'
-                        ), 'identificacao', array('legend' => 'Identificação'));
+            ))
+             ->addElement('select', 'idCaracteristica', array(
+                'multiOptions' => $repoCaracteristica->getIdValue(),
+                'label' => 'Característica',
+                'required' => true
+            ))
+            ->addElement('select', 'idEstruturaArmazenagem', array(
+                'multiOptions' => $repoEstrutura->getIdValue(),
+                'label' => 'Estrutura de Armazenagem',
+                'required' => true
+            ))
+            ->addElement('select', 'idTipoEndereco', array(
+                'multiOptions' => $repoTipo->getIdValue(),
+                'label' => 'Tipo do Endereço',
+                'required' => true
+            ))
+            ->addElement('select', 'idAreaArmazenagem', array(
+                'multiOptions' => $area,
+                'label' => 'Área de Armazenagem',
+                'required' => true
+            ))
+            ->addDisplayGroup(array(
+                'inicialRua',
+                'finalRua',
+                'inicialPredio',
+                'finalPredio',
+                'inicialNivel',
+                'finalNivel',
+                'inicialApartamento',
+                'finalApartamento',
+                'lado'
+                    ), 'endereco', array('legend' => 'Endereço'))
+            ->addDisplayGroup(array(
+                'id',
+                'idDeposito',
+                'idAreaArmazenagem',
+                'idCaracteristica',
+                'idTipoEndereco',
+                'idEstruturaArmazenagem',
+                'status',
+                'situacao',
+                'ativo'
+                    ), 'identificacao', array('legend' => 'Identificação'));
 
         $this->addSubFormTab('Identificação', $formIdentificacao, 'identificacao', 'endereco/cadastrar-form.phtml');
     }
@@ -189,6 +182,43 @@ class Endereco extends Form {
             'idTipoEndereco' => $endereco->getIdTipoEndereco(),
             'status' => $endereco->getStatus(),
             'idAreaArmazenagem' => $endereco->getIdAreaArmazenagem()
+        );
+
+        $this->setDefaults($values);
+    }
+
+    /**
+     * @param $mass_ids
+     * @param $repo EnderecoRepository
+     */
+    public function setMassDefaultsFromEntity($mass_ids, $repo)
+    {
+        $ids = implode('-',$mass_ids);
+        $endInicio = $repo->find($mass_ids[0]);
+        if (count($mass_ids) > 1) {
+            $endFinal = $repo->find($mass_ids[count($mass_ids) - 1]);
+        } else {
+            $endFinal = $endInicio;
+        }
+
+        $values = array(
+            'id' => $ids,
+            'idDeposito' => $endInicio->getIdDeposito(),
+            'inicialRua' => $endInicio->getRua(),
+            'finalRua' => $endFinal->getRua(),
+            'inicialPredio' => $endInicio->getPredio(),
+            'finalPredio' => $endFinal->getPredio(),
+            'inicialNivel' => $endInicio->getNivel(),
+            'finalNivel' => $endFinal->getNivel(),
+            'inicialApartamento' => $endInicio->getApartamento(),
+            'finalApartamento' => $endFinal->getApartamento(),
+            'situacao' => $endInicio->getSituacao(),
+            'ativo' => $endInicio->getAtivo(),
+            'idCaracteristica' => $endInicio->getIdCaracteristica(),
+            'idEstruturaArmazenagem' => $endInicio->getIdEstruturaArmazenagem(),
+            'idTipoEndereco' => $endInicio->getIdTipoEndereco(),
+            'status' => $endInicio->getStatus(),
+            'idAreaArmazenagem' => $endInicio->getIdAreaArmazenagem()
         );
 
         $this->setDefaults($values);

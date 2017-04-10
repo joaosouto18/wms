@@ -22,25 +22,25 @@ class Endereco extends Grid
             ->innerJoin('e.tipoEndereco', 'te')
             ->orderBy('e.descricao');
 
-        if (!empty($inicialRua) && !empty($finalRua)) {
+        if ((!is_null($inicialRua) && $inicialRua != '') && (!is_null($finalRua) && $finalRua != '')) {
             $source->andWhere("e.rua BETWEEN :inicilaRua AND :finalRua")
                 ->setParameter('inicilaRua', $inicialRua)
                 ->setParameter('finalRua', $finalRua);
         }
 
-        if (!empty($inicialPredio) && !empty($finalPredio)) {
+        if ((!is_null($inicialPredio) && $inicialPredio != '') && (!is_null($finalPredio) && $finalPredio != '')) {
             $source->andWhere("e.predio BETWEEN :inicilaPredio AND :finalPredio")
                 ->setParameter('inicilaPredio', $inicialPredio)
                 ->setParameter('finalPredio', $finalPredio);
         }
 
-        if (!empty($inicialNivel) && !empty($finalNivel)) {
+        if ((!is_null($inicialNivel) && $inicialNivel != '') && (!is_null($finalNivel) && $inicialNivel != '')) {
             $source->andWhere("e.nivel BETWEEN :inicilaNivel AND :finalNivel")
                 ->setParameter('inicilaNivel', $inicialNivel)
                 ->setParameter('finalNivel', $finalNivel);
         }
 
-        if (!empty($inicialApartamento) && !empty($finalApartamento)) {
+        if ((!is_null($inicialApartamento) && $inicialApartamento != '') && (!is_null($finalApartamento) && $finalApartamento != '')) {
             $source->andWhere("e.apartamento BETWEEN :inicilaApartamento AND :finalApartamento")
                 ->setParameter('inicilaApartamento', $inicialApartamento)
                 ->setParameter('finalApartamento', $finalApartamento);

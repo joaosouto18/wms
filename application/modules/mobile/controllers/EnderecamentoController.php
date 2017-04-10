@@ -1346,9 +1346,10 @@ class Mobile_EnderecamentoController extends Action
         $codigoBarrasEndereco = $this->_getParam('endereco');
         $capacidadePicking = $this->_getParam('capacidade');
         $embalado = $this->_getParam('embalado');
+        $isEmbalagem = $this->_getParam('isEmbalagem');
 
         try {
-            if (isset($codBarras) && !empty($codBarras) && isset($codigoBarrasEndereco) && !empty($codigoBarrasEndereco) && isset($capacidadePicking) && !empty($capacidadePicking)) {
+            if (!empty($codBarras) && !empty($codigoBarrasEndereco) && !empty($capacidadePicking)) {
                 $LeituraColetor = new \Wms\Service\Coletor();
                 $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
 
@@ -1361,16 +1362,19 @@ class Mobile_EnderecamentoController extends Action
                     throw new Exception('Endereço não encontrado');
                 }
 
-                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-                $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-                $embalagemRepo->updateEmbalagem($codBarras,$enderecoEn,$capacidadePicking,$embalado);
+                if (filter_var($isEmbalagem, FILTER_VALIDATE_BOOLEAN)) {
+                    /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+                    $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+                    $embalagemRepo->setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado);
+                } else {
+                    /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+                    $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
+                    $volumeRepo->setPickingVolume($codBarras, $enderecoEn, $capacidadePicking);
+                }
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
-            } else {
-                $this->addFlashMessage('error', 'É Necessário preencher TODOS os campos!');
             }
-
         } catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
@@ -1380,26 +1384,45 @@ class Mobile_EnderecamentoController extends Action
 
     public function dadosEmbalagemAction()
     {
-        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
         $codBarras = $this->_getParam('codigoBarras');
-
-        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $status = null;
         $mensagem = null;
-        if (!isset($embalagemEn) || empty($embalagemEn)) {
-            $mensagem = 'Codigo de Barras nao encontrado!';
-        }
-        $endereco = null;
-        $enderecoEmbalagem = $embalagemEn->getEndereco();
-        if (isset($enderecoEmbalagem) && !empty($enderecoEmbalagem))
-            $endereco = $embalagemEn->getEndereco()->getDescricao();
+        $result = array();
 
-        $this->_helper->json(array('endereco'   => $endereco,
-            'capacidade' => $embalagemEn->getCapacidadePicking(),
-            'embalado'   => $embalagemEn->getEmbalado(),
-            'referencia' => $embalagemEn->getProduto()->getReferencia(),
-            'mensagem'   => $mensagem,
-            'descricao'  => $embalagemEn->getProduto()->getDescricao()
-        ));
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        if (empty($embalagemEn) ) {
+            /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+            $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
+            /** @var \Wms\Domain\Entity\Produto\Volume $volumeEn */
+            $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
+        }
+
+        if (empty($embalagemEn) && empty($volumeEn)) {
+            $status = 'error';
+            $mensagem = 'Codigo de Barras nao encontrado!';
+        } elseif (!empty($embalagemEn)) {
+            $enderecoEmbalagem = $embalagemEn->getEndereco();
+            $status = 'ok';
+            $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao() : null;
+            $result['isEmbalagem'] = true;
+            $result['capacidade'] = $embalagemEn->getCapacidadePicking();
+            $result['embalado']   = $embalagemEn->getEmbalado();
+            $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
+            $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
+        } else {
+            $enderecoVolume = $volumeEn->getEndereco();
+            $status = 'ok';
+            $result['endereco'] = (!empty($enderecoVolume)) ? $enderecoVolume->getDescricao() : null;
+            $result['isEmbalagem'] = false;
+            $result['capacidade'] = $volumeEn->getCapacidadePicking();
+            $result['referencia'] = $volumeEn->getProduto()->getReferencia();
+            $result['descricao']  = $volumeEn->getProduto()->getDescricao();
+        }
+
+        $this->_helper->json(array('status' => $status, 'msg' => $mensagem, 'result' => $result));
     }
 }
 

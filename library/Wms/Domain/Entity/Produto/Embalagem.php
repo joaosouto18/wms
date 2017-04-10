@@ -262,6 +262,9 @@ class Embalagem
         return $this->recebimentoEmbalagens;
     }
 
+    /**
+     * @return Endereco
+     */
     public function getEndereco()
     {
         return $this->endereco;

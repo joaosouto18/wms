@@ -136,4 +136,25 @@ class VolumeRepository extends EntityRepository
         return true;
     }
 
+    public function setPickingVolume($codBarras, $enderecoEn, $capacidadePicking)
+    {
+        /** @var VolumeRepository $embalagemRepo */
+        $volumeRepo = $this->_em->getRepository('wms:Produto\Volume');
+        $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
+
+        if (empty($volumeEn)) {
+            throw new \Exception('Produto não encontrado');
+        }
+
+        $volumesEntities = $volumeRepo->findBy(array('codProduto' => $volumeEn->getCodProduto(), 'grade' => $volumeEn->getGrade()));
+
+        /** @var Volume $volumesEntity */
+        foreach ($volumesEntities as $volumesEntity) {
+            $volumesEntity->setEndereco($enderecoEn);
+            $volumeEn->setCapacidadePicking($capacidadePicking);
+            $this->_em->persist($volumesEntity);
+        }
+
+        $this->_em->flush();
+    }
 }
