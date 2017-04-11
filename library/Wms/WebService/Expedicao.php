@@ -679,7 +679,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $this->savePedido($repositorios, $pedido, $entityCarga);
             $this->_em->flush();
             $i++;
-//            if ($i == 50) $this->_em->clear();
+            if ($i == 50) $this->_em->clear();
 
         }
     }
