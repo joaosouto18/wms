@@ -456,9 +456,9 @@ class MapaSeparacaoRepository extends EntityRepository
                 $numConferencia = $mapaSeparacaoConferenciaEn[0]->getNumConferencia() + 1;
         }
 
-        $qtdDigitada = (float)$qtdEmbalagem * (float)number_format($quantidade,2,'.','');
-        $qtdBanco    = (float)$qtdConferida + (float)$qtdCortada;
-        $qtdMapa     = (float)$qtdMapa;
+        $qtdDigitada = number_format($qtdEmbalagem,3,'.','') * number_format($quantidade,3,'.','');
+        $qtdBanco    = number_format($qtdConferida,3,'.','') + number_format($qtdCortada,3,'.','');
+        $qtdMapa     = number_format($qtdMapa,3,'.','');
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente!");
         }
