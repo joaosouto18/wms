@@ -756,7 +756,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'grade' => $produto['grade'],
                 'quantidade' => str_replace(',','.',$produto['qtde'])
             );
-            var_dump($prod); exit;
             $PedidoProdutoRepo->save($prod);
         }
     }
