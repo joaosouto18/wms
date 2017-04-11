@@ -235,7 +235,6 @@ class Integracao
     public function processaPedido($dados) {
         try {
 
-            var_dump($dados); exit;
             $cargas = array();
             $pedidos = array();
             $produtos = array();
@@ -301,6 +300,7 @@ class Integracao
                     $pedidos = array();
                 }
             }
+            var_dump($cargas); exit;
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
             $wsExpedicao->enviar($cargas);
