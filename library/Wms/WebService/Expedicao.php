@@ -965,7 +965,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => trim($carga['codCargaExterno']), 'tipoCarga' => $tipoCarga->getId()));
         if ($entityCarga == null) {
-            $entityCarga = $CargaRepo->save($carga,false);
+            $entityCarga = $CargaRepo->save($carga,true);
         }
         return $entityCarga;
     }
