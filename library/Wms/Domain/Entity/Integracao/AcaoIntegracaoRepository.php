@@ -112,7 +112,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->flush();
             $this->_em->commit();
-            var_dump('success');
 
         } catch (\Exception $e) {
             $this->_em->rollback();
@@ -121,7 +120,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         }
 
-        var_dump($result); exit;
         return $result;
     }
 }
