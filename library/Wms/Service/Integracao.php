@@ -98,7 +98,6 @@ class Integracao
                 $maxDate = $data;
             }
         }
-        var_dump($maxDate);
         return $maxDate;
     }
 
