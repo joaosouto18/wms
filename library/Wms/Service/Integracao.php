@@ -300,7 +300,6 @@ class Integracao
                     $pedidos = array();
                 }
             }
-            var_dump($cargas); exit;
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
             $wsExpedicao->enviar($cargas);

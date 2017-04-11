@@ -728,6 +728,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         );
 
         $entityPedido  = $this->findPedidoById($repositorios, $arrayPedido);
+        var_dump($entityPedido); exit;
         $this->savePedidoProduto($repositorios, $pedido['produtos'], $entityPedido);
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepo */
