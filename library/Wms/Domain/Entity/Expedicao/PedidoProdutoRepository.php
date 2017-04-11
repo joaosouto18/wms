@@ -12,6 +12,7 @@ class PedidoProdutoRepository extends EntityRepository
         $em = $this->getEntityManager();
 
         $em->beginTransaction();
+        var_dump($pedido); exit;
         try {
             $enPedidoProduto = new PedidoProduto;
             \Zend\Stdlib\Configurator::configure($enPedidoProduto, $pedido);
