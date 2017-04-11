@@ -24,7 +24,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $conexaoEn = $acaoEn->getConexao();
                 $query = $acaoEn->getQuery();
 
-                //PARAMETRIZA A DATA DE ULTIMA EXECU��O DA QUERY
+                //PARAMETRIZA A DATA DE ULTIMA EXECUÇÃO DA QUERY
                 if ($acaoEn->getDthUltimaExecucao() == null) {
                     $dthExecucao = "TO_DATE('01/01/1900 01:01:01','DD/MM/YY HH24:MI:SS')";
                     if (($acaoEn == null) || ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO)) {
@@ -37,7 +37,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
 
-                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRA��O PARA INTEGRA��ES NO WINTHOR
+                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÇAO PARA INTEGRAÇÕES NO WINTHOR
                 $query = str_replace(":codFilial",$this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"),$query);
 
                 //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
