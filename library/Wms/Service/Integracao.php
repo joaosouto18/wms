@@ -97,10 +97,9 @@ class Integracao
             if ($data > $maxDate) {
                 $maxDate = $data;
             }
-            var_dump($data);
             var_dump($maxDate);
-            var_dump($row); exit;
         }
+        var_dump($maxDate); exit;
         return $maxDate;
     }
 
