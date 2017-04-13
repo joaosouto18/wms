@@ -675,8 +675,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
 
         $i = 0;
+        $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
         foreach ($carga['pedidos'] as $pedido) {
-            $this->savePedido($repositorios, $pedido, $entityCarga);
+            $cargaEntity = $cargaRepository->find($entityCarga->getId());
+            $this->savePedido($repositorios, $pedido, $cargaEntity);
             $this->_em->flush();
             $i++;
             if ($i == 50) $this->_em->clear();
@@ -965,7 +967,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $entityCarga = $CargaRepo->findOneBy(array('codCargaExterno' => trim($carga['codCargaExterno']), 'tipoCarga' => $tipoCarga->getId()));
         if ($entityCarga == null) {
-            $entityCarga = $CargaRepo->save($carga,false);
+            $entityCarga = $CargaRepo->save($carga,true);
         }
         return $entityCarga;
     }

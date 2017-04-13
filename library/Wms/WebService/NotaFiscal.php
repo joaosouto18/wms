@@ -560,7 +560,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
                     $itensNf[] = $itemWs;
                 }
-            }            if (count($itensNf) > 0) {
+            }
+            if (count($itensNf) > 0) {
                 $notaFiscalRepo->salvarItens($itensNf, $notaFiscalEn);
                 $notaFiscalEn->setPesoTotal($pesoTotal);
                 $em->persist($notaFiscalEn);
