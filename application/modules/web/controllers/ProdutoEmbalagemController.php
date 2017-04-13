@@ -108,4 +108,10 @@ class Web_ProdutoEmbalagemController extends Crud
         $this->_helper->json($arrayMensagens, true);
     }
 
+    public function verificarEstoqueReservaAjaxAction()
+    {
+        $id = $this->_getParam('id');
+        list($status, $msg) = $this->repository->checkEstoqueReservaById($id);
+        $this->_helper->json(array('status' => $status, 'msg' => $msg));
+    }
 }

@@ -68,4 +68,29 @@ class EmbalagemRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
+    public function checkEstoqueReservaById($id)
+    {
+        $dql = $this->_em->createQueryBuilder()
+            ->select('NVL(e.id, rep.id)')
+            ->from('wms:Produto\Embalagem', 'pe')
+            ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pe.id = e.produtoEmbalagem')
+            ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH','pe.id = rep.codProdutoEmbalagem')
+            ->where('pe.id = :id')
+            ->setParameter('id',$id);
+
+        $result = $dql->getQuery()->getResult();
+        $msg = null;
+        $status = 'ok';
+        foreach ($result as $item) {
+            foreach ($item as $id) {
+                if (!empty($id)) {
+                    $status = 'error';
+                    $msg = 'Não é permitido excluir embalagens com estoque ou reserva de estoque!';
+                }
+                if ($status === 'error') break;
+            }
+            if ($status === 'error') break;
+        }
+        return array($status, $msg);
+    }
 }

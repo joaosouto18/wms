@@ -164,4 +164,10 @@ class Web_ProdutoVolumeController extends Crud
         $this->view->volume = $repo->findOneBy(array('id' => $params['id']));
     }
 
+    public function verificarEstoqueReservaAjaxAction()
+    {
+        $id = $this->_getParam('id');
+        list($status, $msg) = $this->repository->checkEstoqueReservaById($id);
+        $this->_helper->json(array('status' => $status, 'msg' => $msg));
+    }
 }

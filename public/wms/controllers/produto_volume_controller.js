@@ -383,11 +383,29 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
          */
         '.btn-excluir-volume click': function(el, ev){
             //evita a propagação do click para a div
+            var model = el.closest('.produto_volume').model();
+            var id = model.id.toString();
+
+            var temEstoque = false;
+            $.ajax({
+                url: URL_MODULO + '/produto-volume/verificar-estoque-reserva-ajax',
+                type: 'POST',
+                data: { id: id },
+                async: false,
+                success: function (data) {
+                    if (data.status === 'error'){
+                        alert(data.msg);
+                        temEstoque = true;
+                    }
+                }
+            });
+
+            if (temEstoque)
+                return false;
+
             ev.stopPropagation();
 
             if(confirm("Tem certeza que deseja excluir este volume?")){
-                var model = el.closest('.produto_volume').model();
-                var id = model.id.toString();
                 var este = this;
 
                 //se é um endereço existente (não haja a palavra '-new' no id)

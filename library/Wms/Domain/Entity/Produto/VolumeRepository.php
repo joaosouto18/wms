@@ -157,4 +157,30 @@ class VolumeRepository extends EntityRepository
 
         $this->_em->flush();
     }
+
+    public function checkEstoqueReservaById($id)
+    {
+        $dql = $this->_em->createQueryBuilder()
+            ->select('NVL(e.id, rep.id)')
+            ->from('wms:Produto\Volume', 'pv')
+            ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pv.id = e.produtoVolume')
+            ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH','pv.id = rep.codProdutoVolume')
+            ->where('pv.id = :id')
+            ->setParameter('id',$id);
+
+        $result = $dql->getQuery()->getResult();
+        $msg = null;
+        $status = 'ok';
+        foreach ($result as $item) {
+            foreach ($item as $id) {
+                if (!empty($id)) {
+                    $status = 'error';
+                    $msg = 'Não é permitido excluir volumes com estoque ou reserva de estoque!';
+                }
+                if ($status === 'error') break;
+            }
+            if ($status === 'error') break;
+        }
+        return array($status, $msg);
+    }
 }

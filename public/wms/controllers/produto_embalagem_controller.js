@@ -251,6 +251,23 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var model = el.closest('.produto_embalagem').model();
             var id = model.id.toString();
 
+            var temEstoque = false;
+            $.ajax({
+                url: URL_MODULO + '/produto-embalagem/verificar-estoque-reserva-ajax',
+                type: 'POST',
+                data: { id: id },
+                async: false,
+                success: function (data) {
+                    if (data.status === 'error'){
+                        alert(data.msg);
+                        temEstoque = true;
+                    }
+                }
+            });
+
+            if (temEstoque)
+                return false;
+
             //evita a propagação do click para a div
             ev.stopPropagation();
 

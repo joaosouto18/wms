@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Web\Controller\Action;
 
+use Wms\Domain\EntityRepository;
 use \Wms\Module\Web\Page;
 
 /**
@@ -11,6 +12,7 @@ use \Wms\Module\Web\Page;
  */
 abstract class Crud extends \Wms\Module\Web\Controller\Action {
 
+    /** @var  EntityRepository */
     protected $repository;
     protected $entityName = null;
     protected $pkField = 'id';
