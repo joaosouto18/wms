@@ -92,9 +92,16 @@ class Expedicao_EtiquetaController  extends Action
 
             $this->getEntityManager()->commit();
             $this->_helper->json(array('status' => 'success'));
-        } catch (\Wms\Util\WMS_Exception $e) {
+        } catch (\Wms\Util\WMS_Exception|Exception $e) {
             $this->getEntityManager()->rollback();
-            $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => $e->getLink()));
+            $args = array(
+                'status' => 'error',
+                'msg' => $e->getMessage(),
+                'link' => null);
+            if (method_exists($e,'getLink')){
+                $args['link'] = $e->getLink();
+            }
+            $this->_helper->json($args);
         }
     }
 
