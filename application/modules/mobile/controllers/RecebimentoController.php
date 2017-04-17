@@ -268,15 +268,15 @@ class Mobile_RecebimentoController extends Action
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 }
 
-                $params['dataValidade'] = new Zend_Date($data);
-                if ($params['dataValidade'] <= $PeriodoUtil) {
+                $objData = new Zend_Date($data);
+                if ($objData <= $PeriodoUtil) {
                     //autoriza recebimento?
                     $arrayRedirect = array(
                         'idRecebimento' => $idRecebimento,
                         'idOrdemServico' => $idOrdemServico,
                         'qtdConferida' => $qtdConferida,
                         'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'dataValidade' => $params['dataValidade'],
+                        'dataValidade' => $objData->toString('d-m-Y'),
                         'idProduto' => $idProduto, 'grade' => $grade);
 
                     if ($this->_hasParam('idProdutoEmbalagem')) {
@@ -288,7 +288,7 @@ class Mobile_RecebimentoController extends Action
                     }
                     $this->redirect('autoriza-recebimento', 'recebimento', null, $arrayRedirect );
                 }
-                $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
+                $params['dataValidade'] = $objData->toString('Y-MM-dd');
             } else {
                 $params['dataValidade'] = null;
             }

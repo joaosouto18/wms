@@ -177,6 +177,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 			switch ($idTipoComercializacao) {
 				case ProdutoEntity::TIPO_UNITARIO:
+                    // limpo os volumes se houver
+                    /** @var ProdutoEntity\VolumeRepository $volumeRepo */
+                    $volumeRepo = $em->getRepository('wms:Produto\Volume');
+                    $volumes = $volumeRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
+
+                    /** @var ProdutoEntity\Volume $volumeEntity */
+                    foreach ($volumes as $volumeEntity) {
+                        list($status, $msg) = $volumeRepo->checkEstoqueReservaById($volumeEntity->getId());
+                        if ($status === 'error')
+                            throw new \Exception($msg);
+                        $em->remove($volumeEntity);
+                    }
+
 					// gravo embalagens
 					$result = $this->persistirEmbalagens($produtoEntity, $values);
 
@@ -201,15 +214,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							throw new \Exception($retorno['debug']);
 					}
 
-					// limpo os volumes se houver
-					$volumeRepo = $em->getRepository('wms:Produto\Volume');
-					$volumes = $volumeRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
-
-					foreach ($volumes as $volumeEntity)
-						$em->remove($volumeEntity);
-
 					break;
 				case ProdutoEntity::TIPO_COMPOSTO:
+                    // limpo os embalagens se houver
+                    /** @var ProdutoEntity\EmbalagemRepository $embalagemRepo */
+                    $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                    $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
+
+                    /** @var Embalagem $embalagemEntity */
+                    foreach ($embalagens as $embalagemEntity) {
+                        list($status, $msg) = $embalagemRepo->checkEstoqueReservaById($embalagemEntity->getId());
+                        if ($status === 'error')
+                            throw new \Exception($msg);
+                        $em->remove($embalagemEntity);
+                    }
+
 					// gravo volumes
 					$this->persistirVolumes($produtoEntity, $values);
 
@@ -227,12 +246,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							throw new Exception($retorno['erro']);
 					}
 
-					// limpo os embalagens se houver
-					$embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-					$embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
-
-					foreach ($embalagens as $embalagemEntity)
-						$em->remove($embalagemEntity);
 					break;
 			}
 
