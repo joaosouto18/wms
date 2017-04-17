@@ -92,16 +92,9 @@ class Expedicao_EtiquetaController  extends Action
 
             $this->getEntityManager()->commit();
             $this->_helper->json(array('status' => 'success'));
-        } catch (\Wms\Util\WMS_Exception|Exception $e) {
+        } catch (\Wms\Util\WMS_Exception $e) {
             $this->getEntityManager()->rollback();
-            $args = array(
-                'status' => 'error',
-                'msg' => $e->getMessage(),
-                'link' => null);
-            if (method_exists($e,'getLink')){
-                $args['link'] = $e->getLink();
-            }
-            $this->_helper->json($args);
+            $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => $e->getLink()));
         }
     }
 
@@ -395,6 +388,8 @@ class Expedicao_EtiquetaController  extends Action
             }
         } catch (\Wms\Util\WMS_Exception $WMS_Exception) {
             throw new \Wms\Util\WMS_Exception($WMS_Exception->getMessage(), $WMS_Exception->getLink());
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
     }
 
