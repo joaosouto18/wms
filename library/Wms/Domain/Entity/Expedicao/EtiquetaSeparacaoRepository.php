@@ -877,6 +877,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             break;
                         }
                     }
+                    if (!isset($embalagensEn[count($embalagensEn) - 1]) || empty($embalagensEn[count($embalagensEn) - 1])) {
+                        $msg = "O produto $codProduto GRADE $grade não possui embalagens ativas!";
+                        throw new WMS_Exception($msg);
+                    }
+
                     $menorEmbalagem = $embalagensEn[count($embalagensEn) - 1];
 
                     while ($quantidadeRestantePedido > 0) {
