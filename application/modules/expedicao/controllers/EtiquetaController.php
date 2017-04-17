@@ -395,8 +395,6 @@ class Expedicao_EtiquetaController  extends Action
             }
         } catch (\Wms\Util\WMS_Exception $WMS_Exception) {
             throw new \Wms\Util\WMS_Exception($WMS_Exception->getMessage(), $WMS_Exception->getLink());
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
         }
     }
 
