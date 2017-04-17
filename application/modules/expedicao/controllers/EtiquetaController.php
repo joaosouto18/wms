@@ -99,7 +99,6 @@ class Expedicao_EtiquetaController  extends Action
             $this->getEntityManager()->rollback();
             $this->addFlashMessage('error', $e2->getMessage());
         }
-        exit;
     }
 
     public function listarMapasQuebraAjaxAction()
