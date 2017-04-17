@@ -1140,9 +1140,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                     if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
                         foreach ($mapaSeparacaoPedidoEntities as $mapaSeparacaoPedidoEntity) {
-                            $this->getEntityManager()->remove($mapaSeparacaoPedidoEntity);
+//                            $this->getEntityManager()->remove($mapaSeparacaoPedidoEntity);
                         }
-                        $this->getEntityManager()->remove($mapaSeparacao);
+//                        $this->getEntityManager()->remove($mapaSeparacao);
 
                     }
                 }
