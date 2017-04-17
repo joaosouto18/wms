@@ -1115,7 +1115,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if (isset($result) && !empty($result)) {
                     $mapaSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao")->find($result[0]['COD_MAPA_SEPARACAO']);
-                    $mapaSeparacaoPedidoEntities = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoPedido")->findBy(array('mapaSeparacao' => $result[0]['COD_MAPA_SEPARACAO']));
+                    $mapaSeparacaoPedidoEntities = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoPedido")->findBy(array('mapaSeparacao' => $mapaSeparacao));
                     $mapasSeparacaoProdutoEn = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacao, 'numCarrinho' => $numCarrinho));
                     foreach ($mapasSeparacaoProdutoEn as $mapaSeparacaoProdutoEn) {
                         $mapaSeparacaoPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'pedidoProduto' => $mapaSeparacaoProdutoEn->getPedidoProduto()));
@@ -1140,9 +1140,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                     if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
                         foreach ($mapaSeparacaoPedidoEntities as $mapaSeparacaoPedidoEntity) {
-                            $this->getEntityManager()->remove($mapaSeparacaoPedidoEntity);
+//                            $this->getEntityManager()->remove($mapaSeparacaoPedidoEntity);
                         }
-                        $this->getEntityManager()->remove($mapaSeparacao);
+//                        $this->getEntityManager()->remove($mapaSeparacao);
 
                     }
                 }
