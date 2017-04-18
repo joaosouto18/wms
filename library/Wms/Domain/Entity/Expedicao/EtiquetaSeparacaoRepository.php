@@ -943,6 +943,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
+
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA && $embalado == false) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
@@ -1091,6 +1092,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $statusPendenteImpressao = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
         $quebraCarrinho = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
+        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
         $idExpedicao = $expedicaoEntity->getId();
         $sql = "SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.NUM_CARRINHO, MS.COD_MAPA_SEPARACAO
@@ -1135,12 +1137,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $this->getEntityManager()->persist($mapaSeparacaoEn);
                         }
 
-                        if (($mapaSeparacaoProdutoEn->getNumCaixaFim() - $mapaSeparacaoProdutoEn->getNumCaixaInicio() + 1) > 12) continue;
+                        if (($mapaSeparacaoProdutoEn->getNumCaixaFim() - $mapaSeparacaoProdutoEn->getNumCaixaInicio() + 1) > $parametroQtdCaixas) continue;
 
-                        if ($mapaSeparacaoProdutoEn->getNumCaixaInicio() > 12 && $mapaSeparacaoProdutoEn->getNumCaixaFim() > 12) {
-                            $caixaInicio = ($mapaSeparacaoProdutoEn->getNumCaixaInicio() - (12 * ($mapaSeparacaoProdutoEn->getNumCarrinho() - 1)));
-                            $caixaFim = ($mapaSeparacaoProdutoEn->getNumCaixaFim() - (12 * ($mapaSeparacaoProdutoEn->getNumCarrinho() - 1)));
-                        } else if (($mapaSeparacaoProdutoEn->getNumCaixaInicio() <= 12 && $mapaSeparacaoProdutoEn->getNumCaixaFim() > 12)) {
+                        if ($mapaSeparacaoProdutoEn->getNumCaixaInicio() > $parametroQtdCaixas && $mapaSeparacaoProdutoEn->getNumCaixaFim() > $parametroQtdCaixas) {
+                            $caixaInicio = ($mapaSeparacaoProdutoEn->getNumCaixaInicio() - ($parametroQtdCaixas * ($mapaSeparacaoProdutoEn->getNumCarrinho() - 1)));
+                            $caixaFim = ($mapaSeparacaoProdutoEn->getNumCaixaFim() - ($parametroQtdCaixas * ($mapaSeparacaoProdutoEn->getNumCarrinho() - 1)));
+                        } else if (($mapaSeparacaoProdutoEn->getNumCaixaInicio() <= $parametroQtdCaixas && $mapaSeparacaoProdutoEn->getNumCaixaFim() > $parametroQtdCaixas)) {
                             $caixaFim = $mapaSeparacaoProdutoEn->getNumCaixaFim() - $mapaSeparacaoProdutoEn->getNumCaixaInicio() + 1;
                             $caixaInicio = 1;
                         }
