@@ -655,7 +655,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
             if (!isset($embalagensEn[count($embalagensEn) -1]) || empty($embalagensEn[count($embalagensEn) -1])) {
-                $msg = "Não existe embalagem ATIVA para o PRODUTO $codProduto GRADE $grade";
+                $msg = "O produto $codProduto GRADE $grade não possui embalagens ativas!";
                 throw new WMS_Exception($msg);
             }
             $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
@@ -702,13 +702,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
                         $cubagemProduto = str_replace(',','.',$dadoLogisticoEn->getCubagem());
-//                        if (isset($cubagemPedido[$pedidoId])) {
-                            if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
-//                                if ($cubagemPedido[$pedidoId][$embalagemAtual->getId()] > 0) {
-                                    continue;
-//                                }
-                            }
-//                        }
+                        if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
+                            continue;
+                        }
                         $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (float)$cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.',''));
                     }
                 }
@@ -857,6 +853,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $quantidadeRestantePedido = $quantidade;
 
                     $qtdEmbalagemPadraoRecebimento = 1;
+
                     foreach ($embalagensEn as $embalagem) {
                         $enderecosPulmao = null;
                         $endereco = $embalagem->getEndereco();
@@ -877,6 +874,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             break;
                         }
                     }
+
                     if (!isset($embalagensEn[count($embalagensEn) - 1]) || empty($embalagensEn[count($embalagensEn) - 1])) {
                         $msg = "O produto $codProduto GRADE $grade não possui embalagens ativas!";
                         throw new WMS_Exception($msg);
@@ -931,8 +929,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idEndereco = $depositoEnderecoEn->getId();
                         }
 
+                        $embalado = false;
+                        if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO) {
+                            if ($embalagemAtual->getEmbalado() == 'S') {
+                                $embalado = true;
+                            }
+                        } else {
+                            if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
+                                $embalado = true;
+                            }
+                        }
+
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
+                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA && $embalado == false) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
                                     $quebrasNaoFracionado = array();
                                 }
@@ -969,7 +978,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                         } else {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
+                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA && $embalado == false) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
