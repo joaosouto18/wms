@@ -370,7 +370,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 						$values['embalagens'][$id]['id'] = $embalagemEntity->getId();
 
 						if ($CBInterno == 'S') {
-							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
 							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						}
 
@@ -398,7 +398,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 						// verifica se o codigo de barras é automatico
 						if ($CBInterno == 'S') {
-							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($id);
+							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20". $id);
 							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
 						}
 						$embalagemEntity->setEmbalado($embalado);

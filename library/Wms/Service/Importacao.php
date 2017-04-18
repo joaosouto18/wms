@@ -943,7 +943,7 @@ class Importacao
             $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity, $registro);
             $embalagemEntity->setProduto($produto);
             if ($registro['codigoBarras'] == "") {
-                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem($embalagemEntity->getId());
+                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
                 $embalagemEntity->setCodigoBarras($codigoBarras);
             } else {
                 $embalagemEntity->setCodigoBarras($codigoBarras);

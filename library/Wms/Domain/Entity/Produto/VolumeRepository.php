@@ -78,7 +78,7 @@ class VolumeRepository extends EntityRepository
         
         // gera o codigo de barras com base no id do volume. Ex: 12340102 / 12340202
         if ($CBInterno == 'S') {
-            $codigoBarras = $volumeEntity->getId();
+            $codigoBarras = "20" . $volumeEntity->getId();
             $codigoBarras .= Produto::preencheZerosEsquerda($codigoSequencial, 2);
             $codigoBarras .= Produto::preencheZerosEsquerda($produtoEntity->getNumVolumes(), 2);
             $codigoBarras = CodigoBarras::formatarCodigoEAN128Volume($codigoBarras);
