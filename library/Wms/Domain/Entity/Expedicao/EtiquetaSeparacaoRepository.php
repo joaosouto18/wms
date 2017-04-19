@@ -704,17 +704,37 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if ($embalado === true) {
                     $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                     if (!empty($dadoLogisticoEn)) {
-                        $cubagemProduto = str_replace(',','.',$dadoLogisticoEn->getCubagem());
+                        $numAltura       = $this->tofloat($dadoLogisticoEn->getAltura());
+                        $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
+                        $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
+                        $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
+
                         if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
                             continue;
                         }
-                        $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (float)$cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.',''));
+                        $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = number_format($cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.','')),8);
                     }
                 }
             }
         }
 
         return $cubagemPedido;
+    }
+
+    private function tofloat($num) {
+        $dotPos = strrpos($num, '.');
+        $commaPos = strrpos($num, ',');
+        $sep = (($dotPos > $commaPos) && $dotPos) ? $dotPos :
+            ((($commaPos > $dotPos) && $commaPos) ? $commaPos : false);
+
+        if (!$sep) {
+            return floatval(preg_replace("/[^0-9]/", "", $num));
+        }
+
+        return floatval(
+            preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' .
+            preg_replace("/[^0-9]/", "", substr($num, $sep+1, strlen($num)))
+        );
     }
 
     /**
