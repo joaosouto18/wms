@@ -64,7 +64,7 @@ class EnderecoRepository extends EntityRepository
      * @param array $values
      * @throws \Exception
      */
-    public function save(EnderecoEntity $enderecoEntity, array $values)
+    public function save(EnderecoEntity $enderecoEntity = null, array $values)
     {
         extract($values['identificacao']);
         $em = $this->getEntityManager();
