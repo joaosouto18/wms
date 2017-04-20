@@ -877,7 +877,7 @@ class EnderecoRepository extends EntityRepository
         if (!empty ($params['predio'])) {
             $query = $query . " AND DEP.NUM_PREDIO >= " . $params['predio'];
         }
-        if (!empty ($params['nivel'])) {
+        if (isset($params['nivel']) && !is_null($params['nivel'])) {
             $query = $query . " AND DEP.NUM_NIVEL >= " . $params['nivel'];
         }
         if (!empty ($params['apartamento'])) {
@@ -890,7 +890,7 @@ class EnderecoRepository extends EntityRepository
         if (!empty ($params['prediofinal'])) {
             $query = $query . " AND DEP.NUM_PREDIO <= " . $params['prediofinal'];
         }
-        if (!empty ($params['nivelfinal'])) {
+        if (isset($params['nivelfinal']) && !is_null($params['nivelfinal'])) {
             $query = $query . " AND DEP.NUM_NIVEL <= " . $params['nivelfinal'];
         }
         if (!empty ($params['apartamentofinal'])) {
