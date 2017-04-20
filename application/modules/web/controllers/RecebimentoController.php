@@ -372,12 +372,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
                 $numPeso = $this->getRequest()->getParam('numPeso');
 
-                $hoje = new Zend_Date;
+                /*$hoje = new Zend_Date;
                 foreach ($dataValidade as $idProduto => $grades) {
                     foreach ($grades as $grade => $validade) {
                         $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
                         $shelfLife = $produtoEn->getDiasVidaUtil();
-
                         if (!is_null($shelfLife)) {
                             $PeriodoUtil = $hoje->addDay($produtoEn->getDiasVidaUtil());
                             $validade = new Zend_Date($validade);
@@ -393,7 +392,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         }
 
                     }
-                }
+                }*/
                 // executa os dados da conferencia
                 $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
@@ -1400,6 +1399,32 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $recebimentoDescarga = $recebimentoDescargaRepo->getInfosDescarga($idRecebimento);
 
         $this->exportPDF($recebimentoDescarga, 'usuario_descarga_'.$idRecebimento, 'Usuários Descarga Recebimento '.$idRecebimento, 'P');
+    }
+
+    public function checkShelflifeAjaxAction()
+    {
+        $produtos = json_decode($this->_request->getPost()['data']);
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->em->getRepository('wms:Produto');
+        $result = array();
+        foreach ($produtos as $produto) {
+            $key = "Produto: " . $produto->id . " Grade: " . $produto->grade;
+            $result[$key] = $produtoRepo->checkShelfLifeProduto($produto, $produto->data);
+        }
+
+        $this->_helper->json(array('result' => $result));
+    }
+
+    public function checkSenhaAutorizacaoAjaxAction()
+    {
+        $senha = $this->getRequest()->getParam('senha');
+        $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
+        $result = false;
+        if ($senhaAutorizacao === $senha) {
+            $result = true;
+        }
+        $this->_helper->json(array("result" => $result));
     }
 
 }

@@ -85,21 +85,14 @@
                         </td>
 
                         <td>
-                            <?php if ($produto['possui_validade'] == 'S') : ?>
-                                <?php
-                                echo $this->formHidden("dataValidade[{$produto['codigo']}][{$produto['grade']}]", '', array(
-                                    'class' => "qtdNF",
-                                ));
+                            <?php if ($produto['possui_validade'] == 'S') {
+
                                 $inputName = "dataValidade[{$produto['codigo']}][{$produto['grade']}]";
                                 $id = "dataValidade-{$produto['codigo']}-{$produto['grade']}";
                                 $date = new DateTime('now');
 
-                                $id='dataValidade';
-
-                                echo '<input type="text" name="'.$inputName.'" id="'. $id .'" value="' . $date->format('d/m/Y') . '" size="11" maxLength="10" alt="date" class="date " />'
-
-                                ?>
-                            <?php endif; ?>
+                                echo '<input type="text" name="'.$inputName.'" id="'.$id.'" value="' . $date->format('d/m/Y') . '" size="11" maxLength="10" alt="date" class="date dthValidade" />';
+                            }?>
                         </td>
                         <td>
                             <?php
@@ -111,7 +104,7 @@
                                 'title' => "[{$produto['codigo']}][{$produto['grade']}]",
                                 'readyonly' => 'readyonly',
                             ));
-                            ?>0
+                            ?>
                         </td>
                     </tr>
                 <?php } ?>
@@ -130,13 +123,97 @@
                         </label>
                     </td>
                     <td colspan="2">
+                        <button type="button" id="enviar" class="btn" style="margin-top: 0;">Salvar e Finalizar</button>
                         <?php
-                        echo $this->formSubmit("submit", "Salvar e Finalizar", array('id' => 'btnCconferencia', 'class' => 'btn', 'style' => 'margin-top: 0;'));
-                        ?> 
+                        echo $this->formSubmit("submit", "Salvar e Finalizar", array('id' => 'btnCconferencia', 'class' => 'btn', 'style' => 'margin-top: 0; display:none;'));
+                        ?>
                     </td>
                 </tr>
-
             </tbody>
         </table>
     </div>
 </form>
+<div id="modal-autorizacao" title="Confirmação" style="display: none">
+    <form id="form-autorizacao">
+        <p>A validade do(s) produto(s) abaixo é menor que o esperado:</p><br>
+        <p id="msg-result"></p><br>
+        <p>Para proceguir insira a senha de autorização:</p><br>
+        <fieldset>
+            <label for="password">Senha de autorização: </label>
+            <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all">
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+        </fieldset>
+    </form>
+</div>
+
+<script>
+    $("#enviar").click(function () {
+        var produtos = [];
+        $(".dthValidade").each(function () {
+            var input = $(this);
+            var spl = input.attr("id").split("-");
+            var id = spl[1];
+            var grade = spl[2];
+            var data = input.val();
+            produtos.push({id:id, grade:grade, data:data});
+        });
+        var teste = {data:JSON.stringify(produtos)};
+        var itens = '';
+        $.post(URL_BASE + '/recebimento/check-shelflife-ajax',teste, function (data) {
+            var result = data.result;
+            var isOk = true;
+            $.each(result, function(item, isValido) {
+                if (!isValido) {
+                    isOk = false;
+                    itens += item + "<br>";
+                }
+            });
+
+            if (!isOk) {
+                var password = $("#password");
+                password.keypress(function (e) {
+                    var code = e.keyCode || e.which;
+                    if (code === 13) {
+                        e.preventDefault();
+                        checkAutorizacao($("#modal-autorizacao"), $(this).val());
+                    }
+                });
+                var checkAutorizacao = function (modal, senha) {
+                    $.post(URL_BASE + '/recebimento/check-senha-autorizacao-ajax', {senha:senha}, function (data) {
+                        if (data.result === true) {
+                            modal.dialog( "close" );
+                            $("#form-autorizacao").resetForm();
+                            $("#btnCconferencia").trigger('click');
+                        } else {
+                            alert("Senha incorreta!!!");
+                            $("#form-autorizacao").resetForm();
+                        }
+                    });
+                };
+                $("#msg-result").html(itens);
+                $("#dialog:ui-dialog" ).dialog("destroy");
+                $("#modal-autorizacao").dialog({
+                    resizable: false,
+                    height:250,
+                    width: 400,
+                    modal: true,
+                    buttons: {
+                        "Confirmar": function() {
+                            if (password.val() !== '' && password.val() !== null) {
+                                checkAutorizacao($(this), password.val());
+                            } else {
+                                alert("Nenhuma senha foi informada!");
+                                $("#form-autorizacao").resetForm();
+                                $( this ).dialog( "close" );
+                            }
+                        },
+                        'Cancelar' : function() {
+                            $("#form-autorizacao").resetForm();
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                })
+            }
+        });
+    })
+</script>

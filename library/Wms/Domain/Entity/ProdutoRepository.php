@@ -1637,4 +1637,25 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		return $this->_em->getConnection()->query($sql)->fetchAll();
 
 	}
+
+    /**
+     * @param \stdClass|Produto $produto
+     * @param string $data
+     */
+	public function checkShelfLifeProduto($produto, $validade)
+    {
+        if (is_a($produto,'Produto')) {
+            $produtoEn = $this->findOneBy(array('id' => $produto->getId(), 'grade' => $produto->getGrade()));
+        } else {
+            $produtoEn = $this->findOneBy(array('id' => $produto->id, 'grade' => $produto->grade));
+        }
+        if (!empty($produtoEn)) {
+            $dias = $produtoEn->getDiasVidaUtil();
+            $hoje = new \DateTime('now');
+            $periodoUtil = $hoje->add(date_interval_create_from_date_string("$dias days"));
+            $validade = date_create($validade);
+            return ($validade >= $periodoUtil)? true : false;
+        }
+        return false;
+    }
 }
