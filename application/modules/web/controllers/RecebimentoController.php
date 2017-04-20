@@ -1403,7 +1403,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     public function checkShelflifeAjaxAction()
     {
-        $produtos = json_decode($this->_request->getPost()['data']);
+        $request = $this->_request->getPost();
+        $produtos = json_decode($request['data']);
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->em->getRepository('wms:Produto');
