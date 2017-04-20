@@ -1639,8 +1639,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	}
 
     /**
-     * @param \stdClass|Produto $produto
-     * @param string $data
+     * @param $produto
+     * @param string $validade
+     * @return boolean
      */
 	public function checkShelfLifeProduto($produto, $validade)
     {
