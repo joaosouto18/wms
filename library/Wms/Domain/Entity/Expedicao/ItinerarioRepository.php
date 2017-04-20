@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 class ItinerarioRepository extends EntityRepository
 {
 
-    public function save($itinerario, $runFlush) {
+    public function save($itinerario, $runFlush = false) {
 
         $em = $this->getEntityManager();
 
