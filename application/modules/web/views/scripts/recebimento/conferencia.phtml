@@ -159,61 +159,65 @@
         });
         var teste = {data:JSON.stringify(produtos)};
         var itens = '';
-        $.post(URL_BASE + '/recebimento/check-shelflife-ajax',teste, function (data) {
-            var result = data.result;
-            var isOk = true;
-            $.each(result, function(item, isValido) {
-                if (!isValido) {
-                    isOk = false;
-                    itens += item + "<br>";
-                }
-            });
-
-            if (!isOk) {
-                var password = $("#password");
-                password.keypress(function (e) {
-                    var code = e.keyCode || e.which;
-                    if (code === 13) {
-                        e.preventDefault();
-                        checkAutorizacao($("#modal-autorizacao"), $(this).val());
+        if (produtos.length > 0) {
+            $.post(URL_BASE + '/recebimento/check-shelflife-ajax', teste, function (data) {
+                var result = data.result;
+                var isOk = true;
+                $.each(result, function (item, isValido) {
+                    if (!isValido) {
+                        isOk = false;
+                        itens += item + "<br>";
                     }
                 });
-                var checkAutorizacao = function (modal, senha) {
-                    $.post(URL_BASE + '/recebimento/check-senha-autorizacao-ajax', {senha:senha}, function (data) {
-                        if (data.result === true) {
-                            modal.dialog( "close" );
-                            $("#form-autorizacao").resetForm();
-                            $("#btnCconferencia").trigger('click');
-                        } else {
-                            alert("Senha incorreta!!!");
-                            $("#form-autorizacao").resetForm();
+
+                if (!isOk) {
+                    var password = $("#password");
+                    password.keypress(function (e) {
+                        var code = e.keyCode || e.which;
+                        if (code === 13) {
+                            e.preventDefault();
+                            checkAutorizacao($("#modal-autorizacao"), $(this).val());
                         }
                     });
-                };
-                $("#msg-result").html(itens);
-                $("#dialog:ui-dialog" ).dialog("destroy");
-                $("#modal-autorizacao").dialog({
-                    resizable: false,
-                    height:250,
-                    width: 400,
-                    modal: true,
-                    buttons: {
-                        "Confirmar": function() {
-                            if (password.val() !== '' && password.val() !== null) {
-                                checkAutorizacao($(this), password.val());
-                            } else {
-                                alert("Nenhuma senha foi informada!");
+                    var checkAutorizacao = function (modal, senha) {
+                        $.post(URL_BASE + '/recebimento/check-senha-autorizacao-ajax', {senha: senha}, function (data) {
+                            if (data.result === true) {
+                                modal.dialog("close");
                                 $("#form-autorizacao").resetForm();
-                                $( this ).dialog( "close" );
+                                $("#btnCconferencia").trigger('click');
+                            } else {
+                                alert("Senha incorreta!!!");
+                                $("#form-autorizacao").resetForm();
                             }
-                        },
-                        'Cancelar' : function() {
-                            $("#form-autorizacao").resetForm();
-                            $( this ).dialog( "close" );
+                        });
+                    };
+                    $("#msg-result").html(itens);
+                    $("#dialog:ui-dialog").dialog("destroy");
+                    $("#modal-autorizacao").dialog({
+                        resizable: false,
+                        height: 250,
+                        width: 400,
+                        modal: true,
+                        buttons: {
+                            "Confirmar": function () {
+                                if (password.val() !== '' && password.val() !== null) {
+                                    checkAutorizacao($(this), password.val());
+                                } else {
+                                    alert("Nenhuma senha foi informada!");
+                                    $("#form-autorizacao").resetForm();
+                                    $(this).dialog("close");
+                                }
+                            },
+                            'Cancelar': function () {
+                                $("#form-autorizacao").resetForm();
+                                $(this).dialog("close");
+                            }
                         }
-                    }
-                })
-            }
-        });
+                    })
+                }
+            });
+        } else {
+            $("#btnCconferencia").trigger('click');
+        }
     })
 </script>
