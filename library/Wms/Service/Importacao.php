@@ -632,19 +632,6 @@ class Importacao
 
             $produtoRepo = $repositorios['produtoRepo'];
 
-            $produto = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-            if (!$produto)
-                $produto = new Produto();
-
-            if (!$produto) {
-                $produtoNovo = true;
-                $produto->setId($idProduto);
-                $produto->setGrade($grade);
-            } else {
-                $produtoNovo = false;
-            }
-
-
             $fabricanteRepo = $repositorios['fabricanteRepo'];
             $fabricante = $fabricanteRepo->find($idFabricante);
 
@@ -657,22 +644,24 @@ class Importacao
             if (!$classe)
                 throw new \Exception('Classe do produto de codigo ' . $idClasse . ' inexistente');
 
-            // define numero de volume e tipo de comercializacao do produto
-            $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $tipo);
-            $numVolumes = ($produto->getNumVolumes()) ? $produto->getNumVolumes() : 1;
 
+            $produto = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+            if (!$produto) {
+                // define numero de volume e tipo de comercializacao do produto
+                $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $tipo);
 
-            $produto
-                ->setDescricao($descricao)
-                ->setFabricante($fabricante)
-                ->setClasse($classe)
-                ->setReferencia($referencia);
-
-            if ($produtoNovo == true) {
-                $produto
-                    ->setTipoComercializacao($tipoComercializacaoEntity)
-                    ->setNumVolumes($numVolumes);
+                $produto = new Produto();
+                $produto->setId($idProduto);
+                $produto->setGrade($grade);
+                $produto->setTipoComercializacao($tipoComercializacaoEntity);
+                $produto->setNumVolumes(1);
             }
+
+            $produto->setDescricao($descricao)
+                    ->setFabricante($fabricante)
+                    ->setClasse($classe)
+                    ->setReferencia($referencia);
+
 
             $em->persist($produto);
 
