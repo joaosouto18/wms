@@ -633,15 +633,17 @@ class Importacao
             $produtoRepo = $repositorios['produtoRepo'];
 
             $produto = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+            if (!$produto)
+                $produto = new Produto();
 
             if (!$produto) {
                 $produtoNovo = true;
+                $produto->setId($idProduto);
+                $produto->setGrade($grade);
             } else {
                 $produtoNovo = false;
             }
 
-            if (!$produto)
-                $produto = new Produto();
 
             $fabricanteRepo = $repositorios['fabricanteRepo'];
             $fabricante = $fabricanteRepo->find($idFabricante);
@@ -659,9 +661,9 @@ class Importacao
             $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $tipo);
             $numVolumes = ($produto->getNumVolumes()) ? $produto->getNumVolumes() : 1;
 
-            $produto->setId($idProduto)
+
+            $produto
                 ->setDescricao($descricao)
-                ->setGrade($grade)
                 ->setFabricante($fabricante)
                 ->setClasse($classe)
                 ->setReferencia($referencia);
