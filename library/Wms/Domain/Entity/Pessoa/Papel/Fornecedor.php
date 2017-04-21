@@ -36,7 +36,7 @@ class Fornecedor implements Ator
      */
     protected $idExterno;
     /**
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa")
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Pessoa\Juridica")
      * @JoinColumn(name="COD_FORNECEDOR", referencedColumnName="COD_PESSOA")
      */
     protected $pessoa;
