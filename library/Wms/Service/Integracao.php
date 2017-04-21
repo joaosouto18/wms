@@ -328,7 +328,9 @@ class Integracao
             } else {
                 $tipoPessoa = 'J';
             }
-
+            if ($tipoPessoa == 'F') {
+                continue;
+            }
             if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
                 $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
                     'idExterno' => $notaFiscal['COD_FORNECEDOR'],
