@@ -44,6 +44,12 @@ class Validade extends Form
                 'label' => 'Descrição',
                 'size' => $yDsc,
             ))
+            ->addElement('select', 'endereco', array(
+                'label' => 'Tipo Endereço',
+                'mostrarSelecione' => true,
+                'class' => 'medio',
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('37' => 'Pickinkg', '38' => 'Pulmão')),
+            ))
             ->addElement('select', 'linhaSeparacao', array(
                 'label' => 'Linha de separação',
                 'multiOptions' =>  $arr,
@@ -71,6 +77,8 @@ class Validade extends Form
         $arr = array(
             'codProduto',
             'descricao',
+            'endereco',
+            'br',
             'linhaSeparacao',
             'br',
             'fornecedor',
@@ -86,6 +94,7 @@ class Validade extends Form
             $arr = array(
                 'codProduto',
                 'grade',
+                'endereco',
                 'descricao',
                 'linhaSeparacao',
                 'br',
