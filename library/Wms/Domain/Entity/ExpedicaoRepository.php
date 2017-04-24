@@ -2100,13 +2100,13 @@ class ExpedicaoRepository extends EntityRepository
         $source = $this->_em->createQueryBuilder()
             ->select("
                       ped.sequencia,
-                      ped.id              as pedido,
-                      it.descricao        as itinerario,
-                      car.codCargaExterno as carga,
-                      endere.localidade   as cidade,
-                      endere.bairro       as bairro,
-                      endere.descricao    as rua,
-                      pessoa.nome         as cliente")
+                      ped.id                                as pedido,
+                      it.descricao                          as itinerario,
+                      car.codCargaExterno                   as carga,
+                      NVL(pe.localidade,endere.localidade)  as cidade,
+                      NVL(pe.bairro,endere.bairro)          as bairro,
+                      NVL(pe.descricao,endere.descricao)    as rua,
+                      pessoa.nome                           as cliente")
             ->from("wms:Expedicao\PedidoProduto", "pp")
             ->leftJoin("pp.produto"         ,"prod")
             ->leftJoin("pp.pedido"          ,"ped")
@@ -2115,10 +2115,11 @@ class ExpedicaoRepository extends EntityRepository
             ->leftJoin("ped.pessoa"         ,"cli")
             ->leftJoin("cli.pessoa"         ,"pessoa")
             ->leftJoin("pessoa.enderecos"   ,"endere")
+            ->leftJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.pedido = ped.id')
             ->distinct(true)
             ->where("prod.linhaSeparacao != 15")
-            ->groupBy("ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
-            ->orderBy('car.codCargaExterno, ped.sequencia, pessoa.nome, it.descricao, endere.localidade, endere.bairro, endere.descricao ');
+            ->groupBy("pe.localidade, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
+            ->orderBy('car.codCargaExterno, ped.sequencia, pessoa.nome, it.descricao ');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
             $source->andWhere("car.codExpedicao = " . $codExpedicao);
