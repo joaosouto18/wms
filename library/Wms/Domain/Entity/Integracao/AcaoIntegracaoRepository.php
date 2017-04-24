@@ -63,6 +63,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $observacao = $e->getMessage();
             $sucess = "N";
 
+            $trace = "";
             $prev = $e->getPrevious();
             if ( !empty($prev) ) {
                 while ($prev != null) {

@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityRepository,
 use Doctrine\ORM\ORMException;
 use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Deposito\Endereco\Caracteristica;
 use Wms\Domain\Entity\Produto\Embalagem;
 
@@ -409,18 +410,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							if ($webservice == true) {
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
+								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso',false,$webservice);
 							} elseif (is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(new \DateTime());
+//								$embalagemEntity->setDataInativacao(new \DateTime());
+								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
 							}
 						} else {
 							if ($webservice == true) {
 								if (is_null($embalagemEntity->getDataInativacao())) {
-									$embalagemEntity->setDataInativacao(new \DateTime());
+//									$embalagemEntity->setDataInativacao(new \DateTime());
+									$embalagemEntity->setDataInativacao(null);
 									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
+									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso',false,$webservice);
 								}
 							} else {
 								if (!is_null($embalagemEntity->getDataInativacao())) {
@@ -1594,6 +1597,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
 			$where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
 		}
+
+        $picking = Endereco::ENDERECO_PICKING;
+        $pulmao = Endereco::ENDERECO_PULMAO;
+        if (isset($params['endereco']) && !empty($params['endereco'])) {
+            if ($params['endereco'] == $picking) {
+                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = ".$picking;
+            } elseif ($params['endereco'] == $pulmao) {
+                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = ".$pulmao;
+            }
+        }
 
 		$query = "SELECT 
                       P.COD_PRODUTO AS cod_produto, 
