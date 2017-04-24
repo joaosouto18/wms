@@ -373,10 +373,12 @@ class Produto
 
     /**
      * @param int $diasVidaUtil
+     * @return Produto
      */
     public function setDiasVidaUtil($diasVidaUtil)
     {
         $this->diasVidaUtil = $diasVidaUtil;
+        return $this;
     }
 
     /**
@@ -389,10 +391,12 @@ class Produto
 
     /**
      * @param string $validade
+     * @return Produto
      */
     public function setValidade($validade)
     {
         $this->validade = $validade;
+        return $this;
     }
 
     /**
@@ -469,10 +473,12 @@ class Produto
 
     /**
      * @param string $possuiPesoVariavel
+     * @return Produto
      */
     public function setPossuiPesoVariavel($possuiPesoVariavel)
     {
         $this->possuiPesoVariavel = $possuiPesoVariavel;
+        return $this;
     }
 
 }

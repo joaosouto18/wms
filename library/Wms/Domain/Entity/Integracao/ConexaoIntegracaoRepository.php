@@ -7,13 +7,66 @@ use Doctrine\ORM\EntityRepository;
 class ConexaoIntegracaoRepository extends EntityRepository
 {
 
-    public function runQuery($query, $conexao) {
+    /**
+     * @param $query string
+     * @param $conexao ConexaoIntegracao
+     * @return array
+     */
+    public function runQuery($query, $conexao)
+    {
+        switch ($conexao->getProvedor()) {
+
+            case ConexaoIntegracao::PROVEDOR_ORACLE:
+                return self::oracleQuery($query,$conexao);
+
+            case ConexaoIntegracao::PROVEDOR_MYSQL:
+                return self::mysqlQuery($query,$conexao);
+
+            default:
+                throw new \Exception("Provedor não específicado");
+        }
+        /*
         if ($conexao->getProvedor() == "ORACLE") {
             return $this->oracleQuery($query,$conexao);
-        }
+        }*/
     }
 
-    private function oracleQuery($query, $conexao) {
+    private function mysqlQuery($query, $conexao)
+    {
+        try {
+            ini_set('memory_limit', '-1');
+            $usuario = $conexao->getUsuario();
+            $senha = trim($conexao->getSenha());
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+            $dbName = $conexao->getDbName();
+
+            $conexao = new \mysqli($servidor, $usuario, $senha, $dbName, $porta);
+
+            if ($conexao->connect_errno > 0) {
+                $error = $conexao->connect_error;
+                throw new \Exception("Não foi possível conectar: $error");
+            }
+
+            $result = $conexao->query($query);
+
+            if (!$result) {
+                $error = $conexao->error;
+                throw new \Exception($error);
+            }
+
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \Exception($e->getMessage());
+        } catch (\Exception $e2) {
+            throw new \Exception($e2->getMessage());
+        }
+
+    }
+
+
+    private function oracleQuery($query, $conexao)
+    {
         try {
             ini_set('memory_limit', '-1');
             $usuario = $conexao->getUsuario();

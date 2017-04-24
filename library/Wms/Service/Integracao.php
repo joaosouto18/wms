@@ -429,6 +429,7 @@ class Integracao
              */
             foreach ($dados as $linha) {
                 $codProduto = $linha['COD_PRODUTO'];
+                $dscGrade = (isset($linha['DSC_GRADE']))? $linha['DSC_GRADE'] : 'UNICA';
                 $dscProduto = $linha['DESCRICAO_PRODUTO'];
                 $codClasseNivel1 = $linha['CODIGO_CLASSE_NIVEL_1'];
                 $dscClasseNivel1 = $linha['DSC_CLASSE_NIVEL_1'];
@@ -446,6 +447,8 @@ class Integracao
                 $profundidadeEmbalagem = $linha['PROFUNDIDADE_EMBALAGEM'];
                 $cubagemEmbalagem = $linha['CUBAGEM_EMBALAGEM'];
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
+                $possuiValidade = (isset($linha['POSSUI_VALIDADE']))? $linha['POSSUI_VALIDADE'] : 'N';
+                $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL']))? (int)$linha['DIAS_VIDA_UTIL'] : null;
 
                 $codClasseProduto = $codClasseNivel1;
                 if (($codClasseNivel2 != null) AND ($codClasseNivel1 != null)) {
@@ -454,10 +457,13 @@ class Integracao
 
                 if (!array_key_exists($codProduto,$arrayProdutos)) {
                     $arrayProdutos[$codProduto] = array('codProduto'=>$codProduto,
+                                                        'dscGrade' => $dscGrade,
                                                         'dscProduto'=>$dscProduto,
                                                         'codClasse'=>$codClasseProduto,
                                                         'codFabricante'=>$codFabricante,
                                                         'indPesoVariavel'=>$indPesoVariavel,
+                                                        'possuiValidade'=>$possuiValidade,
+                                                        'diasVidaUtil'=>$diasVidaUtil,
                                                         'embalagem'=>array());
                 }
 
@@ -530,12 +536,15 @@ class Integracao
                                                   $repositorios,
                                                   $produto['codProduto'],
                                                   $produto['dscProduto'],
-                                                  "UNICA",
+                                                  $produto['dscGrade'],
                                                   $produto['codFabricante'],
                                                   '1',
                                                   $produto['codClasse'],
+                                                  $produto['indPesoVariavel'],
                                                   $embalagensObj,
-                                                  '');
+                                                  '',
+                                                  $produto['possuiValidade'],
+                                                  $produto['diasVidaUtil']);
 
             }
             $this->_em->flush();
