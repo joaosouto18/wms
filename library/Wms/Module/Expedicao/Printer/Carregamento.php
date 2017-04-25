@@ -68,7 +68,7 @@ class Carregamento extends eFPDF
             $this->Cell(95, 10, utf8_decode(substr($item['cliente'],0,44)),1,1);
         }
 
-        $this->Output('Carregamento-'.'8242'.'.pdf','D');
+        $this->Output('Carregamento-'.$codExpedicao.'.pdf','D');
     }
 
 
