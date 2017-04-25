@@ -69,7 +69,10 @@ class Expedicao_CarregamentoController extends Action
         $expRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
         $result = $expRepo->getCarregamentoByExpedicao($params['codExpedicao']);
 
-        $this->exportPDF($result,'relatorio-sequenciamento','Imprimir','L');
+        $imprimir = new \Wms\Module\Expedicao\Printer\Carregamento();
+        $imprimir->imprimir($params['codExpedicao'],$result);
+
+//        $this->exportPDF($result,'relatorio-sequenciamento','Imprimir','L');
     }
 
     public function buttons($codExpedicao)

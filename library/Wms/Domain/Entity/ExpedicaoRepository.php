@@ -2103,6 +2103,7 @@ class ExpedicaoRepository extends EntityRepository
                       ped.id                                as pedido,
                       it.descricao                          as itinerario,
                       car.codCargaExterno                   as carga,
+                      car.placaCarga                        as placa,
                       NVL(pe.localidade,endere.localidade)  as cidade,
                       NVL(pe.bairro,endere.bairro)          as bairro,
                       NVL(pe.descricao,endere.descricao)    as rua,
@@ -2118,7 +2119,7 @@ class ExpedicaoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.pedido = ped.id')
             ->distinct(true)
             ->where("prod.linhaSeparacao != 15")
-            ->groupBy("pe.localidade, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
+            ->groupBy("pe.localidade, car.placaCarga, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
             ->orderBy('car.codCargaExterno, ped.sequencia, pessoa.nome, it.descricao ');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
