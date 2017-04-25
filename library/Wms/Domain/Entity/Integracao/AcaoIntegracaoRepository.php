@@ -17,6 +17,9 @@ class AcaoIntegracaoRepository extends EntityRepository
         $idAcao = $acaoEn->getId();
         $sucess = "S";
         $observacao = "";
+        $trace = "";
+        $query = "";
+        $integracaoService = null;
 
         try {
             $this->_em->beginTransaction();
@@ -54,7 +57,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                             $query = str_replace("and a.es1_dtalteracao > :dthExecucao", "" ,$query);
                         }
                     } else {
-                        $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s");
+                        $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y-m-d H:i:s");
                     }
 
                     $query = str_replace(":dthExecucao", $dthExecucao ,$query);
@@ -76,7 +79,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             $observacao = $e->getMessage();
             $sucess = "N";
 
-            $trace = "";
             $prev = $e->getPrevious();
             if ( !empty($prev) ) {
                 while ($prev != null) {
