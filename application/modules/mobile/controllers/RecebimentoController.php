@@ -398,7 +398,6 @@ class Mobile_RecebimentoController extends Action
                             $this->redirect('divergencia','recebimento','web',array('id' => $idOrdemServico));
                         }
                     }
-                    var_dump($params); exit;
                     // gravo conferencia do item
                     if (isset($idProdutoVolume)) {
                         $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
