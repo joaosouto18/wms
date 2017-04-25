@@ -38,7 +38,7 @@ class ProdutosCarregamento extends Pdf
 
     }
 
-    public function imprimir($idExpedicao)
+    public function imprimir($idExpedicao,$idLinhaSeparacao)
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -48,8 +48,8 @@ class ProdutosCarregamento extends Pdf
 
         /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao);
-        $embalados = $mapaSeparacaoConferenciaRepo->getEmbaladosConferidosByExpedicao($idExpedicao);
+        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
+        $embalados = $mapaSeparacaoConferenciaRepo->getEmbaladosConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
         $produtoRepo = $em->getRepository('wms:Produto');
 
         $linhaSeparacaoAnt = null;

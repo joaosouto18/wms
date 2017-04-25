@@ -498,18 +498,20 @@ class Expedicao_IndexController extends Action
     public function relatorioProdutosConferidosAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');
+        $idLinhaSeparacao = $this->_getParam('idLinhaSeparacao');
 
         $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
-        $pdf->imprimir($idExpedicao);
+        $pdf->imprimir($idExpedicao,$idLinhaSeparacao);
 
     }
 
     public function relatorioProdutosClientesConferidosAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');
+        $idLinhaSeparacao = $this->_getParam('idLinhaSeparacao');
 
         $pdf = new \Wms\Module\Expedicao\Printer\ProdutosClienteCarregamento();
-        $pdf->imprimir($idExpedicao);
+        $pdf->imprimir($idExpedicao,$idLinhaSeparacao);
 
     }
 
@@ -547,5 +549,11 @@ class Expedicao_IndexController extends Action
         $expedicaoAndamentoRepository->save("cargas $idCargas removidas",$idExpedicao);
         $this->addFlashMessage('success', "cargas $idCargas da expedicao $idExpedicao removidas com sucesso");
         $this->_redirect('expedicao');
+    }
+
+    public function relatoriosCarregamentoAjaxAction()
+    {
+        $this->view->form = new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
+        $this->view->idExpedicao = $this->_getParam('id');
     }
 }

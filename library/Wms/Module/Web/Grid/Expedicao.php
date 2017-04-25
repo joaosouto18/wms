@@ -228,23 +228,31 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
-                'label' => 'Relatório de Carg. por Clientes',
-                'target' => '_blank',
-                'moduleName' => 'expedicao',
+                'label' => 'Relatórios de Carregamento',
+                'modelName' => 'expedicao',
                 'controllerName' => 'index',
-                'actionName' => 'relatorio-produtos-clientes-conferidos-ajax',
-                'cssClass' => 'pdf',
+                'actionName' => 'relatorios-carregamento-ajax',
+                'cssClass' => 'dialogAjax',
                 'pkIndex' => 'id'
             ))
-            ->addAction(array(
-                'label' => 'Relatório de Carg. por Produtos',
-                'target' => '_blank',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'index',
-                'actionName' => 'relatorio-produtos-conferidos-ajax',
-                'cssClass' => 'pdf',
-                'pkIndex' => 'id'
-            ))
+//            ->addAction(array(
+//                'label' => 'Relatório de Carg. por Clientes',
+//                'target' => '_blank',
+//                'moduleName' => 'expedicao',
+//                'controllerName' => 'index',
+//                'actionName' => 'relatorio-produtos-clientes-conferidos-ajax',
+//                'cssClass' => 'pdf',
+//                'pkIndex' => 'id'
+//            ))
+//            ->addAction(array(
+//                'label' => 'Relatório de Carg. por Produtos',
+//                'target' => '_blank',
+//                'moduleName' => 'expedicao',
+//                'controllerName' => 'index',
+//                'actionName' => 'relatorio-produtos-conferidos-ajax',
+//                'cssClass' => 'pdf',
+//                'pkIndex' => 'id'
+//            ))
             ->addAction(array(
                 'label' => 'Cancelar Expedição',
 //                'target' => '_blank',
