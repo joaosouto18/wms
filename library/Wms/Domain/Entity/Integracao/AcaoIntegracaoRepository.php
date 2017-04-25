@@ -52,7 +52,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
                     if ($acaoEn->getDthUltimaExecucao() == null) {
-                        $dthExecucao = "'01/01/1900 01:01:01'";
+                        $dthExecucao = "1900-01-01 01:01:01";
                         if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO) {
                             $query = str_replace("and a.es1_dtalteracao > :dthExecucao", "" ,$query);
                         }
@@ -60,7 +60,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y-m-d H:i:s");
                     }
 
-                    $query = str_replace(":dthExecucao", $dthExecucao ,$query);
+                    $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
                 }
 
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
