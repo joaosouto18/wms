@@ -451,7 +451,7 @@ class Integracao
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL']))? (int)$linha['DIAS_VIDA_UTIL'] : null;
 
                 $codClasseProduto = $codClasseNivel1;
-                if (($codClasseNivel2 != null) AND ($codClasseNivel1 != null)) {
+                if (empty($codClasseNivel1) AND !empty($codClasseNivel2)) {
                     $codClasseProduto = $codClasseNivel2;
                 }
 
