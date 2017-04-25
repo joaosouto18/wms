@@ -663,6 +663,8 @@ class Importacao
                 $produto->setPossuiPesoVariavel($indPesoVariavel);
                 $produto->setValidade($possuiValidade);
                 $produto->setDiasVidaUtil($diasVidaUtil);
+                $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+                $produto->setIdProduto($sqcGenerator->generate($em, $produto));
             }
 
             $produto->setDescricao($descricao)
@@ -672,10 +674,6 @@ class Importacao
                     ->setPossuiPesoVariavel($indPesoVariavel)
                     ->setValidade($possuiValidade)
                     ->setDiasVidaUtil($diasVidaUtil);
-
-            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-            $produto->setIdProduto($sqcGenerator->generate($em, $produto));
-
 
             $em->persist($produto);
 
