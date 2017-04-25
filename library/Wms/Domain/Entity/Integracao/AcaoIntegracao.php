@@ -72,7 +72,7 @@ class AcaoIntegracao
     }
 
     /**
-     * @return mixed
+     * @return ConexaoIntegracao
      */
     public function getConexao()
     {

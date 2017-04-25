@@ -2103,10 +2103,11 @@ class ExpedicaoRepository extends EntityRepository
                       ped.id                                as pedido,
                       it.descricao                          as itinerario,
                       car.codCargaExterno                   as carga,
+                      car.placaCarga                        as placa,
                       NVL(pe.localidade,endere.localidade)  as cidade,
                       NVL(pe.bairro,endere.bairro)          as bairro,
                       NVL(pe.descricao,endere.descricao)    as rua,
-                      pessoa.nome                           as cliente")
+                      NVL(pj.nomeFantasia,pessoa.nome)      as cliente")
             ->from("wms:Expedicao\PedidoProduto", "pp")
             ->leftJoin("pp.produto"         ,"prod")
             ->leftJoin("pp.pedido"          ,"ped")
@@ -2114,12 +2115,13 @@ class ExpedicaoRepository extends EntityRepository
             ->leftJoin("ped.itinerario"     ,"it")
             ->leftJoin("ped.pessoa"         ,"cli")
             ->leftJoin("cli.pessoa"         ,"pessoa")
+            ->leftJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pessoa.id = pj.id')
             ->leftJoin("pessoa.enderecos"   ,"endere")
             ->leftJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.pedido = ped.id')
             ->distinct(true)
             ->where("prod.linhaSeparacao != 15")
-            ->groupBy("pe.localidade, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
-            ->orderBy('car.codCargaExterno, ped.sequencia, pessoa.nome, it.descricao ');
+            ->groupBy("pe.localidade, pj.nomeFantasia, car.placaCarga, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
+            ->orderBy('cidade, bairro, rua, cliente, ped.id');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
             $source->andWhere("car.codExpedicao = " . $codExpedicao);
