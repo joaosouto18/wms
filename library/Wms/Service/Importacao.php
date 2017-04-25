@@ -24,6 +24,7 @@ use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 use Wms\Domain\Entity\Pessoa\Papel\Fornecedor;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Classe;
+use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Domain\Entity\Util\SiglaRepository;
 use Wms\Module\Web\Controller\Action;
 use Wms\Util\CodigoBarras;
@@ -618,7 +619,7 @@ class Importacao
         }
     }
 
-    public function saveProdutoWs($em,$repositorios,$idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia) {
+    public function saveProdutoWs($em,$repositorios,$idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $indPesoVariavel, $embalagens, $referencia, $possuiValidade, $diasVidaUtil) {
         try {
             $idProduto = trim ($idProduto);
             $descricao = trim ($descricao);
@@ -629,6 +630,7 @@ class Importacao
             $idFabricante = trim ($idFabricante);
             $tipo = trim ($tipo);
             $idClasse = trim($idClasse);
+            $indPesoVariavel = trim($indPesoVariavel);
 
             $produtoRepo = $repositorios['produtoRepo'];
 
@@ -644,6 +646,9 @@ class Importacao
             if (!$classe)
                 throw new \Exception('Classe do produto de codigo ' . $idClasse . ' inexistente');
 
+            if (empty($indPesoVariavel))
+                $indPesoVariavel = 'N';
+
 
             $produto = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
             if (!$produto) {
@@ -655,18 +660,30 @@ class Importacao
                 $produto->setGrade($grade);
                 $produto->setTipoComercializacao($tipoComercializacaoEntity);
                 $produto->setNumVolumes(1);
+                $produto->setPossuiPesoVariavel($indPesoVariavel);
+                $produto->setValidade($possuiValidade);
+                $produto->setDiasVidaUtil($diasVidaUtil);
             }
 
             $produto->setDescricao($descricao)
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
-                    ->setReferencia($referencia);
+                    ->setReferencia($referencia)
+                    ->setPossuiPesoVariavel($indPesoVariavel)
+                    ->setValidade($possuiValidade)
+                    ->setDiasVidaUtil($diasVidaUtil);
+
+            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+            $produto->setIdProduto($sqcGenerator->generate($em, $produto));
 
 
             $em->persist($produto);
 
             $parametroRepo = $repositorios['parametroRepo'];
+            /** @var Parametro $parametro */
             $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS_BANCO'));
+            if (empty($parametro))
+                throw new \Exception("Parametro 'INTEGRACAO_CODIGO_BARRAS_BANCO' não encontrado no banco!");
 
             //VERIFICA SE VAI RECEBER AS EMBALAGENS OU NÃO
             if ($parametro->getValor() == 'S') {

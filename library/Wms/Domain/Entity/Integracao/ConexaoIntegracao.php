@@ -12,6 +12,9 @@ use Wms\Domain\Configurator;
 class ConexaoIntegracao
 {
 
+    const PROVEDOR_ORACLE = "ORACLE";
+    const PROVEDOR_MYSQL = "MYSQL";
+
     /**
      * @Id
      * @Column(name="COD_CONEXAO_INTEGRACAO", type="integer", nullable=false)
