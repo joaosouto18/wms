@@ -42,6 +42,7 @@ class FabricanteRepository extends EntityRepository implements ObjectRepository
                     $em->clear();
                 }
             }
+            return $fabricanteEn;
         } catch (\Exception $e) {
             if ($flush == true) {
                 $em->rollback();

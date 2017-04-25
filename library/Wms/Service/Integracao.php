@@ -503,19 +503,21 @@ class Integracao
              * Persiste no banco de dados
              */
             foreach ($arrayFabricantes as $fabricante) {
-                $importacaoService->saveFabricante($this->_em,
-                                                   $fabricante['codFabricante'],
-                                                   $fabricante['dscFabricante'],
-                                                   $repositorios);
+                if (!empty($fabricante['codFabricante']) and !empty($classe['dscFabricante']))
+                    $importacaoService->saveFabricante($this->_em,
+                                                       $fabricante['codFabricante'],
+                                                       $fabricante['dscFabricante'],
+                                                       $repositorios);
             }
             $this->_em->flush();
             $this->_em->clear();
 
             foreach ($arrayClasses as $classe) {
-                $importacaoService->saveClasse($classe['codClasse'],
-                                               $classe['dscClasse'],
-                                               $classe['codClassePai'],
-                                               $repositorios);
+                if (!empty($classe['codClasse']) and !empty($classe['dscClasse']))
+                    $importacaoService->saveClasse($classe['codClasse'],
+                                                   $classe['dscClasse'],
+                                                   $classe['codClassePai'],
+                                                   $repositorios);
             }
             $this->_em->flush();
             $this->_em->clear();
