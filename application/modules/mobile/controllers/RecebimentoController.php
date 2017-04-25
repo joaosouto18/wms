@@ -276,7 +276,7 @@ class Mobile_RecebimentoController extends Action
                         'idOrdemServico' => $idOrdemServico,
                         'qtdConferida' => $qtdConferida,
                         'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'dataValidade' => $objData->toString('d-m-Y'),
+                        'dataValidade' => $objData->toString('dd-MM-YY'),
                         'idProduto' => $idProduto, 'grade' => $grade);
 
                     if ($this->_hasParam('idProdutoEmbalagem')) {
