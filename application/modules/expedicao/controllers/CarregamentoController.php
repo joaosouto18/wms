@@ -80,14 +80,25 @@ class Expedicao_CarregamentoController extends Action
         if ($codExpedicao) {
             Page::configure(array(
                 'buttons' => array(
+//                    array(
+//                        'label' => 'Imprimir relatório',
+//                        'urlParams' => array(
+//                            'module' => 'expedicao',
+//                            'controller' => 'relatorio_carregamento',
+//                            'action' => 'imprimir',
+//                            'id' => $codExpedicao
+//                        ),
+//                        'tag' => 'a'
+//                    ),
                     array(
-                        'label' => 'Imprimir relatório',
+                        'label' => 'Relatórios de Carregamentos',
                         'urlParams' => array(
                             'module' => 'expedicao',
-                            'controller' => 'relatorio_carregamento',
-                            'action' => 'imprimir',
+                            'controller' => 'index',
+                            'action' => 'relatorios-carregamento-ajax',
                             'id' => $codExpedicao
                         ),
+                        'cssClass' => 'dialogAjax',
                         'tag' => 'a'
                     ),
                     array(

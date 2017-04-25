@@ -1,0 +1,12 @@
+<?php echo $this->form ?>
+
+<input type="hidden" name="idExpedicao" id="expedicao" value="<?php echo $this->idExpedicao ?>">
+<script>
+    $('#btn-relatorio-cliente').click(function () {
+        window.open('/expedicao/index/relatorio-produtos-clientes-conferidos-ajax/id/'+$('#expedicao').val()+'/idLinhaSeparacao/'+$('#linhaSeparacao').val(), '_blank');
+    });
+    $('#btn-relatorio-produto').click(function () {
+        window.open('/expedicao/index/relatorio-produtos-conferidos-ajax/id/'+$('#expedicao').val()+'/idLinhaSeparacao/'+$('#linhaSeparacao').val(), '_blank');
+    })
+
+</script>

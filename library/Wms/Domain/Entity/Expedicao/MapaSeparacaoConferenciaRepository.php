@@ -94,8 +94,12 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getConferidosByExpedicao($idExpedicao)
+    public function getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao)
     {
+        $andWhere = '';
+        if (isset($idLinhaSeparacao) && !empty($idLinhaSeparacao) && $idLinhaSeparacao != 'null') {
+            $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
+        }
         $sql = "SELECT
                     SUM(PP.QUANTIDADE_CONFERIDA / CONF.QTD_EMBALAGEM) / COUNT(DISTINCT CONF.COD_MAPA_SEPARACAO_CONFERENCIA) QUANTIDADE_CONFERIDA,
                     NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) DESCRICAO_EMBALAGEM,
@@ -124,7 +128,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                           INNER JOIN LINHA_SEPARACAO LS ON PROD.COD_LINHA_SEPARACAO = LS.COD_LINHA_SEPARACAO
                           LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = CONF.COD_PRODUTO_EMBALAGEM
                           LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = CONF.COD_PRODUTO_VOLUME
-                    WHERE MS.COD_EXPEDICAO = $idExpedicao AND CONF.COD_MAPA_SEPARACAO_EMBALADO IS NULL
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao AND CONF.COD_MAPA_SEPARACAO_EMBALADO IS NULL $andWhere
                     GROUP BY
                     PE.DSC_EMBALAGEM,
                     PV.DSC_VOLUME,
@@ -142,8 +146,12 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getEmbaladosConferidosByExpedicao($idExpedicao)
+    public function getEmbaladosConferidosByExpedicao($idExpedicao,$idLinhaSeparacao)
     {
+        $andWhere = '';
+        if (isset($idLinhaSeparacao) && !empty($idLinhaSeparacao) && $idLinhaSeparacao != 'null') {
+            $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
+        }
         $sql = "SELECT  COUNT(DISTINCT MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE) QUANTIDADE_CONFERIDA, PP.SEQUENCIA, C.COD_CARGA_EXTERNO, P.NOM_PESSOA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MS.DSC_QUEBRA, E.DTH_INICIO, P.COD_PESSOA, MS.COD_MAPA_SEPARACAO
                     FROM MAPA_SEPARACAO_CONFERENCIA CONF
                     INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = CONF.COD_MAPA_SEPARACAO_EMBALADO
@@ -162,15 +170,19 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = CONF.COD_PRODUTO AND PROD.DSC_GRADE = CONF.DSC_GRADE
                     INNER JOIN LINHA_SEPARACAO LS ON PROD.COD_LINHA_SEPARACAO = LS.COD_LINHA_SEPARACAO
                     INNER JOIN PESSOA P ON P.COD_PESSOA = CONF.COD_PESSOA AND P.COD_PESSOA = MSE.COD_PESSOA
-                    WHERE MS.COD_EXPEDICAO = $idExpedicao
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao $andWhere
                     GROUP BY PP.SEQUENCIA, P.NOM_PESSOA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, C.COD_CARGA_EXTERNO, MS.DSC_QUEBRA, E.DTH_INICIO, P.COD_PESSOA, MS.COD_MAPA_SEPARACAO
                     ORDER BY PP.SEQUENCIA";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getProdutosClientesByExpedicao($idExpedicao)
+    public function getProdutosClientesByExpedicao($idExpedicao,$idLinhaSeparacao)
     {
+        $andWhere = '';
+        if (isset($idLinhaSeparacao) && !empty($idLinhaSeparacao) && $idLinhaSeparacao != 'null') {
+            $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
+        }
         $sql = "SELECT PP.QUANTIDADE_CONFERIDA, PP.SEQUENCIA, C.COD_CARGA_EXTERNO, PROD.COD_PRODUTO, PROD.DSC_GRADE, PROD.DSC_PRODUTO, LS.DSC_LINHA_SEPARACAO, E.DTH_INICIO, PP.DSC_PLACA_CARGA, P.NOM_PESSOA, NVL(PF.NUM_CPF, PJ.NUM_CNPJ) CPF_CNPJ, PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, S.COD_REFERENCIA_SIGLA, PP.COD_PEDIDO
                     FROM MAPA_SEPARACAO_CONFERENCIA CONF
                     INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = CONF.COD_MAPA_SEPARACAO
@@ -191,7 +203,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = P.COD_PESSOA
                     LEFT JOIN PESSOA_ENDERECO PE ON PE.COD_PESSOA = P.COD_PESSOA
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = PE.COD_UF
-                WHERE MS.COD_EXPEDICAO = $idExpedicao  AND CONF.COD_MAPA_SEPARACAO_EMBALADO IS NULL
+                WHERE MS.COD_EXPEDICAO = $idExpedicao  AND CONF.COD_MAPA_SEPARACAO_EMBALADO IS NULL $andWhere 
                 GROUP BY C.COD_CARGA, PP.SEQUENCIA, C.COD_CARGA_EXTERNO, PROD.COD_PRODUTO, PROD.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE_CONFERIDA, LS.COD_LINHA_SEPARACAO, LS.DSC_LINHA_SEPARACAO, E.DTH_INICIO, PP.DSC_PLACA_CARGA, P.NOM_PESSOA, PF.NUM_CPF, PJ.NUM_CNPJ, PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, S.COD_REFERENCIA_SIGLA, PP.COD_PEDIDO
                 ORDER BY P.NOM_PESSOA, PP.SEQUENCIA, PROD.COD_PRODUTO ";
 
