@@ -638,7 +638,7 @@ class Importacao
             $fabricante = $fabricanteRepo->find($idFabricante);
 
             if (!$fabricante)
-                throw new \Exception("Fabricante de código '$idFabricante'' inexistente");
+                throw new \Exception("Fabricante de código '$idFabricante' inexistente");
 
             $classeRepo = $repositorios['classeRepo'];
             $classe = $classeRepo->find($idClasse);
