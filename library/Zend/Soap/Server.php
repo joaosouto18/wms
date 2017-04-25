@@ -824,6 +824,8 @@ class Zend_Soap_Server implements Zend_Server_Interface
         $soap = $this->_getSoap();
 
         ob_start();
+        $this->salvaLogWS();
+
         if($setRequestException instanceof Exception) {
             // Send SOAP fault message if we've catched exception
             $soap->fault("Sender", $setRequestException->getMessage());
@@ -958,4 +960,34 @@ class Zend_Soap_Server implements Zend_Server_Interface
     {
         throw $this->fault($errstr, "Receiver");
     }
+
+    private function salvaLogWS(){
+
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'HABILITA_LOG_WS'));
+        if (($parametro == null) || ($parametro->getValor() != 'S')) {
+            return;
+        }
+
+        $dthAtual = date('Y-m-d H-i-s');
+        $dtAtual = date('Y-m-d');
+
+        $diretorio = APPLICATION_PATH .'/../data/log/'.$dtAtual;
+
+        if ( !is_dir($diretorio) ){
+            mkdir($diretorio,777);
+        }
+        $nomeServico = $this->_class;
+
+        $nomeArquivo = $nomeServico ."-".$dthAtual."-request.xml";
+        $texto = $this->_request;
+
+        $nomeArquivo = $diretorio."/".$nomeArquivo;
+
+        $file = fopen($nomeArquivo,"a");
+        fwrite($file,$texto);
+        fclose($file);
+    }
+
 }

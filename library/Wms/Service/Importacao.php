@@ -638,13 +638,13 @@ class Importacao
             $fabricante = $fabricanteRepo->find($idFabricante);
 
             if (!$fabricante)
-                throw new \Exception('Fabricante inexistente');
+                throw new \Exception("Fabricante de código '$idFabricante' inexistente");
 
             $classeRepo = $repositorios['classeRepo'];
             $classe = $classeRepo->find($idClasse);
 
             if (!$classe)
-                throw new \Exception('Classe do produto de codigo ' . $idClasse . ' inexistente');
+                throw new \Exception("Classe do produto de codigo '$idClasse' inexistente");
 
             if (empty($indPesoVariavel))
                 $indPesoVariavel = 'N';
