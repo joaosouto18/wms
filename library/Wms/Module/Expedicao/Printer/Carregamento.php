@@ -64,7 +64,7 @@ class Carregamento extends eFPDF
             $this->Cell(20, 10, utf8_decode($item['pedido']),1,0);
             $this->Cell(40, 10, utf8_decode($item['cidade']),1,0);
             $this->Cell(40, 10, utf8_decode(substr($item['bairro'],0,17)),1,0);
-            $this->Cell(70, 10, utf8_decode($item['rua']),1,0);
+            $this->Cell(70, 10, utf8_decode(substr($item['rua'],0,30)),1,0);
             $this->Cell(95, 10, utf8_decode(substr($item['cliente'],0,44)),1,1);
         }
 
