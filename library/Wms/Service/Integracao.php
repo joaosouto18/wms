@@ -504,6 +504,7 @@ class Integracao
              */
             foreach ($arrayFabricantes as $fabricante) {
                 if (!empty($fabricante['codFabricante']) and !empty($classe['dscFabricante']))
+                    echo "Fabricante: $classe[dscFabricante] codigo $fabricante[codFabricante]";
                     $importacaoService->saveFabricante($this->_em,
                                                        $fabricante['codFabricante'],
                                                        $fabricante['dscFabricante'],
