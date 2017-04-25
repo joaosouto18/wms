@@ -276,7 +276,7 @@ class Mobile_RecebimentoController extends Action
                         'idOrdemServico' => $idOrdemServico,
                         'qtdConferida' => $qtdConferida,
                         'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'dataValidade' => $objData->toString('d-m-Y'),
+                        'dataValidade' => $objData->toString('dd-MM-YY'),
                         'idProduto' => $idProduto, 'grade' => $grade);
 
                     if ($this->_hasParam('idProdutoEmbalagem')) {
@@ -398,6 +398,7 @@ class Mobile_RecebimentoController extends Action
                             $this->redirect('divergencia','recebimento','web',array('id' => $idOrdemServico));
                         }
                     }
+                    var_dump($params); exit;
                     // gravo conferencia do item
                     if (isset($idProdutoVolume)) {
                         $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
