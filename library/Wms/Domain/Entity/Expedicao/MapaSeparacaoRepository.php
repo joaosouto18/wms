@@ -445,6 +445,9 @@ class MapaSeparacaoRepository extends EntityRepository
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
+        if (isset($ordemServicoId) && !empty($ordemServicoId)) {
+            $qtdEmbalagem = 1;
+        }
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
