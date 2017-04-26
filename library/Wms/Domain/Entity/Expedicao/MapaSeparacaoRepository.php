@@ -423,7 +423,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null){
+    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null,$ordemServicoId=null){
 
         $numConferencia = 1;
         $qtdConferida = 0;
@@ -467,11 +467,14 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $mapaEn->getId(), 'pessoa' => $codPessoa, 'status' => MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
-        $sessao = new \Zend_Session_Namespace('coletor');
+        if (is_null($ordemServicoId)) {
+            $sessao = new \Zend_Session_Namespace('coletor');
+            $ordemServicoId = $sessao->osID;
+        }
 
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
-        $novaConferencia->setCodOS($sessao->osID);
+        $novaConferencia->setCodOS($ordemServicoId);
         $novaConferencia->setCodProduto($produtoEn->getId());
         $novaConferencia->setDscGrade($produtoEn->getGrade());
         $novaConferencia->setProduto($produtoEn);

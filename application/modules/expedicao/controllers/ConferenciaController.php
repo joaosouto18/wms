@@ -41,6 +41,38 @@ class Expedicao_ConferenciaController extends Action
             $redirect = false;
             if ($submit == 'semConferencia') {
                 if ($senhaDigitada == $senhaAutorizacao) {
+
+                    $values['identificacao'] = array(
+                        'tipoOrdem' => 'expedicao',
+                        'idExpedicao' => $idExpedicao,
+                        'idAtividade' => \Wms\Domain\Entity\Atividade::CONFERIR_EXPEDICAO,
+                        'formaConferencia' => 'F'
+                    );
+                    /** @var Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepository */
+                    $ordemServicoRepository = $this->getEntityManager()->getRepository('wms:OrdemServico');
+                    $ordemServicoEntity = new \Wms\Domain\Entity\OrdemServico();
+                    $ordemServicoId = $ordemServicoRepository->save($ordemServicoEntity,$values);
+
+                    /** @var Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepository */
+                    $mapaSeparacaoConferenciaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+                    $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->getQuantidadesConferidasToForcarConferencia($idExpedicao);
+
+                    /** @var Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
+                    $mapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+                    foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
+                        $embalagemEntity = null;
+                        $volumeEntity = null;
+                        if (isset($mapaSeparacaoConferenciaEntity['COD_PRODUTO_EMBALAGEM']) && !empty($mapaSeparacaoConferenciaEntity['COD_PRODUTO_EMBALAGEM'])) {
+                            $embalagemEntity = $this->getEntityManager()->getReference('wms:Produto\Embalagem', $mapaSeparacaoConferenciaEntity['COD_PRODUTO_EMBALAGEM']);
+                        }
+                        if (isset($mapaSeparacaoConferenciaEntity['COD_PRODUTO_VOLUME']) && !empty($mapaSeparacaoConferenciaEntity['COD_PRODUTO_VOLUME'])) {
+                            $volumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $mapaSeparacaoConferenciaEntity['COD_PRODUTO_VOLUME']);
+                        }
+                        $mapaSeparacaoEntity = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $mapaSeparacaoConferenciaEntity['COD_MAPA_SEPARACAO']);
+
+                        $mapaSeparacaoRepository->adicionaQtdConferidaMapa($embalagemEntity,$volumeEntity,$mapaSeparacaoEntity,null,$mapaSeparacaoConferenciaEntity['QTD_CONFERIDA'], null, $ordemServicoId);
+                    }
+
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
                     if ($result == 'true') {
                         $result = 'Expedição Finalizada com Sucesso!';
