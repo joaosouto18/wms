@@ -288,7 +288,7 @@ class Mobile_RecebimentoController extends Action
                     }
                     $this->redirect('autoriza-recebimento', 'recebimento', null, $arrayRedirect );
                 }
-                $params['dataValidade'] = $objData->toString('dd/MM/YY');
+                $params['dataValidade'] = $objData->toString('Y-MM-dd');
             } else {
                 $params['dataValidade'] = null;
             }
