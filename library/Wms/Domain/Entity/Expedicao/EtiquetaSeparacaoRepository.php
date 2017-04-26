@@ -708,12 +708,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
                         $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
                         $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
-
-                        if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
-                            continue;
-                        }
-                        $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = number_format($cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.','')),8);
                     }
+                    if (!isset($cubagemProduto) || is_null($cubagemProduto) || $cubagemProduto <= 0) {
+                        $cubagemProduto = $this->tofloat('0.001');
+                    }
+                    if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
+                        continue;
+                    }
+                    $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = number_format($cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.','')),8);
                 }
             }
         }

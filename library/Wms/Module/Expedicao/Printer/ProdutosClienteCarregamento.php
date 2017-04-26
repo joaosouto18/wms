@@ -82,7 +82,7 @@ class ProdutosClienteCarregamento extends Pdf
         $clienteAnterior = null;
         $sequenciaAnterior = null;
         foreach ($resultado as $chave => $valor) {
-            if ($valor['NOM_PESSOA'] != $clienteAnterior || $valor['SEQUENCIA'] != $sequenciaAnterior) {
+            if ($valor['CPF_CNPJ'] != $clienteAnterior || $valor['SEQUENCIA'] != $sequenciaAnterior) {
                 $this->startPage();
                 $dataExpedicao = new \DateTime($valor['DTH_INICIO']);
                 $dataExpedicao = $dataExpedicao->format('d/m/Y');
@@ -145,7 +145,7 @@ class ProdutosClienteCarregamento extends Pdf
 
             $this->bodyPage($valor, $embalagemRepo);
 
-            $clienteAnterior = $valor['NOM_PESSOA'];
+            $clienteAnterior = $valor['CPF_CNPJ'];
             $sequenciaAnterior = $valor['SEQUENCIA'];
 
         }
