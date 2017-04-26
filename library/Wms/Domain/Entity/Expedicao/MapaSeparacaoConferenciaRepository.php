@@ -141,7 +141,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     E.DTH_INICIO,
                     PP.DSC_PLACA_CARGA,
                     PE.QTD_EMBALAGEM
-                    ORDER BY LS.COD_LINHA_SEPARACAO, PP.SEQUENCIA, PROD.COD_PRODUTO, PE.QTD_EMBALAGEM";
+                    ORDER BY PP.SEQUENCIA, LS.COD_LINHA_SEPARACAO, PROD.COD_PRODUTO, PE.QTD_EMBALAGEM";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
@@ -205,7 +205,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = PE.COD_UF
                 WHERE MS.COD_EXPEDICAO = $idExpedicao  AND CONF.COD_MAPA_SEPARACAO_EMBALADO IS NULL $andWhere 
                 GROUP BY C.COD_CARGA, PP.SEQUENCIA, C.COD_CARGA_EXTERNO, PROD.COD_PRODUTO, PROD.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE_CONFERIDA, LS.COD_LINHA_SEPARACAO, LS.DSC_LINHA_SEPARACAO, E.DTH_INICIO, PP.DSC_PLACA_CARGA, P.NOM_PESSOA, PF.NUM_CPF, PJ.NUM_CNPJ, PE.DSC_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, S.COD_REFERENCIA_SIGLA, PP.COD_PEDIDO
-                ORDER BY P.NOM_PESSOA, PP.SEQUENCIA, PROD.COD_PRODUTO ";
+                ORDER BY PP.SEQUENCIA, P.NOM_PESSOA, PROD.COD_PRODUTO ";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
