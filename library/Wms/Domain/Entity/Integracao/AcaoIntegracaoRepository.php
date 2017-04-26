@@ -57,7 +57,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                             $query = str_replace("and a.es1_dtalteracao > :dthExecucao", "" ,$query);
                         } elseif ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
                             $hoje = new \DateTime();
-                            $dthExecucao = $hoje->format("Y-m-d");
+                            $dthExecucao = $hoje->format("Y-m-d") . " 00:00:00";
                         }
                     } else {
                         $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y-m-d H:i:s");
