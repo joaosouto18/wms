@@ -837,4 +837,9 @@ class MapaSeparacaoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function validaExclusaoPedido()
+    {
+
+    }
+
 }
