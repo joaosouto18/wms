@@ -591,10 +591,10 @@ class PaleteRepository extends EntityRepository
 
         foreach ($qtdEnderecada as $enderecado) {
             foreach ($qtdRecebida as $key => $recebido) {
-                if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
+//                if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
                     $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
                     $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
-                }
+//                }
             }
         }
 

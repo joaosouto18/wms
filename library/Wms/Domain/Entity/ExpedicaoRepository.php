@@ -2121,7 +2121,7 @@ class ExpedicaoRepository extends EntityRepository
             ->distinct(true)
             ->where("prod.linhaSeparacao != 15")
             ->groupBy("pe.localidade, pj.nomeFantasia, car.placaCarga, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
-            ->orderBy('cidade, bairro, rua, cliente, ped.id');
+            ->orderBy('ped.sequencia, cidade, bairro, rua, cliente, ped.id');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
             $source->andWhere("car.codExpedicao = " . $codExpedicao);
