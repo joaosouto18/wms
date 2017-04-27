@@ -709,7 +709,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
                         $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
                     }
-                    if (!isset($cubagemProduto) || is_null($cubagemProduto) || $cubagemProduto) {
+                    if (!isset($cubagemProduto) || is_null($cubagemProduto) || $cubagemProduto <= 0) {
                         $cubagemProduto = $this->tofloat('0.001');
                     }
                     if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
