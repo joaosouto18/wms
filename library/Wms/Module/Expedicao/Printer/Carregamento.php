@@ -55,7 +55,8 @@ class Carregamento extends eFPDF
         $this->Cell(40, 10, utf8_decode("Cidade:"),1,0);
         $this->Cell(40, 10, utf8_decode("Bairro:"),1,0);
         $this->Cell(70, 10, utf8_decode("Rua:"),1,0);
-        $this->Cell(95, 10, utf8_decode("Cliente:"),1,1);
+        $this->Cell(80, 10, utf8_decode("Cliente:"),1,0);
+        $this->Cell(15, 10, utf8_decode("Qtd.:"),1,1);
 
         //DADOS
         foreach ($dados as $item) {
@@ -65,7 +66,8 @@ class Carregamento extends eFPDF
             $this->Cell(40, 10, utf8_decode($item['cidade']),1,0);
             $this->Cell(40, 10, utf8_decode(substr($item['bairro'],0,17)),1,0);
             $this->Cell(70, 10, utf8_decode(substr($item['rua'],0,30)),1,0);
-            $this->Cell(95, 10, utf8_decode(substr($item['cliente'],0,44)),1,1);
+            $this->Cell(80, 10, utf8_decode(substr($item['cliente'],0,44)),1,0);
+            $this->Cell(15, 10, utf8_decode(substr($item['quantidade'],0,44)),1,1);
         }
 
         $this->Output('Carregamento-'.$codExpedicao.'.pdf','D');
