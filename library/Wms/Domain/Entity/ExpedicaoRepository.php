@@ -2108,7 +2108,8 @@ class ExpedicaoRepository extends EntityRepository
                       NVL(pe.bairro,endere.bairro)          as bairro,
                       NVL(pe.descricao,endere.descricao)    as rua,
                       NVL(pessoa.nome,pj.nomeFantasia)      as cliente,
-                      SUM(pp.quantidade)                    as quantidade")
+                      SUM(pp.quantidade)                    as quantidade,
+                      COUNT(pp.quantidade)                  as itens")
             ->from("wms:Expedicao\PedidoProduto", "pp")
             ->leftJoin("pp.produto"         ,"prod")
             ->leftJoin("pp.pedido"          ,"ped")
