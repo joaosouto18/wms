@@ -146,6 +146,37 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getEmbaladosConferidosByExpedicao($idExpedicao,$idLinhaSeparacao)
+    {
+        $andWhere = '';
+        if (isset($idLinhaSeparacao) && !empty($idLinhaSeparacao) && $idLinhaSeparacao != 'null') {
+            $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
+        }
+        $sql = "SELECT  COUNT(DISTINCT MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE) QUANTIDADE_CONFERIDA, PP.SEQUENCIA, C.COD_CARGA_EXTERNO, P.NOM_PESSOA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MS.DSC_QUEBRA, E.DTH_INICIO, P.COD_PESSOA, MS.COD_MAPA_SEPARACAO
+                    FROM MAPA_SEPARACAO_CONFERENCIA CONF
+                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = CONF.COD_MAPA_SEPARACAO_EMBALADO
+                    INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = CONF.COD_MAPA_SEPARACAO
+                    INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
+                    LEFT JOIN (
+                          SELECT E.COD_EXPEDICAO, C.COD_CARGA, PP.COD_PRODUTO, PP.DSC_GRADE, P.SEQUENCIA, SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) QUANTIDADE_CONFERIDA, P.COD_PESSOA
+                          FROM EXPEDICAO E
+                          INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                          INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                          INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                          WHERE E.COD_EXPEDICAO = $idExpedicao
+                          GROUP BY E.COD_EXPEDICAO, C.COD_CARGA, PP.COD_PRODUTO, PP.DSC_GRADE, P.SEQUENCIA, P.COD_PESSOA
+                          ) PP ON PP.COD_EXPEDICAO = E.COD_EXPEDICAO AND PP.COD_PRODUTO = CONF.COD_PRODUTO AND PP.DSC_GRADE = CONF.DSC_GRADE AND PP.COD_PESSOA = MSE.COD_PESSOA AND PP.COD_PESSOA = CONF.COD_PESSOA
+                    INNER JOIN CARGA C ON PP.COD_CARGA = C.COD_CARGA
+                    INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = CONF.COD_PRODUTO AND PROD.DSC_GRADE = CONF.DSC_GRADE
+                    INNER JOIN LINHA_SEPARACAO LS ON PROD.COD_LINHA_SEPARACAO = LS.COD_LINHA_SEPARACAO
+                    INNER JOIN PESSOA P ON P.COD_PESSOA = CONF.COD_PESSOA AND P.COD_PESSOA = MSE.COD_PESSOA
+                    WHERE MS.COD_EXPEDICAO = $idExpedicao $andWhere
+                    GROUP BY PP.SEQUENCIA, P.NOM_PESSOA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, C.COD_CARGA_EXTERNO, MS.DSC_QUEBRA, E.DTH_INICIO, P.COD_PESSOA, MS.COD_MAPA_SEPARACAO
+                    ORDER BY PP.SEQUENCIA";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function getProdutosClientesByExpedicao($idExpedicao,$idLinhaSeparacao)
     {
         $andWhere = '';
