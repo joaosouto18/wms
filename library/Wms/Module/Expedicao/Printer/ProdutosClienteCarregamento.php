@@ -63,7 +63,6 @@ class ProdutosClienteCarregamento extends Pdf
         /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
         $resultado = $mapaSeparacaoConferenciaRepo->getProdutosClientesByExpedicao($idExpedicao,$idLinhaSeparacao);
-        $embalados = $mapaSeparacaoConferenciaRepo->getEmbaladosConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
 
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
         $produtoRepo = $em->getRepository('wms:Produto');
@@ -85,7 +84,7 @@ class ProdutosClienteCarregamento extends Pdf
         $clienteAnterior = null;
         $sequenciaAnterior = null;
         foreach ($resultado as $chave => $valor) {
-            if ($valor['CPF_CNPJ'] != $clienteAnterior || $valor['SEQUENCIA'] != $sequenciaAnterior) {
+            if ($valor['COD_PESSOA'] != $clienteAnterior || $valor['SEQUENCIA'] != $sequenciaAnterior) {
                 $this->startPage();
                 $dataExpedicao = new \DateTime($valor['DTH_INICIO']);
                 $dataExpedicao = $dataExpedicao->format('d/m/Y');
@@ -141,49 +140,19 @@ class ProdutosClienteCarregamento extends Pdf
                 $this->Cell(10, 15, utf8_decode("Seq.:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Cód. Prod.:"),0,0);
                 $this->Cell(110, 15, utf8_decode("Produto:"),0,0);
-//                $this->Cell(20, 15, utf8_decode("Caixa Master:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Unidade:"),0,0);
                 $this->Cell(10, 15, utf8_decode("Total:"),0,1);
             }
 
-            $this->bodyPage($valor, $embalagemRepo);
-
-            $clienteAnterior = $valor['CPF_CNPJ'];
-            $sequenciaAnterior = $valor['SEQUENCIA'];
-
-        }
-
-        $sequencia = 99999;
-        foreach ($embalados as $embalado) {
-            if ($sequencia != $embalado['SEQUENCIA']) {
-                $this->startPage();
-                $dataExpedicao = new \DateTime($embalado['DTH_INICIO']);
-                $dataExpedicao = $dataExpedicao->format('d/m/Y');
-                $this->SetFont('Arial',  "B", 12);
-                $this->Line(10,20,200,20);
-                $this->Cell(45, 10, utf8_decode("Expedição: $idExpedicao"),0,0);
-                $this->Cell(45, 10, utf8_decode("Data: $dataExpedicao"),0,1);
-                $this->Cell(20, 10, utf8_decode("Linha de Separação: $embalado[DSC_QUEBRA]"),0,1);
-                $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
-                $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,1);
-
-                $this->Line(10,70,200,70);
-
-                $this->SetFont('Arial',  "B", 8);
-                $this->Cell(20, 15, utf8_decode("Sequência:"),0,0);
-                $this->Cell(30, 15, utf8_decode("Qtd. Conferir:"),0,0);
-                $this->Cell(40, 15, utf8_decode("Cod. Embalado:"),0,0);
-                $this->Cell(70, 15, utf8_decode("Cliente:"),0,1);
-
-                $sequencia = $embalado['SEQUENCIA'];
+            if (isset($valor['COD_MAPA_SEPARACAO_EMB_CLIENTE']) && !empty($valor['COD_MAPA_SEPARACAO_EMB_CLIENTE'])) {
+                $this->bodyPage(null, null, $valor);
+            } else {
+                $this->bodyPage($valor, $embalagemRepo);
             }
-
-
-            $this->bodyPage(null, null, $embalado);
+            $clienteAnterior = $valor['COD_PESSOA'];
+            $sequenciaAnterior = $valor['SEQUENCIA'];
         }
-
         $this->Output('consultaCarregamento.pdf','D');
-
     }
 
 }
