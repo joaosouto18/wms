@@ -101,7 +101,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
             $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
         }
         $sql = "SELECT
-                    SUM(PP.QUANTIDADE_CONFERIDA / CONF.QTD_EMBALAGEM) / COUNT(DISTINCT CONF.COD_MAPA_SEPARACAO_CONFERENCIA) QUANTIDADE_CONFERIDA,
+                    SUM(PP.QUANTIDADE_CONFERIDA) QUANTIDADE_CONFERIDA,
                     NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) DESCRICAO_EMBALAGEM,
                     PP.SEQUENCIA,
                     PROD.COD_PRODUTO,
