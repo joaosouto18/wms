@@ -32,7 +32,7 @@ class ProdutosCarregamento extends Pdf
             $this->SetFont('Arial',  '', 10);
             $this->Cell(10, 6, utf8_decode($data['SEQUENCIA']),0,0);
             $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0,'R');
-            $this->Cell(100, 6, utf8_decode($data['DSC_PRODUTO']),0,0);
+            $this->Cell(110, 6, utf8_decode($data['DSC_PRODUTO']),0,0);
 
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
@@ -42,7 +42,7 @@ class ProdutosCarregamento extends Pdf
                     break;
                 }
             }
-            $this->Cell(20, 6, $qtdTotal.' und.',0,1,'R');
+            $this->Cell(10, 6, $qtdTotal.' und.',0,1,'R');
         }
     }
 
@@ -96,10 +96,9 @@ class ProdutosCarregamento extends Pdf
                 $this->SetFont('Arial',  "B", 8);
                 $this->Cell(10, 15, utf8_decode("Seq.:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Cód. Prod.:"),0,0);
-                $this->Cell(100, 15, utf8_decode("Produto:"),0,0);
-                $this->Cell(20, 15, utf8_decode("Caixa Master:"),0,0);
+                $this->Cell(110, 15, utf8_decode("Produto:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Unidade:"),0,0);
-                $this->Cell(20, 15, utf8_decode("Total:"),0,1);
+                $this->Cell(10, 15, utf8_decode("Total:"),0,1);
             }
 
             if ($codProdutoAnt != $valor['COD_PRODUTO'] || $gradeAnt != $valor['DSC_GRADE']) {
