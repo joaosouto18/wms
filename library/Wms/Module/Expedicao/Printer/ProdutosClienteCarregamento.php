@@ -29,7 +29,8 @@ class ProdutosClienteCarregamento extends Pdf
             $this->Cell(40, 6, utf8_decode(substr($dataEmb['COD_MAPA_SEPARACAO_EMB_CLIENTE'],0,27)),0,0);
             $this->Cell(70, 6, $dataEmb['NOM_PESSOA'],0,1);
         } else {
-            $embalagemEntity = $embalagemRepo->find($data['COD_PRODUTO_EMBALAGEM']);
+            $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
+
 
             $this->SetFont('Arial',  '', 10);
             $this->Cell(10, 6, utf8_decode($data['SEQUENCIA']),0,0);
@@ -37,10 +38,15 @@ class ProdutosClienteCarregamento extends Pdf
             $this->Cell(110, 6, utf8_decode($data['DSC_PRODUTO']),0,0);
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
 
-            $this->Cell(20, 6, utf8_decode(floor(number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') / number_format($embalagemEntity->getQuantidade(),3,'.','')) . ' ' . $embalagemEntity->getDescricao()),0,0);
-            $data['QUANTIDADE_CONFERIDA'] = number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') % number_format($embalagemEntity->getQuantidade(),3,'.','');
+            foreach ($embalagemEntities as $embalagemEntity) {
+                if ($data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade() == 0) {
+                    $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
+                    break;
+                }
+            }
 
-
+//            $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] . ' ' . $embalagemEntity->getDescricao());
+//            $data['QUANTIDADE_CONFERIDA'] = number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') % number_format($embalagemEntity->getQuantidade(),3,'.','');
             $this->Cell(20, 6, $qtdTotal.' und.',0,1,'R');
         }
 
