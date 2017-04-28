@@ -26,6 +26,7 @@ use Doctrine\Common\Collections\Selectable;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\ExpressionBuilder;
+use Wms\Math;
 
 /**
  * An EntityRepository serves as a repository for entities with generic as well as
@@ -57,6 +58,8 @@ class EntityRepository implements ObjectRepository, Selectable
      */
     protected $_class;
 
+    protected $_math;
+
     /**
      * Initializes a new <tt>EntityRepository</tt>.
      *
@@ -68,6 +71,7 @@ class EntityRepository implements ObjectRepository, Selectable
         $this->_entityName = $class->name;
         $this->_em         = $em;
         $this->_class      = $class;
+        $this->math        = new Math();
     }
 
     /**

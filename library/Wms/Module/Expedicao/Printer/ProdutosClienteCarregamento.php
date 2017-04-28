@@ -5,9 +5,12 @@ namespace Wms\Module\Expedicao\Printer;
 use
     Core\Pdf,
     Wms\Domain\Entity\Expedicao;
+use Wms\Math;
 
 class ProdutosClienteCarregamento extends Pdf
 {
+    protected $math;
+
     private function startPage() {
 
         $this->AddPage();
@@ -27,7 +30,7 @@ class ProdutosClienteCarregamento extends Pdf
             $this->Cell(20, 6, utf8_decode($dataEmb['SEQUENCIA']),0,0);
             $this->Cell(30, 6, utf8_decode($dataEmb['QUANTIDADE_CONFERIDA']),0,0);
             $this->Cell(40, 6, utf8_decode(substr($dataEmb['COD_MAPA_SEPARACAO_EMB_CLIENTE'],0,27)),0,0);
-            $this->Cell(70, 6, $dataEmb['NOM_PESSOA'],0,1);
+            $this->Cell(70, 6, utf8_decode($dataEmb['NOM_PESSOA']),0,1);
         } else {
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
 
@@ -39,14 +42,13 @@ class ProdutosClienteCarregamento extends Pdf
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
 
             foreach ($embalagemEntities as $embalagemEntity) {
-                if ($data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade() == 0) {
+
+                if($this->math->restoDivisao($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
                     break;
                 }
             }
 
-//            $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] . ' ' . $embalagemEntity->getDescricao());
-//            $data['QUANTIDADE_CONFERIDA'] = number_format($data['QUANTIDADE_CONFERIDA'],3,'.','') % number_format($embalagemEntity->getQuantidade(),3,'.','');
             $this->Cell(20, 6, $qtdTotal.' und.',0,1,'R');
         }
 
@@ -56,6 +58,7 @@ class ProdutosClienteCarregamento extends Pdf
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $this->math = new Math();
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
