@@ -20,7 +20,7 @@ class ProdutosCarregamento extends Pdf
         $this->Cell(45, 10, utf8_decode("RELATÓRIO CARREGAMENTO POR PRODUTO"),0,1);
     }
 
-    private function bodyPage($data, $dataEmb = null){
+    private function bodyPage($data, $dataEmb = null, $embalagemRepo = null){
 
         if (isset($dataEmb) && !empty($dataEmb)) {
             $this->SetFont('Arial',  '', 10);
@@ -32,10 +32,18 @@ class ProdutosCarregamento extends Pdf
             $this->SetFont('Arial',  '', 10);
             $this->Cell(10, 6, utf8_decode($data['SEQUENCIA']),0,0);
             $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0,'R');
-            $this->Cell(100, 6, utf8_decode($data['DSC_PRODUTO']),0,0);
-            $this->Cell(20, 6, utf8_decode(floor(number_format($data['QUANTIDADE_CONFERIDA'],3,'.','')) . ' ' . $data['DESCRICAO_EMBALAGEM']),0,1);
-        }
+            $this->Cell(110, 6, utf8_decode($data['DSC_PRODUTO']),0,0);
 
+            $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
+            foreach ($embalagemEntities as $embalagemEntity) {
+                if ($data['QUANTIDADE_CONFERIDA'] % $embalagemEntity->getQuantidade() == 0) {
+                    $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
+                    break;
+                }
+            }
+            $this->Cell(10, 6, $qtdTotal.' und.',0,1,'R');
+        }
     }
 
     public function imprimir($idExpedicao,$idLinhaSeparacao)
@@ -51,6 +59,7 @@ class ProdutosCarregamento extends Pdf
         $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
         $embalados = $mapaSeparacaoConferenciaRepo->getEmbaladosConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
         $produtoRepo = $em->getRepository('wms:Produto');
+        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
         $linhaSeparacaoAnt = null;
         $sequenciaAnt      = null;
@@ -87,14 +96,13 @@ class ProdutosCarregamento extends Pdf
                 $this->SetFont('Arial',  "B", 8);
                 $this->Cell(10, 15, utf8_decode("Seq.:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Cód. Prod.:"),0,0);
-                $this->Cell(100, 15, utf8_decode("Produto:"),0,0);
-                $this->Cell(20, 15, utf8_decode("Caixa Master:"),0,0);
+                $this->Cell(110, 15, utf8_decode("Produto:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Unidade:"),0,0);
-                $this->Cell(20, 15, utf8_decode("Total:"),0,1);
+                $this->Cell(10, 15, utf8_decode("Total:"),0,1);
             }
 
             if ($codProdutoAnt != $valor['COD_PRODUTO'] || $gradeAnt != $valor['DSC_GRADE']) {
-                $this->bodyPage($valor);
+                $this->bodyPage($valor,null,$embalagemRepo);
             }
 
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];

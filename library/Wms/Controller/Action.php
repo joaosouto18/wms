@@ -1,6 +1,8 @@
 <?php
 
 namespace Wms\Controller;
+use Wms\Math;
+
 
 /**
  * Description of Action
@@ -163,5 +165,10 @@ class Action extends \Core\Controller\Action
         } else {
             return $parametro->getValor();
         }
+    }
+
+    public function math()
+    {
+        return new Math();
     }
 }

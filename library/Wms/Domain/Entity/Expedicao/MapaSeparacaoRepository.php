@@ -423,7 +423,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null){
+    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null,$ordemServicoId=null){
 
         $numConferencia = 1;
         $qtdConferida = 0;
@@ -444,6 +444,9 @@ class MapaSeparacaoRepository extends EntityRepository
             $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
+        }
+        if (isset($ordemServicoId) && !empty($ordemServicoId)) {
+            $qtdEmbalagem = 1;
         }
 
         if ($ultConferencia != null) {
@@ -467,11 +470,14 @@ class MapaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $mapaEn->getId(), 'pessoa' => $codPessoa, 'status' => MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
-        $sessao = new \Zend_Session_Namespace('coletor');
+        if (is_null($ordemServicoId)) {
+            $sessao = new \Zend_Session_Namespace('coletor');
+            $ordemServicoId = $sessao->osID;
+        }
 
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
-        $novaConferencia->setCodOS($sessao->osID);
+        $novaConferencia->setCodOS($ordemServicoId);
         $novaConferencia->setCodProduto($produtoEn->getId());
         $novaConferencia->setDscGrade($produtoEn->getGrade());
         $novaConferencia->setProduto($produtoEn);
@@ -829,6 +835,11 @@ class MapaSeparacaoRepository extends EntityRepository
                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSPROD.COD_PRODUTO, MSPROD.DSC_GRADE, PROD.DSC_PRODUTO
                 ORDER BY NUM_CAIXA_PC_INI";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function validaExclusaoPedido()
+    {
+
     }
 
 }
