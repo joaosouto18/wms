@@ -15,7 +15,7 @@ class EtiquetaEndereco extends Pdf
     public $y;
     public $count;
 
-    public function imprimir(array $enderecos = array(), $modelo)
+    public function imprimir(array $enderecos = array(), $modelo, $outExit = true)
     {
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -107,6 +107,20 @@ class EtiquetaEndereco extends Pdf
                         }
                     }
                     break;
+                case 10:
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    if (empty($produtos)){
+                        $this->layoutModelo10(null,$codBarras);
+                    } else {
+                        foreach ($produtos as $i => $produto){
+                            $this->layoutModelo10($produto,$codBarras);
+                            if ($i < (count($produtos) - 1))
+                                $this->AddPage();
+                        }
+                    }
+                    if ($key < (count($enderecos) - 1))
+                        $this->AddPage();
+                    break;
                 default:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo1($produto,$codBarras);
@@ -114,8 +128,10 @@ class EtiquetaEndereco extends Pdf
             }
         }
 
-        $this->Output('Etiquetas-endereco.pdf','D');
-        exit;
+        if ($outExit) {
+            $this->Output('Etiquetas-endereco.pdf', 'D');
+            exit;
+        }
     }
 
     public function layoutModelo4($codBarras){
@@ -433,6 +449,31 @@ class EtiquetaEndereco extends Pdf
         unlink(APPLICATION_PATH . '/../public/img/'.$codBarras.'.jpg');
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 22.5, 20 , 40, 10);
+
+    }
+
+    public function layoutModelo10($produto, $endereco)
+    {
+        $margin = 4;
+        $this->InFooter = true;
+
+        $wDscProduto = 100;
+        $xDscCodBarras = $wDscProduto;
+        $codBarraProduto = $produto['codigoBarras'];
+
+        $this->SetFont('Arial', '',11);
+        $this->SetY($margin);
+        $this->Cell($wDscProduto,4, self::SetStringByMaxWidth($produto['descricao'], $wDscProduto),0,2);
+
+        $this->SetXY($xDscCodBarras,$margin);
+        $this->SetFont('Arial', 'B',13);
+        $this->Cell(30,4, "EAN: $codBarraProduto",0,2);
+
+        $this->SetY($margin + 8);
+        $this->SetFont('Arial', '',31);
+        $this->Cell(60, 10, $endereco, 0,2);
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , 96, 10 , 50, 15);
 
     }
 

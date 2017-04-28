@@ -355,6 +355,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Produto\Volume", "pv")
             ->innerJoin("pv.endereco", "e")
             ->innerJoin("pv.produto", "p")
+            ->leftJoin('p.fabricante', 'f')
             ->where("e.descricao = '$endereco'");
 
         if ($picking) {
@@ -369,11 +370,12 @@ class EnderecoRepository extends EntityRepository
 
         if (count($produto) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbalagem')
+                ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbalagem, pe.codigoBarras, f.nome fabricante')
                 ->distinct(true)
                 ->from("wms:Produto\Embalagem", "pe")
-                ->leftJoin("pe.endereco", "e")
-                ->leftJoin("pe.produto", "p")
+                ->innerJoin("pe.endereco", "e")
+                ->innerJoin("pe.produto", "p")
+                ->leftJoin('p.fabricante', 'f')
                 ->where("e.descricao = '$endereco'");
 
             if ($picking) {
