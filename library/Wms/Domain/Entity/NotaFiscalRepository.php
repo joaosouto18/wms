@@ -867,6 +867,9 @@ class NotaFiscalRepository extends EntityRepository
 
             $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
 
+            var_dump($dataEmissao);
+            var_dump(\DateTime::createFromFormat('d/m/Y', $dataEmissao));
+
             //inserção de nova NF
             $notaFiscalEntity = new NotaFiscalEntity;
             $notaFiscalEntity->setNumero($numero);
