@@ -1,8 +1,3 @@
-/*
- Autor: Tarcísio César
- Data Criação: 02/03/2017
- */
-
 INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '5.0.0','9 logWs.sql');
 
 INSERT INTO PARAMETRO (

@@ -15,7 +15,7 @@ class EtiquetaEndereco extends Pdf
     public $y;
     public $count;
 
-    public function imprimir(array $enderecos = array(), $modelo, $outExit = true)
+    public function imprimir(array $enderecos = array(), $modelo)
     {
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -128,10 +128,6 @@ class EtiquetaEndereco extends Pdf
             }
         }
 
-        if ($outExit) {
-            $this->Output('Etiquetas-endereco.pdf', 'D');
-            exit;
-        }
     }
 
     public function layoutModelo4($codBarras){
@@ -307,21 +303,28 @@ class EtiquetaEndereco extends Pdf
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
         $this->SetX(5);
+        $wRua = 19;
+        $wPredio = 22;
+        $wNivel = 18;
+        $wApto = 23;
+        $wTotal = $wRua + $wPredio + $wNivel + $wApto;
         $this->SetFont('Arial', 'B', 12);
         $this->Cell(7,13,"",0,0);
-        $this->Cell(19,13,utf8_decode("RUA"),0,0);
-        $this->Cell(22,13,utf8_decode("PREDIO"),0,0);
-        $this->Cell(18,13,utf8_decode("NIVEL"),0,0);
-        $this->Cell(23,13,utf8_decode("APTO"),0,1);
+        $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
+        $this->Cell($wPredio,13,utf8_decode("PREDIO"),0,0);
+        $this->Cell($wNivel,13,utf8_decode("NIVEL"),0,0);
+        $this->Cell($wApto,13,utf8_decode("APTO"),0,1);
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(0,0," ",0,1);
         $this->SetX(7);
-        $this->SetFont('Arial', 'B', 48);
-        $this->Cell(95,8,$codBarras,0,1);
+        $count = strlen(str_replace('.','',$codBarras));
+        $fX = ($wTotal / $count) * 4.12;
+        $this->SetFont('Arial', 'B', $fX);
+        $this->Cell($wTotal,8,$codBarras,0,1);
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 4, $this->GetY()+5 , 100);
         $this->Cell(95,5," ",0,1);
-        if ($arrEndereco['nivel'] == 0) {
+        if (substr($arrEndereco['nivel'], -1) == 0) {
             $this->Image(APPLICATION_PATH . '/../data/seta1.png', 88, $this->GetY()-22 , 13,20);
         } else {
             $this->Image(APPLICATION_PATH . '/../data/seta2.png', 88, $this->GetY()-23 , 13,20);
@@ -416,18 +419,18 @@ class EtiquetaEndereco extends Pdf
             $dscProduto = "";
             $idProduto = "";
             $capacidadePicking = '';
-            $descricaoEmbalagem = "";
+            $descricaoEmbVol = "";
         } else {
             $idProduto = $produto['codProduto'];
             $dscProduto = utf8_decode($produto['descricao']);
             $capacidadePicking = $produto['capacidadePicking'];
-            $descricaoEmbalagem = $produto['descricaoEmbalagem'];
+            $descricaoEmbVol = $produto['descricaoEmbVol'];
         }
 
         if ($idProduto == "") {
             $idProduto = "";
         } else {
-            $idProduto = $idProduto . " / " . $capacidadePicking.$descricaoEmbalagem;
+            $idProduto = $idProduto . " / " . $capacidadePicking.$descricaoEmbVol;
         }
 
         $this->SetFont('Arial', '', 13);
@@ -458,22 +461,32 @@ class EtiquetaEndereco extends Pdf
         $this->InFooter = true;
 
         $wDscProduto = 100;
-        $xDscCodBarras = $wDscProduto;
+        $xDscCodBarrasProd = $wDscProduto;
         $codBarraProduto = $produto['codigoBarras'];
+        $wDscEndereco = 60;
+        $wCdoBarrasEnd = 45;
 
         $this->SetFont('Arial', '',11);
         $this->SetY($margin);
         $this->Cell($wDscProduto,4, self::SetStringByMaxWidth($produto['descricao'], $wDscProduto),0,2);
 
-        $this->SetXY($xDscCodBarras,$margin);
-        $this->SetFont('Arial', 'B',13);
+        $this->SetXY($xDscCodBarrasProd + 4,$margin);
+        $this->SetFont('Arial', 'B',12);
         $this->Cell(30,4, "EAN: $codBarraProduto",0,2);
 
         $this->SetY($margin + 8);
-        $this->SetFont('Arial', '',31);
-        $this->Cell(60, 10, $endereco, 0,2);
+        $this->SetFont('Arial', '',26);
+        $this->Cell($wDscEndereco, 10, $endereco, 0,2);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , 96, 10 , 50, 15);
+        $posXRef = $wDscEndereco + $wCdoBarrasEnd + 2;
+        $this->SetXY($posXRef, $margin + 8);
+        $this->SetFont('Arial', 'B', 12);
+        $this->Cell(40,4,"REF: $produto[referencia]",0,2);
+
+        $this->SetXY($posXRef, $margin + 12);
+        $this->Cell(40,4,self::SetStringByMaxWidth($produto['fabricante'],40),0,2);
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , $wDscEndereco, 10 , $wCdoBarrasEnd, 15);
 
     }
 

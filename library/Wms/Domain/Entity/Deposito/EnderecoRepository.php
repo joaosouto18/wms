@@ -350,7 +350,7 @@ class EnderecoRepository extends EntityRepository
         $endereco = EnderecoUtil::formatar($dscEndereco);
 
         $dql = $em->createQueryBuilder()
-            ->select('p.id as codProduto, p.grade, p.descricao' )
+            ->select('p.id as codProduto, p.grade, p.descricao, pv.capacidadePicking, pv.descricao descricaoEmbVol, pv.codigoBarras, f.nome fabricante, p.referencia' )
             ->distinct(true)
             ->from("wms:Produto\Volume", "pv")
             ->innerJoin("pv.endereco", "e")
@@ -370,7 +370,7 @@ class EnderecoRepository extends EntityRepository
 
         if (count($produto) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbalagem, pe.codigoBarras, f.nome fabricante')
+                ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbVol, pe.codigoBarras, f.nome fabricante, p.referencia')
                 ->distinct(true)
                 ->from("wms:Produto\Embalagem", "pe")
                 ->innerJoin("pe.endereco", "e")
@@ -870,33 +870,33 @@ class EnderecoRepository extends EntityRepository
            LEFT JOIN PRODUTO_EMBALAGEM PE ON DEP.COD_DEPOSITO_ENDERECO =  PE.COD_DEPOSITO_ENDERECO
            LEFT JOIN PRODUTO_VOLUME PV ON DEP.COD_DEPOSITO_ENDERECO =  PV.COD_DEPOSITO_ENDERECO
            LEFT JOIN PRODUTO P ON PE.COD_PRODUTO = P.COD_PRODUTO OR PV.COD_PRODUTO = P.COD_PRODUTO
-           WHERE 1 = 1
+           WHERE 1 = 1 AND DEP.COD_CARACTERISTICA_ENDERECO = $params[tipoEndereco]
         ";
 
-        if (!empty ($params['rua'])) {
-            $query = $query . " AND DEP.NUM_RUA >= " . $params['rua'];
+        if (!empty ($params['ruaInicial'])) {
+            $query = $query . " AND DEP.NUM_RUA >= " . $params['ruaInicial'];
         }
-        if (!empty ($params['predio'])) {
-            $query = $query . " AND DEP.NUM_PREDIO >= " . $params['predio'];
+        if (!empty ($params['predioInicial'])) {
+            $query = $query . " AND DEP.NUM_PREDIO >= " . $params['predioInicial'];
         }
-        if (isset($params['nivel']) && $params['nivel'] != '') {
-            $query = $query . " AND DEP.NUM_NIVEL >= " . $params['nivel'];
+        if (isset($params['nivelInicial']) && $params['nivelInicial'] != '') {
+            $query = $query . " AND DEP.NUM_NIVEL >= " . $params['nivelInicial'];
         }
-        if (!empty ($params['apartamento'])) {
-            $query = $query . " AND DEP.NUM_APARTAMENTO >= " . $params['apartamento'];
+        if (!empty ($params['aptoInicial'])) {
+            $query = $query . " AND DEP.NUM_APARTAMENTO >= " . $params['aptoInicial'];
         }
 
-        if (!empty ($params['ruafinal'])) {
-            $query = $query . " AND DEP.NUM_RUA <= " . $params['ruafinal'];
+        if (!empty ($params['ruaFinal'])) {
+            $query = $query . " AND DEP.NUM_RUA <= " . $params['ruaFinal'];
         }
-        if (!empty ($params['prediofinal'])) {
-            $query = $query . " AND DEP.NUM_PREDIO <= " . $params['prediofinal'];
+        if (!empty ($params['predioFinal'])) {
+            $query = $query . " AND DEP.NUM_PREDIO <= " . $params['predioFinal'];
         }
-        if (isset($params['nivelfinal']) && $params['nivelfinal'] != '') {
-            $query = $query . " AND DEP.NUM_NIVEL <= " . $params['nivelfinal'];
+        if (isset($params['nivelFinal']) && $params['nivelFinal'] != '') {
+            $query = $query . " AND DEP.NUM_NIVEL <= " . $params['nivelFinal'];
         }
-        if (!empty ($params['apartamentofinal'])) {
-            $query = $query . " AND DEP.NUM_APARTAMENTO <= " . $params['apartamentofinal'];
+        if (!empty ($params['aptoFinal'])) {
+            $query = $query . " AND DEP.NUM_APARTAMENTO <= " . $params['aptoFinal'];
         }
 
         if (!empty ($params['lado'])) {
@@ -923,14 +923,10 @@ class EnderecoRepository extends EntityRepository
     public function getImprimirEndereco($enderecos)
     {
         $query = "
-           SELECT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
-           FROM DEPOSITO_ENDERECO DEP
-           LEFT JOIN PRODUTO_EMBALAGEM PE ON DEP.COD_DEPOSITO_ENDERECO =  PE.COD_DEPOSITO_ENDERECO
-           LEFT JOIN PRODUTO_VOLUME PV ON DEP.COD_DEPOSITO_ENDERECO =  PV.COD_DEPOSITO_ENDERECO
-           LEFT JOIN PRODUTO P ON PE.COD_PRODUTO = P.COD_PRODUTO OR PV.COD_PRODUTO = P.COD_PRODUTO
-           WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos)
-           GROUP BY DEP.DSC_DEPOSITO_ENDERECO, DEP.NUM_RUA, DEP.NUM_PREDIO, DEP.NUM_APARTAMENTO, DEP.NUM_NIVEL
-            ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL DESC ";
+          SELECT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
+          FROM DEPOSITO_ENDERECO DEP
+          WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos)
+          ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL DESC ";
 
         $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;

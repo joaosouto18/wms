@@ -1,11 +1,15 @@
-<?php
-echo $this->form;
-?>
+<div id="identificacao-form">
+    <fieldset id="identificacao">
+        <legend>Filtro</legend>
+        <?php echo $this->form;?>
+    </fieldset>
+</div>
 <?php if(is_array($this->endereco)) { ?>
     <form id="imprimiretiqueta-form" method="post" action="<?php echo $this->url(array('module' => 'web', 'controller' =>'imprimir', 'action' =>'imprimir' ))?>">
         <input type="submit" style="margin-bottom: 15px" name="busca" value="Imprimir" id="submit" class="btn">
+        <input type="hidden" value="<?php echo $this->tipo?>" name="tipo">
         <table class="gTable ">
-            <caption>Endereços de Picking</caption>
+            <caption>Endereços de <?php echo \Wms\Domain\Entity\Deposito\Endereco::$tiposEndereco[$this->tipo] ?></caption>
             <tbody>
             <tr class ="gTTitle">
                 <td>Selecione</td>
@@ -32,7 +36,6 @@ echo $this->form;
         $(function () {
             $('#imprimiretiqueta-form').submit(function () {
                 var check = $('#imprimiretiqueta-form').find("input[name='enderecos[]']:checked").length > 0;
-                console.log('Entrou ' + check);
                 if (!check){
                     alert("Nenhum endereço foi selecionado");
                     return false;
