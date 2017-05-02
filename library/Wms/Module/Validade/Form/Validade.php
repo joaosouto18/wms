@@ -32,7 +32,7 @@ class Validade extends Form
         $this
             ->setAction($this->getView()->url(array('module' =>'validade', 'controller' => 'consulta', 'action' => 'index')))
             ->setAttribs(array(
-                'method' => 'post',
+                'method' => 'get',
                 'class' => 'filtro',
                 'id' => 'frm-index',
             ))
