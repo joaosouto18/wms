@@ -322,6 +322,7 @@ class Integracao
         $notasFiscais = array();
 
         foreach ($dados as $key => $notaFiscal) {
+
             $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
             if (strlen($cpf_cnpj) == 11) {
                 $tipoPessoa = 'F';
