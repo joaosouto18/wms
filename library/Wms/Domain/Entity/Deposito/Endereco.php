@@ -17,6 +17,12 @@ class Endereco
     const ENDERECO_PULMAO = 38;
     const ENDERECO_PICKING_DINAMICO = 39;
 
+    public static $tiposEndereco = array(
+        self::ENDERECO_PICKING => "Picking",
+        self::ENDERECO_PULMAO => "Pulmão",
+        self::ENDERECO_PICKING_DINAMICO => "Picking Dinâmico"
+    );
+
     /**
      * @var integer $id
      *
