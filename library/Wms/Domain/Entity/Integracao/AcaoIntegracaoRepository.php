@@ -51,16 +51,16 @@ class AcaoIntegracaoRepository extends EntityRepository
                         }
                     }
                 } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
+                    $dthExecucao = null;
                     if ($acaoEn->getDthUltimaExecucao() == null) {
-                        $dthExecucao = "1900-01-01 01:01:01";
                         if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO) {
                             $query = str_replace("and a.es1_dtalteracao > :dthExecucao", "" ,$query);
-                        } elseif ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
+                        } else {
                             $hoje = new \DateTime();
-                            $dthExecucao = $hoje->format("Y-m-d") . " 00:00:00";
+                            $dthExecucao = $hoje->format("Y/m/d") . " 00:00:00";
                         }
                     } else {
-                        $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y-m-d H:i:s");
+                        $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y/m/d H:i:s");
                     }
 
                     $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
