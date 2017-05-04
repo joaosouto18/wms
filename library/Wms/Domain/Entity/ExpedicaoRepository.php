@@ -1459,7 +1459,37 @@ class ExpedicaoRepository extends EntityRepository
                                FROM CARGA C
                                LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                                LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO '. $JoinExpedicao . $JoinSigla . '
-                               LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                               LEFT JOIN (
+                                    SELECT
+                                          P.COD_PRODUTO,
+                                          P.DSC_GRADE,
+                                          PDL.NUM_PESO,
+                                          PDL.NUM_CUBAGEM
+                                          FROM(
+                                          SELECT PE.COD_PRODUTO,
+                                               PE.DSC_GRADE,
+                                               MIN(PDL.COD_PRODUTO_DADO_LOGISTICO) as COD_PRODUTO_DADO_LOGISTICO
+                                            FROM (SELECT MIN(COD_PRODUTO_EMBALAGEM) AS COD_PRODUTO_EMBALAGEM,
+                                                   PE.COD_PRODUTO,
+                                                   PE.DSC_GRADE
+                                                FROM PRODUTO_EMBALAGEM PE
+                                               INNER JOIN (SELECT MIN(QTD_EMBALAGEM) AS FATOR, COD_PRODUTO, DSC_GRADE
+                                                       FROM PRODUTO_EMBALAGEM PE
+                                                      GROUP BY COD_PRODUTO,DSC_GRADE) PEM
+                                                ON (PEM.COD_PRODUTO = PE.COD_PRODUTO) AND (PEM.DSC_GRADE = PE.DSC_GRADE) AND (PEM.FATOR = PE.QTD_EMBALAGEM)
+                                               GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE) PE
+                                           INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                                           GROUP BY COD_PRODUTO, DSC_GRADE
+                                          ) P
+                                           INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_DADO_LOGISTICO = P.COD_PRODUTO_DADO_LOGISTICO
+                                           UNION
+                                           SELECT PV.COD_PRODUTO,
+                                              PV.DSC_GRADE,
+                                              SUM(PV.NUM_PESO) as NUM_PESO,
+                                              SUM(PV.NUM_CUBAGEM) as NUM_CUBAGEM
+                                           FROM PRODUTO_VOLUME PV
+                                          GROUP BY PV.COD_PRODUTO,
+                                        PV.DSC_GRADE ) PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  '.$FullWhere.$andWhere.'
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
                  WHERE 1 = 1'. $FullWhereFinal . '

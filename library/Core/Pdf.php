@@ -1222,7 +1222,7 @@ class Pdf
         return $this->h;
     }
 
-    public function SetStringByMaxWidth($string, $w)
+    public function SetStringByMaxWidth($string, $w, $sPts = true)
     {
         $strW = self::GetStringWidth($string);
         if ($strW > $w){
@@ -1231,8 +1231,11 @@ class Pdf
             foreach (str_split($string) as $kw){
                 if (self::GetStringWidth($newStr.$kw.$endStr) < ($w - 0.88265)){
                     $newStr .= $kw;
-                } else {
+                } elseif (!(self::GetStringWidth($newStr.$kw.$endStr) < ($w - 0.88265)) && $sPts) {
                     $newStr .= $endStr;
+                    return $newStr;
+                } else {
+                    $newStr .= $kw;
                     return $newStr;
                 }
             }
