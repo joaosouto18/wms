@@ -393,9 +393,11 @@ class Mobile_EnderecamentoController extends Action
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+        $paleteProdutoRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\PaleteProduto");
 
         if ($enderecoRepo->enderecoOcupado($enderecoEn->getId())) {
-            $this->addFlashMessage('success','Endereço selecionado está ocupado');
+            $this->addFlashMessage('error','Endereço selecionado está ocupado');
             $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
         }
 
@@ -406,6 +408,14 @@ class Mobile_EnderecamentoController extends Action
         $enderecoAntigo = $paleteEn->getDepositoEndereco();
         $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
         $unitizadorEn = $paleteEn->getUnitizador();
+
+        $paleteProdutoEn = $paleteProdutoRepo->findOneBy(array('uma' => $idPalete));
+        $validade = $paleteProdutoEn->getValidade();
+        $dataValidade = null;
+
+        if (isset($validade) && !empty($validade) && !is_null($validade))
+            $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade()->format('Y-m-d');
+
         if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
             if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
                 throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
@@ -432,7 +442,7 @@ class Mobile_EnderecamentoController extends Action
         $this->em->flush();
 
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR);
+        $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR, $dataValidade);
 
         $this->addFlashMessage('success','Palete Endereçado com sucesso');
         $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
