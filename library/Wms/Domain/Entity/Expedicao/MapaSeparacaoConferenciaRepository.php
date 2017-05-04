@@ -101,7 +101,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
             $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
         }
         $sql = "SELECT
-                    SUM(PP.QUANTIDADE_CONFERIDA) QUANTIDADE_CONFERIDA,
+                    (PP.QUANTIDADE_CONFERIDA) QUANTIDADE_CONFERIDA,
                     NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) DESCRICAO_EMBALAGEM,
                     PP.SEQUENCIA,
                     PROD.COD_PRODUTO,
@@ -140,7 +140,8 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                     LS.DSC_LINHA_SEPARACAO,
                     E.DTH_INICIO,
                     PP.DSC_PLACA_CARGA,
-                    PE.QTD_EMBALAGEM
+                    PE.QTD_EMBALAGEM,
+                    PP.QUANTIDADE_CONFERIDA
                     ORDER BY PP.SEQUENCIA, LS.COD_LINHA_SEPARACAO, PROD.COD_PRODUTO, PE.QTD_EMBALAGEM";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
