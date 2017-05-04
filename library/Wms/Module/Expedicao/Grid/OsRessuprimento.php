@@ -50,6 +50,7 @@ class OsRessuprimento extends Grid
             ->addColumn(array(
                 'label' => 'Volumes',
                 'index' => 'VOLUMES',
+                'width' => 10
             ))
             ->addColumn(array(
                 'label' => 'Qtd.',

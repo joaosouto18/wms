@@ -29,22 +29,28 @@ class Pdf implements IExport
         $fatorText = 1.90;
 
         // calc size of the page, columns and rows
-        foreach ($grid->getColumns() as $columns) {
-            if (!$columns->getIsReportColumn())
+        /** @var Grid\Column $column */
+        foreach ($grid->getColumns() as $column) {
+            if (!$column->getIsReportColumn())
                 continue;
 
-            $size = (strlen($columns->getLabel()) * $fatorTitle);
+            $widthColumn = $column->getWidth();
+            if (empty($widthColumn)) {
+                $size = (strlen($column->getLabel()) * $fatorTitle);
 
-            foreach ($grid->result as $row) {
+                foreach ($grid->result as $row) {
 
-                if ($row[$columns->getIndex()]) {                    
-                    $rowValue = $columns->getRender($row)->render();
+                    if ($row[$column->getIndex()]) {
+                        $rowValue = $column->getRender($row)->render();
 
-                    $size = ($size > (strlen($rowValue) * $fatorText)) ? $size : (strlen($rowValue) * $fatorText);
+                        $size = ($size > (strlen($rowValue) * $fatorText)) ? $size : (strlen($rowValue) * $fatorText);
+                    }
                 }
+            } else {
+                $size = ($widthColumn * 4) * $fatorText;
             }
 
-            $pageCharWidth += $colsLength[$columns->getIndex()] = $size;
+            $pageCharWidth += $colsLength[$column->getIndex()] = $size;
         }
 
         $pageOrientation = ($pageCharWidth > 195) ? 'L' : 'P';
@@ -55,13 +61,14 @@ class Pdf implements IExport
         $pdf->setTitle(utf8_decode($title))
                 ->setLabelHeight(5)
                 ->setColHeight(6)
-                ->setNumRows(count($grid->result));
+                ->setNumRows(count($grid->result))
+                ->SetFont('Arial');
+
 
         foreach ($grid->getColumns() as $columns) {
             if (!$columns->getIsReportColumn())
                 continue;
 
-            $label = $columns->getLabel();
             $pdf->addLabel($columns->getIndex(), $colsLength[$columns->getIndex()], utf8_decode($columns->getLabel()), 'B', 0, $columns->getAlign());
         }
         $pdf->addLabel(1, 1, '', 0, 1, 'R', false, '');
@@ -72,7 +79,8 @@ class Pdf implements IExport
                     continue;
                 
                 $rowValue = $columns->getRender($row)->render();
-                $pdf->addCol($columns->getIndex(), $colsLength[$columns->getIndex()], $rowValue, 0, 0, $columns->getAlign(), false, '', $columns->getHasTotal());
+                $wColRow = $colsLength[$columns->getIndex()];
+                $pdf->addCol($columns->getIndex(), $wColRow, $pdf->SetStringByMaxWidth($rowValue,$wColRow + (($wColRow / 100) * 25), false), 0, 0, $columns->getAlign(), false, '', $columns->getHasTotal());
             }
             $pdf->addCol(1, 1, '', 0, 1, 'R', false, '');
         }
