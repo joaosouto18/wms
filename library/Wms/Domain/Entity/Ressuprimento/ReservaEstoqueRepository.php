@@ -219,7 +219,8 @@ class ReservaEstoqueRepository extends EntityRepository
                         /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
                         $umaEn = $this->_em->find('wms:Enderecamento\Palete', $idOrigem);
                         if (!empty($umaEn)) {
-                            $params['validade'] = $umaEn->getValidade();
+                            
+                            $params['validade'] = $umaEn->getValidade()->format('d/m/Y');
                         }
                     }
                 }
