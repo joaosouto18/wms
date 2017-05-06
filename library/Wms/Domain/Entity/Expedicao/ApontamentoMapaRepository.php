@@ -107,8 +107,8 @@ class ApontamentoMapaRepository extends EntityRepository
         $sql = "SELECT P.NOM_PESSOA,
                     E.COD_EXPEDICAO,
                     MS.COD_MAPA_SEPARACAO,
-                    SUM(MSP.QTD_SEPARAR * PDL.NUM_PESO) NUM_PESO,
-                    SUM(MSP.QTD_SEPARAR) VOLUMES,
+                    SUM((MSP.QTD_SEPARAR - (MSP.QTD_CORTADO / MSP.QTD_EMBALAGEM)) * PDL.NUM_PESO) NUM_PESO,
+                    SUM(MSP.QTD_SEPARAR - (MSP.QTD_CORTADO / MSP.QTD_EMBALAGEM)) VOLUMES,
                     COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
                     TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
                     TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_FIM
