@@ -670,7 +670,7 @@ class MapaSeparacao extends eFPDF
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\DadoLogistico');
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $expedicaoRepo            = $em->getRepository('wms:Expedicao');
 
@@ -738,7 +738,6 @@ class MapaSeparacao extends eFPDF
             $ruaAnterior = 99999;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $embalagemEn  = $produto->getProdutoEmbalagem();
                 $rua          = null;
@@ -748,6 +747,7 @@ class MapaSeparacao extends eFPDF
                 $quantidade   = $produto->getQtdSeparar();
                 $caixaInicio  = $produto->getNumCaixaInicio();
                 $caixaFim     = $produto->getNumCaixaFim();
+                $pesoProduto  = $pesoProdutoRepo->findOneBy(array('embalagem' => $embalagemEn));
 
                 $caixas       = $caixaInicio.' - '.$caixaFim;
                 $dscEndereco  = '';
@@ -873,7 +873,7 @@ class MapaSeparacao extends eFPDF
             $this->Cell(16 * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
             $this->Cell(10 * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
             $this->Cell(16 * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
-            $this->Cell(10 * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+            $this->Cell(10 * 4, 6, utf8_decode('PESO TOTAL ' . number_format($this->pesoTotal,3,',','') . 'kg'), 0, 1);
             $this->Image($this->imgCodBarras, 143, 280, 50);
 
             $this->InFooter = false;
