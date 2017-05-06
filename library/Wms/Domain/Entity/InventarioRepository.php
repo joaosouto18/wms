@@ -420,7 +420,15 @@ class InventarioRepository extends EntityRepository
                     $result = $serviceInventario->compareProduto($estoqueEn,$contagemEndEn);
                     if ($result == true) {
                         $qtd = $qtdContagem - $estoqueEn->getQtd();
-                        if ($qtd != 0 || strtotime($contagemEndEn->getValidade()) != strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'))) {
+                        $validadeContagem = null;
+                        $validadeEstoque = null;
+                        if (!empty($contagemEndEn->getValidade())) {
+                            $validadeContagem = strtotime($contagemEndEn->getValidade());
+                        }
+                        if (!empty($estoqueEn->getValidade())) {
+                            $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
+                        }
+                        if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtd, $osEn, $usuarioEn, $estoqueRepo);
                         }
                     } else {
