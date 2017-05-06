@@ -378,6 +378,8 @@ class InventarioRepository extends EntityRepository
 
     public function atualizarEstoque($inventarioEntity)
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->_em->getRepository('wms:Enderecamento\Estoque');
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
