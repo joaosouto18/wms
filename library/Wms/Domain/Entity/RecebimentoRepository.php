@@ -498,7 +498,7 @@ class RecebimentoRepository extends EntityRepository
 
                 $msg = 'Recebimento finalizado pelo WMS.';
                 if ($divergencia) {
-                    $msg = 'Recebimento aceito mesmo com divergência.';
+                    $msg = 'Recebimento finalizado e aceito com divergência.';
                 }
 
                 $recebimentoEntity->setDataFinal(new \DateTime)
