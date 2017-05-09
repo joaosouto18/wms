@@ -103,9 +103,9 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(10, 15, utf8_decode("Total:"),0,1);
             }
 
-            if ($codProdutoAnt != $valor['COD_PRODUTO'] || $gradeAnt != $valor['DSC_GRADE']) {
+//            if ($codProdutoAnt != $valor['COD_PRODUTO'] || $gradeAnt != $valor['DSC_GRADE']) {
                 $this->bodyPage($valor,null,$embalagemRepo);
-            }
+//            }
 
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];
             $codProdutoAnt     = $valor['COD_PRODUTO'];
