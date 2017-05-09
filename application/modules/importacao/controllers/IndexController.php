@@ -62,12 +62,6 @@ class Importacao_IndexController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepo */
         $cargaRepo = $repositorios['cargaRepo'];
 
-        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEnderecoRepo */
-        $invEnderecoRepo = $repositorios['invEnderecoRepo'];
-
-        /** @var \Wms\Domain\Entity\Inventario\EnderecoProdutoRepository $invEndProdRepo */
-        $invEndProdRepo = $repositorios['invEndProdRepo'];
-
         /** @var \Wms\Domain\Entity\Pessoa\Papel\ClienteRepository $clienteRepo */
         $clienteRepo = $repositorios['clienteRepo'];
 
