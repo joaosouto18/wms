@@ -31,7 +31,7 @@
             }
         });
 
-        $('#qtdConferida').keyup(function (e) {
+        $('#qtdConferida').keydown(function (e) {
             if (e.which == 13) {
                 if (document.getElementById('qtdConferida').value != "") {
                     validade   = document.getElementById('validade');

@@ -107,8 +107,8 @@ class ApontamentoMapaRepository extends EntityRepository
         $sql = "SELECT P.NOM_PESSOA,
                     E.COD_EXPEDICAO,
                     MS.COD_MAPA_SEPARACAO,
-                    SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA * SPP.NUM_PESO) NUM_PESO,
-                    SUM(MSC.QTD_CONFERIDA) VOLUMES,
+                    SUM((MSP.QTD_SEPARAR - (MSP.QTD_CORTADO / MSP.QTD_EMBALAGEM)) * PDL.NUM_PESO) NUM_PESO,
+                    SUM(MSP.QTD_SEPARAR - (MSP.QTD_CORTADO / MSP.QTD_EMBALAGEM)) VOLUMES,
                     COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
                     TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
                     TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_FIM
@@ -117,9 +117,9 @@ class ApontamentoMapaRepository extends EntityRepository
                   INNER JOIN MAPA_SEPARACAO_QUEBRA QUEBRA ON QUEBRA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                   INNER JOIN PESSOA P ON P.COD_PESSOA = APONT.COD_USUARIO
-                  INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                  INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSC.COD_PRODUTO AND PROD.DSC_GRADE = MSC.DSC_GRADE
-                  INNER JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PROD.COD_PRODUTO AND SPP.DSC_GRADE = PROD.DSC_GRADE
+                  INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSP.COD_PRODUTO AND PROD.DSC_GRADE = MSP.DSC_GRADE
+                  LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM
                 WHERE 1 = 1
                   $andWhere
                 GROUP BY P.NOM_PESSOA,
@@ -131,7 +131,7 @@ class ApontamentoMapaRepository extends EntityRepository
                 SELECT P.NOM_PESSOA,
                     E.COD_EXPEDICAO,
                     MS.COD_MAPA_SEPARACAO,
-                    SUM(CONF.QTD_EMBALAGEM * CONF.QTD_CONFERIDA * SPP.NUM_PESO) NUM_PESO,
+                    SUM(CONF.QTD_CONFERIDA * PDL.NUM_PESO) NUM_PESO,
                     SUM(CONF.QTD_CONFERIDA) VOLUMES,
                     COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
                     TO_CHAR(MIN(CONF.DTH_CONFERENCIA), 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
@@ -141,7 +141,7 @@ class ApontamentoMapaRepository extends EntityRepository
                   INNER JOIN MAPA_SEPARACAO_QUEBRA QUEBRA ON QUEBRA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                   INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = CONF.COD_PRODUTO AND PROD.DSC_GRADE = CONF.DSC_GRADE
-                  INNER JOIN SUM_PESO_PRODUTO SPP ON SPP.COD_PRODUTO = PROD.COD_PRODUTO AND SPP.DSC_GRADE = PROD.DSC_GRADE
+                  LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = CONF.COD_PRODUTO_EMBALAGEM
                   INNER JOIN ORDEM_SERVICO OS ON OS.COD_OS = CONF.COD_OS
                   INNER JOIN PESSOA P ON P.COD_PESSOA = OS.COD_PESSOA
                 WHERE 1 = 1
@@ -168,7 +168,7 @@ class ApontamentoMapaRepository extends EntityRepository
             $tempoFinal = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_FIM']);
             $tempoInicial = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_INICIO']);
             if ($tempoFinal == null) {
-                $result[$key]['TEMPO_GASTO'] = utf8_encode('Confer�ncia em Andamento!');
+                $result[$key]['TEMPO_GASTO'] = utf8_encode('Conferência em Andamento!');
                 continue;
             }
             if ($value['COD_EXPEDICAO'] != $idExpedicaoAnterior) {

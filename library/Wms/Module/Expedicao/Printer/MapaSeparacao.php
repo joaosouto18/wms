@@ -670,7 +670,7 @@ class MapaSeparacao extends eFPDF
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\DadoLogistico');
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $expedicaoRepo            = $em->getRepository('wms:Expedicao');
 
@@ -738,7 +738,6 @@ class MapaSeparacao extends eFPDF
             $ruaAnterior = 99999;
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $embalagemEn  = $produto->getProdutoEmbalagem();
                 $rua          = null;
@@ -748,6 +747,7 @@ class MapaSeparacao extends eFPDF
                 $quantidade   = $produto->getQtdSeparar();
                 $caixaInicio  = $produto->getNumCaixaInicio();
                 $caixaFim     = $produto->getNumCaixaFim();
+                $pesoProduto  = $pesoProdutoRepo->findOneBy(array('embalagem' => $embalagemEn));
 
                 $caixas       = $caixaInicio.' - '.$caixaFim;
                 $dscEndereco  = '';
@@ -873,7 +873,7 @@ class MapaSeparacao extends eFPDF
             $this->Cell(16 * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
             $this->Cell(10 * 4, 6, utf8_decode("CARREGAMENTO " . $stringCargas), 0, 1);
             $this->Cell(16 * 4, 6, utf8_decode("ROTA: " . $linhaSeparacao), 0, 0);
-            $this->Cell(10 * 4, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+            $this->Cell(10 * 4, 6, utf8_decode('PESO TOTAL ' . number_format($this->pesoTotal,3,',','') . 'kg'), 0, 1);
             $this->Image($this->imgCodBarras, 143, 280, 50);
 
             $this->InFooter = false;
@@ -884,39 +884,39 @@ class MapaSeparacao extends eFPDF
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
 
-        $this->AddPage();
-        //Select Arial bold 8
-        $this->SetFont('Arial','B',10);
-        $this->Cell(20, 10, utf8_decode("RELATÓRIO DE CODIGO DE BARRAS DE PRODUTOS DA EXPEDIÇÃO ". $this->idExpedicao), 0, 1);
+        if (!empty($produtos)) {
+            $this->AddPage();
+            //Select Arial bold 8
+            $this->SetFont('Arial','B',10);
+            $this->Cell(20, 10, utf8_decode("RELATÓRIO DE CODIGO DE BARRAS DE PRODUTOS DA EXPEDIÇÃO ". $this->idExpedicao), 0, 1);
 
-        $x = 170;
-        $y = 30;
-        $count = 1;
-        foreach ($produtos as $produto)
-        {
-            $height   = 8;
-            $angle    = 0;
-            $type     = 'code128';
-            $black    = '000000';
+            $x = 170;
+            $y = 30;
+            $count = 1;
+            foreach ($produtos as $produto)
+            {
+                $height   = 8;
+                $angle    = 0;
+                $type     = 'code128';
+                $black    = '000000';
 
-            if($count > 12){
-                $this->AddPage();
-                $count = 1;
-                $y = 30;
+                if($count > 12){
+                    $this->AddPage();
+                    $count = 1;
+                    $y = 30;
+                }
+
+                $this->SetFont('Arial','',10);
+                $this->Cell(15, 20, $produto['id'], 0, 0);
+                $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
+                $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
+
+                $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
+                $len = $this->GetStringWidth($data['hri']);
+                $this->Text(($x-$height) + (($height - $len)/2) + 3, $y + 8,$produto['codigoBarras']);
+                $y = $y + 20;
+                $count++;
             }
-
-            $this->SetFont('Arial','',10);
-            $this->Cell(15, 20, $produto['id'], 0, 0);
-            $this->Cell(90, 20, substr($produto['descricao'],0,40), 0, 0);
-            $this->Cell(90, 20, $produto['unidadeMedida'], 0, 1);
-            //$this->Cell(20, 20, '', 0, 1);
-            //$this->Cell(20, 10, '', 0, 1,'C');
-
-            $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
-            $len = $this->GetStringWidth($data['hri']);
-            $this->Text(($x-$height) + (($height - $len)/2) + 3, $y + 8,$produto['codigoBarras']);
-            $y = $y + 20;
-            $count++;
         }
 
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */

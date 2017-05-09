@@ -378,6 +378,8 @@ class InventarioRepository extends EntityRepository
 
     public function atualizarEstoque($inventarioEntity)
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->_em->getRepository('wms:Enderecamento\Estoque');
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
@@ -420,7 +422,15 @@ class InventarioRepository extends EntityRepository
                     $result = $serviceInventario->compareProduto($estoqueEn,$contagemEndEn);
                     if ($result == true) {
                         $qtd = $qtdContagem - $estoqueEn->getQtd();
-                        if ($qtd != 0 || strtotime($contagemEndEn->getValidade()) != strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'))) {
+                        $validadeContagem = $contagemEndEn->getValidade();
+                        $validadeEstoque = $estoqueEn->getValidade();
+                        if (!empty($validadeContagem)) {
+                            $validadeContagem = strtotime($contagemEndEn->getValidade());
+                        }
+                        if (!empty($validadeEstoque)) {
+                            $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
+                        }
+                        if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtd, $osEn, $usuarioEn, $estoqueRepo);
                         }
                     } else {
