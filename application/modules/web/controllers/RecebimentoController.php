@@ -649,7 +649,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->flush();
 
                         //recebimento para o status finalizado
-                        $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento);
+                        $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
 
                         $this->addFlashMessage('success', 'Recebimento finalizado com divergencias.');
 

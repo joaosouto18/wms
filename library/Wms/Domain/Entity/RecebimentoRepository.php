@@ -484,7 +484,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $idRecebimento
      * @throws Exception
      */
-    public function finalizar($idRecebimento)
+    public function finalizar($idRecebimento, $divergencia = false)
     {
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -496,9 +496,14 @@ class RecebimentoRepository extends EntityRepository
             try {
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);
 
+                $msg = 'Recebimento finalizado pelo WMS.';
+                if ($divergencia) {
+                    $msg = 'Recebimento aceito mesmo com divergência.';
+                }
+
                 $recebimentoEntity->setDataFinal(new \DateTime)
                     ->setStatus($statusEntity)
-                    ->addAndamento(RecebimentoEntity::STATUS_FINALIZADO, false, 'Recebimento finalizado pelo WMS.');
+                    ->addAndamento(RecebimentoEntity::STATUS_FINALIZADO, false, $msg );
 
                 $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_RECEBIDA);
 
