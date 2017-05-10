@@ -87,11 +87,11 @@ class EtiquetaVolume extends eFPDF
         $this->AddPage();
 
         //monta o restante dos dados da etiqueta
-        $this->SetFont('Arial', 'B', 12.5);
+        $this->SetFont('Arial', 'B', 15);
 //            $impressao = utf8_decode("EXP: $volume[expedicao] CLI: $volume[quebra]\n");
 //            $volume['quebra'] = "TOMAZ GOMIDE NUNES - PREÇO REVENDA";
         $impressao = utf8_decode(substr("CLI: $volume[quebra]\n",0,50));
-        $this->MultiCell(110, 3.9, $impressao, 0, 'L');
+        $this->MultiCell(110, 4.1, $impressao, 0, 'L');
 
         $this->SetFont('Arial', 'B', 13);
         $impressao = utf8_decode("Pedido:");
@@ -99,7 +99,7 @@ class EtiquetaVolume extends eFPDF
         $this->SetX(82);
         $this->MultiCell(100, 6, $impressao, 0, 'L');
 
-        $this->SetFont('Arial', 'B', 20);
+        $this->SetFont('Arial', 'B', 16);
         $impressao = utf8_decode("\n$volume[pedido]");
         $this->SetY(17);
         $this->SetX(82);
