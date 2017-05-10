@@ -955,20 +955,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idEndereco = $depositoEnderecoEn->getId();
                         }
 
-                        $embalado = false;
-                        if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO) {
-                            if ($embalagemAtual->getEmbalado() == 'S') {
-                                $embalado = true;
-                            }
-                        } else {
-                            if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
-                                $embalado = true;
-                            }
-                        }
-
-
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA && $embalado == false) {
+                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
                                     $quebrasNaoFracionado = array();
                                 }
@@ -1005,7 +993,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                         } else {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA && $embalado == false) {
+                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
