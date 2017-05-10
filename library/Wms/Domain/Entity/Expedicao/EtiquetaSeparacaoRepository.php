@@ -956,7 +956,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
+                            if (($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA)
+                                && ($modeloSeparacaoEn->getSeparacaoPC() == 'N')) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
                                     $quebrasNaoFracionado = array();
                                 }
@@ -993,7 +994,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
                         } else {
-                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
+                            if (($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA)
+                                && ($modeloSeparacaoEn->getSeparacaoPC() == 'N')) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebrasFracionado = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasFracionado);
                                 $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);

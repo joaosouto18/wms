@@ -1419,12 +1419,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			->leftJoin('pv.endereco', 'de2')
 			->leftJoin('pv.normaPaletizacao', 'np_volume')
 			->leftJoin('np_volume.unitizador', 'unitizador_volume')
-			->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-			->setParameters(
-				array(
-					'codigoBarras' => $codigoBarras,
-				)
-			);
+			->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
+			->setParameters(array('codigoBarras' => $codigoBarras));
 
 		return $dql->getQuery()->getArrayResult();
 	}
