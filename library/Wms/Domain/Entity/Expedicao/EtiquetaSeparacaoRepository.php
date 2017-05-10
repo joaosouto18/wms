@@ -799,7 +799,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         return $a->getCodigoSequencial() < $b->getCodigoSequencial();
                     });
 
-                    if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == "E") {
+                    if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
                         for ($i = 0; $i < $quantidade; $i++) {
                             $codReferencia = null;
                             foreach ($arrayVolumes as $volumeEntity) {
@@ -869,7 +869,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $this->salvaMapaSeparacaoProduto($mapaSeparacao, $produtoEntity, $quantidade, $volumeEntity, null, $pedidoProduto, $depositoEnderecoEn, null, $pedidoProduto->getPedido(), $arrayRepositorios);
                         }
                     }
-                } else if ($produtoEntity->getEmbalagens()->count() > 0) {
+                }
+                else if ($produtoEntity->getEmbalagens()->count() > 0) {
                     $depositoEnderecoEn = null;
                     $codProduto = $pedidoProduto->getProduto()->getId();
                     $grade = $pedidoProduto->getProduto()->getGrade();
