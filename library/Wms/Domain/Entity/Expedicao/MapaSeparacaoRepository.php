@@ -423,7 +423,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null,$ordemServicoId=null){
+    public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null,$ordemServicoId=null,$forcaFinalizacao=false){
 
         $numConferencia = 1;
         $qtdConferida = 0;
@@ -459,7 +459,11 @@ class MapaSeparacaoRepository extends EntityRepository
                 $numConferencia = $mapaSeparacaoConferenciaEn[0]->getNumConferencia() + 1;
         }
 
-        $qtdDigitada = number_format($qtdEmbalagem,3,'.','') * number_format($quantidade,3,'.','');
+        if ($forcaFinalizacao == false) {
+            $qtdDigitada = number_format($qtdEmbalagem,3,'.','') * number_format($quantidade,3,'.','');
+        } else {
+            $qtdDigitada = number_format($quantidade,3,'.','');
+        }
         $qtdBanco    = number_format($qtdConferida,3,'.','') + number_format($qtdCortada,3,'.','');
         $qtdMapa     = number_format($qtdMapa,3,'.','');
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
