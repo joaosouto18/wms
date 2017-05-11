@@ -53,12 +53,16 @@ class Expedicao_ConferenciaController extends Action
                     $ordemServicoEntity = new \Wms\Domain\Entity\OrdemServico();
                     $ordemServicoId = $ordemServicoRepository->save($ordemServicoEntity,$values);
 
-                    /** @var Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepository */
-                    $mapaSeparacaoConferenciaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-                    $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->getQuantidadesConferidasToForcarConferencia($idExpedicao);
-
                     /** @var Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
                     $mapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+                    /** @var Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
+                    $mapaSeparacaoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+                    /** @var Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepository */
+                    $mapaSeparacaoConferenciaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+
+                    $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->getQuantidadesConferidasToForcarConferencia($idExpedicao);
+
+
                     foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
                         $embalagemEntity = null;
                         $volumeEntity = null;
