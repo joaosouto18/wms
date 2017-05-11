@@ -325,6 +325,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+
+            /** @var \Wms\Domain\Entity\Pessoa\Fisica\ConferenteRepository $conferenteRepo */
             $conferenteRepo = $this->em->getRepository('wms:Pessoa\Fisica\Conferente');
 
             // checo se há conferencia cadastrada
@@ -332,6 +334,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             if ($conferenciaEntity)
                 $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
+
+            $conferentes = $conferenteRepo->getIdValue();
+            if (empty($conferentes))
+                throw new Exception("Não há nenhum conferente cadastrado!");
 
             $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
 
@@ -353,7 +359,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             // view recebimento
             $this->view->recebimento = $recebimentoEntity;
             // conferente
-            $this->view->conferentes = $conferenteRepo->getIdValue();
+            $this->view->conferentes = $conferentes;
             //produtos
             $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
@@ -411,6 +417,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             }
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
+            $this->redirect('index');
         }
     }
 
