@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Pessoa\Fisica;
 
+use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica as FisicaEntity,
     Wms\Domain\Entity\Ator as AtorInterface;
 
