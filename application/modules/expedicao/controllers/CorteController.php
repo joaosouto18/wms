@@ -145,8 +145,8 @@ class Expedicao_CorteController  extends Action
 
             try {
                 $this->getEntityManager()->beginTransaction();
-
-                if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA'))
+                $senhaSistema = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
+                if ($senha != $senhaSistema)
                     throw new \Exception("Senha Informada Inválida");
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
@@ -169,7 +169,8 @@ class Expedicao_CorteController  extends Action
                 $this->_redirect('/expedicao');
             } catch (\Exception $e) {
                 $this->getEntityManager()->rollback();
-                return $e->getMessage();
+                $this->addFlashMessage('error',$e->getMessage());
+                $this->_redirect('/expedicao');
             }
         }
 
