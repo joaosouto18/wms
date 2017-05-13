@@ -304,7 +304,7 @@ class NotaFiscalRepository extends EntityRepository
      * essa busca n considera nfs canceladas
      *
      * @param type $idRecebimento
-     * @return type
+     * @return array
      */
     public function getConferenciaPorRecebimento($idRecebimento)
     {
@@ -321,7 +321,7 @@ class NotaFiscalRepository extends EntityRepository
             INNER JOIN PRODUTO P on (P.COD_PRODUTO = NFI.COD_PRODUTO AND P.DSC_GRADE = NFI.DSC_GRADE)
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
             INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS)
-            INNER JOIN RECEBIMENTO_EMBALAGEM RE ON RE.COD_OS = OS.COD_OS
+            LEFT JOIN RECEBIMENTO_EMBALAGEM RE ON RE.COD_OS = OS.COD_OS
             LEFT JOIN MOTIVO_DIVER_RECEB MDR ON (MDR.COD_MOTIVO_DIVER_RECEB = RC.COD_MOTIVO_DIVER_RECEB)
                  WHERE R.COD_RECEBIMENTO = ' . $idRecebimento . '
                    AND NF.COD_STATUS != ' . NotaFiscalEntity::STATUS_CANCELADA . '
