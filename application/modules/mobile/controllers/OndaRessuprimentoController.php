@@ -95,6 +95,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $idOnda = $this->_getParam('idOnda');
 
         $OndaRessuprimentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $valores = $OndaRessuprimentoRepo->getDadosOnda($idOnda);
 
         $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
@@ -108,16 +109,21 @@ class Mobile_OndaRessuprimentoController extends Action
         $idEnderecoPulmao = $valores['idPulmao'];
         $qtd = $valores['Qtde'];
 
+        $arrayQtds = array();
+        if ($valores['dscEmbalagem'] != null) {
+            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            $qtdRestante = $qtd;
 
-        if ($valores['dscEmbalagem'] == null) {
-            $dscEmbalagem = "Volumes";
-            $fator = 1;
+            foreach ($embalagensEn as $embalagem) {
+                $qtdEmbalagem = $embalagem->getQuantidade();
+                if ($qtdRestante >= $qtdEmbalagem) {
+                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
+                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                }
+            }
         } else {
-            $dscEmbalagem = $valores['dscEmbalagem'] . "(" . $valores['fator'] . ")";
-            $fator = $valores['fator'];
-            $qtd = $qtd/$fator;
-
-            $qtd = $qtd . ' emb:' . $dscEmbalagem;
+            $arrayQtds[] = $qtd;
         }
 
         //$this->view->embalagem = $dscEmbalagem;
@@ -127,7 +133,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $this->view->grade = $grade;
         $this->view->endPulmao = $endPulmao;
         $this->view->dscProduto = $dscProduto;
-        $this->view->qtd = $qtd;
+        $this->view->qtd = $arrayQtds;
         $this->view->id = $qtd;
         $this->view->idEnderecoPulmao = $idEnderecoPulmao;
         $this->view->endPicking = $endPicking;
