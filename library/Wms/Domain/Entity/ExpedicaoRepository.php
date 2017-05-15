@@ -1191,11 +1191,11 @@ class ExpedicaoRepository extends EntityRepository
                     SUM(prod.NUM_PESO*pedProd.QUANTIDADE) as PESO_TOTAL
                   FROM
                     CARGA c
-                  INNER JOIN
+                  LEFT JOIN
                     PEDIDO ped on (c.COD_CARGA=ped.COD_CARGA)
-                  INNER JOIN
+                  LEFT JOIN
                     PEDIDO_PRODUTO pedProd on (ped.COD_PEDIDO=pedProd.COD_PEDIDO)
-                  INNER JOIN
+                  LEFT JOIN
                     (
                          SELECT
                       P.COD_PRODUTO,
