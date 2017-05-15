@@ -448,7 +448,7 @@ class Integracao
                 $profundidadeEmbalagem = $linha['PROFUNDIDADE_EMBALAGEM'];
                 $cubagemEmbalagem = $linha['CUBAGEM_EMBALAGEM'];
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
-                $possuiValidade = (isset($linha['POSSUI_VALIDADE']))? $linha['POSSUI_VALIDADE'] : 'N';
+                $possuiValidade = (isset($linha['POSSUI_VALIDADE']))? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL']))? (int)$linha['DIAS_VIDA_UTIL'] : null;
 
                 $codClasseProduto = $codClasseNivel1;

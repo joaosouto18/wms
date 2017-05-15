@@ -44,6 +44,8 @@ class OndaRessuprimentoRepository extends EntityRepository
                     ps.qtd as Qtde,
                     e.descricao as Pulmao,
                     e.id as idPulmao,
+                    pe.descricao as dscEmbalagem,
+                    pe.quantidade as fator,
                     pk.descricao as Picking
                 ")
             ->from("wms:Ressuprimento\OndaRessuprimentoOs","o")
@@ -56,6 +58,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             ->leftJoin("wms:Ressuprimento\ReservaEstoqueOnda",'reo','WITH','reo.ondaRessuprimentoOs = o.id')
             ->leftJoin("reo.reservaEstoque",'res')
             ->leftJoin("res.endereco",'pk')
+            ->leftJoin("wms:Produto\Embalagem","pe","WITH","pe.id = ps.codProdutoEmbalagem")
             ->where("o.id = $OS")
             ->andWhere("res.tipoReserva = 'E'");
 
