@@ -70,7 +70,7 @@ class Expedicao_ConferenciaController extends Action
                         }
                         $mapaSeparacaoEntity = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao', $mapaSeparacaoConferenciaEntity['COD_MAPA_SEPARACAO']);
 
-                        $mapaSeparacaoRepository->adicionaQtdConferidaMapa($embalagemEntity,$volumeEntity,$mapaSeparacaoEntity,null,$mapaSeparacaoConferenciaEntity['QTD_CONFERIDA'], null, $ordemServicoId);
+                        $mapaSeparacaoRepository->adicionaQtdConferidaMapa($embalagemEntity,$volumeEntity,$mapaSeparacaoEntity,null,$mapaSeparacaoConferenciaEntity['QTD_CONFERIR'], null, $ordemServicoId, true);
                     }
 
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');

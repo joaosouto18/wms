@@ -11,7 +11,7 @@ class Mobile_ConsultaProdutoController extends Action
         $form->setControllerUrl("consulta-produto");
         $form->setActionUrl("index");
         $form->setLabel("Busca de Produto");
-        $form->setLabelElement("Código de Barras do Produto");
+        $form->setLabelElement("Código de Barras ou Código do Produto");
         $form->init();
         $this->view->form = $form;
 
