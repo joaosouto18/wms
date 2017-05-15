@@ -90,6 +90,7 @@ class Integracao
         $maxDate = null;
         foreach ($this->_dados as $row) {
 
+            var_dump($row['DTH']);
             $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
             $data = $data->format('Y-m-d');
             if ($maxDate == null) {
