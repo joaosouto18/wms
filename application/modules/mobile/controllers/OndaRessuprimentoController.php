@@ -108,6 +108,13 @@ class Mobile_OndaRessuprimentoController extends Action
         $idEnderecoPulmao = $valores['idPulmao'];
         $qtd = $valores['Qtde'];
 
+        if ($valores['dscEmbalagem'] == null) {
+            $dscEmbalagem = "Volumes";
+        } else {
+            $dscEmbalagem = $valores['dscEmbalagem'] . " (" . $valores['fator'] . ")";
+        }
+
+        $this->view->embalagem = $dscEmbalagem;
         $this->view->produtos = $produtos;
         $this->view->idOnda = $idOnda;
         $this->view->codProduto = $codProduto;
