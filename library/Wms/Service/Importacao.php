@@ -661,23 +661,6 @@ class Importacao
                 $produto->setTipoComercializacao($tipoComercializacaoEntity);
                 $produto->setNumVolumes(1);
                 $produto->setPossuiPesoVariavel($indPesoVariavel);
-
-                if (is_null($possuiValidade)) {
-                    $flagValidade = $produto->getValidade();
-                    if (empty($flagValidade))
-                        $produto->setValidade('N');
-                } else {
-                    $produto->setValidade($possuiValidade);
-                }
-
-                if (is_null($diasVidaUtil)) {
-                    $qtdDias = $produto->getDiasVidaUtil();
-                    if (empty($qtdDias))
-                        $produto->setDiasVidaUtil(null);
-                } else {
-                    $produto->setValidade($diasVidaUtil);
-                }
-
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
                 $produto->setIdProduto($sqcGenerator->generate($em, $produto));
             }
@@ -689,6 +672,22 @@ class Importacao
                     ->setPossuiPesoVariavel($indPesoVariavel)
                     ->setValidade($possuiValidade)
                     ->setDiasVidaUtil($diasVidaUtil);
+
+            if (is_null($possuiValidade)) {
+                $flagValidade = $produto->getValidade();
+                if (empty($flagValidade))
+                    $produto->setValidade('N');
+            } else {
+                $produto->setValidade($possuiValidade);
+            }
+
+            if (is_null($diasVidaUtil)) {
+                $qtdDias = $produto->getDiasVidaUtil();
+                if (empty($qtdDias))
+                    $produto->setDiasVidaUtil(null);
+            } else {
+                $produto->setValidade($diasVidaUtil);
+            }
 
             $em->persist($produto);
 
