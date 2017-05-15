@@ -29,11 +29,6 @@
                 <td><B>Grade:</B> <?php echo $this->grade?></td>
                 <td style="font-size: 175%"><B>Qtd:</B> <?php echo $this->qtd?></td>
             </tr>
-            <?php if ($this->produtos[0]->getCodProdutoVolume() == NULL) {?>
-                <tr>
-                    <td colspan="3" style="font-size: 145%"><B>Embalagem:</B> <?php echo $this->embalagem?></td>
-                </tr>
-            <?php }?>
             <tr>
                 <td colspan="1" style="font-size: 145%"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
                 <td colspan="2" style="font-size: 145%"><B>Picking:</B> <?php echo $this->endPicking?></td>
