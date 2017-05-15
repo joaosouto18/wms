@@ -97,6 +97,7 @@ class Integracao
                 $maxDate = $data;
             }
             if (strtotime($data) > strtotime($maxDate)) {
+                var_dump('abc');
                 $maxDate = $data;
             }
         }
