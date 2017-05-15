@@ -246,8 +246,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
 
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-            if ($fornecedorEntity == null)
-                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            if ($fornecedorEntity == null) {
+                $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+                $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+                if ($fornecedorEntity == null) {
+                    throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+                }
+                $idFornecedor = $novoIdFornecedor;
+            }
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
