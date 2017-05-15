@@ -91,7 +91,7 @@ class Integracao
         foreach ($this->_dados as $row) {
 
             $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
-            $data = $data->toString('Y-m-d');
+            $data = $data->format('Y-m-d');
             if ($maxDate == null) {
                 $maxDate = $data;
             }
