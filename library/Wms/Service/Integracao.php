@@ -100,7 +100,7 @@ class Integracao
             }
         }
         $maxDate = new \DateTime($maxDate);
-        var_dump($maxDate); exit;
+        var_dump($maxDate);
         return $maxDate;
     }
 
