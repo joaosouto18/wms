@@ -99,7 +99,7 @@ class Integracao
                 $maxDate = $data;
             }
         }
-        $maxDate = \DateTime::createFromFormat('d/m/Y H:i:s', $maxDate);
+        $maxDate = new \DateTime($maxDate);
         var_dump($maxDate); exit;
         return $maxDate;
     }
