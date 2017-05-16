@@ -71,7 +71,7 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function getResumoConferenciaMapaByExpedicao ($idExpedicao){
-        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, MSC.QTD_CONF,
+        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, NVL(MSC.QTD_CONF,0),
                      CAST((MSC.QTD_CONF/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL,
                      MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
@@ -86,8 +86,9 @@ class MapaSeparacaoRepository extends EntityRepository
                              LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
                                         FROM MAPA_SEPARACAO_CONFERENCIA GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                                          AND MSC.COD_PRODUTO = MSP.COD_PRODUTO AND MSC.DSC_GRADE = MSP.DSC_GRADE
+                              WHERE ((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) > 0
                             GROUP BY MS.COD_MAPA_SEPARACAO) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                WHERE MS.COD_EXPEDICAO = $idExpedicao
+                WHERE MS.COD_EXPEDICAO = $idExpedicao 
                 ORDER BY MS.COD_MAPA_SEPARACAO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
