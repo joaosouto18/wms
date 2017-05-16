@@ -551,7 +551,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $pickings = array();
 
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
-                $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
+                $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$codProduto,'grade'=>$grade, 'dataInativacao' => null),array('quantidade'=>'ASC'));
                 $embalagem = $embalagensEn[0];
                 $embalagens = array();
                 $embalagens[] = $embalagem->getId();
