@@ -232,16 +232,6 @@ class Enderecamento_MovimentacaoController extends Action
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-            $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-            $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $enderecoEn, 'tipoReserva' => 'S', 'atendida' => 'N'));
-
-            if (count($verificaReservaSaida) > 0) {
-                $this->addFlashMessage('error','Existe Reserva de Saída para esse endereço que ainda não foi atendida!');
-                $this->_redirect('/enderecamento/movimentacao');
-            }
-
-
             if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                 /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
                 $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
