@@ -461,7 +461,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdBanco    = number_format($qtdConferida,3,'.','') + number_format($qtdCortada,3,'.','');
         $qtdMapa     = number_format($qtdMapa,3,'.','');
         if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
-            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente!");
+            throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente! Produto: " .$produtoEn->getId());
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
