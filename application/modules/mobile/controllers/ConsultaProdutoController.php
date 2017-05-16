@@ -62,7 +62,7 @@ class Mobile_ConsultaProdutoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo   = $this->_em->getRepository('wms:Enderecamento\Estoque');
-            $this->view->pulmoes = $estoqueRepo->getEstoqueAndVolumeByParams($params, null, false);
+            $this->view->pulmoes = $estoqueRepo->getEstoqueAndVolumeByParams($params, null, true, "ORDER BY C.COD_CARACTERISTICA_ENDERECO, DE.DSC_DEPOSITO_ENDERECO");
 
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
             $reservaEstoqueRepo   = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
