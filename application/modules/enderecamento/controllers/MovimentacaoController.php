@@ -408,25 +408,46 @@ class Enderecamento_MovimentacaoController extends Action
         $volumes = $queryBuilder->getQuery()->getArrayResult();
 
         $grupos = array();
-        foreach($volumes as $key => $volume) {
-            $prodVol = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('normaPaletizacao'=>$volume));
-            $strVols = "";
-            foreach ($prodVol as $vol) {
-                if ($strVols != "") {$strVols.= "; ";}
-                $strVols .= $vol->getDescricao();
-            }
+        $embalagens = array();
 
-            $grupo = array();
-            $grupo['cod'] = $volume['id'];
-            $grupo['descricao'] = 'GRUPO ' . ($key +1) . " : " . $strVols;
-            $grupos[] = $grupo;
+
+        if (count($volumes) >0) {
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+            foreach($volumes as $key => $volume) {
+                $prodVol = $volumeRepo->findBy(array('normaPaletizacao'=>$volume));
+                $strVols = "";
+                foreach ($prodVol as $vol) {
+                    if ($strVols != "") {$strVols.= "; ";}
+                    $strVols .= $vol->getDescricao();
+                }
+
+                $grupo = array();
+                $grupo['cod'] = $volume['id'];
+                $grupo['descricao'] = 'GRUPO ' . ($key +1) . " : " . $strVols;
+                $grupos[] = $grupo;
+            }
+        } else {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            foreach ($embalagensEn as $emb) {
+                $embalagens[] = $emb->getDescricao() . "(" . $emb->getQuantidade(). ")";
+            }
         }
 
+
+        $valores = array(
+            'volumes'=>$grupos,
+            'embalagens' => $embalagens
+        );
+
+        echo $this->_helper->json($valores);
+        /*
         if (count($grupos)>0){
-            echo $this->_helper->json($grupos);
+            echo $this->_helper->json($valores);
         }else {
             echo $this->_helper->json(false);
         }
+        */
     }
 
     public function getValidadeAction()
