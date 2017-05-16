@@ -111,14 +111,14 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         }
 
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
-        if(isset($params['submit'])) {
+        //if(isset($params['submit'])) {
             /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
             $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
             $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
-            $this->view->grid = $grid->init($result);
+            $this->view->grid = $grid->init($result)->render();
 
-        }
-        $form->populate($params);
+        //}
+        //$form->populate($params);
     }
 
     public function relatorioRelatorioDetalhadoAjaxAction()
