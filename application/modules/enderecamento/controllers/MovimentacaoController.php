@@ -90,7 +90,7 @@ class Enderecamento_MovimentacaoController extends Action
             if ($estoqueEn != null) {
                 $unitizadorEstoque = $estoqueEn->getUnitizador();
             }
-            if (!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque)) {
+            if ((!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL)) && ($unitizadorEstoque == NULL && $entradaEstoque)) {
                 $this->addFlashMessage('error','É necessário informar o Unitizador!');
                 $this->_redirect('/enderecamento/movimentacao');
             } else if (isset($data['idNormaPaletizacao']) && $data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
@@ -133,8 +133,10 @@ class Enderecamento_MovimentacaoController extends Action
             if (isset($params['validade']) && !empty($params['validade'])) {
                 $hoje = new DateTime();
                 if (date_create_from_format('d/m/Y', $params['validade']) <= $hoje) {
-                    $this->addFlashMessage('error',"Data de Validade deve ser maior que ". $hoje->format('d/m/Y'));
-                    $this->_redirect('/enderecamento/movimentacao');
+                    if ($entradaEstoque) {
+                        $this->addFlashMessage('error',"Data de Validade deve ser maior que ". $hoje->format('d/m/Y'));
+                        $this->_redirect('/enderecamento/movimentacao');
+                    }
                 }
             }
 
