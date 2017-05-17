@@ -1034,13 +1034,20 @@ class RecebimentoRepository extends EntityRepository
                    AND NOTAFISCAL.DSC_GRADE = V.DSC_GRADE
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE";
         $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
 
         $result = array();
         foreach ($resultado as $row){
+            $produtoEn = $produtoRepo->findOneBy(array('id'=>$row['COD_PRODUTO'],'grade'=>$row['DSC_GRADE']));
+            $picking = $produtoRepo->getEnderecoPicking($produtoEn);
+            if (count($picking) >0) {
+                $picking = $picking[0];
+            }
             $result[] = array(
                 'codigo'=>$row['COD_PRODUTO'],
                 'produto'=>$row['DSC_PRODUTO'],
                 'grade'=>$row['DSC_GRADE'],
+                'picking'=>$picking,
                 'qtdItensNf'=>$row['QTD_NOTA_FISCAL'],
                 'qtdRecebimento'=>$row['QTD_RECEBIMENTO'],
                 'qtdRecebida'=>$row['QTD_RECEBIDA'],
