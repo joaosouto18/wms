@@ -28,14 +28,23 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $this->em->flush();
 
         $orientacao = 'atividade';
+        $tipo = 'resumido';
+
         if (isset($params['orientacao'])) {
             $orientacao = $params['orientacao'];
         }
+        if (isset($params['tipo'])) {
+            $tipo = $params['tipo'];
+        }
 
+        $sqlOrderTipo = "";
+        if ($tipo == 'detalhado' ) {
+            $sqlOrderTipo = " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY'), ";
+        }
         if ($orientacao == 'atividade') {
-            $SQLOrder = " ORDER BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
+            $SQLOrder = " ORDER BY $sqlOrderTipo AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
         } else {
-            $SQLOrder = " ORDER BY PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
+            $SQLOrder = " ORDER BY $sqlOrderTipo PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
         }
 
         $SQLWHere = "";
@@ -43,8 +52,11 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
             $SQLWHere = " AND DSC_ATIVIDADE = '".$params['atividade']."'";
         }
 
-
-        $sql = "SELECT AP.DSC_ATIVIDADE,
+        $sql = "SELECT ";
+        if ($tipo == 'detalhado') {
+            $sql .= " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY') as DIA,";
+        }
+        $sql .=      " AP.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
                        SUM(AP.QTD_PRODUTOS)as QTD_PRODUTOS,
                        SUM(AP.QTD_VOLUMES) as QTD_VOLUMES,
@@ -56,11 +68,14 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
                   WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
                   $SQLWHere
-                  GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
+                  GROUP BY ";
+        if ($tipo == 'detalhado') {
+            $sql .= " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY'), ";
+        }
+        $sql .= "AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
-
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
-        $this->view->grid = $grid->init($result,$orientacao);
+        $this->view->grid = $grid->init($result,$orientacao,$tipo);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
             if (!empty($result)) {
