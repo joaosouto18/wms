@@ -1669,4 +1669,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
         return false;
     }
+
+    public function getProdutosEstoqueSemCapacidade() {
+        $sql = "SELECT DISTINCT
+                       E.COD_PRODUTO as CODIGO,
+                       E.DSC_GRADE as GRADE,
+                       P.DSC_PRODUTO as PRODUTO,
+                       DE.DSC_DEPOSITO_ENDERECO as PICKING
+                 FROM ESTOQUE E
+                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = E.COD_PRODUTO AND PE.DSC_GRADE = E.DSC_GRADE
+                 LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND PE.DSC_GRADE = E.DSC_GRADE
+                 LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
+                 WHERE PE.CAPACIDADE_PICKING = 0";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 }

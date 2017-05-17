@@ -16,6 +16,14 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $this->addFlashMessage("info","Existe(m) " . count ($ondas) . " Os de Ressuprimento Marcadas para Análise " . $link);
         }
 
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->em->getRepository("wms:Produto");
+        $produtosSemCapacidade = $produtoRepo->getProdutosEstoqueSemCapacidade();
+        if (count($produtosSemCapacidade) > 0) {
+            $link = '<a href="/produto/sem-capacidade-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+            $this->addFlashMessage("info","Existe(m) " . count ($produtosSemCapacidade) . " produtos no estoque sem capacidade de picking definida " . $link);
+        }
+
         $params = array(
             'idRecebimento'=>'',
             'classe'=>'',
