@@ -588,6 +588,13 @@ class RecebimentoRepository extends EntityRepository
             ->getResult();
     }
 
+    public function getFornecedorbyRecebimento($idRecebimento) {
+        $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+        $nf = $notaFiscalRepo->findOneBy(array('recebimento'=>$idRecebimento));
+        $fornecedor = $nf->getFornecedor()->getPessoa()->getNome();
+        return $fornecedor;
+    }
+
     /**
      *
      * @param array $criteria

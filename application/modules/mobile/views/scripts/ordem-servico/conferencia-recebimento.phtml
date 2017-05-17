@@ -5,7 +5,7 @@
     <?php endif;?>
     <?php foreach($this->recebimentoIniciado as $recebimento): ?>
     <li>
-        <a href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?></a>
+        <a href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?> - F: <?php echo $this->repo->getFornecedorbyRecebimento($recebimento->getId()) ?> </a>
     </li>
     <?php endforeach; ?>
 </ul>
@@ -17,7 +17,7 @@
     <?php endif;?>
     <?php foreach($this->recebimentoEmConferencia as $recebimento): ?>
     <li>
-        <a href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?></a>
+        <a href="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'ler-codigo-barras', 'idRecebimento' => $recebimento->getId())); ?>" title="<?php echo $recebimento->getId() ?>" >Cod. Receb. <?php echo $recebimento->getId() ?> - Box <?php echo $recebimento->getBox()->getId() ?> - F: <?php echo $this->repo->getFornecedorbyRecebimento($recebimento->getId()) ?> </a>
     </li>
     <?php endforeach; ?>
 </ul>

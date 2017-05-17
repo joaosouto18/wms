@@ -10,6 +10,7 @@ class Mobile_OrdemServicoController extends Action
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
+        $this->view->repo = $recebimentoRepo;
         $this->view->recebimentoIniciado = $recebimentoRepo->buscarStatusIniciado();
         $this->view->recebimentoEmConferencia = $recebimentoRepo->buscarStatusEmConferenciaColetor();
     }
