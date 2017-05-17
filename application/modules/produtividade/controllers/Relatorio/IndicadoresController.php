@@ -103,11 +103,31 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         if (empty($params['dataInicio'])) {
             $hoje = new \DateTime();
             $hoje->sub(new \DateInterval('P01D'));
-            $params['dataInicio'] = $dataInicio = $hoje->format('d/m/Y');
+            $dataInicio = $hoje->format('d/m/Y');
+            $params['dataInicio'] = $dataInicio;
         }
         if (empty($params['dataFim'])) {
             $hoje = new \DateTime();
-            $params['dataFim'] = $dataFim = $hoje->format('d/m/Y');
+            $dataFim = $hoje->format('d/m/Y');
+            $params['dataFim'] = $dataFim;
+        }
+        if (empty($params['horaFim'])) {
+            $params['horaFim'] = "";
+        }
+        if (empty($params['horaInicio'])) {
+            $params['horaInicio'] = "";
+        }
+        if (empty($params['tipoQuebra'])) {
+            $params['tipoQuebra'] = "";
+        }
+        if (empty($params['mapaSeparacao'])) {
+            $params['mapaSeparacao'] = "";
+        }
+        if (empty($params['expedicao'])) {
+            $params['expedicao'] = "";
+        }
+        if (empty($params['usuario'])) {
+            $params['usuario'] = "";
         }
 
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
@@ -118,7 +138,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
             $this->view->grid = $grid->init($result)->render();
 
         //}
-        //$form->populate($params);
+        $form->populate($params);
     }
 
     public function relatorioRelatorioDetalhadoAjaxAction()

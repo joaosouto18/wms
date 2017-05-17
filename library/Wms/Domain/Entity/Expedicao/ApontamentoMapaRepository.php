@@ -111,7 +111,8 @@ class ApontamentoMapaRepository extends EntityRepository
                     SUM(MSP.QTD_SEPARAR - (MSP.QTD_CORTADO / MSP.QTD_EMBALAGEM)) VOLUMES,
                     COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
                     TO_CHAR(APONT.DTH_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
-                    TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_FIM
+                    TO_CHAR(APONT.DTH_FIM_CONFERENCIA, 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
+                    'SEPARAÇÃO' as ATIVIDADE
                 FROM APONTAMENTO_SEPARACAO_MAPA APONT
                   INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = APONT.COD_MAPA_SEPARACAO
                   INNER JOIN MAPA_SEPARACAO_QUEBRA QUEBRA ON QUEBRA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
@@ -135,7 +136,8 @@ class ApontamentoMapaRepository extends EntityRepository
                     SUM(CONF.QTD_CONFERIDA) VOLUMES,
                     COUNT(DISTINCT PROD.COD_PRODUTO) QTD_PRODUTOS,
                     TO_CHAR(MIN(CONF.DTH_CONFERENCIA), 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
-                    TO_CHAR(MAX(CONF.DTH_CONFERENCIA), 'DD/MM/YYYY HH24:MI:SS') DTH_FIM
+                    TO_CHAR(MAX(CONF.DTH_CONFERENCIA), 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
+                    'CONFERENCIA' as ATIVIDADE
                 FROM MAPA_SEPARACAO_CONFERENCIA CONF
                   INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = CONF.COD_MAPA_SEPARACAO
                   INNER JOIN MAPA_SEPARACAO_QUEBRA QUEBRA ON QUEBRA.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
@@ -205,6 +207,7 @@ class ApontamentoMapaRepository extends EntityRepository
         $result[$qtdRows]['DTH_INICIO'] = '-';
         $result[$qtdRows]['DTH_FIM'] = '-';
         $result[$qtdRows]['TEMPO_GASTO'] = "$hours Hora(s) $minutes Minuto(s) $seconds Segundo(s)";
+        $result[$qtdRows]['ATIVIDADE'] = '-';
 
         return $result;
 

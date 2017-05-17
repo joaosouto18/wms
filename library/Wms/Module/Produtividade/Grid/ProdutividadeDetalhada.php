@@ -14,15 +14,15 @@ class ProdutividadeDetalhada extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($params));
 
                 $this->addColumn(array(
-                    'label' => utf8_encode('Usuário'),
+                    'label' => utf8_encode('Usuï¿½rio'),
                     'index' => 'NOM_PESSOA',
                 ));
                 $this->addColumn(array(
-                    'label' => utf8_encode('Expedição'),
+                    'label' => utf8_encode('Expediï¿½ï¿½o'),
                     'index' => 'COD_EXPEDICAO',
                 ));
                 $this->addColumn(array(
-                    'label' => utf8_encode('Mapa Separação'),
+                    'label' => utf8_encode('Mapa Separaï¿½ï¿½o'),
                     'index' => 'COD_MAPA_SEPARACAO',
                 ));
                 $this->addColumn(array(
@@ -49,6 +49,10 @@ class ProdutividadeDetalhada extends Grid
                 $this->addColumn(array(
                     'label' => 'Tempo Gasto',
                     'index' => 'TEMPO_GASTO',
+                ));
+                $this->addColumn(array(
+                    'label' => 'Atividade',
+                    'index' => 'ATIVIDADE',
                 ));
 
         $this->setShowExport(true);
