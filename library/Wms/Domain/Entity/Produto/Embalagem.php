@@ -272,7 +272,37 @@ class Embalagem
 
     public function setEndereco($endereco)
     {
+
+        $dscOrigem = "Nenhum";
+        if ($this->endereco != null) {
+            if (gettype($this->endereco) == "string") {
+                $dscOrigem = $this->endereco;
+            } else {
+                $dscOrigem = $this->endereco->getDescricao();
+            }
+        }
+
+        $dscDestino = "Nenhum";
+        if ($endereco != null) {
+            if (gettype($endereco) == "string") {
+                $dscDestino = $endereco;
+            } else {
+                $dscDestino = $endereco->getDescricao();
+            }
+        }
+
+        if ($dscDestino != $dscOrigem) {
+            $url = $_SERVER['REQUEST_URI'];
+            $em = \Zend_Registry::get('doctrine')->getEntityManager();
+            $obs = " Endereço de picking alterado de " . $dscOrigem . ' para ' . $dscDestino .' - URL: ' . $url;
+            $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
+            $andamentoRepo->save($this->getProduto()->getId(),
+                $this->getProduto()->getGrade(),
+                false,$obs,false);
+        }
+
         $this->endereco = $endereco;
+
         return $this;
     }
 
@@ -313,6 +343,18 @@ class Embalagem
      */
     public function setCapacidadePicking($capacidadePicking)
     {
+        if ($this->capacidadePicking != $capacidadePicking) {
+            if ($this->capacidadePicking != null) {
+                $url = $_SERVER['REQUEST_URI'];
+                $em = \Zend_Registry::get('doctrine')->getEntityManager();
+                $obs = " Capacidade de picking alterada de " . $this->capacidadePicking . ' para ' . $capacidadePicking .' - URL: ' . $url;
+                $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
+                $andamentoRepo->save($this->getProduto()->getId(),
+                    $this->getProduto()->getGrade(),
+                    false,$obs,false);
+            }
+        }
+
         $this->capacidadePicking = $capacidadePicking;
     }
 
