@@ -955,7 +955,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idEndereco = $depositoEnderecoEn->getId();
                         }
 
-                        if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
+                        if ($embalagemAtual->getQuantidade() > $qtdEmbalagemPadraoRecebimento) {
                             if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
                                 if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") {
                                     $quebrasNaoFracionado = array();
