@@ -38,6 +38,12 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 }
             });
 
+            $('#aguarde').attr('style','display:none');
+            $("#gerar").live('click', function() {
+                    $('#gerar').attr('style','display:none');
+                    $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
+            });
+
             /*
              * Valida seleção de expedições
              * @array checkBoxes de expedições
