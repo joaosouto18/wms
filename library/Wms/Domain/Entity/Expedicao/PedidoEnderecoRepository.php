@@ -10,7 +10,7 @@ class PedidoEnderecoRepository extends EntityRepository
     public function save($pedidoEntity, $pedidoCliente) {
 
         $em = $this->getEntityManager();
-//        $em->beginTransaction();
+        $em->beginTransaction();
 
         try {
             // pegar referência do pedido
@@ -20,7 +20,7 @@ class PedidoEnderecoRepository extends EntityRepository
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $pedidoCliente['uf']));
 
             $enPedidoEndereco->setCodPedido($pedidoEntity->getId());
-            $enPedidoEndereco->setPedido($pedidoEntity);
+//            $enPedidoEndereco->setPedido($pedidoEntity);
             $enPedidoEndereco->setIdTipo(\Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA);
             $enPedidoEndereco->setUf($entitySigla);
             $enPedidoEndereco->setComplemento($pedidoCliente['complemento']);
@@ -32,10 +32,10 @@ class PedidoEnderecoRepository extends EntityRepository
             $enPedidoEndereco->setCep($pedidoCliente['cep']);
 
             $em->persist($enPedidoEndereco);
-//            $em->flush();
-//            $em->commit();
+            $em->flush();
+            $em->commit();
         } catch(\Exception $e) {
-//            $em->rollback();
+            $em->rollback();
             throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 

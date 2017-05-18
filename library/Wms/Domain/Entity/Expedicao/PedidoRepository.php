@@ -19,7 +19,7 @@ class PedidoRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-//        $em->beginTransaction();
+        $em->beginTransaction();
         try {
             $enPedido = new Pedido;
 
@@ -41,11 +41,11 @@ class PedidoRepository extends EntityRepository
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
             $enPedido->setIndEtiquetaMapaGerado('N');
             $em->persist($enPedido);
- //           $em->flush();
- //           $em->commit();
+            $em->flush();
+            $em->commit();
 
         } catch(\Exception $e) {
- //           $em->rollback();
+            $em->rollback();
             throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 

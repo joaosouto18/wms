@@ -367,7 +367,7 @@ class Importacao
 
 
             if ($entityPessoa == null) {
-                $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, false);
+                $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
             }
 
             try {
