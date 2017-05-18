@@ -418,6 +418,7 @@ class Integracao
                 'produtoAndamentoRepo'  => $this->_em->getRepository('wms:Produto\Andamento'),
                 'produtoRepo'           => $this->_em->getRepository('wms:Produto'),
                 'enderecoRepo'          => $this->_em->getRepository('wms:Deposito\Endereco'),
+                'parametroRepo'         => $this->_em->getRepository('wms:Sistema\Parametro'),
                 'embalagemRepo'         => $this->_em->getRepository('wms:Produto\Embalagem')
             );
 
@@ -426,6 +427,8 @@ class Integracao
             $arrayProdutos = array();
             $arrayFabricantes = array();
             $arrayClasses = array();
+            $parametroEmbalagemAtiva = $repositorios['parametroRepo']->findOneBy(array('constante' => 'SALVAR_EMBALAGEM_COMO_ATIVA'));
+
 
             /*
              * Reorganiza os arrays
@@ -529,6 +532,9 @@ class Integracao
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
+                    if ($parametroEmbalagemAtiva == 'S') {
+                        $embalagem['ativa'] = 'S';
+                    }
                     if ($embalagem['ativa'] == 'S') {
                         $emb = new embalagem();
                         $emb->codBarras = $embalagem['codBarras'];
