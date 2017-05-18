@@ -34,7 +34,6 @@ class EtiquetaEndereco extends Pdf
         $this->count = 0;
 
         $arrPares = array();
-        $continuaImprimindo = 0;
 
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
@@ -114,31 +113,29 @@ class EtiquetaEndereco extends Pdf
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     if (empty($produtos)){
                         $arrPares[] = array('produtos' => null, 'codBarras' => $codBarras);
-                        if (count($arrPares) == 2 && $continuaImprimindo == 1) {
+                        if (count($arrPares) == 2) {
                             $this->layoutModelo10($arrPares);
                             $arrPares = array();
-                            $continuaImprimindo = 0;
-                        } else{
-                            $continuaImprimindo = 1;
+                            if ($key < (count($enderecos) - 1)) {
+                                $this->AddPage();
+                            }
                         }
-                        if ($key < (count($enderecos) - 1 && $continuaImprimindo == 0) )
-                            $this->AddPage();
+
                     } else {
                         foreach ($produtos as $i => $produto){
                             $arrPares[] = array('produtos' => $produto, 'codBarras' => $codBarras);
-                            if (count($arrPares) == 2 && $continuaImprimindo == 1) {
+                            if (count($arrPares) == 2) {
                                 $this->layoutModelo10($arrPares);
                                 $arrPares = array();
-                                $continuaImprimindo = 0;
-                            } else{
-                                $continuaImprimindo = 1;
+                                if ($key < (count($enderecos) - 1) || ($key == (count($enderecos) - 1) && $i < (count($produtos) - 1))) {
+                                    $this->AddPage();
+                                }
                             }
-                            if ($key < (count($enderecos) - 1) && $continuaImprimindo == 0)
-                                $this->AddPage();
+
                         }
                     }
 
-                    if ($key == (count($enderecos) - 1) && count($arrPares) == 1) {
+                    if ($key == (count($enderecos) - 1) && !empty($arrPares)) {
                         $this->layoutModelo10($arrPares);
                     }
                     break;

@@ -911,6 +911,10 @@ class Importacao
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
                 $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);
 
+                if (!isset($produto['possuiPesoVariavel']) || empty($produto['possuiPesoVariavel'])) {
+                    $produto['possuiPesoVariavel'] = 'N';
+                }
+
                 Configurator::configure($produtoEntity, $produto);
 
                 $em->persist($produtoEntity);
