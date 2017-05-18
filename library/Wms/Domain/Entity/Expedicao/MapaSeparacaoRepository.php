@@ -71,7 +71,7 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function getResumoConferenciaMapaByExpedicao ($idExpedicao){
-        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, NVL(MSC.QTD_CONF,0),
+        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, NVL(MSC.QTD_CONF,0) as QTD_CONF,
                      CAST((MSC.QTD_CONF/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL,
                      MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
