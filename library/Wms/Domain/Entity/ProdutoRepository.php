@@ -167,6 +167,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$produtoEntity->setNumVolumes($numVolumes);
 			$produtoEntity->setReferencia($referencia);
 			$produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
+			$produtoEntity->setPossuiPesoVariavel((isset($indPesoVar) && !empty($indPesoVar))? $indPesoVar : "N");
 
 			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
 			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
