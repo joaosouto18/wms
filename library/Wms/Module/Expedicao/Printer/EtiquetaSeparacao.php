@@ -493,6 +493,69 @@ class EtiquetaSeparacao extends Pdf
 
     }
 
+    protected function layoutModelo8($etiqueta,$countEtiquetas,$reimpressao,$modelo, $reentrega = false)
+    {
+        $this->SetMargins(3, 1.5, 0);
+        $this->SetFont('Arial', 'B', 9);
+
+        $strReimpressao = "";
+        if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
+
+        $this->AddPage();
+        $yImage = 33;
+
+        $this->total = $countEtiquetas;
+        $this->modelo = $modelo;
+        $this->strReimpressao = $strReimpressao;
+        $this->SetFont('Arial', 'B', 9);
+
+        $qtdEmbalagem = "";
+        if (!is_null($etiqueta['codProdutoEmbalagem'])) {
+            $qtdEmbalagem = "(". $etiqueta['qtdProduto'] . ")";
+        }
+
+        if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 35) {
+            $this->SetFont('Arial', 'B', 11);
+        } else if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 30) {
+            $this->SetFont('Arial', 'B', 13);
+        } else if (strlen("$etiqueta[codClienteExterno] - $etiqueta[cliente]") > 20) {
+            $this->SetFont('Arial', 'B', 15);
+        } else {
+            $this->SetFont('Arial', 'B', 18);
+        }
+        $this->SetFont('Arial', 'B', 18);
+        $impressao = substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
+        $this->MultiCell(100, 5.5, $impressao, 0, 'L');
+
+        $this->SetFont('Arial', 'B', 11);
+        $impressao  = utf8_decode("\n\nPEDIDO:$etiqueta[pedido]\n");
+        $this->MultiCell(100, 2, $impressao, 0, 'L');
+
+
+        $this->SetFont('Arial', 'B', 9);
+        $impressao = "CODIGO:$etiqueta[codProduto] - EXP:$etiqueta[codExpedicao] \n";
+        $this->MultiCell(100, 5.9, $impressao, 0, 'L');
+        $this->SetFont('Arial', 'B', 9);
+        $impressao = substr(trim($etiqueta['produto']),0,70)."\n";
+        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        $this->SetFont('Arial', 'B', 9);
+        $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
+        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        if ($reentrega == false) {
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, $yImage, 68,17);
+        }
+//        $this->Image(APPLICATION_PATH . '/../public/img/premium-etiqueta.gif', 90, 1.5, 20, 5);
+        $this->SetFont('Arial', 'B', 13);
+        $this->SetY(36);
+        $this->Cell(20, 3,   utf8_decode($etiqueta['tipoComercializacao']). $qtdEmbalagem, 0, 1, "L");
+
+        if ($reentrega == true) {
+            $this->SetFont('Arial', 'B', 20);
+            $this->MultiCell(100, 0.8, "                    REENTREGA", 0, 'L');
+        }
+
+    }
+
     protected function layoutModelo5($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
@@ -561,6 +624,9 @@ class EtiquetaSeparacao extends Pdf
     protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false)
     {
         switch ($modelo) {
+            case 8:
+                $this->layoutModelo8($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
+                break;
             case 7:
                 $this->layoutModelo7($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
