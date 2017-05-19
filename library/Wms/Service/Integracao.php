@@ -300,10 +300,6 @@ class Integracao
                     unset($pedidos);
                     $pedidos = array();
                 }
-                if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == '33001688') {
-                    var_dump($pedido);
-                    var_dump($produto); exit;
-                }
             }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
