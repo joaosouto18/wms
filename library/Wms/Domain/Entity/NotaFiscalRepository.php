@@ -709,7 +709,7 @@ class NotaFiscalRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
                         tc.id idTipoComercializacao, tc.descricao tipoComercializacao,
-                        pe.id idEmbalagem, pv.id idVolume, p.validade,p.possuiPesoVariavel
+                        pe.id idEmbalagem, pv.id idVolume, p.validade, p.possuiPesoVariavel,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(unitizador_embalagem.id, unitizador_volume.id) idUnitizador,
                         NVL(np_embalagem.numLastro, np_volume.numLastro) numLastro,
