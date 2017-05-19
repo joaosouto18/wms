@@ -289,12 +289,7 @@ class Integracao
                 }
 
 
-                if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == 33001688) {
-                    var_dump($pedido);
-                    var_dump($produto); exit;
-                }
-
-                if ($row['PRODUTO'] == 6) {
+                if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == '33001688') {
                     var_dump($pedido);
                     var_dump($produto); exit;
                 }
