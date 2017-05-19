@@ -96,7 +96,7 @@ use Core\Util\Converter;
                     var id = $(this).parents('.ui-tabs-panel').attr('id');
                     $("a[href='#" + id + "']").parent().addClass("ui-state-error").show("pulsate",{
                                         times: 1
-                                    });;
+                    });;
                 });
             });
         </script>
@@ -107,6 +107,9 @@ use Core\Util\Converter;
         ?>
     </head>
     <body>
+    <div id="loading">
+        <center class="loading-image" ><img src="/img/ajax-loader.gif" width="35" height="35"/><p><b>Carregando...</b></p></center>
+    </div>
         <div id="dialog-delete-record" title="Deseja excluir este registro?" style="display:none;">
             <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Este item será removido permanentemente e não poderá ser recuperado. Está certo disto?</p>
         </div>

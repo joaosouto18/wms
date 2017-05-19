@@ -2,11 +2,11 @@
  * Copyright (c) 2007 Roman Weich
  * http://p.sohei.org
  *
- * Changelog: 
+ * Changelog:
  * v 0.1.6 - 2007-09-06
  *	-fix: having a link in the top-level menu would not open the menu but call the link instead
  * v 0.1.5 - 2007-07-07
- *	-change/fix: menu opening/closing now through simple show() and hide() calls - before fadeIn and fadeOut were used for which extra functions to stop a already running animation were created -> they were 
+ *	-change/fix: menu opening/closing now through simple show() and hide() calls - before fadeIn and fadeOut were used for which extra functions to stop a already running animation were created -> they were
  *			buggy (not working with the interface plugin in jquery1.1.2 and not working with jquery1.1.3 at all) and now removed
  *	-change: removed option: fadeTime
  *	-change: now using the bgiframe plugin for adding iframes in ie6 when available
@@ -42,7 +42,7 @@
                         var url = this.href;
                         var windowName = "popUp";
                         window.open(url, windowName);
-                        event.preventDefault();                                        
+                        event.preventDefault();
                     } else {
                         window.location = this.href;
                     }
@@ -53,8 +53,10 @@
         subDelay: 300,
         mainDelay: 10
     };
-
-    $.fn.clickMenu = function(options) 
+    $(window).load(function() {
+        $('#loading').hide();
+    });
+    $.fn.clickMenu = function(options)
     {
         var shown = false;
         var liOffset = ( ($.browser.msie) ? 4 : 2 );
@@ -134,11 +136,11 @@
             while ( p && p != this )
             {
                 try
-                { 
+                {
                     p = p.parentNode;
                 }
                 catch(e)
-                { 
+                {
                     p = this;
                 }
             }
@@ -149,7 +151,7 @@
             }
             return true;
         };
-		
+
         var mainHoverIn = function(e)
         {
             //no need to test e.target==this, as no child has the same event binded
@@ -192,7 +194,7 @@
             var innerDiv = getOneChild(li, 'DIV');
             //stop running timers from the other menus on the same level - a little faster than $('>*>div', li.parentNode)
             var n = li.parentNode.firstChild;
-            for ( ; n; n = n.nextSibling ) 
+            for ( ; n; n = n.nextSibling )
             {
                 if ( n.nodeType == 1 && n.nodeName.toUpperCase() == 'LI' )
                 {
@@ -206,7 +208,7 @@
             }
             //is there a timer running to hide one of the parent divs? stop it
             var pNode = li.parentNode;
-            for ( ; pNode; pNode = pNode.parentNode ) 
+            for ( ; pNode; pNode = pNode.parentNode )
             {
                 if ( pNode.nodeType == 1 && pNode.nodeName.toUpperCase() == 'DIV' )
                 {
@@ -268,7 +270,7 @@
             {
                 $(this).removeClass('hover');
             }
-            else 
+            else
             {
                 if ( !div.isVisible )
                 {
@@ -373,7 +375,7 @@
                 return null;
             }
             var n = elem.firstChild;
-            for ( ; n; n = n.nextSibling ) 
+            for ( ; n; n = n.nextSibling )
             {
                 if ( n.nodeType == 1 && n.nodeName.toUpperCase() == name )
                 {
@@ -391,7 +393,7 @@
             }
             var r = [];
             var n = elem.firstChild;
-            for ( ; n; n = n.nextSibling ) 
+            for ( ; n; n = n.nextSibling )
             {
                 if ( n.nodeType == 1 && n.nodeName.toUpperCase() == name )
                 {
@@ -414,7 +416,7 @@
             }
             return null;
         };
-		
+
         var checkClass = function(elem, searchClass)
         {
             var pattern = new RegExp("(^|\\s)" + searchClass + "(\\s|$)");
@@ -424,11 +426,11 @@
             }
             return false;
         };
-		
+
         var isChild = function(elem, childElem)
         {
             var n = elem.firstChild;
-            for ( ; n; n = n.nextSibling ) 
+            for ( ; n; n = n.nextSibling )
             {
                 if ( n == childElem )
                 {
@@ -443,7 +445,7 @@
             //add .contains() to mozilla - http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html
             if (window.Node && Node.prototype && !Node.prototype.contains)
             {
-                Node.prototype.contains = function(arg) 
+                Node.prototype.contains = function(arg)
                 {
                     return !!(this.compareDocumentPosition(arg) & 16);
                 };
@@ -465,7 +467,7 @@
                 else
                 {
                     /* thanks to Mark Gibson - http://www.nabble.com/forum/ViewPost.jtp?post=6504414&framed=y */
-                    $('div.outerbox', this).append('<iframe style="display:block;position:absolute;top:0;left:0;z-index:-1;filter:mask();' + 
+                    $('div.outerbox', this).append('<iframe style="display:block;position:absolute;top:0;left:0;z-index:-1;filter:mask();' +
                         'width:expression(this.parentNode.offsetWidth);height:expression(this.parentNode.offsetHeight)"/>');
                 }
             }
@@ -510,8 +512,8 @@
             {
                 //if the child(this) is positioned abolute, we have to use relative positioning and shrink the outerbox accordingly to the innerbox
                 $(outer).css({
-                    position:'relative', 
-                    width:this.offsetWidth, 
+                    position:'relative',
+                    width:this.offsetWidth,
                     height:this.offsetHeight
                 });
             }
