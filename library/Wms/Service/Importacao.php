@@ -414,10 +414,10 @@ class Importacao
             }
 
             //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
-            $notaFiscalRepo->compareItensBancoComArray($itens, $notaFiscalEn);
+            $notaFiscalRepo->compareItensBancoComArray($itens, $notaFiscalEn, false);
 
             //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
-            $notaFiscalRepo->compareItensWsComBanco($itens, $notaFiscalEn);
+            $notaFiscalRepo->compareItensWsComBanco($itens, $notaFiscalEn, false);
 
             //$entityNotaFiscal = $notaFiscalRepo->salvarItens($itens, $notaFiscalEn);
         }
