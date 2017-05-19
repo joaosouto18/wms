@@ -36,7 +36,7 @@ class PedidoEnderecoRepository extends EntityRepository
             $em->flush();
             $em->commit();
         } catch(\Exception $e) {
-//            $em->rollback();
+            $em->rollback();
             throw new \Exception($e->getMessage() . ' - ' .$e->getTraceAsString());
         }
 
