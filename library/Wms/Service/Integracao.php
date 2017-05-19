@@ -289,6 +289,16 @@ class Integracao
                 }
 
 
+                if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == 33001688) {
+                    var_dump($pedido);
+                    var_dump($produto); exit;
+                }
+
+                if ($row['PRODUTO'] == 6) {
+                    var_dump($pedido);
+                    var_dump($produto); exit;
+                }
+
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
                         'idCarga' => $idCarga,
@@ -296,10 +306,6 @@ class Integracao
                         'placa' => $row['PLACA'],
                         'pedidos' => $pedidos
                     );
-                    if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == 33001688) {
-                        var_dump($pedido);
-                        var_dump($produto); exit;
-                    }
                     $cargas[] = $carga;
 
                     unset($pedidos);
