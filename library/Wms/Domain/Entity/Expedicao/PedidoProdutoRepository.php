@@ -14,6 +14,7 @@ class PedidoProdutoRepository extends EntityRepository
 //        $em->beginTransaction();
         try {
             $enPedidoProduto = new PedidoProduto;
+            $enPedidoProduto->setValorVenda($pedido['valorVenda']);
             \Zend\Stdlib\Configurator::configure($enPedidoProduto, $pedido);
             $em->persist($enPedidoProduto);
 //            $em->flush();
