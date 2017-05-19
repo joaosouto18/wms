@@ -252,9 +252,6 @@ class Integracao
                     'valorVenda' => $row['VLR_VENDA']
                 );
                 $produtos[] = $produto;
-                if ($row['PRODUTO'] == 6) {
-                    var_dump($produto); exit;
-                }
 
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idPedido != $dados[$key+1]['PEDIDO']))) {
                     $itinerario = array (
@@ -299,6 +296,10 @@ class Integracao
                         'placa' => $row['PLACA'],
                         'pedidos' => $pedidos
                     );
+                    if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == 33001688) {
+                        var_dump($pedido);
+                        var_dump($produto); exit;
+                    }
                     $cargas[] = $carga;
 
                     unset($pedidos);
