@@ -288,12 +288,6 @@ class Integracao
                     $produtos = array();
                 }
 
-
-                if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == '33001688') {
-                    var_dump($pedido);
-                    var_dump($produto); exit;
-                }
-
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
                         'idCarga' => $idCarga,
@@ -305,6 +299,10 @@ class Integracao
 
                     unset($pedidos);
                     $pedidos = array();
+                }
+                if ($row['PRODUTO'] == 6 && $row['PEDIDO'] == '33001688') {
+                    var_dump($pedido);
+                    var_dump($produto); exit;
                 }
             }
 
