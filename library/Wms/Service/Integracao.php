@@ -288,7 +288,6 @@ class Integracao
                     $produtos = array();
                 }
 
-
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
                         'idCarga' => $idCarga,
