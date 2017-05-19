@@ -282,18 +282,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'itinerarioRepo' =>$this->_em->getRepository('wms:Expedicao\Itinerario')
             );
 
-            foreach ($cargas as $carga) {
-                if ($carga['idCarga'] == 39132) {
-                    foreach ($carga['pedidos'] as $pedido) {
-                        if ($pedido['codPedido'] == 31001706) {
-                            var_dump($pedido['produtos']);
-                            exit;
-                        }
-                    }
-                }
-            }
-
-
             foreach($cargas as $k1 => $carga) {
                 foreach ($carga['pedidos'] as  $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
