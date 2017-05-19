@@ -284,11 +284,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             foreach ($cargas as $carga) {
                 if ($carga['idCarga'] == 39132) {
-                    var_dump($carga['pedidos']);
-                    exit;
+                    foreach ($carga['pedidos'] as $pedido) {
+                        if ($pedido['codPedido'] == 31001706) {
+                            var_dump($pedido['produtos']);
+                            exit;
+                        }
+                    }
                 }
-
-
             }
 
 
