@@ -418,7 +418,6 @@ class Integracao
                 'produtoAndamentoRepo'  => $this->_em->getRepository('wms:Produto\Andamento'),
                 'produtoRepo'           => $this->_em->getRepository('wms:Produto'),
                 'enderecoRepo'          => $this->_em->getRepository('wms:Deposito\Endereco'),
-                'parametroRepo'         => $this->_em->getRepository('wms:Sistema\Parametro'),
                 'embalagemRepo'         => $this->_em->getRepository('wms:Produto\Embalagem')
             );
 
