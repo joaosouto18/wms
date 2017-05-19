@@ -289,7 +289,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $idProduto = ProdutoUtil::formatar($idProduto);
                         $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
 
-                        if ($idProduto == 6 && $pedido['codPedido'] == '33001688') {
+                        if ($idProduto == 6) {
                             var_dump($pedido);
                             var_dump($produto); exit;
                         }
@@ -300,7 +300,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 $this->_em->flush();
 
-//                $this->saveCarga($repositorios, $carga);
+                $this->saveCarga($repositorios, $carga);
             }
             $this->_em->flush();
             $this->_em->commit();
