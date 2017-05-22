@@ -8,7 +8,16 @@
             <tr>
                 <td><b>Cod:</b> <?php echo $this->codProduto?></td>
                 <td><b>Grade:</b> <?php echo $this->grade?></td>
-                <td style="font-size: 175%"><b>Qtd:</b> <?php echo $this->qtd?></td>
+                <td style="font-size: 175%"><B>Qtd:</B>
+                    <ul>
+                        <?php foreach ($this->qtd as $qtd) {?>
+                            <li style="font-size: 150%">
+                                <?php echo $qtd;?>
+                            </li>
+
+                        <?php }?>
+                    </ul>
+                </td>
             </tr>
             <tr>
                 <td colspan="1" style="font-size: 145%"><b>Pulmão:</b> <?php echo $this->endPulmao?></td>
