@@ -647,6 +647,11 @@ class ExpedicaoRepository extends EntityRepository
                     return $result;
                 }
 
+                $result = $mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao);
+                if ($result == false) {
+                    return 'Existem volumes embalados pendentes de CONFERENCIA!';
+                }
+
                 if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
                     $result = $this->validaConferenciaERP($expedicaoEn->getId());
                     if (is_string($result)) {
@@ -855,6 +860,7 @@ class ExpedicaoRepository extends EntityRepository
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
         $this->getEntityManager()->flush();
+        return true;
     }
 
     public function efetivaReservaEstoqueByExpedicao($idExpedicao)

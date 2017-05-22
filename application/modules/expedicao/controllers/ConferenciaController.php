@@ -74,7 +74,7 @@ class Expedicao_ConferenciaController extends Action
                     }
 
                     $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
-                    if ($result == 'true') {
+                    if ($result === true) {
                         $result = 'Expedição Finalizada com Sucesso!';
                         if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
                             $this->addFlashMessage('success', $result);
@@ -93,9 +93,8 @@ class Expedicao_ConferenciaController extends Action
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
-
                 if ($origin == 'coletor') {
-                    if ($result == 'true') {
+                    if ($result === true) {
                         $result = 'Expedição Finalizada com Sucesso!';
                         if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
                             $redirect = true;
@@ -108,7 +107,7 @@ class Expedicao_ConferenciaController extends Action
                     if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
                         $redirect = true;
                     }
-                    $result = 'Expedição Finalizada com Sucesso!';
+                    $result  = 'Expedição Finalizada com Sucesso!';
                 }
             }
             $this->_helper->json(array('result' => $result,
