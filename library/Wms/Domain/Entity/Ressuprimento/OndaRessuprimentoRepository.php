@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityRepository,
 
 class OndaRessuprimentoRepository extends EntityRepository
 {
-    public function getOndasEmAberto($codProduto, $grade){
+    public function getOndasEmAberto($codProduto, $grade, $codEndereco = null){
             $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("os.id as OS,
                           w.id as Onda,
@@ -28,6 +28,9 @@ class OndaRessuprimentoRepository extends EntityRepository
 
             if ($codProduto != null) {
                 $query->andWhere("prod.id = '$codProduto' AND prod.grade ='$grade'");
+            }
+            if ($codEndereco != null) {
+                $query->andWhere("e.id = ".$codEndereco);
             }
         $result = $query->getQuery()->getArrayResult();
         return $result;
