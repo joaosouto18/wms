@@ -100,7 +100,6 @@ class Mobile_RessuprimentoController extends Action
         $predio      = $estoqueEn->getDepositoEndereco()->getPredio();
         $nivel       = $estoqueEn->getDepositoEndereco()->getNivel();
         $apartamento = $estoqueEn->getDepositoEndereco()->getApartamento();
-        $idEstoque   = $estoqueEn->getDepositoEndereco()->getId();
 
         $this->view->rua = $rua;
         $this->view->predio = $predio;
@@ -110,67 +109,81 @@ class Mobile_RessuprimentoController extends Action
 
     public function retirarEstoqueAction()
     {
-        $params = $this->_getAllParams();
         $codigoBarrasUMA = $this->_getParam('codigoBarrasUMA');
         $etiquetaProduto = $this->_getParam('etiquetaProduto');
         $idEstoque = $this->_getParam('cb');
 
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+        try {
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepository */
+            $reservaEstoqueRepository = $this->em->getRepository('wms:Ressuprimento\ReservaEstoque');
 
-        /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-        $estoqueEn = $estoqueRepo->findOneBy(array('id'=>$idEstoque));
-        $idEndereco = $estoqueEn->getDepositoEndereco()->getId();
-        $this->view->idEndereco = $idEndereco;
+            /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
+            $estoqueEn = $estoqueRepo->findOneBy(array('id'=>$idEstoque));
+            $idEndereco = $estoqueEn->getDepositoEndereco()->getId();
+            $this->view->idEndereco = $idEndereco;
+            $codProduto = null;
+            $grade = null;
+            $dscEndereco = null;
 
-        if ($codigoBarrasUMA)
-        {
-            $LeituraColetor = new LeituraColetor();
-            $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
+            if ($codigoBarrasUMA)
+            {
+                $LeituraColetor = new LeituraColetor();
+                $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
 
-            $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $idEndereco);
-            if ($result == NULL) {
-                $this->addFlashMessage("error","UMA $codigoBarrasUMA Não encontrada neste endereço");
-                $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque );
-            } else {
-                $arrEmbs = array();
-                $produto = $result[0]['ID'];
-                foreach ($result as $item){
-                    if ($item['ID'] = $produto)
-                        $arrEmbs[$item['COD_PRODUTO_EMBALAGEM']] = array(
-                            "embalagem" => $item['DSC_EMBALAGEM'],
-                            "qtd" => $item['QTD_EMBALAGEM']
-                        );
+                $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $idEndereco);
+                if ($result == NULL) {
+                    $this->addFlashMessage("error","UMA $codigoBarrasUMA Não encontrada neste endereço");
+                    $this->_redirect('/mobile/ressuprimento/endereco-uma/cb/' . $idEstoque );
+                } else {
+                    $arrEmbs = array();
+                    $produto = $result[0]['ID'];
+                    foreach ($result as $item){
+                        if ($item['ID'] = $produto)
+                            $arrEmbs[$item['COD_PRODUTO_EMBALAGEM']] = array(
+                                "embalagem" => $item['DSC_EMBALAGEM'],
+                                "qtd" => $item['QTD_EMBALAGEM']
+                            );
+                    }
+                    $this->view->codProduto = $codProduto = $result[0]['ID'];
+                    $this->view->embalagens = $arrEmbs;
+                    $this->view->codEmbalagem = null;
+                    $this->view->grade = $grade = $result[0]['GRADE'];
+                    $this->view->descricao = $result[0]['DESCRICAO'];
+                    $this->view->endereco = $dscEndereco = $result[0]['ENDERECO'];
+                    $this->view->qtd = number_format($result[0]['QTD'], 2, ',', '.').' '.$result[0]['DSC_EMBALAGEM'];
                 }
-                $this->view->codProduto = $result[0]['ID'];
-                $this->view->embalagens = $arrEmbs;
-                $this->view->codEmbalagem = null;
-                $this->view->grade = $result[0]['GRADE'];
-                $this->view->descricao = $result[0]['DESCRICAO'];
-                $this->view->endereco = $result[0]['ENDERECO'];
-                $this->view->qtd = number_format($result[0]['QTD'], 2, ',', '.').' '.$result[0]['DSC_EMBALAGEM'];
+
             }
 
-        }
+            if ($etiquetaProduto)
+            {
+                $LeituraColetor = new LeituraColetor();
+                $etiquetaProduto = $LeituraColetor->analisarCodigoBarras($etiquetaProduto);
 
-        if ($etiquetaProduto)
-        {
-            $LeituraColetor = new LeituraColetor();
-            $etiquetaProduto = $LeituraColetor->analisarCodigoBarras($etiquetaProduto);
-
-            $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco);
-            if ($result == NULL) {
-                $this->addFlashMessage("error","Produto $etiquetaProduto não encontrado neste endereço");
-                $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque );
-            } else {
-                $this->view->embalagens = null;
-                $this->view->codEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
-                $this->view->codProduto = $result[0]['ID'];
-                $this->view->grade = $result[0]['GRADE'];
-                $this->view->descricaoProduto = $result[0]['DESCRICAO'];
-                $this->view->endereco = $result[0]['ENDERECO'];
-                $this->view->qtd = number_format($result[0]['QTD'], 2, ',', '.').' '.$result[0]['DSC_EMBALAGEM'];
+                $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco);
+                if ($result == NULL) {
+                    $this->addFlashMessage("error","Produto $etiquetaProduto não encontrado neste endereço");
+                    $this->_redirect('/mobile/ressuprimento/endereco-produto/cb/' . $idEstoque );
+                } else {
+                    $this->view->embalagens = null;
+                    $this->view->codEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
+                    $this->view->codProduto = $codProduto = $result[0]['ID'];
+                    $this->view->grade = $grade = $result[0]['GRADE'];
+                    $this->view->descricaoProduto = $result[0]['DESCRICAO'];
+                    $this->view->endereco = $dscEndereco = $result[0]['ENDERECO'];
+                    $this->view->qtd = number_format($result[0]['QTD'], 2, ',', '.').' '.$result[0]['DSC_EMBALAGEM'];
+                }
             }
+
+            $reservasEstoque = $reservaEstoqueRepository->getQtdReservadaByProduto($codProduto,$grade,null,$idEndereco,'S');
+            if (!empty($reservasEstoque)) {
+                $this->addFlashMessage('error','Já existe reserva de estoque para o Produto '.$codProduto.' Grade '.$grade.' no endereço '.$dscEndereco);
+                $this->_redirect('/mobile/ressuprimento/listar-picking');
+            }
+        } catch (\Exception $e) {
+            $this->addFlashMessage("error",$e->getMessage());
         }
     }
 
