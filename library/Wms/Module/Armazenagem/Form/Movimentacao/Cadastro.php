@@ -42,6 +42,11 @@ class Cadastro extends Form
         $this->addElement('select', 'volumes', array(
             'label' => 'Volumes',
         ))
+            ->addElement('text', 'embalagens', array(
+                'size' => 3,
+                'label' => 'Embalagens',
+                'class' => 'ctrSize',
+            ))
             ->addElement('text', 'rua', array(
                 'size' => 3,
                 'label' => 'Rua',
@@ -125,7 +130,7 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','embalagens','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
             ->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }

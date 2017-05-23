@@ -3,6 +3,11 @@ echo $this->form;
 ?>
 <form id="relatorio-picking-listar" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'onda-ressuprimento', 'action' =>'gerar' ))?>">
 <div id="quantidade-grid" class="grid">
+    <div id="aguarde" style="background-color: lightsteelblue; text-align: center; padding: 5px">
+        <h2>
+            Gerando Reservas de Estoque, aguarde...
+        </h2>
+    </div>
     <input type="button" style="margin-bottom: 15px; display:none" name="busca" value="Gerar Onda" id="gerar" class="btn" >
     <table class="gTable ">
         <caption>Selecione as Expedições</caption>

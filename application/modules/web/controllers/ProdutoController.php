@@ -239,6 +239,14 @@ class Web_ProdutoController extends Crud {
         $this->view->form = $form;
     }
 
+    public function semCapacidadeAjaxAction()
+    {
+        $produtoRepo = $this->em->getRepository("wms:Produto");
+        $produtosSemCapacidade = $produtoRepo->getProdutosEstoqueSemCapacidade();
+        $this->exportPDF($produtosSemCapacidade,'sem-capacidade.pdf','Produtos Sem Capacidade no Estoque','L');
+
+    }
+
     public function codigoFornecedorAjaxAction()
     {
         $term = $this->getRequest()->getParam('term');

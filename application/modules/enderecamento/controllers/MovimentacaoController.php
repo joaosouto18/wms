@@ -90,7 +90,7 @@ class Enderecamento_MovimentacaoController extends Action
             if ($estoqueEn != null) {
                 $unitizadorEstoque = $estoqueEn->getUnitizador();
             }
-            if (!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL && $unitizadorEstoque == NULL && $entradaEstoque)) {
+            if ((!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL)) && ($unitizadorEstoque == NULL && $entradaEstoque)) {
                 $this->addFlashMessage('error','É necessário informar o Unitizador!');
                 $this->_redirect('/enderecamento/movimentacao');
             } else if (isset($data['idNormaPaletizacao']) && $data['idNormaPaletizacao'] != NULL && $entradaEstoque) {
@@ -133,8 +133,10 @@ class Enderecamento_MovimentacaoController extends Action
             if (isset($params['validade']) && !empty($params['validade'])) {
                 $hoje = new DateTime();
                 if (date_create_from_format('d/m/Y', $params['validade']) <= $hoje) {
-                    $this->addFlashMessage('error',"Data de Validade deve ser maior que ". $hoje->format('d/m/Y'));
-                    $this->_redirect('/enderecamento/movimentacao');
+                    if ($entradaEstoque) {
+                        $this->addFlashMessage('error',"Data de Validade deve ser maior que ". $hoje->format('d/m/Y'));
+                        $this->_redirect('/enderecamento/movimentacao');
+                    }
                 }
             }
 
@@ -229,16 +231,6 @@ class Enderecamento_MovimentacaoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-            $reservaEstoqueRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoque');
-            $verificaReservaSaida = $reservaEstoqueRepo->findBy(array('endereco' => $enderecoEn, 'tipoReserva' => 'S', 'atendida' => 'N'));
-
-            if (count($verificaReservaSaida) > 0) {
-                $this->addFlashMessage('error','Existe Reserva de Saída para esse endereço que ainda não foi atendida!');
-                $this->_redirect('/enderecamento/movimentacao');
-            }
-
 
             if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                 /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
@@ -416,25 +408,46 @@ class Enderecamento_MovimentacaoController extends Action
         $volumes = $queryBuilder->getQuery()->getArrayResult();
 
         $grupos = array();
-        foreach($volumes as $key => $volume) {
-            $prodVol = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findBy(array('normaPaletizacao'=>$volume));
-            $strVols = "";
-            foreach ($prodVol as $vol) {
-                if ($strVols != "") {$strVols.= "; ";}
-                $strVols .= $vol->getDescricao();
-            }
+        $embalagens = array();
 
-            $grupo = array();
-            $grupo['cod'] = $volume['id'];
-            $grupo['descricao'] = 'GRUPO ' . ($key +1) . " : " . $strVols;
-            $grupos[] = $grupo;
+
+        if (count($volumes) >0) {
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+            foreach($volumes as $key => $volume) {
+                $prodVol = $volumeRepo->findBy(array('normaPaletizacao'=>$volume));
+                $strVols = "";
+                foreach ($prodVol as $vol) {
+                    if ($strVols != "") {$strVols.= "; ";}
+                    $strVols .= $vol->getDescricao();
+                }
+
+                $grupo = array();
+                $grupo['cod'] = $volume['id'];
+                $grupo['descricao'] = 'GRUPO ' . ($key +1) . " : " . $strVols;
+                $grupos[] = $grupo;
+            }
+        } else {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            foreach ($embalagensEn as $emb) {
+                $embalagens[] = $emb->getDescricao() . "(" . $emb->getQuantidade(). ")";
+            }
         }
 
+
+        $valores = array(
+            'volumes'=>$grupos,
+            'embalagens' => $embalagens
+        );
+
+        echo $this->_helper->json($valores);
+        /*
         if (count($grupos)>0){
-            echo $this->_helper->json($grupos);
+            echo $this->_helper->json($valores);
         }else {
             echo $this->_helper->json(false);
         }
+        */
     }
 
     public function getValidadeAction()

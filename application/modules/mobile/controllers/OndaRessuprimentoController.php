@@ -95,6 +95,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $idOnda = $this->_getParam('idOnda');
 
         $OndaRessuprimentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $valores = $OndaRessuprimentoRepo->getDadosOnda($idOnda);
 
         $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
@@ -108,20 +109,31 @@ class Mobile_OndaRessuprimentoController extends Action
         $idEnderecoPulmao = $valores['idPulmao'];
         $qtd = $valores['Qtde'];
 
-        if ($valores['dscEmbalagem'] == null) {
-            $dscEmbalagem = "Volumes";
+        $arrayQtds = array();
+        if ($valores['dscEmbalagem'] != null) {
+            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            $qtdRestante = $qtd;
+
+            foreach ($embalagensEn as $embalagem) {
+                $qtdEmbalagem = $embalagem->getQuantidade();
+                if ($qtdRestante >= $qtdEmbalagem) {
+                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
+                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                }
+            }
         } else {
-            $dscEmbalagem = $valores['dscEmbalagem'] . " (" . $valores['fator'] . ")";
+            $arrayQtds[] = $qtd;
         }
 
-        $this->view->embalagem = $dscEmbalagem;
+        //$this->view->embalagem = $dscEmbalagem;
         $this->view->produtos = $produtos;
         $this->view->idOnda = $idOnda;
         $this->view->codProduto = $codProduto;
         $this->view->grade = $grade;
         $this->view->endPulmao = $endPulmao;
         $this->view->dscProduto = $dscProduto;
-        $this->view->qtd = $qtd;
+        $this->view->qtd = $arrayQtds;
         $this->view->id = $qtd;
         $this->view->idEnderecoPulmao = $idEnderecoPulmao;
         $this->view->endPicking = $endPicking;
@@ -192,6 +204,23 @@ class Mobile_OndaRessuprimentoController extends Action
         $dscProduto = $produtoOnda->getProduto()->getDescricao();
         $qtd = $produtoOnda->getQtd();
 
+        $arrayQtds = array();
+        if ($produtoOnda->getCodProdutoEmbalagem() != null) {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            $qtdRestante = $qtd;
+            foreach ($embalagensEn as $embalagem) {
+                $qtdEmbalagem = $embalagem->getQuantidade();
+                if ($qtdRestante >= $qtdEmbalagem) {
+                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
+                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                }
+            }
+        } else {
+            $arrayQtds[] = $qtd;
+        }
+
         $endPulmao = $ondaOsEn->getEndereco()->getDescricao();
         $idEnderecoPulmao = $ondaOsEn->getEndereco()->getId();
 
@@ -217,7 +246,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $this->view->endPulmao = $endPulmao;
         $this->view->endPicking = $reservaEstoquePicking->getEndereco()->getDescricao();
         $this->view->dscProduto = $dscProduto;
-        $this->view->qtd = $qtd;
+        $this->view->qtd = $arrayQtds;
         $this->view->id = $qtd;
         $this->view->idEnderecoPulmao = $idEnderecoPulmao;
     }
@@ -239,6 +268,21 @@ class Mobile_OndaRessuprimentoController extends Action
         $grade = $produtoOnda->getProduto()->getGrade();
         $dscProduto = $produtoOnda->getProduto()->getDescricao();
         $qtd = $produtoOnda->getQtd();
+        if ($produtoOnda->getCodProdutoEmbalagem() != null) {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            $qtdRestante = $qtd;
+            foreach ($embalagensEn as $embalagem) {
+                $qtdEmbalagem = $embalagem->getQuantidade();
+                if ($qtdRestante >= $qtdEmbalagem) {
+                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
+                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                }
+            }
+        } else {
+            $arrayQtds[] = $qtd;
+        }
 
         $endPulmao = $ondaOsEn->getEndereco()->getDescricao();
         $idEnderecoPulmao = $ondaOsEn->getEndereco()->getId();
@@ -264,7 +308,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $this->view->endPulmao = $endPulmao;
         $this->view->endPicking = $reservaEstoquePicking->getEndereco()->getDescricao();
         $this->view->dscProduto = $dscProduto;
-        $this->view->qtd = $qtd;
+        $this->view->qtd = $arrayQtds;
         $this->view->id = $qtd;
         $this->view->idEnderecoPulmao = $idEnderecoPulmao;
     }
