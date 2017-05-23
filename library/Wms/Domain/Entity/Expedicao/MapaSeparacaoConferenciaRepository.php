@@ -302,7 +302,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
 
         $sql = "
         SELECT MSP.COD_PRODUTO, NVL(MSC.QTD_CONF,0) as QTD_CONFERIDA, (MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - MSP.QTD_CORTADO as QTD_SEPARAR,
-                       ((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - MSP.QTD_CORTADO) / PE.QTD_EMBALAGEM as QTD_CONFERIR,
+                       (MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - MSP.QTD_CORTADO - NVL(MSC.QTD_CONF,0) as QTD_CONFERIR,
                        PE.COD_PRODUTO_EMBALAGEM,
                        MSP.DSC_GRADE,
                        MSP.COD_MAPA_SEPARACAO,
@@ -318,7 +318,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                              AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                              AND MSC.DSC_GRADE = MSP.DSC_GRADE
                   WHERE MS.COD_EXPEDICAO = $idExpedicao
-                  AND (MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - MSP.QTD_CORTADO > NVL(MSC.QTD_CONF,0)
+                    AND (MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - MSP.QTD_CORTADO - NVL(MSC.QTD_CONF,0) > 0
                   ORDER BY MSP.COD_MAPA_SEPARACAO
         ";
 
