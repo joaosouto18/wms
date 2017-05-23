@@ -392,13 +392,14 @@ class Integracao
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
-            $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N');
+            $status = $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N',null,false);
             if ($count == 50) {
                 $count =0;
                 $em->flush();
                 $em->clear();
             } else {
-                $count=$count +1;
+                if ($status)
+                    $count=$count +1;
             }
         }
 

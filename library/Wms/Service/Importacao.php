@@ -386,7 +386,7 @@ class Importacao
 
     }
 
-    public function saveNotaFiscal($em, $idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null)
+    public function saveNotaFiscal($em, $idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $showExpt = true)
     {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
@@ -403,7 +403,11 @@ class Importacao
         } else {
             $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
             if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
-                throw new \Exception ("Não é possível alterar, NF ".$notaFiscalEn->getNumero()." já recebida");
+                if ($showExpt) {
+                    throw new \Exception ("Não é possível alterar, NF " . $notaFiscalEn->getNumero() . " já recebida");
+                } else {
+                    return false;
+                }
             }
 
             if ($notaFiscalEn->getStatus()->getId() == NotaFiscal::STATUS_CANCELADA) {
@@ -414,15 +418,15 @@ class Importacao
             }
 
             //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
-            $notaFiscalRepo->compareItensBancoComArray($itens, $notaFiscalEn, false);
+            $notaFiscalRepo->compareItensBancoComArray($itens, $notaFiscalEn, $showExpt);
 
             //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
-            $notaFiscalRepo->compareItensWsComBanco($itens, $notaFiscalEn, false);
+            $notaFiscalRepo->compareItensWsComBanco($itens, $notaFiscalEn, $showExpt);
 
             //$entityNotaFiscal = $notaFiscalRepo->salvarItens($itens, $notaFiscalEn);
         }
         //return $entityNotaFiscal;
-
+        return true;
     }
 
     public function saveExpedicao($em, $placaExpedicao)
