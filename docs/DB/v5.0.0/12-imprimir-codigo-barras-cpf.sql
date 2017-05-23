@@ -1,0 +1,15 @@
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+VALUES (SQ_ACAO_01.NEXTVAL, 'Imprimir código de barras do cpf do usuário', 'imprimir-cpf');
+
+INSERT INTO RECURSO_ACAO (
+  COD_RECURSO_ACAO,
+  COD_RECURSO,
+  COD_ACAO,
+  DSC_RECURSO_ACAO
+)
+VALUES (
+  SQ_ACAO_01.NEXTVAL,
+  (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO LIKE 'usuario'),
+  (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO LIKE 'imprimir-cpf'),
+  'Imprimir etiqueta de Usuário pelo CPF'
+);
