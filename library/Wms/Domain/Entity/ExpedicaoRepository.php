@@ -197,6 +197,46 @@ class ExpedicaoRepository extends EntityRepository
                 if ($expedicao != end($expedicoes)) $strExpedicao = $strExpedicao . ",";
             }
 
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
+            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+            /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+            $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+            $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
+            $repositorios = array(
+                'produtoRepo' => $produtoRepo,
+                'embalagemRepo' => $embalagemRepo,
+                'reservaEstoqueExpRepo' => $reservaEstoqueExpedicaoRepo,
+                'reservaEstoqueOndaRepo' => $reservaEstoqueOndaRepo,
+                'reservaEstoqueRepo' => $reservaEstoqueRepo,
+                'ondaRepo' => $ondaRepo,
+                'pedidoRepo' => $pedidoRepo,
+                'volumeRepo' => $volumeRepo,
+                'enderecoRepo' => $enderecoRepo,
+                'usuarioRepo' => $usuarioRepo,
+                'expedicaoRepo' => $expedicaoRepo,
+                'estoqueRepo' => $estoqueRepo,
+                'osRepo' => $ordemServicoRepo,
+                'siglaRepo' => $siglaRepo
+            );
+
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
             $central = $deposito->getFilial()->getCodExterno();
@@ -208,24 +248,37 @@ class ExpedicaoRepository extends EntityRepository
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
             $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
 
+            $dadosProdutos = array();
+            foreach ($produtosRessuprir as $produto) {
+                $codProduto = $produto['COD_PRODUTO'];
+                $grade = $produto['DSC_GRADE'];
+                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+                $embalagensASC = null;
+                if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+                    $embalagensASC = $embalagemRepo->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'ASC'));
+                }
+
+                $dadosProdutos[$codProduto][$grade] = array(
+                    'codProduto'=> $codProduto,
+                    'grade'=> $grade,
+                    'entidade'=> $produtoEn,
+                    'embalagensASC' => $embalagensASC,
+                );
+            }
+
             if (empty($produtosRessuprir)) {
                 throw new \Exception("Não foi encontrado produto pendente de onda de ressuprimento ou a quantidade cortada é equivalente a do pedido");
             }
 
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
-            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
-            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-
             $ondaEn = $ondaRepo->geraNovaOnda();
-            $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
+            $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
 
-            $produtosPorTipoSaida = $ondaRepo->getArrayProdutosPorTipoSaida($produtosReservaSaida);
-                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPicking($produtosPorTipoSaida['picking']);
-                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPulmao($produtosPorTipoSaida['pulmao']);
+            $produtosPorTipoSaida = $ondaRepo->getArrayProdutosPorTipoSaida($produtosReservaSaida, $dadosProdutos, $repositorios);
+                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPicking($produtosPorTipoSaida['picking'], $repositorios);
+                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPulmao($produtosPorTipoSaida['pulmao'], $repositorios);
             $this->getEntityManager()->flush();
 
-            $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
+            $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn, $dadosProdutos, $repositorios);
 
             $this->getEntityManager()->flush();
             $ondaRepo->sequenciaOndasOs();

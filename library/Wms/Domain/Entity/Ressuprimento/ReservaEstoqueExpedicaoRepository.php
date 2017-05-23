@@ -7,21 +7,21 @@ use Doctrine\ORM\EntityRepository;
 class ReservaEstoqueExpedicaoRepository extends EntityRepository
 {
 
-    public function gerarReservaSaidaPicking ($produtos){
+    public function gerarReservaSaidaPicking ($produtos, $repositorios){
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
         foreach ($produtos as $produto){
-            $reservaEstoqueRepo->adicionaReservaEstoque($produto['idPicking'],$produto['produtos'],"S","E",$produto['idExpedicao'],null,null,null,$produto['idPedido']);
+            $reservaEstoqueRepo->adicionaReservaEstoque($produto['idPicking'],$produto['produtos'],"S","E",$produto['idExpedicao'],null,null,null,$produto['idPedido'], $repositorios);
         }
     }
 
 
-    public function gerarReservaSaidaPulmao ($produtos)
+    public function gerarReservaSaidaPulmao ($produtos, $repositorios)
     {
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $estoqueRepo = $repositorios['estoqueRepo'];
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
 
         foreach ($produtos as $produto) {
             $idExpedicao = $produto['idExpedicao'];
@@ -49,7 +49,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                         $produtosSeparar[$key]['qtd'] = ($qtdSeparar * -1);
                     }
 
-                    $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$produtosSeparar,"S","E",$idExpedicao,null,null,null,$idPedido);
+                    $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$produtosSeparar,"S","E",$idExpedicao,null,null,null,$idPedido, $repositorios);
                 }
             }
 
