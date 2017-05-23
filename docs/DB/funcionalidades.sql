@@ -34,3 +34,4 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Correção: Alterando a capacidade de picking e o picking apenas se for informado um picking dinamico', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Relatório de Produtividade: Permitir tirar o sintetico geral ou detalhado por dia', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Ocultando botão de gerar ressuprimento para evitar requisições assincronas', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Não deve fazer Ressuprimento preventivo caso exista reserva de saida ', null,SYSDATE);
