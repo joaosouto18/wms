@@ -325,5 +325,22 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getProdutosClientesInConferencia($idExpedicao)
+    {
+        $sql = "
+            SELECT COUNT(MS.COD_MAPA_SEPARACAO) 
+            FROM MAPA_SEPARACAO MS
+            INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+            INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+            AND MSP.COD_PRODUTO = MSC.COD_PRODUTO 
+            AND MSP.DSC_GRADE = MSC.DSC_GRADE
+            WHERE MS.COD_EXPEDICAO = $idExpedicao
+            GROUP BY MSP.QTD_CORTADO
+            HAVING ((SUM(MSP.QTD_SEPARAR  * MSP.QTD_EMBALAGEM) - MSP.QTD_CORTADO) - SUM(MSC.QTD_CONFERIDA *  MSC.QTD_EMBALAGEM)) > 0
+        ";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 
 }
