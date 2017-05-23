@@ -40,3 +40,4 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (40, 'Ao finalizar a expedição no desktop, não esta exibindo alertas informando que a expedição foi finalizada', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (41, 'Problema ao forçar a finalização de expedição caso o mapa ja tenha iniciado a conferencia.', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (42, 'Melhoria de performance na geração de ressuprimento. Evitando multiplas chamadas ao banco', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (43, 'Melhoria na tela de apontamento para Etiqueta', null,SYSDATE);
