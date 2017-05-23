@@ -61,10 +61,10 @@ class AcaoIntegracaoRepository extends EntityRepository
                             $query = str_replace("and a.es1_dtalteracao > :dthExecucao", "" ,$query);
                         } else {
                             $hoje = new \DateTime();
-                            $dthExecucao = $hoje->format("d/m/Y") . " 00:00:00";
+                            $dthExecucao = $hoje->format("Y-m-d");
                         }
                     } else {
-                        $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s");
+                        $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y-m-d");
                     }
 
                     $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);

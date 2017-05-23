@@ -71,6 +71,123 @@ class NotaFiscalRepository extends EntityRepository
     }
 
     /**
+     * @param $itens
+     * @param $notaFiscalEn
+     * @return bool
+     * @throws \Exception
+     */
+    public function compareItensBancoComArray($itens, $notaFiscalEn, $showExpt = true)
+    {
+        $notaItensRepo = $this->_em->getRepository('wms:NotaFiscal\Item');
+        $recebimentoConferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
+        //VERIFICA TODOS OS ITENS DO BD
+        $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
+
+        if (count($itens) <= 0 && $showExpt) {
+            throw new \Exception("Nenhum item informado na nota");
+        }
+
+        if ($notaItensBDEn <= 0) {
+            return false;
+        }
+
+        try {
+            foreach ($notaItensBDEn as $itemBD) {
+                $continueBD = false;
+                //VERIFICA TODOS OS ITENS DA NF
+                foreach ($itens as $itemNf) {
+                    //VERIFICA SE PRODUTO DO BANCO AINDA EXISTE NA NF
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
+                        //VERIFICA SE A QUANTIDADE É A MESMA
+                        if ($itemBD->getQuantidade() == trim($itemNf['quantidade'])) {
+                            //VERIFICA SE O PESO É O MESMO
+                            if ($itemBD->getNumPeso() == trim($itemNf['peso'])) {
+                                //SE TODOS OS DADOS FOREM IGUAIS, NAO FAZ NADA
+                                $continueBD = true;
+                                break;
+                            }
+                        } else {
+                            //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
+                            $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
+                            //SE EXISTIR CONFERENCIA E A QUANTIDADE FOR DIFERENTE FINALIZA O PROCESSO
+                            if ($recebimentoConferenciaEn && $showExpt)
+                                throw new \Exception ("Não é possível sobrescrever a NF com itens já conferidos!");
+                        }
+                    }
+                }
+                if ($continueBD == false) {
+                    // SE PRODUTO EXISTIR NO BD, NAO EXISTIR NO WS E NAO TIVER CONFERENCIA REMOVE O PRODUTO
+                    $this->_em->remove($itemBD);
+                }
+            }
+            $this->_em->flush();
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+    }
+
+    /**
+     * @param $itens array
+     * @param $notaFiscalEn NotaFiscal
+     * @return bool
+     * @throws \Exception
+     */
+    public function compareItensWsComBanco($itens, $notaFiscalEn, $showExpt = true)
+    {
+
+        $notaItensRepo = $this->_em->getRepository('wms:NotaFiscal\Item');
+
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+        if ($itens <= 0 && $showExpt) {
+            throw new \Exception("Nenhum item informado na nota");
+        }
+
+        //VERIFICA TODOS OS ITENS DO BD
+        $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
+
+        try {
+            $itensNf = array();
+            $pesoTotal = 0;
+            foreach ($itens as $itemNf) {
+                $pesoTotal = trim((float)$itemNf['peso']) + $pesoTotal;
+                $continueNF = false;
+                foreach ($notaItensBDEn as $itemBD) {
+                    //VERIFICA SE PRODUTO DA NF JÁ EXISTE NO BD
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade']) && $itemBD->getNumPeso() == trim($itemNf['peso'])) {
+                        $continueNF = true;
+                        break;
+                    }
+                }
+                //INSERE SE O PRODUTO NÃO EXISTIR NO BD
+                if ($continueNF == false) {
+                    $itemWs['idProduto'] = trim($itemNf['idProduto']);
+                    $itemWs['grade'] = trim($itemNf['grade']);
+                    $itemWs['quantidade'] = trim(str_replace(',','.',$itemNf['quantidade']));
+                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf['peso']));
+                    if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
+                        $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
+                    }
+
+
+                    $itensNf[] = $itemWs;
+                }
+            }
+            if (count($itensNf) > 0) {
+                $this->salvarItens($itensNf, $notaFiscalEn);
+                $notaFiscalEn->setPesoTotal($pesoTotal);
+                $this->_em->persist($notaFiscalEn);
+                $this->_em->flush($notaFiscalEn);
+            }
+            return true;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+
+    /**
      * Busca relação de itens para conferencia.
      * Traz apenas os itens que devem constar na conferencia
      *
@@ -592,7 +709,7 @@ class NotaFiscalRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
                         tc.id idTipoComercializacao, tc.descricao tipoComercializacao,
-                        pe.id idEmbalagem, pv.id idVolume, p.validade,
+                        pe.id idEmbalagem, pv.id idVolume, p.validade, p.possuiPesoVariavel,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(unitizador_embalagem.id, unitizador_volume.id) idUnitizador,
                         NVL(np_embalagem.numLastro, np_volume.numLastro) numLastro,

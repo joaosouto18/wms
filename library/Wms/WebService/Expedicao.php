@@ -288,11 +288,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $idProduto = trim($cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto']);
                         $idProduto = ProdutoUtil::formatar($idProduto);
                         $cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto'] = $idProduto;
-
-                        if ($idProduto == 6) {
-                            var_dump($pedido);
-                            var_dump($produto); exit;
-                        }
                     }
                 }
                 $this->checkProductsExists($repositorios, $carga['pedidos']);
