@@ -27,13 +27,17 @@
             <tr">
                 <td><B>Cod:</B> <?php echo $this->codProduto?></td>
                 <td><B>Grade:</B> <?php echo $this->grade?></td>
-                <td style="font-size: 175%"><B>Qtd:</B> <?php echo $this->qtd?></td>
+                <td style="font-size: 175%"><B>Qtd:</B>
+                    <ul>
+                        <?php foreach ($this->qtd as $qtd) {?>
+                            <li style="font-size: 150%">
+                                <?php echo $qtd;?>
+                            </li>
+
+                            <?php }?>
+                    </ul>
+                </td>
             </tr>
-            <?php if ($this->produtos[0]->getCodProdutoVolume() == NULL) {?>
-                <tr>
-                    <td colspan="3" style="font-size: 145%"><B>Embalagem:</B> <?php echo $this->embalagem?></td>
-                </tr>
-            <?php }?>
             <tr>
                 <td colspan="1" style="font-size: 145%"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
                 <td colspan="2" style="font-size: 145%"><B>Picking:</B> <?php echo $this->endPicking?></td>

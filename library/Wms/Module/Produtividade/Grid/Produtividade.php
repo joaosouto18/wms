@@ -7,11 +7,17 @@ use Wms\Module\Web\Grid;
 
 class Produtividade extends Grid
 {
-    public function init($params, $sort)
+    public function init($params, $sort, $tipo = 'resumido')
     {
 
         $this->setAttrib('title','apontamento-separacao');
         $this->setSource(new \Core\Grid\Source\ArraySource($params));
+                if ($tipo == 'detalhado') {
+                    $this->addColumn(array(
+                        'label' => 'Dia',
+                        'index' => 'DIA'
+                    ));
+                }
                 if ($sort == 'atividade') {
                     $this->addColumn(array(
                         'label' => 'Atividade',

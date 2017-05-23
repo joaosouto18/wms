@@ -85,9 +85,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-
-        if ($fornecedorEntity == null)
-            throw new \Exception('Codigo de Fornecedor invalido');
+        if ($fornecedorEntity == null) {
+            $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+            if ($fornecedorEntity == null) {
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            }
+            $idFornecedor = $novoIdFornecedor;
+        }
 
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
@@ -155,9 +160,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-
-        if ($fornecedorEntity == null)
-            throw new \Exception('Codigo de Fornecedor invalido');
+        if ($fornecedorEntity == null) {
+            $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+            if ($fornecedorEntity == null) {
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            }
+            $idFornecedor = $novoIdFornecedor;
+        }
 
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
@@ -246,8 +256,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
 
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-            if ($fornecedorEntity == null)
-                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            if ($fornecedorEntity == null) {
+                $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+                $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+                if ($fornecedorEntity == null) {
+                    throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+                }
+                $idFornecedor = $novoIdFornecedor;
+            }
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
@@ -359,9 +375,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-
-        if ($fornecedorEntity == null)
-            throw new \Exception('Codigo de Fornecedor invalido');
+        if ($fornecedorEntity == null) {
+            $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+            if ($fornecedorEntity == null) {
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            }
+            $idFornecedor = $novoIdFornecedor;
+        }
 
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
             ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
@@ -398,9 +419,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-
-        if ($fornecedorEntity == null)
-            throw new \Exception('Codigo de Fornecedor invalido');
+        if ($fornecedorEntity == null) {
+            $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+            if ($fornecedorEntity == null) {
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            }
+            $idFornecedor = $novoIdFornecedor;
+        }
 
         $notaFiscalEntity = $this->__getServiceLocator()->getService('NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
@@ -435,9 +461,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
-
-        if ($fornecedorEntity == null)
-            throw new \Exception('Codigo de Fornecedor invalido');
+        if ($fornecedorEntity == null) {
+            $novoIdFornecedor = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_FORNECEDOR_DEVOLUCAO'))->getValor();
+            $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $novoIdFornecedor));
+            if ($fornecedorEntity == null) {
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+            }
+            $idFornecedor = $novoIdFornecedor;
+        }
 
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
             ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);

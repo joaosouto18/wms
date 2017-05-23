@@ -267,26 +267,21 @@ class Mobile_EnderecamentoController extends Action
         if ($caracteristicaEnd == $idCaracteristicaPickingRotativo || $caracteristicaEnd == $idCaracteristicaPicking) {
             $produtosEn = $paleteProdutoRepo->getProdutoByUma($paleteEn->getId());
             foreach ($produtosEn as $produto) {
-                $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
-                if (isset($estoqueEn) && !empty($estoqueEn)) {
-                    if ($enderecoEn->getId() != $estoqueEn->getDepositoEndereco()->getId()) {
-//                        $this->createXml('error','Existe estoque para o Produto '.$estoqueEn->getCodProduto().' grade '.$estoqueEn->getGrade().' no endereco '.$estoqueEn->getDepositoEndereco()->getDescricao());
-                    }
-                }
-
                 $embalagens = $embalagemRepo->findBy(array('codProduto' => $produto->getId(), 'grade' => $produto->getGrade()));
                 foreach ($embalagens as $embalagemEn) {
                     $enderecoEmbalagem = $embalagemEn->getEndereco();
                     if (isset($enderecoEmbalagem) && !empty($enderecoEmbalagem)) {
                         $caracteristicaEndAntigo = $embalagemEn->getEndereco()->getCaracteristica()->getId();
-                        if ($caracteristicaEndAntigo == $idCaracteristicaPicking && $embalagemEn->getEndereco()->getId() != $enderecoEn->getId()) {
+                        if (($caracteristicaEndAntigo == $idCaracteristicaPicking) && ($embalagemEn->getEndereco()->getId() != $enderecoEn->getId())) {
                             $this->createXml('error','Produto Ja cadastrado no Picking '.$embalagemEn->getEndereco()->getDescricao());
                         }
                     }
 
-                    $embalagemEn->setEndereco($enderecoEn);
-                    $embalagemEn->setCapacidadePicking($capacidadePicking);
-                    $this->getEntityManager()->persist($embalagemEn);
+                    if ($caracteristicaEnd == $idCaracteristicaPickingRotativo) {
+                        $embalagemEn->setEndereco($enderecoEn);
+                        $embalagemEn->setCapacidadePicking($capacidadePicking);
+                        $this->getEntityManager()->persist($embalagemEn);
+                    }
                 }
                 $this->getEntityManager()->flush();
             }
