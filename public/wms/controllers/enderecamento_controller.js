@@ -143,6 +143,10 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     alert("Preencha o endereço e a quantidade");
                     return false;
                 }
+                if($('#validade').attr('validar') == 'S' && $('#validade').val() == '' && $("#quantidade").val() > 0){
+                    alert("Preencha o campo Data Validade");
+                    return false;
+                }
             });
 
             //$('#idProduto').focus();

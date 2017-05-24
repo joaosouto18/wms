@@ -301,6 +301,11 @@ $(document).ready(function(){
         $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
             if (data == 'S') {
                 $('#validade').parent().show();
+                $('#validade').attr('validar','S');
+            }else{
+                $('#validade').parent().hide();
+                $('#validade').val('');
+                 $('#validade').attr('validar','N');
             }
         });
         $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
