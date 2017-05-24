@@ -385,6 +385,7 @@ class Importacao
             try {
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
+                $entityFornecedor->setPessoa($entityPessoa);
                 var_dump($entityFornecedor);
 
                 $em->persist($entityFornecedor);
