@@ -381,6 +381,8 @@ class Importacao
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
                 $em->persist($entityFornecedor);
+                var_dump("persistiu");
+                var_dump($entityFornecedor);
                 return true;
             }catch (\Exception $e){
                 return $e->getMessage();
