@@ -125,7 +125,7 @@ class AtorRepository extends EntityRepository {
         } else { //tipo inválido
             throw new \Exception('Tipo de Pessoa inválido');
         }
-
+        var_dump($pessoa);
         $ator->setPessoa($pessoa);
         $em->persist($pessoa);
         return $pessoa;
