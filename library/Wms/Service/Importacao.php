@@ -383,13 +383,14 @@ class Importacao
 
             var_dump("Achou a pessoa: " . $entityPessoa->getNome());
             try {
+                var_dump("tentou presistir fornecedor");
+                var_dump($entityPessoa->getId());
+                var_dump($fornecedor['idExterno']);
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
                 $em->persist($entityFornecedor);
                 $em->flush($entityFornecedor);
-                var_dump("persistiu");
-                var_dump($entityFornecedor);
                 return true;
             }catch (\Exception $e){
                 return $e->getMessage();
