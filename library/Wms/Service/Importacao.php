@@ -299,7 +299,8 @@ class Importacao
         $entityPessoa = null;
 
         if ($entityFornecedor == null) {
-
+            var_dump($fornecedor['tipoPessoa']);
+            var_dump(String::retirarMaskCpfCnpj($fornecedor['cpf_cnpj']));
             switch ($fornecedor['tipoPessoa']) {
                 case 'J':
                     $fornecedor['pessoa']['tipo'] = 'J';
@@ -369,10 +370,12 @@ class Importacao
 
 
             if ($entityPessoa == null) {
+                var_dump("cadastrou ator fornecedor");
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
             }
 
             try {
+                var_dump($entityPessoa);
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
