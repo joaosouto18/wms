@@ -344,17 +344,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							if ($webservice == true) {
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
 							} elseif (is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(new \DateTime());
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
 							}
 						} else {
 							if (!is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
 							}
 						}
 
@@ -411,12 +411,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							if ($webservice == true) {
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso',false,$webservice);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso',false,$webservice);
 							} elseif (is_null($embalagemEntity->getDataInativacao())) {
 //								$embalagemEntity->setDataInativacao(new \DateTime());
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
 							}
 						} else {
 							if ($webservice == true) {
@@ -424,13 +424,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 //									$embalagemEntity->setDataInativacao(new \DateTime());
 									$embalagemEntity->setDataInativacao(null);
 									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso',false,$webservice);
+//									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso',false,$webservice);
 								}
 							} else {
 								if (!is_null($embalagemEntity->getDataInativacao())) {
 									$embalagemEntity->setDataInativacao(null);
 									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
+//									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
 								}
 							}
 						}
@@ -474,13 +474,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							if (is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(new \DateTime());
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false, true);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false, true);
 							}
 						} else {
 							if (!is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false, true);
+//								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false, true);
 							}
 						}
 
