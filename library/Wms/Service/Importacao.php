@@ -379,7 +379,6 @@ class Importacao
                 var_dump("cadastrou ator fornecedor");
                 var_dump($fornecedor);
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
-                $em->clear();
             }
 
             var_dump("Achou a pessoa: " . $entityPessoa->getNome());
@@ -388,6 +387,7 @@ class Importacao
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
                 $em->persist($entityFornecedor);
+                $em->flush($entityFornecedor);
                 var_dump("persistiu");
                 var_dump($entityFornecedor);
                 return true;
