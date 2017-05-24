@@ -24,7 +24,7 @@ class AtorRepository extends EntityRepository {
      */
     public function persistirAtor(AtorInterface $ator, array $values, $flush = true) {
         $pessoa = $this->persistirPessoa($ator, $values);
-
+        var_dump($pessoa);
         if (isset($values['enderecos']))
             $this->persistirEnderecos($pessoa, $values['enderecos']);
 
@@ -125,7 +125,7 @@ class AtorRepository extends EntityRepository {
         } else { //tipo inválido
             throw new \Exception('Tipo de Pessoa inválido');
         }
-        var_dump($pessoa);
+
         $ator->setPessoa($pessoa);
         $em->persist($pessoa);
         return $pessoa;
