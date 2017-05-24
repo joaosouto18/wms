@@ -374,8 +374,8 @@ class Importacao
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
             }
 
+            var_dump("Achou a pessoa: " . $entityPessoa->getNome());
             try {
-                var_dump($entityPessoa);
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
