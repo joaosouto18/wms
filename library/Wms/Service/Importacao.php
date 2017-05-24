@@ -387,11 +387,10 @@ class Importacao
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
 
-                var_dump("tentou presistir fornecedor");
-                var_dump($entityFornecedor);
-
                 $em->persist($entityFornecedor);
                 $em->flush($entityFornecedor);
+                var_dump("persistiu");
+                var_dump($entityFornecedor);
                 return true;
             }catch (\Exception $e){
                 return $e->getMessage();
