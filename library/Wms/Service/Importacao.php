@@ -371,6 +371,7 @@ class Importacao
 
             if ($entityPessoa == null) {
                 var_dump("cadastrou ator fornecedor");
+                var_dump($fornecedor);
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
             }
 
