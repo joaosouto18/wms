@@ -284,6 +284,12 @@ class Importacao
         }
     }
 
+    /**
+     * @param $em EntityManager
+     * @param $fornecedor
+     * @param bool $verificarCpfCnpj
+     * @return bool|string
+     */
     public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
     {
 
@@ -373,6 +379,7 @@ class Importacao
                 var_dump("cadastrou ator fornecedor");
                 var_dump($fornecedor);
                 $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
+                $em->clear();
             }
 
             var_dump("Achou a pessoa: " . $entityPessoa->getNome());
