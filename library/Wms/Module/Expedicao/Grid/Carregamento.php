@@ -16,12 +16,16 @@ class Carregamento extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
                 ->addColumn(array(
                     'label' => 'Seq.',
-                    'index' => 'pedido',
+                    'index' => 'codCliente',
                     'render' => 'Input'
                 ))
                 ->addColumn(array(
-                    'label' => 'Pedido.',
-                    'index' => 'pedido',
+                    'label' => 'Cod. Cliente',
+                    'index' => 'codCliente',
+                ))
+                ->addColumn(array(
+                    'label' => 'Cliente',
+                    'index' => 'cliente',
                 ))
                 ->addColumn(array(
                     'label' => 'Itens',
@@ -36,10 +40,6 @@ class Carregamento extends Grid
                     'index' => 'itinerario',
                 ))
                 ->addColumn(array(
-                    'label' => 'Carga',
-                    'index' => 'carga',
-                ))
-                ->addColumn(array(
                     'label' => 'Cidade',
                     'index' => 'cidade',
                 ))
@@ -51,10 +51,7 @@ class Carregamento extends Grid
                     'label' => 'Rua',
                     'index' => 'rua',
                 ))
-                ->addColumn(array(
-                    'label' => 'Cliente',
-                    'index' => 'cliente',
-                ));
+                ;
 
         $this->setShowExport(false)
             ->setButtonForm('Sequenciar');
