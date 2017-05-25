@@ -709,13 +709,6 @@ class ExpedicaoRepository extends EntityRepository
                     return 'Existem volumes embalados pendentes de CONFERENCIA!';
                 }
 
-                if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                    $result = $this->validaConferenciaERP($expedicaoEn->getId());
-                    if (is_string($result)) {
-                        return $result;
-                    }
-                }
-
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
@@ -723,6 +716,13 @@ class ExpedicaoRepository extends EntityRepository
                 }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
+            }
+
+            if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+                $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                if (is_string($result)) {
+                    return $result;
+                }
             }
 
             if (isset($idMapa) && !empty($idMapa)) {
