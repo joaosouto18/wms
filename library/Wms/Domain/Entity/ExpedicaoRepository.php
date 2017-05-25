@@ -384,7 +384,9 @@ class ExpedicaoRepository extends EntityRepository
         if (count($values) == 0) {
             throw new \Exception("Carga $idCargaExterno não encontrada no WMS");
         }
-        if ($values[0]['QTD'] == $qtd) {
+        $qtdWms = str_replace(',','.',$values[0]['QTD']);
+        $qtdErp = str_replace(',','.',$qtd);
+        if ($qtdErp == $qtdWms) {
             return true;
         } else {
             return false;
@@ -414,21 +416,23 @@ class ExpedicaoRepository extends EntityRepository
                 foreach ($pedidoERP as $produtoERP) {
                     if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
                         $encontrouProduto = true;
-                        if ($produtoERP['qtd'] != $pedidoProdutoWms['QTD']) {
-                            throw new \Exception("Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]");
+                        $qtdERP = str_replace(',','.',$produtoERP['qtd']);
+                        $qtdWms = str_replace(',','.',$pedidoProdutoWms['QTD']);
+                        if ($qtdERP != $qtdWms) {
+                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
                         }
                     }
                 }
 
                 if ($encontrouProduto == false) {
-                    throw new \Exception("Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]");
+                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
                 }
             } else {
-                throw new \Exception("Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP");
+                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
             }
         }
 
-        throw new \Exception("Divergencia de conferencia com o ERP na carga " . $idCargaExterno);
+        return "Divergencia de conferencia com o ERP na carga " . $idCargaExterno;
     }
 
     public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
@@ -817,7 +821,7 @@ class ExpedicaoRepository extends EntityRepository
                 $options = array();
                 $options[] = $cargaEn->getCodCargaExterno();
                 $result = $acaoIntRepo->processaAcao($acaoResumoEn,$options);
-                if (!($result === false)) {
+                if (!($result === true)) {
                     $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options);
                     if (!($result === true)) {
                         throw new \Exception($result);
