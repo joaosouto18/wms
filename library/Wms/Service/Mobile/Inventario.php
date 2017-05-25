@@ -282,7 +282,7 @@ class Inventario
                 $mes = substr($params['validade'],3,2);
                 if ($mes == false) $dataValida = false;
                 $ano = substr($params['validade'],6,2);
-                if ($mes == false) $dataValida = false;
+                if ($ano == false) $dataValida = false;
 
                 if ($dataValida == true) {
                     $data = $dia . "/" . $mes . "/20" . $ano;
@@ -293,9 +293,8 @@ class Inventario
                 $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
                 return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => $url);
             } else {
-                $validade = new \Zend_Date($data);
-                $validade = $validade->toString('Y-MM-dd');
-
+                $validade = date_create_from_format('d/m/Y', $data);
+                $validade = $validade->format('Y-m-d');
             }
         }
 

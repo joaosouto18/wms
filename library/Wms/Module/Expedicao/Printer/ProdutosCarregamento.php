@@ -9,7 +9,7 @@ use Wms\Math;
 
 class ProdutosCarregamento extends Pdf
 {
-    private function startPage() {
+    private function startPage($produtosClientesInConferenciaTxt) {
 
         $this->AddPage();
 
@@ -18,7 +18,7 @@ class ProdutosCarregamento extends Pdf
         $this->Cell(85, 10, utf8_decode('Página ').$this->PageNo(), 0, 1, 'R');
 
         $this->SetFont('Arial','B',14);
-        $this->Cell(45, 10, utf8_decode("RELATÓRIO CARREGAMENTO POR PRODUTO"),0,1);
+        $this->Cell(45, 10, utf8_decode("RELATÓRIO CARREGAMENTO POR PRODUTO - $produtosClientesInConferenciaTxt"),0,1);
     }
 
     private function bodyPage($data, $dataEmb = null, $embalagemRepo = null){
@@ -63,6 +63,12 @@ class ProdutosCarregamento extends Pdf
         $produtoRepo = $em->getRepository('wms:Produto');
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
+        $produtosClientesInConferenciaTxt = "Conferência em andamento";
+        $produtosClientesInConferencia = $mapaSeparacaoConferenciaRepo->getProdutosClientesInConferencia($idExpedicao);
+        if(is_array($produtosClientesInConferencia) && count($produtosClientesInConferencia)===0) {
+            $produtosClientesInConferenciaTxt = "Conferência realizada";
+        }
+
         $linhaSeparacaoAnt = null;
         $sequenciaAnt      = null;
         $codProdutoAnt     = null;
@@ -81,7 +87,7 @@ class ProdutosCarregamento extends Pdf
         foreach ($resultado as $chave => $valor) {
 
             if ($valor['DSC_LINHA_SEPARACAO'] != $linhaSeparacaoAnt || $valor['SEQUENCIA'] != $sequenciaAnt) {
-                $this->startPage();
+                $this->startPage($produtosClientesInConferenciaTxt);
                 $dataExpedicao = new \DateTime($valor['DTH_INICIO']);
                 $dataExpedicao = $dataExpedicao->format('d/m/Y');
                 $this->SetFont('Arial',  "B", 12);
@@ -112,7 +118,7 @@ class ProdutosCarregamento extends Pdf
         $sequencia = 99999;
         foreach ($embalados as $embalado) {
             if ($sequencia != $embalado['SEQUENCIA']) {
-                $this->startPage();
+                $this->startPage($produtosClientesInConferenciaTxt);
                 $dataExpedicao = new \DateTime($embalado['DTH_INICIO']);
                 $dataExpedicao = $dataExpedicao->format('d/m/Y');
                 $this->SetFont('Arial',  "B", 12);

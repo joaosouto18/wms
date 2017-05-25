@@ -35,8 +35,10 @@ class MapaSeparacaoRepository extends EntityRepository
                        P.COD_PRODUTO,
                        P.DSC_GRADE,
                        P.DSC_PRODUTO,
+                       MSP.QTD_EMBALAGEM,
+                       PE.DSC_EMBALAGEM,
                        NVL(CONF.NUM_CONFERENCIA,0) as NUM_CONFERENCIA,
-                       SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) as QTD_SEPARAR,
+                       SUM(MSP.QTD_SEPARAR) ||  PE.DSC_EMBALAGEM || '(' || MSP.QTD_EMBALAGEM || ')' as QTD_SEPARAR,
                        SUM(MSP.QTD_CORTADO) as QTD_CORTADO,
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
                        CASE WHEN (MSP.IND_CONFERIDO = 'S') OR NVL(CONF.QTD_CONFERIDA,0) + SUM(MSP.QTD_CORTADO) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) OR NVL(CONF.QTD_CONFERIDA,0) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) THEN 'CONFERIDO'
@@ -44,6 +46,7 @@ class MapaSeparacaoRepository extends EntityRepository
                             ELSE 'PENDENTE'
                        END AS CONFERIDO
                   FROM MAPA_SEPARACAO_PRODUTO MSP
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON MSP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN (SELECT MSC.NUM_CONFERENCIA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MSC.COD_MAPA_SEPARACAO, SUM (MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) as QTD_CONFERIDA
                                FROM MAPA_SEPARACAO_CONFERENCIA MSC
@@ -65,7 +68,11 @@ class MapaSeparacaoRepository extends EntityRepository
                         MSP.COD_MAPA_SEPARACAO,
                        CONF.NUM_CONFERENCIA,
                        CONF.QTD_CONFERIDA,
-                        MSP.IND_CONFERIDO";
+                        MSP.IND_CONFERIDO,
+                        MSP.QTD_EMBALAGEM,
+                        PE.DSC_EMBALAGEM  
+                        ORDER BY P.DSC_GRADE,
+                        P.DSC_PRODUTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }

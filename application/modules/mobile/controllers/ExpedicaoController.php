@@ -601,13 +601,6 @@ class Mobile_ExpedicaoController extends Action
             $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
         }
 
-        if (!is_string($result)) {
-            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
-                $this->addFlashMessage('error', 'Existem volumes embalados pendentes de CONFERENCIA!');
-                $this->_redirect("mobile/expedicao/index/idCentral/$central");
-            }
-        }
-
         if (is_string($result)) {
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
