@@ -109,22 +109,7 @@ class Mobile_OndaRessuprimentoController extends Action
         $idEnderecoPulmao = $valores['idPulmao'];
         $qtd = $valores['Qtde'];
 
-        $arrayQtds = array();
-        if ($valores['dscEmbalagem'] != null) {
-            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
-            $qtdRestante = $qtd;
-
-            foreach ($embalagensEn as $embalagem) {
-                $qtdEmbalagem = $embalagem->getQuantidade();
-                if ($qtdRestante >= $qtdEmbalagem) {
-                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
-                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
-                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
-                }
-            }
-        } else {
-            $arrayQtds[] = $qtd;
-        }
+        $arrayQtds = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $qtd);
 
         //$this->view->embalagem = $dscEmbalagem;
         $this->view->produtos = $produtos;
