@@ -249,21 +249,23 @@ class ExpedicaoRepository extends EntityRepository
             $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
 
             $dadosProdutos = array();
-            foreach ($produtosRessuprir as $produto) {
+            foreach ($pedidosProdutosRessuprir as $produto) {
                 $codProduto = $produto['COD_PRODUTO'];
                 $grade = $produto['DSC_GRADE'];
-                $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-                $embalagensASC = null;
-                if ($produtoEn->getTipoComercializacao()->getId() == 1) {
-                    $embalagensASC = $embalagemRepo->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'ASC'));
-                }
+                if (!isset($dadosProdutos[$codProduto][$grade])) {
+                    $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+                    $embalagensASC = null;
+                    if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+                        $embalagensASC = $embalagemRepo->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'ASC'));
+                    }
 
-                $dadosProdutos[$codProduto][$grade] = array(
-                    'codProduto'=> $codProduto,
-                    'grade'=> $grade,
-                    'entidade'=> $produtoEn,
-                    'embalagensASC' => $embalagensASC,
-                );
+                    $dadosProdutos[$codProduto][$grade] = array(
+                        'codProduto'=> $codProduto,
+                        'grade'=> $grade,
+                        'entidade'=> $produtoEn,
+                        'embalagensASC' => $embalagensASC,
+                    );
+                }
             }
 
             if (empty($produtosRessuprir)) {
