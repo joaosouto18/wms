@@ -76,10 +76,10 @@ class ProdutosMapa extends Grid {
         }
         foreach ($array as $key => $value) {
             $array[$key]['QTD_SEPARAR'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_SEPARAR'];
-            if ($value['QTD_CONFERIDA'] > 0) {
+            if (isset($value['QTD_CONFERIDA']) && !empty($value['QTD_CONFERIDA'])) {
                 $array[$key]['QTD_CONFERIDA'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CONFERIDA'];
             }
-            if ($value['QTD_CORTADO'] > 0) {
+            if (isset($value['QTD_CORTADO']) && !empty($value['QTD_CORTADO'])) {
                 $qtdCortadaReal = array_sum($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CORTADO_REAL']);
                 $qtd = 0;
                 if ($value['QTD_CORTADO'] > 0) {
