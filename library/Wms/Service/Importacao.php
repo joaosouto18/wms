@@ -284,6 +284,12 @@ class Importacao
         }
     }
 
+    /**
+     * @param $em EntityManager
+     * @param $fornecedor
+     * @param bool $verificarCpfCnpj
+     * @return bool|string
+     */
     public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
     {
 
@@ -299,7 +305,6 @@ class Importacao
         $entityPessoa = null;
 
         if ($entityFornecedor == null) {
-
             switch ($fornecedor['tipoPessoa']) {
                 case 'J':
                     $fornecedor['pessoa']['tipo'] = 'J';
@@ -375,6 +380,7 @@ class Importacao
             try {
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
+                $entityFornecedor->setPessoa($entityPessoa);
 
                 $em->persist($entityFornecedor);
                 return true;

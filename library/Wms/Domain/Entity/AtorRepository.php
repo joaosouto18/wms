@@ -35,6 +35,7 @@ class AtorRepository extends EntityRepository {
             $this->getEntityManager()->flush();
         }
 
+        var_dump($pessoa);
         return $pessoa;
     }
 
