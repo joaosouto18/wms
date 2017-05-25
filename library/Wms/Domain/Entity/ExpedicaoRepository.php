@@ -2193,10 +2193,8 @@ class ExpedicaoRepository extends EntityRepository
         $source = $this->_em->createQueryBuilder()
             ->select("
                       ped.sequencia,
-                      ped.id                                as pedido,
+                      cli.codClienteExterno                 as codCliente,
                       it.descricao                          as itinerario,
-                      car.codCargaExterno                   as carga,
-                      car.placaCarga                        as placa,
                       NVL(pe.localidade,endere.localidade)  as cidade,
                       NVL(pe.bairro,endere.bairro)          as bairro,
                       NVL(pe.descricao,endere.descricao)    as rua,
@@ -2215,8 +2213,8 @@ class ExpedicaoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.pedido = ped.id')
             ->distinct(true)
             ->where("prod.linhaSeparacao != 15")
-            ->groupBy("pe.localidade, pj.nomeFantasia, car.placaCarga, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
-            ->orderBy('ped.sequencia, cidade, bairro, rua, cliente, ped.id');
+            ->groupBy("cli.codClienteExterno, pe.localidade, pj.nomeFantasia, pe.bairro, pe.descricao, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia")
+            ->orderBy('ped.sequencia, cidade, bairro, rua, cliente, codCliente');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
             $source->andWhere("car.codExpedicao = " . $codExpedicao);
@@ -2229,7 +2227,6 @@ class ExpedicaoRepository extends EntityRepository
         if ($codStatus != NULL){
             $source->andWhere("es.codStatus = $codStatus ");
         }
-
         return $source->getQuery()->getResult();
     }
 

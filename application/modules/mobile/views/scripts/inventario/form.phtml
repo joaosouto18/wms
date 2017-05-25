@@ -45,8 +45,25 @@
                     }
                 }
             }
-        })
+        });
 
+        $('#qtdAvaria').keydown(function (e) {
+            if(e.which===13 && $('#parametroValidade').val() === 'S' && $('#validadeProduto').val() === 'S' ) {
+                var dataSplit = validade.val().split('/');
+                var dataAtual = new Date().toISOString().slice(0,10);
+                var dataValidade = new Date('20'+dataSplit[2], dataSplit[1]-1, dataSplit[0]).toISOString().slice(0,10);
+
+                var confirma = true;
+
+                if(dataAtual === dataValidade) {
+                    confirma = confirm("A Data de validade informada "+ validade.val() +" está vencendo hoje. Deseja continuar?");
+                } else if (dataAtual > dataValidade){
+                    confirma = confirm("A Data de validade informada "+ validade.val() +" está vencida. Deseja continuar?");
+                }
+
+                return confirma === true;
+            }
+        });
 
     });
 </script>

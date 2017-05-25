@@ -11,7 +11,7 @@ class ProdutosClienteCarregamento extends Pdf
 {
     protected $math;
 
-    private function startPage() {
+    private function startPage($produtosClientesInConferenciaTxt) {
 
         $this->AddPage();
 
@@ -20,7 +20,7 @@ class ProdutosClienteCarregamento extends Pdf
         $this->Cell(85, 10, utf8_decode('Página ').$this->PageNo(), 0, 1, 'R');
 
         $this->SetFont('Arial','B',14);
-        $this->Cell(45, 10, utf8_decode("RELATÓRIO CARREGAMENTO POR CLIENTE"),0,1);
+        $this->Cell(45, 10, utf8_decode("RELATÓRIO CARREGAMENTO POR CLIENTE - $produtosClientesInConferenciaTxt"),0,1);
     }
 
     private function bodyPage($data, $embalagemRepo, $dataEmb = null){
@@ -70,6 +70,12 @@ class ProdutosClienteCarregamento extends Pdf
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
         $produtoRepo = $em->getRepository('wms:Produto');
 
+        $produtosClientesInConferenciaTxt = "Conferência em andamento";
+        $produtosClientesInConferencia = $mapaSeparacaoConferenciaRepo->getProdutosClientesInConferencia($idExpedicao);
+        if(is_array($produtosClientesInConferencia) && count($produtosClientesInConferencia)===0) {
+            $produtosClientesInConferenciaTxt = "Conferência realizada";
+        }
+
         $linhaSeparacaoAnt = null;
         $sequenciaAnt      = null;
 
@@ -88,7 +94,7 @@ class ProdutosClienteCarregamento extends Pdf
         $sequenciaAnterior = null;
         foreach ($resultado as $chave => $valor) {
             if ($valor['COD_PESSOA'] != $clienteAnterior || $valor['SEQUENCIA'] != $sequenciaAnterior) {
-                $this->startPage();
+                $this->startPage($produtosClientesInConferenciaTxt);
                 $dataExpedicao = new \DateTime($valor['DTH_INICIO']);
                 $dataExpedicao = $dataExpedicao->format('d/m/Y');
                 $this->SetFont('Arial', "B", 12);

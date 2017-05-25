@@ -4,17 +4,15 @@ namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\ORM\EntityRepository;
 
-class EmbalagemRepository extends EntityRepository
-{
+class EmbalagemRepository extends EntityRepository {
 
     /**
      * @param $novaEmbalagem \Wms\Domain\Entity\Produto\Embalagem
      * @return bool|\Exception
      */
-    public function checkEmbalagemDefault($novaEmbalagem)
-    {
-        try{
-            if (!empty($novaEmbalagem) && is_a($novaEmbalagem,'\Wms\Domain\Entity\Produto\Embalagem')){
+    public function checkEmbalagemDefault($novaEmbalagem) {
+        try {
+            if (!empty($novaEmbalagem) && is_a($novaEmbalagem, '\Wms\Domain\Entity\Produto\Embalagem')) {
                 $criterio = array(
                     'codProduto' => $novaEmbalagem->getProduto()->getId(),
                     'grade' => $novaEmbalagem->getProduto()->getGrade(),
@@ -41,13 +39,12 @@ class EmbalagemRepository extends EntityRepository
             } else {
                 throw new \Exception("A variavel passada não é válida");
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return $e;
         }
     }
 
-    public function setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado)
-    {
+    public function setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado) {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
@@ -68,15 +65,14 @@ class EmbalagemRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function checkEstoqueReservaById($id)
-    {
+    public function checkEstoqueReservaById($id) {
         $dql = $this->_em->createQueryBuilder()
-            ->select('NVL(e.id, rep.id)')
-            ->from('wms:Produto\Embalagem', 'pe')
-            ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pe.id = e.produtoEmbalagem')
-            ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH','pe.id = rep.codProdutoEmbalagem')
-            ->where('pe.id = :id')
-            ->setParameter('id',$id);
+                ->select('NVL(e.id, rep.id)')
+                ->from('wms:Produto\Embalagem', 'pe')
+                ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pe.id = e.produtoEmbalagem')
+                ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH', 'pe.id = rep.codProdutoEmbalagem')
+                ->where('pe.id = :id')
+                ->setParameter('id', $id);
 
         $result = $dql->getQuery()->getResult();
         $msg = null;
@@ -87,11 +83,40 @@ class EmbalagemRepository extends EntityRepository
                     $status = 'error';
                     $msg = 'Não é permitido excluir embalagens com estoque ou reserva de estoque!';
                 }
-                if ($status === 'error') break;
+                if ($status === 'error')
+                    break;
             }
-            if ($status === 'error') break;
+            if ($status === 'error')
+                break;
         }
         return array($status, $msg);
+    }
+
+    /**
+     * Retorna quantidade usada para cada embalagem
+     * @param int $codProduto Description
+     * @param int $grade Description
+     * @param int $qtd Description
+     * @return array Description
+     */
+    public function getQtdEmbalagensProduto($codProduto, $grade, $qtd) {
+        $arrayQtds = array();
+        $embalagensEn = $this->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+        $qtdRestante = $qtd;
+
+        foreach ($embalagensEn as $embalagem) {
+            $qtdEmbalagem = $embalagem->getQuantidade();
+            if ($qtdRestante >= $qtdEmbalagem) {
+                $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
+                $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                if ($embalagem->getDescricao() != null) {
+                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                } else {
+                    $arrayQtds[] = $qtd;
+                }
+            }
+        }
+        return $arrayQtds;
     }
 
 }
