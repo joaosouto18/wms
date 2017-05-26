@@ -6,10 +6,12 @@ use Wms\Module\Web\Form;
 class RelatoriosCarregamento extends Form
 {
 
-    public function init()
+    public function start($idExpedicao)
     {
         $em = $this->getEm();
-        $linhasSeparacao = $em->getRepository('wms:Armazenagem\LinhaSeparacao')->getIdValue();
+        $linhasSeparacao = $em->getRepository('wms:Armazenagem\LinhaSeparacao')
+            ->getLinhaSeparacaoByConferenciaExpedicao($idExpedicao);
+
           $this
               ->setAttribs(array(
                   'method' => 'get',

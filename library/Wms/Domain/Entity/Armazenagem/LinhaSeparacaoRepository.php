@@ -60,4 +60,26 @@ class LinhaSeparacaoRepository extends EntityRepository
 	    $linhas[$linha->getId()] = $linha->getDescricao();
 	return $linhas;
     }
+
+    public function getLinhaSeparacaoByConferenciaExpedicao($codExpedicao)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('ls.descricao, ls.id')
+            ->from('wms:Expedicao\MapaSeparacao','ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoProduto','msp', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->leftJoin('wms:Expedicao\MapaSeparacaoConferencia', 'msc', 'WITH', 'msc.mapaSeparacao = ms.id AND msc.codProduto = msp.codProduto AND msc.dscGrade = msp.dscGrade')
+            ->innerJoin('msp.produto', 'p')
+            ->innerJoin('p.linhaSeparacao', 'ls')
+            ->where("ms.codExpedicao = $codExpedicao")
+            ->groupBy('ls.descricao, ls.id')
+            ->having('SUM(msp.qtdSeparar * msp.qtdEmbalagem - NVL(msp.qtdCortado,0)) - NVL(SUM(msc.qtdConferida * msc.qtdEmbalagem),0) = 0');
+
+        $linhaSeparacao = $sql->getQuery()->getResult();
+
+        $linhas = array();
+        foreach ($linhaSeparacao as $linha)
+            $linhas[$linha['id']] = $linha['descricao'];
+        return $linhas;
+
+    }
 }

@@ -553,7 +553,10 @@ class Expedicao_IndexController extends Action
 
     public function relatoriosCarregamentoAjaxAction()
     {
-        $this->view->form = new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
-        $this->view->idExpedicao = $this->_getParam('id');
+        $form =new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
+        $idExpedicao = $this->_getParam('id');
+        $form->start($idExpedicao);
+        $this->view->form = $form;
+        $this->view->idExpedicao = $idExpedicao;
     }
 }
