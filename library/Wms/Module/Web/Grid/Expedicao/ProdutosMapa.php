@@ -76,17 +76,10 @@ class ProdutosMapa extends Grid {
         }
         foreach ($array as $key => $value) {
             $array[$key]['QTD_SEPARAR'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_SEPARAR'];
-<<<<<<< HEAD
             if (isset($array[$key]['QTD_CONFERIDA']) && $value['QTD_CONFERIDA'] > 0) {
                 $array[$key]['QTD_CONFERIDA'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CONFERIDA'];
             }
             if (isset($array[$key]['QTD_CORTADO']) && $value['QTD_CORTADO'] > 0) {
-=======
-            if (isset($value['QTD_CONFERIDA']) && !empty($value['QTD_CONFERIDA'])) {
-                $array[$key]['QTD_CONFERIDA'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CONFERIDA'];
-            }
-            if (isset($value['QTD_CORTADO']) && !empty($value['QTD_CORTADO'])) {
->>>>>>> 43c8e497bb238a1d6cc8e2380e16a2ca19cc7804
                 $qtdCortadaReal = array_sum($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CORTADO_REAL']);
                 $qtd = 0;
                 arsort($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM']);
