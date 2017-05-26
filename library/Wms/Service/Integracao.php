@@ -148,13 +148,13 @@ class Integracao
             );
             $produtos[] = $produto;
 
-            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
+            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
                 $pedidos[$idPedido] = $produtos;
                 unset($produtos);
                 $produtos = array();
             }
 
-            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
+            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
                 $cargas[$idCarga] = $pedidos;
                 unset($pedidos);
                 $pedidos = array();

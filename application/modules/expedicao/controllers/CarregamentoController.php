@@ -33,7 +33,7 @@ class Expedicao_CarregamentoController extends Action
 
         if ($codExpedicao || $codCarga) {
             $form->populate($params);
-            if (isset($params['pedido'])) {
+            if (isset($params['codCliente'])) {
                 /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
                 $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
 
@@ -44,7 +44,7 @@ class Expedicao_CarregamentoController extends Action
                 }
 
                 try {
-                    $pedidoRepo->realizaSequenciamento($params['pedido']);
+                    $pedidoRepo->realizaSequenciamento($params['codCliente'],$codExpedicao);
                     $this->addFlashMessage('success', 'Sequenciamento realizado com sucesso');
                     $this->_redirect('/expedicao/carregamento/index/page/'.$page.'?codExpedicao='.$codExpedicao);
                 } catch (Expedicao $e) {

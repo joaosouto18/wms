@@ -402,17 +402,40 @@ class PedidoRepository extends EntityRepository
     /**
      * O array de pedidos deve ter a chave o id do pedido e o value a sequencia desejada
      */
-    public function realizaSequenciamento(array $pedidos)
+    public function realizaSequenciamento(array $pedidos,$codExpedicao)
     {
         foreach($pedidos as $chave => $sequencia)
         {
-            $entityPedido = $this->find($chave);
-            $entityPedido->setSequencia($sequencia);
-            $this->_em->persist($entityPedido);
+            $result = $this->getPedidosByClienteExpedicao($chave,$codExpedicao);
+            foreach ($result as $item) {
+                $entityPedido = $this->find($item->getId());
+                $entityPedido->setSequencia($sequencia);
+                $this->_em->persist($entityPedido);
+            }
         }
        if ($this->_em->flush()) {
            return true;
        }
+    }
+
+    private function getPedidosByClienteExpedicao($codClientes,$codExpedicao)
+    {
+//        $clienteExternoArr = array();
+//        foreach ($codClientes as $key => $codCliente) {
+//            $clienteExternoArr[] = $key;
+//        }
+//        $codClienteExterno = implode(',',$clienteExternoArr);
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('ped')
+            ->from('wms:Expedicao\Pedido', 'ped')
+            ->innerJoin('ped.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->innerJoin('ped.pessoa', 'p')
+            ->innerJoin('wms:Pessoa\Papel\Cliente', 'cli', 'WITH', 'cli.id = p.id')
+            ->where("e.id = $codExpedicao")
+            ->andWhere("cli.codClienteExterno IN ($codClientes)");
+        
+        return $sql->getQuery()->getResult();
     }
 
     public function removeReservaEstoque($idPedido, $runFlush = true)
