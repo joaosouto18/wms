@@ -15,10 +15,11 @@ class RelatoriosCarregamento extends Form
               ));
 
           if (isset($linhasSeparacao) && !empty($linhasSeparacao)) {
-              $this->addElement('multiselect', 'idLinhaSeparacao', array(
+              $this->addElement('select', 'idLinhaSeparacao', array(
                   'label' => 'Linha de Separação',
                   'style' => 'height:auto; width:100%',
                   'multiOptions' => $linhasSeparacao,
+                  'value' => key($linhasSeparacao),
                   'attribs' => array(
                       'id' => 'linhaSeparacao'
                   ),

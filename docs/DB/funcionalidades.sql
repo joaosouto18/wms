@@ -47,4 +47,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Mensagem de confirmação no Mobile Inventário caso a data informada do produto esteja com data vencida', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Correção: Exibir as validades conferidas corretamente no Relatório de Nota Fiscal de Entrada', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Correção: Validando conferencia WMS x ERP independente do tipo de fechamento, com conferenica ou forçando com senha', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Correção: Geração de relatório de carregamento apenas com linhas conferidas', null, SYSDATE);
 
