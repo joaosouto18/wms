@@ -440,52 +440,45 @@ class PedidoRepository extends EntityRepository
 
     public function removeReservaEstoque($idPedido, $runFlush = true)
     {
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
-        $PedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $PedidoRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEn */
 
-        $getCentralEntrega = $PedidoProdutoRepo->getFilialByProduto($idPedido);
+        $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
-        $ondasPedido = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido')->findBy(array('pedido'=>$idPedido));
-        if (count($ondasPedido) == 0) {
+        $pedidoEn = $PedidoRepo->find($idPedido);
+        $idExpedicao = $pedidoEn->getCarga()->getExpedicao()->getId();
+
+        if ($pedidoEn == null) {
             return;
         }
-        foreach ($ondasPedido as $ondaPedido) {
-            $this->getEntityManager()->remove($ondaPedido);
-        }
 
-        foreach ($getCentralEntrega as $centralEntrega) {
-            if ($centralEntrega['indUtilizaRessuprimento'] == 'S') {
-                $dados['produto'] = $centralEntrega['produto'];
-                $dados['grade'] = $centralEntrega['grade'];
-                $dados['expedicao'] = $centralEntrega['expedicao'];
+        $ondasPedido = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido')->findBy(array('pedido'=>$idPedido));
+        $reservasExpedicaoEn = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueExpedicao')->findBy(array('expedicao'=>$idExpedicao,
+            'pedido'=>$idPedido));
 
-                $arrayReservaEstoqueId = $PedidoProdutoRepo->identificaExpedicaoPedido($dados);
 
-                //atualiza a tabela RESERVA_ESTOQUE_PRODUTO que tiver o COD_RESERVA_ESTOQUE da consulta acima
-                $reservaEstoqueProdutoRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
-
-                foreach ($arrayReservaEstoqueId as $key => $reservaEstoqueId) {
-                    $arrayReservaProdutoEntity = $reservaEstoqueProdutoRepository->findBy(array('reservaEstoque' => $reservaEstoqueId['reservaEstoque']));
-                    foreach ($arrayReservaProdutoEntity as $reservaProdutoEntity) {
-                        $reservaProdutoEntity->setQtd($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']);
-                        $this->_em->persist($reservaProdutoEntity);
-
-                        $reservaEstoqueRepository = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
-                        $reservaId = $reservaEstoqueRepository->findOneBy(array('id' => $reservaProdutoEntity->getReservaEstoque()));
-                        if (($reservaProdutoEntity->getQtd() + $centralEntrega['quantidade']) == 0) {
-                            $reservaId->setAtendida('C');
-                            $this->_em->persist($reservaId);
-                        }
-                    }
-                }
+        foreach ($reservasExpedicaoEn as $reservaExpedicaoEn) {
+            $reservaEn = $reservaExpedicaoEn->getReservaEstoque();
+            $this->getEntityManager()->remove($reservaExpedicaoEn);
+            if ($reservaEn->getAtendida() == "N") {
+                $reservaEn->setAtendida('C');
+                $this->getEntityManager()->persist($reservaEn);
             }
         }
 
         if ($runFlush == true) {
             $this->_em->flush();
         }
-    }
 
+        foreach ($ondasPedido as $ondaPedido) {
+            $this->getEntityManager()->remove($ondaPedido);
+        }
+
+        if ($runFlush == true) {
+            $this->_em->flush();
+        }
+
+    }
 
     public function getDadosPedidoByCodPedido ($codPedido){
         $SQL = "
