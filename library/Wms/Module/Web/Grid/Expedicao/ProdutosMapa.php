@@ -76,36 +76,34 @@ class ProdutosMapa extends Grid {
         }
         foreach ($array as $key => $value) {
             $array[$key]['QTD_SEPARAR'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_SEPARAR'];
-            if (isset($value['QTD_CONFERIDA']) && !empty($value['QTD_CONFERIDA'])) {
+            if (isset($array[$key]['QTD_CONFERIDA']) && $value['QTD_CONFERIDA'] > 0) {
                 $array[$key]['QTD_CONFERIDA'] = $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CONFERIDA'];
             }
-            if (isset($value['QTD_CORTADO']) && !empty($value['QTD_CORTADO'])) {
+            if (isset($array[$key]['QTD_CORTADO']) && $value['QTD_CORTADO'] > 0) {
                 $qtdCortadaReal = array_sum($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_CORTADO_REAL']);
                 $qtd = 0;
-                if ($value['QTD_CORTADO'] > 0) {
-                    arsort($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM']);
-                    foreach ($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM'] as $keyEmbalagem => $qtdEmbalagem) {
-                        /**
-                         * Enquanto a quantidade total conferida menos a quantidade dessa embalagem 
-                         * for maior que zero adiciona uma quantidade na embalagem
-                         */
-                        while (($qtdCortadaReal - $qtdEmbalagem) > 0) {
-                            if ($qtdCortadaReal > 0) {
-                                $qtd++;
-                            }
-                            $qtdCortadaReal = $qtdCortadaReal - $qtdEmbalagem;
+                arsort($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM']);
+                foreach ($vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM'] as $keyEmbalagem => $qtdEmbalagem) {
+                    /**
+                     * Enquanto a quantidade total conferida menos a quantidade dessa embalagem 
+                     * for maior que zero adiciona uma quantidade na embalagem
+                     */
+                    while (($qtdCortadaReal - $qtdEmbalagem) > 0) {
+                        if ($qtdCortadaReal > 0) {
+                            $qtd++;
                         }
-                        /**
-                         * Insere uma posicao com a quantidade de embalagens 
-                         */
-                        $qtdCortadaEmbalagem[] = $qtd . $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['DSC_EMBALAGEM'][$keyEmbalagem] . '(' . $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM'][$keyEmbalagem] . ')';
+                        $qtdCortadaReal = $qtdCortadaReal - $qtdEmbalagem;
                     }
                     /**
-                     * Ordena o vetor em ordem crescente e concatena
+                     * Insere uma posicao com a quantidade de embalagens 
                      */
-                    asort($qtdCortadaEmbalagem);
-                    $cortado = implode(' + ', $qtdCortadaEmbalagem);
+                    $qtdCortadaEmbalagem[] = $qtd . $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['DSC_EMBALAGEM'][$keyEmbalagem] . '(' . $vetDuplicado[$value['COD_PRODUTO'] . $value['DSC_GRADE']]['QTD_EMBALAGEM'][$keyEmbalagem] . ')';
                 }
+                /**
+                 * Ordena o vetor em ordem crescente e concatena
+                 */
+                asort($qtdCortadaEmbalagem);
+                $cortado = implode(' + ', $qtdCortadaEmbalagem);
                 $array[$key]['QTD_CORTADO'] = $cortado;
             }
         }
