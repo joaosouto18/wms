@@ -14,6 +14,21 @@ class Expedicao_IndexController extends Action
     public function indexAction()
     {
 
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Importar Pedidos ERP',
+                    'cssClass' => 'btnSave',
+                    'urlParams' => array(
+                        'module' => 'expedicao',
+                        'controller' => 'pedido',
+                        'action' => 'listar-pedidos-erp',
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
+
         $form = new FiltroExpedicaoMercadoria();
         $this->view->form = $form;
         $params = $this->_getAllParams();

@@ -20,3 +20,11 @@ UPDATE ACAO_INTEGRACAO SET DSC_QUERY = 'select n.codfornec COD_FORNECEDOR, f.for
 
 UPDATE ACAO_INTEGRACAO SET DSC_QUERY = 'select c.numcar CARGA, sum(i.qt) QTD, sum(i.qt*i.pvenda) valototal from pcpedc c, pcpedi i, pccarreg car where c.numcar=car.numcar and c.numped = i.numped and c.numcar= :?1 group by c.numcar' WHERE COD_TIPO_ACAO_INTEGRACAO = 603;
 UPDATE ACAO_INTEGRACAO SET DSC_QUERY = 'select i.numcar CARGA, i.numped PEDIDO, i.codprod PRODUTO, ' || '''UNICA''' || ' as GRADE, sum(i.qt) QTD from pcpedi i where numcar = :?1 group by i.numcar, i.numped, i.codprod' WHERE COD_TIPO_ACAO_INTEGRACAO = 604;
+
+
+INSERT INTO SIGLA (COD_SIGLA, COD_TIPO_SIGLA, DSC_SIGLA, COD_REFERENCIA_SIGLA) VALUES (607, 79, 'ENVIO DE PEDIDOS POR CARGA', 'P');
+
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
+  VALUES (8,1,'SELECT c.numcar CARGA, v.placa PLACA, c.numped PEDIDO, c.codpraca COD_PRACA, pr.praca DSC_PRACA, pr.rota COD_ROTA, rota.descricao DSC_ROTA, c.codcli COD_CLIENTE, cli.cliente NOME, cli.cgcent CPF_CNPJ, cli.tipofj TIPO_PESSOA, cli.enderent LOGRADOURO, cli.numeroent NUMERO, cli.bairroent BAIRRO, cli.municent CIDADE, cli.estent UF, cli.complementoent COMPLEMENTO, cli.pontorefer REFERENCIA, cli.cepent CEP, i.codprod PRODUTO, ' || '''UNICA''' || ' GRADE, i.qt QTD, SUM(i.qt*i.pvenda) VLR_VENDA, TO_CHAR(TO_DATE(g.datamon || ' || ''' ''' || '||g.horamon||' || ''':''' || '||g.minutomon,' || '''DD/MM/YY HH24:MI:SS''' || '),' || '''DD/MM/YYYY HH24:MI:SS''' || ') AS DTH FROM pcpedc c, pcpedi i, pcpraca pr, pcrotaexp rota, pcclient cli, pccarreg g, pcveicul v WHERE c.numped=i.numped AND c.codcli=cli.codcli AND pr.codpraca=c.codpraca AND pr.rota=rota.codrota AND c.numcar=g.numcar AND g.codveiculo=v.codveiculo AND c.posicao NOT IN ('||'''C'''||') AND c.codfilial in ( :codFilial ) AND c.numcar IN (:?1) GROUP BY c.numcar, v.placa, c.numped, c.codpraca, pr.praca, pr.rota, rota.descricao, c.codcli, cli.cliente, cli.cgcent, cli.tipofj, cli.enderent, cli.numeroent, cli.bairroent, cli.municent, cli.estent, cli.complementoent, cli.pontorefer, cli.cepent, i.codprod, i.qt, i.numseq, g.datamon, g.horamon, g.minutomon ORDER BY c.numped',
+ 607,'S',NULL);
+

@@ -117,6 +117,11 @@ class Integracao
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     return $this->processaNotasFiscais($this->_dados);
+                case AcaoIntegracao::BUSCA_PEDIDOS_POR_CARGA:
+                    return $this->_dados;
+                case AcaoIntegracao::INTEGRACAO_PEDIDOS_POR_CARGA:
+                    return $this->processaPedido($this->_dados);
+
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
