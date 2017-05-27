@@ -35,7 +35,8 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
                         'Grade' => $line['DSC_GRADE'],
                         'Produto' => $line['DSC_PRODUTO'],
                         'Estoque WMS' => $line['ESTOQUE_WMS'],
-                        'Estoque ERP' => $line['ESTOQUE_ERP']);
+                        'Estoque ERP' => $line['ESTOQUE_ERP'],
+                        'Divergência' => $line['DIVERGENCIA']);
                 }
                 $this->exportCSV($pdf, 'comparativoEstoque', 'Comparativo de Estoque');
             }
