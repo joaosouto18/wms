@@ -199,12 +199,12 @@ class Expedicao_IndexController extends Action
                 /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaPedidoRepo */
                 $ondaPedidoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
                 foreach ($pedidos as $pedidoEn) {
-                    $ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
+                    //$ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
 
                     if ($pedidoEn->getIndEtiquetaMapaGerado() == 'S') {
                         throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados!');
-                    } else if (count($ondaPedidoEn) > 0) {
-                        throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
+                    //} else if (count($ondaPedidoEn) > 0) {
+                    //    throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
                     }
                 }
 
@@ -219,6 +219,11 @@ class Expedicao_IndexController extends Action
                 if (count($cargas) <= 1) {
                     throw new \Exception('A Expedição não pode ficar sem cargas');
                 }
+
+                foreach ($pedidos as $pedido) {
+                    $pedidoRepo->removeReservaEstoque($pedido->getId());
+                }
+
                 $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
                 $expedicaoAntiga = $cargaEn->getCodExpedicao();
                 $expedicaoEn = $ExpedicaoRepo->save($placa);
@@ -227,9 +232,6 @@ class Expedicao_IndexController extends Action
                 $cargaEn->setPlacaCarga($placa);
                 $this->_em->persist($cargaEn);
 
-                foreach ($pedidos as $pedido) {
-                    $pedidoRepo->removeReservaEstoque($pedido->getId());
-                }
 
                 if ($countCortadas > 0) {
                     $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
