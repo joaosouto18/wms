@@ -22,7 +22,8 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
             $idInventario = $params['inventario'];
         }
 
-        if (!empty($params['inventario']) || !empty($params['divergencia']) || !empty($params['tipoDivergencia']) || !empty($params['linhaSeparacao'])) {
+        if (isset($params['inventario']) && !empty($params['inventario']) || isset($params['divergencia'])
+            || isset($params['tipoDivergencia']) || isset($params['linhaSeparacao'])) {
             $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario, $params);
             $grid = new \Wms\Module\Inventario\Grid\ComparativoEstoque();
             $this->view->grid = $grid->init($result);

@@ -30,7 +30,7 @@ class ComparativoEstoque extends Grid
                     'render' => 'N3'
                 ));
                 $this->addColumn(array(
-                    'label' => 'Estoqe WMS',
+                    'label' => 'Estoque WMS',
                     'index' => 'ESTOQUE_WMS',
                     'render' => 'N3'
                 ));
