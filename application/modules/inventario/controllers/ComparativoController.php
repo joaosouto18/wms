@@ -6,6 +6,8 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
 {
     public function indexAction() 
     {
+        ini_set('max_execution_time', 3000);
+        ini_set('memory_limit', '-1');
         $this->configurePage();
         $params = $this->_getAllParams();
         $form = new \Wms\Module\Inventario\Form\FormComparativo();
