@@ -3,6 +3,8 @@
 namespace Wms\Domain\Entity\Ressuprimento;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 
 class ReservaEstoqueExpedicaoRepository extends EntityRepository
 {
@@ -31,7 +33,13 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
             $qtdRestante = $produto['produtos'][0]['qtd'];
             $idVolume = $produtos['produtos'][0]['codProdutoVolume'];
             $qtdRestante = $qtdRestante * -1;
-            $estoquePulmao = $estoqueRepo->getEstoquePulmaoByProduto($codProduto, $grade,$idVolume, false);
+            $params = array(
+                'idProduto'=>$codProduto,
+                'grade'=> $grade,
+                'idVolume'=>$idVolume,
+                'idCaracteristigaIgnorar' => Endereco::ENDERECO_PICKING
+            );
+            $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
             foreach ($estoquePulmao as $estoque) {
                 if ($qtdRestante > 0) {
                     $qtdEstoque = $estoque['SALDO'];

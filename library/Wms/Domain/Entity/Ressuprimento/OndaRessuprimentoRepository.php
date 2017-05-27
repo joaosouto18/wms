@@ -479,7 +479,13 @@ class OndaRessuprimentoRepository extends EntityRepository
 
             $quantidadeBloqueadoInventario = 0;
             //GERO AS OS DE ACORDO COM OS ENDEREÇOS DE PULMAO
-            $estoquePulmao = $estoqueRepo->getEstoquePulmaoByProduto($codProduto, $grade,$idVolume, false);
+            $params = array(
+                'idProduto' => $codProduto,
+                'grade' => $grade,
+                'idVolume' => $volumes,
+                'idEnderecoIgnorar' => $idPicking
+            );
+            $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
