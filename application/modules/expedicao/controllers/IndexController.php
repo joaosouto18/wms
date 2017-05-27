@@ -555,7 +555,25 @@ class Expedicao_IndexController extends Action
 
     public function relatoriosCarregamentoAjaxAction()
     {
-        $this->view->form = new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
-        $this->view->idExpedicao = $this->_getParam('id');
+        try {
+            $form =new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
+            $idExpedicao = $this->_getParam('id');
+
+            $em = $this->getEntityManager();
+            $linhasSeparacao = $em->getRepository('wms:Armazenagem\LinhaSeparacao')
+                ->getLinhaSeparacaoByConferenciaExpedicao($idExpedicao);
+
+            $possuiConferenciaConcluida = true;
+            if (!isset($linhasSeparacao) || empty($linhasSeparacao)) {
+                $possuiConferenciaConcluida = false;
+            }
+
+            $form->start($linhasSeparacao);
+            $this->view->form = $form;
+            $this->view->idExpedicao = $idExpedicao;
+            $this->view->possuiConferenciaConcluida = $possuiConferenciaConcluida;
+        } catch (\Wms\Util\WMS_Exception $e) {
+            $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage()));
+        }
     }
 }

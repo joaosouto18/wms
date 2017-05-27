@@ -136,7 +136,8 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                                     AND PROD.DSC_GRADE = P.DSC_GRADE
               LEFT JOIN LINHA_SEPARACAO LS ON LS.COD_LINHA_SEPARACAO = PROD.COD_LINHA_SEPARACAO                        
              
-              WHERE P.QTD_SEPARAR - NVL(EMB.QTD_EMBALADO,0) > 0
+              WHERE P.QTD_SEPARAR - NVL(EMB.QTD_EMBALADO,0) > 0 
+              $andWhere
              ORDER BY P.SEQUENCIA,
                       LS.COD_LINHA_SEPARACAO,
                       PROD.COD_PRODUTO";
