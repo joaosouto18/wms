@@ -22,22 +22,24 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
             $idInventario = $params['inventario'];
         }
 
-        $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario,$params);
-        $grid = new \Wms\Module\Inventario\Grid\ComparativoEstoque();
-        $this->view->grid = $grid->init($result);
+        if (!empty($params['inventario']) || !empty($params['divergencia']) || !empty($params['tipoDivergencia']) || !empty($params['linhaSeparacao'])) {
+            $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario, $params);
+            $grid = new \Wms\Module\Inventario\Grid\ComparativoEstoque();
+            $this->view->grid = $grid->init($result);
 
             if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
                 $pdf = array();
                 foreach ($result as $line) {
                     $pdf[] = array(
-                        'Código'=>$line['COD_PRODUTO'],
-                        'Grade'=>$line['DSC_GRADE'],
-                        'Produto'=>$line['DSC_PRODUTO'],
-                        'Estoque WMS'=> $line['ESTOQUE_WMS'],
-                        'Estoque ERP'=> $line['ESTOQUE_ERP']);
+                        'Código' => $line['COD_PRODUTO'],
+                        'Grade' => $line['DSC_GRADE'],
+                        'Produto' => $line['DSC_PRODUTO'],
+                        'Estoque WMS' => $line['ESTOQUE_WMS'],
+                        'Estoque ERP' => $line['ESTOQUE_ERP']);
                 }
-                $this->exportPDF($pdf,"comparativoEstoque","Comparativo de Estoque","P");
+                $this->exportPDF($pdf, "comparativoEstoque", "Comparativo de Estoque", "P");
             }
+        }
 
     }
 
