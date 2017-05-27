@@ -37,7 +37,7 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
                         'Estoque WMS' => $line['ESTOQUE_WMS'],
                         'Estoque ERP' => $line['ESTOQUE_ERP']);
                 }
-                $this->exportPDF($pdf, "comparativoEstoque", "Comparativo de Estoque", "P");
+                $this->exportCSV($pdf, 'comparativoEstoque', 'Comparativo de Estoque');
             }
         }
 

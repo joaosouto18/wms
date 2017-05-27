@@ -39,7 +39,7 @@ class ComparativoEstoque extends Grid
                     'index' => 'DIVERGENCIA',
 //                    'render' => 'N3'
                 ));
-        $this->setShowExport(true);
+        $this->setShowExport(false);
         $pg = new Pager(count($restult),0,count($restult));
         $this->setPager($pg);
         return $this;
