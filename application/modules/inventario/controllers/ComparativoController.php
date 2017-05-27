@@ -9,6 +9,7 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
         $this->configurePage();
         $params = $this->_getAllParams();
         $form = new \Wms\Module\Inventario\Form\FormComparativo();
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueErpRepository $estoqueErpRepo */
         $estoqueErpRepo = $this->_em->getRepository("wms:Enderecamento\EstoqueErp");
 
         $form->populate($params);
@@ -19,7 +20,7 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
             $idInventario = $params['inventario'];
         }
 
-        $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario);
+        $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario,$params);
         $grid = new \Wms\Module\Inventario\Grid\ComparativoEstoque();
         $this->view->grid = $grid->init($result);
 
