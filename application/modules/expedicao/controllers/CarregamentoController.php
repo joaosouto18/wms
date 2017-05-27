@@ -74,7 +74,6 @@ class Expedicao_CarregamentoController extends Action
         $imprimir = new \Wms\Module\Expedicao\Printer\Carregamento();
         $imprimir->imprimir($params['codExpedicao'],$result);
 
-//        $this->exportPDF($result,'relatorio-sequenciamento','Imprimir','L');
     }
 
     public function buttons($codExpedicao)
@@ -82,16 +81,6 @@ class Expedicao_CarregamentoController extends Action
         if ($codExpedicao) {
             Page::configure(array(
                 'buttons' => array(
-//                    array(
-//                        'label' => 'Imprimir relatório',
-//                        'urlParams' => array(
-//                            'module' => 'expedicao',
-//                            'controller' => 'relatorio_carregamento',
-//                            'action' => 'imprimir',
-//                            'id' => $codExpedicao
-//                        ),
-//                        'tag' => 'a'
-//                    ),
                     array(
                         'label' => 'Relatórios de Carregamentos',
                         'urlParams' => array(

@@ -122,4 +122,31 @@ class Expedicao_PedidoController  extends Action
         $this->view->etiquetas = $etiquetas;
     }
 
+    public function listarPedidosErpAction()
+    {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        $form = new \Wms\Module\Expedicao\Form\Pedidos();
+        $request = $this->getRequest();
+        $params = $request->getParams();
+        $form->populate($params);
+        $this->view->form = $form;
+
+        try {
+            if (isset($params['carga']) && !empty($params['carga'])) {
+                $codCargas[] = implode(',',$params['carga']);
+                $acaoEn = $acaoIntRepo->find(8);
+                $acaoIntRepo->processaAcao($acaoEn, $codCargas);
+            } elseif (isset($params['0']) && isset($params['1']) && !empty($params['0']) && !empty($params['1'])) {
+                $grid = new \Wms\Module\Expedicao\Grid\Pedidos();
+                $this->view->grid = $grid->init(7, $params);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+
+    }
+
 }
