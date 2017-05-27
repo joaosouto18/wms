@@ -12,7 +12,7 @@ class EstoqueErpRepository extends EntityRepository
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
                P.DSC_PRODUTO,
-               NVL(ERP.ESTOQUE_DISPONIVEL,0) as ESTOQUE_ERP,
+               NVL(ERP.ESTOQUE_GERENCIAL,0) as ESTOQUE_ERP,
                NVL(WMS.QTD,0) as ESTOQUE_WMS
           FROM ESTOQUE_ERP ERP
           FULL OUTER JOIN (SELECT E.COD_PRODUTO,
@@ -43,7 +43,7 @@ class EstoqueErpRepository extends EntityRepository
               OR (I.COD_PRODUTO = WMS.COD_PRODUTO AND I.DSC_GRADE = WMS.DSC_GRADE)";
         }
 
-        $sql.= " WHERE NVL(WMS.QTD,0) <> NVL(ERP.ESTOQUE_DISPONIVEL,0) 
+        $sql.= " WHERE NVL(WMS.QTD,0) <> NVL(ERP.ESTOQUE_GERENCIAL,0) 
                  ORDER BY P.COD_PRODUTO, P.DSC_GRADE";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
