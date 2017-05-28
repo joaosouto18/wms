@@ -17,9 +17,9 @@ echo '<table class="gTable ">
         foreach($arrayValues as $line) {
             $color = !($color);
             if (!$color) {
-                echo '<tr class = gTResultSet gRowColor>';
+                echo '<tr class = "gTResultSet gRowColor">';
             } else {
-                echo '<tr class = gTResultSet gTResultSet>';
+                echo '<tr class = "gTResultSet">';
             }
             foreach ($line as $field) {
                 $strField = $field;
@@ -31,7 +31,13 @@ echo '<table class="gTable ">
             echo '</tr>';
         }
     }
-echo "</tbody>
-      </table>";
+echo '</tbody>
+      </table>
+      <div class = "gPager">
+            <span>'."Total de " . (count($arrayValues)-1) . " registros encontrados".
+'            </span>
+      </div>
+
+      ';
 
 ?>

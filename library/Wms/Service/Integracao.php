@@ -325,14 +325,18 @@ class Integracao
             if ($this->getTipoExecucao() == "L") {
                 return $cargas;
             } else if ($this->getTipoExecucao() == "R") {
-                $resumo = array();
                 foreach($cargas as $carga) {
                     $resumo[] = array(
-                        'idCarga'=>$carga['idCarga'],
-                        'qtdPedidos'=>count($carga['pedidos']),
-                        'placa'=>$carga['placaExpedicao']
+                        'Num. Carga'=>$carga['idCarga'],
+                        'Qtd. Pedidos'=>count($carga['pedidos']),
+                        'Placa Carga'=>$carga['placaExpedicao']
                     );
                 }
+                $resumo[] = array(
+                    'Num. Carrga'=>'',
+                    'Qtd. Pedidos'=>'',
+                    'Placa Carga'=>''
+                );
                 return $resumo;
             }
 
