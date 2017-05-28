@@ -18,7 +18,7 @@ class Pedidos extends Form
                   'value' => $dataUltimaExecucao
               ))
               ->addElement('submit', 'submit', array(
-                  'label' => 'Buscar',
+                  'label' => 'Salvar',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper'),
               ))

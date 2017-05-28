@@ -9,7 +9,7 @@ use Wms\Service\Integracao;
 class AcaoIntegracaoRepository extends EntityRepository
 {
     /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
-    public function processaAcao($acaoEn, $options = null) {
+    public function processaAcao($acaoEn, $options = null, $somenteLeitura = false) {
 
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
@@ -70,6 +70,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $integracaoService = new Integracao($this->getEntityManager(),
                                                     array('acao'=>$acaoEn,
                                                           'options'=>$options,
+                                                          'leitura'=>$somenteLeitura,
                                                           'dados'=>$result));
                 $result = $integracaoService->processaAcao();
 
@@ -121,11 +122,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $this->_em->persist($andamentoEn);
             }
 
-            if ($sucess=="S") {
-                $maxDate = $integracaoService->getMaxDate();
-                if (!empty($maxDate)) {
-                    $acaoEn->setDthUltimaExecucao($maxDate);
-                    $this->_em->persist($acaoEn);
+            if ($somenteLeitura == false) {
+                if ($sucess=="S") {
+                    $maxDate = $integracaoService->getMaxDate();
+                    if (!empty($maxDate)) {
+                        $acaoEn->setDthUltimaExecucao($maxDate);
+                        $this->_em->persist($acaoEn);
+                    }
                 }
             }
 
