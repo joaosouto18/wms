@@ -139,7 +139,7 @@ class Expedicao_PedidoController  extends Action
         $this->view->form = $form;
 
         $listagemPedidos = $acaoIntRepo->processaAcao($acaoIntegracaoEntity,null, true);
-        var_dump($listagemPedidos); exit;
+
 
         $grid = new \Wms\Module\Expedicao\Grid\Pedidos();
         $this->view->grid = $grid->init(7, $params);
