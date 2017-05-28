@@ -1,37 +1,37 @@
 <?php
 echo $this->form;
-/*
-echo '        <table class="gTable ">';
 
-$arrayValores = $this->valores;
-if (count($arrayValues) > 0) {
-    if ($exportHeader == true) {
+$arrayValues = $this->valores;
+
+echo '<table class="gTable ">
+      <tbody>';
+    if (count($arrayValues) > 0) {
         $header = $arrayValues[0];
-        // if ($header == null)
-        // $header = "Não existem nenhum registro com o filtro informado";
-        $strLine = "";
+        echo '<tr class ="gTTitle">';
         foreach ($header as $key => $line) {
-            $strLine = $strLine . utf8_decode($key);
-            if($strLine != "") $strLine = $strLine . ";";
+            echo '<td>' . $key . '</td>';
         }
-        $file .= $strLine . PHP_EOL;
-    }
+        echo'</tr>';
 
-    foreach($arrayValues as $line) {
-        $strLine = "";
-        foreach ($line as $field) {
-
-            $strField = $field;
-            if (($field instanceof \DateTime) == true) {
-                $strField = $field->format('d/m/Y');
+        $color = false;
+        foreach($arrayValues as $line) {
+            $color = !($color);
+            if (!$color) {
+                echo '<tr class = gTResultSet gRowColor>';
+            } else {
+                echo '<tr class = gTResultSet gTResultSet>';
             }
-            $strLine = $strLine . utf8_decode($strField);
-            if($strLine != "") $strLine = $strLine . ";";
+            foreach ($line as $field) {
+                $strField = $field;
+                if (($field instanceof \DateTime) == true) {
+                    $strField = $field->format('d/m/Y');
+                }
+                echo "<td>" . utf8_decode($strField). "</td>";
+            }
+            echo '</tr>';
         }
-        $file .= $strLine . PHP_EOL;
     }
-}
+echo "</tbody>
+      </table>";
 
-echo $this->valores;
-*/
 ?>
