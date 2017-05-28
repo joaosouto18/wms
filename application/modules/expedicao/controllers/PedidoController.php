@@ -125,7 +125,7 @@ class Expedicao_PedidoController  extends Action
 
     public function listarPedidosErpAction()
     {
-        $acao = "3";
+        $acao = "6,7,8";
 
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');

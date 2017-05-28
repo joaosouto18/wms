@@ -381,9 +381,6 @@ class Integracao
                 );
             }
 
-
-
-
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
                 'grade' => $notaFiscal['DSC_GRADE'],
@@ -422,6 +419,31 @@ class Integracao
 
             }
         }
+
+        if ($this->getTipoExecucao() == "L") {
+            return $notasFiscais;
+        } else if ($this->getTipoExecucao() == "R") {
+            foreach($notasFiscais as $nf) {
+                $resumo[] = array(
+                    'Numero NF'=>$nf['numNota'],
+                    'Serie' => $nf['serie'],
+                    'Dt. Emissão' => $nf['dtEmissao'],
+                    'Fornecedor' => $fornecedores[$nf['codFornecedor']]['nome'],
+                    'Veículo' => $nf['placaVeiculo'],
+                    'Qtd. Produtos' =>count($nf['itens'])
+                );
+            }
+            $resumo[] = array(
+                'Numero NF'=>'',
+                'Serie'=>'',
+                'Dt. Emissão'=>'',
+                'Fornecedor'=>'',
+                'Veículo'=>'',
+                'Qtd. Produtos'=>''
+            );
+            return $resumo;
+        }
+
 
         foreach ($fornecedores as $fornecedor){
             $importacaoService->saveFornecedor($em,$fornecedor);
