@@ -125,12 +125,11 @@ class Expedicao_PedidoController  extends Action
 
     public function listarPedidosErpAction()
     {
-        $acao = "3";
-
         $form = new \Wms\Module\Expedicao\Form\Pedidos();
         $form->start();
         $request = $this->getRequest();
         $params = $request->getParams();
+        $acao = $params['id'];
         $form->populate($params);
         $this->view->form = $form;
 
@@ -144,8 +143,8 @@ class Expedicao_PedidoController  extends Action
         foreach ($acoesId as $id) {
             $acaoEn = $acaoIntRepo->findOneBy(array('id'=>$id));
             $integracoes[$id] = $acaoEn;
-            $result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
-            $arrayFinal = array_merge($arrayFinal,$result);
+            //$result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
+            //$arrayFinal = array_merge($arrayFinal,$result);
         }
 
         if (isset($params['submit'])) {

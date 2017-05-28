@@ -23,6 +23,7 @@ class Expedicao_IndexController extends Action
                         'module' => 'expedicao',
                         'controller' => 'pedido',
                         'action' => 'listar-pedidos-erp',
+                        'id' => 3
                     ),
                     'tag' => 'a'
                 )
