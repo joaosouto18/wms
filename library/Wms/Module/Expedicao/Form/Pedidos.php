@@ -6,23 +6,18 @@ use Wms\Module\Web\Form;
 class Pedidos extends Form
 {
 
-    public function start($dataUltimaExecucao)
+    public function start()
     {
           $this
               ->setAttribs(array(
                   'method' => 'get',
               ))
-              ->addElement('text', 'dataInicio', array(
-                  'size' => 15,
-                  'label' => 'Data Inicial',
-                  'value' => $dataUltimaExecucao
-              ))
               ->addElement('submit', 'submit', array(
-                  'label' => 'Salvar',
+                  'label' => 'Importar Dados para WMS',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper'),
               ))
-            ->addDisplayGroup(array('dataInicio', 'submit'), 'identificacao', array('legend' => 'Listar Pedidos ERP')
+            ->addDisplayGroup(array('submit'), 'identificacao', array('legend' => 'Listar Pedidos ERP')
         );
     }
 

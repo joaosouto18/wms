@@ -127,6 +127,13 @@ class Expedicao_PedidoController  extends Action
     {
         $acao = "3";
 
+        $form = new \Wms\Module\Expedicao\Form\Pedidos();
+        $form->start();
+        $request = $this->getRequest();
+        $params = $request->getParams();
+        $form->populate($params);
+        $this->view->form = $form;
+
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
@@ -139,6 +146,13 @@ class Expedicao_PedidoController  extends Action
             $integracoes[$id] = $acaoEn;
             $result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
             $arrayFinal = array_merge($arrayFinal,$result);
+        }
+
+        if (isset($params['submit'])) {
+            foreach ($acoesId as $id) {
+                $acaoEn = $acaoIntRepo->find($acao);
+                $acaoIntRepo->processaAcao($acaoEn,null, 'E');
+            }
         }
 
         $this->view->valores = $arrayFinal;
