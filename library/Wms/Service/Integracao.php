@@ -22,6 +22,7 @@ class Integracao
     protected $_acao;
     protected $_dados;
     protected $_options;
+    protected $_leitura;
 
     /** @var EntityManager _em */
     protected $_em;
@@ -62,6 +63,22 @@ class Integracao
     public function setDados($dados)
     {
         $this->_dados = $dados;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLeitura()
+    {
+        return $this->_leitura;
+    }
+
+    /**
+     * @param mixed $leitura
+     */
+    public function setLeitura($leitura)
+    {
+        $this->_leitura = $leitura;
     }
 
     /**
@@ -306,8 +323,12 @@ class Integracao
                 }
             }
 
+            if ($this->getLeitura() == true) {
+                return $cargas;
+            }
+
             $wsExpedicao = new \Wms_WebService_Expedicao();
-            $wsExpedicao->enviar($cargas);
+//            $wsExpedicao->enviar($cargas);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);

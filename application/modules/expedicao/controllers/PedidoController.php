@@ -2,6 +2,7 @@
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\Pedido as PedidoGrid,
+    \Wms\Domain\Entity\Integracao\AcaoIntegracao as AcaoIntegracao,
 
     Wms\Module\Web\Page;
 
@@ -126,7 +127,8 @@ class Expedicao_PedidoController  extends Action
     {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-        $dataUltimaExecucao = $acaoIntRepo->findOneBy(array('tipoAcao' => \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_PEDIDOS))->getDthUltimaExecucao();
+        $acaoIntegracaoEntity = $acaoIntRepo->findOneBy(array('tipoAcao' => AcaoIntegracao::INTEGRACAO_PEDIDOS));
+        $dataUltimaExecucao = $acaoIntegracaoEntity->getDthUltimaExecucao();
 
         $dataUltimaExecucao = $dataUltimaExecucao->format('d/m/Y H:i:s');
         $form = new \Wms\Module\Expedicao\Form\Pedidos();
@@ -136,11 +138,18 @@ class Expedicao_PedidoController  extends Action
         $form->populate($params);
         $this->view->form = $form;
 
+        $listagemPedidos = $acaoIntRepo->processaAcao($acaoIntegracaoEntity,null, true);
+        var_dump($listagemPedidos); exit;
+
+        $grid = new \Wms\Module\Expedicao\Grid\Pedidos();
+        $this->view->grid = $grid->init(7, $params);
+
         try {
-            if (isset($params['carga']) && !empty($params['carga'])) {
-                $codCargas[] = implode(',',$params['carga']);
-                $acaoEn = $acaoIntRepo->find(3);
-                $acaoIntRepo->processaAcao($acaoEn, $codCargas);
+            if (isset($params['submit']) && !empty($params['submit'])) {
+                $AcaoListagemPedidos = $acaoIntRepo->findOneBy(array('tipoAcao' => AcaoIntegracao::BUSCA_PEDIDOS_POR_CARGA));
+                $options[] = $dataUltimaExecucao;
+                $listagemPedidos = $acaoIntRepo->processaAcao($AcaoListagemPedidos,$options);
+                var_dump($listagemPedidos); exit;
             } elseif (isset($params['0']) && isset($params['1']) && !empty($params['0']) && !empty($params['1'])) {
                 $grid = new \Wms\Module\Expedicao\Grid\Pedidos();
                 $this->view->grid = $grid->init(7, $params);
