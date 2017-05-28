@@ -126,8 +126,11 @@ class Expedicao_PedidoController  extends Action
     {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        $dataUltimaExecucao = $acaoIntRepo->findOneBy(array('tipoAcao' => \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_PEDIDOS))->getDthUltimaExecucao();
 
+        $dataUltimaExecucao = $dataUltimaExecucao->format('d/m/Y H:i:s');
         $form = new \Wms\Module\Expedicao\Form\Pedidos();
+        $form->start($dataUltimaExecucao);
         $request = $this->getRequest();
         $params = $request->getParams();
         $form->populate($params);
@@ -136,7 +139,7 @@ class Expedicao_PedidoController  extends Action
         try {
             if (isset($params['carga']) && !empty($params['carga'])) {
                 $codCargas[] = implode(',',$params['carga']);
-                $acaoEn = $acaoIntRepo->find(8);
+                $acaoEn = $acaoIntRepo->find(3);
                 $acaoIntRepo->processaAcao($acaoEn, $codCargas);
             } elseif (isset($params['0']) && isset($params['1']) && !empty($params['0']) && !empty($params['1'])) {
                 $grid = new \Wms\Module\Expedicao\Grid\Pedidos();

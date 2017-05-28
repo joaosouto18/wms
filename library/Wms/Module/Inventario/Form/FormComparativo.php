@@ -10,11 +10,21 @@ class FormComparativo extends Form
         /** @var \Wms\Domain\Entity\Armazenagem\LinhaSeparacaoRepository $linhaRepo */
         $linhaRepo = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
         $result = $linhaRepo->findAll();
-        $arr = array('' => 'Selecione...');
+        $linhaSeparacaoArray = array('' => 'Todos');
         /** @var \Wms\Domain\Entity\Armazenagem\LinhaSeparacao $linha */
         foreach ($result as $linha){
-            $arr[$linha->getId()] = $linha->getDescricao();
+            $linhaSeparacaoArray[$linha->getId()] = $linha->getDescricao();
         }
+        $divergenciaArray = array(
+            '' => 'Todos',
+            'S' => 'SIM',
+            'N' => 'NÃO'
+        );
+        $tipoDivergenciaArray = array(
+            '' => 'Todos',
+            'S' => 'SOBRA',
+            'F' => 'FALTA'
+        );
 
         $this->setAction(
             $this->getView()->url(array(
@@ -33,21 +43,15 @@ class FormComparativo extends Form
             ))
             ->addElement('select', 'divergencia', array(
                 'label' => 'Divergência',
-                'multiOptions' => array(
-                    'S' => 'Sim',
-                    'N' => 'Não'
-                )
+                'multiOptions' => $divergenciaArray
             ))
             ->addElement('select', 'tipoDivergencia', array(
                 'label' => 'Tipo Divergência',
-                'multiOptions' => array(
-                    'S' => 'Sobra',
-                    'F' => 'Falta'
-                )
+                'multiOptions' => $tipoDivergenciaArray
             ))
             ->addElement('select', 'linhaSeparacao', array(
                 'label' => 'Linha de separação',
-                'multiOptions' =>  $arr,
+                'multiOptions' =>  $linhaSeparacaoArray,
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',

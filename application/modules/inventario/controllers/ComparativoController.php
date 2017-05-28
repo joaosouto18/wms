@@ -6,6 +6,8 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
 {
     public function indexAction() 
     {
+        ini_set('max_execution_time', 3000);
+        ini_set('memory_limit', '-1');
         $this->configurePage();
         $params = $this->_getAllParams();
         $form = new \Wms\Module\Inventario\Form\FormComparativo();
@@ -20,22 +22,26 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
             $idInventario = $params['inventario'];
         }
 
-        $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario,$params);
-        $grid = new \Wms\Module\Inventario\Grid\ComparativoEstoque();
-        $this->view->grid = $grid->init($result);
+        if (isset($params['inventario']) && !empty($params['inventario']) || isset($params['divergencia'])
+            || isset($params['tipoDivergencia']) || isset($params['linhaSeparacao'])) {
+            $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario, $params);
+            $grid = new \Wms\Module\Inventario\Grid\ComparativoEstoque();
+            $this->view->grid = $grid->init($result);
 
             if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
                 $pdf = array();
                 foreach ($result as $line) {
                     $pdf[] = array(
-                        'Código'=>$line['COD_PRODUTO'],
-                        'Grade'=>$line['DSC_GRADE'],
-                        'Produto'=>$line['DSC_PRODUTO'],
-                        'Estoque WMS'=> $line['ESTOQUE_WMS'],
-                        'Estoque ERP'=> $line['ESTOQUE_ERP']);
+                        'Código' => $line['COD_PRODUTO'],
+                        'Grade' => $line['DSC_GRADE'],
+                        'Produto' => $line['DSC_PRODUTO'],
+                        'Estoque WMS' => $line['ESTOQUE_WMS'],
+                        'Estoque ERP' => $line['ESTOQUE_ERP'],
+                        'Divergência' => $line['DIVERGENCIA']);
                 }
-                $this->exportPDF($pdf,"comparativoEstoque","Comparativo de Estoque","P");
+                $this->exportCSV($pdf, 'comparativoEstoque', 'Comparativo de Estoque');
             }
+        }
 
     }
 
