@@ -22,7 +22,7 @@ class Integracao
     protected $_acao;
     protected $_dados;
     protected $_options;
-    protected $_leitura;
+    protected $_tipoExecucao;
 
     /** @var EntityManager _em */
     protected $_em;
@@ -66,19 +66,19 @@ class Integracao
     }
 
     /**
-     * @return mixed
+     * @param mixed $tipoExecucao
      */
-    public function getLeitura()
+    public function setTipoExecucao($tipoExecucao)
     {
-        return $this->_leitura;
+        $this->_tipoExecucao = $tipoExecucao;
     }
 
     /**
-     * @param mixed $leitura
+     * @return mixed
      */
-    public function setLeitura($leitura)
+    public function getTipoExecucao()
     {
-        $this->_leitura = $leitura;
+        return $this->_tipoExecucao;
     }
 
     /**
@@ -322,13 +322,22 @@ class Integracao
                     $pedidos = array();
                 }
             }
-
-            if ($this->getLeitura() == true) {
+            if ($this->getTipoExecucao() == "L") {
                 return $cargas;
+            } else if ($this->getTipoExecucao() == "R") {
+                $resumo = array();
+                foreach($cargas as $carga) {
+                    $resumo[] = array(
+                        'idCarga'=>$carga['idCarga'],
+                        'qtdPedidos'=>count($carga['pedidos']),
+                        'placa'=>$carga['placaExpedicao']
+                    );
+                }
+                return $resumo;
             }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
-//            $wsExpedicao->enviar($cargas);
+            $wsExpedicao->enviar($cargas);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);

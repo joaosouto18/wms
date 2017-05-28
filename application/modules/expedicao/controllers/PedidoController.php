@@ -125,26 +125,26 @@ class Expedicao_PedidoController  extends Action
 
     public function listarPedidosErpAction()
     {
+        $acao = "3";
+
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-        $acaoIntegracaoEntity = $acaoIntRepo->findOneBy(array('tipoAcao' => AcaoIntegracao::INTEGRACAO_PEDIDOS));
-        $dataUltimaExecucao = $acaoIntegracaoEntity->getDthUltimaExecucao();
 
-        $dataUltimaExecucao = $dataUltimaExecucao->format('d/m/Y H:i:s');
-        $form = new \Wms\Module\Expedicao\Form\Pedidos();
-        $form->start($dataUltimaExecucao);
-        $request = $this->getRequest();
-        $params = $request->getParams();
-        $form->populate($params);
-        $this->view->form = $form;
+        $acoesId = explode(",",$acao);
+        $integracoes = array();
 
-        $listagemPedidos = $acaoIntRepo->processaAcao($acaoIntegracaoEntity,null, true);
-        var_dump($listagemPedidos); exit;
+        $arrayFinal = array();
+        foreach ($acoesId as $id) {
+            $acaoEn = $acaoIntRepo->findOneBy(array('id'=>$id));
+            $integracoes[$id] = $acaoEn;
+            $result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
+            $arrayFinal = array_merge($arrayFinal,$result);
+        }
 
-        $grid = new \Wms\Module\Expedicao\Grid\Pedidos();
-        $this->view->grid = $grid->init(7, $params);
+        $this->view->valores = $arrayFinal;
 
         try {
+            /*
             if (isset($params['submit']) && !empty($params['submit'])) {
                 $AcaoListagemPedidos = $acaoIntRepo->findOneBy(array('tipoAcao' => AcaoIntegracao::BUSCA_PEDIDOS_POR_CARGA));
                 $options[] = $dataUltimaExecucao;
@@ -154,6 +154,7 @@ class Expedicao_PedidoController  extends Action
                 $grid = new \Wms\Module\Expedicao\Grid\Pedidos();
                 $this->view->grid = $grid->init(7, $params);
             }
+            */
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

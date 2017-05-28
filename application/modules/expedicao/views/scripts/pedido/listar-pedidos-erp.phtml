@@ -1,4 +1,37 @@
 <?php
 echo $this->form;
-echo $this->grid;
+/*
+echo '        <table class="gTable ">';
+
+$arrayValores = $this->valores;
+if (count($arrayValues) > 0) {
+    if ($exportHeader == true) {
+        $header = $arrayValues[0];
+        // if ($header == null)
+        // $header = "Não existem nenhum registro com o filtro informado";
+        $strLine = "";
+        foreach ($header as $key => $line) {
+            $strLine = $strLine . utf8_decode($key);
+            if($strLine != "") $strLine = $strLine . ";";
+        }
+        $file .= $strLine . PHP_EOL;
+    }
+
+    foreach($arrayValues as $line) {
+        $strLine = "";
+        foreach ($line as $field) {
+
+            $strField = $field;
+            if (($field instanceof \DateTime) == true) {
+                $strField = $field->format('d/m/Y');
+            }
+            $strLine = $strLine . utf8_decode($strField);
+            if($strLine != "") $strLine = $strLine . ";";
+        }
+        $file .= $strLine . PHP_EOL;
+    }
+}
+
+echo $this->valores;
+*/
 ?>
