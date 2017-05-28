@@ -126,8 +126,10 @@ class Expedicao_PedidoController  extends Action
     {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        $dataUltimaExecucao = $acaoIntRepo->findOneBy(array('tipoAcao' => \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_PEDIDOS))->getDthUltimaExecucao();
 
         $form = new \Wms\Module\Expedicao\Form\Pedidos();
+        $form->start($dataUltimaExecucao);
         $request = $this->getRequest();
         $params = $request->getParams();
         $form->populate($params);
