@@ -15,7 +15,7 @@ class Pedidos extends Form
               ->addElement('text', 'dataInicio', array(
                   'size' => 15,
                   'label' => 'Data Inicial',
-                  'value' => 'd'
+                  'value' => $dataUltimaExecucao
               ))
               ->addElement('submit', 'submit', array(
                   'label' => 'Buscar',
