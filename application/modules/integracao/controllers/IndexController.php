@@ -15,14 +15,7 @@
 class Integracao_IndexController extends Core\Controller\Action\WebService
 {
     public function init(){
-        $front = \Zend_Controller_Front::getInstance();
-        $front->setParam('noErrorHandler', true);
-        $front->setParam('noViewRenderer', true);
-        if (null != \Zend_Layout::getMvcInstance()) {
-            \Zend_Layout::getMvcInstance()->disableLayout();
-        }
 
-        $this->getHelper('viewRenderer')->setNoRender(true);
     }
     public function runAction()
     {
