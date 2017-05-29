@@ -146,13 +146,13 @@ class Expedicao_PedidoController  extends Action
 
             $arrayFinal = array();
             if (isset($params['submit'])) {
-                foreach ($acoesId as $x) {
-                    $acaoEn = $acaoIntRepo->find($acao);
+                foreach ($acoesId as $id) {
+                    $acaoEn = $acaoIntRepo->find($id);
                     $acaoIntRepo->processaAcao($acaoEn,null, 'E');
                 }
             } else {
                 foreach ($acoesId as $id) {
-                    $acaoEn = $acaoIntRepo->find($acao);
+                    $acaoEn = $acaoIntRepo->find($id);
                     $integracoes[$id] = $acaoEn;
                     $result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
                     $arrayFinal = array_merge($arrayFinal,$result);
