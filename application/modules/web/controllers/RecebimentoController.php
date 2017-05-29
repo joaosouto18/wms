@@ -39,6 +39,23 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $form = new FiltroRecebimentoMercadoria;
 
         $values = $form->getParams();
+        $parametroNotasFiscais = $this->getSystemParameterValue('COD_INTEGRACAO_NOTAS_FISCAIS');
+
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Importar Notas Fiscais ERP',
+                    'cssClass' => 'btnSave',
+                    'urlParams' => array(
+                        'module' => 'integracao',
+                        'controller' => 'gerenciamento',
+                        'action' => 'index',
+                        'id' => $parametroNotasFiscais
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
 
         //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje
         if (!$values) {

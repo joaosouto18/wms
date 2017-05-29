@@ -14,16 +14,17 @@ class Expedicao_IndexController extends Action
     public function indexAction()
     {
 
+        $parametroPedidos = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS');
         Page::configure(array(
             'buttons' => array(
                 array(
                     'label' => 'Importar Pedidos ERP',
                     'cssClass' => 'btnSave',
                     'urlParams' => array(
-                        'module' => 'expedicao',
-                        'controller' => 'pedido',
-                        'action' => 'listar-pedidos-erp',
-                        'id' => 3
+                        'module' => 'integracao',
+                        'controller' => 'gerenciamento',
+                        'action' => 'index',
+                        'id' => $parametroPedidos
                     ),
                     'tag' => 'a'
                 )
