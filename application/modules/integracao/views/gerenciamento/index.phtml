@@ -1,0 +1,43 @@
+<?php
+echo $this->form;
+
+$arrayValues = $this->valores;
+
+echo '<table class="gTable ">
+      <tbody>';
+    if (count($arrayValues) > 0) {
+        $header = $arrayValues[0];
+        echo '<tr class ="gTTitle">';
+        foreach ($header as $key => $line) {
+            echo '<td>' . $key . '</td>';
+        }
+        echo'</tr>';
+
+        $color = false;
+        foreach($arrayValues as $line) {
+            $color = !($color);
+            if (!$color) {
+                echo '<tr class = "gTResultSet gRowColor">';
+            } else {
+                echo '<tr class = "gTResultSet">';
+            }
+            foreach ($line as $field) {
+                $strField = $field;
+                if (($field instanceof \DateTime) == true) {
+                    $strField = $field->format('d/m/Y');
+                }
+                echo "<td>" . utf8_decode($strField). "</td>";
+            }
+            echo '</tr>';
+        }
+    }
+echo '</tbody>
+      </table>
+      <div class = "gPager">
+            <span>'."Total de " . (count($arrayValues)-1) . " registros encontrados".
+'            </span>
+      </div>
+
+      ';
+
+?>

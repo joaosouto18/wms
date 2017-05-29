@@ -48,7 +48,7 @@ class Enderecamento_MovimentacaoController extends Action
                     'predio' => $data['predio'],
                     'nivel' => $data['nivel'],
                     'apto' => $data['apto'],
-                    'validade' => $data['validade'],
+                    'validade' => str_replace('/', '-', $data['validade']),
                     'quantidade' => $quantidade,
                     'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
@@ -122,7 +122,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['validade'] = null;
             if ($produtoEn->getValidade() == 'S' ) {
                 if (isset($data['validade']) && !empty($data['validade'])) {
-                    $params['validade'] = $data['validade'];
+                    $params['validade'] = str_replace('-', '/', $data['validade']);
                 } elseif (!empty($estoqueEn)) {
                     $validade = $estoqueEn->getValidade();
                     if (!empty($validade)) {
