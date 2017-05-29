@@ -125,36 +125,49 @@ class Expedicao_PedidoController  extends Action
 
     public function listarPedidosErpAction()
     {
-        $form = new \Wms\Module\Expedicao\Form\Pedidos();
-        $form->start();
-        $request = $this->getRequest();
-        $params = $request->getParams();
-        $acao = $params['id'];
-        $form->populate($params);
-        $this->view->form = $form;
+        $em = $this->getEntityManager();
+        try {
+            $em->beginTransaction();
 
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $request = $this->getRequest();
+            $params = $request->getParams();
+            $acao = $params['id'];
+            $acoesId = explode(",",$acao);
+            $dataUltimaExecucao = $acaoIntRepo->findOneBy(array('id' => $acoesId[0]))->getDthUltimaExecucao();
+            $dataUltimaExecucao = $dataUltimaExecucao->format('d/m/Y H:i:s');
+            $form = new \Wms\Module\Expedicao\Form\Pedidos();
+            $form->start($dataUltimaExecucao);
+            $form->populate($params);
+            $this->view->form = $form;
 
-        $acoesId = explode(",",$acao);
-        $integracoes = array();
+            $integracoes = array();
 
-        $arrayFinal = array();
-        if (isset($params['submit'])) {
-            foreach ($acoesId as $id) {
-                $acaoEn = $acaoIntRepo->find($acao);
-                $acaoIntRepo->processaAcao($acaoEn,null, 'E');
+            $arrayFinal = array();
+            if (isset($params['submit'])) {
+                foreach ($acoesId as $x) {
+                    $acaoEn = $acaoIntRepo->find($acao);
+                    $acaoIntRepo->processaAcao($acaoEn,null, 'E');
+                }
+            } else {
+                foreach ($acoesId as $id) {
+                    $acaoEn = $acaoIntRepo->find($acao);
+                    $integracoes[$id] = $acaoEn;
+                    $result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
+                    $arrayFinal = array_merge($arrayFinal,$result);
+                }
             }
-        } else {
-            foreach ($acoesId as $id) {
-                $acaoEn = $acaoIntRepo->find($acao);
-                $integracoes[$id] = $acaoEn;
-                $result = $acaoIntRepo->processaAcao($acaoEn,null, "R");
-                $arrayFinal = array_merge($arrayFinal,$result);
-            }
+
+            $this->view->valores = $arrayFinal;
+            $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            $this->_helper->messenger('error', $e->getMessage());
         }
 
-        $this->view->valores = $arrayFinal;
+
+
 
     }
 
