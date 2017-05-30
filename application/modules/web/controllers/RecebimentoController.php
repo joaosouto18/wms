@@ -47,7 +47,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     'label' => 'Importar Notas Fiscais ERP',
                     'cssClass' => 'btnSave',
                     'urlParams' => array(
-                        'module' => 'integracao',
+                        'module' => 'importacao',
                         'controller' => 'gerenciamento',
                         'action' => 'index',
                         'id' => $parametroNotasFiscais

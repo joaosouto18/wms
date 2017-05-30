@@ -21,7 +21,7 @@ class Expedicao_IndexController extends Action
                     'label' => 'Importar Pedidos ERP',
                     'cssClass' => 'btnSave',
                     'urlParams' => array(
-                        'module' => 'integracao',
+                        'module' => 'importacao',
                         'controller' => 'gerenciamento',
                         'action' => 'index',
                         'id' => $parametroPedidos

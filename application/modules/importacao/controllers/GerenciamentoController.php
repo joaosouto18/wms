@@ -2,7 +2,7 @@
 
 use Wms\Module\Web\Controller\Action;
 
-class Integracao_GerenciamentoController extends Action
+class Importacao_GerenciamentoController extends Action
 {
 
     public function indexAction()
