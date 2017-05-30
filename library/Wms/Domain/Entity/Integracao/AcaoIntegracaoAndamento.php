@@ -53,6 +53,11 @@ class   AcaoIntegracaoAndamento
     protected $query;
 
     /**
+     * @Column(name="IND_DESTINO", type="string", nullable=true)
+     */
+    protected $destino;
+
+    /**
      * @Column(name="ERR_NUMBER", type="string", nullable=true)
      */
     protected $errNumber;
@@ -87,6 +92,22 @@ class   AcaoIntegracaoAndamento
     public function getQuery()
     {
         return $this->query;
+    }
+
+    /**
+     * @param mixed $destino
+     */
+    public function setDestino($destino)
+    {
+        $this->destino = $destino;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDestino()
+    {
+        return $this->destino;
     }
 
     /**

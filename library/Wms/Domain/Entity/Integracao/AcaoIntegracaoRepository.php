@@ -8,17 +8,119 @@ use Wms\Service\Integracao;
 
 class AcaoIntegracaoRepository extends EntityRepository
 {
-    /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
+
+    private function validaAcoesMesmoTipo($acoes) {
+        if (count($acoes) == 0) {
+            throw new \Exception ("Nenhuma ação foi definida para ser executada");
+        }
+
+        $tipoAcao = null;
+        foreach ($acoes as $acaoEn) {
+            if ($tipoAcao == null) {
+                $tipoAcao = $acaoEn->getTipoAcao()->getId();
+            } else {
+                if ($tipoAcao != $acaoEn->getTipoAcao()->getId()) {
+                    throw new \Exception ("Apenas integrações com o mesmo tipo de ação podem ser disparadas em conjunto");
+                }
+            }
+        }
+    }
+
+    private function getDadosTemporarios($tipoAcao) {
+        $tabela = null;
+        switch ($tipoAcao) {
+            case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                $tabela = "INTEGRACAO_NF_ENTRADA";
+                break;
+            case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                $tabela = "INTEGRACAO_PEDIDO";
+                break;
+        }
+
+        if ($tabela == null) {
+            return false;
+        }
+
+        $SQL = "SELECT * FROM " . $tabela;
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    private function limpaDadosTemporarios($tipoAcao) {
+        $repo = null;
+        switch ($tipoAcao) {
+            case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                $repo = $this->getEntityManager()->getRepository('wms:Integracao\TabelaTemporaria\NotaFiscalEntrada');
+                break;
+            case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                $repo = $this->getEntityManager()->getRepository('wms:Integracao\TabelaTemporaria\Pedido');
+                break;
+        }
+
+        if ($repo != null) {
+            $ens = $repo->findAll();
+            foreach ($ens as $en) {
+                $this->getEntityManager()->remove($en);
+            }
+        }
+
+        $this->getEntityManager()->flush();
+    }
+
+    public function efetivaTemporaria($acoes) {
+
+        /* Para efetivar no banco de dados, só vou efetivar uma unica vez mesmo que tenham sido disparados n consultas.
+           Porem todas tem que compartilhar a mesma tabela temporaria, ou seja, ser da mesma ação */
+        $this->validaAcoesMesmoTipo($acoes);
+        $acaoEn = $acoes[0];
+
+        /* Consulto os dados da tabela temporaria referente a ação */
+        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
+
+        /* Executo uma unica ação com todos os dados retornados */
+        $result = $this->processaAcao($acaoEn,null,"E","P",$dados);
+
+        /* Limpo os dados da tabela temporaria */
+        $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
+
+        return $result;
+    }
+
+    public function listaTemporaria($acoes, $options) {
+
+        $this->validaAcoesMesmoTipo($acoes);
+
+        $this->limpaDadosTemporarios($acoes);
+
+        /* Executa cada ação salvando os dados na tabela temporaria */
+        foreach ($acoes as $acaoEn) {
+            $this->processaAcao($acaoEn,$options,"E","T");
+        }
+
+        /* Faz a consulta na tabela temporaria, para retornar as informações no mesmo modelo do ERP */
+        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
+
+        /* Executa uma integração apenas para pegar o array formatado */
+        $integracaoService = new Integracao($this->getEntityManager(),
+            array('acao'=>$acaoEn,
+                'options'=>null,
+                'tipoExecucao' => "R",
+                'dados'=>$dados));
+        $result = $integracaoService->processaAcao();
+
+        return $result;
+    }
+
     /*
      * TiposRetorno E => Executar
      *              L => Listar o resultado da query
      *              R => Resumo do resultado
+     * Destino => (P => Produção, T => Tabela temporária)
      */
-    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E") {
-
+    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null) {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
-
         $idAcao = $acaoEn->getId();
         $sucess = "S";
         $observacao = "";
@@ -75,13 +177,25 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
             }
 
-            $result = $conexaoRepo->runQuery($query,$conexaoEn);
-            $integracaoService = new Integracao($this->getEntityManager(),
-                                                    array('acao'=>$acaoEn,
-                                                          'options'=>$options,
-                                                          'tipoExecucao' => $tipoExecucao,
-                                                          'dados'=>$result));
-            $result = $integracaoService->processaAcao();
+            if ($dados == null) {
+                $result = $conexaoRepo->runQuery($query,$conexaoEn);
+            } else {
+                $result = $dados;
+            }
+
+            if (($tipoExecucao == "E") && ($destino == "T")) {
+                $integracaoService = new Integracao($this->getEntityManager(),
+                    array('acao'=>$acaoEn,
+                        'dados'=>$result));
+                $integracaoService->salvaTemporario();
+            } else {
+                $integracaoService = new Integracao($this->getEntityManager(),
+                    array('acao'=>$acaoEn,
+                        'options'=>$options,
+                        'tipoExecucao' => $tipoExecucao,
+                        'dados'=>$result));
+                $result = $integracaoService->processaAcao();
+            }
 
             $this->_em->flush();
             $this->_em->commit();
@@ -117,21 +231,34 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
-            if ($acaoEn->getIndUtilizaLog() == 'S') {
-                $andamentoEn = new AcaoIntegracaoAndamento();
-                $andamentoEn->setAcaoIntegracao($acaoEn);
-                $andamentoEn->setIndSucesso($sucess);
-                $andamentoEn->setDthAndamento(new \DateTime());
-                $andamentoEn->setObservacao($observacao);
-                $andamentoEn->setErrNumber($errNumber);
-                $andamentoEn->setTrace($trace);
-                if ($sucess != "S") {
-                    $andamentoEn->setQuery($query);
+            if (($tipoExecucao == "E") || ($dados == null)) {
+                /*
+                 * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
+                 * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
+                 * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
+                 * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
+                 */
+                if ($acaoEn->getIndUtilizaLog() == 'S') {
+                    $andamentoEn = new AcaoIntegracaoAndamento();
+                    $andamentoEn->setAcaoIntegracao($acaoEn);
+                    $andamentoEn->setIndSucesso($sucess);
+                    $andamentoEn->setDestino($destino);
+                    $andamentoEn->setDthAndamento(new \DateTime());
+                    $andamentoEn->setObservacao($observacao);
+                    $andamentoEn->setErrNumber($errNumber);
+                    $andamentoEn->setTrace($trace);
+                    if ($sucess != "S") {
+                        $andamentoEn->setQuery($query);
+                    }
+                    $this->_em->persist($andamentoEn);
                 }
-                $this->_em->persist($andamentoEn);
             }
 
-            if ($tipoExecucao == "E") {
+            if (($tipoExecucao == "E") && ($destino == "P")) {
+                /*
+                 * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
+                 * Caso estja salvando em tabelas temporarias (com o fim de listagem e validação), a data da ultima execução não deve ser alterada dois a operação ainda não foi concluida
+                 */
                 if ($sucess=="S") {
                     $maxDate = $integracaoService->getMaxDate();
                     if (!empty($maxDate)) {
