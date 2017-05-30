@@ -25,6 +25,16 @@ class FormComparativo extends Form
             'S' => 'SOBRA',
             'F' => 'FALTA'
         );
+        $estoqueWMS = array(
+            '' => 'Todos',
+            'S' => 'SIM',
+            'N' => 'NÃO'
+        );
+        $estoqueERP = array(
+            '' => 'Todos',
+            'S' => 'SIM',
+            'N' => 'NÃO'
+        );
 
         $this->setAction(
             $this->getView()->url(array(
@@ -53,6 +63,14 @@ class FormComparativo extends Form
                 'label' => 'Linha de separação',
                 'multiOptions' =>  $linhaSeparacaoArray,
             ))
+            ->addElement('select','estoqueWms', array(
+                'label' => 'Estoque WMS',
+                'multiOptions' => $estoqueWMS,
+            ))
+            ->addElement('select','estoqueErp', array(
+                'label' => 'Estoque ERP',
+                'multiOptions' => $estoqueERP
+            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
                 'class' => 'btn',
@@ -63,7 +81,7 @@ class FormComparativo extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }

@@ -22,6 +22,18 @@ class EstoqueErpRepository extends EntityRepository
             $where .= ' AND NVL(WMS.QTD,0) < NVL(ERP.ESTOQUE_GERENCIAL,0)';
         }
 
+        if ($params['estoqueErp'] == 'S') {
+            $where .= ' AND ERP.ESTOQUE_GERENCIAL > 0';
+        } elseif ($params['estoqueErp'] == 'N') {
+            $where .= ' AND ERP.ESTOQUE_GERENCIAL = 0';
+        }
+
+        if ($params['estoqueWms'] == 'S') {
+            $where .= ' AND WMS.QTD > 0';
+        } elseif ($params['estoqueWms'] == 'N') {
+            $where .= ' AND WMS.QTD IS NULL';
+        }
+
         if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
             $where .= " AND P.COD_LINHA_SEPARACAO = $params[linhaSeparacao] ";
         }
