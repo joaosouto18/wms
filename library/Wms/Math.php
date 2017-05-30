@@ -41,4 +41,15 @@ Class Math
 
         return $x % $y;
     }
+
+    public function totalAdicao($x,$y)
+    {
+        $quantidade = $this->maiorPrecisao($x,$y);
+
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        return ($x + $y) / $quantidade;
+
+    }
 }

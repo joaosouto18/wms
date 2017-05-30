@@ -2,14 +2,14 @@
 
 use Wms\Module\Web\Controller\Action;
 
-class Integracao_GerenciamentoController extends Action
+class Importacao_GerenciamentoController extends Action
 {
 
     public function indexAction()
     {
         $em = $this->getEntityManager();
         try {
-            $em->beginTransaction();
+//            $em->beginTransaction();
 
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -42,9 +42,9 @@ class Integracao_GerenciamentoController extends Action
             }
 
             $this->view->valores = $arrayFinal;
-            $em->commit();
+//            $em->commit();
         } catch (\Exception $e) {
-            $em->rollback();
+//            $em->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
     }

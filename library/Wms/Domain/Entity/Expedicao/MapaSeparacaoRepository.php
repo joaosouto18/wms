@@ -9,6 +9,7 @@ use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
 
 class MapaSeparacaoRepository extends EntityRepository
 {
+    protected $math;
 
     public function getDetalhesConferenciaMapaProduto ($idMapa, $idProduto, $grade, $numConferencia) {
         $SQL = "SELECT OS.COD_OS,
@@ -460,7 +461,9 @@ class MapaSeparacaoRepository extends EntityRepository
         }
         $qtdBanco    = number_format($qtdConferida,3,'.','') + number_format($qtdCortada,3,'.','');
         $qtdMapa     = number_format($qtdMapa,3,'.','');
-        if (($qtdBanco + $qtdDigitada) > $qtdMapa) {
+
+        $quantidadeConferida = $this->math->totalAdicao($qtdBanco, $qtdDigitada);
+        if ($quantidadeConferida > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente! Produto: " .$produtoEn->getId() . " Mapa:" . $mapaEn->getId());
         }
 
