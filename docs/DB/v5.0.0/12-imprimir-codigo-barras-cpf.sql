@@ -1,3 +1,5 @@
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '5.0.0','12-imprimir-codigo-barras-cpf.sql');
+
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
 VALUES (SQ_ACAO_01.NEXTVAL, 'Imprimir código de barras do cpf do usuário', 'imprimir-cpf');
 
