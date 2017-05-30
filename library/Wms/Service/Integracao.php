@@ -622,6 +622,9 @@ class Integracao
             $x = $x + 1;
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+
+                    $data =
+
                     $nf = new TabelaTemporaria\NotaFiscalEntrada();
                     $nf->setCodFornecedor($row['COD_FORNECEDOR']);
                     $nf->setNomFornecedor($row['NOM_FORNECEDOR']);
@@ -631,11 +634,11 @@ class Integracao
                     $nf->setNumNF($row['NUM_NOTA_FISCAL']);
                     $nf->setCodProduto($row['COD_PRODUTO']);
                     $nf->setSerieNF($row['COD_SERIE_NOTA_FISCAL']);
-                    $nf->setDthEmissao($row['DAT_EMISSAO']);
+                    $nf->setDthEmissao(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DAT_EMISSAO']));
                     $nf->setVeiculo($row['DSC_PLACA_VEICULO']);
                     $nf->setQtdItem($row['QTD_ITEM']);
                     $nf->setVlrTotal($row['VALOR_TOTAL']);
-                    $nf->setDth($row['DTH']);
+                    $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
@@ -663,7 +666,7 @@ class Integracao
                     $pedido->setGrade($row['GRADE']);
                     $pedido->setQtd($row['QTD']);
                     $pedido->setVlrVenda($row['VLR_VENDA']);
-                    $pedido->setDth($row['DTH']);
+                    $pedido->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
                     $this->_em->persist($pedido);
                     break;
             }
