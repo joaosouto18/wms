@@ -38,6 +38,11 @@ class   AcaoIntegracaoAndamento
     protected $indSucesso;
 
     /**
+     * @Column(name="URL", type="string", nullable=true)
+     */
+    protected $url;
+
+    /**
      * @Column(name="DSC_OBSERVACAO", type="string", nullable=true)
      */
     protected $observacao;
@@ -68,6 +73,22 @@ class   AcaoIntegracaoAndamento
     public function setErrNumber($errNumber)
     {
         $this->errNumber = $errNumber;
+    }
+
+    /**
+     * @param mixed $url
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUrl()
+    {
+        return $this->url;
     }
 
     /**

@@ -86,7 +86,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         return $result;
     }
 
-    public function listaTemporaria($acoes, $options) {
+    public function listaTemporaria($acoes, $options = null) {
 
         $this->validaAcoesMesmoTipo($acoes);
 
@@ -239,9 +239,11 @@ class AcaoIntegracaoRepository extends EntityRepository
                  * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
                  */
                 if ($acaoEn->getIndUtilizaLog() == 'S') {
+                    $url = $_SERVER['REQUEST_URI'];
                     $andamentoEn = new AcaoIntegracaoAndamento();
                     $andamentoEn->setAcaoIntegracao($acaoEn);
                     $andamentoEn->setIndSucesso($sucess);
+                    $andamentoEn->setUrl($url);
                     $andamentoEn->setDestino($destino);
                     $andamentoEn->setDthAndamento(new \DateTime());
                     $andamentoEn->setObservacao($observacao);

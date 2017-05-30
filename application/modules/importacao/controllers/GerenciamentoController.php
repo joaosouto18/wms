@@ -25,20 +25,17 @@ class Importacao_GerenciamentoController extends Action
             $this->view->form = $form;
 
             $integracoes = array();
-
             $arrayFinal = array();
+
+            foreach ($acoesId as $id) {
+                $acaoEn = $acaoIntRepo->find($id);
+                $integracoes[] = $acaoEn;
+            }
+
             if (isset($params['submit'])) {
-                foreach ($acoesId as $id) {
-                    $acaoEn = $acaoIntRepo->find($id);
-                    $acaoIntRepo->processaAcao($acaoEn, null, 'E');
-                }
+                $acaoIntRepo->efetivaTemporaria($integracoes);
             } else {
-                foreach ($acoesId as $id) {
-                    $acaoEn = $acaoIntRepo->find($id);
-                    $integracoes[$id] = $acaoEn;
-                    $result = $acaoIntRepo->processaAcao($acaoEn, null, "R");
-                    $arrayFinal = array_merge($arrayFinal, $result);
-                }
+                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes);
             }
 
             $this->view->valores = $arrayFinal;
