@@ -17,6 +17,7 @@ use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Inventario;
+use Wms\Domain\Entity\NotaFiscal;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
 use Wms\Domain\Entity\Pessoa\Juridica;
@@ -384,7 +385,7 @@ class Importacao
 
     }
 
-    public function saveNotaFiscal($em, $idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null)
+    public function saveNotaFiscal($em, $idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $showExpt = true)
     {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
@@ -393,15 +394,36 @@ class Importacao
         if (isset($idFornecedor)) {
             $entityFornecedor = $fornecedorRepo->findOneBy(array('idExterno' => $idFornecedor));
         }
+        /** @var NotaFiscal $notaFiscalEn */
         $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $entityFornecedor->getId()));
 
         if (!$notaFiscalEn) {
-            $entityNotaFiscal = $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao);
+            $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao);
         } else {
-            $entityNotaFiscal = $notaFiscalRepo->salvarItens($itens, $notaFiscalEn);
-        }
-        return $entityNotaFiscal;
+            $statusNotaFiscal = $notaFiscalEn->getStatus()->getId();
+            if ($statusNotaFiscal == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
+                if ($showExpt) {
+                    throw new \Exception ("Não é possível alterar, NF " . $notaFiscalEn->getNumero() . " já recebida");
+                } else {
+                    return false;
+                }
+            }
 
+            if ($notaFiscalEn->getStatus()->getId() == NotaFiscal::STATUS_CANCELADA) {
+                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscal::STATUS_INTEGRADA);
+                $notaFiscalEn->setRecebimento(null);
+                $notaFiscalEn->setStatus($statusEntity);
+                $em->persist($notaFiscalEn);
+            }
+
+            //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
+            $notaFiscalRepo->compareItensBancoComArray($itens, $notaFiscalEn, $showExpt);
+
+            //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
+            $notaFiscalRepo->compareItensWsComBanco($itens, $notaFiscalEn, $showExpt);
+
+        }
+        return true;
     }
 
     public function saveExpedicao($em, $placaExpedicao)
