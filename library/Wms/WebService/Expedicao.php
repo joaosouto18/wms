@@ -808,7 +808,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $PedidoRepo->remove($PedidoEntity,false);
 
                     } else {
-                        if ($qtdTotal != $qtdCortadas) {
+                        if ($qtdCortadas > 0) {
                             throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                         }
 
