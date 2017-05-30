@@ -40,7 +40,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (40, 'Ao finalizar a expedição no desktop, não esta exibindo alertas informando que a expedição foi finalizada', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (41, 'Problema ao forçar a finalização de expedição caso o mapa ja tenha iniciado a conferencia.', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (42, 'Melhoria de performance na geração de ressuprimento. Evitando multiplas chamadas ao banco', null,SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Não deve fazer Ressuprimento preventivo caso exista reserva de saida ', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (43, 'Correção de query de integração de notas fiscais para integrar develução ', '4 exemplos-novas-integracoes.sql',SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, 'Melhoria na tela de apontamento para Etiqueta', '12-imprimir-codigo-barras-cpf.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (44, 'Tratamento de integração de nota via consulta', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (45, 'Melhoria na tela de apontamento para Etiqueta', '12-imprimir-codigo-barras-cpf.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (46, 'Não deve fazer Ressuprimento preventivo caso exista reserva de saida ', null,SYSDATE);
