@@ -14,15 +14,15 @@ class ProdutividadeDetalhada extends Grid
         $this->setSource(new \Core\Grid\Source\ArraySource($params));
 
                 $this->addColumn(array(
-                    'label' => utf8_encode('Usu�rio'),
+                    'label' => utf8_encode('Usuario'),
                     'index' => 'NOM_PESSOA',
                 ));
                 $this->addColumn(array(
-                    'label' => utf8_encode('Expedi��o'),
+                    'label' => utf8_encode('Expedicao'),
                     'index' => 'COD_EXPEDICAO',
                 ));
                 $this->addColumn(array(
-                    'label' => utf8_encode('Mapa Separa��o'),
+                    'label' => utf8_encode('Mapa Separacao'),
                     'index' => 'COD_MAPA_SEPARACAO',
                 ));
                 $this->addColumn(array(
