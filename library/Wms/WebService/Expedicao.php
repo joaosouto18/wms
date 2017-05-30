@@ -260,7 +260,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array cargas informacoes das cargas com os pedidos
      * @return boolean Se as cargas foram salvas com sucesso
      */
-    public function enviar($cargas)
+    public function enviar($cargas, $isIntegracaoSQL = false)
     {
         $cargas = $this->trimArray($cargas);
         ini_set('max_execution_time', -1);
@@ -291,11 +291,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     }
                 }
                 $this->checkProductsExists($repositorios, $carga['pedidos']);
-                $this->checkPedidosExists($repositorios, $carga['pedidos']);
+                $result = $this->checkPedidosExists($repositorios, $carga['pedidos'], $isIntegracaoSQL);
 
-                $this->_em->flush();
-
-                $this->saveCarga($repositorios, $carga);
+                if ($result) {
+                    $this->_em->flush();
+                    $this->saveCarga($repositorios, $carga);
+                }
             }
             $this->_em->flush();
             $this->_em->commit();
@@ -766,7 +767,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param array $pedidos
      * @throws Exception
      */
-    protected function checkPedidosExists($repositorios, array $pedidos) {
+    protected function checkPedidosExists($repositorios, array $pedidos, $isIntegracaoSQL = false) {
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
         $PedidoRepo = $repositorios['pedidoRepo'];
@@ -801,7 +802,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         ($qtdCortadas == $qtdTotal && $statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO)) {
 
                         if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
-                            throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
+                            if (!$isIntegracaoSQL)
+                                throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
+                            else
+                                return false;
                         }
 
                         $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
@@ -809,14 +813,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                     } else {
                         if ($qtdCortadas > 0) {
-                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                            if (!$isIntegracaoSQL)
+                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                            else
+                                return false;
                         }
 
-                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                        if (!$isIntegracaoSQL)
+                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                        else
+                            return false;
                     }
                 }
             }
         }
+        return true;
     }
 
     /**

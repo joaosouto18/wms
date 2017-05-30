@@ -303,7 +303,7 @@ class Integracao
             }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
-            $wsExpedicao->enviar($cargas);
+            $wsExpedicao->enviar($cargas, true);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
