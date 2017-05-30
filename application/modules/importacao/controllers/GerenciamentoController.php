@@ -33,7 +33,10 @@ class Importacao_GerenciamentoController extends Action
             }
 
             if (isset($params['submit'])) {
-                $acaoIntRepo->efetivaTemporaria($integracoes);
+                $result = $acaoIntRepo->efetivaTemporaria($integracoes);
+                if (!($result === true)) {
+                    $this->addFlashMessage('error',$result);
+                }
             } else {
                 $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes);
             }
