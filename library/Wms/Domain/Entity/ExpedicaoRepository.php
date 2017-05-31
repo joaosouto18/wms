@@ -707,8 +707,8 @@ class ExpedicaoRepository extends EntityRepository
                 }
 
                 $result = $mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao);
-                if ($result == false) {
-                    return 'Existem volumes embalados pendentes de CONFERENCIA!';
+                if (is_string($result)) {
+                    return $result;
                 }
 
             } else {
