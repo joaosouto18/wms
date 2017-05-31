@@ -31,12 +31,25 @@ echo '<table class="gTable ">
             echo '</tr>';
         }
     }
-echo '</tbody>
+
+if (count($arrayValues) == 0) {
+    echo '</tbody>
+      </table>
+      <div class = "gPager">
+            <span>'."Nenhum registro listado".
+        '            </span>
+              </div>
+
+              ';
+} else {
+    echo '</tbody>
       </table>
       <div class = "gPager">
             <span>'."Total de " . (count($arrayValues)-1) . " registros encontrados".
-'            </span>
-      </div>
+        '            </span>
+              </div>
 
-      ';
+              ';
+
+}
 ?>

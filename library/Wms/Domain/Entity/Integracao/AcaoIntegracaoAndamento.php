@@ -38,6 +38,11 @@ class   AcaoIntegracaoAndamento
     protected $indSucesso;
 
     /**
+     * @Column(name="URL", type="string", nullable=true)
+     */
+    protected $url;
+
+    /**
      * @Column(name="DSC_OBSERVACAO", type="string", nullable=true)
      */
     protected $observacao;
@@ -53,6 +58,11 @@ class   AcaoIntegracaoAndamento
     protected $query;
 
     /**
+     * @Column(name="IND_DESTINO", type="string", nullable=true)
+     */
+    protected $destino;
+
+    /**
      * @Column(name="ERR_NUMBER", type="string", nullable=true)
      */
     protected $errNumber;
@@ -63,6 +73,22 @@ class   AcaoIntegracaoAndamento
     public function setErrNumber($errNumber)
     {
         $this->errNumber = $errNumber;
+    }
+
+    /**
+     * @param mixed $url
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUrl()
+    {
+        return $this->url;
     }
 
     /**
@@ -87,6 +113,22 @@ class   AcaoIntegracaoAndamento
     public function getQuery()
     {
         return $this->query;
+    }
+
+    /**
+     * @param mixed $destino
+     */
+    public function setDestino($destino)
+    {
+        $this->destino = $destino;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDestino()
+    {
+        return $this->destino;
     }
 
     /**
