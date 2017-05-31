@@ -622,9 +622,6 @@ class Integracao
             $x = $x + 1;
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
-
-                    $data =
-
                     $nf = new TabelaTemporaria\NotaFiscalEntrada();
                     $nf->setCodFornecedor($row['COD_FORNECEDOR']);
                     $nf->setNomFornecedor($row['NOM_FORNECEDOR']);
@@ -636,8 +633,8 @@ class Integracao
                     $nf->setSerieNF($row['COD_SERIE_NOTA_FISCAL']);
                     $nf->setDthEmissao(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DAT_EMISSAO']));
                     $nf->setVeiculo($row['DSC_PLACA_VEICULO']);
-                    $nf->setQtdItem($row['QTD_ITEM']);
-                    $nf->setVlrTotal($row['VALOR_TOTAL']);
+                    $nf->setQtdItem(str_replace(",",".",$row['QTD_ITEM']));
+                    $nf->setVlrTotal(str_replace(",",".",$row['VALOR_TOTAL']));
                     $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
                     $this->_em->persist($nf);
                     break;

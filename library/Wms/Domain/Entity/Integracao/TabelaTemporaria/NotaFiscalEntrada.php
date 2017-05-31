@@ -61,7 +61,7 @@ class NotaFiscalEntrada
 
     /**
      * @var \DateTime
-     * @Column(name="DAT_EMISSAO", type="string", nullable=true)
+     * @Column(name="DAT_EMISSAO", type="datetime", nullable=true)
      */
     protected $dthEmissao;
 

@@ -27,21 +27,37 @@ class AcaoIntegracaoRepository extends EntityRepository
     }
 
     private function getDadosTemporarios($tipoAcao) {
-        $tabela = null;
+        $SQL = null;
         switch ($tipoAcao) {
             case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
-                $tabela = "INTEGRACAO_NF_ENTRADA";
+                $SQL = "
+                  SELECT COD_INTEGRACAO_NF_ENTRADA,
+                         COD_FORNECEDOR,
+                         NOM_FORNECEDOR,
+                         CPF_CNPJ,
+                         DSC_GRADE,
+                         INSCRICAO_ESTADUAL,
+                         NUM_NOTA_FISCAL,
+                         COD_PRODUTO,
+                         COD_SERIE_NOTA_FISCAL,
+                         TO_CHAR(DAT_EMISSAO,'DD/MM/YYYY') as DAT_EMISSAO,
+                         DSC_PLACA_VEICULO,
+                         QTD_ITEM,
+                         VALOR_TOTAL,
+                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                        FROM INTEGRACAO_NF_ENTRADA
+                ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:
-                $tabela = "INTEGRACAO_PEDIDO";
+                $SQL = "SELECT * FROM INTEGRACAO_PEDIDO";
                 break;
         }
 
-        if ($tabela == null) {
+        if ($SQL == null) {
             return false;
         }
 
-        $SQL = "SELECT * FROM " . $tabela;
+
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -90,7 +106,9 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         $this->validaAcoesMesmoTipo($acoes);
 
-        $this->limpaDadosTemporarios($acoes);
+        $acaoEn = $acoes[0];
+
+        $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
 
         /* Executa cada ação salvando os dados na tabela temporaria */
         foreach ($acoes as $acaoEn) {
@@ -203,6 +221,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $trace = "";
             $query = "";
         } catch (\Exception $e) {
+
             $observacao = $e->getMessage();
             $sucess = "N";
 

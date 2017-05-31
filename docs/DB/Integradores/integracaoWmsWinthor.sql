@@ -36,7 +36,7 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
 
 /*INTEGRAÇÃO DE NOTAS FISCAIS DE SAIDA CANCELADAS*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (7,1,'select pcnfsaid.codcli, pcclient.cliente, pcclient.cgcent,' || '''UNICA''' || ' DSC_GRADE, pcclient.ieent, pcnfsaid.numnota, pcmov.codprod, pcnfsaid.serie, pcnfsaid.dtsaidanf, pcnfsaid.placaveic, pcmov.qt, (pcmov.qt * pcmov.punit) valor_total, to_char(pcnfsaid.dtcancel, ' || '''DD/MM/YYYY HH24:MI:SS''' || ') dth from pcnfsaid  inner join pcmov on pcmov.numtransvenda = pcnfsaid.numtransvenda inner join pcclient on pcclient.codcli = pcnfsaid.codcli where pcnfsaid.especie = ' || '''NF''' || ' and pcmov.qt > 0 and pcmov.codoper = ' || '''S''' || ' and pcnfsaid.dtcancel > :dthExecucao and pcnfsaid.enviada = ' || '''S''',
+  VALUES (7,1,'select pcnfsaid.codcli COD_FORNECEDOR, pcclient.cliente NOM_FORNECEDOR,  pcclient.cgcent  CPF_CNPJ,  ' ||'''UNICA''' || ' DSC_GRADE,  pcclient.ieent INSCRICAO_ESTADUAL, pcnfsaid.numnota NUM_NOTA_FISCAL,  pcmov.codprod COD_PRODUTO,  pcnfsaid.serie COD_SERIE_NOTA_FISCAL,  pcnfsaid.dtsaidanf DAT_EMISSAO,  pcnfsaid.placaveic DSC_PLACA_VEICULO,  pcmov.qt QTD_ITEM,  (pcmov.qt * pcmov.punit) VALOR_TOTAL, to_char(pcnfsaid.dtcancel,' || '''DD/MM/YYYY HH24:MI:SS''' || ') DTH from pcnfsaid  inner join pcmov on pcmov.numtransvenda = pcnfsaid.numtransvenda inner join pcclient on pcclient.codcli = pcnfsaid.codcli where pcnfsaid.especie = '|| '''NF''' || ' and pcmov.qt > 0 and pcmov.codoper = ' || '''S''' || ' and pcnfsaid.dtcancel > :dthExecucao and pcnfsaid.enviada = ' || '''S'''  ,
   605,'S',NULL);
 
 
