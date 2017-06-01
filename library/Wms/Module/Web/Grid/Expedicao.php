@@ -150,6 +150,16 @@ class Expedicao extends Grid
                     }
             ))
             ->addAction(array(
+                'label' => 'Importar Cortes',
+                'moduleName' => 'importacao',
+                'controllerName' => 'gerenciamento',
+                'actionName' => 'corte-erp-ajax',
+                'pkIndex' => 'id',
+//                'condition' => function ($row) {
+//                    return $row['status'] != "FINALIZADO";
+//                }
+            ))
+            ->addAction(array(
                 'label' => 'Imprimir',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',

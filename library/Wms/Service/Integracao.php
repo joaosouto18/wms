@@ -119,7 +119,8 @@ class Integracao
     }
 
 
-    public function processaAcao() {
+    public function processaAcao()
+    {
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_PRODUTO:
@@ -140,45 +141,84 @@ class Integracao
         }
     }
 
-    public function comparaConferenciaExpedicao ($dados, $options) {
-        $idCarga = null;
-        if (isset($options[0]) && ($options[0] != null)) {
-            $idCarga = $options[0];
-        } else {
-            throw new \Exception("Carga não definida nos parametros da consulta");
-        }
+    public function comparaConferenciaExpedicao($pedidosProdutosERP, $cargas)
+    {
+        $em = $this->_em;
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+        $expedicaoRepository = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+        $pedidosProdutosWMS = $expedicaoRepository->compareConferenciaByCarga($cargas);
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
+        $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-        $expedicaoRepo    = $this->_em->getRepository('wms:Expedicao');
+        foreach ($pedidosProdutosWMS as $produtoWms) {
+            $encontrouProdutoERP = false;
+            foreach ($pedidosProdutosERP as $key => $produtoERP) {
+                if (in_array($produtoWms['pedido'],$produtoERP)) {
+                    if (in_array($produtoWms['produto'],$produtoERP)) {
+                        if (in_array($produtoWms['grade'],$produtoERP)) {
+                            $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                                'codPedido' => $produtoWms['pedido'],
+                                'codProduto' => $produtoWms['produto'],
+                                'grade' => $produtoWms['grade']));
+                            if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                                $encontrouProdutoERP = true;
+                                $cortesProduto = array(
+                                    'codPedido' => $produtoWms['pedido'],
+                                    'codProduto' => $produtoWms['produto'],
+                                    'grade' => $produtoWms['grade'],
+                                    'quantidadeCortar' => str_replace(',','.',$pedidoProdutoEntity->getQuantidade()) - str_replace(',','.',$produtoERP['QTD']),
+                                    'pedidoProduto' => $pedidoProdutoEntity->getId()
+                                );
+                                if ($cortesProduto['quantidadeCortar'] >= $pedidoProdutoEntity->getQtdCortada()) {
+                                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
+                                    $em->persist($pedidoProdutoEntity);
+                                }
+                                unset($pedidosProdutosERP[$key]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!$encontrouProdutoERP) {
+                $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                    'codPedido' => $produtoWms['pedido'],
+                    'codProduto' => $produtoWms['produto'],
+                    'grade' => $produtoWms['grade']));
 
-        $idPedidoAnterior = null;
-        $produtos = array();
-        $pedidos = array();
-        $cargas = array();
-        foreach ($dados as $key => $row) {
-            $idCarga = $row['CARGA'];
-            $idPedido = $row['PEDIDO'];
-
-            $produto = array(
-                'idProduto' => $row['PRODUTO'],
-                'grade' => $row['GRADE'],
-                'qtd' =>$row['QTD']
-            );
-            $produtos[] = $produto;
-
-            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
-                $pedidos[$idPedido] = $produtos;
-                unset($produtos);
-                $produtos = array();
+                if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                    $cortesProduto = array(
+                        'codPedido' => $produtoWms['pedido'],
+                        'codProduto' => $produtoWms['produto'],
+                        'grade' => $produtoWms['grade'],
+                        'quantidadeCortar' => $pedidoProdutoEntity->getQuantidade(),
+                        'pedidoProduto' => $pedidoProdutoEntity->getId()
+                    );
+                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
+                    $em->persist($pedidoProdutoEntity);
+                }
             }
 
-            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
-                $cargas[$idCarga] = $pedidos;
-                unset($pedidos);
-                $pedidos = array();
+            while ($cortesProduto['quantidadeCortar'] > 0) {
+                $mapaSeparacaoProdutoEntities = $pedidoProdutoRepository->compareMapaProdutoByPedido($cortesProduto);
+                foreach ($mapaSeparacaoProdutoEntities as $mapaSeparacaoProduto) {
+                    $mapaSeparacaoProdutoEntity = $mapaSeparacaoProdutoRepository->find($mapaSeparacaoProduto['id']);
+                    if ($mapaSeparacaoProduto['corteMaximo'] >= $cortesProduto['quantidadeCortar']) {
+                        $quantidadeCortar = $cortesProduto['quantidadeCortar'];
+                    } else {
+                        $quantidadeCortar = $mapaSeparacaoProduto['corteMaximo'];
+                    }
+                    $cortesProduto['quantidadeCortar'] = $cortesProduto['quantidadeCortar'] - $quantidadeCortar;
+                    $mapaSeparacaoProdutoEntity->setQtdCortado($quantidadeCortar);
+                    $em->persist($mapaSeparacaoProdutoEntity);
+                }
             }
         }
 
-        return $expedicaoRepo->compareConferenciaByCarga($cargas,$idCarga);
+        $em->flush();
+        return true;
     }
 
     public function comparaResumoConferenciaExpedicao ($dados, $options) {

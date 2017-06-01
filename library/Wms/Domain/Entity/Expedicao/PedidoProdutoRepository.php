@@ -60,4 +60,20 @@ class PedidoProdutoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
+    public function compareMapaProdutoByPedido($produtoWms)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('(msp.qtdSeparar * msp.qtdEmbalagem) AS corteMaximo, msp.id')
+            ->from('wms:Expedicao\MapaSeparacaoProduto','msp')
+            ->innerJoin('msp.mapaSeparacao','ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoPedido','msped','WITH','ms.id = msped.mapaSeparacao')
+            ->innerJoin('wms:Expedicao\PedidoProduto','pp','WITH','pp.id = msped.pedidoProduto AND pp.codProduto = msp.codProduto AND pp.grade = msp.dscGrade')
+            ->where("pp.id = $produtoWms[pedidoProduto]")
+            ->andWhere("pp.codProduto = $produtoWms[codProduto]")
+            ->andWhere("pp.grade = '$produtoWms[grade]'")
+            ->orderBy('msp.qtdSeparar * msp.qtdEmbalagem','ASC');
+
+        return $sql->getQuery()->getResult();
+    }
+
 }
