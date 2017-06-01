@@ -1,7 +1,6 @@
 <?php
 
 namespace Wms\Controller;
-use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Math;
 
 
@@ -165,25 +164,6 @@ class Action extends \Core\Controller\Action
             return "";
         } else {
             return $parametro->getValor();
-        }
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return Parametro | string
-     */
-    public static function getSystemParameter(array $params) {
-        /** @var ParametroRepository $parametroRepo */
-        $parametroRepo = self::getEntityManager()->getRepository('wms:Sistema\Parametro');
-
-        /** @var Parametro $parametro */
-        $parametro = $parametroRepo->findOneBy($params);
-
-        if ($parametro == NULL) {
-            return "";
-        } else {
-            return $parametro;
         }
     }
 
