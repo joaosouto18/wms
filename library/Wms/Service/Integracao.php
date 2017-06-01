@@ -661,8 +661,8 @@ class Integracao
                     $pedido->setCep($row['CEP']);
                     $pedido->setCodProduto($row['PRODUTO']);
                     $pedido->setGrade($row['GRADE']);
-                    $pedido->setQtd($row['QTD']);
-                    $pedido->setVlrVenda($row['VLR_VENDA']);
+                    $pedido->setQtd(str_replace(",",".",$row['QTD']));
+                    $pedido->setVlrVenda(str_replace(",",".",$row['VLR_VENDA']));
                     $pedido->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
                     $this->_em->persist($pedido);
                     break;
