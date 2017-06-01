@@ -33,7 +33,7 @@ class Importacao_GerenciamentoController extends Action
         $em = $this->getEntityManager();
         try {
 //            $em->beginTransaction();
-
+            var_dump("aqui");exit;
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             $acoesId = explode(",", $acao);
