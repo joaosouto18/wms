@@ -49,7 +49,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:
-                $SQL = "SELECT * FROM INTEGRACAO_PEDIDO";
+                $SQL = "SELECT * FROM INTEGRACAO_PEDIDO ORDER by CARGA, PEDIDO, PRODUTO";
                 break;
         }
 
