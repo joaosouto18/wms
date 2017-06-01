@@ -138,7 +138,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         foreach ($acoes as $acaoEn) {
             $this->processaAcao($acaoEn,$options,"E","T");
         }
-        var_dump("aqui - 6");exit;
+
 
         /* Faz a consulta na tabela temporaria, para retornar as informações no mesmo modelo do ERP */
         $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
@@ -219,7 +219,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
             }
-
+            var_dump("aqui - 6");exit;
             if ($dados == null) {
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
             } else {
