@@ -622,7 +622,11 @@ class Integracao
             $x = $x + 1;
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                    var_dump(\DateTime::createFromFormat('d/m/Y', $row['DAT_EMISSAO']));
+                    var_dump(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
                     var_dump("aqui - 7");exit;
+
+
                     $nf = new TabelaTemporaria\NotaFiscalEntrada();
                     $nf->setCodFornecedor($row['COD_FORNECEDOR']);
                     $nf->setNomFornecedor($row['NOM_FORNECEDOR']);
@@ -637,6 +641,7 @@ class Integracao
                     $nf->setQtdItem(str_replace(",",".",$row['QTD_ITEM']));
                     $nf->setVlrTotal(str_replace(",",".",$row['VALOR_TOTAL']));
                     $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
