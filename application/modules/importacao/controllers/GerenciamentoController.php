@@ -59,7 +59,7 @@ class Importacao_GerenciamentoController extends Action
             } else {
                 $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes);
             }
-            var_dump("aqui - 4");exit;
+
 
             $this->view->valores = $arrayFinal;
 //            $em->commit();

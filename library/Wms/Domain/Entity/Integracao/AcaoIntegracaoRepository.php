@@ -134,7 +134,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $acaoEn = $acoes[0];
 
         $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
-
+        var_dump("aqui - 4");exit;
         /* Executa cada ação salvando os dados na tabela temporaria */
         foreach ($acoes as $acaoEn) {
             $this->processaAcao($acaoEn,$options,"E","T");
