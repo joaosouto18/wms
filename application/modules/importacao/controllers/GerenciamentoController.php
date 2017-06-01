@@ -51,7 +51,6 @@ class Importacao_GerenciamentoController extends Action
                 $acaoEn = $acaoIntRepo->find($id);
                 $integracoes[] = $acaoEn;
             }
-            var_dump("aqui");exit;
             if (isset($params['submit'])) {
                 $result = $acaoIntRepo->efetivaTemporaria($integracoes);
                 if (!($result === true)) {
@@ -60,6 +59,7 @@ class Importacao_GerenciamentoController extends Action
             } else {
                 $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes);
             }
+            var_dump("aqui - 4");exit;
 
             $this->view->valores = $arrayFinal;
 //            $em->commit();
