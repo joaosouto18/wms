@@ -224,8 +224,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else {
                 $result = $dados;
             }
-            var_dump($result);exit;
-            var_dump("aqui - 6");exit;
 
             if (($tipoExecucao == "E") && ($destino == "T")) {
                 $integracaoService = new Integracao($this->getEntityManager(),

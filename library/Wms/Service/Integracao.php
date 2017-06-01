@@ -622,6 +622,7 @@ class Integracao
             $x = $x + 1;
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                    var_dump("aqui - 7");exit;
                     $nf = new TabelaTemporaria\NotaFiscalEntrada();
                     $nf->setCodFornecedor($row['COD_FORNECEDOR']);
                     $nf->setNomFornecedor($row['NOM_FORNECEDOR']);
