@@ -33,7 +33,7 @@ class Importacao_GerenciamentoController extends Action
         $em = $this->getEntityManager();
         try {
 //            $em->beginTransaction();
-            var_dump("aqui");exit;
+
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             $acoesId = explode(",", $acao);
@@ -43,7 +43,7 @@ class Importacao_GerenciamentoController extends Action
             $form->start($dataUltimaExecucao);
             $form->populate($params);
             $this->view->form = $form;
-
+            var_dump("aqui");exit;
             $integracoes = array();
             $arrayFinal = array();
 
