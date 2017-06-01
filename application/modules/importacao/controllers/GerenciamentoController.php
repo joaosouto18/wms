@@ -43,7 +43,7 @@ class Importacao_GerenciamentoController extends Action
             $form->start($dataUltimaExecucao);
             $form->populate($params);
             $this->view->form = $form;
-            var_dump("aqui");exit;
+
             $integracoes = array();
             $arrayFinal = array();
 
@@ -51,7 +51,7 @@ class Importacao_GerenciamentoController extends Action
                 $acaoEn = $acaoIntRepo->find($id);
                 $integracoes[] = $acaoEn;
             }
-
+            var_dump("aqui");exit;
             if (isset($params['submit'])) {
                 $result = $acaoIntRepo->efetivaTemporaria($integracoes);
                 if (!($result === true)) {
