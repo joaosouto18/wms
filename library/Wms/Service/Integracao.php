@@ -623,7 +623,7 @@ class Integracao
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     var_dump(\DateTime::createFromFormat('d/m/Y', $row['DAT_EMISSAO']));
-                    var_dump(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    var_dump($row['DAT_EMISSAO']);
                     var_dump("aqui - 7");exit;
 
 
