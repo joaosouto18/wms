@@ -13,16 +13,21 @@ use Doctrine\ORM\EntityRepository,
 class SiglaRepository extends EntityRepository
 {
     /**
-     *
      * @param int $idTipo
+     * @param array $notStatus
+     *
      * @return type 
      */
-    public function getIdValue($idTipo = false)
+    public function getIdValue($idTipo = false, $notStatus = array())
     {
 	$result = ($idTipo) ? $this->findBy(array('tipo' => (int) $idTipo), array('sigla' => 'ASC')) : $this->findAll();
 
-	foreach ($result as $row)
-	    $rows[$row->getId()] = $row->getSigla();
+	/** @var Sigla $row */
+        foreach ($result as $row) {
+	    if (!in_array($row->getId(), $notStatus)) {
+            $rows[$row->getId()] = $row->getSigla();
+        }
+    }
 
 	return $rows;
     }

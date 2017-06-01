@@ -2,6 +2,9 @@
 
 namespace Wms\Module\Web\Form\Subform;
 
+use Wms\Domain\Entity\Util\SiglaRepository,
+    Wms\Domain\Entity\Expedicao;
+
 /**
  * Description of FiltroRecebimentoMercadoria
  *
@@ -17,7 +20,10 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
        //if ( !empty($s->action))
            //$label=$s->action;
         $em = $this->getEm();
+        /** @var SiglaRepository $repoSigla */
         $repoSigla = $em->getRepository('wms:Util\Sigla');
+
+        $notStatus = array(Expedicao::STATUS_CANCELADO, Expedicao::STATUS_FINALIZADO);
 
         $this->setAttribs(array(
             'method' => 'get',
@@ -51,7 +57,7 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
                 ))
                 ->addElement('select', 'status', array(
                     'label' => 'Status da Expedição',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(53)),
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(53, $notStatus)),
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('text', 'codCargaExterno', array(

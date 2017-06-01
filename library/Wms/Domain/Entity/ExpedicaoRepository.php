@@ -1024,6 +1024,7 @@ class ExpedicaoRepository extends EntityRepository
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
+        $statusCancelada = Expedicao::STATUS_CANCELADO;
         $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
@@ -1038,6 +1039,7 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                    AND E.COD_STATUS <> $statusFinalizado
+                   AND E.COD_STATUS <> $statusCancelada
                    AND P.CENTRAL_ENTREGA = $central
                    ";
 
