@@ -49,7 +49,32 @@ class AcaoIntegracaoRepository extends EntityRepository
                 ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:
-                $SQL = "SELECT * FROM INTEGRACAO_PEDIDO ORDER by CARGA, PEDIDO, PRODUTO";
+                $SQL = "SELECT  COD_INTEGRACAO_PEDIDO,
+                                CARGA,
+                                PLACA,
+                                PEDIDO,
+                                COD_PRACA,
+                                DSC_PRACA,
+                                COD_ROTA,
+                                DSC_ROTA,
+                                COD_CLIENTE,
+                                NOME,
+                                CPF_CNPJ,
+                                TIPO_PESSOA,
+                                LOGRADOURO,
+                                NUMERO,
+                                BAIRRO,
+                                CIDADE,
+                                UF,
+                                COMPLEMENTO,
+                                REFERENCIA,
+                                CEP,
+                                PRODUTO,
+                                GRADE,
+                                QTD,
+                                VLR_VENDA,
+                                TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                FROM INTEGRACAO_PEDIDO ORDER by CARGA, PEDIDO, PRODUTO";
                 break;
         }
 
