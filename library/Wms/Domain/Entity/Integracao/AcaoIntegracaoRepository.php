@@ -219,12 +219,12 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
             }
-            var_dump("aqui - 6");exit;
             if ($dados == null) {
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
             } else {
                 $result = $dados;
             }
+            var_dump("aqui - 6");exit;
 
             if (($tipoExecucao == "E") && ($destino == "T")) {
                 $integracaoService = new Integracao($this->getEntityManager(),
