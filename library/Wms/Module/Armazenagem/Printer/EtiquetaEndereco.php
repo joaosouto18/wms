@@ -42,7 +42,7 @@ class EtiquetaEndereco extends Pdf
 
             switch ((int)$modelo) {
                 case 1:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,true);
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
                     } else {
