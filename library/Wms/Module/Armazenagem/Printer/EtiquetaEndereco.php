@@ -128,6 +128,8 @@ class EtiquetaEndereco extends Pdf
             }
         }
 
+        $this->Output('etiqueta','I');
+
     }
 
     public function layoutModelo4($codBarras){
