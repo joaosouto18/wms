@@ -364,7 +364,11 @@ class Integracao
                 $tipoPessoa = 'J';
             }
             if ($tipoPessoa == 'F') {
-                continue;
+                $notaFiscal['COD_FORNECEDOR'] = '9999';
+                $cpf_cnpj = '9999999999';
+                $notaFiscal['NOM_FORNECEDOR'] = 'DEVOLUCAO';
+                $notaFiscal['INSCRICAO_ESTADUAL'] = 'ISENTO';
+                $tipoPessoa = 'J';
             }
             if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
                 $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
