@@ -11,7 +11,7 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
 
 /*INTEGRAÇÃO DE ESTOQUE*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (2,1,'select e.codprod as COD_PRODUTO, e.qtestger as ESTOQUE_GERENCIAL, sum(e.qtestger-e.qtreserv-e.qtbloqueada) as ESTOQUE_DISPONIVEL, trunc(sum(e.qtestger*e.custoultent),2) VALOR_ESTOQUE, trunc(e.custoultent,2) CUSTO_UNITARIO, p.qtunit FATOR_UNIDADE_VENDA, p.unidade DSC_UNIDADE from pcest e, pcprodut p where e.codprod=p.codprod and e.codfilial=:codFilial group by e.codprod,e.qtestger,e.custoultent,p.qtunit,p.unidade',
+  VALUES (2,1,'select e.codprod as COD_PRODUTO, e.qtestger as ESTOQUE_GERENCIAL, sum(e.qtestger-e.qtreserv-e.qtbloqueada) as ESTOQUE_DISPONIVEL, trunc(sum(e.qtestger*e.custoultent),2) VALOR_ESTOQUE, trunc(e.custoultent,2) CUSTO_UNITARIO, p.qtunit FATOR_UNIDADE_VENDA, p.unidade DSC_UNIDADE from pcest e, pcprodut p where e.codprod=p.codprod and e.codfilial=:codFilial AND e.qtestger > 0 group by e.codprod,e.qtestger,e.custoultent,p.qtunit,p.unidade',
   601,'S',NULL);
 
 /*INTEGRAÇÃO DE PEDIDOS PARA IMPORTAR*/
@@ -36,10 +36,13 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
 
 /*INTEGRAÇÃO DE NOTAS FISCAIS DE SAIDA CANCELADAS*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (7,1,'select pcnfsaid.codcli, pcclient.cliente, pcclient.cgcent,' || '''UNICA''' || ' DSC_GRADE, pcclient.ieent, pcnfsaid.numnota, pcmov.codprod, pcnfsaid.serie, pcnfsaid.dtsaidanf, pcnfsaid.placaveic, pcmov.qt, (pcmov.qt * pcmov.punit) valor_total, to_char(pcnfsaid.dtcancel, ' || '''DD/MM/YYYY HH24:MI:SS''' || ') dth from pcnfsaid  inner join pcmov on pcmov.numtransvenda = pcnfsaid.numtransvenda inner join pcclient on pcclient.codcli = pcnfsaid.codcli where pcnfsaid.especie = ' || '''NF''' || ' and pcmov.qt > 0 and pcmov.codoper = ' || '''S''' || ' and pcnfsaid.dtcancel > :dthExecucao and pcnfsaid.enviada = ' || '''S''',
+  VALUES (7,1,'select pcnfsaid.codcli COD_FORNECEDOR, pcclient.cliente NOM_FORNECEDOR,  pcclient.cgcent  CPF_CNPJ,  ' ||'''UNICA''' || ' DSC_GRADE,  pcclient.ieent INSCRICAO_ESTADUAL, pcnfsaid.numnota NUM_NOTA_FISCAL,  pcmov.codprod COD_PRODUTO,  pcnfsaid.serie COD_SERIE_NOTA_FISCAL,  pcnfsaid.dtsaidanf DAT_EMISSAO,  pcnfsaid.placaveic DSC_PLACA_VEICULO,  pcmov.qt QTD_ITEM,  (pcmov.qt * pcmov.punit) VALOR_TOTAL, to_char(pcnfsaid.dtcancel,' || '''DD/MM/YYYY HH24:MI:SS''' || ') DTH from pcnfsaid  inner join pcmov on pcmov.numtransvenda = pcnfsaid.numtransvenda inner join pcclient on pcclient.codcli = pcnfsaid.codcli where pcnfsaid.especie = '|| '''NF''' || ' and pcmov.qt > 0 and pcmov.codoper = ' || '''S''' || ' and pcnfsaid.dtcancel > :dthExecucao and pcnfsaid.enviada = ' || '''S'''  ,
   605,'S',NULL);
 
-
+/*INTEGRAÇÃO DE NOTAS FISCAIS DE SAIDA EMITIDAS NA ROTINA 1322*/
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (8,1, 'select pcnfsaid.numnota CARGA, ' || '''AAA0000''' || ' PLACA, pcnfsaid.numnota PEDIDO, pcclient.codpraca COD_PRACA, pcpraca.praca DSC_PRACA, pcrotaexp.codrota COD_ROTA, pcrotaexp.descricao DSC_ROTA, pcclient.codcli COD_CLIENTE, pcclient.cliente NOME, pcclient.cgcent CPF_CNPJ, pcclient.tipofj TIPO_PESSOA, pcclient.enderent LOGRADOURO, pcclient.numeroent NUMERO, pcclient.bairroent BAIRRO, pcclient.municent CIDADE, pcclient.estent UF, pcclient.complementoent COMPLEMENTO, pcclient.pontorefer REFERENCIA, pcclient.cepent CEP, pcmov.codprod PRODUTO, ' || '''UNICA''' || ' GRADE, pcmov.qt QTD, (pcmov.qt * pcmov.punit) VLR_VENDA, TO_CHAR(pcmov.dtmovlog,' || '''DD/MM/YYYY HH24:MI:SS''' || ') AS DTH from pcmov  inner join pcnfsaid on pcnfsaid.numnota = pcmov.numnota inner join pcclient on pcclient.codcli = pcnfsaid.codcli inner join pcpraca on pcpraca.codpraca = pcclient.codpraca inner join pcrotaexp on pcrotaexp.codrota = pcpraca.rota inner join pcprodut on pcprodut.codprod = pcmov.codprod where pcmov.rotinacad = ' || '''PCSIS1322.EXE''' || ' and pcprodut.revenda = ' || '''S''' || ' AND pcmov.dtmovlog > :dthExecucao ',
+  602,'S',NULL);
 
 /******* APENAS PARA TESTES *********/
 /*INTEGRAÇÃO DE NOTAS FISCAIS DE ENTRADA*/

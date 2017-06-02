@@ -859,6 +859,10 @@ class NotaFiscalRepository extends EntityRepository
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
+            if ($fornecedorEntity->getPessoa() == null) {
+                $fornecedorEntity = $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $this->getSystemParameterValue('COD_FORNECEDOR_DEVOLUCAO')));
+            }
+
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))
                 $placa = $em->getRepository('wms:Sistema\Parametro')->getValor(5, 'PLACA_PADRAO_NOTAFISCAL');

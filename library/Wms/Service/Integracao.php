@@ -5,6 +5,7 @@ namespace Wms\Service;
 
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
+use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 
@@ -119,8 +120,7 @@ class Integracao
     }
 
 
-    public function processaAcao()
-    {
+    public function processaAcao() {
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_PRODUTO:
@@ -653,6 +653,71 @@ class Integracao
             throw new \Exception($e->getMessage());
         }
 
+
     }
+
+    public function salvaTemporario(){
+        $x = 0;
+        foreach($this->_dados as $row){
+            $x = $x + 1;
+            switch ($this->getAcao()->getTipoAcao()->getId()) {
+                case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                    $nf = new TabelaTemporaria\NotaFiscalEntrada();
+                    $nf->setCodFornecedor($row['COD_FORNECEDOR']);
+                    $nf->setNomFornecedor($row['NOM_FORNECEDOR']);
+                    $nf->setCpfCnpj($row['CPF_CNPJ']);
+                    $nf->setGrade($row['DSC_GRADE']);
+                    $nf->setInscricaoEstadual($row['INSCRICAO_ESTADUAL']);
+                    $nf->setNumNF($row['NUM_NOTA_FISCAL']);
+                    $nf->setCodProduto($row['COD_PRODUTO']);
+                    $nf->setSerieNF($row['COD_SERIE_NOTA_FISCAL']);
+                    $nf->setDthEmissao(\DateTime::createFromFormat('d/m/Y', $row['DAT_EMISSAO']));
+                    $nf->setVeiculo($row['DSC_PLACA_VEICULO']);
+                    $nf->setQtdItem(str_replace(",",".",$row['QTD_ITEM']));
+                    $nf->setVlrTotal(str_replace(",",".",$row['VALOR_TOTAL']));
+                    $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $this->_em->persist($nf);
+                    break;
+                case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                    $pedido = new TabelaTemporaria\Pedido();
+                    $pedido->setCarga($row['CARGA']);
+                    $pedido->setPlaca($row['PLACA']);
+                    $pedido->setPedido($row['PEDIDO']);
+                    $pedido->setCodPraca($row['COD_PRACA']);
+                    $pedido->setDscPraca($row['DSC_PRACA']);
+                    $pedido->setCodRota($row['COD_ROTA']);
+                    $pedido->setDscRota($row['DSC_ROTA']);
+                    $pedido->setCodCliente($row['COD_CLIENTE']);
+                    $pedido->setNomeCliente($row['NOME']);
+                    $pedido->setCpfCnpj($row['CPF_CNPJ']);
+                    $pedido->setTipoPessoa($row['TIPO_PESSOA']);
+                    $pedido->setLogradouro($row['LOGRADOURO']);
+                    $pedido->setNumero($row['NUMERO']);
+                    $pedido->setBairro($row['BAIRRO']);
+                    $pedido->setCidade($row['CIDADE']);
+                    $pedido->setUf($row['UF']);
+                    $pedido->setComplemento($row['COMPLEMENTO']);
+                    $pedido->setReferencia($row['REFERENCIA']);
+                    $pedido->setCep($row['CEP']);
+                    $pedido->setCodProduto($row['PRODUTO']);
+                    $pedido->setGrade($row['GRADE']);
+                    $pedido->setQtd(str_replace(",",".",$row['QTD']));
+                    $pedido->setVlrVenda(str_replace(",",".",$row['VLR_VENDA']));
+                    $pedido->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $this->_em->persist($pedido);
+                    break;
+            }
+
+            if ($x >= 50) {
+                $this->_em->flush();
+                $this->_em->clear();
+                $x = 0;
+            }
+        }
+
+        $this->_em->flush();
+        return true;
+    }
+
 
 }
