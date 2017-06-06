@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Domain\Entity\Enderecamento\Palete as PaleteEntity;
 use Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Service\Integracao;
 
 /**
  * Deposito
@@ -159,6 +160,29 @@ class RecebimentoRepository extends EntityRepository
         $em->beginTransaction();
 
         try {
+
+            if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+
+                $acaoEn = $acaoIntRepo->find(7);
+                $notaFiscal = $em->getReference('wms:NotaFiscal', $notasFiscais[0]);
+                $options = array(
+                    0 => $notaFiscal->getFornecedor()->getIdExterno(),
+                    1 => $notaFiscal->getSerie(),
+                    2 => $notaFiscal->getNumero(),
+                );
+                $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn,$options);
+                $serviceIntegracao = new Integracao();
+                $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
+
+
+
+            }
+
+
+
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $em->getReference('wms:Deposito', $sessao->idDepositoLogado);
 

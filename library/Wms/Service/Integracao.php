@@ -135,6 +135,8 @@ class Integracao
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     return $this->processaNotasFiscais($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                    return $this->_dados;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
@@ -719,5 +721,49 @@ class Integracao
         return true;
     }
 
+    public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
+    {
+        foreach ($notasFiscaisWms as $idNotaFiscal) {
+            $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
+            $constaNoErp = false;
+
+            $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+            $numeroSerie  = $notaFiscal->getSerie();
+            $numeroNota   = $notaFiscal->getNumero();
+
+            foreach ($notasFiscaisErp as $key => $erpNotaFiscal) {
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                    $constaNoErp = true;
+                    unset($notasFiscaisErp[$key]);
+                    break;
+                }
+            }
+            if ($constaNoErp == false) {
+                throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+            }
+        }
+
+        foreach ($notasFiscaisErp as $erpNotaFiscal) {
+            $constaNoWms = false;
+            foreach ($notasFiscaisWms as $key => $idNotaFiscal) {
+                $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
+
+                $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+                $numeroSerie  = $notaFiscal->getSerie();
+                $numeroNota   = $notaFiscal->getNumero();
+
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                    $constaNoWms = true;
+                    unset($notasFiscaisWms[$key]);
+                    break;
+                }
+            }
+            if ($constaNoWms == false) {
+                throw new \Exception('Nota Fiscal número '.$erpNotaFiscal['NUM_NOTA'].' série '.$erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] .' não consta no recebimento do WMS!');
+            }
+
+        }
+        return true;
+    }
 
 }

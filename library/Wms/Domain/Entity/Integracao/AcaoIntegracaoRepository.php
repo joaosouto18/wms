@@ -234,9 +234,9 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else {
                 $integracaoService = new Integracao($this->getEntityManager(),
                     array('acao'=>$acaoEn,
-                        'options'=>$options,
-                        'tipoExecucao' => $tipoExecucao,
-                        'dados'=>$result));
+                          'options'=>$options,
+                          'tipoExecucao' => $tipoExecucao,
+                          'dados'=>$result));
                 $result = $integracaoService->processaAcao();
             }
 
