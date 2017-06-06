@@ -723,6 +723,7 @@ class Integracao
 
     public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
     {
+        $erpRecebimento = array();
         foreach ($notasFiscaisWms as $idNotaFiscal) {
             $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
             $constaNoErp = false;
@@ -764,6 +765,24 @@ class Integracao
 
         }
         return true;
+    }
+
+    public function atualizaRecebimentoERP($acaoEn, $options = null)
+    {
+
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        $conexaoEn = $acaoEn->getConexao();
+        $query = $acaoEn->getQuery();
+
+        if (!is_null($options)) {
+            foreach ($options as $key => $value) {
+                $query = str_replace(":?" . ($key+1) ,$value ,$query);
+            }
+        }
+
+        echo $query; exit;
+        $conexaoRepo->runQuery($query,$conexaoEn);
     }
 
 }
