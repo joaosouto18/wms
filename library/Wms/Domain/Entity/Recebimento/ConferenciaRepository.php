@@ -253,4 +253,17 @@ class ConferenciaRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getProdutosByRecebimento($idRecebimento)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('rc.codProduto, rc.grade, nfi.quantidade, nfi.quantidade - rc.qtdConferida qtdDivergencia')
+            ->from('wms:Recebimento','r')
+            ->innerJoin('wms:Recebimento\Conferencia','rc','WITH','rc.recebimento = r.id')
+            ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
+            ->innerJoin('wms:NotaFiscal\Item','nfi','WITH','nfi.notaFiscal = nf.id')
+            ->where("r.id = $idRecebimento");
+
+        return $sql->getQuery()->getResult();
+    }
+
 }

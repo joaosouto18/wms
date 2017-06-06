@@ -161,6 +161,7 @@ class RecebimentoRepository extends EntityRepository
 
         try {
 
+            $idRecebimentoErp = null;
             if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -179,6 +180,7 @@ class RecebimentoRepository extends EntityRepository
                         'options'=>null,
                         'tipoExecucao' => 'E'));
                 $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
+                $idRecebimentoErp = $notasFiscaisErp[0]['COD_RECEBIMENTO_ERP'];
             }
 
             $sessao = new \Zend_Session_Namespace('deposito');
@@ -203,6 +205,7 @@ class RecebimentoRepository extends EntityRepository
 
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $nota);
                 $notaFiscal->setRecebimento($recebEntity)
+                    ->setCodRecebimentoErp($idRecebimentoErp)
                     ->setStatus($statusEntity);
 
                 $em->persist($notaFiscal);
@@ -303,13 +306,14 @@ class RecebimentoRepository extends EntityRepository
      */
     public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null)
     {
-        $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
-        $vQtdRecebimentoRepo = $this->_em->getRepository('wms:Recebimento\VQtdRecebimento');
-        $notafiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
+        $em = $this->_em;
+        $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
+        $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
+        $notafiscalRepo = $em->getRepository('wms:NotaFiscal');
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
-        $conferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
+        $conferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
         /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */
-        $pesoProdutoRepo = $this->_em->getRepository('wms:Produto\Peso');
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
 
 
         $repositorios = array(
@@ -404,6 +408,31 @@ class RecebimentoRepository extends EntityRepository
                 }
             }
         }
+
+
+
+
+
+
+        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $em->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoEn = $acaoIntRepo->find(10);
+
+            $optionsRecebimentoErp = array(
+                0 => 1566,
+            );
+
+            $serviceIntegracao = new Integracao($em,
+                array('acao'=>$acaoEn,
+                    'options'=>null,
+                    'tipoExecucao' => 'E'
+                ));
+            $serviceIntegracao->atualizaRecebimentoERP($acaoEn,$optionsRecebimentoErp,$idRecebimento);
+        }
+
+
+
 
         if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);

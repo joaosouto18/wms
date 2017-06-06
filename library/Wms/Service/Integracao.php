@@ -767,9 +767,8 @@ class Integracao
         return true;
     }
 
-    public function atualizaRecebimentoERP($acaoEn, $options = null)
+    public function atualizaRecebimentoERP($acaoEn, $options = null, $idRecebimento)
     {
-
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
         $conexaoEn = $acaoEn->getConexao();
@@ -782,6 +781,17 @@ class Integracao
         }
 
         $conexaoRepo->runQuery($query,$conexaoEn);
+
+        /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
+        $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
+        $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
+
+        foreach ($produtosConferidos as $produtoConferido) {
+            var_dump($produtoConferido); exit;
+
+        }
+
+
     }
 
 }
