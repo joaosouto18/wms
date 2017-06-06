@@ -179,20 +179,7 @@ class RecebimentoRepository extends EntityRepository
                         'options'=>null,
                         'tipoExecucao' => 'E'));
                 $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
-
-                $acaoEn = $acaoIntRepo->find(10);
-                $optionsRecebimentoErp = array(
-                    0 => $notasFiscaisErp[0]['COD_RECEBIMENTO_ERP']
-                );
-                $serviceIntegracao->atualizaRecebimentoERP($acaoEn,$optionsRecebimentoErp);
-
-
-
-
-
             }
-
-
 
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $em->getReference('wms:Deposito', $sessao->idDepositoLogado);
