@@ -220,7 +220,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
             }
 
-            echo $query; exit;
             if ($dados == null) {
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
             } else {
@@ -239,6 +238,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                           'tipoExecucao' => $tipoExecucao,
                           'dados'=>$result));
                 $result = $integracaoService->processaAcao();
+                var_dump($result); exit;
             }
 
             $this->_em->flush();
