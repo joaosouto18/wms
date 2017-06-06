@@ -166,7 +166,7 @@ class RecebimentoRepository extends EntityRepository
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
 
-                $acaoEn = $acaoIntRepo->find(7);
+                $acaoEn = $acaoIntRepo->find(9);
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $notasFiscais[0]);
                 $options = array(
                     0 => $notaFiscal->getFornecedor()->getIdExterno(),

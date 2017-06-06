@@ -1113,6 +1113,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             if ($notasFiscais == 0)
                 throw new \Exception('Por favor selecione alguma nota para gerar o recebimento');
 
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $recebimentoId = $recebimentoRepo->gerar($values['notasFiscais']);
 
