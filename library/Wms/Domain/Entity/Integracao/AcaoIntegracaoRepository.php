@@ -220,6 +220,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
             }
 
+            echo $query; exit;
             if ($dados == null) {
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
             } else {
