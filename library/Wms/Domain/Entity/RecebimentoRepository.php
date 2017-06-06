@@ -179,6 +179,7 @@ class RecebimentoRepository extends EntityRepository
                         'options'=>null,
                         'tipoExecucao' => 'E'));
                 $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
+                var_dump($notasFiscaisErp[0]['COD_RECEBIMENTO_ERP']); exit;
 
 
 
