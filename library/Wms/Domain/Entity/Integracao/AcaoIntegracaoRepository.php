@@ -300,6 +300,9 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
+            var_dump($tipoExecucao);
+            var_dump($destino);
+            var_dump($sucess);
             if (($tipoExecucao == "E") && ($destino == "P")) {
                 /*
                  * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
