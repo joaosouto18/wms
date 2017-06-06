@@ -174,9 +174,10 @@ class RecebimentoRepository extends EntityRepository
                     2 => $notaFiscal->getNumero(),
                 );
                 $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn,$options);
-                var_dump('abc');
-                var_dump($notasFiscaisErp); exit;
-                $serviceIntegracao = new Integracao();
+                $serviceIntegracao = new Integracao($em,
+                    array('acao'=>$acaoEn,
+                        'options'=>null,
+                        'tipoExecucao' => 'E'));
                 $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
 
 

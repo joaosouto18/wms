@@ -723,6 +723,9 @@ class Integracao
 
     public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
     {
+        var_dump($notasFiscaisWms);
+        var_dump($notasFiscaisErp);
+        exit;
         foreach ($notasFiscaisWms as $idNotaFiscal) {
             $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
             $constaNoErp = false;
