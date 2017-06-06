@@ -238,7 +238,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                           'tipoExecucao' => $tipoExecucao,
                           'dados'=>$result));
                 $result = $integracaoService->processaAcao();
-                var_dump($result); exit;
             }
 
             $this->_em->flush();
@@ -324,6 +323,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         }
 
+        var_dump($result); exit;
         return $result;
     }
 }
