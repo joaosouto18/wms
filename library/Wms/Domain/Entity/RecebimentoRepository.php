@@ -180,7 +180,6 @@ class RecebimentoRepository extends EntityRepository
                         'tipoExecucao' => 'E'));
                 $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
 
-                var_dump('abc'); exit;
 
 
             }
