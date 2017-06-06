@@ -146,78 +146,15 @@ class Integracao
         $em = $this->_em;
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
         $expedicaoRepository = $em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
-        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
         $pedidosProdutosWMS = $expedicaoRepository->compareConferenciaByCarga($cargas);
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
         $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-        foreach ($pedidosProdutosWMS as $produtoWms) {
-            $encontrouProdutoERP = false;
-            foreach ($pedidosProdutosERP as $key => $produtoERP) {
-                if (in_array($produtoWms['pedido'],$produtoERP)) {
-                    if (in_array($produtoWms['produto'],$produtoERP)) {
-                        if (in_array($produtoWms['grade'],$produtoERP)) {
-                            $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
-                                'codPedido' => $produtoWms['pedido'],
-                                'codProduto' => $produtoWms['produto'],
-                                'grade' => $produtoWms['grade']));
-                            if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
-                                $encontrouProdutoERP = true;
-                                $cortesProduto = array(
-                                    'codPedido' => $produtoWms['pedido'],
-                                    'codProduto' => $produtoWms['produto'],
-                                    'grade' => $produtoWms['grade'],
-                                    'quantidadeCortar' => str_replace(',','.',$pedidoProdutoEntity->getQuantidade()) - str_replace(',','.',$produtoERP['QTD']),
-                                    'pedidoProduto' => $pedidoProdutoEntity->getId()
-                                );
-                                if ($cortesProduto['quantidadeCortar'] >= $pedidoProdutoEntity->getQtdCortada()) {
-                                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
-                                    $em->persist($pedidoProdutoEntity);
-                                }
-                                unset($pedidosProdutosERP[$key]);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (!$encontrouProdutoERP) {
-                $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
-                    'codPedido' => $produtoWms['pedido'],
-                    'codProduto' => $produtoWms['produto'],
-                    'grade' => $produtoWms['grade']));
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+        $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
+        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosERP);
 
-                if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
-                    $cortesProduto = array(
-                        'codPedido' => $produtoWms['pedido'],
-                        'codProduto' => $produtoWms['produto'],
-                        'grade' => $produtoWms['grade'],
-                        'quantidadeCortar' => $pedidoProdutoEntity->getQuantidade(),
-                        'pedidoProduto' => $pedidoProdutoEntity->getId()
-                    );
-                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
-                    $em->persist($pedidoProdutoEntity);
-                }
-            }
-
-            while ($cortesProduto['quantidadeCortar'] > 0) {
-                $mapaSeparacaoProdutoEntities = $pedidoProdutoRepository->compareMapaProdutoByPedido($cortesProduto);
-                foreach ($mapaSeparacaoProdutoEntities as $mapaSeparacaoProduto) {
-                    $mapaSeparacaoProdutoEntity = $mapaSeparacaoProdutoRepository->find($mapaSeparacaoProduto['id']);
-                    if ($mapaSeparacaoProduto['corteMaximo'] >= $cortesProduto['quantidadeCortar']) {
-                        $quantidadeCortar = $cortesProduto['quantidadeCortar'];
-                    } else {
-                        $quantidadeCortar = $mapaSeparacaoProduto['corteMaximo'];
-                    }
-                    $cortesProduto['quantidadeCortar'] = $cortesProduto['quantidadeCortar'] - $quantidadeCortar;
-                    $mapaSeparacaoProdutoEntity->setQtdCortado($quantidadeCortar);
-                    $em->persist($mapaSeparacaoProdutoEntity);
-                }
-            }
-        }
-
-        $em->flush();
         return true;
     }
 

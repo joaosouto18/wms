@@ -7,6 +7,66 @@ use Doctrine\ORM\EntityRepository,
 class PedidoProdutoRepository extends EntityRepository
 {
 
+    public function aplicaCortesbyERP($pedidosProdutosWMS, $pedidosProdutosERP) {
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+        $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+
+        foreach ($pedidosProdutosWMS as $produtoWms) {
+            $encontrouProdutoERP = false;
+            foreach ($pedidosProdutosERP as $key => $produtoERP) {
+                if (in_array($produtoWms['pedido'],$produtoERP)) {
+                    if (in_array($produtoWms['produto'],$produtoERP)) {
+                        if (in_array($produtoWms['grade'],$produtoERP)) {
+                            $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                                'codPedido' => $produtoWms['pedido'],
+                                'codProduto' => $produtoWms['produto'],
+                                'grade' => $produtoWms['grade']));
+                            if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                                $encontrouProdutoERP = true;
+                                $cortesProduto = array(
+                                    'codPedido' => $produtoWms['pedido'],
+                                    'codProduto' => $produtoWms['produto'],
+                                    'grade' => $produtoWms['grade'],
+                                    'quantidadeCortar' => str_replace(',','.',$pedidoProdutoEntity->getQuantidade()) - str_replace(',','.',$produtoERP['QTD']),
+                                    'pedidoProduto' => $pedidoProdutoEntity->getId()
+                                );
+                                if ($cortesProduto['quantidadeCortar'] >= $pedidoProdutoEntity->getQtdCortada()) {
+                                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
+                                    $this->getEntityManager()->persist($pedidoProdutoEntity);
+                                }
+                                unset($pedidosProdutosERP[$key]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!$encontrouProdutoERP) {
+                $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                    'codPedido' => $produtoWms['pedido'],
+                    'codProduto' => $produtoWms['produto'],
+                    'grade' => $produtoWms['grade']));
+
+                if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                    $cortesProduto = array(
+                        'codPedido' => $produtoWms['pedido'],
+                        'codProduto' => $produtoWms['produto'],
+                        'grade' => $produtoWms['grade'],
+                        'quantidadeCortar' => $pedidoProdutoEntity->getQuantidade(),
+                        'pedidoProduto' => $pedidoProdutoEntity->getId()
+                    );
+                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
+                    $this->getEntityManager()->persist($pedidoProdutoEntity);
+                }
+            }
+        }
+
+        $this->getEntityManager()->flush();
+
+        return true;
+    }
+
     public function save($pedido) {
 
         $em = $this->getEntityManager();

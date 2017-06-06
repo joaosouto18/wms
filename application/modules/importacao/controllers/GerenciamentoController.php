@@ -89,13 +89,19 @@ class Importacao_GerenciamentoController extends Action
             $idCargas[] = implode(',',$cargas);
 
             $acaoEn = $acaoIntRepo->find(5);
-            $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E');
+            $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E');
 
-            $this->addFlashMessage('success','Pedidos cortados com sucesso pelo ERP');
+            if ($result === true) {
+                $this->addFlashMessage('success','Pedidos cortados com sucesso pelo ERP');
+            } else {
+                $this->addFlashMessage('error',$result);
+            }
+
             $this->redirect('index','index','expedicao');
 
         } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            $this->addFlashMessage('error',$e->getMessage());
+            $this->redirect('index','index','expedicao');
         }
         exit;
     }
