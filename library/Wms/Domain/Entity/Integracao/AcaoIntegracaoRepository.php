@@ -323,7 +323,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         }
 
-        var_dump($result); exit;
         return $result;
     }
 }
