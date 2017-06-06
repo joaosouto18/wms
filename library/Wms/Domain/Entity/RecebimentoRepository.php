@@ -203,8 +203,10 @@ class RecebimentoRepository extends EntityRepository
             //itera nas notas fiscais enviadas
             foreach ($notasFiscais as $nota) {
 
+                var_dump($idRecebimentoErp); exit;
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $nota);
-                $notaFiscal->setRecebimento($recebEntity)
+                $notaFiscal
+                    ->setRecebimento($recebEntity)
                     ->setCodRecebimentoErp($idRecebimentoErp)
                     ->setStatus($statusEntity);
 
