@@ -781,7 +781,6 @@ class Integracao
             }
         }
 
-        echo $query; exit;
         $conexaoRepo->runQuery($query,$conexaoEn);
     }
 
