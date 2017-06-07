@@ -808,8 +808,8 @@ class Integracao
                 1 => $produtoConferido['codProduto'],
                 2 => $produtoConferido['quantidade'],
                 3 => $produtoConferido['qtdDivergencia'],
-                4 => $produtoConferido['dataValidade'],
-                5 => $produtoConferido['dataConferencia'],
+                4 => $produtoConferido['dataValidade']->format('d/m/Y'),
+                5 => $produtoConferido['dataConferencia']->format('d/m/Y'),
                 6 => $produtoConferido['codigoBarras']
             );
 
