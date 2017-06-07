@@ -679,7 +679,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                                     'options'=>null,
                                     'tipoExecucao' => 'E'
                                 ));
-                            var_dump('abc'); exit;
                             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
                         }
 
