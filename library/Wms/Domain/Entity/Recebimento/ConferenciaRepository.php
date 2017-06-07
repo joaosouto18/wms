@@ -256,14 +256,14 @@ class ConferenciaRepository extends EntityRepository
     public function getProdutosByRecebimento($idRecebimento)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('MIN(pe.codigoBarras) codigoBarras, v.codProduto, v.grade, SUM(nfi.quantidade) quantidade, SUM(nfi.quantidade) - SUM(v.qtd) qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
+            ->select('1010101010 codigoBarras, v.codProduto, v.grade, SUM(nfi.quantidade) quantidade, SUM(nfi.quantidade) - v.qtd qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
             ->from('wms:Recebimento','r')
             ->innerJoin('wms:Recebimento\VQtdRecebimento','v','WITH','v.codRecebimento = r.id')
             ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
             ->innerJoin('wms:NotaFiscal\Item','nfi','WITH','nfi.notaFiscal = nf.id AND nfi.codProduto = v.codProduto AND nfi.grade = v.grade')
             ->innerJoin('wms:Recebimento\Conferencia','rc','WITH','rc.ordemServico = v.codOs AND rc.codProduto = v.codProduto AND rc.grade = v.grade')
             ->innerJoin('wms:Produto','p', 'WITH', 'p.id = v.codProduto and p.grade = v.grade')
-            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id and pe.grade = p.grade')
+//            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id and pe.grade = p.grade')
             ->where("r.id = $idRecebimento")
             ->groupBy('v.codProduto, v.grade, v.qtd, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia');
 
