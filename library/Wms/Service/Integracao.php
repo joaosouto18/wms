@@ -767,27 +767,64 @@ class Integracao
         return true;
     }
 
-    public function atualizaRecebimentoERP($acaoEn, $options = null, $idRecebimento)
+    public function atualizaRecebimentoERP($idRecebimento)
     {
+        $em = $this->_em;
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepository */
+        $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
+
+        $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
+        $options1 = array(
+            0 => $notaFiscalEntity->getCodRecebimentoErp(),
+        );
+
+        //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
+        $acaoEn = $acaoIntRepository->find(10);
         $conexaoEn = $acaoEn->getConexao();
         $query = $acaoEn->getQuery();
 
-        if (!is_null($options)) {
-            foreach ($options as $key => $value) {
+        if (!is_null($options1)) {
+            foreach ($options1 as $key => $value) {
                 $query = str_replace(":?" . ($key+1) ,$value ,$query);
             }
         }
 
         $conexaoRepo->runQuery($query,$conexaoEn);
 
+
+
+
+        //FAZ O UPDATE NO ERP ATUALIZANDO AS QUANTIDADES
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
         $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
         $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
 
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
+        $acaoEn = $acaoIntRepo->find(11);
         foreach ($produtosConferidos as $produtoConferido) {
-            var_dump($produtoConferido); exit;
+            $options2 = array(
+                0 => $produtoConferido['codRecebimentoErp'],
+                1 => $produtoConferido['codProduto'],
+                2 => $produtoConferido['quantidade'],
+                3 => $produtoConferido['qtdDivergencia'],
+                4 => $produtoConferido['dataValidade'],
+                5 => $produtoConferido['dataConferencia'],
+                6 => $produtoConferido['codigoBarras']
+            );
+
+            $conexaoEn = $acaoEn->getConexao();
+            $query = $acaoEn->getQuery();
+
+            foreach ($options2 as $key => $value) {
+                $query = str_replace(":?" . ($key+1) ,$value ,$query);
+            }
+            $conexaoRepo->runQuery($query,$conexaoEn);
+
 
         }
 

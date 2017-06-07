@@ -416,20 +416,12 @@ class RecebimentoRepository extends EntityRepository
 
 
         if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
-            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-            $acaoIntRepo = $em->getRepository('wms:Integracao\AcaoIntegracao');
-            $acaoEn = $acaoIntRepo->find(10);
-
-            $optionsRecebimentoErp = array(
-                0 => 1566,
-            );
-
             $serviceIntegracao = new Integracao($em,
-                array('acao'=>$acaoEn,
+                array('acao'=>null,
                     'options'=>null,
                     'tipoExecucao' => 'E'
                 ));
-            $serviceIntegracao->atualizaRecebimentoERP($acaoEn,$optionsRecebimentoErp,$idRecebimento);
+            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
         }
 
 

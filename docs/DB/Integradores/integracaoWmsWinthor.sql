@@ -50,6 +50,18 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
   VALUES (9,1,'select pcnfent.codfornec COD_FORNECEDOR, pcnfent.numnota NUM_NOTA, pcnfent.serie COD_SERIE_NOTA_FISCAL, pcnfent.dtent DTH_ENTRADA, pcnfent.totpeso NUM_PESO, pcnfent.numbonus COD_RECEBIMENTO_ERP, pcnfent.codfilial COD_FILIAL from pcnfent inner join pcfornec on pcfornec.codfornec = pcnfent.codfornec where pcnfent.especie = '||'''NF'''||' and pcnfent.codcont = 100001 and numbonus = (select pcnfent.numbonus from pcnfent inner join pcfornec on pcfornec.codfornec = pcnfent.codfornec where pcnfent.codfornec = :?1 and pcnfent.serie = :?2 and pcnfent.numnota = :?3 and pcnfent.especie = '||'''NF'''||' and pcnfent.codcont = 100001)',
   606,'S',NULL);
 
+/*ATUALIZAÇÃO DE RECEBIMENTO NO ERP*/
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (10,1,'Update pcbonusc set dataarm = SYSDATE, codfuncrm = 1 where numbonus = :?1', 606,'S',NULL);
+
+/*ATUALIZAÇÃO DE RECEBIMENTO NO ERP*/
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (11,1,'Update pcbonusi set qtentrada = :?3, Qtavaria = :?4, Numlote = 01 where numbonus = :?1 and codprod = :?2', 606,'S',NULL);
+
+/* INSERÇÃO DE RECEBIMENTO NO ERP */
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (12,1,'Insert into pcbonusiconf (numbonus,codprod,dataconf,datavalidade,codfuncconf,numlote,qt, qtavaria,codauxiliar) values (:?1,:?2,:?6,:?5,1,01,:?3,:?4,:?)7', 606,'S',NULL);
+
 /******* APENAS PARA TESTES *********/
 /*INTEGRAÇÃO DE NOTAS FISCAIS DE ENTRADA*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)

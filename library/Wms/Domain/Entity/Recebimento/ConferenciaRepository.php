@@ -256,12 +256,15 @@ class ConferenciaRepository extends EntityRepository
     public function getProdutosByRecebimento($idRecebimento)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('rc.codProduto, rc.grade, nfi.quantidade, nfi.quantidade - rc.qtdConferida qtdDivergencia')
+            ->select('MIN(codigoBarras) codigoBarras, rc.codProduto, rc.grade, nfi.quantidade, nfi.quantidade - rc.qtdConferida qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
             ->from('wms:Recebimento','r')
             ->innerJoin('wms:Recebimento\Conferencia','rc','WITH','rc.recebimento = r.id')
             ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
             ->innerJoin('wms:NotaFiscal\Item','nfi','WITH','nfi.notaFiscal = nf.id')
-            ->where("r.id = $idRecebimento");
+            ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = grade')
+            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id and pe.grade = p.grade')
+            ->where("r.id = $idRecebimento")
+            ->groupBy('rc.codProduto, rc.grade, nfi.quantidade, rc.qtdConferida, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia');
 
         return $sql->getQuery()->getResult();
     }
