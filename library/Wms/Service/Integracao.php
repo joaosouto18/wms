@@ -787,13 +787,13 @@ class Integracao
         $conexaoEn = $acaoEn->getConexao();
         $query = $acaoEn->getQuery();
 
-        var_dump($query); exit;
         if (!is_null($options1)) {
             foreach ($options1 as $key => $value) {
                 $query = str_replace(":?" . ($key+1) ,$value ,$query);
             }
         }
 
+        var_dump($query); exit;
         //EXECUTA O ERP
         $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
 
