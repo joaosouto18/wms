@@ -793,19 +793,15 @@ class Integracao
             }
         }
 
+        //EXECUTA O ERP
         $conexaoRepo->runQuery($query,$conexaoEn);
 
-
-
-
-        //FAZ O UPDATE NO ERP ATUALIZANDO AS QUANTIDADES
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
         $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
         $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
 
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-        $acaoIntRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
-        $acaoEn = $acaoIntRepo->find(11);
+        $acaoEn = $acaoIntRepository->find(11);
+        $acaoToInsert = $acaoIntRepository->find(12);
         foreach ($produtosConferidos as $produtoConferido) {
             $options2 = array(
                 0 => $produtoConferido['codRecebimentoErp'],
@@ -817,16 +813,26 @@ class Integracao
                 6 => $produtoConferido['codigoBarras']
             );
 
+            //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES
             $conexaoEn = $acaoEn->getConexao();
             $query = $acaoEn->getQuery();
 
+            //CONEXAO PARA INSERIR AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO DO RECEBIMENTO E O CÓDIGO DO PRODUTO
+            $conexaoInsertEn = $acaoToInsert->getConexao();
+            $queryToInsert = $acaoToInsert->getQuery();
+
+            //INSERE OS DADOS REAIS NAS QUERYS PARA ATUALIZAÇÃO E INSERÇÃO
             foreach ($options2 as $key => $value) {
                 $query = str_replace(":?" . ($key+1) ,$value ,$query);
+                $queryToInsert = str_replace(":?" . ($key+1) ,$value ,$queryToInsert);
             }
+            //FAZ O UPDATE NO ERP ATUALIZANDO AS QUANTIDADES
             $conexaoRepo->runQuery($query,$conexaoEn);
-
+            //FAZ INSERT NO ERP COM AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO E O CÓDIGO DO PRODUTO
+            $conexaoRepo->runQuery($queryToInsert,$conexaoInsertEn);
 
         }
+        return true;
 
 
     }
