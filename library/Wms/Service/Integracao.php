@@ -827,9 +827,9 @@ class Integracao
                 $queryToInsert = str_replace(":?" . ($key+1) ,$value ,$queryToInsert);
             }
             //FAZ O UPDATE NO ERP ATUALIZANDO AS QUANTIDADES
-            $conexaoRepo->runQuery($query,$conexaoEn);
+            $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
             //FAZ INSERT NO ERP COM AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO E O CÓDIGO DO PRODUTO
-            $conexaoRepo->runQuery($queryToInsert,$conexaoInsertEn);
+            $conexaoRepo->runQuery($queryToInsert,$conexaoInsertEn,$update = true);
 
         }
         return true;
