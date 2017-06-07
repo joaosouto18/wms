@@ -410,11 +410,7 @@ class RecebimentoRepository extends EntityRepository
             }
         }
 
-
-
-
-
-
+        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
         if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
             $serviceIntegracao = new Integracao($em,
                 array('acao'=>null,
@@ -423,9 +419,6 @@ class RecebimentoRepository extends EntityRepository
                 ));
             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
         }
-
-
-
 
         if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);

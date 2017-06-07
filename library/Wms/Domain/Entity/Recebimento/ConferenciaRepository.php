@@ -261,7 +261,7 @@ class ConferenciaRepository extends EntityRepository
             ->innerJoin('wms:Recebimento\Conferencia','rc','WITH','rc.recebimento = r.id')
             ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
             ->innerJoin('wms:NotaFiscal\Item','nfi','WITH','nfi.notaFiscal = nf.id')
-            ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = grade')
+            ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = rc.grade')
             ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.codProduto = p.id and pe.grade = p.grade')
             ->where("r.id = $idRecebimento")
             ->groupBy('rc.codProduto, rc.grade, nfi.quantidade, rc.qtdConferida, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia');
