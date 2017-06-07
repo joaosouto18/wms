@@ -440,7 +440,7 @@ class RecebimentoRepository extends EntityRepository
                 ));
             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
         }
-        
+
         if ($result['exception'] == null) {
             return array('message' => 'Recebimento Nº. ' . $idRecebimento . ' finalizado com sucesso.',
                 'exception' => null,

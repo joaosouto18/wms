@@ -672,6 +672,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->persist($ordemServicoEntity);
                         $this->em->flush();
 
+                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
+                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(),
+                                array('acao'=>null,
+                                    'options'=>null,
+                                    'tipoExecucao' => 'E'
+                                ));
+                            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+                        }
+
                         //recebimento para o status finalizado
                         $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
 
