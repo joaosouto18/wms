@@ -13,7 +13,6 @@ class Expedicao_IndexController extends Action
 
     public function indexAction()
     {
-
         $parametroPedidos = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS');
         Page::configure(array(
             'buttons' => array(
