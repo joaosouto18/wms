@@ -76,6 +76,7 @@ class ConexaoIntegracaoRepository extends EntityRepository
             $sid = $conexao->getDbName();
 
             $connectionString = "$servidor:$porta/$sid";
+            var_dump($connectionString); exit;
             $conexao = oci_connect($usuario,$senha,$connectionString);
 
             if (!$conexao) {

@@ -796,7 +796,6 @@ class Integracao
         //EXECUTA O ERP
         $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
 
-        var_dump('abc'); exit;
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
         $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
         $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
