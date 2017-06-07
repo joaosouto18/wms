@@ -256,7 +256,7 @@ class ConferenciaRepository extends EntityRepository
     public function getProdutosByRecebimento($idRecebimento)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('MIN(pe.codigoBarras) codigoBarras, v.codProduto, v.grade, SUM(nfi.quantidade) quantidade, SUM(nfi.quantidade) - v.qtd qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
+            ->select('MIN(pe.codigoBarras) codigoBarras, v.codProduto, v.grade, SUM(nfi.quantidade) quantidade, SUM(nfi.quantidade) - SUM(v.qtd) qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
             ->from('wms:Recebimento','r')
             ->innerJoin('wms:Recebimento\VQtdRecebimento','v','WITH','v.codRecebimento = r.id')
             ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
