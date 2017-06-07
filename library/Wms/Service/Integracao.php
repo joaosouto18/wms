@@ -813,6 +813,7 @@ class Integracao
                 6 => $produtoConferido['codigoBarras']
             );
 
+            var_dump($options1); exit;
             //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES
             $conexaoEn = $acaoEn->getConexao();
             $query = $acaoEn->getQuery();
