@@ -777,6 +777,7 @@ class Integracao
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
         $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
 
+        var_dump($idRecebimento); exit;
         $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
         $options1 = array(
             0 => $notaFiscalEntity->getCodRecebimentoErp(),
