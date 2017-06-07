@@ -90,6 +90,7 @@ class ConexaoIntegracaoRepository extends EntityRepository
                 throw new \Exception($erro['message']);
             }
 
+            var_dump($res); exit;
             $e = oci_execute($res);
             if (!$e) {
                 $erro = oci_error($res);
@@ -98,7 +99,6 @@ class ConexaoIntegracaoRepository extends EntityRepository
                 throw new \Exception($erro['message']);
             }
 
-            var_dump('abc'); exit;
             $arrayResult = array();
             if ($update == false) {
                 oci_fetch_all($res, $result);
