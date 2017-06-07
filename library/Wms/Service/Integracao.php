@@ -135,27 +135,77 @@ class Integracao
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     return $this->processaNotasFiscais($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_CORTES:
+                    return $this->processaCorteERP($this->_dados, $this->_options);
+
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
         }
     }
 
-    public function comparaConferenciaExpedicao($pedidosProdutosERP, $cargas)
-    {
+    public function processaCorteERP ($pedidosProdutosERP, $cargas) {
         $em = $this->_em;
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
-        $expedicaoRepository = $em->getRepository('wms:Expedicao');
-        $pedidosProdutosWMS = $expedicaoRepository->compareConferenciaByCarga($cargas);
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
         $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+
+        $codCargaExterno = implode(',',$cargas);
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade')
+            ->from('wms:Expedicao\PedidoProduto','pp')
+            ->innerJoin('pp.pedido','p')
+            ->innerJoin('p.carga','c')
+            ->where("c.codCargaExterno IN ($codCargaExterno)")
+            ->orderBy('p.id, pp.codProduto, pp.grade');
+
+        $pedidosProdutosWMS = $sql->getQuery()->getResult();
         $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
         $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
         $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosERP);
 
         return true;
+    }
+
+    public function comparaConferenciaExpedicao ($dados, $options) {
+        $idCarga = null;
+        if (isset($options[0]) && ($options[0] != null)) {
+            $idCarga = $options[0];
+        } else {
+            throw new \Exception("Carga não definida nos parametros da consulta");
+        }
+
+        $expedicaoRepo    = $this->_em->getRepository('wms:Expedicao');
+
+        $idPedidoAnterior = null;
+        $produtos = array();
+        $pedidos = array();
+        $cargas = array();
+        foreach ($dados as $key => $row) {
+            $idCarga = $row['CARGA'];
+            $idPedido = $row['PEDIDO'];
+
+            $produto = array(
+                'idProduto' => $row['PRODUTO'],
+                'grade' => $row['GRADE'],
+                'qtd' =>$row['QTD']
+            );
+            $produtos[] = $produto;
+
+            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
+                $pedidos[$idPedido] = $produtos;
+                unset($produtos);
+                $produtos = array();
+            }
+
+            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
+                $cargas[$idCarga] = $pedidos;
+                unset($pedidos);
+                $pedidos = array();
+            }
+        }
+
+        return $expedicaoRepo->compareConferenciaByCarga($cargas,$idCarga);
     }
 
     public function comparaResumoConferenciaExpedicao ($dados, $options) {

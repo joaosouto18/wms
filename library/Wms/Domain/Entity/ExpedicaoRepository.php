@@ -395,62 +395,46 @@ class ExpedicaoRepository extends EntityRepository
         }
     }
 
-    public function compareConferenciaByCarga($idCargaExterno)
-    {
+    public function compareConferenciaByCarga($dados,$idCargaExterno) {
+        $SQL = "SELECT C.COD_CARGA_EXTERNO as CARGA,
+                       P.COD_PEDIDO,
+                       PP.COD_PRODUTO,
+                       PP.DSC_GRADE,
+                       SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                  WHERE C.COD_CARGA_EXTERNO = $idCargaExterno
+                  GROUP BY COD_CARGA_EXTERNO,
+                           P.COD_PEDIDO,
+                           PP.COD_PRODUTO,
+                           PP.DSC_GRADE
+                  ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
+        $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($pedidosWMS as $pedidoProdutoWms) {
+            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
+                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
+                $encontrouProduto = false;
+                foreach ($pedidoERP as $produtoERP) {
+                    if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
+                        $encontrouProduto = true;
+                        $qtdERP = str_replace(',','.',$produtoERP['qtd']);
+                        $qtdWms = str_replace(',','.',$pedidoProdutoWms['QTD']);
+                        if ($qtdERP != $qtdWms) {
+                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
+                        }
+                    }
+                }
 
-        $codCargaExterno = implode(',',$idCargaExterno);
-        $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade')
-            ->from('wms:Expedicao\PedidoProduto','pp')
-            ->innerJoin('pp.pedido','p')
-            ->innerJoin('p.carga','c')
-            ->where("c.codCargaExterno IN ($codCargaExterno)")
-            ->orderBy('p.id, pp.codProduto, pp.grade');
+                if ($encontrouProduto == false) {
+                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
+                }
+            } else {
+                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
+            }
+        }
 
-        return $sql->getQuery()->getResult();
-
-
-//        $SQL = "SELECT C.COD_CARGA_EXTERNO as CARGA,
-//                       P.COD_PEDIDO,
-//                       PP.COD_PRODUTO,
-//                       PP.DSC_GRADE,
-//                       SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
-//                  FROM PEDIDO_PRODUTO PP
-//                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
-//                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-//                  WHERE C.COD_CARGA_EXTERNO = $idCargaExterno
-//                  GROUP BY COD_CARGA_EXTERNO,
-//                           P.COD_PEDIDO,
-//                           PP.COD_PRODUTO,
-//                           PP.DSC_GRADE
-//                  ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
-//
-//        $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
-//        return $pedidosWMS;
-//        foreach ($pedidosWMS as $pedidoProdutoWms) {
-//            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
-//                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
-//                $encontrouProduto = false;
-//                foreach ($pedidoERP as $produtoERP) {
-//                    if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
-//                        $encontrouProduto = true;
-//                        $qtdERP = str_replace(',','.',$produtoERP['qtd']);
-//                        $qtdWms = str_replace(',','.',$pedidoProdutoWms['QTD']);
-//                        if ($qtdERP != $qtdWms) {
-//                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
-//                        }
-//                    }
-//                }
-//
-//                if ($encontrouProduto == false) {
-//                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
-//                }
-//            } else {
-//                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
-//            }
-//        }
-
-//        return "Divergencia de conferencia com o ERP na carga " . $idCargaExterno;
+        return "Divergencia de conferencia com o ERP na carga " . $idCargaExterno;
     }
 
     public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
