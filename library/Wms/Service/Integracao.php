@@ -777,7 +777,6 @@ class Integracao
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
         $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
 
-        var_dump($idRecebimento); exit;
         $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
         $options1 = array(
             0 => $notaFiscalEntity->getCodRecebimentoErp(),
@@ -788,6 +787,7 @@ class Integracao
         $conexaoEn = $acaoEn->getConexao();
         $query = $acaoEn->getQuery();
 
+        var_dump($query); exit;
         if (!is_null($options1)) {
             foreach ($options1 as $key => $value) {
                 $query = str_replace(":?" . ($key+1) ,$value ,$query);
