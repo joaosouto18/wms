@@ -793,9 +793,10 @@ class Integracao
             }
         }
 
-        var_dump('abc'); exit;
         //EXECUTA O ERP
+        echo $query;
         $conexaoRepo->runQuery($query,$conexaoEn);
+        var_dump('abc'); exit;
 
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
         $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
