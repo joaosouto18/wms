@@ -410,16 +410,6 @@ class RecebimentoRepository extends EntityRepository
             }
         }
 
-        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
-        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
-            $serviceIntegracao = new Integracao($em,
-                array('acao'=>null,
-                    'options'=>null,
-                    'tipoExecucao' => 'E'
-                ));
-            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
-        }
-
         if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);
 
@@ -441,6 +431,16 @@ class RecebimentoRepository extends EntityRepository
         //altera recebimento para o status finalizado
         $result = $this->finalizar($idRecebimento);
 
+        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
+        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+            $serviceIntegracao = new Integracao($em,
+                array('acao'=>null,
+                    'options'=>null,
+                    'tipoExecucao' => 'E'
+                ));
+            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+        }
+        
         if ($result['exception'] == null) {
             return array('message' => 'Recebimento Nº. ' . $idRecebimento . ' finalizado com sucesso.',
                 'exception' => null,
