@@ -18,6 +18,7 @@ use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\NotaFiscal;
+use Wms\Domain\Entity\NotaFiscalRepository;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
 use Wms\Domain\Entity\Pessoa\Juridica;
@@ -283,6 +284,12 @@ class Importacao
         }
     }
 
+    /**
+     * @param $em EntityManager
+     * @param $fornecedor
+     * @param bool $verificarCpfCnpj
+     * @return bool|string
+     */
     public function saveFornecedor($em, $fornecedor, $verificarCpfCnpj = true)
     {
 
@@ -298,7 +305,6 @@ class Importacao
         $entityPessoa = null;
 
         if ($entityFornecedor == null) {
-
             switch ($fornecedor['tipoPessoa']) {
                 case 'J':
                     $fornecedor['pessoa']['tipo'] = 'J';
@@ -368,12 +374,13 @@ class Importacao
 
 
             if ($entityPessoa == null) {
-                $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, false);
+                $entityPessoa = $fornecedorRepo->persistirAtor($entityFornecedor, $fornecedor, true);
             }
 
             try {
                 $entityFornecedor->setId($entityPessoa->getId());
                 $entityFornecedor->setIdExterno($fornecedor['idExterno']);
+                $entityFornecedor->setPessoa($entityPessoa);
 
                 $em->persist($entityFornecedor);
                 return true;
@@ -683,23 +690,6 @@ class Importacao
                 $produto->setTipoComercializacao($tipoComercializacaoEntity);
                 $produto->setNumVolumes(1);
                 $produto->setPossuiPesoVariavel($indPesoVariavel);
-
-                if (is_null($possuiValidade)) {
-                    $flagValidade = $produto->getValidade();
-                    if (empty($flagValidade))
-                        $produto->setValidade('N');
-                } else {
-                    $produto->setValidade($possuiValidade);
-                }
-
-                if (is_null($diasVidaUtil)) {
-                    $qtdDias = $produto->getDiasVidaUtil();
-                    if (empty($qtdDias))
-                        $produto->setDiasVidaUtil(null);
-                } else {
-                    $produto->setValidade($diasVidaUtil);
-                }
-
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
                 $produto->setIdProduto($sqcGenerator->generate($em, $produto));
             }
@@ -708,9 +698,23 @@ class Importacao
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
                     ->setReferencia($referencia)
-                    ->setPossuiPesoVariavel($indPesoVariavel)
-                    ->setValidade($possuiValidade)
-                    ->setDiasVidaUtil($diasVidaUtil);
+                    ->setPossuiPesoVariavel($indPesoVariavel);
+
+            if (is_null($possuiValidade)) {
+                $flagValidade = $produto->getValidade();
+                if (empty($flagValidade))
+                    $produto->setValidade('N');
+            } else {
+                $produto->setValidade($possuiValidade);
+            }
+
+            if (is_null($diasVidaUtil)) {
+                $qtdDias = $produto->getDiasVidaUtil();
+                if (empty($qtdDias))
+                    $produto->setDiasVidaUtil(null);
+            } else {
+                $produto->setValidade($diasVidaUtil);
+            }
 
             $em->persist($produto);
 
@@ -935,6 +939,10 @@ class Importacao
 
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
                 $produto['idProduto'] = $sqcGenerator->generate($em, $produtoEntity);
+
+                if (!isset($produto['possuiPesoVariavel']) || empty($produto['possuiPesoVariavel'])) {
+                    $produto['possuiPesoVariavel'] = 'N';
+                }
 
                 Configurator::configure($produtoEntity, $produto);
 

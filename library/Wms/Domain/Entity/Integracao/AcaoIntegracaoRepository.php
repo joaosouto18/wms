@@ -189,7 +189,11 @@ class AcaoIntegracaoRepository extends EntityRepository
                     if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
                         $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
                     } else {
-                        $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YY HH24:MI:SS')";
+                        if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
+                            $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
+                        } else {
+                            $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YY HH24:MI:SS')";
+                        }
                     }
                 }
 
@@ -216,7 +220,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 } else {
                     $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y/m/d H:i:s");
                 }
-
                 $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
             }
 

@@ -109,13 +109,15 @@ class Integracao
         foreach ($this->_dados as $row) {
 
             $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
+            $data = $data->format('Y-m-d H:i:s');
             if ($maxDate == null) {
                 $maxDate = $data;
             }
-            if ($data > $maxDate) {
+            if (strtotime($data) > strtotime($maxDate)) {
                 $maxDate = $data;
             }
         }
+        $maxDate = new \DateTime($maxDate);
         return $maxDate;
     }
 
@@ -345,7 +347,6 @@ class Integracao
                     $produtos = array();
                 }
 
-
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
                         'idCarga' => $idCarga,
@@ -378,7 +379,7 @@ class Integracao
             }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
-            $wsExpedicao->enviar($cargas);
+            $wsExpedicao->enviar($cargas, true);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
@@ -489,13 +490,14 @@ class Integracao
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
-            $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N');
+            $status = $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N',null,false);
             if ($count == 50) {
                 $count =0;
                 $em->flush();
                 $em->clear();
             } else {
-                $count=$count +1;
+                if ($status)
+                    $count=$count +1;
             }
         }
 
@@ -522,6 +524,8 @@ class Integracao
             $arrayProdutos = array();
             $arrayFabricantes = array();
             $arrayClasses = array();
+            $parametroEmbalagemAtiva = $repositorios['parametroRepo']->findOneBy(array('constante' => 'SALVAR_EMBALAGEM_COMO_ATIVA'));
+
 
             /*
              * Reorganiza os arrays
@@ -625,6 +629,9 @@ class Integracao
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
+                    if ($parametroEmbalagemAtiva == 'S') {
+                        $embalagem['ativa'] = 'S';
+                    }
                     if ($embalagem['ativa'] == 'S') {
                         $emb = new embalagem();
                         $emb->codBarras = $embalagem['codBarras'];
