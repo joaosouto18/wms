@@ -803,13 +803,20 @@ class Integracao
         $acaoEn = $acaoIntRepository->find(11);
         $acaoToInsert = $acaoIntRepository->find(12);
         foreach ($produtosConferidos as $produtoConferido) {
+            $dataValidade = null;
+            if (isset($produtoConferido['dataValidade']) && !empty($produtoConferido['dataValidade'])) {
+                $dataValidade = $produtoConferido['dataValidade']->format('d/m/Y');
+            }
+            if (isset($produtoConferido['dataConferencia']) && !empty($produtoConferido['dataConferencia'])) {
+                $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
+            }
             $options2 = array(
                 0 => $produtoConferido['codRecebimentoErp'],
                 1 => $produtoConferido['codProduto'],
                 2 => $produtoConferido['quantidade'],
                 3 => $produtoConferido['qtdDivergencia'],
-                4 => $produtoConferido['dataValidade']->format('d/m/Y'),
-                5 => $produtoConferido['dataConferencia']->format('d/m/Y'),
+                4 => $dataValidade,
+                5 => $dataConferencia,
                 6 => $produtoConferido['codigoBarras']
             );
 
