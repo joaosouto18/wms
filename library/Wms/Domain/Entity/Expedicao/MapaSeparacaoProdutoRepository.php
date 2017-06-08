@@ -151,11 +151,11 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         return true;
     }
 
-    public function validaCorteMapasERP($produtosERP) {
+    public function validaCorteMapasERP($produtosWMS) {
 
         $arrayPedidos = array();
-        foreach ($produtosERP as $pp) {
-            $pedido = $pp['PEDIDO'];
+        foreach ($produtosWMS as $pp) {
+            $pedido = $pp['pedido'];
             if (!in_array($pedido,$arrayPedidos)) {
                 $arrayPedidos[] = $pedido;
             }

@@ -162,7 +162,7 @@ class Integracao
         $pedidosProdutosWMS = $sql->getQuery()->getResult();
         $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
         $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
-        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosERP);
+        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
 
         return true;
     }
