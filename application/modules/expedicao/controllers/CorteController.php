@@ -90,10 +90,14 @@ class Expedicao_CorteController  extends Action
     }
 
     public function corteAntecipadoAjaxAction(){
+
         $this->view->id = $id = $this->_getParam('id');
         $grade = $this->_getParam('grade');
         $codProduto = $this->_getParam('codProduto');
         $actionAjax = $this->_getParam('acao');
+
+        $permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
+        $this->view->permiteCortes = $permiteCortes;
         $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO',null);
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */

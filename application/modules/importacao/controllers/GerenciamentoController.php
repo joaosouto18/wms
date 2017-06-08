@@ -8,7 +8,6 @@ class Importacao_GerenciamentoController extends Action
 
     public function indexAction()
     {
-
         $request = $this->getRequest();
         $params = $request->getParams();
         $acao = $params['id'];
@@ -68,5 +67,4 @@ class Importacao_GerenciamentoController extends Action
             $this->_helper->messenger('error', $e->getMessage());
         }
     }
-
 }

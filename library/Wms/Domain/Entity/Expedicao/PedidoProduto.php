@@ -39,7 +39,7 @@ class PedidoProduto
      *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
      * })
      */
-    protected $produto;    
+    protected $produto;
 
     /**
      * @Column(name="COD_PRODUTO",type="string", nullable=false)

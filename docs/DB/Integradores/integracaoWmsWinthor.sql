@@ -26,7 +26,7 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
 
 /*INTEGRAÇÃO DO DETALHAMENTO DA CONFERENCIA A NIVEL DE PEDIDO PRODUTO*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (5,1,'select i.numcar CARGA, i.numped PEDIDO, i.codprod PRODUTO, '||'''UNICA'''||' as GRADE, sum(i.qt) QTD from pcpedi i where numcar = :?1 group by i.numcar, i.numped, i.codprod',
+  VALUES (5,1,'select i.numcar CARGA, i.numped PEDIDO, i.codprod PRODUTO, '||'''UNICA'''||' as GRADE, sum(i.qt) QTD from pcpedi i where numcar in (:?1) group by i.numcar, i.numped, i.codprod order by i.numped asc, i.codprod asc',
   604,'S',NULL);
 
 /*INTEGRAÇÃO DE NOTAS FISCAIS DE ENTRADA - COMPLETO*/
@@ -55,3 +55,9 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
   VALUES (998,1,'select n.codfornec COD_FORNECEDOR, C.CLIENTE NOM_FORNECEDOR, c.cgcent CPF_CNPJ, '||'''UNICA'''||' DSC_GRADE, c.ieent INSCRICAO_ESTADUAL, n.numnota NUM_NOTA_FISCAL, m.codprod COD_PRODUTO, n.serie COD_SERIE_NOTA_FISCAL, n.dtemissao DAT_EMISSAO, n.placaveiculo DSC_PLACA_VEICULO, sum(m.qt) QTD_ITEM, cast(sum(m.punit*m.qt) as numeric(15,2)) VALOR_TOTAL, TO_CHAR(m.dtmovlog, '||'''DD/MM/YYYY HH24:MI:SS'''||') as DTH from pcnfent n, pcclient c, pcmov m where n.numtransent=m.numtransent and n.codfornec=c.codcli and m.dtmovlog > :dthExecucao and m.codoper in ('||'''ED'''||') and m.codfilial IN (:codFilial) group by n.codfornec, c.cliente, c.cgcent, c.ieent, n.numnota, n.serie, n.dtemissao, n.placaveiculo, m.codprod, '||'''UNICA'''||', m.dtmovlog order by n.codfornec',
   605,'S',NULL);
+
+/*INTEGRAÇÃO DE CORTES COM ERP*/
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (5,1,'select i.numcar CARGA, i.numped PEDIDO, i.codprod PRODUTO, '||'''UNICA'''||' as GRADE, sum(i.qt) QTD from pcpedi i where numcar in (:?1) group by i.numcar, i.numped, i.codprod order by i.numped asc, i.codprod asc',
+  606,'S',NULL);
+
