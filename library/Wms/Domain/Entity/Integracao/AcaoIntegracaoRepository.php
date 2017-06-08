@@ -186,15 +186,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $query = str_replace("AND (log.datainicio > :dthExecucao OR p.dtultaltcom > :dthExecucao)", "" ,$query);
                     }
                 } else {
-                    if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
-                        $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
-                    } else {
-                        if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
-                            $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
-                        } else {
-                            $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/y H:i:s") . "','DD/MM/YY HH24:MI:SS')";
-                        }
-                    }
+                    $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
                 }
 
                 $query = str_replace(":dthExecucao", $dthExecucao ,$query);
