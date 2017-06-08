@@ -66,44 +66,4 @@ class Importacao_GerenciamentoController extends Action
             $this->_helper->messenger('error', $e->getMessage());
         }
     }
-
-    public function corteErpAjaxAction()
-    {
-        $em = $this->getEntityManager();
-
-        ini_set('memory_limit', '-1');
-        ini_set('max_execution_time', '-1');
-        $idExpedicao = $this->getRequest()->getParam('id');
-
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-        $acaoIntRepo = $em->getRepository('wms:Integracao\AcaoIntegracao');
-        /** @var Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
-        $cargaRepository = $em->getRepository('wms:Expedicao\Carga');
-
-        try {
-            $cargaEntities = $cargaRepository->findBy(array('codExpedicao' => $idExpedicao));
-            $cargas = array();
-            foreach ($cargaEntities as $cargaEntity) {
-                $cargas[] = $cargaEntity->getCodCargaExterno();
-            }
-            $idCargas[] = implode(',',$cargas);
-
-            $acaoEn = $acaoIntRepo->find(5);
-            $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E');
-
-            if ($result === true) {
-                $this->addFlashMessage('success','Pedidos cortados com sucesso pelo ERP');
-            } else {
-                $this->addFlashMessage('error',$result);
-            }
-
-            $this->redirect('index','index','expedicao');
-
-        } catch (\Exception $e) {
-            $this->addFlashMessage('error',$e->getMessage());
-            $this->redirect('index','index','expedicao');
-        }
-        exit;
-    }
-
 }

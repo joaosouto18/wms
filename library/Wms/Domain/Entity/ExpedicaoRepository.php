@@ -665,6 +665,32 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+    public function importaCortesERP($idExpedicao) {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+
+        $cargaEntities = $cargaRepository->findBy(array('codExpedicao' => $idExpedicao));
+        $cargas = array();
+        foreach ($cargaEntities as $cargaEntity) {
+            $cargas[] = $cargaEntity->getCodCargaExterno();
+        }
+        $idCargas[] = implode(',',$cargas);
+
+        $idCorte= $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
+        $acaoEn = $acaoIntRepo->find($idCorte);
+        $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E');
+
+        if (!($result === true)) {
+            return $result;
+        }
+
+        return true;
+    }
+
+
     public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
@@ -678,6 +704,13 @@ class ExpedicaoRepository extends EntityRepository
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
             return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+        }
+
+        if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') =='S') {
+            $result = $this->importaCortesERP($idExpedicao);
+            if (!($result === true)) {
+                return $result;
+            }
         }
 
         if ($this->validaPedidosImpressos($idExpedicao) == false) {
