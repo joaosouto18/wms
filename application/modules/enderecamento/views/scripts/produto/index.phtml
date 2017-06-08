@@ -1,5 +1,8 @@
 <?php
 echo $this->render('recebimento/cabecalho.phtml'); ?>
-<a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'produto', 'action' => 'imprimir-ajax', 'id' => $this->recebimento->getId())) ?>" style="float:right" class="btn"><?php echo utf8_encode('Imprimir Produtos Não Endereçados') ?></a>
+<div class="left">
+    <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'palete', 'action' => 'index', 'id' => $this->recebimento->getId())) ?>" style="float:right" class="btn">Endereçar Todos</a>
+    <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'produto', 'action' => 'imprimir-ajax', 'id' => $this->recebimento->getId())) ?>" style="float:right;margin-right: 7px;" class="btn">Imprimir Produtos Não Endereçados</a>
+</div>
 <?php echo $this->grid
 ?>

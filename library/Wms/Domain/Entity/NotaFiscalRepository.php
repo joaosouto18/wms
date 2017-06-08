@@ -17,6 +17,17 @@ use Wms\Domain\Entity\Deposito\Endereco;
 class NotaFiscalRepository extends EntityRepository
 {
 
+    public function getItensNotaByRecebimento ($idRecebimento) {
+        $dql = $this->_em->createQueryBuilder()
+            ->select('nfi.codProduto, nfi.grade')
+            ->from('wms:NotaFiscal\Item', 'nfi')
+            ->innerJoin('nfi.notaFiscal', 'nf')
+            ->where('nf.recebimento = :recebimento')
+            ->setParameter(':recebimento', $idRecebimento);
+
+        return $dql->getQuery()->getResult();
+    }
+
     /**
      *
      * @param array $values
@@ -975,10 +986,6 @@ class NotaFiscalRepository extends EntityRepository
 
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
-
-            if ($fornecedorEntity->getPessoa() == null) {
-                $fornecedorEntity = $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $this->getSystemParameterValue('COD_FORNECEDOR_DEVOLUCAO')));
-            }
 
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))
