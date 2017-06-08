@@ -105,7 +105,6 @@ class Integracao
             return new \DateTime();
         }
 
-        var_dump($this->_dados); exit;
         $maxDate = null;
         foreach ($this->_dados as $row) {
 
@@ -118,7 +117,9 @@ class Integracao
                 $maxDate = $data;
             }
         }
-        $maxDate = new \DateTime($maxDate);
+        if (!is_null($maxDate))
+            $maxDate = new \DateTime($maxDate);
+        
         return $maxDate;
     }
 
