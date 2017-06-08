@@ -5,11 +5,14 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
+use Wms\Math;
 
 class MapaSeparacaoProdutoRepository extends EntityRepository
 {
 
     public function efetivaCorteMapasERP($pedidosCortar, $produtosCortar) {
+
+        $math = new Math();
 
         //* SE NÃO TIVER NENHUM PRODUTO PARA CORTAR, ENTÂO NAO PRECISO FAZER NENHUM CORTE EM NENHUM MAPA, RETORNO TRUE
         if (count($produtosCortar) == 0) return true;
@@ -88,16 +91,16 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     } else {
                         $qtdConfMSP = $qtdConferida;
                     }
-                    $qtdPendente = $qtdSepararMapa - $qtdConfMSP;
+                    $qtdPendente = $math->totalSubtracao($qtdSepararMapa,$qtdConfMSP );// $qtdSepararMapa - $qtdConfMSP;
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
-                            $qtdCortar = $qtdCortar - $qtdPendente;
+                            $qtdCortar = $math->totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
                         }
                     }
-                    $qtdConferida = $qtdConferida - $qtdConfMSP;
+                    $qtdConferida = $math->totalSubtracao($qtdConferida,$qtdConfMSP); //$qtdConferida - $qtdConfMSP;
                 }
             }
 
@@ -124,16 +127,17 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     } else {
                         $qtdConfMSP = $qtdConferida;
                     }
-                    $qtdPendente = $qtdSepararMapa - $qtdConfMSP;
+                    $qtdPendente = $math->totalSubtracao($qtdSepararMapa,$qtdConfMSP);// $qtdSepararMapa - $qtdConfMSP;
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
-                            $qtdCortar = $qtdCortar - $qtdPendente;
+
+                            $qtdCortar = $math->totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
                         }
                     }
-                    $qtdConferida = $qtdConferida - $qtdConfMSP;
+                    $qtdConferida = $math->totalSubtracao($qtdConferida,$qtdConfMSP);// $qtdConferida - $qtdConfMSP;
                 }
             }
 
