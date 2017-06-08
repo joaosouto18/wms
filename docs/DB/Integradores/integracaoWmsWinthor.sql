@@ -58,6 +58,6 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
 
 /*INTEGRAÇÃO DE CORTES COM ERP*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (5,1,'select i.numcar CARGA, i.numped PEDIDO, i.codprod PRODUTO, '||'''UNICA'''||' as GRADE, sum(i.qt) QTD from pcpedi i where numcar in (:?1) group by i.numcar, i.numped, i.codprod order by i.numped asc, i.codprod asc',
+  VALUES (10,1,'select i.numcar CARGA, i.numped PEDIDO, i.codprod PRODUTO, '||'''UNICA'''||' as GRADE, sum(i.qt) QTD from pcpedi i where numcar in (:?1) group by i.numcar, i.numped, i.codprod order by i.numped asc, i.codprod asc',
   606,'S',NULL);
 

@@ -525,7 +525,8 @@ class PedidoRepository extends EntityRepository
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
                P.DSC_PRODUTO,
-               PP.QUANTIDADE
+               PP.QUANTIDADE,
+               NVL(PP.QTD_CORTADA,0) as QTD_CORTADA
           FROM PEDIDO_PRODUTO PP
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
          WHERE PP.COD_PEDIDO = $codPedido ORDER BY COD_PRODUTO, DSC_GRADE";

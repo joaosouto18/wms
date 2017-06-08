@@ -151,7 +151,7 @@ class Integracao
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
 
         $codCargaExterno = implode(',',$cargas);
-        $sql = $this->getEntityManager()->createQueryBuilder()
+        $sql = $em->createQueryBuilder()
             ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade')
             ->from('wms:Expedicao\PedidoProduto','pp')
             ->innerJoin('pp.pedido','p')
