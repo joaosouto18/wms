@@ -105,6 +105,7 @@ class Integracao
             return new \DateTime();
         }
 
+        var_dump($this->_dados); exit;
         $maxDate = null;
         foreach ($this->_dados as $row) {
 
@@ -746,7 +747,7 @@ class Integracao
                     break;
                 }
             }
-            if ($constaNoErp == false && count($notasFiscaisErp) > 0) {
+            if ($constaNoErp == false && count($notasFiscaisErp)) {
                 throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
             }
         }
