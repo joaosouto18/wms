@@ -813,6 +813,7 @@ class Integracao
         $acaoToInsert = $acaoIntRepository->find(12);
         foreach ($produtosConferidos as $produtoConferido) {
             $dataValidade = null;
+            $dataConferencia = null;
             if (isset($produtoConferido['dataValidade']) && !empty($produtoConferido['dataValidade'])) {
                 $dataValidade = $produtoConferido['dataValidade']->format('d/m/Y');
             }
