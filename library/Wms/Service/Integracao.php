@@ -119,7 +119,7 @@ class Integracao
         }
         if (!is_null($maxDate))
             $maxDate = new \DateTime($maxDate);
-        
+
         return $maxDate;
     }
 
