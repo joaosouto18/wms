@@ -75,7 +75,8 @@ class EmbalagemRepository extends EntityRepository
             ->from('wms:Produto\Embalagem', 'pe')
             ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pe.id = e.produtoEmbalagem')
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH','pe.id = rep.codProdutoEmbalagem')
-            ->where('pe.id = :id')
+            ->leftJoin("rep.reservaEstoque", 're')
+            ->where("pe.id = :id and re.atendida = 'N'")
             ->setParameter('id',$id);
 
         $result = $dql->getQuery()->getResult();

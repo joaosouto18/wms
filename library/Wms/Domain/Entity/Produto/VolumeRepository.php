@@ -165,7 +165,8 @@ class VolumeRepository extends EntityRepository
             ->from('wms:Produto\Volume', 'pv')
             ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pv.id = e.produtoVolume')
             ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH','pv.id = rep.codProdutoVolume')
-            ->where('pv.id = :id')
+            ->leftJoin("rep.reservaEstoque", 're')
+            ->where("pv.id = :id and re.atendida = 'N'")
             ->setParameter('id',$id);
 
         $result = $dql->getQuery()->getResult();
