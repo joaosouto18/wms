@@ -748,7 +748,7 @@ class Integracao
                     break;
                 }
             }
-            if ($constaNoErp == false && count($notasFiscaisErp) > 0) {
+            if ($constaNoErp == false) {
                 throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
             }
         }
