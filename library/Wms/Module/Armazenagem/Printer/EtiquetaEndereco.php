@@ -113,7 +113,7 @@ class EtiquetaEndereco extends Pdf
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     if (empty($produtos)){
                         $arrPares[] = array('produtos' => null, 'codBarras' => $codBarras);
-                        if (count($arrPares) == 2) {
+                        if (count($arrPares) == 3) {
                             $this->layoutModelo10($arrPares);
                             $arrPares = array();
                             if ($key < (count($enderecos) - 1)) {
@@ -124,7 +124,7 @@ class EtiquetaEndereco extends Pdf
                     } else {
                         foreach ($produtos as $i => $produto){
                             $arrPares[] = array('produtos' => $produto, 'codBarras' => $codBarras);
-                            if (count($arrPares) == 2) {
+                            if (count($arrPares) == 3) {
                                 $this->layoutModelo10($arrPares);
                                 $arrPares = array();
                                 if ($key < (count($enderecos) - 1) || ($key == (count($enderecos) - 1) && $i < (count($produtos) - 1))) {
@@ -475,14 +475,14 @@ class EtiquetaEndereco extends Pdf
 
     public function layoutModelo10($vetor)
     {
-        $margin = 4;
+        $margin = 8;
         $this->InFooter = true;
 
         foreach ($vetor as $key => $itens) {
             $produto = $itens['produtos'];
             $endereco = $itens['codBarras'];
             $wDscProduto = 100;
-            $fator = 30 * $key;
+            $fator = 29 * $key;
             $xDscCodBarrasProd = $wDscProduto;
             $codBarraProduto = $produto['codigoBarras'];
             $wDscEndereco = 60;
@@ -490,7 +490,13 @@ class EtiquetaEndereco extends Pdf
 
             $this->SetFont('Arial', '',11);
             $this->SetY($margin + $fator);
-            $this->Cell($wDscProduto,4, self::SetStringByMaxWidth($produto['descricao'], $wDscProduto),0,2);
+            $desc = "";
+            if ((isset($produto['codProduto']) && !empty($produto['codProduto'])) &&
+                (isset($produto['descricao']) && !empty($produto['descricao']))) {
+                $desc = "$produto[codProduto] - $produto[descricao]";
+            }
+
+            $this->Cell($wDscProduto,4, self::SetStringByMaxWidth($desc, $wDscProduto),0,2);
 
             $this->SetXY($xDscCodBarrasProd + 4,$margin + $fator);
             $this->SetFont('Arial', 'B',12);
@@ -508,7 +514,7 @@ class EtiquetaEndereco extends Pdf
             $this->SetXY($posXRef, $margin + 12 + $fator);
             $this->Cell(40,4,self::SetStringByMaxWidth($produto['fabricante'],40),0,2);
 
-            $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , $wDscEndereco, 10  + $fator, $wCdoBarrasEnd, 15);
+            $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , $wDscEndereco, 15  + $fator, $wCdoBarrasEnd, 12);
 
         }
     }
