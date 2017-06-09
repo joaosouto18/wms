@@ -206,6 +206,9 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         $produtos =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         $produtosCortar = array();
 
+        $falhas = array();
+        $corteTotal = array();
+        $corteParcial = array();
         foreach ($produtos as $produto) {
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
@@ -214,12 +217,25 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             $qtdCorte = $produto['QTD_CORTE'];
             $dscProduto = $produto['DSC_PRODUTO'];
             if ($qtdCorte + $qtdConferido > $qtdMapa) {
-                throw new \Exception("Quantidade conferida ($qtdConferido) + Quantidade Cortada no ERP ($qtdCorte), excede a quantidade solicitada na separação para o produto $codProduto/$grade - $dscProduto");
+                if ($qtdCorte == $qtdConferido) {
+                    $corteTotal[] = $codProduto;
+                } else {
+                    $corteParcial[] = $codProduto;
+                }
+                $falhas[] = "Quantidade conferida ($qtdConferido) + Quantidade Cortada no ERP ($qtdCorte), excede a quantidade solicitada na separação para o produto $codProduto/$grade - $dscProduto";
+
             }
             if ($qtdCorte + $qtdConferido == $qtdMapa) {
                 $produtosCortar[] = array('codProduto' =>$codProduto,
                                           'grade'=>$grade);
             }
+        }
+
+        if (count($falhas) >0) {
+            $corteTotal = implode(",",$corteTotal);
+            $corteParcial = implode(",",$corteParcial);
+
+            throw new \Exception($falhas[0]);
         }
 
         return $this->efetivaCorteMapasERP($pedidos,$produtosCortar);
