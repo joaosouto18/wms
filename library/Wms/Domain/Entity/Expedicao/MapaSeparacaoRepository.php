@@ -785,6 +785,31 @@ class MapaSeparacaoRepository extends EntityRepository
                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA
                 ORDER BY NUM_CAIXA_PC_INI";
 
+        $sql = "SELECT P.NOM_PESSOA,
+                       P.COD_PESSOA,
+                       LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI
+                 FROM (SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
+                              MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
+                              MSP.COD_MAPA_SEPARACAO,
+                              MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE
+                         FROM MAPA_SEPARACAO_PRODUTO MSP
+                        WHERE MSP.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                        GROUP BY MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.COD_MAPA_SEPARACAO,
+                                 MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE, MSP.COD_MAPA_SEPARACAO) MSP
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
+                INNER JOIN PESSOA P ON P.COD_PESSOA = PED.COD_PESSOA
+                 LEFT JOIN (SELECT SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) QTD_CONFERIDA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MSC.COD_MAPA_SEPARACAO, MSC.COD_PESSOA
+                              FROM MAPA_SEPARACAO_CONFERENCIA MSC
+                             WHERE MSC.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                             GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MSC.COD_MAPA_SEPARACAO, MSC.COD_PESSOA) MSC
+                        ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                       AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
+                       AND MSC.DSC_GRADE = MSP.DSC_GRADE
+                       AND MSC.COD_PESSOA = P.COD_PESSOA
+                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA
+                 ORDER BY NUM_CAIXA_PC_INI";
+
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
