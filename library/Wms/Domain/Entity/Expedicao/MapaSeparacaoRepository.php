@@ -296,6 +296,15 @@ class MapaSeparacaoRepository extends EntityRepository
         $sqlVolume = "";
         $sqlPessoa = "";
         $idMapa = $mapaEn->getId();
+        $idExpedicao = $mapaEn->getExpedicao()->getId();
+
+        $modeloSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->find(1);
+        $quebraColetor = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+        if ($quebraColetor == 'S') {
+            $whereQuebra = " AND M.COD_MAPA_SEPARACAO = $idMapa";
+        } else {
+            $whereQuebra = " AND MS.COD_EXPEDICAO = $idExpedicao";
+        }
         if ($embalagemEn != null) {
             $grade = $embalagemEn->getProduto()->getGrade();
             $idProduto = $embalagemEn->getProduto()->getId();
@@ -312,10 +321,11 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $SQL = "SELECT SUM(M.QTD_EMBALAGEM * M.QTD_SEPARAR) as QTD, SUM(NVL(M.QTD_CORTADO,0)) QTD_CORTADO
                   FROM MAPA_SEPARACAO_PRODUTO M
+                  INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
                  WHERE M.COD_PRODUTO = '$idProduto'
                    AND M.DSC_GRADE = '$grade'
                    $sqlVolume
-                   AND M.COD_MAPA_SEPARACAO = $idMapa
+                   $whereQuebra
                    $sqlPessoa ";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
