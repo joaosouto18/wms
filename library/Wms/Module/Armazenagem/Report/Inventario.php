@@ -97,9 +97,9 @@ class Inventario extends Pdf
 
                 $this->Cell(20,5, $enderecoAnterior ,1, 0);
                 $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
-                $this->Cell(90, 5, substr($dscProdutoAnterior, 0, 50) ,1, 0);
-                $this->Cell(105, 5, $dscVolumes ,1, 0);
-                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                $this->Cell(80, 5, substr($dscProdutoAnterior, 0, 50) ,1, 0);
+                $this->Cell(90, 5, $dscVolumes ,1, 0);
+                $this->Cell(55, 5, $unitizadorAnterior ,1, 0);
                 $this->Cell(12, 5, $qtdAnterior ,1, 1);
 
                 $dscVolumes = "";
@@ -124,9 +124,9 @@ class Inventario extends Pdf
 
                 $this->Cell(20,5,$enderecoAnterior ,1, 0);
                 $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
-                $this->Cell(90, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
-                $this->Cell(105, 5, $dscVolumes ,1, 0);
-                $this->Cell(43, 5, $unitizadorAnterior ,1, 0);
+                $this->Cell(80, 5, substr($dscProdutoAnterior,0,50) ,1, 0);
+                $this->Cell(90, 5, $dscVolumes ,1, 0);
+                $this->Cell(55, 5, $unitizadorAnterior ,1, 0);
                 $this->Cell(12, 5, $qtdAnterior ,1, 1);
             }
         }
