@@ -23,6 +23,9 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $hoje = date('d/m/Y');
         $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO('$hoje','$hoje')";
+//        $procedureSQL = "CALL PROC_PRODUTIVIDADE_DETALHE('05/04/17','05/04/17')";
+//        $procedureSQL = "CALL PROC_PRODUTIVIDADE_DETALHE('04/04/2017','04/04/2017')";
+
         $procedure = $this->em->getConnection()->prepare($procedureSQL);
         $procedure->execute();
         $this->em->flush();
