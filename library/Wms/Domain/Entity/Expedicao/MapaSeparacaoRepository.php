@@ -751,6 +751,22 @@ class MapaSeparacaoRepository extends EntityRepository
                 GROUP BY P.NOM_PESSOA, PED.COD_PEDIDO, MSPROD.NUM_CAIXA_PC_INI, MSPROD.NUM_CAIXA_PC_FIM, P.COD_PESSOA
                 ORDER BY MSPROD.NUM_CAIXA_PC_INI";
 
+        $sql = "
+                SELECT P.NOM_PESSOA, PED.COD_PEDIDO, MSPROD.NUM_CAIXA_PC_INI, MSPROD.NUM_CAIXA_PC_FIM, P.COD_PESSOA
+                FROM (
+                      SELECT MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.COD_MAPA_SEPARACAO, MSP.COD_PEDIDO_PRODUTO
+                      FROM MAPA_SEPARACAO_PRODUTO MSP
+                      WHERE MSP.COD_MAPA_SEPARACAO = $idMapaSeparacao
+                    ) MSPROD
+              INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSPROD.COD_PEDIDO_PRODUTO
+              INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+              INNER JOIN PEDIDO PED ON PP.COD_PEDIDO = PED.COD_PEDIDO
+              INNER JOIN PESSOA P ON P.COD_PESSOA = PED.COD_PESSOA
+              WHERE MSPROD.COD_MAPA_SEPARACAO = $idMapaSeparacao
+              $andWhere
+              GROUP BY P.NOM_PESSOA, PED.COD_PEDIDO, MSPROD.NUM_CAIXA_PC_INI, MSPROD.NUM_CAIXA_PC_FIM, P.COD_PESSOA
+              ORDER BY MSPROD.NUM_CAIXA_PC_INI";
+
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -807,6 +823,7 @@ class MapaSeparacaoRepository extends EntityRepository
                        AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                        AND MSC.DSC_GRADE = MSP.DSC_GRADE
                        AND MSC.COD_PESSOA = P.COD_PESSOA
+                 WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)
                  GROUP BY P.NOM_PESSOA, P.COD_PESSOA
                  ORDER BY NUM_CAIXA_PC_INI";
 
