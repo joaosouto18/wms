@@ -899,6 +899,7 @@ class MapaSeparacaoRepository extends EntityRepository
                         AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                         AND MSC.DSC_GRADE = MSP.DSC_GRADE
                         AND MSC.COD_PESSOA = P.COD_PESSOA
+                WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)
                  GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
                   ORDER BY NUM_CAIXA_PC_INI";
 
