@@ -121,6 +121,21 @@ class EtiquetaEndereco extends Pdf
                     if ($key < (count($enderecos) - 1))
                         $this->AddPage();
                     break;
+                case 11:
+                    $produtosEndereco = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+
+                    $produtos = array();
+                    foreach ($produtosEndereco as $prod){
+                        if (!isset($produtos[$prod['codProduto']][$prod['grade']])){
+                            $produtos[$prod['codProduto']][$prod['grade']] = array(
+                                'codProduto'=>$prod['codProduto'],
+                                'grade'=>$prod['grade'],
+                                'descricao'=>$prod['descricao']
+                            );
+                        }
+                    }
+                    $this->layoutModelo11($produtos,$codBarras);
+                    break;
                 default:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo1($produto,$codBarras);
@@ -413,6 +428,47 @@ class EtiquetaEndereco extends Pdf
 
         $this->Cell(5,5," ",0,1);
         $this->Line(0,$this->GetY(),297,$this->GetY());
+    }
+
+
+    public function layoutModelo11 ($produtos, $codBarras){
+
+        //Celula para espaço em branco
+        $this->Cell(0,0," ",0,1);
+        $posYIni = $this->GetY();
+        $posXIni = $this->getX();
+
+        //Imprime a descrição do Endereço XX.XXX.XX.XX
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetX(138);
+        $this->Cell(148.5,14,$codBarras,0,1);
+
+        //Imprime o Código de barras
+        $posY = $this->GetY() -1;
+        $this->Cell(0,8,"",0,1);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 143, $posY , 60, 13);
+
+        //Linha para separar um código de barras do outro
+        $this->Cell(5,5," ",0,1);
+        $this->Line(0,$this->GetY(),297,$this->GetY());
+
+        $this->Line(135,0,135,$this->GetY());
+
+
+        $this->SetX($posXIni);
+        $this->SetY($posYIni);
+        $this->SetFont('Arial', 'B', 13);
+        foreach ($produtos as $keyId => $produto) {
+            foreach ($produto as $keyGrade => $prod) {
+                $this->Cell(1,6.5,substr($keyId . " - ".$prod['descricao'],0,47),0,1);
+            }
+        }
+        /*
+        $this->Cell(1,6.5,"Exemplo de produto 01",0,1);
+        $this->Cell(1,6.5,"Exemplo de produto 02",0,1);
+        $this->Cell(1,6.5,"Exemplo de produto 03",0,1);
+        $this->Cell(1,6.5,"Exemplo de produto 04",0,1);
+        */
     }
 
     public function layoutModelo9 ($produto, $codBarras){

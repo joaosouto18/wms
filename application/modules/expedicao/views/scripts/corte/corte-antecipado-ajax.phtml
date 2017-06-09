@@ -1,8 +1,18 @@
 <?php
-echo $this->form;
+if ($this->permiteCortes == 'S') {
+    echo $this->form;
+} else {
+    echo "Corte Desabilitado no WMS";
+    echo "<script>alert('Os cortes foram desabilitados no WMS'); </script>";
+}
+
 ?>
 <div id="gridCorte">
-    <?php echo $this->grid; ?>
+    <?php
+    if ($this->permiteCortes == 'S') {
+        echo $this->grid;
+    }
+    ?>
 </div>
 <input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
 <input type="hidden" name="COD_MAPA_SEPARACAO" id="COD_MAPA_SEPARACAO" value="<?php echo $this->idMapa ?>">

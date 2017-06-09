@@ -119,6 +119,7 @@ class Integracao
         return $maxDate;
     }
 
+
     public function processaAcao() {
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
@@ -134,10 +135,36 @@ class Integracao
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     return $this->processaNotasFiscais($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_CORTES:
+                    return $this->processaCorteERP($this->_dados, $this->_options);
+
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function processaCorteERP ($pedidosProdutosERP, $cargas) {
+        $em = $this->_em;
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
+        $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+
+        $codCargaExterno = implode(',',$cargas);
+        $sql = $em->createQueryBuilder()
+            ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade')
+            ->from('wms:Expedicao\PedidoProduto','pp')
+            ->innerJoin('pp.pedido','p')
+            ->innerJoin('p.carga','c')
+            ->where("c.codCargaExterno IN ($codCargaExterno)")
+            ->orderBy('p.id, pp.codProduto, pp.grade');
+
+        $pedidosProdutosWMS = $sql->getQuery()->getResult();
+        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+        $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
+        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+
+        return true;
     }
 
     public function comparaConferenciaExpedicao ($dados, $options) {

@@ -104,7 +104,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             foreach ($mapaSeparacaoEmbaladoEn as $mapaSeparacaoEmbalado) {
                 $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus()->getId();
                 if ($statusMapaEmbalado != MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                    return false;
+                    return 'Existem volumes embalados pendentes de CONFERENCIA!';
                 }
             }
         }
