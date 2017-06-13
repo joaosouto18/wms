@@ -108,7 +108,6 @@ class Expedicao_OsController extends Action
             ),
             'tag' => 'a'
         );
-        $s = new Zend_Session_Namespace('sessionUrl');
 
         $buttons[] =  array(
             'label' => 'Voltar para Busca de Expedições',

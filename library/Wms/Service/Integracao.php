@@ -109,13 +109,17 @@ class Integracao
         foreach ($this->_dados as $row) {
 
             $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
+            $data = $data->format('Y-m-d H:i:s');
             if ($maxDate == null) {
                 $maxDate = $data;
             }
-            if ($data > $maxDate) {
+            if (strtotime($data) > strtotime($maxDate)) {
                 $maxDate = $data;
             }
         }
+        if (!is_null($maxDate))
+            $maxDate = new \DateTime($maxDate);
+
         return $maxDate;
     }
 
@@ -137,7 +141,8 @@ class Integracao
                     return $this->processaNotasFiscais($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_CORTES:
                     return $this->processaCorteERP($this->_dados, $this->_options);
-
+                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                    return $this->_dados;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
@@ -330,7 +335,6 @@ class Integracao
                     $produtos = array();
                 }
 
-
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
                         'idCarga' => $idCarga,
@@ -363,7 +367,7 @@ class Integracao
             }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
-            $wsExpedicao->enviar($cargas);
+            $wsExpedicao->enviar($cargas, true);
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
@@ -478,13 +482,14 @@ class Integracao
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
-            $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N');
+            $status = $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N',null,false);
             if ($count == 50) {
                 $count =0;
                 $em->flush();
                 $em->clear();
             } else {
-                $count=$count +1;
+                if ($status)
+                    $count=$count +1;
             }
         }
 
@@ -511,6 +516,8 @@ class Integracao
             $arrayProdutos = array();
             $arrayFabricantes = array();
             $arrayClasses = array();
+            $parametroEmbalagemAtiva = $repositorios['parametroRepo']->findOneBy(array('constante' => 'SALVAR_EMBALAGEM_COMO_ATIVA'));
+
 
             /*
              * Reorganiza os arrays
@@ -614,6 +621,9 @@ class Integracao
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
+                    if ($parametroEmbalagemAtiva == 'S') {
+                        $embalagem['ativa'] = 'S';
+                    }
                     if ($embalagem['ativa'] == 'S') {
                         $emb = new embalagem();
                         $emb->codBarras = $embalagem['codBarras'];
@@ -710,5 +720,128 @@ class Integracao
         return true;
     }
 
+    public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
+    {
+        $erpRecebimento = array();
+        foreach ($notasFiscaisWms as $idNotaFiscal) {
+            $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
+            $constaNoErp = false;
+
+            $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+            $numeroSerie  = $notaFiscal->getSerie();
+            $numeroNota   = $notaFiscal->getNumero();
+
+            foreach ($notasFiscaisErp as $key => $erpNotaFiscal) {
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                    $constaNoErp = true;
+                    unset($notasFiscaisErp[$key]);
+                    break;
+                }
+            }
+            if ($constaNoErp == false) {
+                throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+            }
+        }
+
+        foreach ($notasFiscaisErp as $erpNotaFiscal) {
+            $constaNoWms = false;
+            foreach ($notasFiscaisWms as $key => $idNotaFiscal) {
+                $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
+
+                $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+                $numeroSerie  = $notaFiscal->getSerie();
+                $numeroNota   = $notaFiscal->getNumero();
+
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                    $constaNoWms = true;
+                    unset($notasFiscaisWms[$key]);
+                    break;
+                }
+            }
+            if ($constaNoWms == false) {
+                throw new \Exception('Nota Fiscal número '.$erpNotaFiscal['NUM_NOTA'].' série '.$erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] .' não consta no recebimento do WMS!');
+            }
+
+        }
+        return true;
+    }
+
+    public function atualizaRecebimentoERP($idRecebimento)
+    {
+        $em = $this->_em;
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepository */
+        $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
+
+        $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
+        $options1 = array(
+            0 => $notaFiscalEntity->getCodRecebimentoErp(),
+        );
+
+        //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
+        $acaoEn = $acaoIntRepository->find(10);
+        $conexaoEn = $acaoEn->getConexao();
+        $query = $acaoEn->getQuery();
+
+        if (!is_null($options1)) {
+            foreach ($options1 as $key => $value) {
+                $query = str_replace(":?" . ($key+1) ,$value ,$query);
+            }
+        }
+
+        //EXECUTA O ERP
+        $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
+
+        /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
+        $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
+        $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
+
+        $acaoEn = $acaoIntRepository->find(11);
+        $acaoToInsert = $acaoIntRepository->find(12);
+        foreach ($produtosConferidos as $produtoConferido) {
+            $dataValidade = null;
+            $dataConferencia = null;
+            if (isset($produtoConferido['dataValidade']) && !empty($produtoConferido['dataValidade'])) {
+                $dataValidade = $produtoConferido['dataValidade']->format('d/m/Y');
+            }
+            if (isset($produtoConferido['dataConferencia']) && !empty($produtoConferido['dataConferencia'])) {
+                $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
+            }
+            $options2 = array(
+                0 => $produtoConferido['codRecebimentoErp'],
+                1 => $produtoConferido['codProduto'],
+                2 => $produtoConferido['quantidade'],
+                3 => $produtoConferido['qtdDivergencia'],
+                4 => $dataValidade,
+                5 => $dataConferencia,
+                6 => $produtoConferido['codigoBarras']
+            );
+
+            //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES
+            $conexaoEn = $acaoEn->getConexao();
+            $query = $acaoEn->getQuery();
+
+            //CONEXAO PARA INSERIR AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO DO RECEBIMENTO E O CÓDIGO DO PRODUTO
+            $conexaoInsertEn = $acaoToInsert->getConexao();
+            $queryToInsert = $acaoToInsert->getQuery();
+
+            //INSERE OS DADOS REAIS NAS QUERYS PARA ATUALIZAÇÃO E INSERÇÃO
+            foreach ($options2 as $key => $value) {
+                $query = str_replace(":?" . ($key+1) ,$value ,$query);
+                $queryToInsert = str_replace(":?" . ($key+1) ,$value ,$queryToInsert);
+            }
+            //FAZ O UPDATE NO ERP ATUALIZANDO AS QUANTIDADES
+            $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
+            //FAZ INSERT NO ERP COM AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO E O CÓDIGO DO PRODUTO
+            $conexaoRepo->runQuery($queryToInsert,$conexaoInsertEn,$update = true);
+
+        }
+        return true;
+
+
+    }
 
 }

@@ -167,6 +167,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$produtoEntity->setNumVolumes($numVolumes);
 			$produtoEntity->setReferencia($referencia);
 			$produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
+			$produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel))? $possuiPesoVariavel : "N");
 
 			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
 			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
@@ -473,13 +474,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 							if (is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(new \DateTime());
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false);
+								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false, true);
 							}
 						} else {
 							if (!is_null($embalagemEntity->getDataInativacao())) {
 								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false);
+								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false, true);
 							}
 						}
 

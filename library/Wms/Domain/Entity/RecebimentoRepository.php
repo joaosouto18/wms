@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Domain\Entity\Enderecamento\Palete as PaleteEntity;
 use Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Service\Integracao;
 
 /**
  * Deposito
@@ -159,6 +160,29 @@ class RecebimentoRepository extends EntityRepository
         $em->beginTransaction();
 
         try {
+
+            $idRecebimentoErp = null;
+            if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+
+                $acaoEn = $acaoIntRepo->find(9);
+                $notaFiscal = $em->getReference('wms:NotaFiscal', $notasFiscais[0]);
+                $options = array(
+                    0 => $notaFiscal->getFornecedor()->getIdExterno(),
+                    1 => $notaFiscal->getSerie(),
+                    2 => $notaFiscal->getNumero(),
+                );
+                $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn,$options);
+                $serviceIntegracao = new Integracao($em,
+                    array('acao'=>$acaoEn,
+                        'options'=>null,
+                        'tipoExecucao' => 'E'));
+                $serviceIntegracao->comparaNotasFiscais($notasFiscais,$notasFiscaisErp);
+                $idRecebimentoErp = $notasFiscaisErp[0]['COD_RECEBIMENTO_ERP'];
+            }
+
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $em->getReference('wms:Deposito', $sessao->idDepositoLogado);
 
@@ -180,8 +204,10 @@ class RecebimentoRepository extends EntityRepository
             foreach ($notasFiscais as $nota) {
 
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $nota);
-                $notaFiscal->setRecebimento($recebEntity)
-                    ->setStatus($statusEntity);
+                $notaFiscal
+                    ->setRecebimento($recebEntity)
+                    ->setStatus($statusEntity)
+                    ->setCodRecebimentoErp($idRecebimentoErp);
 
                 $em->persist($notaFiscal);
             }
@@ -281,13 +307,14 @@ class RecebimentoRepository extends EntityRepository
      */
     public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null)
     {
-        $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
-        $vQtdRecebimentoRepo = $this->_em->getRepository('wms:Recebimento\VQtdRecebimento');
-        $notafiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
+        $em = $this->_em;
+        $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
+        $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
+        $notafiscalRepo = $em->getRepository('wms:NotaFiscal');
         /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
-        $conferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
+        $conferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
         /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */
-        $pesoProdutoRepo = $this->_em->getRepository('wms:Produto\Peso');
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
 
 
         $repositorios = array(
@@ -403,6 +430,16 @@ class RecebimentoRepository extends EntityRepository
 
         //altera recebimento para o status finalizado
         $result = $this->finalizar($idRecebimento);
+
+        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
+        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+            $serviceIntegracao = new Integracao($em,
+                array('acao'=>null,
+                    'options'=>null,
+                    'tipoExecucao' => 'E'
+                ));
+            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+        }
 
         if ($result['exception'] == null) {
             return array('message' => 'Recebimento Nº. ' . $idRecebimento . ' finalizado com sucesso.',

@@ -80,8 +80,14 @@ class Web_UsuarioController extends Crud
                         'title' => 'Reseta a senha deste usuário.'
                     ))
                     ->addAction(array(
-                        'label' => 'Imprimir Código de Barras',
+                        'label' => 'Imprimir Código de Barras - Login',
                         'actionName' => 'imprimir',
+                        'pkIndex' => 'id',
+                        'title' => 'Imprime o código de barras deste usuário.'
+                    ))
+                    ->addAction(array(
+                        'label' => 'Imprimir Código de Barras - CPF',
+                        'actionName' => 'imprimir-cpf',
                         'pkIndex' => 'id',
                         'title' => 'Imprime o código de barras deste usuário.'
                     ));
@@ -288,6 +294,19 @@ class Web_UsuarioController extends Crud
         $usuario = $this->em->find('wms:Usuario', $id);
         $nomeUsuario = $usuario->getLogin();
         $dscUsuario = $usuario->getPessoa()->getNome();
+
+        $etiquetaUsuario = new \Wms\Module\Web\Report\Usuario("P", 'mm', array(110, 60));
+        $result = $etiquetaUsuario->init($nomeUsuario,$dscUsuario);
+    }
+
+    public function imprimirCpfAction () {
+        $id = $this->getRequest()->getParam('id');
+
+        $usuario = $this->em->find('wms:Pessoa\Fisica', $id);
+
+        /** @var \Wms\Domain\Entity\Pessoa\Fisica $usuario */
+        $nomeUsuario = preg_replace('#[^0-9]#', '', $usuario->getCpf());
+        $dscUsuario = $usuario->getNome();
 
         $etiquetaUsuario = new \Wms\Module\Web\Report\Usuario("P", 'mm', array(110, 60));
         $result = $etiquetaUsuario->init($nomeUsuario,$dscUsuario);
