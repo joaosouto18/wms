@@ -7,6 +7,66 @@ use Doctrine\ORM\EntityRepository,
 class PedidoProdutoRepository extends EntityRepository
 {
 
+    public function aplicaCortesbyERP($pedidosProdutosWMS, $pedidosProdutosERP) {
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+        $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+
+        foreach ($pedidosProdutosWMS as $produtoWms) {
+            $encontrouProdutoERP = false;
+            foreach ($pedidosProdutosERP as $key => $produtoERP) {
+                if (in_array($produtoWms['pedido'],$produtoERP)) {
+                    if (in_array($produtoWms['produto'],$produtoERP)) {
+                        if (in_array($produtoWms['grade'],$produtoERP)) {
+                            $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                                'codPedido' => $produtoWms['pedido'],
+                                'codProduto' => $produtoWms['produto'],
+                                'grade' => $produtoWms['grade']));
+                            if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                                $encontrouProdutoERP = true;
+                                $cortesProduto = array(
+                                    'codPedido' => $produtoWms['pedido'],
+                                    'codProduto' => $produtoWms['produto'],
+                                    'grade' => $produtoWms['grade'],
+                                    'quantidadeCortar' => str_replace(',','.',$pedidoProdutoEntity->getQuantidade()) - str_replace(',','.',$produtoERP['QTD']),
+                                    'pedidoProduto' => $pedidoProdutoEntity->getId()
+                                );
+                                if ($cortesProduto['quantidadeCortar'] >= $pedidoProdutoEntity->getQtdCortada()) {
+                                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
+                                    $this->getEntityManager()->persist($pedidoProdutoEntity);
+                                }
+                                unset($pedidosProdutosERP[$key]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!$encontrouProdutoERP) {
+                $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                    'codPedido' => $produtoWms['pedido'],
+                    'codProduto' => $produtoWms['produto'],
+                    'grade' => $produtoWms['grade']));
+
+                if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                    $cortesProduto = array(
+                        'codPedido' => $produtoWms['pedido'],
+                        'codProduto' => $produtoWms['produto'],
+                        'grade' => $produtoWms['grade'],
+                        'quantidadeCortar' => $pedidoProdutoEntity->getQuantidade(),
+                        'pedidoProduto' => $pedidoProdutoEntity->getId()
+                    );
+                    $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
+                    $this->getEntityManager()->persist($pedidoProdutoEntity);
+                }
+            }
+        }
+
+        $this->getEntityManager()->flush();
+
+        return true;
+    }
+
     public function save($pedido) {
 
         $em = $this->getEntityManager();
@@ -58,6 +118,22 @@ class PedidoProdutoRepository extends EntityRepository
             ->groupBy('re.id');
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function compareMapaProdutoByPedido($produtoWms)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('(msp.qtdSeparar * msp.qtdEmbalagem) AS corteMaximo, msp.id')
+            ->from('wms:Expedicao\MapaSeparacaoProduto','msp')
+            ->innerJoin('msp.mapaSeparacao','ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoPedido','msped','WITH','ms.id = msped.mapaSeparacao')
+            ->innerJoin('wms:Expedicao\PedidoProduto','pp','WITH','pp.id = msped.pedidoProduto AND pp.codProduto = msp.codProduto AND pp.grade = msp.dscGrade')
+            ->where("pp.id = $produtoWms[pedidoProduto]")
+            ->andWhere("pp.codProduto = $produtoWms[codProduto]")
+            ->andWhere("pp.grade = '$produtoWms[grade]'")
+            ->orderBy('msp.qtdSeparar * msp.qtdEmbalagem','ASC');
+
+        return $sql->getQuery()->getResult();
     }
 
 }

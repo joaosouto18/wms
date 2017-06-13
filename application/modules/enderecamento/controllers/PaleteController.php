@@ -16,27 +16,62 @@ class Enderecamento_PaleteController extends Action
         $grade          = $this->getRequest()->getParam('grade');
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-        $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
-        $produtoEn = $this->em->getRepository("wms:Produto")->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+        $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
+
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
-        $ProdutoRepository   = $this->em->getRepository('wms:Produto');
-        $this->view->endPicking = $picking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+        $ProdutoRepository = $this->em->getRepository('wms:Produto');
 
-        $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
+        if (!empty($codProduto) && !empty($grade)) {
+            $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+            $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
-        try {
-            $paletes = $paleteRepo->getPaletes($idRecebimento,$codProduto,$grade,true,$tipoEnderecamento = 'M');
-        } catch(Exception $e) {
-                $this->addFlashMessage('error',$e->getMessage());
-            $this->_redirect('/enderecamento/produto/index/id/'.$idRecebimento);
+            $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
+
+            try {
+                $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+            } catch (Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+                $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+            }
+            $this->view->isIndividual = true;
+            $this->view->produto = $produtoEn->getDescricao();
+            $this->view->codProduto = $codProduto;
+            $this->view->grade = $grade;
+            $this->view->paletes = $paletes;
+        } else {
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $itens  = $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
+
+            $result = array();
+            /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
+            foreach ($itens as $item) {
+                $codProduto = $item['codProduto'];
+                $grade = $item['grade'];
+                /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+                $arr = array();
+                $arr['codProduto'] = $codProduto;
+                $arr['grade'] = $grade;
+                $arr['descricao'] = $produtoEn->getDescricao();
+                $arr['endPicking'] = $ProdutoRepository->getEnderecoPicking($produtoEn);
+                $arr['qtdTotal'] = $paleteRepo->getQtdTotalByPicking($codProduto,$grade);
+
+                try {
+                    $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                } catch (Exception $e) {
+                    $this->addFlashMessage('error', $e->getMessage());
+                    $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+                }
+                $result[] = $arr;
+            }
+            $this->view->isIndivudal = false;
+            $this->view->utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+            $this->view->itens = $result;
         }
 
-        $this->configurePage($idRecebimento);
-        $this->view->produto      = $produtoEn->getDescricao();
-        $this->view->codProduto    = $codProduto;
-        $this->view->grade         = $grade;
-        $this->view->paletes       = $paletes;
         $this->view->idRecebimento = $idRecebimento;
+        $this->configurePage($idRecebimento);
     }
 
     /**
@@ -55,7 +90,10 @@ class Enderecamento_PaleteController extends Action
 
         $param = array();
         $paletesArray = array();
+
+        $produtoEn = null;
         foreach ($paletes as $paleteId) {
+            /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $PaleteRepository->find($paleteId);
 
             $dadosPalete = array();
@@ -66,7 +104,13 @@ class Enderecamento_PaleteController extends Action
                 $dadosPalete['endereco'] = "";
             }
 
-            $produtoEn = $produtoRepo->findOneBy(array('id' => $params['codigo'], 'grade' => $params['grade']));
+            if (empty($produtoEn)) {
+                $prods = $paleteEn->getProdutos();
+                /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $paleteProd */
+                $paleteProd = $prods[0];
+                $produtoEn = $paleteProd->getProduto();
+            }
+            //$produtoEn = $produtoRepo->findOneBy(array('id' => $params['codigo'], 'grade' => $params['grade']));
 
             //SE O PRODUTO TIVER PESO VARIAVEL CONSIDERA O PESO DO PALETE
             if ($produtoEn->getPossuiPesoVariavel() == 'S') {
@@ -92,8 +136,8 @@ class Enderecamento_PaleteController extends Action
         }
 
         $param['idRecebimento'] = $params['id'];
-        $param['codProduto']    = $params['codigo'];
-        $param['grade']         = $params['grade'];
+        $param['codProduto']    = $produtoEn->getId();
+        $param['grade']         = $produtoEn->getGrade();
         $param['paletes']       = $paletesArray;
 
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
@@ -121,31 +165,30 @@ class Enderecamento_PaleteController extends Action
 
     public function enderecarAction()
     {
+        $this->view->id = $id = $this->_getParam('id');
+        $this->view->codigo = $codigo = $this->_getParam('codigo');
+        $this->view->grade = $grade = urldecode($this->_getParam('grade'));
         try {
             $this->em->beginTransaction();
             $usuarioRepo = $this->em->getRepository('wms:Usuario');
-            $perfilParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'COD_PERFIL_OPERADOR_EMPILHADEIRA'));
+            $perfil = $this->getSystemParameterValue('COD_PERFIL_OPERADOR_EMPILHADEIRA');
 
-            $this->view->conferentes = $usuarioRepo->getIdValueByPerfil($perfilParam->getValor());
-
-            $this->view->id = $id = $this->_getParam('id');
-            $this->view->codigo = $codigo = $this->_getParam('codigo');
-            $this->view->grade = $grade = urldecode($this->_getParam('grade'));
+            $this->view->conferentes = $usuarioRepo->getIdValueByPerfil($perfil);
 
             $paletes = $this->_getParam('palete', null);
             if ($paletes != null) {
                 /**@var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
                 $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
 
-                /**@var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-                $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-                $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($id, null, $codigo, $grade);
-
-                $result = $paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'), null, $dataValidade);
+                $result = $paleteRepo->finalizar($paletes, $this->_getParam('idPessoa'));
                 if ($result && !is_string($result)) {
                     $this->em->commit();
                     $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
-                    $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
+                    if (!empty($codigo) && !empty($grade)) {
+                        $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
+                    } else {
+                        $this->_redirect('enderecamento/palete/index/id/' . $id);
+                    }
                 } else {
                     throw new Exception($result);
                 }
@@ -153,7 +196,11 @@ class Enderecamento_PaleteController extends Action
         } catch (Exception $e) {
             $this->addFlashMessage('info', 'Não foram feitos endereçamentos.' . $e->getMessage());
             $this->em->rollback();
-            $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
+            if (!empty($codigo) && !empty($grade)) {
+                $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
+            } else {
+                $this->_redirect('enderecamento/palete/index/id/' . $id);
+            }
         }
     }
 
@@ -252,6 +299,7 @@ class Enderecamento_PaleteController extends Action
         $codProduto    = $this->_getParam('codigo');
         $grade         = $this->_getParam('grade');
 
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
         try {
             $result = $paleteRepo->enderecaPicking($paletes);
@@ -263,12 +311,17 @@ class Enderecamento_PaleteController extends Action
             $this->addFlashMessage('error',$e->getMessage());
         }
 
-        $this->_redirect('enderecamento/palete/index/id/'.$idRecebimento.'/codigo/'.$codProduto.'/grade/'.urlencode($grade));
+        if ($codProduto && $grade) {
+            $this->_redirect('enderecamento/palete/index/id/' . $idRecebimento . '/codigo/' . $codProduto . '/grade/' . urlencode($grade));
+        } else {
+            $this->_redirect('enderecamento/palete/index/id/' . $idRecebimento);
+        }
     }
 
     public function desfazerAction()
     {
         $idPalete = $this->_getParam('id');
+        $isIndividual = $this->_getParam('isIndividual');
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
@@ -285,7 +338,11 @@ class Enderecamento_PaleteController extends Action
             $this->addFlashMessage('error',$e->getMessage());
         }
 
-        $this->_redirect('enderecamento/palete/index/id/'.$idRecebimento.'/codigo/'.$codProduto.'/grade/'.urlencode($grade));
+        if ($isIndividual) {
+            $this->_redirect('enderecamento/palete/index/id/' . $idRecebimento . '/codigo/' . $codProduto . '/grade/' . urlencode($grade));
+        } else {
+            $this->_redirect('enderecamento/palete/index/id/' . $idRecebimento);
+        }
 
     }
 

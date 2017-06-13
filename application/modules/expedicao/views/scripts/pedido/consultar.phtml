@@ -93,7 +93,8 @@
             <td>Código</td>
             <td>Grade</td>
             <td>Produto</td>
-            <td>Qtd</td>
+            <td>Qtd. Pedido</td>
+            <td>Qtd. Cortada</td>
         </tr>
 
         <?php foreach ($this->produtos as $produto) {?>
@@ -103,6 +104,7 @@
                 <td><?php echo $produto['DSC_GRADE']; ?></td>
                 <td><?php echo $produto['DSC_PRODUTO'];?></td>
                 <td><?php echo $produto['QUANTIDADE'];?></td>
+                <td><?php echo $produto['QTD_CORTADA'];?></td>
             </tr>
         <?php }?>
     </table>

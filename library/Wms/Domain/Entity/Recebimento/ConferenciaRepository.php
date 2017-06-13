@@ -253,4 +253,20 @@ class ConferenciaRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getProdutosByRecebimento($idRecebimento)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('1010101010 codigoBarras, nfi.codProduto, nfi.grade, SUM(nfi.quantidade) quantidade, SUM(nfi.quantidade) - NVL(v.qtd,0) qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
+            ->from('wms:Recebimento','r')
+            ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
+            ->innerJoin('wms:NotaFiscal\Item','nfi','WITH','nfi.notaFiscal = nf.id')
+            ->leftJoin('wms:Recebimento\VQtdRecebimento','v','WITH','v.codRecebimento = r.id AND nfi.codProduto = v.codProduto AND nfi.grade = v.grade')
+            ->leftJoin('wms:Recebimento\Conferencia','rc','WITH','rc.ordemServico = v.codOs AND rc.codProduto = v.codProduto AND rc.grade = v.grade')
+            ->leftJoin('wms:Produto','p', 'WITH', 'p.id = v.codProduto and p.grade = v.grade')
+            ->where("r.id = $idRecebimento")
+            ->groupBy('nfi.codProduto, nfi.grade, v.qtd, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia');
+
+        return $sql->getQuery()->getResult();
+    }
+
 }

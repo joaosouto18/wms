@@ -1686,4 +1686,43 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
+    /**
+     * Método destinado para listar todos os cortes por dia / produto
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    public function getCortePorDiaProduto($params){
+        $sql = "SELECT TO_CHAR(E.DTH_INICIO, 'DD/MM/YYYY') as DTH_INICIO, E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO as COD_CARGA, PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE, PP.QTD_CORTADA, PP.QUANTIDADE - PP.QTD_CORTADA as QTD_ATENDIDA,
+                CASE WHEN (PP.QUANTIDADE - PP.QTD_CORTADA) = 0 THEN 'CORTE TOTAL' ELSE 'CORTE PARCIAL' END AS TIPO_CORTE
+                FROM PEDIDO_PRODUTO PP
+                LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
+                WHERE PP.QTD_CORTADA > 0";
+
+        if (isset($params['idExpedicao']) && !empty($params['idExpedicao'])) {
+            $sql .= " AND E.COD_EXPEDICAO = " . $params['idExpedicao'] . "";
+        }
+
+        if (isset($params['grade']) && !empty($params['grade'])) {
+            $sql .= " AND PP.DSC_GRADE = '" . $params['grade'] . "'";
+        }
+
+        if (isset($params['descricao']) && !empty($params['descricao'])) {
+            $sql .= " AND PROD.DSC_PRODUTO LIKE UPPER('%" . $params['descricao'] . "%')";
+        }
+
+        if (isset($params['dataInicial']) && !empty($params['dataInicial'])) {
+            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('".$params['dataInicial']." 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+        }
+
+        $sql .= " ORDER BY E.DTH_INICIO DESC, PP.COD_PRODUTO";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 }

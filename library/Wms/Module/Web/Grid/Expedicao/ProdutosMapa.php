@@ -8,11 +8,6 @@ use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento;
 
-/**
- * Grid da Página Inicial da Expedição
- *
- * @author Lucas Chinelate <lucaschinelate@hotmail.com>
- */
 class ProdutosMapa extends Grid
 {
     /**
@@ -69,27 +64,8 @@ class ProdutosMapa extends Grid
                 'actionName' => 'conferencia',
                 'cssClass' => 'inside-modal',
                 'pkIndex' => array('COD_PRODUTO','DSC_GRADE','NUM_CONFERENCIA')
-            ))
-/*            ->addAction(array(
-                'label' => 'Cortar Item',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'corte-pedido',
-                'actionName' => 'list',
-                'cssClass' => 'inside-modal',
-                'params'=>array('pedidoCompleto'=>'N','COD_EXPEDICAO'=>$idExpedicao),
-                'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
-            ))
-            ->addAction(array(
-                'label' => 'Cortar Pedido',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'corte-pedido',
-                'actionName' => 'list',
-                'cssClass' => 'inside-modal',
-                'params'=>array('pedidoCompleto'=>'S','COD_EXPEDICAO'=>$idExpedicao),
-                'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE')
-            ))*/
+            ));
 
-        ;
         return $this;
     }
 

@@ -429,9 +429,8 @@ class Importacao
             //VERIFICA TODOS OS ITENS DO WS E COMPARA COM BANCO DE DADOS
             $notaFiscalRepo->compareItensWsComBanco($itens, $notaFiscalEn, $showExpt);
 
-            //$entityNotaFiscal = $notaFiscalRepo->salvarItens($itens, $notaFiscalEn);
         }
-        //return $entityNotaFiscal;
+
         return true;
     }
 

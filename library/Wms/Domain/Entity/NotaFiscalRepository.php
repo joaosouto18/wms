@@ -17,6 +17,17 @@ use Wms\Domain\Entity\Deposito\Endereco;
 class NotaFiscalRepository extends EntityRepository
 {
 
+    public function getItensNotaByRecebimento ($idRecebimento) {
+        $dql = $this->_em->createQueryBuilder()
+            ->select('nfi.codProduto, nfi.grade')
+            ->from('wms:NotaFiscal\Item', 'nfi')
+            ->innerJoin('nfi.notaFiscal', 'nf')
+            ->where('nf.recebimento = :recebimento')
+            ->setParameter(':recebimento', $idRecebimento);
+
+        return $dql->getQuery()->getResult();
+    }
+
     /**
      *
      * @param array $values
@@ -426,12 +437,12 @@ class NotaFiscalRepository extends EntityRepository
     public function getConferenciaPorRecebimento($idRecebimento)
     {
         $sql = '
-            SELECT NF.NUM_NOTA_FISCAL, NF.DAT_EMISSAO, NF.COD_SERIE_NOTA_FISCAL, NFI.COD_PRODUTO, P.DSC_PRODUTO, NFI.DSC_GRADE, RC.DTH_CONFERENCIA,                
+            SELECT DISTINCT NF.NUM_NOTA_FISCAL, NF.DAT_EMISSAO, NF.COD_SERIE_NOTA_FISCAL, NFI.COD_PRODUTO, P.DSC_PRODUTO, NFI.DSC_GRADE, RC.DTH_CONFERENCIA,                
                 CASE WHEN RC.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL THEN (NFI.QTD_ITEM + RC.QTD_DIVERGENCIA) ELSE NFI.QTD_ITEM END QTD_CONFERIDA,
                 CASE WHEN RC.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL THEN 0 ELSE 0 END QTD_AVARIA, -- pending
                 CASE WHEN RC.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL THEN RC.QTD_DIVERGENCIA ELSE 0 END QTD_DIVERGENCIA,
                 CASE WHEN RC.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL THEN MDR.DSC_MOTIVO_DIVER_RECEB ELSE \'\' END DSC_MOTIVO_DIVER_RECEB,
-                RE.DTH_VALIDADE
+                RC.DTH_VALIDADE
             FROM RECEBIMENTO R
             INNER JOIN NOTA_FISCAL NF ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
             INNER JOIN NOTA_FISCAL_ITEM NFI ON (NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL)
@@ -688,7 +699,8 @@ class NotaFiscalRepository extends EntityRepository
                               NVL(PV.COD_BARRAS, PE.COD_BARRAS), NVL(PV.NUM_ALTURA, PDL.NUM_ALTURA),
                               NVL(PV.NUM_LARGURA, PDL.NUM_LARGURA), NVL(PV.NUM_PESO, PDL.NUM_PESO), NVL(PV.NUM_PROFUNDIDADE, PDL.NUM_PROFUNDIDADE),
                               NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO), NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR),
-                              NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS), NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO)";
+                              NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS), NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO),
+                              DE.DSC_DEPOSITO_ENDERECO, PV.CAPACIDADE_PICKING, PE.CAPACIDADE_PICKING, PV.PONTO_REPOSICAO, PE.PONTO_REPOSICAO";
             }
         }
 

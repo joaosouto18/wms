@@ -232,30 +232,11 @@ class Expedicao extends Grid
                 'modelName' => 'expedicao',
                 'controllerName' => 'index',
                 'actionName' => 'relatorios-carregamento-ajax',
-                'cssClass' => 'dialogAjax',
+                'cssClass' => 'dialogAjax relatorio-carregamento',
                 'pkIndex' => 'id'
             ))
-//            ->addAction(array(
-//                'label' => 'Relatório de Carg. por Clientes',
-//                'target' => '_blank',
-//                'moduleName' => 'expedicao',
-//                'controllerName' => 'index',
-//                'actionName' => 'relatorio-produtos-clientes-conferidos-ajax',
-//                'cssClass' => 'pdf',
-//                'pkIndex' => 'id'
-//            ))
-//            ->addAction(array(
-//                'label' => 'Relatório de Carg. por Produtos',
-//                'target' => '_blank',
-//                'moduleName' => 'expedicao',
-//                'controllerName' => 'index',
-//                'actionName' => 'relatorio-produtos-conferidos-ajax',
-//                'cssClass' => 'pdf',
-//                'pkIndex' => 'id'
-//            ))
             ->addAction(array(
                 'label' => 'Cancelar Expedição',
-//                'target' => '_blank',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',
                 'actionName' => 'cancelar-expedicao-ajax',

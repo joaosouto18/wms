@@ -71,7 +71,8 @@ class ReservaEstoqueRepository extends EntityRepository
             } else {
                 $reservaEstoqueExpedicaoRepo = $repositorios['reservaEstoqueExpRepo'];
             }
-            $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $idOrigem));
+            $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $idOrigem['idExpedicao'],
+                                                                              'pedido'=>$idOrigem['idPedido']));
         }
 
 
@@ -88,6 +89,10 @@ class ReservaEstoqueRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoque $reservaEstoqueEn */
             $reservaEstoqueEn = $reserva->getReservaEstoque();
             $reservaProdutos = $reservaEstoqueEn->getProdutos();
+
+            if ($reservaEstoqueEn->getAtendida() == 'C') {
+                continue;
+            }
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
             foreach ($reservaProdutos as $reservaProduto) {
                 foreach ($produtos as $produto) {
@@ -356,7 +361,8 @@ class ReservaEstoqueRepository extends EntityRepository
             $pedidoRepo = $repositorios['pedidoRepo'];
         }
 
-        $reservaEstoqueEn = $this->findReservaEstoque($enderecoEn->getId(),$produtos,"S","E",$idExpedicao, null, $repositorios);
+        $reservaEstoqueEn = $this->findReservaEstoque($enderecoEn->getId(),$produtos,"S","E",array('idExpedicao'=>$idExpedicao,
+                                                                                                    'idPedido'=>$idPedido), null, $repositorios);
 
         if ($reservaEstoqueEn != NULL) {
             $reservaProdutos = $reservaEstoqueEn->getProdutos();

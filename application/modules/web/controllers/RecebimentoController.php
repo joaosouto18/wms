@@ -39,6 +39,23 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $form = new FiltroRecebimentoMercadoria;
 
         $values = $form->getParams();
+        $parametroNotasFiscais = $this->getSystemParameterValue('COD_INTEGRACAO_NOTAS_FISCAIS');
+
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Importar Notas Fiscais ERP',
+                    'cssClass' => 'btnSave',
+                    'urlParams' => array(
+                        'module' => 'importacao',
+                        'controller' => 'gerenciamento',
+                        'action' => 'index',
+                        'id' => $parametroNotasFiscais
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
 
         //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje
         if (!$values) {
@@ -655,6 +672,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->persist($ordemServicoEntity);
                         $this->em->flush();
 
+                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
+                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(),
+                                array('acao'=>null,
+                                    'options'=>null,
+                                    'tipoExecucao' => 'E'
+                                ));
+                            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+                        }
+
                         //recebimento para o status finalizado
                         $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
 
@@ -1096,6 +1123,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             if ($notasFiscais == 0)
                 throw new \Exception('Por favor selecione alguma nota para gerar o recebimento');
 
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $recebimentoId = $recebimentoRepo->gerar($values['notasFiscais']);
 

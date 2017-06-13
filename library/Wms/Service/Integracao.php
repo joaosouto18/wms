@@ -5,6 +5,7 @@ namespace Wms\Service;
 
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
+use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 
@@ -22,6 +23,7 @@ class Integracao
     protected $_acao;
     protected $_dados;
     protected $_options;
+    protected $_tipoExecucao;
 
     /** @var EntityManager _em */
     protected $_em;
@@ -65,6 +67,22 @@ class Integracao
     }
 
     /**
+     * @param mixed $tipoExecucao
+     */
+    public function setTipoExecucao($tipoExecucao)
+    {
+        $this->_tipoExecucao = $tipoExecucao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoExecucao()
+    {
+        return $this->_tipoExecucao;
+    }
+
+    /**
      * @return mixed
      */
     public function getOptions()
@@ -99,7 +117,10 @@ class Integracao
                 $maxDate = $data;
             }
         }
-        $maxDate = new \DateTime($maxDate);
+        if (!is_null($maxDate))
+            $maxDate = new \DateTime($maxDate);
+
+
         return $maxDate;
     }
 
@@ -119,10 +140,37 @@ class Integracao
                     return $this->comparaConferenciaExpedicao($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
                     return $this->processaNotasFiscais($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_CORTES:
+                    return $this->processaCorteERP($this->_dados, $this->_options);
+                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                    return $this->_dados;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function processaCorteERP ($pedidosProdutosERP, $cargas) {
+        $em = $this->_em;
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
+        $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+
+        $codCargaExterno = implode(',',$cargas);
+        $sql = $em->createQueryBuilder()
+            ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade')
+            ->from('wms:Expedicao\PedidoProduto','pp')
+            ->innerJoin('pp.pedido','p')
+            ->innerJoin('p.carga','c')
+            ->where("c.codCargaExterno IN ($codCargaExterno)")
+            ->orderBy('p.id, pp.codProduto, pp.grade');
+
+        $pedidosProdutosWMS = $sql->getQuery()->getResult();
+        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+        $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
+        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+
+        return true;
     }
 
     public function comparaConferenciaExpedicao ($dados, $options) {
@@ -150,13 +198,13 @@ class Integracao
             );
             $produtos[] = $produto;
 
-            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
+            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['PEDIDO'] != $idPedido))) {
                 $pedidos[$idPedido] = $produtos;
                 unset($produtos);
                 $produtos = array();
             }
 
-            if ((count($dados) == $key-1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
+            if ((count($dados) == $key+1) || (isset($dados[$key+1]) && ($dados[$key+1]['CARGA'] != $idCarga))) {
                 $cargas[$idCarga] = $pedidos;
                 unset($pedidos);
                 $pedidos = array();
@@ -301,6 +349,23 @@ class Integracao
                     $pedidos = array();
                 }
             }
+            if ($this->getTipoExecucao() == "L") {
+                return $cargas;
+            } else if ($this->getTipoExecucao() == "R") {
+                foreach($cargas as $carga) {
+                    $resumo[] = array(
+                        'Num. Carga'=>$carga['idCarga'],
+                        'Qtd. Pedidos'=>count($carga['pedidos']),
+                        'Placa Carga'=>$carga['placaExpedicao']
+                    );
+                }
+                $resumo[] = array(
+                    'Num. Carrga'=>'',
+                    'Qtd. Pedidos'=>'',
+                    'Placa Carga'=>''
+                );
+                return $resumo;
+            }
 
             $wsExpedicao = new \Wms_WebService_Expedicao();
             $wsExpedicao->enviar($cargas, true);
@@ -331,7 +396,11 @@ class Integracao
                 $tipoPessoa = 'J';
             }
             if ($tipoPessoa == 'F') {
-                continue;
+                $notaFiscal['COD_FORNECEDOR'] = '9999';
+                $cpf_cnpj = '9999999999';
+                $notaFiscal['NOM_FORNECEDOR'] = 'DEVOLUCAO';
+                $notaFiscal['INSCRICAO_ESTADUAL'] = 'ISENTO';
+                $tipoPessoa = 'J';
             }
             if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
                 $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
@@ -342,9 +411,6 @@ class Integracao
                     'tipoPessoa' => $tipoPessoa
                 );
             }
-
-
-
 
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
@@ -384,6 +450,31 @@ class Integracao
 
             }
         }
+
+        if ($this->getTipoExecucao() == "L") {
+            return $notasFiscais;
+        } else if ($this->getTipoExecucao() == "R") {
+            foreach($notasFiscais as $nf) {
+                $resumo[] = array(
+                    'Numero NF'=>$nf['numNota'],
+                    'Serie' => $nf['serie'],
+                    'Dt. Emissão' => $nf['dtEmissao'],
+                    'Fornecedor' => $fornecedores[$nf['codFornecedor']]['nome'],
+                    'Veículo' => $nf['placaVeiculo'],
+                    'Qtd. Produtos' =>count($nf['itens'])
+                );
+            }
+            $resumo[] = array(
+                'Numero NF'=>'',
+                'Serie'=>'',
+                'Dt. Emissão'=>'',
+                'Fornecedor'=>'',
+                'Veículo'=>'',
+                'Qtd. Produtos'=>''
+            );
+            return $resumo;
+        }
+
 
         foreach ($fornecedores as $fornecedor){
             $importacaoService->saveFornecedor($em,$fornecedor);
@@ -563,6 +654,194 @@ class Integracao
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+
+
+    }
+
+    public function salvaTemporario(){
+        $x = 0;
+        foreach($this->_dados as $row){
+            $x = $x + 1;
+            switch ($this->getAcao()->getTipoAcao()->getId()) {
+                case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                    $nf = new TabelaTemporaria\NotaFiscalEntrada();
+                    $nf->setCodFornecedor($row['COD_FORNECEDOR']);
+                    $nf->setNomFornecedor($row['NOM_FORNECEDOR']);
+                    $nf->setCpfCnpj($row['CPF_CNPJ']);
+                    $nf->setGrade($row['DSC_GRADE']);
+                    $nf->setInscricaoEstadual($row['INSCRICAO_ESTADUAL']);
+                    $nf->setNumNF($row['NUM_NOTA_FISCAL']);
+                    $nf->setCodProduto($row['COD_PRODUTO']);
+                    $nf->setSerieNF($row['COD_SERIE_NOTA_FISCAL']);
+                    $nf->setDthEmissao(\DateTime::createFromFormat('d/m/Y', $row['DAT_EMISSAO']));
+                    $nf->setVeiculo($row['DSC_PLACA_VEICULO']);
+                    $nf->setQtdItem(str_replace(",",".",$row['QTD_ITEM']));
+                    $nf->setVlrTotal(str_replace(",",".",$row['VALOR_TOTAL']));
+                    $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $this->_em->persist($nf);
+                    break;
+                case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                    $pedido = new TabelaTemporaria\Pedido();
+                    $pedido->setCarga($row['CARGA']);
+                    $pedido->setPlaca($row['PLACA']);
+                    $pedido->setPedido($row['PEDIDO']);
+                    $pedido->setCodPraca($row['COD_PRACA']);
+                    $pedido->setDscPraca($row['DSC_PRACA']);
+                    $pedido->setCodRota($row['COD_ROTA']);
+                    $pedido->setDscRota($row['DSC_ROTA']);
+                    $pedido->setCodCliente($row['COD_CLIENTE']);
+                    $pedido->setNomeCliente($row['NOME']);
+                    $pedido->setCpfCnpj($row['CPF_CNPJ']);
+                    $pedido->setTipoPessoa($row['TIPO_PESSOA']);
+                    $pedido->setLogradouro($row['LOGRADOURO']);
+                    $pedido->setNumero($row['NUMERO']);
+                    $pedido->setBairro($row['BAIRRO']);
+                    $pedido->setCidade($row['CIDADE']);
+                    $pedido->setUf($row['UF']);
+                    $pedido->setComplemento($row['COMPLEMENTO']);
+                    $pedido->setReferencia($row['REFERENCIA']);
+                    $pedido->setCep($row['CEP']);
+                    $pedido->setCodProduto($row['PRODUTO']);
+                    $pedido->setGrade($row['GRADE']);
+                    $pedido->setQtd(str_replace(",",".",$row['QTD']));
+                    $pedido->setVlrVenda(str_replace(",",".",$row['VLR_VENDA']));
+                    $pedido->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $this->_em->persist($pedido);
+                    break;
+            }
+
+            if ($x >= 50) {
+                $this->_em->flush();
+                $this->_em->clear();
+                $x = 0;
+            }
+        }
+
+        $this->_em->flush();
+        return true;
+    }
+
+    public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
+    {
+        $erpRecebimento = array();
+        foreach ($notasFiscaisWms as $idNotaFiscal) {
+            $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
+            $constaNoErp = false;
+
+            $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+            $numeroSerie  = $notaFiscal->getSerie();
+            $numeroNota   = $notaFiscal->getNumero();
+
+            foreach ($notasFiscaisErp as $key => $erpNotaFiscal) {
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                    $constaNoErp = true;
+                    unset($notasFiscaisErp[$key]);
+                    break;
+                }
+            }
+            if ($constaNoErp == false) {
+                throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+            }
+        }
+
+        foreach ($notasFiscaisErp as $erpNotaFiscal) {
+            $constaNoWms = false;
+            foreach ($notasFiscaisWms as $key => $idNotaFiscal) {
+                $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
+
+                $idFornecedor = $notaFiscal->getFornecedor()->getIdExterno();
+                $numeroSerie  = $notaFiscal->getSerie();
+                $numeroNota   = $notaFiscal->getNumero();
+
+                if ($erpNotaFiscal['NUM_NOTA'] == $numeroNota && $erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] == $numeroSerie && $erpNotaFiscal['COD_FORNECEDOR'] == $idFornecedor) {
+                    $constaNoWms = true;
+                    unset($notasFiscaisWms[$key]);
+                    break;
+                }
+            }
+            if ($constaNoWms == false) {
+                throw new \Exception('Nota Fiscal número '.$erpNotaFiscal['NUM_NOTA'].' série '.$erpNotaFiscal['COD_SERIE_NOTA_FISCAL'] .' não consta no recebimento do WMS!');
+            }
+
+        }
+        return true;
+    }
+
+    public function atualizaRecebimentoERP($idRecebimento)
+    {
+        $em = $this->_em;
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepository */
+        $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
+
+        $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
+        $options1 = array(
+            0 => $notaFiscalEntity->getCodRecebimentoErp(),
+        );
+
+        //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
+        $acaoEn = $acaoIntRepository->find(10);
+        $conexaoEn = $acaoEn->getConexao();
+        $query = $acaoEn->getQuery();
+
+        if (!is_null($options1)) {
+            foreach ($options1 as $key => $value) {
+                $query = str_replace(":?" . ($key+1) ,$value ,$query);
+            }
+        }
+
+        //EXECUTA O ERP
+        $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
+
+        /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
+        $conferenciaRepository = $this->_em->getRepository('wms:Recebimento\Conferencia');
+        $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
+
+        $acaoEn = $acaoIntRepository->find(11);
+        $acaoToInsert = $acaoIntRepository->find(12);
+        foreach ($produtosConferidos as $produtoConferido) {
+            $dataValidade = null;
+            $dataConferencia = null;
+            if (isset($produtoConferido['dataValidade']) && !empty($produtoConferido['dataValidade'])) {
+                $dataValidade = $produtoConferido['dataValidade']->format('d/m/Y');
+            }
+            if (isset($produtoConferido['dataConferencia']) && !empty($produtoConferido['dataConferencia'])) {
+                $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
+            }
+            $options2 = array(
+                0 => $produtoConferido['codRecebimentoErp'],
+                1 => $produtoConferido['codProduto'],
+                2 => $produtoConferido['quantidade'],
+                3 => $produtoConferido['qtdDivergencia'],
+                4 => $dataValidade,
+                5 => $dataConferencia,
+                6 => $produtoConferido['codigoBarras']
+            );
+
+            //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES
+            $conexaoEn = $acaoEn->getConexao();
+            $query = $acaoEn->getQuery();
+
+            //CONEXAO PARA INSERIR AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO DO RECEBIMENTO E O CÓDIGO DO PRODUTO
+            $conexaoInsertEn = $acaoToInsert->getConexao();
+            $queryToInsert = $acaoToInsert->getQuery();
+
+            //INSERE OS DADOS REAIS NAS QUERYS PARA ATUALIZAÇÃO E INSERÇÃO
+            foreach ($options2 as $key => $value) {
+                $query = str_replace(":?" . ($key+1) ,$value ,$query);
+                $queryToInsert = str_replace(":?" . ($key+1) ,$value ,$queryToInsert);
+            }
+            //FAZ O UPDATE NO ERP ATUALIZANDO AS QUANTIDADES
+            $conexaoRepo->runQuery($query,$conexaoEn,$update = true);
+            //FAZ INSERT NO ERP COM AS QUANTIDADES DE ACORDO COM O CÓDIGO EXTERNO E O CÓDIGO DO PRODUTO
+            $conexaoRepo->runQuery($queryToInsert,$conexaoInsertEn,$update = true);
+
+        }
+        return true;
+
 
     }
 

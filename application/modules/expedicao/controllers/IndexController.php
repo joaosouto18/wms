@@ -14,6 +14,22 @@ class Expedicao_IndexController extends Action
 
     public function indexAction()
     {
+        $parametroPedidos = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS');
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Importar Pedidos ERP',
+                    'cssClass' => 'btnSave',
+                    'urlParams' => array(
+                        'module' => 'importacao',
+                        'controller' => 'gerenciamento',
+                        'action' => 'index',
+                        'id' => $parametroPedidos
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
 
         $form = new FiltroExpedicaoMercadoria();
         $this->view->form = $form;
@@ -185,12 +201,12 @@ class Expedicao_IndexController extends Action
                 /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaPedidoRepo */
                 $ondaPedidoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
                 foreach ($pedidos as $pedidoEn) {
-                    $ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
+                    //$ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
 
                     if ($pedidoEn->getIndEtiquetaMapaGerado() == 'S') {
                         throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados!');
-                    } else if (count($ondaPedidoEn) > 0) {
-                        throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
+                    //} else if (count($ondaPedidoEn) > 0) {
+                    //    throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
                     }
                 }
 
@@ -205,6 +221,11 @@ class Expedicao_IndexController extends Action
                 if (count($cargas) <= 1) {
                     throw new \Exception('A Expedição não pode ficar sem cargas');
                 }
+
+                foreach ($pedidos as $pedido) {
+                    $pedidoRepo->removeReservaEstoque($pedido->getId());
+                }
+
                 $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
                 $expedicaoAntiga = $cargaEn->getCodExpedicao();
                 $expedicaoEn = $ExpedicaoRepo->save($placa);
@@ -213,9 +234,6 @@ class Expedicao_IndexController extends Action
                 $cargaEn->setPlacaCarga($placa);
                 $this->_em->persist($cargaEn);
 
-                foreach ($pedidos as $pedido) {
-                    $pedidoRepo->removeReservaEstoque($pedido->getId());
-                }
 
                 if ($countCortadas > 0) {
                     $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
@@ -589,7 +607,25 @@ class Expedicao_IndexController extends Action
 
     public function relatoriosCarregamentoAjaxAction()
     {
-        $this->view->form = new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
-        $this->view->idExpedicao = $this->_getParam('id');
+        try {
+            $form =new \Wms\Module\Expedicao\Form\RelatoriosCarregamento();
+            $idExpedicao = $this->_getParam('id');
+
+            $em = $this->getEntityManager();
+            $linhasSeparacao = $em->getRepository('wms:Armazenagem\LinhaSeparacao')
+                ->getLinhaSeparacaoByConferenciaExpedicao($idExpedicao);
+
+            $possuiConferenciaConcluida = true;
+            if (!isset($linhasSeparacao) || empty($linhasSeparacao)) {
+                $possuiConferenciaConcluida = false;
+            }
+
+            $form->start($linhasSeparacao);
+            $this->view->form = $form;
+            $this->view->idExpedicao = $idExpedicao;
+            $this->view->possuiConferenciaConcluida = $possuiConferenciaConcluida;
+        } catch (\Wms\Util\WMS_Exception $e) {
+            $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage()));
+        }
     }
 }
