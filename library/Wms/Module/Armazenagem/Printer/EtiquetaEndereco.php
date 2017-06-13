@@ -135,9 +135,9 @@ class EtiquetaEndereco extends Pdf
                         }
                     }
                     $qtd = $qtd +1;
-                    if ($qtd >=9) {
+                    if ($qtd >=10) {
                         $this->AddPage();
-                        $qtd = 0;
+
                     }
                     $this->layoutModelo11($produtos,$codBarras);
                     break;
@@ -439,7 +439,7 @@ class EtiquetaEndereco extends Pdf
     public function layoutModelo11 ($produtos, $codBarras){
 
         //Celula para espaço em branco
-        $this->Cell(2,2," ",0,1);
+        $this->Cell(0,0," ",0,1);
         $posYIni = $this->GetY();
         $posXIni = $this->getX();
 
