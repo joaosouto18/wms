@@ -32,7 +32,7 @@ class EtiquetaEndereco extends Pdf
         $this->lado = "E";
         $this->y=0;
         $this->count = 0;
-
+        $qtd = 0;
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
 
@@ -133,6 +133,11 @@ class EtiquetaEndereco extends Pdf
                                 'descricao'=>$prod['descricao']
                             );
                         }
+                    }
+                    $qtd = $qtd +1;
+                    if ($qtd >=10) {
+                        $this->AddPage();
+
                     }
                     $this->layoutModelo11($produtos,$codBarras);
                     break;
@@ -458,10 +463,17 @@ class EtiquetaEndereco extends Pdf
         $this->SetX($posXIni);
         $this->SetY($posYIni);
         $this->SetFont('Arial', 'B', 13);
+        $qtd = 0;
         foreach ($produtos as $keyId => $produto) {
             foreach ($produto as $keyGrade => $prod) {
                 $this->Cell(1,6.5,substr($keyId . " - ".$prod['descricao'],0,47),0,1);
+                $qtd = $qtd +1;
             }
+        }
+
+        while ($qtd <4) {
+            $this->Cell(1,6.5,"",0,1);
+            $qtd = $qtd +1;
         }
         /*
         $this->Cell(1,6.5,"Exemplo de produto 01",0,1);
