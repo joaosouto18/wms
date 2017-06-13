@@ -4,13 +4,13 @@
             var checked_status = this.checked;
             $("input").each(function()
             {
-                this.checked = checked_status;
+                $(this).checked = checked_status;
             });
         });
     });
 </script>
 <form id="enderecamento-form" method="post" class="saveForm" action="">
-
+    <?php if ($this->isIndividual) { ?>
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <caption>Recebimento <?php echo $this->idRecebimento ?> - <?php echo "Paletes do Produto $this->codProduto - $this->produto / $this->grade"?></caption>
@@ -21,7 +21,7 @@
             <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             <tbody>
                 <tr class ="gTTitle">
-                    <td>Selecione</td>
+                    <td>Check</td>
                     <td>U.M.A.</td>
                     <td>Unitizador</td>
                     <td>Embalagem/Volume</td>
@@ -55,11 +55,11 @@
                         </td>
                         <td><?php if (($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) ||
                                       ($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO)) {?>
-                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete['UMA']?>">Retornar Status</a>
+                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/isIndividual/true/id/".$palete['UMA']?>">Retornar Status</a>
                                 <?php
                             } else if (($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO) ||
                                        ($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO)) {?>
-                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete['UMA']?>">Excluir</a>
+                                <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/isIndividual/true/id/".$palete['UMA']?>">Excluir</a>
                             <?php }?>
                         </td>
                     </tr>
@@ -72,4 +72,77 @@
             </span>
         </div>
     </div>
+    <?php } else { ?>
+        <div id="quantidade-grid" class="grid">
+            <table class="gTable ">
+                <caption>Recebimento <?php echo $this->idRecebimento ?></caption>
+                <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
+                <tbody>
+                <tr class ="gTTitle">
+                    <td>Check</td>
+                    <td>Produto</td>
+                    <td>Descrição</td>
+                    <?php if ($this->utilizaGrade == "S") { ?>
+                    <td>Grade</td>
+                    <?php } ?>
+                    <td>U.M.A.</td>
+                    <td>Unitizador</td>
+                    <td>Embalagem/Volume</td>
+                    <td>Qtd.Unitária</td>
+                    <td>Situacao</td>
+                    <td>Endereço</td>
+                    <td>Impresso</td>
+                    <td>Ação</td>
+                </tr>
+                <?php $t = 0;
+                foreach ($this->itens as $item):
+                    foreach ($item['paletes'] as $palete):
+                        $t++;
+                        $fontColor = "black";
+                        $liberado = true;
+                        if ($palete['QTD_VOL_TOTAL'] > $palete['QTD_VOL_CONFERIDO']) {
+                            $fontColor = "gray";
+                            $liberado = false;
+                        }
+                        $this->color = !($this->color);?>
+                        <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                            <td><?php if ($liberado == true) {?><input name="palete[]" value="<?php echo $palete['UMA'] ?>" type="checkbox" /> <?php }?></td>
+
+                            <td><?php echo $item['codProduto'] ?></td>
+                            <td><?php echo $item['descricao'] ?></td>
+                            <?php if ($this->utilizaGrade == "S") { ?>
+                            <td><?php echo $item['grade'] ?></td>
+                            <?php } ?>
+                            <td><?php echo $palete['UMA'] ?></td>
+                            <td><?php echo $palete['UNITIZADOR'] ?></td>
+                            <td><?php echo $palete['VOLUMES'] ?></td>
+                            <td><?php echo $palete['QTD'] ?></td>
+                            <td><?php echo $palete['STATUS'] ?></td>
+                            <td>
+                                <?php if ($palete['ENDERECO'] == NULL) {echo "";} else { echo $palete['ENDERECO'];} ?>
+                            </td>
+                            <td>
+                                <?php if ($palete['IND_IMPRESSO'] == 'S') {echo "SIM";} else { echo "NÃO";} ?>
+                            </td>
+                            <td><?php if (($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) ||
+                                    ($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO)) {?>
+                                    <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete['UMA']?>">Retornar Status</a>
+                                    <?php
+                                } else if (($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO) ||
+                                    ($palete['COD_SIGLA'] == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO)) {?>
+                                    <a class="btn reader button" href="<?php echo "/enderecamento/palete/desfazer/id/".$palete['UMA']?>">Excluir</a>
+                                <?php }?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <div class = "gPager">
+            <span>
+                <?php echo "Total de " . $t . " registros encontrados"?>
+            </span>
+            </div>
+        </div>
+    <?php } ?>
 </form>

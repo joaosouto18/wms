@@ -44,6 +44,24 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
   VALUES (8,1, 'select pcnfsaid.numnota CARGA, ' || '''AAA0000''' || ' PLACA, pcnfsaid.numnota PEDIDO, pcclient.codpraca COD_PRACA, pcpraca.praca DSC_PRACA, pcrotaexp.codrota COD_ROTA, pcrotaexp.descricao DSC_ROTA, pcclient.codcli COD_CLIENTE, pcclient.cliente NOME, pcclient.cgcent CPF_CNPJ, pcclient.tipofj TIPO_PESSOA, pcclient.enderent LOGRADOURO, pcclient.numeroent NUMERO, pcclient.bairroent BAIRRO, pcclient.municent CIDADE, pcclient.estent UF, pcclient.complementoent COMPLEMENTO, pcclient.pontorefer REFERENCIA, pcclient.cepent CEP, pcmov.codprod PRODUTO, ' || '''UNICA''' || ' GRADE, pcmov.qt QTD, (pcmov.qt * pcmov.punit) VLR_VENDA, TO_CHAR(pcmov.dtmovlog,' || '''DD/MM/YYYY HH24:MI:SS''' || ') AS DTH from pcmov  inner join pcnfsaid on pcnfsaid.numnota = pcmov.numnota inner join pcclient on pcclient.codcli = pcnfsaid.codcli inner join pcpraca on pcpraca.codpraca = pcclient.codpraca inner join pcrotaexp on pcrotaexp.codrota = pcpraca.rota inner join pcprodut on pcprodut.codprod = pcmov.codprod where pcmov.rotinacad = ' || '''PCSIS1322.EXE''' || ' and pcprodut.revenda = ' || '''S''' || ' AND pcmov.dtmovlog > :dthExecucao ',
   602,'S',NULL);
 
+/*INTEGRAÇÃO DE RECEBIMENTO*/
+INSERT INTO SIGLA (COD_SIGLA,COD_TIPO_SIGLA,DSC_SIGLA,COD_REFERENCIA_SIGLA) VALUES (606,79,'RECEBIMENTO BONUS','B');
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (9,1,'select pcnfent.codfornec COD_FORNECEDOR, pcnfent.numnota NUM_NOTA, pcnfent.serie COD_SERIE_NOTA_FISCAL, pcnfent.dtent DTH_ENTRADA, pcnfent.totpeso NUM_PESO, pcnfent.numbonus COD_RECEBIMENTO_ERP, pcnfent.codfilial COD_FILIAL from pcnfent inner join pcfornec on pcfornec.codfornec = pcnfent.codfornec where pcnfent.especie = '||'''NF'''||' and pcnfent.codcont = 100001 and numbonus = (select pcnfent.numbonus from pcnfent inner join pcfornec on pcfornec.codfornec = pcnfent.codfornec where pcnfent.codfornec = :?1 and pcnfent.serie = :?2 and pcnfent.numnota = :?3 and pcnfent.especie = '||'''NF'''||' and pcnfent.codcont = 100001)',
+  606,'S',NULL);
+
+/*ATUALIZAÇÃO DE RECEBIMENTO NO ERP*/
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (10,1,'Update pcbonusc set datarm = SYSDATE, codfuncrm = 1 where numbonus = :?1', 606,'S',NULL);
+
+/*ATUALIZAÇÃO DE RECEBIMENTO NO ERP*/
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (11,1,'Update pcbonusi set qtentrada = :?3, Qtavaria = :?4, Numlote = 01 where numbonus = :?1 and codprod = :?2', 606,'S',NULL);
+
+/* INSERÇÃO DE RECEBIMENTO NO ERP */
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
+  VALUES (12,1,'Insert into pcbonusiconf (numbonus,codprod,dataconf,datavalidade,codfuncconf,numlote,qt, qtavaria,codauxiliar) values (:?1,:?2,:?6,:?5,1,01,:?3,:?4,:?)7', 606,'S',NULL);
+
 /******* APENAS PARA TESTES *********/
 /*INTEGRAÇÃO DE NOTAS FISCAIS DE ENTRADA*/
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)

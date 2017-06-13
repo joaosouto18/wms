@@ -194,7 +194,7 @@ class InventarioRepository extends EntityRepository
 
         } catch(\Exception $e) {
             $em->rollback();
-            throw new \Exception();
+            throw new \Exception($e->getMessage());
         }
 
         return $enInventario;

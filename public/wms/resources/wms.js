@@ -11,17 +11,17 @@
      */
     $.wmsDialogAlert = function(settings, callbackFnk){
         var config = {
-            'title': '',
-            'msg': '',
-            'width': 500,
-            'height': 350,
+            'title': settings.title,
+            'msg': settings.msg,
+            'width': 350,
+            'height': 130,
             'resizable':    true,
             'position' :    'center',
             'modal' :       true
         };
 
         // show a spinner or something via css
-        var dialog = $('<div id="wms-dialog-msg" style="display:none">' + config.msg + '</div>').appendTo('body');
+        var dialog = $('<div id="wms-dialog-msg" style="display:none; font-size: 12px;">' + config.msg + '</div>').appendTo('body');
         
         // open the dialog
         dialog.dialog({

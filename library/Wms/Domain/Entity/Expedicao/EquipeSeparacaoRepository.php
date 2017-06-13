@@ -10,7 +10,7 @@ use Wms\Domain\Entity\Expedicao;
 class EquipeSeparacaoRepository extends EntityRepository
 {
 
-    public function save($etiquetaInicial,$etiquetaFinal,$usuarioEn)
+    public function save($etiquetaInicial,$etiquetaFinal,$usuarioEn, $save = true)
     {
         $equipeSeparacao = new Expedicao\EquipeSeparacao();
         $equipeSeparacao->setCodUsuario($usuarioEn->getId());
@@ -18,7 +18,25 @@ class EquipeSeparacaoRepository extends EntityRepository
         $equipeSeparacao->setEtiquetaInicial($etiquetaInicial);
         $equipeSeparacao->setEtiquetaFinal($etiquetaFinal);
         $this->getEntityManager()->persist($equipeSeparacao);
-        $this->getEntityManager()->flush();
+
+        if($save===true)
+            $this->getEntityManager()->flush();
     }
 
+    /**
+     * Retorna os intervalos das Etiquetas do Usuário
+     * @param $usuarioEn EquipeSeparacao
+     *
+     * @return array
+     */
+    public function getIntervaloEtiquetaUsuario($usuarioEn) {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select("es.etiquetaInicial, es.etiquetaFinal")
+            ->from("wms:Expedicao\EquipeSeparacao","es")
+            ->where("es.codUsuario = :codUsuario ")
+            ->addOrderBy("es.etiquetaInicial", "ASC")
+            ->setParameter('codUsuario', $usuarioEn->getId());
+
+        return $sql->getQuery()->getResult();
+    }
 }

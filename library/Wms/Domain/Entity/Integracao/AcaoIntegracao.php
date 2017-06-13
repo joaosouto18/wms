@@ -18,7 +18,8 @@ class AcaoIntegracao
     const INTEGRACAO_RESUMO_CONFERENCIA = 603;
     const INTEGRACAO_CONFERENCIA = 604;
     const INTEGRACAO_NOTAS_FISCAIS = 605;
-    const INTEGRACAO_CORTES = 606;
+    const INTEGRACAO_RECEBIMENTO = 606;
+    const INTEGRACAO_CORTES = 607;
 
     /**
      * @Id

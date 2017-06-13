@@ -72,7 +72,7 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function getResumoConferenciaMapaByExpedicao ($idExpedicao){
-        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, MSC.QTD_CONF,
+        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, NVL(MSC.QTD_CONF,0) as QTD_CONF,
                      CAST((MSC.QTD_CONF/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL,
                      MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
@@ -296,6 +296,15 @@ class MapaSeparacaoRepository extends EntityRepository
         $sqlVolume = "";
         $sqlPessoa = "";
         $idMapa = $mapaEn->getId();
+        $idExpedicao = $mapaEn->getExpedicao()->getId();
+
+        $modeloSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->find(1);
+        $quebraColetor = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+        if ($quebraColetor == 'S') {
+            $whereQuebra = " AND M.COD_MAPA_SEPARACAO = $idMapa";
+        } else {
+            $whereQuebra = " AND MS.COD_EXPEDICAO = $idExpedicao";
+        }
         if ($embalagemEn != null) {
             $grade = $embalagemEn->getProduto()->getGrade();
             $idProduto = $embalagemEn->getProduto()->getId();
@@ -312,10 +321,11 @@ class MapaSeparacaoRepository extends EntityRepository
 
         $SQL = "SELECT SUM(M.QTD_EMBALAGEM * M.QTD_SEPARAR) as QTD, SUM(NVL(M.QTD_CORTADO,0)) QTD_CORTADO
                   FROM MAPA_SEPARACAO_PRODUTO M
+                  INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
                  WHERE M.COD_PRODUTO = '$idProduto'
                    AND M.DSC_GRADE = '$grade'
                    $sqlVolume
-                   AND M.COD_MAPA_SEPARACAO = $idMapa
+                   $whereQuebra
                    $sqlPessoa ";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -788,7 +798,7 @@ class MapaSeparacaoRepository extends EntityRepository
                       FROM MAPA_SEPARACAO_PRODUTO MSP
                       WHERE MSP.COD_MAPA_SEPARACAO = $idMapaSeparacao
                       GROUP BY MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.COD_MAPA_SEPARACAO,
-                      MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE, MSP.COD_MAPA_SEPARACAO
+                      MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE
                     ) MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                     INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                     LEFT JOIN (
