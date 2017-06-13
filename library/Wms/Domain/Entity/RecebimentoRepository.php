@@ -748,6 +748,7 @@ class RecebimentoRepository extends EntityRepository
             ->setRecebimento($recebimentoEntity)
             ->setOrdemServico($ordemServicoEntity)
             ->setEmbalagem($produtoEmbalagemEntity)
+            ->setQtdEmbalagem($produtoEmbalagemEntity->getQuantidade())
             ->setQtdConferida($qtdConferida)
             ->setDataConferencia(new \DateTime)
             ->setDataValidade($validade);
