@@ -1426,6 +1426,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		return $dql->getQuery()->getArrayResult();
 	}
 
+    public function getEmbalagemByCodBarras($codigoBarras)
+    {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('  p.id idProduto, p.descricao, p.grade,
+                        pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
+                        NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
+                        NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
+                        NVL(pe.quantidade, \'0\') quantidadeEmbalagem'
+            )
+            ->from('wms:Produto', 'p')
+            ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
+            ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
+            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
+            ->setParameters(array('codigoBarras' => $codigoBarras));
+
+        return $dql->getQuery()->getArrayResult();
+    }
+
 	public function relatorioProdutosSemPicking(array $params = array())
 	{
 		extract ($params);

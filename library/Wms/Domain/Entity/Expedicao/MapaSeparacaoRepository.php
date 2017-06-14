@@ -298,7 +298,8 @@ class MapaSeparacaoRepository extends EntityRepository
         $idMapa = $mapaEn->getId();
         $idExpedicao = $mapaEn->getExpedicao()->getId();
 
-        $modeloSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->find(1);
+        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+        $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao',$idModeloSeparacao);
         $quebraColetor = $modeloSeparacaoEn->getUtilizaQuebraColetor();
         if ($quebraColetor == 'S') {
             $whereQuebra = " AND M.COD_MAPA_SEPARACAO = $idMapa";
