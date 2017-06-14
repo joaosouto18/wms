@@ -75,11 +75,6 @@ class PaleteProduto
     protected $validade;
 
     /**
-     * @Column(name="QTD_EMBALAGEM", type="decimal", length=60, nullable=false)
-     */
-    protected $qtdEmbalagem;
-
-    /**
      * @param mixed $codNormaPaletizacao
      */
     public function setCodNormaPaletizacao($codNormaPaletizacao)
@@ -265,22 +260,6 @@ class PaleteProduto
             $embalagemEn = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('id'=>$this->getCodProdutoEmbalagem()));
         }
         return $embalagemEn;
-    }
-
-    /**
-     * @param mixed $qtdEmbalagem
-     */
-    public function setQtdEmbalagem($qtdEmbalagem)
-    {
-        $this->qtdEmbalagem = $qtdEmbalagem;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getQtdEmbalagem()
-    {
-        return $this->qtdEmbalagem;
     }
 
 }

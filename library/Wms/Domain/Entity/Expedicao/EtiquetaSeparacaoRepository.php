@@ -1634,6 +1634,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $arrayEtiqueta['etiquetaMae']          = $etiquetaMae;
         $arrayEtiqueta['codDepositoEndereco']  = $depositoEndereco;
 
+        if ($embalagemEntity == null) {
+            $arrayEtiqueta['qtdEmbalagem'] = 1;
+        } else {
+            $arrayEtiqueta['qtdEmbalagem'] = $embalagemEntity->getQuantidade();
+        }
+
         $codEtiqueta = $this->save($arrayEtiqueta,$statusEntity);
 
         if ($verificaReconferencia=='S'){
