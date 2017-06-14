@@ -57,6 +57,11 @@ class Embalagem
     protected $embalagem;
 
     /**
+     * @Column(name="QTD_EMBALAGEM", type="decimal", length=60, nullable=false)
+     */
+    protected $qtdEmbalagem;
+
+    /**
      * Norma de paletizacao do recebimento
      *
      * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\NormaPaletizacao")
@@ -185,5 +190,20 @@ class Embalagem
         $this->numPeso = $numPeso;
     }
 
-    
+    /**
+     * @param mixed $qtdEmbalagem
+     */
+    public function setQtdEmbalagem($qtdEmbalagem)
+    {
+        $this->qtdEmbalagem = $qtdEmbalagem;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdEmbalagem()
+    {
+        return $this->qtdEmbalagem;
+    }
+
 }

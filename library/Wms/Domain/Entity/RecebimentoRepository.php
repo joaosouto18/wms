@@ -738,19 +738,22 @@ class RecebimentoRepository extends EntityRepository
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
         $produtoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idProdutoEmbalagem);
+        $peEntity = $this->getEntityManager()->getReference('wms:Produto\Embalagem', $idProdutoEmbalagem);
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
             $validade = new \DateTime($params['dataValidade']);
         } else {
             $validade = null;
         }
 
-        $recebimentoEmbalagemEntity
-            ->setRecebimento($recebimentoEntity)
-            ->setOrdemServico($ordemServicoEntity)
-            ->setEmbalagem($produtoEmbalagemEntity)
-            ->setQtdConferida($qtdConferida)
-            ->setDataConferencia(new \DateTime)
-            ->setDataValidade($validade);
+        $qtdEmbalagem = $peEntity->getQuantidade();
+
+        $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity);
+        $recebimentoEmbalagemEntity->setOrdemServico($ordemServicoEntity);
+        $recebimentoEmbalagemEntity->setEmbalagem($produtoEmbalagemEntity);
+        $recebimentoEmbalagemEntity->setQtdEmbalagem($qtdEmbalagem);
+        $recebimentoEmbalagemEntity->setQtdConferida($qtdConferida);
+        $recebimentoEmbalagemEntity->setDataConferencia(new \DateTime);
+        $recebimentoEmbalagemEntity->setDataValidade($validade);
 
         $recebimentoEmbalagemEntity->setNumPeso($numPeso);
         if ($idNormaPaletizacao != null) {
