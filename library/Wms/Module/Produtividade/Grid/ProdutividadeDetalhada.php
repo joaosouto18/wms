@@ -18,25 +18,45 @@ class ProdutividadeDetalhada extends Grid
                     'index' => 'NOM_PESSOA',
                 ));
                 $this->addColumn(array(
-                    'label' => utf8_encode('Expedicao'),
-                    'index' => 'COD_EXPEDICAO',
+                    'label' => 'Atividade',
+                    'index' => 'DSC_ATIVIDADE',
                 ));
+//                $this->addColumn(array(
+//                    'label' => utf8_encode('Expedicao'),
+//                    'index' => 'COD_EXPEDICAO',
+//                ));
+//                $this->addColumn(array(
+//                    'label' => utf8_encode('Mapa Separacao'),
+//                    'index' => 'COD_MAPA_SEPARACAO',
+//                ));
                 $this->addColumn(array(
-                    'label' => utf8_encode('Mapa Separacao'),
-                    'index' => 'COD_MAPA_SEPARACAO',
+                    'label' => 'Código',
+                    'index' => 'IDENTIDADE',
                 ));
                 $this->addColumn(array(
                     'label' => 'Peso',
-                    'index' => 'NUM_PESO',
+                    'index' => 'QTD_PESO',
                     'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Volumes',
-                    'index' => 'VOLUMES',
+                    'index' => 'QTD_VOLUMES',
                 ));
                 $this->addColumn(array(
                     'label' => 'Qtd. Produtos',
                     'index' => 'QTD_PRODUTOS',
+                ));
+                $this->addColumn(array(
+                    'label' => 'Qtd. Cubagem',
+                    'index' => 'QTD_CUBAGEM',
+                ));
+                $this->addColumn(array(
+                    'label' => 'Qtd. Palete',
+                    'index' => 'QTD_PALETES',
+                ));
+                $this->addColumn(array(
+                    'label' => 'Qtd. Carga',
+                    'index' => 'QTD_CARGA',
                 ));
                 $this->addColumn(array(
                     'label' => 'Data Inicio',
@@ -50,10 +70,7 @@ class ProdutividadeDetalhada extends Grid
                     'label' => 'Tempo Gasto',
                     'index' => 'TEMPO_GASTO',
                 ));
-                $this->addColumn(array(
-                    'label' => 'Atividade',
-                    'index' => 'ATIVIDADE',
-                ));
+                
 
         $this->setShowExport(true);
         $pg = new Pager(count($params),0,count($params));
