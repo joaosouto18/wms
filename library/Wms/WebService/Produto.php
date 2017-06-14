@@ -213,14 +213,17 @@ class Wms_WebService_Produto extends Wms_WebService {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
+                    $fator = $embalagemCadastrada->getCodigoBarras();
                     foreach ($embalagens as $embalagemWs) {
+
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
+                            $fator = $embalagemWs->qtdEmbalagem;
 
-                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
-                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
-                            }
+                            //if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                            //    throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
+                            //}
 
                             continue;
                         }
@@ -232,6 +235,7 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                     $embalagemArray = array(
                         'acao'=> 'alterar',
+                        'quantidade' => $fator ,
                         'id' =>$embalagemCadastrada->getId(),
                         'endereco' => $endPicking,
                         'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),

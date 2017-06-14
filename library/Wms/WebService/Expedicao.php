@@ -385,8 +385,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             /** @var \Wms\Domain\Entity\Expedicao\Pedido $EntPedido */
             $EntPedido = $pedidoRepository->find($idPedido);
-            if ($EntPedido->getConferido() == 1) {
-                throw new \Exception("Pedido $idPedido já conferido");
+
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo  */
+            $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+
+            if ($mapaSeparacaoRepo->validaMapasCortados($idPedido) == false) {
+                throw new \Exception("Pedido $idPedido precisa ser cortado no WMS");
             }
 
             $pedidoRepository->cancelar($idPedido);
