@@ -69,6 +69,7 @@ class FormProdutividadeDetalhada extends Form {
                 'SEPARACAO' => 'SEPARACAO',
                 'CARREGAMENTO' => 'CARREGAMENTO',
                 'CONF. SEPARACAO' => 'CONF. SEPARACAO',
+                'RESSUPRIMENTO' => 'RESSUPRIMENTO',
             ),
             'decorators' => array('ViewHelper'),
         ));
