@@ -33,8 +33,8 @@ use Core\Util\Converter;
         <meta name="category" content="Internet" />
         <meta name="Robots" content="Index,Follow" />
         <meta name="author" content="Renato Medina" />
-        <title>WMS-MS</title>
-        <link rel="shortcut icon" href="<?php echo $this->baseUrl('img/admin/favicon.ico') ?>" type="image/x-icon" />
+        <title>WMS - Imperium</title>
+        <link rel="shortcut icon" href="<?php echo $this->baseUrl('img/admin/logomarca.png') ?>" type="image/x-icon" />
         <script type="text/javascript">
             var URL_SISTEMA = "<?php echo $this->serverUrl($this->baseUrl()); ?>";
             var URL_BASE = "<?php echo $this->baseUrl(); ?>";
@@ -139,7 +139,7 @@ use Core\Util\Converter;
                     <span>|</span>
                     <a href="<?php echo $this->url(array('module' =>'web', 'controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" ><img src="<?php echo $this->baseUrl('img/icons/door_out.png'); ?>" alt="#" /> Sair</a>
                 </div>
-                <h1><a href="#" title="Wms-MS">Wms-MS</a></h1>
+                <h1><a href="#" title="WMS - Imperium">WMS - Imperium</a></h1>
             </div>
             <div id="mainmenu-container">
                 <?php
@@ -173,7 +173,7 @@ use Core\Util\Converter;
                 </div>
             </div>
             <div id="footer">
-                <p>Wms Quebec Consulting <?php $abc = new Zend_Date(); echo $abc->toString('Y') ?></p>
+                <p>Wms Imperium <?php $abc = new Zend_Date(); echo $abc->toString('Y') ?></p>
                 <p>&copy; Todos os Direitos Reservados.</p>
                 <?php if (APPLICATION_ENV == 'development') : ?>
                     <p class="development">

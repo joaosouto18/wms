@@ -23,6 +23,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $hoje = date('d/m/Y');
         $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO('$hoje','$hoje')";
+
         $procedure = $this->em->getConnection()->prepare($procedureSQL);
         $procedure->execute();
         $this->em->flush();
@@ -115,6 +116,12 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $this->view->form = $form;
         $params = $this->_getAllParams();
 
+        $hoje = date('d/m/Y');
+        $procedureSQL = "CALL PROC_PRODUTIVIDADE_DETALHE('$hoje','$hoje')";
+        $procedure = $this->em->getConnection()->prepare($procedureSQL);
+        $procedure->execute();
+        $this->em->flush();
+        
         if (empty($params['dataInicio'])) {
             $hoje = new \DateTime();
             $hoje->sub(new \DateInterval('P01D'));
@@ -135,21 +142,21 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         if (empty($params['tipoQuebra'])) {
             $params['tipoQuebra'] = "";
         }
-        if (empty($params['mapaSeparacao'])) {
-            $params['mapaSeparacao'] = "";
+        if (empty($params['identidade'])) {
+            $params['identidade'] = "";
         }
-        if (empty($params['expedicao'])) {
-            $params['expedicao'] = "";
+        if (empty($params['atividade'])) {
+            $params['atividade'] = "";
         }
         if (empty($params['usuario'])) {
             $params['usuario'] = "";
         }
-
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
         //if(isset($params['submit'])) {
             /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
             $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-            $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+//            $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+            $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
             $this->view->grid = $grid->init($result)->render();
 
         //}
@@ -164,7 +171,8 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
         $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-        $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+//        $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+        $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
 
         $relatorio = new \Wms\Module\Produtividade\Printer\ProdutividadeDetalhada('L', 'mm', 'A4');
         $relatorio->imprimir($result);
