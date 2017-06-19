@@ -111,7 +111,7 @@ class EmbalagemRepository extends EntityRepository {
                 $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
                 $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
                 if ($embalagem->getDescricao() != null) {
-                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                    $arrayQtds[] = $qtdSeparar . ' ' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
                 } else {
                     $arrayQtds[] = $qtd;
                 }
