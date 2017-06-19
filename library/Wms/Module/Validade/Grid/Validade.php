@@ -51,8 +51,13 @@ class Validade extends Grid
                 'index' => 'VALIDADE',
             ))
             ->addColumn(array(
-                'label' => 'Qtd',
-                'index' => 'QTD',
+                'label' => 'Emb. Maior',
+                'index' => 'QTD_MAIOR',
+                'width' => 'auto'
+            ))
+            ->addColumn(array(
+                'label' => 'Emb. Menor',
+                'index' => 'QTD_MENOR',
                 'width' => 'auto'
             ))
             ->addLogicalFeatured(
