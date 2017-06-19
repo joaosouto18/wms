@@ -3107,5 +3107,6 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
-
+    public function checkStatusConferencia ($id, $tipo) {
+    }
 }
