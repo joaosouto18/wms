@@ -32,6 +32,10 @@ class EtiquetaEndereco extends Pdf
         $this->lado = "E";
         $this->y=0;
         $this->count = 0;
+        $qtd = 0;
+        $arrPares = array();
+
+        $arrPares = array();
 
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
@@ -42,7 +46,7 @@ class EtiquetaEndereco extends Pdf
 
             switch ((int)$modelo) {
                 case 1:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,true);
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
                     } else {
@@ -110,16 +114,53 @@ class EtiquetaEndereco extends Pdf
                 case 10:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     if (empty($produtos)){
-                        $this->layoutModelo10(null,$codBarras);
+                        $arrPares[] = array('produtos' => null, 'codBarras' => $codBarras);
+                        if (count($arrPares) == 3) {
+                            $this->layoutModelo10($arrPares);
+                            $arrPares = array();
+                            if ($key < (count($enderecos) - 1)) {
+                                $this->AddPage();
+                            }
+                        }
+
                     } else {
                         foreach ($produtos as $i => $produto){
-                            $this->layoutModelo10($produto,$codBarras);
-                            if ($i < (count($produtos) - 1))
-                                $this->AddPage();
+                            $arrPares[] = array('produtos' => $produto, 'codBarras' => $codBarras);
+                            if (count($arrPares) == 3) {
+                                $this->layoutModelo10($arrPares);
+                                $arrPares = array();
+                                if ($key < (count($enderecos) - 1) || ($key == (count($enderecos) - 1) && $i < (count($produtos) - 1))) {
+                                    $this->AddPage();
+                                }
+                            }
+
                         }
                     }
-                    if ($key < (count($enderecos) - 1))
+
+                    if ($key == (count($enderecos) - 1) && !empty($arrPares)) {
+                        $this->layoutModelo10($arrPares);
+                    }
+                    break;
+                case 11:
+                    $produtosEndereco = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+
+                    $produtos = array();
+                    foreach ($produtosEndereco as $prod){
+                        if (!isset($produtos[$prod['codProduto']][$prod['grade']])){
+                            $produtos[$prod['codProduto']][$prod['grade']] = array(
+                                'codProduto'=>$prod['codProduto'],
+                                'grade'=>$prod['grade'],
+                                'descricao'=>$prod['descricao']
+                            );
+                        }
+                    }
+                    $qtd = $qtd +1;
+                    if ($qtd >=10) {
                         $this->AddPage();
+
+                    }
+                    $this->layoutModelo11($produtos,$codBarras);
+
                     break;
                 default:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
@@ -127,6 +168,8 @@ class EtiquetaEndereco extends Pdf
                     break;
             }
         }
+
+        $this->Output('etiqueta','I');
 
     }
 
@@ -413,6 +456,54 @@ class EtiquetaEndereco extends Pdf
         $this->Line(0,$this->GetY(),297,$this->GetY());
     }
 
+
+    public function layoutModelo11 ($produtos, $codBarras){
+
+        //Celula para espaço em branco
+        $this->Cell(0,0," ",0,1);
+        $posYIni = $this->GetY();
+        $posXIni = $this->getX();
+
+        //Imprime a descrição do Endereço XX.XXX.XX.XX
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetX(138);
+        $this->Cell(148.5,14,$codBarras,0,1);
+
+        //Imprime o Código de barras
+        $posY = $this->GetY() -1;
+        $this->Cell(0,8,"",0,1);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 143, $posY , 60, 13);
+
+        //Linha para separar um código de barras do outro
+        $this->Cell(5,5," ",0,1);
+        $this->Line(0,$this->GetY(),297,$this->GetY());
+
+        $this->Line(135,0,135,$this->GetY());
+
+
+        $this->SetX($posXIni);
+        $this->SetY($posYIni);
+        $this->SetFont('Arial', 'B', 13);
+        $qtd = 0;
+        foreach ($produtos as $keyId => $produto) {
+            foreach ($produto as $keyGrade => $prod) {
+                $this->Cell(1,6.5,substr($keyId . " - ".$prod['descricao'],0,47),0,1);
+                $qtd = $qtd +1;
+            }
+        }
+
+        while ($qtd <4) {
+            $this->Cell(1,6.5,"",0,1);
+            $qtd = $qtd +1;
+        }
+        /*
+        $this->Cell(1,6.5,"Exemplo de produto 01",0,1);
+        $this->Cell(1,6.5,"Exemplo de produto 02",0,1);
+        $this->Cell(1,6.5,"Exemplo de produto 03",0,1);
+        $this->Cell(1,6.5,"Exemplo de produto 04",0,1);
+        */
+    }
+
     public function layoutModelo9 ($produto, $codBarras){
 
         if (count($produto) <= 0) {
@@ -455,39 +546,50 @@ class EtiquetaEndereco extends Pdf
 
     }
 
-    public function layoutModelo10($produto, $endereco)
+    public function layoutModelo10($vetor)
     {
-        $margin = 4;
+        $margin = 8;
         $this->InFooter = true;
 
-        $wDscProduto = 100;
-        $xDscCodBarrasProd = $wDscProduto;
-        $codBarraProduto = $produto['codigoBarras'];
-        $wDscEndereco = 60;
-        $wCdoBarrasEnd = 45;
+        foreach ($vetor as $key => $itens) {
+            $produto = $itens['produtos'];
+            $endereco = $itens['codBarras'];
+            $wDscProduto = 100;
+            $fator = 29 * $key;
+            $xDscCodBarrasProd = $wDscProduto;
+            $codBarraProduto = $produto['codigoBarras'];
+            $wDscEndereco = 60;
+            $wCdoBarrasEnd = 45;
 
-        $this->SetFont('Arial', '',11);
-        $this->SetY($margin);
-        $this->Cell($wDscProduto,4, self::SetStringByMaxWidth($produto['descricao'], $wDscProduto),0,2);
+            $this->SetFont('Arial', '',11);
+            $this->SetY($margin + $fator);
+            $desc = "";
+            if ((isset($produto['codProduto']) && !empty($produto['codProduto'])) &&
+                (isset($produto['descricao']) && !empty($produto['descricao']))) {
+                $desc = "$produto[codProduto] - $produto[descricao]";
+            }
 
-        $this->SetXY($xDscCodBarrasProd + 4,$margin);
-        $this->SetFont('Arial', 'B',12);
-        $this->Cell(30,4, "EAN: $codBarraProduto",0,2);
+            $this->Cell($wDscProduto,4, self::SetStringByMaxWidth($desc, $wDscProduto),0,2);
 
-        $this->SetY($margin + 8);
-        $this->SetFont('Arial', '',26);
-        $this->Cell($wDscEndereco, 10, $endereco, 0,2);
+            $this->SetXY($xDscCodBarrasProd + 4,$margin + $fator);
+            $this->SetFont('Arial', 'B',12);
+            $this->Cell(30,4, "EAN: $codBarraProduto",0,2);
 
-        $posXRef = $wDscEndereco + $wCdoBarrasEnd + 2;
-        $this->SetXY($posXRef, $margin + 8);
-        $this->SetFont('Arial', 'B', 12);
-        $this->Cell(40,4,"REF: $produto[referencia]",0,2);
+            $this->SetY($margin + 8 + $fator);
+            $this->SetFont('Arial', '',26);
+            $this->Cell($wDscEndereco, 10, $endereco, 0,2);
 
-        $this->SetXY($posXRef, $margin + 12);
-        $this->Cell(40,4,self::SetStringByMaxWidth($produto['fabricante'],40),0,2);
+            $posXRef = $wDscEndereco + $wCdoBarrasEnd + 2;
+            $this->SetXY($posXRef, $margin + 8 + $fator);
+            $this->SetFont('Arial', 'B', 12);
+            $this->Cell(40,4,"REF: $produto[referencia]",0,2);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , $wDscEndereco, 10 , $wCdoBarrasEnd, 15);
+            $this->SetXY($posXRef, $margin + 12 + $fator);
+            $this->Cell(40,4,self::SetStringByMaxWidth($produto['fabricante'],40),0,2);
 
+            $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , $wDscEndereco, 15  + $fator, $wCdoBarrasEnd, 12);
+
+        }
     }
 
 }

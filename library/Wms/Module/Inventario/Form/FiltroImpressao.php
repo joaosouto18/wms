@@ -77,7 +77,7 @@ class FiltroImpressao extends Form
             ->addElement('select', 'status', array(
                 'mostrarSelecione' => false,
                 'multiOptions' => array(
-                    '1' => 'Há Inventariar',
+                    '1' => 'A inventariar',
                     '2' => 'Inventariados',
                 ),
                 'value' => '1',

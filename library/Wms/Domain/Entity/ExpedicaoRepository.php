@@ -197,6 +197,46 @@ class ExpedicaoRepository extends EntityRepository
                 if ($expedicao != end($expedicoes)) $strExpedicao = $strExpedicao . ",";
             }
 
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
+            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+            /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+            $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+            $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
+            $repositorios = array(
+                'produtoRepo' => $produtoRepo,
+                'embalagemRepo' => $embalagemRepo,
+                'reservaEstoqueExpRepo' => $reservaEstoqueExpedicaoRepo,
+                'reservaEstoqueOndaRepo' => $reservaEstoqueOndaRepo,
+                'reservaEstoqueRepo' => $reservaEstoqueRepo,
+                'ondaRepo' => $ondaRepo,
+                'pedidoRepo' => $pedidoRepo,
+                'volumeRepo' => $volumeRepo,
+                'enderecoRepo' => $enderecoRepo,
+                'usuarioRepo' => $usuarioRepo,
+                'expedicaoRepo' => $expedicaoRepo,
+                'estoqueRepo' => $estoqueRepo,
+                'osRepo' => $ordemServicoRepo,
+                'siglaRepo' => $siglaRepo
+            );
+
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
             $central = $deposito->getFilial()->getCodExterno();
@@ -208,24 +248,39 @@ class ExpedicaoRepository extends EntityRepository
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
             $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
 
+            $dadosProdutos = array();
+            foreach ($pedidosProdutosRessuprir as $produto) {
+                $codProduto = $produto['COD_PRODUTO'];
+                $grade = $produto['DSC_GRADE'];
+                if (!isset($dadosProdutos[$codProduto][$grade])) {
+                    $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
+                    $embalagensASC = null;
+                    if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+                        $embalagensASC = $embalagemRepo->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'ASC'));
+                    }
+
+                    $dadosProdutos[$codProduto][$grade] = array(
+                        'codProduto'=> $codProduto,
+                        'grade'=> $grade,
+                        'entidade'=> $produtoEn,
+                        'embalagensASC' => $embalagensASC,
+                    );
+                }
+            }
+
             if (empty($produtosRessuprir)) {
                 throw new \Exception("Não foi encontrado produto pendente de onda de ressuprimento ou a quantidade cortada é equivalente a do pedido");
             }
 
-            /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
-            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
-            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-
             $ondaEn = $ondaRepo->geraNovaOnda();
-            $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn);
+            $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
 
-            $produtosPorTipoSaida = $ondaRepo->getArrayProdutosPorTipoSaida($produtosReservaSaida);
-                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPicking($produtosPorTipoSaida['picking']);
-                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPulmao($produtosPorTipoSaida['pulmao']);
+            $produtosPorTipoSaida = $ondaRepo->getArrayProdutosPorTipoSaida($produtosReservaSaida, $dadosProdutos, $repositorios);
+                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPicking($produtosPorTipoSaida['picking'], $repositorios);
+                $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPulmao($produtosPorTipoSaida['pulmao'], $repositorios);
             $this->getEntityManager()->flush();
 
-            $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn);
+            $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir,$ondaEn, $dadosProdutos, $repositorios);
 
             $this->getEntityManager()->flush();
             $ondaRepo->sequenciaOndasOs();
@@ -331,7 +386,9 @@ class ExpedicaoRepository extends EntityRepository
         if (count($values) == 0) {
             throw new \Exception("Carga $idCargaExterno não encontrada no WMS");
         }
-        if ($values[0]['QTD'] == $qtd) {
+        $qtdWms = str_replace(',','.',$values[0]['QTD']);
+        $qtdErp = str_replace(',','.',$qtd);
+        if ($qtdErp == $qtdWms) {
             return true;
         } else {
             return false;
@@ -361,21 +418,23 @@ class ExpedicaoRepository extends EntityRepository
                 foreach ($pedidoERP as $produtoERP) {
                     if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
                         $encontrouProduto = true;
-                        if ($produtoERP['qtd'] != $pedidoProdutoWms['QTD']) {
-                            throw new \Exception("Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]");
+                        $qtdERP = str_replace(',','.',$produtoERP['qtd']);
+                        $qtdWms = str_replace(',','.',$pedidoProdutoWms['QTD']);
+                        if ($qtdERP != $qtdWms) {
+                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
                         }
                     }
                 }
 
                 if ($encontrouProduto == false) {
-                    throw new \Exception("Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]");
+                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
                 }
             } else {
-                throw new \Exception("Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP");
+                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
             }
         }
 
-        throw new \Exception("Divergencia de conferencia com o ERP na carga " . $idCargaExterno);
+        return "Divergencia de conferencia com o ERP na carga " . $idCargaExterno;
     }
 
     public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) 
@@ -606,6 +665,32 @@ class ExpedicaoRepository extends EntityRepository
 
     }
 
+    public function importaCortesERP($idExpedicao) {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+
+        $cargaEntities = $cargaRepository->findBy(array('codExpedicao' => $idExpedicao));
+        $cargas = array();
+        foreach ($cargaEntities as $cargaEntity) {
+            $cargas[] = $cargaEntity->getCodCargaExterno();
+        }
+        $idCargas[] = implode(',',$cargas);
+
+        $idCorte= $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
+        $acaoEn = $acaoIntRepo->find($idCorte);
+        $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E');
+
+        if (!($result === true)) {
+            return $result;
+        }
+
+        return true;
+    }
+
+
     public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
@@ -619,6 +704,13 @@ class ExpedicaoRepository extends EntityRepository
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
             return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+        }
+
+        if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') =='S') {
+            $result = $this->importaCortesERP($idExpedicao);
+            if (!($result === true)) {
+                return $result;
+            }
         }
 
         if ($this->validaPedidosImpressos($idExpedicao) == false) {
@@ -647,11 +739,9 @@ class ExpedicaoRepository extends EntityRepository
                     return $result;
                 }
 
-                if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                    $result = $this->validaConferenciaERP($expedicaoEn->getId());
-                    if (is_string($result)) {
-                        return $result;
-                    }
+                $result = $mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao);
+                if (is_string($result)) {
+                    return $result;
                 }
 
             } else {
@@ -661,6 +751,13 @@ class ExpedicaoRepository extends EntityRepository
                 }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
+            }
+
+            if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+                $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                if (is_string($result)) {
+                    return $result;
+                }
             }
 
             if (isset($idMapa) && !empty($idMapa)) {
@@ -759,7 +856,7 @@ class ExpedicaoRepository extends EntityRepository
                 $options = array();
                 $options[] = $cargaEn->getCodCargaExterno();
                 $result = $acaoIntRepo->processaAcao($acaoResumoEn,$options);
-                if (!($result === false)) {
+                if (!($result === true)) {
                     $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options);
                     if (!($result === true)) {
                         throw new \Exception($result);
@@ -855,6 +952,7 @@ class ExpedicaoRepository extends EntityRepository
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
         $this->getEntityManager()->flush();
+        return true;
     }
 
     public function efetivaReservaEstoqueByExpedicao($idExpedicao)
@@ -959,6 +1057,7 @@ class ExpedicaoRepository extends EntityRepository
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
+        $statusCancelada = Expedicao::STATUS_CANCELADO;
         $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
@@ -973,6 +1072,7 @@ class ExpedicaoRepository extends EntityRepository
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                    AND E.COD_STATUS <> $statusFinalizado
+                   AND E.COD_STATUS <> $statusCancelada
                    AND P.CENTRAL_ENTREGA = $central
                    ";
 
@@ -2130,10 +2230,8 @@ class ExpedicaoRepository extends EntityRepository
         $source = $this->_em->createQueryBuilder()
             ->select("
                       ped.sequencia,
-                      ped.id                                as pedido,
+                      cli.codClienteExterno                 as codCliente,
                       it.descricao                          as itinerario,
-                      car.codCargaExterno                   as carga,
-                      car.placaCarga                        as placa,
                       NVL(pe.localidade,endere.localidade)  as cidade,
                       NVL(pe.bairro,endere.bairro)          as bairro,
                       NVL(pe.descricao,endere.descricao)    as rua,
@@ -2152,8 +2250,8 @@ class ExpedicaoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.pedido = ped.id')
             ->distinct(true)
             ->where("prod.linhaSeparacao != 15")
-            ->groupBy("pe.localidade, pj.nomeFantasia, car.placaCarga, pe.bairro, pe.descricao, ped.id, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia, car.codCargaExterno")
-            ->orderBy('ped.sequencia, cidade, bairro, rua, cliente, ped.id');
+            ->groupBy("cli.codClienteExterno, pe.localidade, pj.nomeFantasia, pe.bairro, pe.descricao, it.descricao, endere.localidade, endere.bairro, endere.descricao, pessoa.nome, ped.sequencia")
+            ->orderBy('ped.sequencia, cidade, bairro, rua, cliente, codCliente');
 
         if (!is_null($codExpedicao) && ($codExpedicao != "")) {
             $source->andWhere("car.codExpedicao = " . $codExpedicao);
@@ -2166,7 +2264,6 @@ class ExpedicaoRepository extends EntityRepository
         if ($codStatus != NULL){
             $source->andWhere("es.codStatus = $codStatus ");
         }
-
         return $source->getQuery()->getResult();
     }
 
@@ -2731,7 +2828,7 @@ class ExpedicaoRepository extends EntityRepository
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND CA.COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."";
+            $where = " AND C.COD_CARGA_EXTERNO = ".$parametros['codCargaExterno']."";
         }
 
         $SQL = "

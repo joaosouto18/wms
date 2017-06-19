@@ -260,13 +260,22 @@
 
             if (isNaN(total)) {
                 if (eI != "" && eF == "") {
-                    alert("Não é possível definir o intervalo sem a etiqueta final");
+                    $.wmsDialogAlert({
+                        title: 'Alerta',
+                        msg: 'Não é possível definir o intervalo sem a etiqueta final'
+                    });
                     return false;
                 } else if (eI == "" && eF != "") {
-                    alert("Não é possível definir o intervalo sem a etiqueta inicial");
+                    $.wmsDialogAlert({
+                        title: 'Alerta',
+                        msg: 'Não é possível definir o intervalo sem a etiqueta inicial'
+                    });
                     return false;
                 } else {
-                    alert("Defina um intervalo de etiquetas antes de buscar");
+                    $.wmsDialogAlert({
+                        title: 'Alerta',
+                        msg: 'Defina um intervalo de etiquetas antes de buscar'
+                    });
                     return false;
                 }
             }
@@ -274,15 +283,27 @@
             eI = parseInt(eI.substring(0, eI.length - 1));
             eF = parseInt(eF.substring(0, eF.length - 1));
 
+            if (eI > eF) {
+                var aux = eF;
+                eF = eI;
+                eI = aux;
+            }
+
             var intervalo = eI + " - " + eF;
 
             var cpf = $('#etiquetas-pessoa').val();
 
             if (cpf == null || cpf == ""){
-                alert("Informe um CPF");
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'Informe um CPF'
+                });
                 return false;
             } else if (cpf.length != 14) {
-                alert("CPF incompleto ou inválido");
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'CPF incompleto ou inválido'
+                });
                 return false;
             }
 
@@ -293,9 +314,29 @@
                 success: function (data) {
                     if (data.result === "Ok") {
                         result.pessoa = data.pessoa;
-                        addRow(result);
+                        var addLinha = true;
+                        $('.gTResultSet').each(function(e){
+                            if($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
+                                addLinha = false;
+                                return false;
+                            }
+                        });
+                        if(addLinha) {
+                            addRow(result);
+                        }
+                        //limpando os campos:
+                        $('#etiquetas-etiquetaInicial').val('');
+                        $('#etiquetas-etiquetaFinal').val('');
+                        $('#txtIntervalo').val('');
+                        $('#etiquetas-pessoa').val('');
+
+                        $('#etiquetas-etiquetaInicial').focus();
                     } else if (data.result = 'Error'){
-                        alert(data.msg);
+                        $.wmsDialogAlert({
+                            title: 'Alerta',
+                            msg: data.msg
+                        });
+                        $('#etiquetas-pessoa').val('');
                     }
                 }
             });
@@ -349,7 +390,10 @@
             if (eI != '' && eF != '') {
 
                 if (eI.length < 2 || eF.length < 2) {
-                    alert("Etiqueta fora do padrão");
+                    $.wmsDialogAlert({
+                        title: 'Alerta',
+                        msg: 'Etiqueta fora do padrão'
+                    });
                     return false;
                 }
 
@@ -357,13 +401,14 @@
                 eF = parseInt(eF.substring(0, eF.length - 1));
 
                 if (eI > eF) {
-                    alert("A etiqueta inicial não pode ser maior que a final.");
-                    return false;
-                } else {
-                    $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira:eI,ultima:eF}, function (data) {
-                        $("#txtIntervalo").val(data.result);
-                    });
+                    var aux = eF;
+
+                    eF = eI;
+                    eI = aux;
                 }
+                $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira:eI,ultima:eF}, function (data) {
+                    $("#txtIntervalo").val(data.result);
+                });
             }
         });
 
@@ -388,20 +433,34 @@
                 var tipo = $(this).children(".tipo").text();
                 data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo});
             });
-
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
                     console.log(data);
                     if (data.result === 'Ok') {
-                        alert('Todas os apontamentos foram salvos com sucesso!');
+                        $.wmsDialogAlert({
+                            title: 'Alerta',
+                            msg: 'Todas os apontamentos foram salvos com sucesso!'
+                        });
                         window.location.href = 'apontamento-separacao';
                     } else if (data.result === 'Error'){
-                        alert(data.msg);
+                        $.wmsDialogAlert({
+                            title: 'Alerta',
+                            msg: data.msg
+                        });
                     }
                 });
             } else {
-                alert("Sem apontamentos à serem salvos");
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'Sem apontamentos à serem salvos'
+                });
                 return false;
+            }
+        });
+
+        $('#etiquetas-pessoa').keydown(function (e) {
+            if(e.which == 13) {
+                $('#etiquetas-buscar').click();
             }
         });
 

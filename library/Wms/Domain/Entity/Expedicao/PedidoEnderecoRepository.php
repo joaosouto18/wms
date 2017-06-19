@@ -20,7 +20,8 @@ class PedidoEnderecoRepository extends EntityRepository
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $pedidoCliente['uf']));
 
             $enPedidoEndereco->setCodPedido($pedidoEntity->getId());
-            $enPedidoEndereco->setPedido($pedidoEntity);
+            //LINHA COMENTADA POR RODRIGO PQ NA WILSO SÓ FUNCIONOU DESSA MANEIRA
+//            $enPedidoEndereco->setPedido($pedidoEntity);
             $enPedidoEndereco->setIdTipo(\Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA);
             $enPedidoEndereco->setUf($entitySigla);
             $enPedidoEndereco->setComplemento($pedidoCliente['complemento']);

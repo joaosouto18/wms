@@ -108,11 +108,12 @@
 </table>
 
 <?php if(isset($this->pulmoes) && count($this->pulmoes) >0 ) : ?>
-        <h2>Estoque do produto em pulmão:</h2>
+        <h2>Estoque do produto:</h2>
         <table class="gTable ">
         <tbody>
         <tr class ="gTTitle">
             <td><b>Endereço</b></td>
+            <td><b>Tipo</b></td>
             <td><b>U.M.A</b></td>
             <td><b>Qtd.Estoque</b></td>
             <td><b>Validade</b></td>
@@ -120,6 +121,7 @@
         <?php foreach($this->pulmoes as $pulmao) : ?>
         <tr>
             <td><?php echo $pulmao['ENDERECO'] ?></td>
+            <td><?php echo $pulmao['TIPO'] ?></td>
             <td><?php echo $pulmao['UMA'] ?></td>
             <td><?php echo $pulmao['QTD'] ?></td>
             <?php $dataValidade = new Zend_Date($pulmao['DTH_VALIDADE']); ?>

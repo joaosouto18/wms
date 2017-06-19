@@ -30,11 +30,16 @@ class ComparativoEstoque extends Grid
                     'render' => 'N3'
                 ));
                 $this->addColumn(array(
-                    'label' => 'Estoqe WMS',
+                    'label' => 'Estoque WMS',
                     'index' => 'ESTOQUE_WMS',
                     'render' => 'N3'
                 ));
-        $this->setShowExport(true);
+                $this->addColumn(array(
+                    'label' => 'Divergência',
+                    'index' => 'DIVERGENCIA',
+//                    'render' => 'N3'
+                ));
+        $this->setShowExport(false);
         $pg = new Pager(count($restult),0,count($restult));
         $this->setPager($pg);
         return $this;

@@ -81,14 +81,16 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
 
-        $this->getEntityManager()->beginTransaction();
         $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa,$idPessoa);
         if (count($qtdPendenteConferencia) <= 0) {
+            $this->getEntityManager()->beginTransaction();
+
             $mapaSeparacaoEmbaladoEn->setUltimoVolume('S');
+
+            $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
         }
-        $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
-        $this->getEntityManager()->flush();
-        $this->getEntityManager()->commit();
 
         $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
         $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$mapaSeparacaoEmbaladoRepo);
@@ -104,7 +106,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             foreach ($mapaSeparacaoEmbaladoEn as $mapaSeparacaoEmbalado) {
                 $statusMapaEmbalado = $mapaSeparacaoEmbalado->getStatus()->getId();
                 if ($statusMapaEmbalado != MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                    return false;
+                    return 'Existem volumes embalados pendentes de CONFERENCIA!';
                 }
             }
         }
@@ -145,7 +147,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                     INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
                     INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     INNER JOIN PEDIDO PED ON PED.COD_CARGA = C.COD_CARGA
-                    INNER JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
+                    LEFT JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
                     LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
                     INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA AND P.COD_PESSOA = PED.COD_PESSOA
                 WHERE 1 = 1

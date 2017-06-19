@@ -23,19 +23,29 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $hoje = date('d/m/Y');
         $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO('$hoje','$hoje')";
+
         $procedure = $this->em->getConnection()->prepare($procedureSQL);
         $procedure->execute();
         $this->em->flush();
 
         $orientacao = 'atividade';
+        $tipo = 'resumido';
+
         if (isset($params['orientacao'])) {
             $orientacao = $params['orientacao'];
         }
+        if (isset($params['tipo'])) {
+            $tipo = $params['tipo'];
+        }
 
+        $sqlOrderTipo = "";
+        if ($tipo == 'detalhado' ) {
+            $sqlOrderTipo = " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY'), ";
+        }
         if ($orientacao == 'atividade') {
-            $SQLOrder = " ORDER BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
+            $SQLOrder = " ORDER BY $sqlOrderTipo AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
         } else {
-            $SQLOrder = " ORDER BY PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
+            $SQLOrder = " ORDER BY $sqlOrderTipo PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
         }
 
         $SQLWHere = "";
@@ -43,8 +53,11 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
             $SQLWHere = " AND DSC_ATIVIDADE = '".$params['atividade']."'";
         }
 
-
-        $sql = "SELECT AP.DSC_ATIVIDADE,
+        $sql = "SELECT ";
+        if ($tipo == 'detalhado') {
+            $sql .= " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY') as DIA,";
+        }
+        $sql .=      " AP.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
                        SUM(AP.QTD_PRODUTOS)as QTD_PRODUTOS,
                        SUM(AP.QTD_VOLUMES) as QTD_VOLUMES,
@@ -56,11 +69,14 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
                   WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
                   $SQLWHere
-                  GROUP BY AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
+                  GROUP BY ";
+        if ($tipo == 'detalhado') {
+            $sql .= " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY'), ";
+        }
+        $sql .= "AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
-
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
-        $this->view->grid = $grid->init($result,$orientacao);
+        $this->view->grid = $grid->init($result,$orientacao,$tipo);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
             if (!empty($result)) {
@@ -100,24 +116,50 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $this->view->form = $form;
         $params = $this->_getAllParams();
 
+        $hoje = date('d/m/Y');
+        $procedureSQL = "CALL PROC_PRODUTIVIDADE_DETALHE('$hoje','$hoje')";
+        $procedure = $this->em->getConnection()->prepare($procedureSQL);
+        $procedure->execute();
+        $this->em->flush();
+        
         if (empty($params['dataInicio'])) {
             $hoje = new \DateTime();
             $hoje->sub(new \DateInterval('P01D'));
-            $params['dataInicio'] = $dataInicio = $hoje->format('d/m/Y');
+            $dataInicio = $hoje->format('d/m/Y');
+            $params['dataInicio'] = $dataInicio;
         }
         if (empty($params['dataFim'])) {
             $hoje = new \DateTime();
-            $params['dataFim'] = $dataFim = $hoje->format('d/m/Y');
+            $dataFim = $hoje->format('d/m/Y');
+            $params['dataFim'] = $dataFim;
         }
-
+        if (empty($params['horaFim'])) {
+            $params['horaFim'] = "";
+        }
+        if (empty($params['horaInicio'])) {
+            $params['horaInicio'] = "";
+        }
+        if (empty($params['tipoQuebra'])) {
+            $params['tipoQuebra'] = "";
+        }
+        if (empty($params['identidade'])) {
+            $params['identidade'] = "";
+        }
+        if (empty($params['atividade'])) {
+            $params['atividade'] = "";
+        }
+        if (empty($params['usuario'])) {
+            $params['usuario'] = "";
+        }
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
-        if(isset($params['submit'])) {
+        //if(isset($params['submit'])) {
             /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
             $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-            $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
-            $this->view->grid = $grid->init($result);
+//            $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+            $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
+            $this->view->grid = $grid->init($result)->render();
 
-        }
+        //}
         $form->populate($params);
     }
 
@@ -129,7 +171,8 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
         $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-        $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+//        $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
+        $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
 
         $relatorio = new \Wms\Module\Produtividade\Printer\ProdutividadeDetalhada('L', 'mm', 'A4');
         $relatorio->imprimir($result);

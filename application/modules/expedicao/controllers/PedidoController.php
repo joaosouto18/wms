@@ -2,6 +2,7 @@
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria,
     Wms\Module\Web\Grid\Expedicao\Pedido as PedidoGrid,
+    \Wms\Domain\Entity\Integracao\AcaoIntegracao as AcaoIntegracao,
 
     Wms\Module\Web\Page;
 

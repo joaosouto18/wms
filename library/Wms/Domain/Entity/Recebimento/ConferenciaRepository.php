@@ -118,7 +118,7 @@ class ConferenciaRepository extends EntityRepository
     }
 
     public function getQtdByRecebimentoEmbalagemAndNorma ($idOs, $codProduto, $grade){
-        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * PE.QTD_EMBALAGEM) as QTD, RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) as NUM_NORMA, NP.COD_UNITIZADOR, SUM(RE.NUM_PESO) as PESO
+        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM) as QTD, RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) as NUM_NORMA, NP.COD_UNITIZADOR, SUM(RE.NUM_PESO) as PESO
                   FROM RECEBIMENTO_EMBALAGEM RE
                  INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
                  INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = RE.COD_NORMA_PALETIZACAO
@@ -249,6 +249,22 @@ class ConferenciaRepository extends EntityRepository
             $sql->andWhere("p.id = '$codProduto'")
                 ->andWhere("p.grade = '$grade'");
         }
+
+        return $sql->getQuery()->getResult();
+    }
+
+    public function getProdutosByRecebimento($idRecebimento)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('1010101010 codigoBarras, nfi.codProduto, nfi.grade, SUM(nfi.quantidade) quantidade, SUM(nfi.quantidade) - NVL(v.qtd,0) qtdDivergencia, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia')
+            ->from('wms:Recebimento','r')
+            ->innerJoin('wms:NotaFiscal','nf','WITH','nf.recebimento = r.id')
+            ->innerJoin('wms:NotaFiscal\Item','nfi','WITH','nfi.notaFiscal = nf.id')
+            ->leftJoin('wms:Recebimento\VQtdRecebimento','v','WITH','v.codRecebimento = r.id AND nfi.codProduto = v.codProduto AND nfi.grade = v.grade')
+            ->leftJoin('wms:Recebimento\Conferencia','rc','WITH','rc.ordemServico = v.codOs AND rc.codProduto = v.codProduto AND rc.grade = v.grade')
+            ->leftJoin('wms:Produto','p', 'WITH', 'p.id = v.codProduto and p.grade = v.grade')
+            ->where("r.id = $idRecebimento")
+            ->groupBy('nfi.codProduto, nfi.grade, v.qtd, nf.codRecebimentoErp, rc.dataValidade, rc.dataConferencia');
 
         return $sql->getQuery()->getResult();
     }

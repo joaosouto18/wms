@@ -125,6 +125,18 @@ class NotaFiscal
     protected $observacao;
 
     /**
+     * @Column(name="COD_RECEBIMENTO_ERP", nullable=true, type="integer")
+     * @var int
+     */
+    protected $codRecebimentoErp;
+
+    /**
+     * @Column(name="IND_RECEBIMENTO_ERP_FINALIZADO", nullable=true, type="string")
+     * @var string
+     */
+    protected $recebimentoFinalizado;
+
+    /**
      * Peso da nota fiscal
      *
      * @Column(name="PESO_TOTAL", type="float", nullable=true)
@@ -292,6 +304,38 @@ class NotaFiscal
     public function setPesoTotal($pesoTotal)
     {
         $this->pesoTotal = $pesoTotal;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodRecebimentoErp()
+    {
+        return $this->codRecebimentoErp;
+    }
+
+    /**
+     * @param mixed $codRecebimentoErp
+     */
+    public function setCodRecebimentoErp($codRecebimentoErp)
+    {
+        $this->codRecebimentoErp = $codRecebimentoErp;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRecebimentoFinalizado()
+    {
+        return $this->recebimentoFinalizado;
+    }
+
+    /**
+     * @param string $recebimentoFinalizado
+     */
+    public function setRecebimentoFinalizado($recebimentoFinalizado)
+    {
+        $this->recebimentoFinalizado = $recebimentoFinalizado;
     }
 
 }

@@ -1,11 +1,60 @@
 <script>
 
+    function selecionar() {
+        $('#qtd').select();
+    }
+
+    function load() {
+        qtd = document.getElementById('qtd');
+        qtd.style.display = 'none';
+        qtdLabel = document.getElementById('label-qtd');
+        qtdLabel.style.display = 'none';
+    }
+
+    function exibirQtd(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+
+            qtd = document.getElementById('qtd');
+            qtdLabel = document.getElementById('label-qtd');
+            if (qtd) {
+                qtd.style.display = 'block';
+                qtdLabel.style.display = 'block';
+                qtd.focus();
+                if(event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
+            }
+
+            var codBarras = $('#codigoBarras').val();
+            dadosProdutos = '';
+            $.ajax({
+                url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras,
+                type: 'get',
+                success: function (data) {
+                    var codProduto         = data['result']['codProduto'];
+                    var grade              = data['result']['grade'];
+                    var descricao          = data['result']['descricao'];
+                    var quantidade         = data['result']['quantidade'];
+                    var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
+
+                    dadosProdutos = '<tr><td colspan="2"><b>Cod Produto: </b>'+codProduto+' - <b>Grade: </b>'+grade+'</td></tr>' +
+                        '<tr><td colspan="2"><b>Descrição: </b>'+descricao+'</td></tr>' +
+                        '<tr><td colspan="2"><b>Embalagem: </b>'+descricaoEmbalagem+' ('+quantidade+')</td></tr>';
+                    $('#dados-produtos').html(dadosProdutos);
+                }
+            });
+        }
+        return true;
+    }
+
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('codigoBarras').value != "") {
-                qtd   = document.getElementById('qtd');
-                if (qtd) {
-                    qtd.focus();
+            if (document.getElementById('qtd').value != "") {
+                codigoBarras = document.getElementById('codigoBarras');
+                if (codigoBarras) {
+                    codigoBarras.focus();
                     if(event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -18,11 +67,22 @@
     }
 </script>
 
+<?php if ($this->exibeQtd == false) : ?>
+    <body onLoad="load()"></body>
+<?php endif; ?>
+
+
 <table class="info">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
     <tr>
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
+
+    <tr></tr>
+    <tr>
+        <td><div id="dados-produtos"></div> </td>
+    </tr>
+
     <?php if(count($this->produtosMapa) > 0) : ?>
         <script type="text/javascript">
             $(document).ready(function(){
@@ -90,24 +150,23 @@
 
                     <table>
                         <tr>
-                            <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
                             <?php if ($this->exibeQtd == true) : ?>
-                                <td><label for="qtd" class="field required">*Qtd</label></td>
+                                <td><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
+                            <?php endif; ?>
+                            <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
+                            <?php if ($this->exibeQtd == false) : ?>
+                                <td><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
                             <?php endif; ?>
                         </tr>
+
+
                         <tr>
-                            <?php if ($this->exibeQtd == false) : ?>
-                                <td>
-                                    <input type="text" name="codigoBarras" id="codigoBarras" value="" class="required focus" size="40" maxlength="100" style="width: 99%">
-                                </td>
-                            <?php endif; ?>
                             <?php if ($this->exibeQtd == true) : ?>
-                                <td>
-                                    <input type="text" name="codigoBarras" id="codigoBarras" value="" class="required focus" size="40" maxlength="100" onkeydown="nextInput(event)" style="width: 99%">
-                                </td>
-                                <td>
-                                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%">
-                                </td>
+                                <td><input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%"></td>
+                                <td><input type="text" name="codigoBarras" id="codigoBarras" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                            <?php else : ?>
+                                <td><input type="text" name="codigoBarras" id="codigoBarras" onkeydown="exibirQtd(event)" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                                <td><input type="text" name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%"></td>
                             <?php endif; ?>
                         </tr>
                     </table>

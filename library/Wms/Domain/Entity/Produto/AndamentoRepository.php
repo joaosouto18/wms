@@ -15,8 +15,8 @@ class AndamentoRepository extends EntityRepository
     {
         $usuario = null;
         if ($integracao == false) {
-            $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
-            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+//            $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
+//            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
         }
 
         $andamento = new Andamento();

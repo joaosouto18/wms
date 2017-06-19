@@ -15,8 +15,13 @@ class ConferenteRepository extends AtorRepository {
     public function getIdValue() {
         $conferentes = array();
 
-        foreach ($this->findAll() as $conferente)
-            $conferentes[$conferente->getPessoa()->getId()] = $conferente->getPessoa()->getNome();
+        $result = $this->findAll();
+        /** @var Conferente $conferente */
+        foreach ($result as $conferente) {
+            $pessoa = $conferente->getPessoa();
+            if (!empty($pessoa))
+                $conferentes[$pessoa->getId()] = $pessoa->getNome();
+        }
 
         return $conferentes;
     }

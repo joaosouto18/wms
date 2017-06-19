@@ -140,17 +140,6 @@ class Inventario extends Grid
                 },
             ))
             ->addAction(array(
-                'label' => 'Cancelar',
-                'modelName' => 'inventario',
-                'controllerName' => 'index',
-                'actionName' => 'cancelar',
-                'cssClass' => '',
-                'pkIndex' => 'id',
-                'condition' => function ($row) {
-                    return $row['status'] != "FINALIZADO" && $row['status'] != "CANCELADO";
-                },
-            ))
-            ->addAction(array(
                 'label' => 'Atualizar Estoque',
                 'modelName' => 'inventario',
                 'controllerName' => 'index',
@@ -160,6 +149,18 @@ class Inventario extends Grid
                 'condition' => function ($row) {
                     return $row['status'] == "CONCLUIDO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
                 },
+            ))
+            ->addAction(array(
+                'label' => 'Cancelar',
+                'modelName' => 'inventario',
+                'controllerName' => 'index',
+                'actionName' => 'cancelar',
+                'cssClass' => 'confirm',
+                'title' => 'Cancelar inventário?.',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                        return $row['status'] != "FINALIZADO" && $row['status'] != "CANCELADO";
+                    },
             ))
             ->addAction(array(
                 'label' => 'Relatório Avariados',

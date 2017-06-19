@@ -53,7 +53,7 @@ class Validade extends Grid
             ->addColumn(array(
                 'label' => 'Qtd',
                 'index' => 'QTD',
-                'width' => 3
+                'width' => 'auto'
             ))
             ->addLogicalFeatured(
                 function ($row){

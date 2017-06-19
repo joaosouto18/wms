@@ -39,6 +39,23 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $form = new FiltroRecebimentoMercadoria;
 
         $values = $form->getParams();
+        $parametroNotasFiscais = $this->getSystemParameterValue('COD_INTEGRACAO_NOTAS_FISCAIS');
+
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Importar Notas Fiscais ERP',
+                    'cssClass' => 'btnSave',
+                    'urlParams' => array(
+                        'module' => 'importacao',
+                        'controller' => 'gerenciamento',
+                        'action' => 'index',
+                        'id' => $parametroNotasFiscais
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
 
         //Caso nao seja preenchido nenhum filtro preenche automaticamente com a data inicial de ontem e de hoje
         if (!$values) {
@@ -325,6 +342,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+
+            /** @var \Wms\Domain\Entity\Pessoa\Fisica\ConferenteRepository $conferenteRepo */
             $conferenteRepo = $this->em->getRepository('wms:Pessoa\Fisica\Conferente');
 
             // checo se há conferencia cadastrada
@@ -332,6 +351,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             if ($conferenciaEntity)
                 $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
+
+            $conferentes = $conferenteRepo->getIdValue();
+            if (empty($conferentes))
+                throw new Exception("Não há nenhum conferente cadastrado!");
 
             $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
 
@@ -353,7 +376,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             // view recebimento
             $this->view->recebimento = $recebimentoEntity;
             // conferente
-            $this->view->conferentes = $conferenteRepo->getIdValue();
+            $this->view->conferentes = $conferentes;
             //produtos
             $this->view->produtos = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
@@ -411,6 +434,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             }
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
+            $this->redirect('index');
         }
     }
 
@@ -647,6 +671,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $ordemServicoEntity->setDataFinal(new \DateTime());
                         $this->em->persist($ordemServicoEntity);
                         $this->em->flush();
+
+                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
+                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(),
+                                array('acao'=>null,
+                                    'options'=>null,
+                                    'tipoExecucao' => 'E'
+                                ));
+                            $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+                        }
 
                         //recebimento para o status finalizado
                         $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
@@ -1089,6 +1123,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             if ($notasFiscais == 0)
                 throw new \Exception('Por favor selecione alguma nota para gerar o recebimento');
 
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $recebimentoId = $recebimentoRepo->gerar($values['notasFiscais']);
 

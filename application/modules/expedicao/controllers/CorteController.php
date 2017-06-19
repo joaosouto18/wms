@@ -90,10 +90,14 @@ class Expedicao_CorteController  extends Action
     }
 
     public function corteAntecipadoAjaxAction(){
+
         $this->view->id = $id = $this->_getParam('id');
         $grade = $this->_getParam('grade');
         $codProduto = $this->_getParam('codProduto');
         $actionAjax = $this->_getParam('acao');
+
+        $permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
+        $this->view->permiteCortes = $permiteCortes;
         $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO',null);
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
@@ -145,8 +149,8 @@ class Expedicao_CorteController  extends Action
 
             try {
                 $this->getEntityManager()->beginTransaction();
-
-                if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA'))
+                $senhaSistema = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
+                if ($senha != $senhaSistema)
                     throw new \Exception("Senha Informada Inválida");
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
@@ -169,7 +173,8 @@ class Expedicao_CorteController  extends Action
                 $this->_redirect('/expedicao');
             } catch (\Exception $e) {
                 $this->getEntityManager()->rollback();
-                return $e->getMessage();
+                $this->addFlashMessage('error',$e->getMessage());
+                $this->_redirect('/expedicao');
             }
         }
 

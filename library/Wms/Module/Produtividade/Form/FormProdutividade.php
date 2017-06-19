@@ -26,6 +26,14 @@ class FormProdutividade extends Form
                     'funcionario' => 'Funcionário'
                 )
             ))
+            ->addElement('select', 'tipo', array(
+                'label' => 'Tipo:',
+                'value' => 'analitico',
+                'multiOptions' => array(
+                    'resumido' => 'Resumido',
+                    'detalhado' => 'Detalhado por dia'
+                )
+            ))
             ->addElement('select', 'atividade', array(
                 'label' => 'Atividade:',
                 'value' => 'operacao',
@@ -56,7 +64,7 @@ class FormProdutividade extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('atividade', 'dataInicio', 'dataFim', 'orientacao','submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de produtividade')
+            ->addDisplayGroup(array('atividade', 'dataInicio', 'dataFim', 'orientacao','tipo','submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de produtividade')
         );
     }
 }

@@ -134,10 +134,11 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param string $idClasse ID da classe do produto
      * @param embalagem[] $embalagens Embalagens
      * @param string $referencia Código de Referencia do produto no fornecedor
+     * @param string $possuiPesoVariavel 'N' , 'S'
      * @throws Exception
      * @return boolean Se o produto foi inserido com sucesso ou não
      */
-    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia) {
+    public function salvar($idProduto, $descricao, $grade, $idFabricante, $tipo, $idClasse, $embalagens, $referencia, $possuiPesoVariavel) {
 
         $idProduto = trim ($idProduto);
         $descricao = trim ($descricao);
@@ -148,6 +149,9 @@ class Wms_WebService_Produto extends Wms_WebService {
         $idFabricante = trim ($idFabricante);
         $tipo = trim ($tipo);
         $idClasse = trim($idClasse);
+
+        if ($referencia === "?" || empty($referencia)) $referencia = "";
+        if ($possuiPesoVariavel === "?" || empty($possuiPesoVariavel)) $possuiPesoVariavel = "N";
 
         $service = $this->__getServiceLocator()->getService('Produto');
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -185,7 +189,8 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setGrade($grade)
                 ->setFabricante($fabricante)
                 ->setClasse($classe)
-                ->setReferencia($referencia);
+                ->setReferencia($referencia)
+                ->setPossuiPesoVariavel($possuiPesoVariavel);
 
             if ($produtoNovo == true) {
                 $produto
@@ -208,14 +213,17 @@ class Wms_WebService_Produto extends Wms_WebService {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
+                    $fator = $embalagemCadastrada->getCodigoBarras();
                     foreach ($embalagens as $embalagemWs) {
+
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
+                            $fator = $embalagemWs->qtdEmbalagem;
 
-                            if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
-                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
-                            }
+                            //if ($embalagemWs->qtdEmbalagem != $embalagemCadastrada->getQuantidade()) {
+                            //    throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade " . $embalagemWs->descricao . " para " . $embalagemWs->qtdEmbalagem);
+                            //}
 
                             continue;
                         }
@@ -227,6 +235,7 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                     $embalagemArray = array(
                         'acao'=> 'alterar',
+                        'quantidade' => $fator ,
                         'id' =>$embalagemCadastrada->getId(),
                         'endereco' => $endPicking,
                         'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),

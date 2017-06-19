@@ -30,16 +30,16 @@ class Carregamento extends eFPDF
         $this->Cell(50, 6, $codExpedicao,0,0);
 
         //CARGA
-        $this->SetFont('Arial', "B", 14);
-        $this->Cell(22, 6, utf8_decode('Cargas: '),0,0);
-        $this->SetFont('Arial', '', 14);
-        $this->Cell(50, 6, utf8_decode($dados[0]['carga']),0,1);
+//        $this->SetFont('Arial', "B", 14);
+//        $this->Cell(22, 6, utf8_decode('Cargas: '),0,0);
+//        $this->SetFont('Arial', '', 14);
+//        $this->Cell(50, 6, utf8_decode($dados[0]['carga']),0,1);
 
         //PLACA
-        $this->SetFont('Arial', "B", 14);
-        $this->Cell(30, 6, utf8_decode('Placa: '),0,0);
-        $this->SetFont('Arial', '', 14);
-        $this->Cell(50, 6, utf8_decode($dados[0]['placa']),0,0);
+//        $this->SetFont('Arial', "B", 14);
+//        $this->Cell(30, 6, utf8_decode('Placa: '),0,0);
+//        $this->SetFont('Arial', '', 14);
+//        $this->Cell(50, 6, utf8_decode($dados[0]['placa']),0,0);
 
         //ITINERÁRIO
         $this->SetFont('Arial', "B", 14);
@@ -51,11 +51,11 @@ class Carregamento extends eFPDF
         //CABEÇALHO
         $this->SetFont('Arial',  "B", 12);
         $this->Cell(15, 10, utf8_decode("Seq.:"),1,0);
-        $this->Cell(20, 10, utf8_decode("Pedido:"),1,0);
+        $this->Cell(20, 10, utf8_decode("Cod. Cli.:"),1,0);
+        $this->Cell(80, 10, utf8_decode("Cliente:"),1,0);
         $this->Cell(32, 10, utf8_decode("Cidade:"),1,0);
         $this->Cell(40, 10, utf8_decode("Bairro:"),1,0);
         $this->Cell(70, 10, utf8_decode("Rua:"),1,0);
-        $this->Cell(80, 10, utf8_decode("Cliente:"),1,0);
         $this->Cell(14, 10, utf8_decode("Itens:"),1,0);
         $this->Cell(14, 10, utf8_decode("Qtd.:"),1,1);
 
@@ -63,11 +63,11 @@ class Carregamento extends eFPDF
         foreach ($dados as $item) {
             $this->SetFont('Arial',  '', 10);
             $this->Cell(15, 10, utf8_decode($item['sequencia']),1,0);
-            $this->Cell(20, 10, utf8_decode($item['pedido']),1,0);
+            $this->Cell(20, 10, utf8_decode(substr($item['codCliente'],0,35)),1,0);
+            $this->Cell(80, 10, utf8_decode(substr($item['cliente'],0,35)),1,0);
             $this->Cell(32, 10, utf8_decode($item['cidade']),1,0);
             $this->Cell(40, 10, utf8_decode(substr($item['bairro'],0,17)),1,0);
             $this->Cell(70, 10, utf8_decode(substr($item['rua'],0,30)),1,0);
-            $this->Cell(80, 10, utf8_decode(substr($item['cliente'],0,35)),1,0);
             $this->Cell(14, 10, utf8_decode(substr($item['itens'],0,44)),1,0);
             $this->Cell(14, 10, utf8_decode(substr($item['quantidade'],0,44)),1,1);
         }

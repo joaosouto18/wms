@@ -167,6 +167,11 @@ class EtiquetaSeparacao
      */
     protected $dataGeracao;
 
+    /**
+     * @Column(name="QTD_EMBALAGEM", type="decimal", length=60, nullable=false)
+     */
+    protected $qtdEmbalagem;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -458,6 +463,22 @@ class EtiquetaSeparacao
     public function setDataGeracao($dataGeracao)
     {
         $this->dataGeracao = $dataGeracao;
+    }
+
+    /**
+     * @param mixed $qtdEmbalagem
+     */
+    public function setQtdEmbalagem($qtdEmbalagem)
+    {
+        $this->qtdEmbalagem = $qtdEmbalagem;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdEmbalagem()
+    {
+        return $this->qtdEmbalagem;
     }
 
 }

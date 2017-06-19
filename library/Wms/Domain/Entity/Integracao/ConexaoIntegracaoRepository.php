@@ -12,12 +12,12 @@ class ConexaoIntegracaoRepository extends EntityRepository
      * @param $conexao ConexaoIntegracao
      * @return array
      */
-    public function runQuery($query, $conexao)
+    public function runQuery($query, $conexao, $update = false)
     {
         switch ($conexao->getProvedor()) {
 
             case ConexaoIntegracao::PROVEDOR_ORACLE:
-                return self::oracleQuery($query,$conexao);
+                return self::oracleQuery($query,$conexao, $update);
 
             case ConexaoIntegracao::PROVEDOR_MYSQL:
                 return self::mysqlQuery($query,$conexao);
@@ -65,7 +65,7 @@ class ConexaoIntegracaoRepository extends EntityRepository
     }
 
 
-    private function oracleQuery($query, $conexao)
+    private function oracleQuery($query, $conexao, $update)
     {
         try {
             ini_set('memory_limit', '-1');
@@ -98,15 +98,17 @@ class ConexaoIntegracaoRepository extends EntityRepository
                 throw new \Exception($erro['message']);
             }
 
-            oci_fetch_all($res, $result);
-
             $arrayResult = array();
-            foreach ($result[key($result)] as $rowId => $row) {
-                $newLine = array();
-                foreach ($result as $columnId => $column) {
-                    $newLine[$columnId] = $result[$columnId][$rowId];
+            if ($update == false) {
+                oci_fetch_all($res, $result);
+
+                foreach ($result[key($result)] as $rowId => $row) {
+                    $newLine = array();
+                    foreach ($result as $columnId => $column) {
+                        $newLine[$columnId] = $result[$columnId][$rowId];
+                    }
+                    $arrayResult[] = $newLine;
                 }
-                $arrayResult[] = $newLine;
             }
 
             //fecha a conexão atual

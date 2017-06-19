@@ -161,14 +161,21 @@ class Mobile_ExpedicaoController extends Action
         $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
         $mapaEn = $mapaSeparacaoRepo->find($idMapa);
         $confereQtd = false;
-
+        $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
+        $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
         /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
         $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
-        if (($modeloSeparacaoEn->getTipoConferenciaEmbalado() == Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE && ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO || !empty($idVolume)))
-            || ($modeloSeparacaoEn->getTipoConferenciaNaoEmbalado() == Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE && $mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO)) {
-            $confereQtd = true;
-        } else {
-            $qtd = 1;
+
+        if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+            if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                $confereQtd = true;
+            }
+        }
+
+        if ($mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+            if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                $confereQtd = true;
+            }
         }
 
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
@@ -278,6 +285,31 @@ class Mobile_ExpedicaoController extends Action
 
         $this->view->dscVolume = $dscVolume;
         $this->view->exibeQtd = $confereQtd;
+    }
+
+    public function consultaProdutoAction()
+    {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $recebimentoService = new \Wms\Service\Recebimento;
+        $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $info = $produtoRepo->getEmbalagemByCodBarras($codigoBarras);
+
+        if (is_null($info)) {
+            $this->addFlashMessage('error', 'Nenhum produto encontrado para o código de barras ' . $codigoBarras);
+            $this->redirect("index",'consulta-produto');
+        }
+        $dadosProduto = array(
+            'codProduto' => $info[0]['idProduto'],
+            'grade' => $info[0]['grade'],
+            'descricao' => $info[0]['descricao'],
+            'quantidade' => $info[0]['quantidadeEmbalagem'],
+            'descricaoEmbalagem' => $info[0]['descricaoEmbalagem']
+        );
+
+        $this->_helper->json(array('status' => 'ok', 'result' => $dadosProduto));
     }
 
     public function fechaVolumePatrimonioMapaAction(){
@@ -586,8 +618,6 @@ class Mobile_ExpedicaoController extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-        $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
         if ($quebraColetor == 'S') {
             if (isset($idMapa) && !empty($idMapa)) {
@@ -599,13 +629,6 @@ class Mobile_ExpedicaoController extends Action
             }
         } else {
             $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
-        }
-
-        if (!is_string($result)) {
-            if ($mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao) == false) {
-                $this->addFlashMessage('error', 'Existem volumes embalados pendentes de CONFERENCIA!');
-                $this->_redirect("mobile/expedicao/index/idCentral/$central");
-            }
         }
 
         if (is_string($result)) {
