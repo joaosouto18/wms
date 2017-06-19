@@ -173,7 +173,7 @@ class Mobile_ExpedicaoController extends Action
         }
 
         if ($mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-            if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+            if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE) {
                 $confereQtd = true;
             }
         }
