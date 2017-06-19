@@ -803,7 +803,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     if (($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
                         ($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                         ($statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
-                        ($qtdCortadas == $qtdTotal && $statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO)) {
+                        ($qtdCortadas == $qtdTotal)) {
 
                         if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
                             if (!$isIntegracaoSQL)
