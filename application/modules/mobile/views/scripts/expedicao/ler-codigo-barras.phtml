@@ -94,7 +94,10 @@
         if (x[i].getElementsByTagName("resposta").length > 0) {
             status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
             if (status == 'error') {
-                playSound('/alarme.mp3');
+                var audioElement = document.createElement('audio');
+                audioElement.setAttribute('src', '/alarme.mp3');
+                audioElement.play();
+                //playSound('/alarme.mp3');
             }
         }
     }
