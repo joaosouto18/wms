@@ -272,7 +272,12 @@ class EstoqueRepository extends EntityRepository
         }
 
         if ((isset($params['idVolume'])) && ($params['idVolume'] != null)) {
-            $SqlWhere .= " AND ESTQ.COD_PRODUTO_VOLUME = '" . $params['idVolume'] . "'";
+            $idVolume = $params['idVolume'];
+            if (is_array($params['idVolume']) == true) {
+                $idVolume = implode(",",$params['idVolume']);
+            }
+
+            $SqlWhere .= " AND ESTQ.COD_PRODUTO_VOLUME IN (" . $idVolume . ")";
         }
 
         if ((isset($params['idCaracteristicaIgnorar'])) && ($params['idCaracteristicaIgnorar'] != null)) {
