@@ -297,7 +297,7 @@ class Mobile_ExpedicaoController extends Action
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
         $info = $produtoRepo->getEmbalagemByCodBarras($codigoBarras);
 
-        if (is_null($info)) {
+        if (empty($info)) {
             $this->addFlashMessage('error', 'Nenhum produto encontrado para o código de barras ' . $codigoBarras);
             $this->redirect("index",'consulta-produto');
         }
