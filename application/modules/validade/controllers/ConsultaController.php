@@ -21,7 +21,17 @@ class Validade_ConsultaController extends Action {
         $result = $produtoRepo->getProdutoByParametroVencimento($params);
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
-            $result[$key]['QTD'] = implode(' + ', $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['GRADE'], $value['QTD']));
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['GRADE'], $value['QTD']);
+            if(!empty($vetEmbalagens[0])){
+                $result[$key]['QTD_MAIOR'] = $vetEmbalagens[0];
+            }else{
+                $result[$key]['QTD_MAIOR'] = ' - ';
+            }
+            if(!empty($vetEmbalagens[1])){
+                $result[$key]['QTD_MENOR'] = $vetEmbalagens[1];
+            }else{
+                $result[$key]['QTD_MENOR'] = ' - ';
+            }
         }
         $grid = new ValidadeGrid();
         $this->view->grid = $grid->init($result);

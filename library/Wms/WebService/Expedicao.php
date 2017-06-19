@@ -856,82 +856,76 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     public function findClienteByCodigoExterno ($repositorios, $cliente) {
         $ClienteRepo    = $repositorios['clienteRepo'];
-        $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
+
         $permitirCnpjIguais = $ClienteRepo->getParametroCNPJ();
 
         if ($permitirCnpjIguais == 'S')
             $cliente['cpf_cnpj'] = $cliente['codCliente'];
 
-        if ($entityCliente == null) {
+        switch ($cliente['tipoPessoa']) {
+            case 'J':
+                $cliente['pessoa']['tipo'] = 'J';
 
-            switch ($cliente['tipoPessoa']) {
-                case 'J':
-                    $cliente['pessoa']['tipo'] = 'J';
+                $PessoaJuridicaRepo    = $repositorios['pessoaJuridicaRepo'];
+                $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
+                if ($entityPessoa != null) {
+                    $cliente['id'] = $entityPessoa->getId();
+                }
+                $cliente['pessoa']['juridica']['dataAbertura'] = null;
+                $cliente['pessoa']['juridica']['cnpj'] = $cliente['cpf_cnpj'];
+                $cliente['pessoa']['juridica']['idTipoOrganizacao'] = null;
+                $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
+                $cliente['pessoa']['juridica']['nome'] = $cliente['nome'];
+                break;
+            case 'F':
 
-                    $PessoaJuridicaRepo    = $repositorios['pessoaJuridicaRepo'];
-                    $entityPessoa = $PessoaJuridicaRepo->findOneBy(array('cnpj' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
-                    if ($entityPessoa) {
-                        break;
-                    }
-
-                    $cliente['pessoa']['juridica']['dataAbertura'] = null;
-                    $cliente['pessoa']['juridica']['cnpj'] = $cliente['cpf_cnpj'];
-                    $cliente['pessoa']['juridica']['idTipoOrganizacao'] = null;
-                    $cliente['pessoa']['juridica']['idRamoAtividade'] = null;
-                    $cliente['pessoa']['juridica']['nome'] = $cliente['nome'];
-                    break;
-                case 'F':
-
-                    $PessoaFisicaRepo    = $repositorios['pessoaFisicaRepo'];
-                    $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
-                    if ($entityPessoa) {
-                        break;
-                    }
-
-                    $cliente['pessoa']['tipo']              = 'F';
-                    $cliente['pessoa']['fisica']['cpf']     = $cliente['cpf_cnpj'];
-                    $cliente['pessoa']['fisica']['nome']    = $cliente['nome'];
-                    break;
-            }
-
-            $SiglaRepo      = $repositorios['siglaRepo'];
-            $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
-
-            $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
-            $cliente['enderecos'][0]['acao'] = 'incluir';
-            $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
-
-            if (isset($cliente['complemento']))
-                $cliente['enderecos'][0]['complemento'] = $cliente['complemento'];
-            if (isset($cliente['logradouro']))
-                $cliente['enderecos'][0]['descricao'] = $cliente['logradouro'];
-            if (isset($cliente['referencia']))
-                $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
-            if (isset($cliente['bairro']))
-                $cliente['enderecos'][0]['bairro'] = $cliente['bairro'];
-            if (isset($cliente['cidade']))
-                $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
-            if (isset($cliente['numero']))
-                $cliente['enderecos'][0]['numero'] = $cliente['numero'];
-            if (isset($cliente['cep']))
-                $cliente['enderecos'][0]['cep'] = $cliente['cep'];
-            if (isset($entitySigla))
-                $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
-
-            $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
-
-            if ($entityPessoa == null) {
-                $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
-            } else {
-                $entityCliente->setPessoa($entityPessoa);
-            }
-
-            $entityCliente->setId($entityPessoa->getId());
-            $entityCliente->setCodClienteExterno($cliente['codCliente']);
-
-            $this->_em->persist($entityCliente);
-            //$this->_em->flush();
+                $PessoaFisicaRepo    = $repositorios['pessoaFisicaRepo'];
+                $entityPessoa = $PessoaFisicaRepo->findOneBy(array('cpf' => str_replace(array(".", "-", "/"), "",$cliente['cpf_cnpj'])));
+                if ($entityPessoa != null) {
+                    $cliente['pessoa']['fisica']['id'] = $entityPessoa->getId();
+                    $cliente['pessoa']['fisica']['acao'] = 'edit';
+                }
+                $cliente['pessoa']['tipo']              = 'F';
+                $cliente['pessoa']['fisica']['cpf']     = $cliente['cpf_cnpj'];
+                $cliente['pessoa']['fisica']['nome']    = $cliente['nome'];
+                break;
         }
+
+        $SiglaRepo      = $repositorios['siglaRepo'];
+        $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
+
+        $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
+        $cliente['enderecos'][0]['acao'] = 'incluir';
+        $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
+
+        if (isset($cliente['complemento']))
+            $cliente['enderecos'][0]['complemento'] = $cliente['complemento'];
+        if (isset($cliente['logradouro']))
+            $cliente['enderecos'][0]['descricao'] = $cliente['logradouro'];
+        if (isset($cliente['referencia']))
+            $cliente['enderecos'][0]['pontoReferencia'] = $cliente['referencia'];
+        if (isset($cliente['bairro']))
+            $cliente['enderecos'][0]['bairro'] = $cliente['bairro'];
+        if (isset($cliente['cidade']))
+            $cliente['enderecos'][0]['localidade'] = $cliente['cidade'];
+        if (isset($cliente['numero']))
+            $cliente['enderecos'][0]['numero'] = $cliente['numero'];
+        if (isset($cliente['cep']))
+            $cliente['enderecos'][0]['cep'] = $cliente['cep'];
+        if (isset($entitySigla))
+            $cliente['enderecos'][0]['idUf'] = $entitySigla->getId();
+
+        $entityCliente  = $ClienteRepo->findOneBy(array('codClienteExterno' => $cliente['codCliente']));
+        if ($entityCliente == null) {
+            $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
+            $entityCliente->setCodClienteExterno($cliente['codCliente']);
+        }
+
+        $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
+        $entityCliente->setPessoa($entityPessoa);
+        $entityCliente->setId($entityPessoa->getId());
+
+        $this->_em->persist($entityCliente);
 
         return $entityCliente;
     }
