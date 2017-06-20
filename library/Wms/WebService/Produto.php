@@ -155,6 +155,8 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $service = $this->__getServiceLocator()->getService('Produto');
         $em = $this->__getDoctrineContainer()->getEntityManager();
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $em->getRepository('wms:Produto');
 
         $em->beginTransaction();
 
@@ -291,8 +293,6 @@ class Wms_WebService_Produto extends Wms_WebService {
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
-                /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-                $produtoRepo = $em->getRepository('wms:Produto');
                 $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true);
             }
 
