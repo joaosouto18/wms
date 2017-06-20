@@ -97,4 +97,41 @@ class CargaRepository extends EntityRepository
         $this->getEntityManager()->flush();
         return true;
     }
+
+    public function getDetalhesPeso($codCarga) {
+        $sql = "SELECT PROD.COD_PRODUTO,
+                       PROD.DSC_GRADE,
+                       PROD.DSC_PRODUTO,
+                       SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) as QUANTIDADE,
+                       PESO.NUM_CUBAGEM as CUBAGEM_UNITARIA,
+                       SUM((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))) * NVL(PESO.NUM_CUBAGEM,0) as CUBAGEM_TOTAL,
+                       PESO.NUM_PESO as PESO_UNITARIO,
+                       SUM((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))) * NVL(PESO.NUM_PESO,0) as PESO_TOTAL
+                  FROM PEDIDO P
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
+                 WHERE P.COD_CARGA = $codCarga
+                 GROUP BY PROD.COD_PRODUTO,
+                          PROD.DSC_GRADE,
+                          PROD.DSC_PRODUTO,
+                          PESO.NUM_CUBAGEM,
+                          PESO.NUM_PESO
+                ORDER BY PROD.COD_PRODUTO,
+                          PROD.DSC_GRADE
+                    ";
+
+        $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($result as $key => $line){
+            $result[$key]['CUBAGEM_UNITARIA'] = number_format($line['CUBAGEM_UNITARIA'],3);
+            $result[$key]['PESO_UNITARIO']    = number_format($line['PESO_UNITARIO'],3);
+            $result[$key]['CUBAGEM_TOTAL']    = number_format($line['CUBAGEM_TOTAL'],3);
+            $result[$key]['PESO_TOTAL']       = number_format($line['PESO_TOTAL'],3);
+        }
+
+
+        return $result;
+
+    }
+
 }

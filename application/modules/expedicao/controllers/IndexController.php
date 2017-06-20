@@ -273,6 +273,14 @@ class Expedicao_IndexController extends Action
         $this->exportPDF($result, 'volume-patrimonio', 'Relatório de Volumes Patrimônio da Expedição ' . $idExpedicao, 'L');
     }
 
+    public function detalharPesoAjaxAction() {
+        $idCarga = $this->_getParam('COD_CARGA');
+
+        $cargaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        $peso = $cargaRepo->getDetalhesPeso($idCarga);
+        $this->exportPDF($peso,"Peso.pdf","Detalhamento da Carga","L");
+    }
+
     public function declaracaoAjaxAction()
     {
         $idExpedicao = $this->_getParam('id');
