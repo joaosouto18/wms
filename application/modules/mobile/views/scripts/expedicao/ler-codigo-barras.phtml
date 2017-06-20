@@ -3,10 +3,10 @@
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetaSeparacao').value != "") {
-                etiquetaProduto   = document.getElementById('etiquetaProduto');
+                etiquetaProduto = document.getElementById('etiquetaProduto');
                 if (etiquetaProduto) {
                     etiquetaProduto.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -21,7 +21,7 @@
     {
 
         etiquetaSeparacao = document.getElementById('etiquetaSeparacao');
-        etiquetaProduto   = document.getElementById('etiquetaProduto');
+        etiquetaProduto = document.getElementById('etiquetaProduto');
 
         if (etiquetaProduto) {
             if (etiquetaSeparacao.value !== "" && etiquetaProduto.value !== "") {
@@ -33,7 +33,7 @@
             }
         }
 
-        if(event.preventDefault) {
+        if (event.preventDefault) {
             event.preventDefault();
         } else {
             event.returnValue = false;
@@ -44,7 +44,7 @@
     function loadResult()
     {
         etiquetaSeparacao = document.getElementById('etiquetaSeparacao');
-        etiquetaProduto   = document.getElementById('etiquetaProduto');
+        etiquetaProduto = document.getElementById('etiquetaProduto');
 
         etiquetaSeparacao.disabled = true;
 
@@ -53,7 +53,7 @@
         }
 
         document.getElementById('retorno').innerHTML = 'Pesquisando...';
-        load(document.getElementById('formulario').action, 'formulario', function(xhr){
+        load(document.getElementById('formulario').action, 'formulario', function (xhr) {
 
             document.getElementById('retorno').innerHTML = '';
 
@@ -66,33 +66,33 @@
             etiquetaSeparacao.value = "";
             etiquetaSeparacao.focus();
 
-            xmlDoc=xhr.responseXML;
+            xmlDoc = xhr.responseXML;
 
-            x=xmlDoc.getElementsByTagName("retorno");
-            i=0;
+            x = xmlDoc.getElementsByTagName("retorno");
+            i = 0;
 
-            exibeMensagem(x,i);
+            exibeMensagem(x, i);
 
             if (x[i].getElementsByTagName("redirect").length > 0) {
                 etiquetaSeparacao.disabled = true;
-                redirect=(x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
-                setTimeout("location.href = redirect;",0);
-            }else{
+                redirect = (x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
+                setTimeout("location.href = redirect;", 0);
+            } else {
                 etiquetaSeparacao.focus();
             }
 
         });
     }
 
-    function exibeMensagem(x,i)
+    function exibeMensagem(x, i)
     {
         if (x[i].getElementsByTagName("message").length > 0) {
-            message=(x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
-            document.getElementById("retorno").innerHTML=message;
+            message = (x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
+            document.getElementById("retorno").innerHTML = message;
         }
 
         if (x[i].getElementsByTagName("resposta").length > 0) {
-            status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
+            status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
             if (status == 'error') {
                 var audioElement = document.createElement('audio');
                 audioElement.setAttribute('src', '/alarme.mp3');
@@ -105,19 +105,19 @@
     function finalizar(event, element)
     {
         document.getElementById('retorno').innerHTML = 'Calculando...';
-        load(element.href , 'formulario', function(xhr){
+        load(element.href, 'formulario', function (xhr) {
             document.getElementById('retorno').innerHTML = '';
 
-            xmlDoc=xhr.responseXML;
+            xmlDoc = xhr.responseXML;
 
-            x=xmlDoc.getElementsByTagName("retorno");
-            i=0;
+            x = xmlDoc.getElementsByTagName("retorno");
+            i = 0;
 
-            exibeMensagem(x,i);
+            exibeMensagem(x, i);
 
         });
 
-        if(event.preventDefault) {
+        if (event.preventDefault) {
             event.preventDefault();
         } else {
             event.returnValue = false;
@@ -133,55 +133,55 @@
 
 
 
-<?php if (isset($this->idExpedicao))  : ?>
+<?php if (isset($this->idExpedicao)) : ?>
 
-    <p><?php echo $this->acao . " " .$this->idExpedicao ?>
-        <?php if ($this->acao == "Expedição de Transbordo:") :?>
+    <p><?php echo $this->acao . " " . $this->idExpedicao ?>
+        <?php if ($this->acao == "Expedição de Transbordo:") : ?>
             <br>Placa: <?php echo $this->placa ?><br>
         <?php endif; ?>
-        <?php if (isset($this->volume))  : ?>
+        <?php if (isset($this->volume)) : ?>
             Volume: <?php echo $this->volume ?>
         <?php endif; ?>
     </p>
 
 <?php endif; ?>
 
-<?php if ( empty($this->bloqueiaOS) )  { ?>
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'buscar-etiquetas')) ?>" onSubmit="formSubmit(event)" method="post">
+<?php if (empty($this->bloqueiaOS)) { ?>
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'buscar-etiquetas')) ?>" onSubmit="formSubmit(event)" method="post">
 
-    <?php if (isset($this->idExpedicao))  : ?>
-        <input name="idExpedicao" type="hidden" value="<?php echo $this->idExpedicao?>" />
-    <?php endif; ?>
+        <?php if (isset($this->idExpedicao)) : ?>
+            <input name="idExpedicao" type="hidden" value="<?php echo $this->idExpedicao ?>" />
+        <?php endif; ?>
 
-    <?php if (isset($this->volume))  : ?>
-        <input name="volume" type="hidden" value="<?php echo $this->volume?>" />
-    <?php endif; ?>
-    <?php if (isset($this->idTipoVolume))  : ?>
-        <input name="idTipoVolume" type="hidden" value="<?php echo $this->idTipoVolume?>" />
-    <?php endif; ?>
+        <?php if (isset($this->volume)) : ?>
+            <input name="volume" type="hidden" value="<?php echo $this->volume ?>" />
+        <?php endif; ?>
+        <?php if (isset($this->idTipoVolume)) : ?>
+            <input name="idTipoVolume" type="hidden" value="<?php echo $this->idTipoVolume ?>" />
+        <?php endif; ?>
 
-    <?php if ((isset($this->placa)) && ($this->placa != ""))  : ?>
-        <input name="placa" type="hidden" value="<?php echo $this->placa?>" />
-        <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
-    <?php else : ?>
-        <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
-        <?php if ($this->segundaConferencia != "S") { ?>
-            <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
-        <?php } ?>
+        <?php if ((isset($this->placa)) && ($this->placa != "")) : ?>
+            <input name="placa" type="hidden" value="<?php echo $this->placa ?>" />
+            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+        <?php else : ?>
+            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+            <?php if ($this->segundaConferencia != "S") { ?>
+                <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+            <?php } ?>
 
-    <?php endif; ?>
+        <?php endif; ?>
 
-    <input type="submit" name="submit" id="submit" value="Conferir" />
-</form>
+        <input type="submit" name="submit" id="submit" value="Conferir" />
+    </form>
 
-    <?php if (isset($this->placa) && !is_null($this->placa) && ($this->placa != ""))  : ?>
+    <?php if (isset($this->placa) && !is_null($this->placa) && ($this->placa != "")) : ?>
 
         <div id="footer">
             <!--<a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a> |-->
             <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
 
-        <?php elseif(isset($this->volume)) : ?>
+    <?php elseif (isset($this->volume)) : ?>
 
         <div id="footer">
             <a class="finalizar" href="<?php echo $this->url(array('controller' => 'volume-patrimonio', 'action' => 'fechar-caixa', 'idExpedicao' => $this->idExpedicao, 'volume' => $this->volume)); ?>">Fechar Caixa</a>
@@ -189,13 +189,39 @@
             <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
 
-        <?php else : ?>
-            <div id="footer">
-                <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
-            </div>
+    <?php else : ?>
+        <div id="footer">
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+        </div>
     <?php endif; ?>
     <a class="finalizarAmarelo" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'carregamento', 'idExpedicao' => $this->idExpedicao)) ?>" >Equipe</a>
 
 <?php } else { ?>
     <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras')); ?>">Confirmar</a>
 <?php } ?>
+<script>
+    $('#etiquetaProduto').on('keydown', function (e) {
+        var ret = true;
+        if (e.which == 13) {
+            $.ajax({
+                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'verifica-etiqueta-valida-ajax')) ?>',
+                data: $('form').serialize(),
+                async: false,
+                type: 'post',
+                success: function (data) {
+                    if (data.retorno.resposta.length > 0) {
+                        $("#retorno").html(data.retorno.message);
+                        if (data.retorno.resposta == 'error') {
+                            var audioElement = document.createElement('audio');
+                            audioElement.setAttribute('src', '/alarme.mp3');
+                            audioElement.play();
+                            ret = false;
+                        }
+                    }
+                }
+            });
+        }
+        return ret;
+    });
+
+</script>
