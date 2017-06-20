@@ -77,12 +77,16 @@
             <td>Qtd.Etiquetas</td>
             <td>Filial Estoque</td>
             <td>Filial Transbordo</td>
+            <td>Peso Total</td>
+            <td>Cubagem Total</td>
         </tr>
         <tr>
             <td><input type="text" value="<?php echo $this->qtdProdutos; ?>" disabled/></td>
             <td><input type="text" value="<?php echo $this->qtdEtiquetas; ?>" disabled/></td>
             <td><input type="text" value="<?php echo $this->filialEstoque; ?>" disabled/></td>
             <td><input type="text" value="<?php echo $this->filialTransbordo; ?>" disabled/></td>
+            <td><input type="text" value="<?php echo number_format($this->pesoTotal,3); ?>" disabled/></td>
+            <td><input type="text" value="<?php echo number_format($this->cubagemTotal,3); ?>" disabled/></td>
         </tr>
         </tbody>
     </table>
@@ -95,6 +99,8 @@
             <td>Produto</td>
             <td>Qtd. Pedido</td>
             <td>Qtd. Cortada</td>
+            <td>Peso</td>
+            <td>Cubagem</td>
         </tr>
 
         <?php foreach ($this->produtos as $produto) {?>
@@ -105,6 +111,8 @@
                 <td><?php echo $produto['DSC_PRODUTO'];?></td>
                 <td><?php echo $produto['QUANTIDADE'];?></td>
                 <td><?php echo $produto['QTD_CORTADA'];?></td>
+                <td><?php echo number_format($produto['NUM_PESO'],3);?></td>
+                <td><?php echo number_format($produto['NUM_CUBAGEM'],3);?></td>
             </tr>
         <?php }?>
     </table>

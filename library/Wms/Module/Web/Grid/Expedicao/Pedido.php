@@ -64,6 +64,16 @@ class Pedido extends Grid
                 'index' => 'DSC_PLACA_EXPEDICAO',
             ))
             ->addColumn(array(
+                'label' => 'Peso',
+                'index' => 'NUM_PESO',
+                'render' => 'N3'
+            ))
+            ->addColumn(array(
+                'label' => 'Cubagem',
+                'index' => 'NUM_CUBAGEM',
+                'render' => 'N3'
+            ))
+            ->addColumn(array(
                 'label' => 'Situação',
                 'index' => 'DSC_SIGLA',
             ))
