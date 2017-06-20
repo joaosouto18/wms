@@ -662,6 +662,7 @@ class Importacao
             $idClasse = trim($idClasse);
             $indPesoVariavel = trim($indPesoVariavel);
 
+            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $repositorios['produtoRepo'];
 
             $fabricanteRepo = $repositorios['fabricanteRepo'];
@@ -810,8 +811,6 @@ class Importacao
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
-                /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-                $produtoRepo = $em->getRepository('wms:Produto');
                 $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
             }
 

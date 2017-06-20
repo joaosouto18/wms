@@ -1276,7 +1276,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                  NUM_PESO,
                  NUM_CUBAGEM
                 FROM
-                 SUM_PESO_PRODUTO
+                 PRODUTO_PESO
                 WHERE
                   COD_PRODUTO = '$params[COD_PRODUTO]'
                   AND DSC_GRADE = '$params[DSC_GRADE]'
