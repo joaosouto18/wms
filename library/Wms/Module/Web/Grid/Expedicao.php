@@ -40,12 +40,12 @@ class Expedicao extends Grid
             ->addColumn(array(
                 'label' => 'Cubagem',
                 'index' => 'cubagem',
-                'render' => 'N2'
+                'render' => 'N3'
             ))
             ->addColumn(array(
                 'label' => 'Peso',
                 'index' => 'peso',
-                'render' => 'N0'
+                'render' => 'N3'
             ))
             ->addColumn(array(
                 'label' => 'Placa',

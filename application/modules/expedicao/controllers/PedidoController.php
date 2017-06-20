@@ -98,6 +98,9 @@ class Expedicao_PedidoController  extends Action
         $filialEstoque = $dadosPedido[0]['FILIAL_ESTOQUE'];
         $filialTransbordo = $dadosPedido[0]['FILIAL_TRANSBORDO'];
 
+
+        $this->view->pesoTotal = $dadosPedido[0]['NUM_PESO'];
+        $this->view->cubagemTotal = $dadosPedido[0]['NUM_CUBAGEM'];
         $this->view->codPedido = $codPedido;
         $this->view->codCliente = $codCliente;
         $this->view->cliente = $cliente;

@@ -501,10 +501,19 @@ class PedidoRepository extends EntityRepository
                        UF.COD_REFERENCIA_SIGLA as UF,
                        ENDERECO.NUM_CEP as CEP,
                        P.CENTRAL_ENTREGA as FILIAL_ESTOQUE,
-                       P.PONTO_TRANSBORDO as FILIAL_TRANSBORDO
+                       P.PONTO_TRANSBORDO as FILIAL_TRANSBORDO,
+                       PESO.NUM_PESO,
+                       PESO.NUM_CUBAGEM
                   FROM PEDIDO P
                   LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
                   LEFT JOIN CLIENTE CLI ON CLI.COD_PESSOA = PES.COD_PESSOA
+                  LEFT JOIN (SELECT PP.COD_PEDIDO,
+                                    SUM((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_PESO,0)) as NUM_PESO,
+                                    SUM((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_CUBAGEM,0)) as NUM_CUBAGEM
+                               FROM PEDIDO_PRODUTO PP
+                               LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO
+                                                          AND PESO.DSC_GRADE = PP.DSC_GRADE
+                              GROUP BY PP.COD_PEDIDO) PESO ON PESO.COD_PEDIDO = P.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                   LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
@@ -526,9 +535,12 @@ class PedidoRepository extends EntityRepository
                P.DSC_GRADE,
                P.DSC_PRODUTO,
                PP.QUANTIDADE,
-               NVL(PP.QTD_CORTADA,0) as QTD_CORTADA
+               NVL(PP.QTD_CORTADA,0) as QTD_CORTADA,
+               (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_PESO,0) as NUM_PESO,
+               (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_CUBAGEM,0) as NUM_CUBAGEM
           FROM PEDIDO_PRODUTO PP
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
+          LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
          WHERE PP.COD_PEDIDO = $codPedido ORDER BY COD_PRODUTO, DSC_GRADE";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
