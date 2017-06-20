@@ -1,4 +1,5 @@
 <?php
+
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
@@ -6,52 +7,48 @@ use Wms\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Domain\Entity\Expedicao;
 
-class Mobile_ExpedicaoController extends Action
-{
+class Mobile_ExpedicaoController extends Action {
 
     protected $bloquearOs = null;
 
-    public function indexAction()
-    {
+    public function indexAction() {
         $idCentral = $this->_getParam('idCentral');
         $this->setIdCentral($idCentral);
     }
 
-    public function iniciarExpedicaoAction()
-    {
+    public function iniciarExpedicaoAction() {
         $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
         $expedicaoRepo->getExpedicaoByCliente();
     }
 
-    public function definirOperacaoAction()
-    {
+    public function definirOperacaoAction() {
         $LeituraColetor = new LeituraColetor();
         $codBarras = $LeituraColetor->retiraDigitoIdentificador($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
         if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/'.$codBarras);
+            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $codBarras);
         }
-        $this->_redirect('mobile/expedicao/confirmar-operacao/codigoBarras/'.$this->_getParam('codigoBarras'));
+        $this->_redirect('mobile/expedicao/confirmar-operacao/codigoBarras/' . $this->_getParam('codigoBarras'));
     }
 
-    public function confirmaClientesAction()
-    {
+    public function confirmaClientesAction() {
         $this->view->idMapa = $idMapaSeparacao = $this->_getParam('codigoBarras');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
 
         foreach ($clientes as $key => $cliente) {
-            $numeroCaixas = explode(',',$cliente['NUM_CAIXA_PC_INI']);
+            $numeroCaixas = explode(',', $cliente['NUM_CAIXA_PC_INI']);
             $caixaAnterior = null;
             $arrCaixas = array();
             foreach ($numeroCaixas as $caixa) {
-                if ($caixa != $caixaAnterior) $arrCaixas[] = $caixa;
+                if ($caixa != $caixaAnterior)
+                    $arrCaixas[] = $caixa;
                 $caixaAnterior = $caixa;
             }
-            $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ',$arrCaixas);
+            $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ', $arrCaixas);
         }
         $this->view->clientes = $clientes;
 
@@ -60,10 +57,9 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idExpedicao = $idExpedicao;
     }
 
-    public function confirmarOperacaoAction()
-    {
+    public function confirmarOperacaoAction() {
         $this->view->codBarras = $codBarras = $this->_getParam('codigoBarras');
-        if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
+        if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "")) {
             try {
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -87,22 +83,20 @@ class Mobile_ExpedicaoController extends Action
                 $this->view->expedicao = $operacao['expedicao'];
                 $this->view->url = $operacao['url'];
             } catch (\Exception $e) {
-                $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
                 $this->_redirect('mobile/expedicao/index');
             }
         } else {
-            $this->addFlashMessage('info','informe um código de barras');
+            $this->addFlashMessage('info', 'informe um código de barras');
             $this->_redirect('mobile/expedicao/index');
         }
     }
 
-
-    public function lerEmbaladosMapaAction()
-    {
-        $this->view->idEmbalado  = $idEmbalado = $this->_getParam('embalado');
+    public function lerEmbaladosMapaAction() {
+        $this->view->idEmbalado = $idEmbalado = $this->_getParam('embalado');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('expedicao');
-        $this->view->idMapa      = $idMapa = $this->_getParam('idMapa');
-        $submit                  = $this->_getParam('submit');
+        $this->view->idMapa = $idMapa = $this->_getParam('idMapa');
+        $submit = $this->_getParam('submit');
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
@@ -110,13 +104,12 @@ class Mobile_ExpedicaoController extends Action
             $conferir = 'Conferir';
             if (isset($submit) || isset($conferir)) {
                 $idEmbalado = \Wms\Util\Coletor::retiraDigitoIdentificador($idEmbalado);
-                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado,$idExpedicao,$idMapa);
-                $this->addFlashMessage('success',"Volume embalado $idEmbalado conferido com sucesso!");
+                $mapaSeparacaoEmbaladoRepo->conferirVolumeEmbalado($idEmbalado, $idExpedicao, $idMapa);
+                $this->addFlashMessage('success', "Volume embalado $idEmbalado conferido com sucesso!");
             }
         } catch (\Exception $e) {
-            $this->addFlashMessage('error',$e->getMessage());
+            $this->addFlashMessage('error', $e->getMessage());
         }
-
     }
 
     public function lerProdutoMapaAction() {
@@ -143,7 +136,7 @@ class Mobile_ExpedicaoController extends Action
         $Expedicao->validacaoExpedicao();
         $Expedicao->osLiberada();
 
-        $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
@@ -178,7 +171,7 @@ class Mobile_ExpedicaoController extends Action
             }
         }
 
-        if (isset($codBarras) and ($codBarras != null) and ($codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+        if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
                 $tipoProvavelCodBarras = 'produto';
@@ -194,7 +187,7 @@ class Mobile_ExpedicaoController extends Action
                 }
 
                 if ($tipoProvavelCodBarras === 'volume') {
-                    if (!empty($volumePatrimonioEn)){
+                    if (!empty($volumePatrimonioEn)) {
                         throw new \Exception("Já existe um volume patrimonio aberto, feche a caixa " . $volumePatrimonioEn->getId() . " antes de abrir um novo volume.");
                     }
                     $idVolume = $codBarrasProcessado;
@@ -217,7 +210,6 @@ class Mobile_ExpedicaoController extends Action
 
                     $this->view->idVolume = $codBarras;
                     $this->addFlashMessage('info', 'Volume ' . $codBarrasProcessado . ' vinculada a expedição');
-
                 } else if ($tipoProvavelCodBarras === 'produto') {
 
                     if (empty($embalagens)) {
@@ -227,7 +219,7 @@ class Mobile_ExpedicaoController extends Action
                     $embalagemEn = $embalagens['embalagem'];
                     $volumeEn = $embalagens['volume'];
                     $produtoEn = $embalagens['produto'];
-                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras,$embalagemEn,$volumeEn,$mapaEn,$modeloSeparacaoEn,$volumePatrimonioEn,$codPessoa);
+                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn, $codPessoa);
                     if ($resultado['return'] == false) {
                         throw new \Exception($resultado['message']);
                     }
@@ -239,18 +231,18 @@ class Mobile_ExpedicaoController extends Action
 
                     if (isset($codPessoa) && !empty($codPessoa)) {
                         if (count($mapaSeparacaoEmbaladoEn) <= 0) {
-                            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+                            $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa);
                         } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                            $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
+                            $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $mapaSeparacaoEmbaladoEn[0]);
                         }
                     }
 
-                    $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
-                    $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn,$produtoEn->getId(),$produtoEn->getGrade());
+                    $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn, $volumeEn, $mapaEn, $volumePatrimonioEn, $qtd, $codPessoa);
+                    $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn, $produtoEn->getId(), $produtoEn->getGrade());
                     $this->addFlashMessage('success', $msg['msg']);
                 }
             } catch (\Exception $e) {
-                $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
                 $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/cliente/$codPessoa");
             }
         }
@@ -276,7 +268,7 @@ class Mobile_ExpedicaoController extends Action
         }
         /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
         if (isset($codPessoa) && !empty($codPessoa)) {
-            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa,$codPessoa);
+            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
             if (count($produtosClientes) > 0) {
                 $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
                 $this->view->produtosClientes = $produtosClientes;
@@ -287,8 +279,7 @@ class Mobile_ExpedicaoController extends Action
         $this->view->exibeQtd = $confereQtd;
     }
 
-    public function consultaProdutoAction()
-    {
+    public function consultaProdutoAction() {
         $codigoBarras = $this->_getParam('codigoBarras');
         $recebimentoService = new \Wms\Service\Recebimento;
         $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
@@ -299,7 +290,7 @@ class Mobile_ExpedicaoController extends Action
 
         if (is_null($info)) {
             $this->addFlashMessage('error', 'Nenhum produto encontrado para o código de barras ' . $codigoBarras);
-            $this->redirect("index",'consulta-produto');
+            $this->redirect("index", 'consulta-produto');
         }
         $dadosProduto = array(
             'codProduto' => $info[0]['idProduto'],
@@ -312,7 +303,7 @@ class Mobile_ExpedicaoController extends Action
         $this->_helper->json(array('status' => 'ok', 'result' => $dadosProduto));
     }
 
-    public function fechaVolumePatrimonioMapaAction(){
+    public function fechaVolumePatrimonioMapaAction() {
         $idMapa = $this->_getParam('idMapa');
         $idExpedicao = $this->_getParam('idExpedicao');
         $idVolume = $this->_getParam('idVolume');
@@ -326,16 +317,15 @@ class Mobile_ExpedicaoController extends Action
             $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'imprime-volume-patrimonio', 'idExpedicao' => $idExpedicao, 'volume' => $idVolume)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Clique aqui para Imprimir</a>';
             $mensagem = "Volume $idVolume fechado com sucesso - $linkImpressao";
 
-            $this->addFlashMessage('success', $mensagem );
+            $this->addFlashMessage('success', $mensagem);
         } catch (Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
 
-        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . $params . "/idVolume/" );
+        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/" . $idExpedicao . $params . "/idVolume/");
     }
 
-    public function fechaMapaEmbaladoAction()
-    {
+    public function fechaMapaEmbaladoAction() {
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 3000);
         $idMapa = $this->_getParam('idMapa');
@@ -358,9 +348,9 @@ class Mobile_ExpedicaoController extends Action
                 }
                 $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
                 $this->getEntityManager()->commit();
-                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa);
+                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idMapa, $idPessoa);
             } else {
-                $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa,$idPessoa);
+                $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa, $idPessoa);
                 if (count($qtdPendenteConferencia) <= 0) {
                     $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $idMapa);
                 } else {
@@ -373,8 +363,7 @@ class Mobile_ExpedicaoController extends Action
         }
     }
 
-    public function imprimeVolumePatrimonioAction()
-    {
+    public function imprimeVolumePatrimonioAction() {
         $idExpedicao = $this->_getParam('idExpedicao');
         $volume = $this->_getParam('volume');
         $parametroEtiquetaVolume = $this->getSystemParameterValue('MODELO_ETIQUETA_VOLUME');
@@ -400,15 +389,15 @@ class Mobile_ExpedicaoController extends Action
         $expedicaoEn = $this->em->find('wms:Expedicao', $idExpedicao);
 
         /** @var \Wms\Domain\Entity\Pessoa $pessoaEmpresa */
-        $pessoaEmpresa = $this->em->find('wms:Pessoa',1);
+        $pessoaEmpresa = $this->em->find('wms:Pessoa', 1);
 
         /** @var \Wms\Domain\Entity\Pessoa $pessoaCliente */
         $pessoaCliente = $clienteEn[0]->getPessoa();
-        
+
         $codPessoa = $pessoaCliente->getNome();
         $cargas = $expVolumePatrimonioEn->getExpedicao()->getCarga();
         $pedido = $cargas[0]->getPedido();
-		$idPedido = $pedido[0]->getId();
+        $idPedido = $pedido[0]->getId();
 
         /** @var \Doctrine\ORM\PersistentCollection $enderecoCollection */
         $enderecoCollection = $pessoaCliente->getEnderecos();
@@ -416,8 +405,8 @@ class Mobile_ExpedicaoController extends Action
 
         $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volume);
 
-        $dataInicio = (!empty($expedicaoEn))?$expedicaoEn->getDataInicio():null;
-        $emissor = (!empty($pessoaEmpresa))?$pessoaEmpresa->getNome():null;
+        $dataInicio = (!empty($expedicaoEn)) ? $expedicaoEn->getDataInicio() : null;
+        $emissor = (!empty($pessoaEmpresa)) ? $pessoaEmpresa->getNome() : null;
 
         $localidade = null;
         $estado = null;
@@ -451,7 +440,7 @@ class Mobile_ExpedicaoController extends Action
                     $gerarEtiqueta->imprimirExpedicaoModelo1($fields, false);
                     break;
                 case 2:
-                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62,5));
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 62, 5));
                     $gerarEtiqueta->imprimirExpedicaoModelo2($fields);
                     break;
                 case 3:
@@ -459,12 +448,10 @@ class Mobile_ExpedicaoController extends Action
                     $gerarEtiqueta->imprimirExpedicaoModelo3($fields, false);
                     break;
             }
-
         }
     }
 
-    public function informaQtdMapaAction()
-    {
+    public function informaQtdMapaAction() {
         $idVolume = $this->_getParam('idVolume');
         $idMapa = $this->_getParam('idMapa');
         $idEmbVol = $this->_getParam('idEmbVol');
@@ -474,15 +461,15 @@ class Mobile_ExpedicaoController extends Action
         $codPessoa = $this->_getParam('cliente');
 
         /** @var \Wms\Domain\Entity\Produto\Embalagem|\Wms\Domain\Entity\Produto\Volume $embVolEnt */
-        $embVolEnt = $this->getEntityManager()->find('wms:Produto\\'.$tipo, $idEmbVol);
+        $embVolEnt = $this->getEntityManager()->find('wms:Produto\\' . $tipo, $idEmbVol);
 
         $produto = $embVolEnt->getProduto();
 
         $this->view->codProduto = $produto->getId();
         $this->view->grade = $produto->getGrade();
         $this->view->descricao = $produto->getDescricao();
-        $this->view->embalagem = $embVolEnt->getDescricao() . (is_a($embVolEnt,'\Wms\Domain\Entity\Produto\Embalagem'))? "(" . $embVolEnt->getQuantidade() . ")": "";
-        $this->view->fator = (is_a($embVolEnt,"\Wms\Domain\Entity\Produto\Embalagem"))? "(" . $embVolEnt->getQuantidade() . ")": 1 ;
+        $this->view->embalagem = $embVolEnt->getDescricao() . (is_a($embVolEnt, '\Wms\Domain\Entity\Produto\Embalagem')) ? "(" . $embVolEnt->getQuantidade() . ")" : "";
+        $this->view->fator = (is_a($embVolEnt, "\Wms\Domain\Entity\Produto\Embalagem")) ? "(" . $embVolEnt->getQuantidade() . ")" : 1;
         $this->view->idVolume = $idVolume;
         $this->view->idEmbVol = $idEmbVol;
         $this->view->tipo = $tipo;
@@ -490,19 +477,19 @@ class Mobile_ExpedicaoController extends Action
         $this->view->idMapa = $idMapa;
         $this->view->idExpedicao = $idExpedicao;
         $this->view->idPessoa = $codPessoa;
-        $this->view->urlVoltar = '/mobile/expedicao/ler-produto-mapa/idMapa/'.$idMapa.'/idExpedicao/'.$idExpedicao.'/cliente/'.$codPessoa;
+        $this->view->urlVoltar = '/mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $codPessoa;
 
         if (!empty($qtd)) {
             try {
-                $volumePatrimonioRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+                $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
                 $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
                 $embalagemEn = null;
                 $volumeEn = null;
-                if (!empty($embVolEnt) and $tipo === 'Embalagem'){
+                if (!empty($embVolEnt) and $tipo === 'Embalagem') {
                     $embalagemEn = $embVolEnt;
-                } elseif (!empty($embVolEnt) and $tipo === 'Volume'){
+                } elseif (!empty($embVolEnt) and $tipo === 'Volume') {
                     $volumeEn = $embVolEnt;
                 }
 
@@ -518,14 +505,14 @@ class Mobile_ExpedicaoController extends Action
 
                 if (isset($codPessoa) && !empty($codPessoa)) {
                     if (count($mapaSeparacaoEmbaladoEn) <= 0) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa);
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa);
                     } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa,$codPessoa,$mapaSeparacaoEmbaladoEn[0]);
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $mapaSeparacaoEmbaladoEn[0]);
                     }
                 }
 
-                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$qtd,$codPessoa);
-                $listaQtdProdutosConferidos = $mapaSeparacaoRepo->verificaConferenciaProduto($idMapa,$embalagemEn,$volumeEn);
+                $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn, $volumeEn, $mapaEn, $volumePatrimonioEn, $qtd, $codPessoa);
+                $listaQtdProdutosConferidos = $mapaSeparacaoRepo->verificaConferenciaProduto($idMapa, $embalagemEn, $volumeEn);
                 $listaProdutosNãoConferidosMapa = $mapaSeparacaoRepo->verificaConferenciaMapa($idMapa);
                 $todosProdutosConferidos = true;
                 $todoMapaConferido = true;
@@ -546,46 +533,42 @@ class Mobile_ExpedicaoController extends Action
                 $this->addFlashMessage('success', "Quantidade Conferida com sucesso");
 
                 if ($todosProdutosConferidos == true)
-                    $this->addFlashMessage('success', 'Todos os Produtos ' . $embalagemEn->getProduto()->getId() .' - '. $embalagemEn->getProduto()->getGrade() . ' foram conferidos com sucesso!');
+                    $this->addFlashMessage('success', 'Todos os Produtos ' . $embalagemEn->getProduto()->getId() . ' - ' . $embalagemEn->getProduto()->getGrade() . ' foram conferidos com sucesso!');
 
                 if ($todoMapaConferido == true)
                     $this->addFlashMessage('success', 'Todo o Mapa foi conferido com sucesso!');
 
-                $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/". $idExpedicao . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
-
+                $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . "/idExpedicao/" . $idExpedicao . "/idVolume/" . $idVolume . '/cliente/' . $codPessoa);
             } catch (\Exception $e) {
-                $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
             }
-
         } else {
-            $this->addFlashMessage('info','Informe uma Quantidade');
+            $this->addFlashMessage('info', 'Informe uma Quantidade');
         }
     }
 
-
-    public function tipoConferenciaAction()
-    {
-        $idExpedicao = $this->_getParam('idExpedicao',null);
-        $placa = $this->_getParam('placa',null);
+    public function tipoConferenciaAction() {
+        $idExpedicao = $this->_getParam('idExpedicao', null);
+        $placa = $this->_getParam('placa', null);
         if ($placa != null) {
-            $url = '/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/'.$idExpedicao.'/placa/'.$placa;
-            $urlNEmbalado = '/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/tipo-conferencia/naoembalado/placa/'.$placa;
-            $urlEmbalado = '/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/'.$idExpedicao;
+            $url = '/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/' . $idExpedicao . '/placa/' . $placa;
+            $urlNEmbalado = '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/tipo-conferencia/naoembalado/placa/' . $placa;
+            $urlEmbalado = '/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/' . $idExpedicao;
         } else {
-            $urlNEmbalado = '/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/tipo-conferencia/naoembalado';
-            $url = '/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/'.$idExpedicao;
-            $urlEmbalado = '/mobile/volume-patrimonio/carrega-tipo/idExpedicao/'.$idExpedicao;
+            $urlNEmbalado = '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/tipo-conferencia/naoembalado';
+            $url = '/mobile/volume-patrimonio/ler-codigo-barra-volume/idExpedicao/' . $idExpedicao;
+            $urlEmbalado = '/mobile/volume-patrimonio/carrega-tipo/idExpedicao/' . $idExpedicao;
         }
         $menu = array(
             1 => array(
-                'url' => $url.'/box/1',
+                'url' => $url . '/box/1',
                 'label' => 'CONF. VOLUME',
             ),
             2 => array(
                 'url' => $urlNEmbalado,
                 'label' => 'CONF. NÃO EMBALADO',
             ),
-            3 => array (
+            3 => array(
                 'url' => $urlEmbalado,
                 'label' => 'CONF. EMBALADO',
             ),
@@ -599,16 +582,15 @@ class Mobile_ExpedicaoController extends Action
         $this->renderScript('menu.phtml');
     }
 
-    public function finalizarAction()
-    {
+    public function finalizarAction() {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo  = $this->em->getRepository('wms:Expedicao');
+        $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $sessao = new \Zend_Session_Namespace('coletor');
         $request = $this->getRequest();
-        $idExpedicao      = $request->getParam('idExpedicao');
-        $idMapa           = $request->getParam('idMapa');
-        $central          = $sessao->centralSelecionada;
-        $mapa             = $request->getParam('mapa', "N");
+        $idExpedicao = $request->getParam('idExpedicao');
+        $idMapa = $request->getParam('idMapa');
+        $central = $sessao->centralSelecionada;
+        $mapa = $request->getParam('mapa', "N");
 
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
@@ -622,7 +604,7 @@ class Mobile_ExpedicaoController extends Action
         if ($quebraColetor == 'S') {
             if (isset($idMapa) && !empty($idMapa)) {
                 $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
-                $mapaEn = $mapaSeparacaoRepo->findOneBy(array('id'=>$idMapa));
+                $mapaEn = $mapaSeparacaoRepo->findOneBy(array('id' => $idMapa));
                 if ($mapaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CONFERIDO) {
                     $this->addFlashMessage('success', "Mapa de Separação $idMapa Finalizado com sucesso!");
                 }
@@ -636,59 +618,56 @@ class Mobile_ExpedicaoController extends Action
             if ($mapa == 'S') {
                 $this->_redirect("mobile/expedicao/index/idCentral/$central");
             }
-            $this->redirect('conferencia-expedicao', 'ordem-servico','mobile', array('idCentral' => $central));
-        } else if ($result===0) {
+            $this->redirect('conferencia-expedicao', 'ordem-servico', 'mobile', array('idCentral' => $central));
+        } else if ($result === 0) {
             $this->addFlashMessage('success', 'Primeira Conferência finalizada com sucesso');
         } else {
             $this->addFlashMessage('success', 'Conferência finalizada com sucesso');
         }
 
         if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
-            $this->redirect('carregamento', 'expedicao','mobile', array('idExpedicao' => $idExpedicao));
+            $this->redirect('carregamento', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao));
         }
 
-        $this->_redirect('mobile/expedicao/index/idCentral/'.$central);
-
+        $this->_redirect('mobile/expedicao/index/idCentral/' . $central);
     }
 
-    public function selecionaPlacaAction()
-    {
-        $idExpedicao    = $this->getRequest()->getParam('idExpedicao');
+    public function selecionaPlacaAction() {
+        $idExpedicao = $this->getRequest()->getParam('idExpedicao');
         $sessaoColetor = new \Zend_Session_Namespace('coletor');
         $sessaoColetor->parcialmenteFinalizado = true;
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-        $expedicaoRepo  = $this->em->getRepository('wms:Expedicao');
+        $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $placas = $expedicaoRepo->getPlacasByExpedicaoCentral($idExpedicao);
 
         $this->view->placas = $placas;
     }
 
-    protected function validacaoEtiqueta($codigoBarras)
-    {
+    protected function validacaoEtiqueta($codigoBarras) {
         $this->bloquearOs();
-        $idExpedicao        = $this->getRequest()->getParam('idExpedicao');
-        $placa              = $this->getRequest()->getParam('placa', null);
-        $tipoConferencia    = $this->getRequest()->getParam('tipo-conferencia', null);
-        $idTipoVolume       = $this->getRequest()->getParam('idTipoVolume', null);
-        $volume             = $this->getRequest()->getParam('volume', null);
-        $sessao             = new \Zend_Session_Namespace('coletor');
-        $idCentral          = $sessao->centralSelecionada;
+        $idExpedicao = $this->getRequest()->getParam('idExpedicao');
+        $placa = $this->getRequest()->getParam('placa', null);
+        $tipoConferencia = $this->getRequest()->getParam('tipo-conferencia', null);
+        $idTipoVolume = $this->getRequest()->getParam('idTipoVolume', null);
+        $volume = $this->getRequest()->getParam('volume', null);
+        $sessao = new \Zend_Session_Namespace('coletor');
+        $idCentral = $sessao->centralSelecionada;
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-        $etiquetaRepo  = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $etiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $etiqueta = $etiquetaRepo->getEtiquetaByExpedicaoAndId($codigoBarras);
         if (count($etiqueta) == 0) {
 
-            $msg = 'Etiqueta '.$codigoBarras.' não encontrada';
-            $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras, null);
+            $msg = 'Etiqueta ' . $codigoBarras . ' não encontrada';
+            $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
-            if ($this->bloquearOs=='S') {
+            if ($this->bloquearOs == 'S') {
                 $this->bloqueioOs($idExpedicao, $msg, false);
                 if ($this->_request->isXmlHttpRequest()) {
-                    $this->createXml("error",$msg,$this->createUrlMobile());
+                    $this->createXml("error", $msg, $this->createUrlMobile());
                 } else {
-                    $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                    $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                     die();
                 }
             } else {
@@ -701,10 +680,10 @@ class Mobile_ExpedicaoController extends Action
 
         if ($etiqueta[0]['reentregaExpedicao'] != null) {
             if ($etiqueta[0]['reentregaExpedicao'] != $idExpedicao) {
-                $msg='Etiqueta de reentrega'.$codigoBarras.' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras, null);
+                $msg = 'Etiqueta de reentrega' . $codigoBarras . ' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
-                if ($this->bloquearOs=='S') {
+                if ($this->bloquearOs == 'S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
@@ -723,10 +702,10 @@ class Mobile_ExpedicaoController extends Action
         }
 
         if ($etiqueta[0]['codExpedicao'] != $idExpedicao) {
-            $msg='Etiqueta '.$codigoBarras.' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
-            $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
+            $msg = 'Etiqueta ' . $codigoBarras . ' pertence a expedicao ' . $etiqueta[0]['codExpedicao'];
+            $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
-            if ($this->bloquearOs=='S') {
+            if ($this->bloquearOs == 'S') {
                 $this->bloqueioOs($idExpedicao, $msg, false);
 
                 if ($this->_request->isXmlHttpRequest()) {
@@ -744,33 +723,33 @@ class Mobile_ExpedicaoController extends Action
 
 
         //Se o tipo de conferencia for nao embalado, nao se pode bipar produtos que devem ser embalados
-            if ($tipoConferencia == 'naoembalado' && $etiqueta[0]['embalado'] == 'S') {
-                $msg='Produtos embalados devem ser vinculados a um patrimônio';
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
-                if ($this->bloquearOs=='S'){
-                    $this->createXml('error',$msg);
-                } else {
-                    $this->createXml("error",$msg);
-                    die();
-                }
+        if ($tipoConferencia == 'naoembalado' && $etiqueta[0]['embalado'] == 'S') {
+            $msg = 'Produtos embalados devem ser vinculados a um patrimônio';
+            $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
+            if ($this->bloquearOs == 'S') {
+                $this->createXml('error', $msg);
+            } else {
+                $this->createXml("error", $msg);
+                die();
             }
+        }
 
         //Verifico se a etiqueta pertence a carga selecionada
-        if  (!is_null($idTipoVolume) && !empty($idTipoVolume)) {
+        if (!is_null($idTipoVolume) && !empty($idTipoVolume)) {
             if ($idTipoVolume != $etiqueta[0]['codCargaExterno']) {
-                $msg='Etiqueta '.$codigoBarras.' não pertence a carga selecionada - Carga Correta:' . $etiqueta[0]['codCargaExterno'];
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
+                $msg = 'Etiqueta ' . $codigoBarras . ' não pertence a carga selecionada - Carga Correta:' . $etiqueta[0]['codCargaExterno'];
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
-                if ($this->bloquearOs=='S'){
+                if ($this->bloquearOs == 'S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
                     } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                         die();
                     }
-                }  else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                } else {
+                    $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                     die();
                 }
                 return false;
@@ -778,21 +757,21 @@ class Mobile_ExpedicaoController extends Action
         }
 
         //Etiqueta pertence a central Selecionada e a placa selecionada
-        if  (!is_null($placa) && !empty($placa)) {
+        if (!is_null($placa) && !empty($placa)) {
             if ($etiqueta[0]['pontoTransbordo'] != $idCentral) {
-                $msg='Etiqueta não pertence a central ' . $idCentral;
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
+                $msg = 'Etiqueta não pertence a central ' . $idCentral;
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
-                if ($this->bloquearOs=='S'){
+                if ($this->bloquearOs == 'S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
                     } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                         die();
                     }
-                }  else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                } else {
+                    $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                     die();
                 }
                 return false;
@@ -800,12 +779,12 @@ class Mobile_ExpedicaoController extends Action
             if ($etiqueta[0]['placaCarga'] != $placa) {
                 $msg = 'Etiqueta não pertence a placa ' . $placa;
 
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
                 $this->bloqueioOs($idExpedicao, $msg, false);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('error', 'Etiqueta não pertence a placa ' . $placa, $this->createUrlMobile());
                 } else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                    $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                     die();
                 }
                 return false;
@@ -813,12 +792,12 @@ class Mobile_ExpedicaoController extends Action
         } else {
             if ($etiqueta[0]['codEstoque'] != $idCentral) {
                 $msg = 'Etiqueta não pertence a central ' . $idCentral;
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao,$codigoBarras,null);
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
                 $this->bloqueioOs($idExpedicao, 'Etiqueta não pertence a central ' . $idCentral, false);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('error', 'Etiqueta não pertence a central ' . $idCentral, $this->createUrlMobile());
                 } else {
-                    $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                    $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                     die();
                 }
                 return false;
@@ -828,54 +807,52 @@ class Mobile_ExpedicaoController extends Action
         return $etiqueta;
     }
 
-    public function validaStatusReentrega ($etiqueta) {
+    public function validaStatusReentrega($etiqueta) {
 
         $etiquetaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao");
         $nfSaidaPedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaidaPedido");
         $esReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacaoReentrega");
 
-        if ($this->getSystemParameterValue('CONFERE_RECEBIMENTO_REENTREGA') == 'S'){
-            $etiquetaEn = $etiquetaRepo->findOneBy(array('id'=>$etiqueta[0]['codBarras']));
+        if ($this->getSystemParameterValue('CONFERE_RECEBIMENTO_REENTREGA') == 'S') {
+            $etiquetaEn = $etiquetaRepo->findOneBy(array('id' => $etiqueta[0]['codBarras']));
             $pedido = $etiquetaEn->getPedido();
-            $nfSaidaPedidoPedido = $nfSaidaPedidoRepo->findBy(array('codPedido'=>$pedido->getId()));
+            $nfSaidaPedidoPedido = $nfSaidaPedidoRepo->findBy(array('codPedido' => $pedido->getId()));
             foreach ($nfSaidaPedidoPedido as $nfSaida) {
-                $nfSaidaEn= $nfSaida->getNotaFiscalSaida();
-                $statusNf =$nfSaidaEn->getStatus()->getId();
+                $nfSaidaEn = $nfSaida->getNotaFiscalSaida();
+                $statusNf = $nfSaidaEn->getStatus()->getId();
                 if ($statusNf != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
-                    return array('result'=>false,'msg'=> "Nota Fiscal de reentrega" . $nfSaidaEn->getNumeroNf() . "/". $nfSaidaEn->getSerieNf() . " ainda não foi recebida");
+                    return array('result' => false, 'msg' => "Nota Fiscal de reentrega" . $nfSaidaEn->getNumeroNf() . "/" . $nfSaidaEn->getSerieNf() . " ainda não foi recebida");
                 }
             }
         }
 
-        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao'=>$etiqueta[0]['codBarras'],
-                                                           'codReentrega'=>$etiqueta[0]['codReentrega']));
+        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao' => $etiqueta[0]['codBarras'],
+            'codReentrega' => $etiqueta[0]['codReentrega']));
 
-        if ($esReentregaEn->getCodStatus() != EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA ) {
-            return array('result'=>false,'msg'=> "Etiqueta de Separação de Reentrega" . $etiqueta[0]['codBarras'] . " já foi conferida");
+        if ($esReentregaEn->getCodStatus() != EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA) {
+            return array('result' => false, 'msg' => "Etiqueta de Separação de Reentrega" . $etiqueta[0]['codBarras'] . " já foi conferida");
         }
 
-        $siglaEn = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id'=>EtiquetaSeparacao::STATUS_CONFERIDO));
+        $siglaEn = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => EtiquetaSeparacao::STATUS_CONFERIDO));
 
         $esReentregaEn->setStatus($siglaEn);
         $esReentregaEn->setCodStatus($siglaEn->getId());
         $this->getEntityManager()->persist($esReentregaEn);
         $this->getEntityManager()->flush();
 
-        return array('result'=>true,'msg'=> "Etiqueta de Conferida com sucesso");
+        return array('result' => true, 'msg' => "Etiqueta de Conferida com sucesso");
     }
 
-    public function validaStatusEtiqueta($idExpedicao, $status, $sessaoColetor,$etiqueta=null)
-    {
+    public function validaStatusEtiqueta($idExpedicao, $status, $sessaoColetor, $etiqueta = null) {
         $this->bloquearOs();
-        $tipoConferencia    = $this->getRequest()->getParam('tipo-conferencia', null);
-        $idTipoVolume       = $this->getRequest()->getParam('idTipoVolume', null);
+        $tipoConferencia = $this->getRequest()->getParam('tipo-conferencia', null);
+        $idTipoVolume = $this->getRequest()->getParam('idTipoVolume', null);
 
 
         $obrigaRealizarRecebimento = $sessaoColetor->ObrigaBiparEtiquetaProduto;
-        $placa = $this->getRequest()->getParam('placa',null);
+        $placa = $this->getRequest()->getParam('placa', null);
 
-        switch ($status)
-        {
+        switch ($status) {
             case EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO:
             case EtiquetaSeparacao::STATUS_PENDENTE_CORTE:
             case EtiquetaSeparacao::STATUS_CORTADO:
@@ -887,41 +864,39 @@ class Mobile_ExpedicaoController extends Action
 
                     $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
-                    if ($verificaReconferencia=='S'){
-                        $expedEntity=$this->_em->getReference('wms:Expedicao',$idExpedicao);
-                        $statusExped=$expedEntity->getStatus()->getId();
+                    if ($verificaReconferencia == 'S') {
+                        $expedEntity = $this->_em->getReference('wms:Expedicao', $idExpedicao);
+                        $statusExped = $expedEntity->getStatus()->getId();
 
                         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $etiquetaConfRepo */
-                        $etiquetaConfRepo  = $this->em->getRepository('wms:Expedicao\EtiquetaConferencia');
+                        $etiquetaConfRepo = $this->em->getRepository('wms:Expedicao\EtiquetaConferencia');
 
-                        if ( $statusExped==Expedicao::STATUS_PRIMEIRA_CONFERENCIA){
+                        if ($statusExped == Expedicao::STATUS_PRIMEIRA_CONFERENCIA) {
 
-                            $resultado=$etiquetaConfRepo->getEtiquetaByCodBarras($idExpedicao,$etiqueta);
+                            $resultado = $etiquetaConfRepo->getEtiquetaByCodBarras($idExpedicao, $etiqueta);
 
-                            if ($resultado[0]['codStatus']==Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
+                            if ($resultado[0]['codStatus'] == Expedicao::STATUS_PRIMEIRA_CONFERENCIA)
                                 return false;
-                        } else if ( $statusExped==Expedicao::STATUS_SEGUNDA_CONFERENCIA){
+                        } else if ($statusExped == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
 
-                            $resultado=$etiquetaConfRepo->getEtiquetaByCodBarras($idExpedicao,$etiqueta);
+                            $resultado = $etiquetaConfRepo->getEtiquetaByCodBarras($idExpedicao, $etiqueta);
 
-                            if ($resultado[0]['codStatus']==Expedicao::STATUS_SEGUNDA_CONFERENCIA)
+                            if ($resultado[0]['codStatus'] == Expedicao::STATUS_SEGUNDA_CONFERENCIA)
                                 return false;
                         }
-
                     } else {
                         return false;
                     }
                 } else {
                     if ($obrigaRealizarRecebimento == 'S') {
                         $msg = 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido';
-                        $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiqueta , null);
+                        $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiqueta, null);
                         $this->bloqueioOs($idExpedicao, 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido', false);
                         if ($this->_request->isXmlHttpRequest()) {
                             $this->createXml('error', 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido', $this->createUrlMobile());
                         } else {
-                            $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+                            $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
                             die();
-
                         }
                         return false;
                     }
@@ -931,8 +906,7 @@ class Mobile_ExpedicaoController extends Action
         return true;
     }
 
-    public function extraiCodigoBarras($etiquetas)
-    {
+    public function extraiCodigoBarras($etiquetas) {
         $codBarras = "";
         foreach ($etiquetas as $etiqueta) {
             $codBarras = $codBarras . '-' . trim($etiqueta['codBarrasProduto']);
@@ -940,18 +914,16 @@ class Mobile_ExpedicaoController extends Action
         return $codBarras;
     }
 
-    public function geraArrayCodigoBarras ($value)
-    {
+    public function geraArrayCodigoBarras($value) {
         $result = explode('-', $value);
         unset($result[0]);
         return $result;
     }
 
-    protected function bloqueioOs($idExpedicao, $motivo, $render = true)
-    {
+    protected function bloqueioOs($idExpedicao, $motivo, $render = true) {
         $this->bloquearOs();
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-        $expedicaoRepo  = $this->em->getRepository('wms:Expedicao');
+        $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $osEntity = $expedicaoRepo->verificaOSUsuario($idExpedicao);
         $osEntity[0]->setBloqueio($motivo);
         $this->_em->persist($osEntity[0]);
@@ -968,33 +940,29 @@ class Mobile_ExpedicaoController extends Action
         }
     }
 
-    protected function gravaAndamentoExpedicao ($motivo, $idExpedicao, $codEtiquetaSeparacao = null, $codBarrasProduto = null)
-    {
+    protected function gravaAndamentoExpedicao($motivo, $idExpedicao, $codEtiquetaSeparacao = null, $codBarrasProduto = null) {
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
         $andamentoRepo->save($motivo, $idExpedicao, false, true, $codEtiquetaSeparacao, $codBarrasProduto);
     }
 
-    protected function desbloqueioOs($idExpedicao, $motivo)
-    {
+    protected function desbloqueioOs($idExpedicao, $motivo) {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-        $expedicaoRepo  = $this->em->getRepository('wms:Expedicao');
+        $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         $osEntity = $expedicaoRepo->verificaOSUsuario($idExpedicao);
         $osEntity[0]->setBloqueio(NULL);
         $this->_em->persist($osEntity[0]);
         $this->_em->flush();
 
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $andamentoRepo->save($motivo, $idExpedicao);
         $this->_helper->messenger('success', $motivo);
     }
 
-
-    public function liberarOsAction()
-    {
-        $request     = $this->getRequest();
+    public function liberarOsAction() {
+        $request = $this->getRequest();
         $idExpedicao = $request->getParam('idExpedicao');
         $placa = $this->getRequest()->getParam('placa', null);
         $volume = $this->getRequest()->getParam('volume', null);
@@ -1002,13 +970,13 @@ class Mobile_ExpedicaoController extends Action
         $idTipoVolume = $this->getRequest()->getParam('idTipoVolume', null);
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         if ($request->isPost()) {
-            $senhaDigitada    = $request->getParam('senha');
+            $senhaDigitada = $request->getParam('senha');
 
             if ($EtiquetaRepo->checkAutorizacao($senhaDigitada)) {
                 $this->desbloqueioOs($idExpedicao, 'Ordem de serviço liberada');
-                $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa, 'tipo-conferencia' => $tipoConferencia, 'volume' => $volume, 'idTipoVolume' => $idTipoVolume));
+                $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa, 'tipo-conferencia' => $tipoConferencia, 'volume' => $volume, 'idTipoVolume' => $idTipoVolume));
             } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
             }
@@ -1018,14 +986,12 @@ class Mobile_ExpedicaoController extends Action
         $form->setDefault('idExpedicao', $idExpedicao);
         $this->view->form = $form;
         $this->render('bloqueio');
-
     }
 
     /**
      * @param $idEtiqueta
      */
-    protected function confereEtiqueta($idEtiqueta, $codStatus , $volume = null,$idExpedicao=null)
-    {
+    protected function confereEtiqueta($idEtiqueta, $codStatus, $volume = null, $idExpedicao = null) {
         $sessao = new \Zend_Session_Namespace('coletor');
 
         $date = new \DateTime();
@@ -1045,10 +1011,10 @@ class Mobile_ExpedicaoController extends Action
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
             if ($verificaReconferencia == 'S') {
-                $expedEntity = $this->_em->getReference('wms:Expedicao',$idExpedicao);
+                $expedEntity = $this->_em->getReference('wms:Expedicao', $idExpedicao);
                 $statusExped = $expedEntity->getStatus()->getId();
 
-                if ($statusExped == Expedicao::STATUS_PRIMEIRA_CONFERENCIA ){
+                if ($statusExped == Expedicao::STATUS_PRIMEIRA_CONFERENCIA) {
                     $q2 = $this->_em->createQuery('update wms:Expedicao\EtiquetaConferencia es set es.status = :status, es.codOsPrimeiraConferencia = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.codEtiquetaSeparacao = :idEtiqueta');
                     $q2->setParameter('status', EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA);
                     $q2->setParameter('dataConferencia', $date);
@@ -1067,7 +1033,6 @@ class Mobile_ExpedicaoController extends Action
                 $q2->setParameter('idEtiqueta', $idEtiqueta);
                 $q2->setParameter('volumePatrimonio', $volume);
                 $q2->execute();
-
             } else {
                 $q1 = $this->_em->createQuery('update wms:Expedicao\EtiquetaSeparacao es set es.status = :status, es.codOS = :osID , es.dataConferencia = :dataConferencia, es.volumePatrimonio = :volumePatrimonio where es.id = :idEtiqueta');
                 $q1->setParameter('dataConferencia', $date);
@@ -1082,17 +1047,42 @@ class Mobile_ExpedicaoController extends Action
         $q1->execute();
     }
 
-    public function buscarEtiquetasAction()
-    {
+    public function verificaEtiquetaValidaAjaxAction() {
         $this->bloquearOs();
-        $idTipoVolume       = $this->getRequest()->getParam('idTipoVolume', null);
+
+        $LeituraColetor = new LeituraColetor();
+        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($this->getRequest()->getParam('etiquetaSeparacao'));
+        $etiqueta = $this->validacaoEtiqueta($etiquetaSeparacao);
+
+        //VERIFICA SE O PRODUTO PERTENCE A ETIQUETA CORRETA
+        $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
+        if (isset($etiquetaProduto)) {
+            $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
+            $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+
+            if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
+                $msg = 'Produto ' . $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] . ' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
+
+                if ($this->bloquearOs != 'S') {
+                    $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $msg));
+                    $this->_helper->json($vetRetorno);
+                    die;
+                }
+                return false;
+            }
+        }
+    }
+
+    public function buscarEtiquetasAction() {
+        $this->bloquearOs();
+        $idTipoVolume = $this->getRequest()->getParam('idTipoVolume', null);
 
         $sessaoColetor = new \Zend_Session_Namespace('coletor');
         $idExpedicao = $this->getRequest()->getParam('idExpedicao');
         $etiquetaSeparacao = $this->getRequest()->getParam('etiquetaSeparacao');
         $LeituraColetor = new LeituraColetor();
         $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($etiquetaSeparacao);
-        $placa = $this->getRequest()->getParam('placa',null);
+        $placa = $this->getRequest()->getParam('placa', null);
         $tipoConferencia = $this->getRequest()->getParam('tipo-conferencia', null);
         $volume = $this->getRequest()->getParam('volume', null);
 
@@ -1100,7 +1090,7 @@ class Mobile_ExpedicaoController extends Action
 
         if ($etiqueta == false) {
             $msg = "";
-            if ($this->bloquearOs=='S'){
+            if ($this->bloquearOs == 'S') {
                 return false;
             }
         }
@@ -1110,23 +1100,23 @@ class Mobile_ExpedicaoController extends Action
         $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
         if (isset($etiquetaProduto)) {
             $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+            $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
 
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
-                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
+                $msg = 'Produto ' . $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] . ' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
                 //$this->_helper->messenger('info', $msg);
 
-                if ($this->bloquearOs=='S'){
+                if ($this->bloquearOs == 'S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
                     if ($this->_request->isXmlHttpRequest()) {
-                        $this->createXml("error",$msg,$this->createUrlMobile());
+                        $this->createXml("error", $msg, $this->createUrlMobile());
                     } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                         die();
                     }
                 } else {
-                    $this->createXml("error",$msg);
+                    $this->createXml("error", $msg);
                     die();
                 }
                 return false;
@@ -1135,16 +1125,16 @@ class Mobile_ExpedicaoController extends Action
 
 
         if ($etiqueta[0]['reentregaExpedicao'] == null) {
-            $return = $this->validaStatusEtiqueta ($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
+            $return = $this->validaStatusEtiqueta($idExpedicao, $etiqueta[0]['codStatus'], $sessaoColetor, $etiquetaSeparacao);
         } else {
             $return = $this->validaStatusReentrega($etiqueta);
             if ($return['result'] == false) {
-                $msg= $return['msg'];
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao,null);
+                $msg = $return['msg'];
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiquetaSeparacao, null);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml("error", $msg);
                 } else {
-                    $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                    $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                 }
                 return false;
             } else {
@@ -1152,11 +1142,10 @@ class Mobile_ExpedicaoController extends Action
                     $this->createXml('success', 'Etiqueta conferida com sucesso');
                 } else {
                     $this->addFlashMessage('success', 'Etiqueta conferida com sucesso');
-                    $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                    $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                 }
                 return true;
             }
-
         }
 
         if ($return == false) {
@@ -1178,12 +1167,12 @@ class Mobile_ExpedicaoController extends Action
                     $mensagem = 'Etiqueta já conferida';
             }
 
-            $msg=$mensagem;
-            $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao,null);
+            $msg = $mensagem;
+            $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiquetaSeparacao, null);
             if ($this->_request->isXmlHttpRequest()) {
                 $this->createXml("error", $msg);
             } else {
-                $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
             }
 
             return false;
@@ -1192,12 +1181,12 @@ class Mobile_ExpedicaoController extends Action
         if ($sessaoColetor->parcialmenteFinalizado == true) {
             $obrigaBiparEtiqueta = $sessaoColetor->RecebimentoTransbordoObrigatorio;
             if ($obrigaBiparEtiqueta == 'N') {
-                $this->confereEtiqueta($etiquetaSeparacao,$etiqueta[0]['codStatus'], $volume, $idExpedicao);
+                $this->confereEtiqueta($etiquetaSeparacao, $etiqueta[0]['codStatus'], $volume, $idExpedicao);
                 $this->addFlashMessage('success', 'Produto conferido com sucesso');
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('success', 'Produto conferido com sucesso');
                 } else {
-                    $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                    $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                 }
             }
         }
@@ -1205,23 +1194,23 @@ class Mobile_ExpedicaoController extends Action
         $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
         if (isset($etiquetaProduto)) {
             $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto   = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+            $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
 
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
-                $msg='Produto '. $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] .' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
-                $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
+                $msg = 'Produto ' . $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] . ' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
+                $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiquetaSeparacao, $etiquetaProduto);
                 //$this->_helper->messenger('info', $msg);
 
-                if ($this->bloquearOs=='S'){
+                if ($this->bloquearOs == 'S') {
                     $this->bloqueioOs($idExpedicao, $msg, false);
                     if ($this->_request->isXmlHttpRequest()) {
-                        $this->createXml("error",$msg,$this->createUrlMobile());
+                        $this->createXml("error", $msg, $this->createUrlMobile());
                     } else {
-                        $this->redirect('liberar-os', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+                        $this->redirect('liberar-os', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
                         die();
                     }
                 } else {
-                    $this->createXml("error",$msg);
+                    $this->createXml("error", $msg);
                     die();
                 }
                 return false;
@@ -1230,24 +1219,22 @@ class Mobile_ExpedicaoController extends Action
 
         if (($etiqueta[0]['embalado'] == 'S') && (is_null($volume))) {
             $msg = "A etiqueta " . $etiquetaSeparacao . " precisa de um volume informado pois é Embalado";
-            $this->gravaAndamentoExpedicao($msg,$idExpedicao, $etiquetaSeparacao, null);
-            $this->createXml("error",$msg,'/mobile/expedicao/ler-codigo-barras/idExpedicao/'.$idExpedicao.'/placa/'.$placa.'/bloqueiaOS/1/tipo-conferencia/'.$tipoConferencia.'/idTipoVolume/'.$idTipoVolume."/msg/".$msg);
+            $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiquetaSeparacao, null);
+            $this->createXml("error", $msg, '/mobile/expedicao/ler-codigo-barras/idExpedicao/' . $idExpedicao . '/placa/' . $placa . '/bloqueiaOS/1/tipo-conferencia/' . $tipoConferencia . '/idTipoVolume/' . $idTipoVolume . "/msg/" . $msg);
         }
 
-        $this->confereEtiqueta($etiquetaSeparacao,$etiqueta[0]['codStatus'], $volume, $idExpedicao);
+        $this->confereEtiqueta($etiquetaSeparacao, $etiqueta[0]['codStatus'], $volume, $idExpedicao);
 
         if ($this->_request->isXmlHttpRequest()) {
             $this->createXml('success', 'Etiqueta conferida com sucesso');
         } else {
 
             $this->addFlashMessage('success', 'Etiqueta conferida com sucesso');
-            $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
+            $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa));
         }
-
     }
 
-    public function lerCodigoBarrasAction()
-    {
+    public function lerCodigoBarrasAction() {
         try {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->setLayout();
@@ -1261,18 +1248,18 @@ class Mobile_ExpedicaoController extends Action
             $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->find($Expedicao->getIdExpedicao());
             if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
                 $this->view->segundaConferencia = "S";
-            }else {
+            } else {
                 $this->view->segundaConferencia = "N";
             }
 
-            $url="/volume".$this->_getParam('volume', null)."/volume".$this->_getParam('volume', null)."/placa".$this->_getParam('placa', null)."/bloqueiaOS".$this->_getParam('bloqueiaOS', null);
+            $url = "/volume" . $this->_getParam('volume', null) . "/volume" . $this->_getParam('volume', null) . "/placa" . $this->_getParam('placa', null) . "/bloqueiaOS" . $this->_getParam('bloqueiaOS', null);
 
-            if ( ($Expedicao->validacaoExpedicao() == false) || ( $Expedicao->osLiberada() == false)) {
-                $this->mensagemColetor($Expedicao,$url);
+            if (($Expedicao->validacaoExpedicao() == false) || ( $Expedicao->osLiberada() == false)) {
+                $this->mensagemColetor($Expedicao, $url);
             }
 
             if ($Expedicao->possuiEmbalado() == true) {
-                $this->_forward('tipo-conferencia','expedicao','mobile', array('placa' => $Expedicao->getPlaca()));
+                $this->_forward('tipo-conferencia', 'expedicao', 'mobile', array('placa' => $Expedicao->getPlaca()));
             }
             $acao = "Expedição:";
             $sessaoColetor = new \Zend_Session_Namespace('coletor');
@@ -1284,7 +1271,6 @@ class Mobile_ExpedicaoController extends Action
             $this->view->idTipoVolume = $this->_getParam('idTipoVolume', null);
             $this->view->placa = $Expedicao->getPlaca();
             $this->view->idExpedicao = $Expedicao->getIdExpedicao();
-
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
             if ($this->_request->isXmlHttpRequest()) {
@@ -1293,14 +1279,12 @@ class Mobile_ExpedicaoController extends Action
                 $this->redirect('conferencia-expedicao', 'ordem-servico');
             }
         }
-
     }
 
     /**
      * @param $Expedicao
      */
-    public function mensagemColetor($Expedicao)
-    {
+    public function mensagemColetor($Expedicao) {
         $this->_helper->messenger($Expedicao->getStatus(), $Expedicao->getMessage());
         if ($this->_request->isXmlHttpRequest()) {
             $this->createXml($Expedicao->getRetorno(), $Expedicao->getMessage(), $Expedicao->getRedirect());
@@ -1309,10 +1293,9 @@ class Mobile_ExpedicaoController extends Action
         }
     }
 
-    public function finalizadoAction()
-    {
+    public function finalizadoAction() {
         $idExpedicao = $this->_getParam('idExpedicao');
-        $placa      = $this->_getParam('placa');
+        $placa = $this->_getParam('placa');
 
         $sessaoColetor = new \Zend_Session_Namespace('coletor');
         $obrigaBiparEtiqueta = $sessaoColetor->RecebimentoTransbordoObrigatorio;
@@ -1320,25 +1303,24 @@ class Mobile_ExpedicaoController extends Action
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
         if ($obrigaBiparEtiqueta == 'S') {
-            $conferido = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_CONFERIDO, "Array", $placa);
+            $conferido = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, "Array", $placa);
             if (count($conferido) > 0) {
                 $result = $conferido;
             } else {
-                $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO, "Array", $placa);
+                $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO, "Array", $placa);
             }
         } else {
-            $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao,EtiquetaSeparacao::STATUS_CONFERIDO, "Array", $placa);
+            $result = $etiquetaRepo->getPendenciasByExpedicaoAndStatus($idExpedicao, EtiquetaSeparacao::STATUS_CONFERIDO, "Array", $placa);
         }
 
         if (count($result) > 0) {
-            $this->createXml('error', 'Faltam '.count($result).' produtos a serem conferidos');
+            $this->createXml('error', 'Faltam ' . count($result) . ' produtos a serem conferidos');
         } else {
-            $this->createXml('success','Todos os produtos já foram recebidos');
+            $this->createXml('success', 'Todos os produtos já foram recebidos');
         }
     }
 
-    public function setIdCentral($idCentral = null)
-    {
+    public function setIdCentral($idCentral = null) {
         $sessaoColetor = new \Zend_Session_Namespace('coletor');
         $sessaoColetor->parcialmenteFinalizado = false;
 
@@ -1362,37 +1344,34 @@ class Mobile_ExpedicaoController extends Action
         return $idCentral;
     }
 
-    public function bloquearOs()
-    {
+    public function bloquearOs() {
         $this->bloquearOs = $this->getSystemParameterValue('BLOQUEIO_OS');
 
         return $this->bloquearOs;
     }
 
-    public function expedicaoCarregamentoAction()
-    {
-
+    public function expedicaoCarregamentoAction() {
+        
     }
 
-    public function carregamentoAction()
-    {
+    public function carregamentoAction() {
         //OBTER OS PARAMETROS
-        $leituraColetor          = new LeituraColetor();
-        $operadores              = $this->_getParam('mass-id');
+        $leituraColetor = new LeituraColetor();
+        $operadores = $this->_getParam('mass-id');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('idExpedicao');
-        $this->view->operacao    = $this->_getParam('operacao');
+        $this->view->operacao = $this->_getParam('operacao');
 
         //OBTER OS REPOSITORIOS
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-        $expedicaoRepo           = $this->em->getRepository('wms:Expedicao');
+        $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\UsuarioRepository $UsuarioRepo */
-        $UsuarioRepo             = $this->_em->getRepository('wms:Usuario');
+        $UsuarioRepo = $this->_em->getRepository('wms:Usuario');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-        $etiquetaRepo            = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $etiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
-        $codBarras               = $leituraColetor->retiraDigitoIdentificador($this->_getParam('codBarras'));
-        $etiquetaEn              = $etiquetaRepo->findOneBy(array('id' => $codBarras));
-        $entityExpedicao         = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
+        $codBarras = $leituraColetor->retiraDigitoIdentificador($this->_getParam('codBarras'));
+        $etiquetaEn = $etiquetaRepo->findOneBy(array('id' => $codBarras));
+        $entityExpedicao = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
 
         if (!$entityExpedicao) {
             $this->addFlashMessage('error', 'Expedição não encontrada!');
@@ -1401,27 +1380,27 @@ class Mobile_ExpedicaoController extends Action
         $placa = null;
 
         if (!$etiquetaEn) {
-            $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
+            $this->view->operadores = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
             /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
-            $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+            $this->view->equipe = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
         } else {
             //VERIFICA QUAL O STATUS DA ETIQUETA E EXIBE A EQUIPE CORRETA
             switch ($etiquetaEn->getStatus()->getId()) {
                 case EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO;
-                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
+                    $this->view->operadores = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_RECEBIMENTO_TRANSBORDO"));
                     /** @var \Wms\Domain\Entity\Recebimento\EquipeRecebimentoTransbordoRepository $equipeRecebTransbRepo */
-                    $this->view->equipe         = $equipe = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
+                    $this->view->equipe = $equipe = $this->em->getRepository('wms:Recebimento\EquipeRecebimentoTransbordo');
                     break;
                 case EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO;
-                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
+                    $this->view->operadores = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_EXPEDICAO_TRANSBORDO"));
                     /** @var \Wms\Domain\Entity\Expedicao\EquipeExpedicaoTransbordoRepository $equipe */
-                    $this->view->equipe         = $equipe = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
-                    $placa                      = str_replace('-','',$this->_getParam('placa'));
+                    $this->view->equipe = $equipe = $this->em->getRepository("wms:Expedicao\EquipeExpedicaoTransbordo");
+                    $placa = str_replace('-', '', $this->_getParam('placa'));
                     break;
                 default:
-                    $this->view->operadores     = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
+                    $this->view->operadores = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
                     /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
-                    $this->view->equipe         = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+                    $this->view->equipe = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
                     break;
             }
         }
@@ -1429,19 +1408,18 @@ class Mobile_ExpedicaoController extends Action
         if ($operadores && $idExpedicao) {
 
             try {
-                $equipe->vinculaOperadores($idExpedicao,$operadores,$placa);
+                $equipe->vinculaOperadores($idExpedicao, $operadores, $placa);
                 $this->_helper->messenger('success', 'Operadores vinculados a expedicao com sucesso');
                 $this->_redirect('mobile');
-            } catch(Exception $e) {
+            } catch (Exception $e) {
                 $this->addFlashMessage('error', $e->getMessage());
             }
         }
 
-        $this->view->idExpedicao    = $idExpedicao;
+        $this->view->idExpedicao = $idExpedicao;
     }
 
-    public function bloquearEtiquetaInexistenteAjaxAction()
-    {
+    public function bloquearEtiquetaInexistenteAjaxAction() {
         $this->view->form = $form = new \Wms\Module\Mobile\Form\BloquearEtiqueta();
 
         $values = $form->getParams();
@@ -1449,18 +1427,15 @@ class Mobile_ExpedicaoController extends Action
         if ($values) {
             $params = $this->_getAllParams();
             if ($this->getSystemParameterValue('SENHA_FINALIZAR_EXPEDICAO') == $params['senha']) {
-                $this->redirect('ler-codigo-barras', 'expedicao','mobile', array('idExpedicao' => $params['idExpedicao']));
+                $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $params['idExpedicao']));
             } else {
                 $this->_helper->messenger('error', 'Senha Incorreta!');
-                $this->redirect('bloquear-etiqueta-inexistente-ajax', 'expedicao','mobile', array('idExpedicao' => $params['idExpedicao']));
+                $this->redirect('bloquear-etiqueta-inexistente-ajax', 'expedicao', 'mobile', array('idExpedicao' => $params['idExpedicao']));
             }
-
         }
-
     }
 
-    public function vincularLacreAction()
-    {
+    public function vincularLacreAction() {
         /** @var \Wms\Domain\Entity\Expedicao\ExpedicaoVolumePatrimonioRepository $expedicaoVolumePatrimonioRepo */
         $expedicaoVolumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         $volumePatrimonioId = $this->_getParam('id');
@@ -1476,7 +1451,7 @@ class Mobile_ExpedicaoController extends Action
 
         if ($volumePatrimonioId) {
             try {
-                $expedicaoVolumePatrimonioEn = $expedicaoVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volumePatrimonioId), array('id' => 'DESC'),1);
+                $expedicaoVolumePatrimonioEn = $expedicaoVolumePatrimonioRepo->findBy(array('volumePatrimonio' => $volumePatrimonioId), array('id' => 'DESC'), 1);
 
                 if (!isset($expedicaoVolumePatrimonioEn) || empty($expedicaoVolumePatrimonioEn))
                     throw new \Exception('Volume Patrimônio nao encontrado!');
@@ -1489,10 +1464,7 @@ class Mobile_ExpedicaoController extends Action
             } catch (\Exception $e) {
                 throw new \Exception($e->getMessage());
             }
-
         }
-
     }
 
 }
-
