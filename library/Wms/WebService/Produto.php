@@ -297,7 +297,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             }
 
             $em->flush();
-
+            $produtoRepo->atualizaPesoProduto($idProduto,$grade);
             $em->commit();
         } catch (\Exception $e) {
             $em->rollback();

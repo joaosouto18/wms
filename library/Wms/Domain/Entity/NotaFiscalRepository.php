@@ -956,11 +956,11 @@ class NotaFiscalRepository extends EntityRepository
 
     public function atualizaRecebimentoUma($recebimento)
     {
-        $entity = $this->em->getReference('wms:NotaFiscal', $recebimento['notaFiscal']);
+        $entity = $this->_em->getReference('wms:NotaFiscal', $recebimento['notaFiscal']);
         $entity->setRecebimento($recebimento['recebimento']);
 
-        $this->em->persist($entity);
-        $this->em->flush();
+        $this->_em->persist($entity);
+        $this->_em->flush();
 
         return $entity;
     }

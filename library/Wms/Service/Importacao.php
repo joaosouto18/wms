@@ -814,6 +814,8 @@ class Importacao
                 $produtoRepo = $em->getRepository('wms:Produto');
                 $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
             }
+
+            $produtoRepo->atualizaPesoProduto($idProduto,$grade);
             return true;
         }catch (\Exception $e){
             throw new \Exception($e->getMessage());

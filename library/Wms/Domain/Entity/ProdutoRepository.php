@@ -32,6 +32,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 	 * @param array $values valores vindo de um formulário
 	 */
 
+    public function atualizaPesoProduto($codProduto, $dscGrade) {
+
+        $procedureSQL = "CALL PROC_ATUALIZA_PESO_PRODUTO($codProduto,'$dscGrade')";
+
+        $procedure = $this->getEntityManager()->getConnection()->prepare($procedureSQL);
+        $procedure->execute();
+        $this->getEntityManager()->flush();
+    }
+
 	public function getProdutosSemPickingByExpedicoes($expedicoes) {
 		$sessao = new \Zend_Session_Namespace('deposito');
 		$deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
@@ -251,8 +260,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 					break;
 			}
 
-			$em->commit();
-			$em->flush();
+            $em->flush();
+            $this->atualizaPesoProduto($produtoEntity->getId(),$produtoEntity->getGrade());
+            $em->commit();
+
+
 		} catch (\Exception $e) {
 			$em->rollback();
 			throw new \Exception($e->getMessage());
