@@ -52,7 +52,16 @@ class PesoCargas extends Grid
                     'cssClass' => 'inside-modal',
                     'pkIndex' => 'COD_CARGA'
                 ))
-                ->setShowExport(false);
+                ->addAction(array(
+                    'label' => 'Detalhar peso',
+                    'modelName' => 'expedicao',
+                    'controllerName' => 'index',
+                    'actionName' => 'detalhar-peso-ajax',
+                    'cssClass' => 'pdf',
+                    'pkIndex' => 'COD_CARGA'
+                ))
+
+            ->setShowExport(false);
 
         return $this;
     }
