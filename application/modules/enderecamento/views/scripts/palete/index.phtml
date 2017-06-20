@@ -4,7 +4,11 @@
             var checked_status = this.checked;
             $("input").each(function()
             {
-                $(this).checked = checked_status;
+                $(this).attr('checked',checked_status);
+                //alert($(this).val());
+                ///$(this).checked = true;
+                //$(this).check(true);
+                //'$(this).checked = checked_status;
             });
         });
     });
