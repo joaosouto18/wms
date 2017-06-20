@@ -38,7 +38,7 @@ class Mobile_ExpedicaoController extends Action
 
     public function confirmaClientesAction()
     {
-        $this->view->codigoBarras = $idMapaSeparacao = $this->_getParam('codigoBarras');
+        $this->view->idMapa = $idMapaSeparacao = $this->_getParam('codigoBarras');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
@@ -65,6 +65,7 @@ class Mobile_ExpedicaoController extends Action
         $this->view->codBarras = $codBarras = $this->_getParam('codigoBarras');
         if (isset($codBarras) and ($codBarras != null) and ($codBarras != "")) {
             try {
+                /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
                 $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
                 $this->view->operacao = $operacao['operacao'];
@@ -117,7 +118,6 @@ class Mobile_ExpedicaoController extends Action
         }
 
     }
-
 
     public function lerProdutoMapaAction() {
 
