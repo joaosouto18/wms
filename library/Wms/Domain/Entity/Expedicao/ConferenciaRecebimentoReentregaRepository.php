@@ -53,9 +53,21 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
             if ($data['modeloSeparacaoFracionado'] == 'E' || $data['modeloSeparacaoNaoFracionado'] == 'E') {
                 if (isset($data['etiqueta']) && !empty($data['etiqueta'])) {
                     $etiqueta = Coletor::retiraDigitoIdentificador($data['etiqueta']);
-                    $etiquetaEn = $etiquetaRepo ->findOneBy(array('id' => $etiqueta, 'produtoEmbalagem' => $idEmbalagem, 'produtoVolume' => $idVolume));
-                    if (!isset($etiquetaEn) || empty($etiquetaEn)) {
+
+                    $SQL = "SELECT ES.COD_ETIQUETA_SEPARACAO, ES.COD_PRODUTO, PE.COD_BARRAS, PE2.COD_BARRAS
+                              FROM ETIQUETA_SEPARACAO ES
+                              LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
+                              LEFT JOIN PRODUTO_EMBALAGEM PE2 ON PE2.COD_PRODUTO = ES.COD_PRODUTO
+                                                             AND PE2.DSC_GRADE = ES.DSC_GRADE
+                                                             AND PE2.QTD_EMBALAGEM = PE.QTD_EMBALAGEM
+                              LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = ES.COD_PRODUTO AND PV.DSC_GRADE = ES.DSC_GRADE
+                             WHERE ES.COD_ETIQUETA_SEPARACAO = " . $etiqueta .  "
+                               AND NVL(PE2.COD_BARRAS, PV.COD_BARRAS) = " . $codBarras;
+                    $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                    if (count($result) == 0) {
                         throw new \Exception(utf8_encode('Código da Etiqueta não confere com Código de Barras do Produto!'));
+                    } else {
+                        $etiquetaEn = $etiquetaRepo ->findOneBy(array('id' => $etiqueta));
                     }
                 }
             }
