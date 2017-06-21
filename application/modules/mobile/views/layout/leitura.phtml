@@ -64,10 +64,8 @@ echo $this->doctype();
 
                 xhr.open("POST",url,false);
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                if(Object.is(params)){
-                    xhr.setRequestHeader("Content-length", params.length);
-                    xhr.setRequestHeader("Connection", "close");
-                }
+                xhr.setRequestHeader("Content-length", params.length);
+                xhr.setRequestHeader("Connection", "close");
                 xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
                 xhr.send(params);
             }
