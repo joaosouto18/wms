@@ -116,6 +116,7 @@ class ExpedicaoRepository extends EntityRepository
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND P.CENTRAL_ENTREGA = $filialExterno
+                          AND P.DTH_CANCELAMENTO IS NULL
                           ";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
@@ -460,6 +461,7 @@ class ExpedicaoRepository extends EntityRepository
                         WHERE ped.indEtiquetaMapaGerado != 'S'
                           $whereCargas
                           AND ped.centralEntrega = '$central'
+                          AND ped.dataCancelamento is null
                         ";
 
         switch ($sequencia) {
@@ -1073,6 +1075,7 @@ class ExpedicaoRepository extends EntityRepository
                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                    AND E.COD_STATUS <> $statusFinalizado
                    AND E.COD_STATUS <> $statusCancelada
+                   AND P.DTH_CANCELAMENTO IS NULL
                    AND P.CENTRAL_ENTREGA = $central
                    ";
 
