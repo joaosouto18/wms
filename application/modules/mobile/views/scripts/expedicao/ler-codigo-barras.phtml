@@ -86,6 +86,7 @@
 
     function exibeMensagem(x, i)
     {
+        var message = 'Error';
         if (x[i].getElementsByTagName("message").length > 0) {
             message = (x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
             document.getElementById("retorno").innerHTML = message;
@@ -94,10 +95,15 @@
         if (x[i].getElementsByTagName("resposta").length > 0) {
             status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
             if (status == 'error') {
-                var audioElement = document.createElement('audio');
-                audioElement.setAttribute('src', '/alarme.mp3');
-                audioElement.play();
-                //playSound('/alarme.mp3');
+                try{
+                    var audioElement = document.createElement('audio');
+                    audioElement.setAttribute('src', '/alarme.mp3');
+                    audioElement.play();
+                    //playSound('/alarme.mp3');
+                }
+                catch(e){
+                    alert(message);
+                }
             }
         }
     }
@@ -212,10 +218,14 @@
                     if (data.retorno.resposta.length > 0) {
                         $("#retorno").html(data.retorno.message);
                         if (data.retorno.resposta == 'error') {
-                            var audioElement = document.createElement('audio');
-                            audioElement.setAttribute('src', '/alarme.mp3');
-                            audioElement.play();
-                            ret = false;
+                            try {
+                                var audioElement = document.createElement('audio');
+                                audioElement.setAttribute('src', '/alarme.mp3');
+                                audioElement.play();
+                                ret = false;
+                            } catch (e) {
+                                alert('Não confere com a etiqueta do fabricante');
+                            }
                         }
                     }
                 }
