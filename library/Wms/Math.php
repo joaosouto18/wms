@@ -63,4 +63,15 @@ Class Math
         return ($x - $y) / $quantidade;
 
     }
+
+    public function produtoMultiplicacao($x,$y)
+    {
+        $quantidade = $this->maiorPrecisao($x,$y);
+
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        return ($x * $y) / ($quantidade * $quantidade);
+
+    }
 }
