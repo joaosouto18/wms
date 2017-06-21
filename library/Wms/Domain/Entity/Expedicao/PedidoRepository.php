@@ -226,7 +226,7 @@ class PedidoRepository extends EntityRepository
         $SQL = "SELECT *
                   FROM MAPA_SEPARACAO_PEDIDO MSP
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PRODUTO = " . $idPedido;
+                 WHERE PP.COD_PEDIDO = " . $idPedido;
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
 
