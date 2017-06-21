@@ -74,7 +74,7 @@ class Embalagem extends SubForm
                     'size' => 10,
                     'value' => 0
                 ))
-                ->addElement('numeric', 'capacidadePicking', array(
+                ->addElement('text', 'capacidadePicking', array(
                     'label' => 'Capacidade do Picking',
                     'size' => 10,
                     'value' => 0
