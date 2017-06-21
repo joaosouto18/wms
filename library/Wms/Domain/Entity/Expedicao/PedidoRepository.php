@@ -226,7 +226,7 @@ class PedidoRepository extends EntityRepository
         $SQL = "SELECT *
                   FROM MAPA_SEPARACAO_PEDIDO MSP
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PRODUTO = " . $idPedido;
+                 WHERE PP.COD_PEDIDO = " . $idPedido;
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
 
@@ -612,6 +612,39 @@ class PedidoRepository extends EntityRepository
         }
 
         return $sql->getQuery()->getResult();
+    }
+
+    public function getSituacaoPedido ($idPedido) {
+
+        $sql = "SELECT DISTINCT
+                    E.COD_EXPEDICAO
+                FROM EXPEDICAO E
+                INNER JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
+                LEFT JOIN (
+                    SELECT MSP.COD_MAPA_SEPARACAO, SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) AS QTD_SEPARAR
+                    FROM MAPA_SEPARACAO MS
+                    INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    GROUP BY MSP.COD_MAPA_SEPARACAO) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                    SELECT COD_MAPA_SEPARACAO, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
+                    FROM MAPA_SEPARACAO_CONFERENCIA
+                    GROUP BY COD_MAPA_SEPARACAO ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = PP.COD_PEDIDO AND ES.COD_PRODUTO = PP.COD_PRODUTO AND ES.DSC_GRADE = PP.DSC_GRADE
+                WHERE P.COD_PEDIDO = $idPedido AND ((MSP.QTD_SEPARAR != MSC.QTD_CONF OR ES.COD_STATUS NOT IN (524, 525, 526, 531, 532, 552))
+                      OR (PP.COD_PEDIDO_PRODUTO NOT IN (SELECT COD_PEDIDO_PRODUTO FROM MAPA_SEPARACAO_PEDIDO) OR PP.COD_PEDIDO_PRODUTO NOT IN
+                        (SELECT PP2.COD_PEDIDO_PRODUTO 
+                         FROM ETIQUETA_SEPARACAO ES2 
+                         INNER JOIN PEDIDO_PRODUTO PP2 ON PP2.COD_PEDIDO = ES2.COD_PEDIDO AND PP2.COD_PRODUTO = ES2.COD_PRODUTO AND PP2.DSC_GRADE = ES2.DSC_GRADE)))";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+
+        if (empty($result))
+            return true;
+
+        return false;
     }
 
 }

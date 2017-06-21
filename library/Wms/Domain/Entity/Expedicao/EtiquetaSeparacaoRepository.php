@@ -749,6 +749,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $depositoEnderecoRepo = $arrayRepositorios['depositoEndereco'];
         $filialRepository = $arrayRepositorios['filial'];
+        /** @var ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $arrayRepositorios['modeloSeparacao'];
         $etiquetaConferenciaRepo = $arrayRepositorios['etiquetaConferencia'];
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
