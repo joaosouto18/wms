@@ -355,7 +355,7 @@ class Embalagem
             }
         }
 
-        $this->capacidadePicking = $capacidadePicking;
+        $this->capacidadePicking = str_replace(',','.',$capacidadePicking);
     }
 
     /**
@@ -363,7 +363,7 @@ class Embalagem
      */
     public function getCapacidadePicking()
     {
-        return $this->capacidadePicking;
+        return str_replace('.',',',$this->capacidadePicking);
     }
 
     /**

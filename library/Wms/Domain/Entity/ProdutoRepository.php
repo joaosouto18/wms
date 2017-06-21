@@ -1193,6 +1193,57 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		return $enderecoPicking;
 	}
 
+    public function getDadosLogisticos($codProduto, $grade) {
+        $SQL = "
+            SELECT PE.COD_BARRAS,
+                   PE.DSC_EMBALAGEM,
+                   PE.QTD_EMBALAGEM,
+                   NVL(PDL.NUM_ALTURA,0) as NUM_ALTURA,
+                   NVL(PDL.NUM_LARGURA,0) as NUM_LARGURA,
+                   NVL(PDL.NUM_PROFUNDIDADE,0) as NUM_PROFUNDIDADE,
+                   NVL(PDL.NUM_CUBAGEM,0) as NUM_CUBAGEM,
+                   NVL(PDL.NUM_PESO,0) as NUM_PESO
+              FROM PRODUTO_EMBALAGEM PE
+              LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+             WHERE PE.COD_PRODUTO = '$codProduto'
+               AND PE.DSC_GRADE = '$grade'";
+        $embalagens = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+
+        $SQL = "
+        SELECT PV.COD_BARRAS,
+               PV.DSC_VOLUME,
+               PV.NUM_ALTURA,
+               PV.NUM_LARGURA,
+               PV.NUM_PROFUNDIDADE,
+               PV.NUM_CUBAGEM,
+               PV.NUM_PESO
+          FROM PRODUTO_VOLUME PV
+         WHERE PV.COD_PRODUTO = '$codProduto'
+           AND PV.DSC_GRADE = '$grade'";
+        $volumes = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+
+        $SQL = "
+        SELECT PP.NUM_CUBAGEM,
+               PP.NUM_PESO
+          FROM PRODUTO_PESO PP
+         WHERE PP.COD_PRODUTO = '$codProduto'
+           AND PP.DSC_GRADE = '$grade'";
+        $dadosPeso = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+
+        $cubagem = 0;
+        $peso = 0;
+        if (count($dadosPeso)>0) {
+            $cubagem = $dadosPeso[0]['NUM_CUBAGEM'];
+            $peso = $dadosPeso[0]['NUM_PESO'];
+        }
+        return array(
+            'NUM_PESO' => $peso,
+            'NUM_CUBAGEM' => $cubagem,
+            'VOLUMES' => $volumes,
+            'EMBALAGENS' => $embalagens
+        );
+    }
+
 	public function getEmbalagensOrVolumesByProduto($codProduto, $grade = "UNICA")
 	{
 		$sql = "SELECT PV.COD_PRODUTO_VOLUME,
