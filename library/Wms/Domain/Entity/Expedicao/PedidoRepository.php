@@ -148,8 +148,12 @@ class PedidoRepository extends EntityRepository
                     'produto'             => $em->getRepository('wms:Produto')
                 );
 
-                if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao, $arrayRepositorios) > 0 ) {
-                    throw new \Exception ("Existem produtos sem definição de volume");
+                if  (($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_EM_CONFERENCIA)
+                    || ($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_EM_SEPARACAO)
+                    || ($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_PRIMEIRA_CONFERENCIA)) {
+                    if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao, $arrayRepositorios) > 0 ) {
+                        throw new \Exception ("Existem produtos sem definição de volume");
+                    }
                 }
                 return true;
             }
@@ -199,8 +203,8 @@ class PedidoRepository extends EntityRepository
             }
             $this->_em->flush();
             $this->gerarEtiquetasById($idPedido, EtiquetaSeparacao::STATUS_CORTADO);
+            $this->removeReservaEstoque($idPedido, true);
             $this->cancelaPedido($idPedido);
-            $this->removeReservaEstoque($idPedido);
 
         } catch (\Exception $e) {
             echo $e->getMessage();
@@ -213,9 +217,26 @@ class PedidoRepository extends EntityRepository
      */
     protected function cancelaPedido($idPedido)
     {
+
+        $SQL = "SELECT * FROM ETIQUETA_SEPARACAO WHERE COD_PEDIDO = " . $idPedido;
+        $countEtiquetas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $SQL = "SELECT *
+                  FROM MAPA_SEPARACAO_PEDIDO MSP
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                 WHERE PP.COD_PRODUTO = " . $idPedido;
+        $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+
         $EntPedido = $this->find($idPedido);
         $EntPedido->setDataCancelamento(new \DateTime());
         $this->_em->persist($EntPedido);
+
+
+        if ((count($countEtiquetas) == 0) && (count($countMapas) == 0) && ($EntPedido->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_INTEGRADO)) {
+            $this->_em->remove($EntPedido);
+        }
+
         $this->_em->flush();
     }
 
