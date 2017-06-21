@@ -58,6 +58,8 @@ class pedido {
     public $cliente;
     /** @var string */
     public $situacao;
+    /** @var  boolean */
+    public $conferido;
     /** @var produto[] */
     public $produtos = array();
 }
@@ -544,6 +546,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido->linhaEntrega = $pedidoEn->getLinhaEntrega();
             $pedido->itinerario = $itinerario;
             $pedido->cliente = $cliente;
+            $pedido->conferido = $pedidoRepo->getSituacaoPedido($pedidoEn->getId());
             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
             foreach ($produtos as $item) {
                 $produto = new produto();
@@ -621,6 +624,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $result->itinerario = $itinerario;
         $result->linhaEntrega = $pedidoEn->getLinhaEntrega();
         $result->situacao = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getSigla();
+        $result->conferido = $pedidoRepo->getSituacaoPedido($idPedido);
         $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
         foreach ($produtos as $item) {
             $produto = new produto();

@@ -614,4 +614,34 @@ class PedidoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getSituacaoPedido ($idPedido) {
+
+        $sql = "SELECT DISTINCT
+                    E.COD_EXPEDICAO
+                FROM EXPEDICAO E
+                INNER JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
+                LEFT JOIN (
+                    SELECT MSP.COD_MAPA_SEPARACAO, SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) AS QTD_SEPARAR
+                    FROM MAPA_SEPARACAO MS
+                    INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                    GROUP BY MSP.COD_MAPA_SEPARACAO) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (
+                    SELECT COD_MAPA_SEPARACAO, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
+                    FROM MAPA_SEPARACAO_CONFERENCIA
+                    GROUP BY COD_MAPA_SEPARACAO ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN ETIQUETA_MAE EM ON EM.COD_EXPEDICAO = E.COD_EXPEDICAO
+                LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE AND (ES.COD_PEDIDO = PP.COD_PEDIDO AND ES.COD_PRODUTO = PP.COD_PRODUTO AND ES.DSC_GRADE = PP.DSC_GRADE)
+                WHERE P.COD_PEDIDO = $idPedido AND (MSP.QTD_SEPARAR != MSC.QTD_CONF OR ES.COD_STATUS NOT IN (524, 525, 526, 531, 532, 552))";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+
+        if (empty($result))
+            return true;
+
+        return false;
+    }
+
 }
