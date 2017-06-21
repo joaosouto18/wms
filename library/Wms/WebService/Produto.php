@@ -10,6 +10,33 @@ class embalagem {
     public $qtdEmbalagem;
     /** @var string */
     public $descricao;
+    /** @var double */
+    public $altura;
+    /** @var double */
+    public $largura;
+    /** @var double */
+    public $comprimento;
+    /** @var double */
+    public $peso;
+    /** @var double */
+    public $cubagem;
+}
+
+class volume {
+    /** @var string */
+    public $codBarras;
+    /** @var string */
+    public $descricao;
+    /** @var double */
+    public $altura;
+    /** @var double */
+    public $largura;
+    /** @var double */
+    public $comprimento;
+    /** @var double */
+    public $peso;
+    /** @var double */
+    public $cubagem;
 }
 
 
@@ -32,9 +59,14 @@ class produto {
     public $estoqueArmazenado;
     /** @var integer */
     public $estoqueDisponivel;
-    /** @var string */
-    public $teste;
-
+    /** @var double */
+    public $peso;
+    /** @var double */
+    public $cubagem;
+    /** @var embalagem[] */
+    public $embalagens = array();
+    /** @var volume[] */
+    public $volumes = array();
 
 }
 
@@ -71,6 +103,10 @@ class Wms_WebService_Produto extends Wms_WebService {
             $idProduto = trim ($idProduto);
             $grade = trim ($grade);
 
+            $em = $this->__getDoctrineContainer()->getEntityManager();
+            $produtoRepo = $em->getRepository('wms:Produto');
+            $dadosProduto = $produtoRepo->getDadosLogisticos($idProduto,$grade);
+
             $produtoService = $this->__getServiceLocator()->getService('Produto');
             $produto = $produtoService->findOneBy(array('id' => $idProduto, 'grade'=> $grade));
 
@@ -88,6 +124,33 @@ class Wms_WebService_Produto extends Wms_WebService {
             $prod->nomeFabricante = $this->removeCaracteres($produto->getFabricante()->getNome());
             $prod->estoqueArmazenado = 0;
             $prod->estoqueDisponivel = 0;
+            $prod->cubagem = $dadosProduto['NUM_CUBAGEM'];
+            $prod->peso = $dadosProduto['NUM_PESO'];
+
+            foreach ($dadosProduto['EMBALAGENS'] as $embalagem) {
+                $emb = new embalagem();
+                $emb->altura = $embalagem['NUM_ALTURA'];
+                $emb->largura = $embalagem['NUM_LARGURA'];
+                $emb->comprimento = $embalagem['NUM_PROFUNDIDADE'];
+                $emb->codBarras = $embalagem['COD_BARRAS'];
+                $emb->peso = $embalagem['NUM_PESO'];
+                $emb->qtdEmbalagem = $embalagem['QTD_EMBALAGEM'];
+                $emb->descricao = $embalagem['DSC_EMBALAGEM'];
+                $emb->cubagem = $embalagem['NUM_CUBAGEM'];
+                $prod->embalagens[] = $emb;
+            }
+
+            foreach ($dadosProduto['VOLUMES'] as $volume) {
+                $vol = new volume();
+                $vol->altura = $volume['NUM_ALTURA'];
+                $vol->largura = $volume['NUM_LARGURA'];
+                $vol->comprimento = $volume['NUM_PROFUNDIDADE'];
+                $vol->codBarras = $volume['COD_BARRAS'];
+                $vol->peso = $volume['NUM_PESO'];
+                $vol->descricao = $volume['DSC_VOLUME'];
+                $vol->cubagem = $volume['NUM_CUBAGEM'];
+                $prod->volumes[] = $vol;
+            }
             return $prod;
 
         } catch (\Exception $e) {
@@ -377,7 +440,13 @@ class Wms_WebService_Produto extends Wms_WebService {
         $produtos = new produtos();
         $arrayProdutos = array();
 
+        $produtoRepo = $em->getRepository('wms:Produto');
+
+
         foreach ($result as $line) {
+
+            $dadosProduto = $produtoRepo->getDadosLogisticos($line['idProduto'],$line['grade']);
+
             $produto = new produto();
             $produto->idProduto = $line['idProduto'];
             $produto->descricao = $this->removeCaracteres($line['descricao']);
@@ -388,6 +457,32 @@ class Wms_WebService_Produto extends Wms_WebService {
             $produto->nomeFabricante = $this->removeCaracteres($line['nomeFabricante']);
             $produto->estoqueArmazenado = 0;
             $produto->estoqueDisponivel = 0;
+            $produto->cubagem = $dadosProduto['NUM_CUBAGEM'];
+            $produto->peso = $dadosProduto['NUM_PESO'];
+            foreach ($dadosProduto['EMBALAGENS'] as $embalagem) {
+                $emb = new embalagem();
+                $emb->altura = $embalagem['NUM_ALTURA'];
+                $emb->largura = $embalagem['NUM_LARGURA'];
+                $emb->comprimento = $embalagem['NUM_PROFUNDIDADE'];
+                $emb->codBarras = $embalagem['COD_BARRAS'];
+                $emb->peso = $embalagem['NUM_PESO'];
+                $emb->qtdEmbalagem = $embalagem['QTD_EMBALAGEM'];
+                $emb->descricao = $embalagem['DSC_EMBALAGEM'];
+                $emb->cubagem = $embalagem['NUM_CUBAGEM'];
+                $produto->embalagens[] = $emb;
+            }
+
+            foreach ($dadosProduto['VOLUMES'] as $volume) {
+                $vol = new volume();
+                $vol->altura = $volume['NUM_ALTURA'];
+                $vol->largura = $volume['NUM_LARGURA'];
+                $vol->comprimento = $volume['NUM_PROFUNDIDADE'];
+                $vol->codBarras = $volume['COD_BARRAS'];
+                $vol->peso = $volume['NUM_PESO'];
+                $vol->descricao = $volume['DSC_VOLUME'];
+                $vol->cubagem = $volume['NUM_CUBAGEM'];
+                $produto->volumes[] = $vol;
+            }
             $arrayProdutos[] = $produto;
         }
         $produtos->produtos = $arrayProdutos;
@@ -427,7 +522,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             if( empty($grades) )
                 throw new \Exception('O array de grades deve ser informado.');
             foreach($grades as $grade)
-                $this->salvar($idProduto, $descricao, trim($grade), $idFabricante, $tipo, $idClasse);
+                $this->salvar($idProduto, $descricao, trim($grade), $idFabricante, $tipo, $idClasse,null,'','N');
         } catch(\Exception $e) {
             throw new \Exception($e->getMessage());
         }
