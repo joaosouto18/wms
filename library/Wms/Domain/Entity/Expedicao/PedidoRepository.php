@@ -218,6 +218,8 @@ class PedidoRepository extends EntityRepository
     protected function cancelaPedido($idPedido)
     {
 
+        $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+
         $SQL = "SELECT * FROM ETIQUETA_SEPARACAO WHERE COD_PEDIDO = " . $idPedido;
         $countEtiquetas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -228,14 +230,19 @@ class PedidoRepository extends EntityRepository
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
 
+
         $EntPedido = $this->find($idPedido);
+        $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
+        $idCarga = $EntPedido->getCarga()->getId();
         $EntPedido->setDataCancelamento(new \DateTime());
         $this->_em->persist($EntPedido);
-
 
         if ((count($countEtiquetas) == 0) && (count($countMapas) == 0) && ($EntPedido->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_INTEGRADO)) {
             $this->_em->remove($EntPedido);
         }
+
+        $idUsuario = $this->getSystemParameterValue('ID_USER_ERP');
+        $expedicaoAndamentoRepo->save("Pedido " . $idPedido . " cancelado da Expedição:" . $idExpedicao . ", Carga:" . $idCarga. " via integração", $idExpedicao, $idUsuario);
 
         $this->_em->flush();
     }
