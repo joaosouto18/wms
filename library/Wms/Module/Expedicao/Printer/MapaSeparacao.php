@@ -9,6 +9,7 @@ use
     Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Sistema\Parametro;
+use Wms\Math;
 use Wms\Util\Barcode\Barcode;
 
 use Wms\Util\Barcode\eFPDF;
@@ -21,6 +22,7 @@ class MapaSeparacao extends eFPDF
     private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total;
     protected $chaveCargas;
     protected $cargasSelecionadas;
+    protected $math;
 
     //($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
     public function layoutMapa($expedicao, $modelo, $codBarras = null, $status)
@@ -660,6 +662,7 @@ class MapaSeparacao extends eFPDF
 
     private function layoutModelo4($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
     {
+        $this->math = new Math();
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         if ($codBarras == null) {
@@ -760,9 +763,10 @@ class MapaSeparacao extends eFPDF
                     $codigoBarras = $embalagemEn->getCodigoBarras();
                     $embalagem   = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
-                    $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
+                    $pesoTotal += $this->math->produtoMultiplicacao(str_replace(',','.',$pesoProduto->getPeso()), str_replace(',','.',$quantidade));
+                    $cubagemTotal += $this->math->produtoMultiplicacao(str_replace(',','.',$pesoProduto->getCubagem()), str_replace(',','.',$quantidade));
                 }
+
                 if ($ruaAnterior != $rua) {
                     $this->Cell(20, 7, "", 0, 1);
                     $this->SetFont('Arial','B',10);
@@ -780,9 +784,7 @@ class MapaSeparacao extends eFPDF
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 2, '', 0, 1);
                     $this->SetFont('Arial','B',10);
-//                    $this->Cell(20, 2, utf8_decode("ROTA: "), 0, 0);
                     $this->SetFont('Arial',null,10);
-//                    $this->Cell(20, 2, utf8_decode($linhaSeparacao), 0, 1);
 
                     $this->SetFont('Arial',null,10);
                     $this->Cell(4, 2, '', 0, 1);
@@ -862,8 +864,6 @@ class MapaSeparacao extends eFPDF
             $this->mapa = $mapa;
 
             $this->InFooter = true;
-//            $pageSizeA4 = $this->_getpagesize('A4');
-            $wPage = 595.28/12;
 
             $this->SetY(-23);
             $this->SetFont('Arial','B',9);
