@@ -282,9 +282,9 @@ class ApontamentoMapaRepository extends EntityRepository
                     FROM PRODUTIVIDADE_DETALHE PD
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = PD.COD_PESSOA
                   WHERE 1 = 1
-                  $andWhere "
-                . "GROUP BY "
-                . " PE.NOM_PESSOA, 
+                  $andWhere 
+                  GROUP BY 
+                  PE.NOM_PESSOA, 
                     IDENTIDADE,
                     DSC_ATIVIDADE,
                     PD.COD_PESSOA
