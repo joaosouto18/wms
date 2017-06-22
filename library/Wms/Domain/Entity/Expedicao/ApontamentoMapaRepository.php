@@ -287,8 +287,6 @@ class ApontamentoMapaRepository extends EntityRepository
                 . " PE.NOM_PESSOA, 
                     IDENTIDADE,
                     DSC_ATIVIDADE,
-                    DTH_INICIO,
-                    DTH_FIM,
                     PD.COD_PESSOA
                     ORDER BY DSC_ATIVIDADE, PD.COD_PESSOA";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
