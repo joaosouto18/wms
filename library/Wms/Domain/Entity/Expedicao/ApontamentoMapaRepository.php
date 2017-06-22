@@ -241,7 +241,7 @@ class ApontamentoMapaRepository extends EntityRepository
         $dataFim = str_replace('-','/',$dataFim);
 
         if (isset($idUsuario) && !empty($idUsuario)) {
-            $andWhere     .= " AND COD_PESSOA = $idUsuario";
+            $andWhere     .= " AND PE.COD_PESSOA = $idUsuario";
         }
 
         if (isset($atividade) && !empty($atividade)) {
