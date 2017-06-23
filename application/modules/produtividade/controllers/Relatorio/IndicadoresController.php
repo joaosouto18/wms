@@ -117,7 +117,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $params = $this->_getAllParams();
 
         $hoje = date('d/m/Y');
-        $procedureSQL = "CALL PROC_PRODUTIVIDADE_DETALHE('$hoje','$hoje')";
+        $procedureSQL = "CALL (PROC_PRODUTIVIDADE_DETALHE('$hoje','$hoje'))";
         $procedure = $this->em->getConnection()->prepare($procedureSQL);
         $procedure->execute();
         $this->em->flush();
