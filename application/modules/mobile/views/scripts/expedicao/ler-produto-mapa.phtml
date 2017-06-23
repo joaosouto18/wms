@@ -147,8 +147,20 @@
 
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
 
+
 <table class="info">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
+    <tr>
+        <td>
+            <div id='erro' style="background-color: #ff0000; font-size: 20px" ></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div id='success' style="background-color: lightgreen; font-size: 12px" >
+        </td>
+    </tr>
+
     <tr>
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
@@ -207,8 +219,6 @@
     <?php endif; ?>
 </table>
 
-<h2><div id='retorno' style="background-color: #ff0000; font-size: 20px" ></div></h2>
-<span id="dummy"></span>
 
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
     <input type="hidden" name="uma" value="" id="uma">
@@ -280,20 +290,28 @@
                         codigoBarras = document.getElementById('codigoBarras');
                         qtd.value = "1";
                         codigoBarras.value = "";
-                        $("#retorno").html(data.retorno.message);
+                        $("#erro").html("");
+                        $("#success").html("");
+                        ret = false;
                         if (data.retorno.resposta == 'error') {
                             try {
-                                alert(data.retorno.message);
-                                ret = false;
-                                //var audioElement = document.createElement('audio');
-                                //audioElement.setAttribute('src', '/alarme.mp3');
-                                //audioElement.play();
+                                $("#erro").html(data.retorno.message);
+                                $("#success").html("");
+                                //alert(data.retorno.message);
+                                var audioElement = document.createElement('audio');
+                                audioElement.setAttribute('src', '/alarme.mp3');
+                                audioElement.play();
                             } catch (e) {
                                 alert(message);
                             }
+                        } else {
+                            $("#erro").html("");
+                            $("#success").html(data.retorno.message);
+                            var audioElement = document.createElement('audio');
+                            audioElement.setAttribute('src', '/confirm.mp3');
+                            audioElement.play();
                         }
                     }
-
                 }
             });
         }
