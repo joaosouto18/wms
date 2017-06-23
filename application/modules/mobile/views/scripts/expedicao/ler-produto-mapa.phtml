@@ -214,6 +214,7 @@
                                 audioElement.setAttribute('src', '/alarme.mp3');
                                 audioElement.play();
                                 ret = false;
+                                return;
                             } catch (e) {
                                 alert(message);
                             }
