@@ -315,6 +315,14 @@
                 }
             });
         }
+
+        if (ret == false) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            } else {
+                e.returnValue = false;
+            }
+        }
         return ret;
     });
 
