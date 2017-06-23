@@ -422,16 +422,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso',false,$webservice);
 							} elseif (is_null($embalagemEntity->getDataInativacao())) {
-//								$embalagemEntity->setDataInativacao(new \DateTime());
-								$embalagemEntity->setDataInativacao(null);
+								$embalagemEntity->setDataInativacao(new \DateTime());
+//								$embalagemEntity->setDataInativacao(null);
 								$embalagemEntity->setUsuarioInativacao($idUsuario);
 								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
 							}
 						} else {
 							if ($webservice == true) {
 								if (is_null($embalagemEntity->getDataInativacao())) {
-//									$embalagemEntity->setDataInativacao(new \DateTime());
-									$embalagemEntity->setDataInativacao(null);
+									$embalagemEntity->setDataInativacao(new \DateTime());
+//									$embalagemEntity->setDataInativacao(null);
 									$embalagemEntity->setUsuarioInativacao(null);
 									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso',false,$webservice);
 								}
