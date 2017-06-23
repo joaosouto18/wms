@@ -278,22 +278,26 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->dscVolume = $dscVolume;
             $this->view->exibeQtd = $confereQtd;
 
+            /*
             if ($this->_request->isXmlHttpRequest()) {
                 $this->createXml('success', $msg['msg']);
             } else {
                 $this->addFlashMessage('success', $msg['msg']);
             }
+            */
 
         } catch (\Exception $e) {
             $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
             $this->_helper->json($vetRetorno);
 
+            /*
             if ($this->_request->isXmlHttpRequest()) {
                 $this->createXml("error", $msg);
             } else {
                 $this->addFlashMessage('error', $e->getMessage());
                 $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/cliente/$codPessoa");
             }
+            */
         }
 
     }
