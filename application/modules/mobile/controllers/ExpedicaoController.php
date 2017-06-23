@@ -289,7 +289,7 @@ class Mobile_ExpedicaoController extends Action {
         } catch (\Exception $e) {
             $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
             $this->_helper->json($vetRetorno);
-
+            return;
             /*
             if ($this->_request->isXmlHttpRequest()) {
                 $this->createXml("error", $msg);
