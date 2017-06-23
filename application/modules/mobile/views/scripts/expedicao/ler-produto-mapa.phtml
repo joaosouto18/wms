@@ -1,5 +1,78 @@
 <script>
 
+    function formSubmit(event)
+    {
+        qtd = document.getElementById('qtd');
+        codigoBarras = document.getElementById('codigoBarras');
+
+        if (codigoBarras) {
+            if (qtd.value !== "" && qtd.value !== "") {
+                loadResult();
+            }
+        }
+
+        if (event.preventDefault) {
+            event.preventDefault();
+        } else {
+            event.returnValue = false;
+        }
+
+    }
+
+    function loadResult()
+    {
+        qtd = document.getElementById('qtd');
+        codigoBarras = document.getElementById('codigoBarras');
+
+        qtd.disabled = true;
+        codigoBarras.disabled = true;
+
+        document.getElementById('retorno').innerHTML = 'Pesquisando...';
+
+        load(document.getElementById('formulario').action, 'formulario', function (xhr) {
+            document.getElementById('retorno').innerHTML = '';
+
+            qtd.disabled = false;
+            codigoBarras.disabled = false;
+            qtd.value = "1";
+            codigoBarras.value = ""
+            codigoBarras.focus();
+
+            xmlDoc = xhr.responseXML;
+
+            x = xmlDoc.getElementsByTagName("retorno");
+            i = 0;
+
+            exibeMensagem(x, i);
+        });
+    }
+
+    function exibeMensagem(x, i)
+    {
+
+
+        var message = 'Error';
+        if (x[i].getElementsByTagName("message").length > 0) {
+            message = (x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
+            document.getElementById("retorno").innerHTML = message;
+        }
+
+        if (x[i].getElementsByTagName("resposta").length > 0) {
+            status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
+            if (status == 'error') {
+                try{
+                    var audioElement = document.createElement('audio');
+                    audioElement.setAttribute('src', '/alarme.mp3');
+                    audioElement.play();
+                    //playSound('/alarme.mp3');
+                }
+                catch(e){
+                    alert(message);
+                }
+            }
+        }
+    }
+
     function selecionar() {
         $('#qtd').select();
     }
@@ -137,7 +210,7 @@
 <h2><div id='retorno' style="background-color: #ff0000; font-size: 20px" ></div></h2>
 <span id="dummy"></span>
 
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" onmethod="post">
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" method="post">
     <input type="hidden" name="uma" value="" id="uma">
     <dt id="identification-label">&nbsp;</dt>
     <dd id="identification-element">
