@@ -283,10 +283,10 @@
                         $("#retorno").html(data.retorno.message);
                         if (data.retorno.resposta == 'error') {
                             try {
+                                ret = false;
                                 var audioElement = document.createElement('audio');
                                 audioElement.setAttribute('src', '/alarme.mp3');
                                 audioElement.play();
-                                ret = false;
                             } catch (e) {
                                 alert(message);
                             }
