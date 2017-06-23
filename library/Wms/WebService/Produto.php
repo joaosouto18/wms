@@ -278,7 +278,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
-                    $fator = $embalagemCadastrada->getCodigoBarras();
+                    $fator = $embalagemCadastrada->getQuantidade();
                     foreach ($embalagens as $embalagemWs) {
 
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
