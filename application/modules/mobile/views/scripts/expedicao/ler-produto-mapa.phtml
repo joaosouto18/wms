@@ -66,82 +66,6 @@
         return true;
     }
 
-
-    function formSubmit(event)
-    {
-        qtd = document.getElementById('qtd');
-        codigoBarras = document.getElementById('codigoBarras');
-
-        if (codigoBarras) {
-            if (qtd.value !== "" && qtd.value !== "") {
-                loadResult();
-            }
-        }
-
-        if (event.preventDefault) {
-            event.preventDefault();
-        } else {
-            event.returnValue = false;
-        }
-
-    }
-
-    function loadResult()
-    {
-        qtd = document.getElementById('qtd');
-        codigoBarras = document.getElementById('codigoBarras');
-
-        qtd.disabled = true;
-        codigoBarras.disabled = true;
-
-        document.getElementById('retorno').innerHTML = 'Pesquisando...';
-
-        load(document.getElementById('formulario').action, 'formulario', function (xhr) {
-            alert('teste 2');
-            document.getElementById('retorno').innerHTML = '';
-
-            qtd.disabled = false;
-            codigoBarras.disabled = false;
-            qtd.value = "1";
-            codigoBarras.value = ""
-            codigoBarras.focus();
-
-            xmlDoc = xhr.responseXML;
-
-            x = xmlDoc.getElementsByTagName("retorno");
-            i = 0;
-
-            exibeMensagem(x, i);
-        });
-    }
-
-    function exibeMensagem(x, i)
-    {
-
-
-        var message = 'Error';
-        if (x[i].getElementsByTagName("message").length > 0) {
-            message = (x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
-            document.getElementById("retorno").innerHTML = message;
-        }
-
-        if (x[i].getElementsByTagName("resposta").length > 0) {
-            status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
-            if (status == 'error') {
-                try{
-                    var audioElement = document.createElement('audio');
-                    audioElement.setAttribute('src', '/alarme.mp3');
-                    audioElement.play();
-                    //playSound('/alarme.mp3');
-                }
-                catch(e){
-                    alert(message);
-                }
-            }
-        }
-    }
-
-
 </script>
 
 <?php if ($this->exibeQtd == false) : ?>
@@ -149,9 +73,6 @@
 <?php endif; ?>
 
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
-
-<div id='retorno'></div>
-<span id="dummy"></span>
 
 <table class="info">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
@@ -213,7 +134,10 @@
     <?php endif; ?>
 </table>
 
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" onSubmit="formSubmit(event)" method="post">
+<h2><div id='retorno' style="background-color: #ff0000; font-size: 20px" ></div></h2>
+<span id="dummy"></span>
+
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" onmethod="post">
     <input type="hidden" name="uma" value="" id="uma">
     <dt id="identification-label">&nbsp;</dt>
     <dd id="identification-element">
@@ -266,3 +190,40 @@
         <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/'. $this->central ?>" >Alt. Mapa</a></td>
     <?php endif; ?>
 </form>
+
+
+<script>
+    $('#codigoBarras').on('keydown', function (e) {
+        var ret = true;
+        if (e.which == 13) {
+            $.ajax({
+                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
+                data: $('form').serialize(),
+                async: false,
+                type: 'post',
+                success: function (data) {
+                    if (data.retorno.resposta.length > 0) {
+                        qtd = document.getElementById('qtd');
+                        codigoBarras = document.getElementById('codigoBarras');
+                        qtd.value = "1";
+                        codigoBarras.value = ""
+                        $("#retorno").html(data.retorno.message);
+                        if (data.retorno.resposta == 'error') {
+                            try {
+                                var audioElement = document.createElement('audio');
+                                audioElement.setAttribute('src', '/alarme.mp3');
+                                audioElement.play();
+                                ret = false;
+                            } catch (e) {
+                                alert(message);
+                            }
+                        }
+                    }
+
+                }
+            });
+        }
+        return ret;
+    });
+
+</script>
