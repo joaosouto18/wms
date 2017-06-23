@@ -283,7 +283,7 @@
                         $("#retorno").html(data.retorno.message);
                         if (data.retorno.resposta == 'error') {
                             try {
-                                alert('teste');
+                                alert(data.retorno.message);
                                 ret = false;
                                 //var audioElement = document.createElement('audio');
                                 //audioElement.setAttribute('src', '/alarme.mp3');
