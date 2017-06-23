@@ -1431,9 +1431,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $embalagenEn =null;
         $volumeEn = null;
         $produtoEn = null;
-        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras'=>$codBarras));
+        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras'=>$codBarras, 'dataInativacao' => null));
         if ($embalagenEn == null) {
-            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras'=>$codBarras));
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras'=>$codBarras, 'dataInativacao' => null));
 			if ($volumeEn == null) {
 				throw new \Exception("Produto não encontrado para o código de barras $codBarras.");
 			} else {

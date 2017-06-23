@@ -969,7 +969,7 @@ class Inventario
         if ($teveAlteracao == true) {
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
         }
-        
+
 
         foreach($contagemEndEntities as $contagemEndEn) {
 
