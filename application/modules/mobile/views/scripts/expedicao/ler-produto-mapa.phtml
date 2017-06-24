@@ -1,4 +1,5 @@
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
+<span id="dummy"></span>
 
 <script>
 
@@ -316,7 +317,7 @@
                         try {
                             $("#erro").html(error);
                             $("#success").html(success);
-                            playSound(song);
+                            playSound('/confirm.mp3');
                         } catch (e) {
                             alert(message);
                         }
@@ -330,4 +331,3 @@
 
 </script>
 
-<span id="dummy"></span>
