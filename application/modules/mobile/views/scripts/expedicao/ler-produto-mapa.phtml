@@ -34,13 +34,14 @@
                     event.returnValue = false;
                 }
             }
-            alert('teste2');
+
             var codBarras = $('#codigoBarras').val();
             dadosProdutos = '';
             $.ajax({
                 url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras,
                 type: 'get',
                 success: function (data) {
+                    alert('teste3');
                     var codProduto         = data['result']['codProduto'];
                     var grade              = data['result']['grade'];
                     var descricao          = data['result']['descricao'];
