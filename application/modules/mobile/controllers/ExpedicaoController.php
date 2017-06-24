@@ -293,7 +293,7 @@ class Mobile_ExpedicaoController extends Action {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
                 $this->_helper->json($vetRetorno);
             } else {
-                $this->addFlashMessage('error',$msg['msg']);
+                $this->addFlashMessage('error',$e->getMessage());
             }
         }
 
