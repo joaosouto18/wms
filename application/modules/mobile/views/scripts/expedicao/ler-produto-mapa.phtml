@@ -1,4 +1,11 @@
+<?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
+
 <script>
+
+    function playSound(soundfile) {
+        document.getElementById("dummy").innerHTML=
+            "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+    }
 
     function formSubmit(event)
     {
@@ -145,7 +152,6 @@
     <body onLoad="load()"></body>
 <?php endif; ?>
 
-<?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
 
 
 <table class="info">
@@ -303,13 +309,14 @@
                             song = "/alarme.mp3";
                         } else {
                             success = "";
-                            error = "data.retorno.message";
+                            error = data.retorno.message;
                             song = "/confirm.mp3";
                         }
 
                         try {
                             $("#erro").html(error);
                             $("#success").html(success);
+                            playSound(song);
                             //var audioElement = document.createElement('audio');
                             //audioElement.setAttribute('src', '/alarme.mp3');
                             //audioElement.play();
@@ -325,3 +332,5 @@
     });
 
 </script>
+
+<span style="display: none" id="dummy"></span>
