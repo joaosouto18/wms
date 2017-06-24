@@ -277,7 +277,6 @@
 
 <script>
     $('#codigoBarras').on('keydown', function (e) {
-        var ret = true;
         if (e.which == 13) {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
@@ -286,33 +285,37 @@
                 type: 'post',
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
-                        alert('teste');
                         qtd = document.getElementById('qtd');
                         codigoBarras = document.getElementById('codigoBarras');
                         qtd.value = "1";
                         codigoBarras.value = "";
+                        var error = "";
+                        var success = "";
+                        var song = "";
+
                         $("#erro").html("");
                         $("#success").html("");
-                        ret = false;
+
                         if (data.retorno.resposta == 'error') {
-                            try {
-                                $("#erro").html(data.retorno.message);
-                                $("#success").html("");
-                                //alert(data.retorno.message);
-                                var audioElement = document.createElement('audio');
-                                audioElement.setAttribute('src', '/alarme.mp3');
-                                audioElement.play();
-                            } catch (e) {
-                                alert(message);
-                            }
+                            error = data.retorno.message;
+                            success = "";
+                            song = "/alarme.mp3";
                         } else {
-                            $("#erro").html("");
-                            $("#success").html(data.retorno.message);
-                            var audioElement = document.createElement('audio');
-                            audioElement.setAttribute('src', '/confirm.mp3');
-                            audioElement.play();
+                            success = "";
+                            error = "data.retorno.message";
+                            song = "/confirm.mp3";
                         }
 
+                        try {
+                            $("#erro").html(error);
+                            $("#success").html(success);
+                            //alert(data.retorno.message);
+                            var audioElement = document.createElement('audio');
+                            audioElement.setAttribute('src', '/alarme.mp3');
+                            audioElement.play();
+                        } catch (e) {
+                            alert(message);
+                        }
 
                         if (e.preventDefault) {
                             e.preventDefault();
@@ -328,9 +331,7 @@
             });
         }
 
-        if (ret == false) {
-        }
-        return ret;
+        return true;
     });
 
 </script>
