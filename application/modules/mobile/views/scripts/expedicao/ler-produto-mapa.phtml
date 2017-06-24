@@ -1,11 +1,12 @@
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
 <span id="dummy"></span>
+<bgsound id="bgSoundId" loop="0" volume="100" />
 
 <script>
 
     function playSound(soundfile) {
-        document.getElementById("dummy").innerHTML=
-            "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+        document.getElementById("bgSoundId").src = soundfile;
+        //document.getElementById("dummy").innerHTML="<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
     }
 
     function formSubmit(event)
@@ -317,7 +318,7 @@
                         try {
                             $("#erro").html(error);
                             $("#success").html(success);
-                            playSound('/confirm.mp3');
+                            playSound(song);
                         } catch (e) {
                             alert(message);
                         }
