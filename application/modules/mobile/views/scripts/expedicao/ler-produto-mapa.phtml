@@ -6,80 +6,6 @@
 
     function playSound(soundfile) {
         document.getElementById("bgSoundId").src = soundfile;
-        //document.getElementById("dummy").innerHTML="<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
-    }
-
-    function formSubmit(event)
-    {
-        qtd = document.getElementById('qtd');
-        codigoBarras = document.getElementById('codigoBarras');
-
-        if (codigoBarras) {
-            if (qtd.value !== "" && qtd.value !== "") {
-                loadResult();
-            }
-        }
-
-        if (event.preventDefault) {
-            event.preventDefault();
-        } else {
-            event.returnValue = false;
-        }
-
-    }
-
-    function loadResult()
-    {
-        qtd = document.getElementById('qtd');
-        codigoBarras = document.getElementById('codigoBarras');
-
-        qtd.disabled = true;
-        codigoBarras.disabled = true;
-
-        document.getElementById('retorno').innerHTML = 'Pesquisando...';
-
-        load(document.getElementById('formulario').action, 'formulario', function (xhr) {
-            document.getElementById('retorno').innerHTML = '';
-
-            qtd.disabled = false;
-            codigoBarras.disabled = false;
-            qtd.value = "1";
-            codigoBarras.value = ""
-            codigoBarras.focus();
-
-            xmlDoc = xhr.responseXML;
-
-            x = xmlDoc.getElementsByTagName("retorno");
-            i = 0;
-
-            exibeMensagem(x, i);
-        });
-    }
-
-    function exibeMensagem(x, i)
-    {
-
-
-        var message = 'Error';
-        if (x[i].getElementsByTagName("message").length > 0) {
-            message = (x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
-            document.getElementById("retorno").innerHTML = message;
-        }
-
-        if (x[i].getElementsByTagName("resposta").length > 0) {
-            status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
-            if (status == 'error') {
-                try{
-                    var audioElement = document.createElement('audio');
-                    audioElement.setAttribute('src', '/alarme.mp3');
-                    audioElement.play();
-                    //playSound('/alarme.mp3');
-                }
-                catch(e){
-                    alert(message);
-                }
-            }
-        }
     }
 
     function selecionar() {
@@ -186,7 +112,6 @@
                     next: '#next',
                     timeout:  0
                 });
-
             });
         </script>
 
@@ -285,50 +210,51 @@
 
 <script>
     $('#codigoBarras').on('keydown', function (e) {
-        if (e.which == 13) {
-            var ret = true;
-            $.ajax({
-                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
-                data: $('form').serialize(),
-                async: false,
-                type: 'post',
-                success: function (data) {
-                    if (data.retorno.resposta.length > 0) {
-                        ret = false;
-                        document.getElementById('qtd').value = "1";
-                        codigoBarras = document.getElementById('codigoBarras').value = "";
+        var ret = true;
+        if (<?php if ($this->exibeQtd == true) {echo "'S'";} else {echo "'N'";}?> == 'S') {
+            if (e.which == 13) {
+                $.ajax({
+                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
+                    data: $('form').serialize(),
+                    async: false,
+                    type: 'post',
+                    success: function (data) {
+                        if (data.retorno.resposta.length > 0) {
+                            ret = false;
+                            document.getElementById('qtd').value = "1";
+                            codigoBarras = document.getElementById('codigoBarras').value = "";
 
-                        var error = "";
-                        var success = "";
-                        var song = "";
+                            var error = "";
+                            var success = "";
+                            var song = "";
 
-                        if (data.retorno.resposta == 'error') {
-                            error = data.retorno.message;
-                            success = "";
-                            song = "/alarme.mp3";
-                        } else {
-                            success = data.retorno.message;
-                            error = "";
-                            song = "/confirm2.mp3";
-                        }
+                            if (data.retorno.resposta == 'error') {
+                                error = data.retorno.message;
+                                success = "";
+                                song = "/alarme.mp3";
+                            } else {
+                                success = data.retorno.message;
+                                error = "";
+                                song = "/confirm2.mp3";
+                            }
 
-                        $("#erro").html(error);
-                        $("#success").html(success);
+                            $("#erro").html(error);
+                            $("#success").html(success);
 
-                        try {
-                            playSound(song);
-                        } catch (e) {
-                            alert(message);
-                        }
+                            try {
+                                playSound(song);
+                            } catch (e) {
+                                alert(message);
+                            }
 
-                        if (data.retorno.resposta == 'error') {
-                            alert(data.retorno.message);
+                            if (data.retorno.resposta == 'error') {
+                                alert(data.retorno.message);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
-
         return ret;
     });
 

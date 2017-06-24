@@ -278,13 +278,17 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->dscVolume = $dscVolume;
             $this->view->exibeQtd = $confereQtd;
 
-            if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
-                $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
-                $this->_helper->json($vetRetorno);
+            if ($confereQtd == true) {
+                if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+                    $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
+                    $this->_helper->json($vetRetorno);
+                }
             }
         } catch (\Exception $e) {
-            $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
-            $this->_helper->json($vetRetorno);
+            if ($confereQtd == true) {
+                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
+                $this->_helper->json($vetRetorno);
+            }
         }
 
     }
