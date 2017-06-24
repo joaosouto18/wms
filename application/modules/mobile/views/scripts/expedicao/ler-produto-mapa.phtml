@@ -278,6 +278,7 @@
 <script>
     $('#codigoBarras').on('keydown', function (e) {
         if (e.which == 13) {
+            var ret = true;
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
                 data: $('form').serialize(),
@@ -285,6 +286,7 @@
                 type: 'post',
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
+                        ret = false;
                         qtd = document.getElementById('qtd');
                         codigoBarras = document.getElementById('codigoBarras');
                         qtd.value = "1";
@@ -315,23 +317,20 @@
                         } catch (e) {
                             alert(message);
                         }
-
-                        if (e.preventDefault) {
-                            e.preventDefault();
-                        } else {
-                            e.returnValue = false;
-                        }
-                        alert('teste4');
-                        return false;
-
-
-
                     }
                 }
             });
         }
 
-        return true;
+        alert('teste 5');
+
+        if (e.preventDefault) {
+            e.preventDefault();
+        } else {
+            e.returnValue = false;
+        }
+
+        return ret;
     });
 
 </script>
