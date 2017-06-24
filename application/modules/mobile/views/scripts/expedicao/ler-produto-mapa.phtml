@@ -295,29 +295,27 @@
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
                         ret = false;
-                        qtd = document.getElementById('qtd');
-                        codigoBarras = document.getElementById('codigoBarras');
-                        qtd.value = "1";
-                        codigoBarras.value = "";
+                        document.getElementById('qtd').value = "1";
+                        codigoBarras = document.getElementById('codigoBarras').value = "";
+
                         var error = "";
                         var success = "";
                         var song = "";
-                        $("#erro").html("");
-                        $("#success").html("");
 
                         if (data.retorno.resposta == 'error') {
                             error = data.retorno.message;
                             success = "";
-                            song = "/alarme.mp3";
+                            song = "/alarme2.mp3";
                         } else {
-                            success = "";
-                            error = data.retorno.message;
-                            song = "/confirm.mp3";
+                            success = data.retorno.message;
+                            error = "";
+                            song = "/confirm2.mp3";
                         }
 
+                        $("#erro").html(error);
+                        $("#success").html(success);
+
                         try {
-                            $("#erro").html(error);
-                            $("#success").html(success);
                             playSound(song);
                         } catch (e) {
                             alert(message);
