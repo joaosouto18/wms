@@ -303,7 +303,6 @@
                         var song = "";
 
                         if (data.retorno.resposta == 'error') {
-                            alert(data.retorno.message);
                             error = data.retorno.message;
                             success = "";
                             song = "/alarme.mp3";
@@ -320,6 +319,10 @@
                             playSound(song);
                         } catch (e) {
                             alert(message);
+                        }
+
+                        if (data.retorno.resposta == 'error') {
+                            alert(data.retorno.message);
                         }
                     }
                 }
