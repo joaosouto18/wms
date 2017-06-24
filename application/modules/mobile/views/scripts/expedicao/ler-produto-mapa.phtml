@@ -311,19 +311,23 @@
                             audioElement.setAttribute('src', '/confirm.mp3');
                             audioElement.play();
                         }
+
+
+                        if (e.preventDefault) {
+                            e.preventDefault();
+                        } else {
+                            e.returnValue = false;
+                        }
+                        //alert('teste');
+                        return false;
+
+
                     }
                 }
             });
         }
 
         if (ret == false) {
-            if (e.preventDefault) {
-                e.preventDefault();
-            } else {
-                e.returnValue = false;
-            }
-            return false;
-            alert('teste');
         }
         return ret;
     });
