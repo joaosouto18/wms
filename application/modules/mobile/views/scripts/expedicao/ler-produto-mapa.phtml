@@ -310,10 +310,9 @@
                         try {
                             $("#erro").html(error);
                             $("#success").html(success);
-                            //alert(data.retorno.message);
-                            //var audioElement = document.createElement('audio');
-                            //audioElement.setAttribute('src', '/alarme.mp3');
-                            //audioElement.play();
+                            var audioElement = document.createElement('audio');
+                            audioElement.setAttribute('src', '/alarme.mp3');
+                            audioElement.play();
                         } catch (e) {
                             alert(message);
                         }
@@ -322,14 +321,6 @@
             });
         }
 
-        //alert('teste 5');
-/*
-        if (e.preventDefault) {
-            e.preventDefault();
-        } else {
-            e.returnValue = false;
-        }
-*/
         return ret;
     });
 
