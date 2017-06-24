@@ -283,11 +283,17 @@ class Mobile_ExpedicaoController extends Action {
                     $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
                     $this->_helper->json($vetRetorno);
                 }
+            } else {
+                if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+                    $this->addFlashMessage('success',$msg['msg']);
+                }
             }
         } catch (\Exception $e) {
             if ($confereQtd == true) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
                 $this->_helper->json($vetRetorno);
+            } else {
+                $this->addFlashMessage('error',$msg['msg']);
             }
         }
 
