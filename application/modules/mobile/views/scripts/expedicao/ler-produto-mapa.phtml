@@ -286,6 +286,7 @@
                 type: 'post',
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
+                        alert('teste');
                         qtd = document.getElementById('qtd');
                         codigoBarras = document.getElementById('codigoBarras');
                         qtd.value = "1";
@@ -312,7 +313,7 @@
                             audioElement.play();
                         }
 
-                        alert('teste');
+
                         if (e.preventDefault) {
                             e.preventDefault();
                         } else {
