@@ -214,10 +214,10 @@
 
 
 <script>
-    $('#codigoBarras').on('keydown', function (e) {
+    $('#formulario').on('submit', function (e) {
         var ret = true;
         if (<?php if ($this->exibeQtd == true) {echo "'S'";} else {echo "'N'";}?> == 'S') {
-            if (e.which == 13) {
+            //if (e.which == 13) {
                 $.ajax({
                     url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
                     data: $('form').serialize(),
@@ -258,7 +258,7 @@
                         }
                     }
                 });
-            }
+            //}
         }
         return ret;
     });
