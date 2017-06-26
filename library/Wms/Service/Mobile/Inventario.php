@@ -909,6 +909,9 @@ class Inventario
                  */
                 if ($encontrouProduto == false) {
                     if ($maiorContagem == 1) {
+                        if ($idEmbalagem != null) {
+                            $idEmbalagem = 0;
+                        }
                         $contagemEndRepo->save(array(
                             'qtd' => 0,
                             'idContagemOs' => $idOs,
@@ -922,15 +925,6 @@ class Inventario
                             'validade' => null
                         ));
                         $alterou = true;
-                    } else {
-                      /*  $produtoEn = $produtoRepo->findOneBy(array('id'=>$codProduto, 'grade'=>$grade));
-
-                        $dscProduto = "";
-                        if ($produtoEn != null) {
-                            $dscProduto = $produtoEn->getDescricao();
-                        }
-                        throw new \Exception(("Não foi encontrada a conferencia do item $codProduto/$grade - $dscProduto - codBarras: $codBarras"));
-                      */
                     }
                 }
             }
@@ -964,10 +958,11 @@ class Inventario
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
 
-
-        $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
-        if ($teveAlteracao == true) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
+        if ($this->getSystemParameterValue('CONTAR_TODOS_PRODUTOS') == 'S') {
+            $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
+            if ($teveAlteracao == true) {
+                $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
+            }
         }
 
         foreach($contagemEndEntities as $contagemEndEn) {
