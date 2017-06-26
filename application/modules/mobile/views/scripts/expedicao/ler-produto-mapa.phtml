@@ -242,7 +242,9 @@
                                 error = "";
                                 song = "/confirm2.mp3";
                             }
-                            codigoBarras.focus();
+
+                            document.getElementById('codigoBarras').focus();
+                            
                             $("#erro").html(error);
                             $("#success").html(success);
 
