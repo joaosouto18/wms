@@ -970,7 +970,6 @@ class Inventario
             $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
         }
 
-
         foreach($contagemEndEntities as $contagemEndEn) {
 
             $params['contagemEndId']        = $contagemEndEn->getId();

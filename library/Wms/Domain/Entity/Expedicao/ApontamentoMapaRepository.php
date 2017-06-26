@@ -241,7 +241,7 @@ class ApontamentoMapaRepository extends EntityRepository
         $dataFim = str_replace('-','/',$dataFim);
 
         if (isset($idUsuario) && !empty($idUsuario)) {
-            $andWhere     .= " AND COD_PESSOA = $idUsuario";
+            $andWhere     .= " AND PE.COD_PESSOA = $idUsuario";
         }
 
         if (isset($atividade) && !empty($atividade)) {
@@ -282,9 +282,9 @@ class ApontamentoMapaRepository extends EntityRepository
                     FROM PRODUTIVIDADE_DETALHE PD
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = PD.COD_PESSOA
                   WHERE 1 = 1
-                  $andWhere "
-                . "GROUP BY "
-                . " PE.NOM_PESSOA, 
+                  $andWhere 
+                  GROUP BY 
+                  PE.NOM_PESSOA, 
                     IDENTIDADE,
                     DSC_ATIVIDADE,
                     PD.COD_PESSOA

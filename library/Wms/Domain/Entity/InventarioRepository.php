@@ -239,7 +239,7 @@ class InventarioRepository extends EntityRepository
             if (isset($codProduto) && ($codProduto != null)) {
                 $enderecoProdutoRepo->save($codProduto, $grade, $enderecoEn);
             }
-            
+
         }
 
         $this->_em->flush();

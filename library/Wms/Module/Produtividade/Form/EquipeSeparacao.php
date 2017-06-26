@@ -26,7 +26,7 @@ class EquipeSeparacao extends Form
         $parametro = $parametroRepo->findOneBy(array('constante' => 'MODELO_SEPARACAO_PADRAO'));
         $idModeloSeparacao = $parametro->getValor();
 
-        $modeloSeparacaoRepo = $this->getEm()->getRepository('wms:expedicao\modeloSeparacao');
+        $modeloSeparacaoRepo = $this->getEm()->getRepository('wms:Expedicao\ModeloSeparacao');
         $modeloSeparacao = $modeloSeparacaoRepo->findOneBy(array('id' => $idModeloSeparacao));
 
         if ($modeloSeparacao->getTipoSeparacaoFracionado() === tipoSeparacao::TIPO_SEPARACAO_MAPA || $modeloSeparacao->getTipoSeparacaoNaoFracionado() === tipoSeparacao::TIPO_SEPARACAO_MAPA) {
