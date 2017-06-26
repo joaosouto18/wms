@@ -378,9 +378,20 @@ class MapaSeparacao extends eFPDF
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
+                $codigoBarras = '';
+                $embalagem = '';
 
-                $embalagem   = $produto->getProdutoEmbalagem();
-                $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                if (isset($embalagemEn) && !empty($embalagemEn)) {
+                    $embalagem   = $produto->getProdutoEmbalagem();
+                    if ($embalagem->getQuantidade() == $embalagemEn->getQuantidade()) {
+                        $embalagem = $embalagemEn->getDescricao() . "(". $embalagemEn->getQuantidade(). ")";
+                        $codigoBarras = $embalagemEn->getCodigoBarras();
+                    } else {
+                        $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                        $codigoBarras = $embalagem->getCodigoBarras();
+                    }
+                }
+
                 $endereco     = $produto->getCodDepositoEndereco();
                 $codProduto   = $produto->getCodProduto();
                 $descricao    = utf8_decode($produto->getProduto()->getDescricao());
@@ -388,14 +399,11 @@ class MapaSeparacao extends eFPDF
                 $quantidade   = $produto->getQtdSeparar();
                 $caixas       = $produto->getNumCaixaInicio().' - '.$produto->getNumCaixaFim();
                 $dscEndereco  = "";
-                $codigoBarras = '';
-                //$embalagem = $embalagemEn->getDescricao() . "(". $embalagemEn->getQuantidade(). ")";
-                //$embalagem = "";
+
 
                 if ($endereco != null)
                     $dscEndereco  = $endereco->getDescricao();
-                if (isset($embalagemEn) && !empty($embalagemEn))
-                    $codigoBarras = $embalagemEn->getCodigoBarras();
+
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;

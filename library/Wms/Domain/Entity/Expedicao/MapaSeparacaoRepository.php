@@ -731,7 +731,7 @@ class MapaSeparacaoRepository extends EntityRepository
     public function getMapaSeparacaoByExpedicao($idExpedicao)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('ms.id codBarras')
+            ->select('ms.id codBarras, ms.dscQuebra descricao')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->where("ms.expedicao = $idExpedicao");
 

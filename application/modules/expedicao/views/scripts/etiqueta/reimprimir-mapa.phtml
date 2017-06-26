@@ -22,6 +22,7 @@
             <thead>
             <tr class="gTTitle">
                 <td>Cód de barras do Mapa</td>
+                <td>Descrição</td>
             </tr>
             </thead>
             <tbody>
@@ -29,10 +30,11 @@
             foreach ($this->mapaSeparacao as $mapa): ?>
                 <tr height="35">
                     <td><?php echo $mapa['codBarras'] ?></td>
+                    <td><?php echo $mapa['descricao'] ?></td>
                 </tr>
             <?php endforeach; ?>
             <tr>
-                <td>
+                <td colspan="2">
                     <label>Código de barras Mapa Separação:</label>
                     <input class="focus" type="text" name="codBarra" id="codBarra"  onkeydown="nextInput(event)" />
                     <?php
