@@ -411,8 +411,8 @@ class MapaSeparacaoRepository extends EntityRepository
 
     public function verificaConferenciaProduto($mapaEn, $idProduto, $grade) {
         /* TESTE DE PERFORMANCE - NÃO VERIFICAR SE TODOS OS PRODUTOS FORAM CONFERIDOS */
-        return array('result'=> true ,
-                     'msg' => 'Quantidade conferida com sucesso');
+        //return array('result'=> true ,
+        //             'msg' => 'Quantidade conferida com sucesso');
 
         $idMapa = $mapaEn->getId();
         $SQL = "SELECT SEP.COD_PRODUTO, SEP.DSC_GRADE, SEP.QTD_SEP, CONF.QTD_CONF, SEP.QTD_SEP - CONF.QTD_CONF as QTD_PEND
