@@ -378,6 +378,9 @@ class MapaSeparacao extends eFPDF
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
+
+                $embalagem   = $produto->getProdutoEmbalagem();
+                $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
                 $endereco     = $produto->getCodDepositoEndereco();
                 $codProduto   = $produto->getCodProduto();
                 $descricao    = utf8_decode($produto->getProduto()->getDescricao());
@@ -386,7 +389,9 @@ class MapaSeparacao extends eFPDF
                 $caixas       = $produto->getNumCaixaInicio().' - '.$produto->getNumCaixaFim();
                 $dscEndereco  = "";
                 $codigoBarras = '';
-                $embalagem = $embalagemEn->getDescricao() . "(". $embalagemEn->getQuantidade(). ")";
+                //$embalagem = $embalagemEn->getDescricao() . "(". $embalagemEn->getQuantidade(). ")";
+                //$embalagem = "";
+
                 if ($endereco != null)
                     $dscEndereco  = $endereco->getDescricao();
                 if (isset($embalagemEn) && !empty($embalagemEn))

@@ -368,16 +368,17 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param string $tipoCarga
      * @param string $tipoPedido
      * @param string $idPedido
-     * @return boolean
+     * @return bool|Exception
+     * @throws Exception
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
-
+        $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-cancelarPedido.log');
+        $logger = new Zend_Log($writer);
         try {
             $this->_em->beginTransaction();
 
-            $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-cancelarPedido.log');
-            $logger = new Zend_Log($writer);
+
             $logger->debug("Pedido: $idPedido");
 
             $idPedido = trim($idPedido);
@@ -418,7 +419,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         } catch (\Exception $e) {
             $this->_em->rollback();
             $logger->warn($e->getMessage());
-            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+            throw new \Exception($e->getMessage(), null, $e);
         }
 
         return true;
