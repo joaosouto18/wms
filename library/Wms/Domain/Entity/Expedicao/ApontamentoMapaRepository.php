@@ -1,14 +1,13 @@
 <?php
+
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 
-class ApontamentoMapaRepository extends EntityRepository
-{
+class ApontamentoMapaRepository extends EntityRepository {
 
-    public function save($mapaSeparacao,$codUsuario)
-    {
+    public function save($mapaSeparacao, $codUsuario) {
         $em = $this->getEntityManager();
         $apontamentoEn = new ApontamentoMapa();
         $apontamentoEn->setDataConferencia(new \DateTime());
@@ -28,8 +27,7 @@ class ApontamentoMapaRepository extends EntityRepository
         return $apontamentoEn;
     }
 
-    public function update($apontamentoMapaEn)
-    {
+    public function update($apontamentoMapaEn) {
         $em = $this->getEntityManager();
         $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
         $em->persist($apontamentoMapaEn);
@@ -37,8 +35,7 @@ class ApontamentoMapaRepository extends EntityRepository
         return true;
     }
 
-    public function getApontamentoDetalhado($params)
-    {
+    public function getApontamentoDetalhado($params) {
 
         $idUsuario = $params['usuario'];
         $idExpedicao = $params['expedicao'];
@@ -60,36 +57,36 @@ class ApontamentoMapaRepository extends EntityRepository
             $hoje = new \DateTime();
             $params['dataFim'] = $dataFim = $hoje->format('d/m/Y');
         }
-        $dataInicio = str_replace('-','/',$dataInicio);
-        $dataFim = str_replace('-','/',$dataFim);
+        $dataInicio = str_replace('-', '/', $dataInicio);
+        $dataFim = str_replace('-', '/', $dataFim);
 
         if (isset($idUsuario) && !empty($idUsuario)) {
-            $andWhere     .= " AND P.COD_PESSOA = $idUsuario";
+            $andWhere .= " AND P.COD_PESSOA = $idUsuario";
             $andWhereConf .= " AND P.COD_PESSOA = $idUsuario";
         }
 
         if (isset($tipoQuebra) && !empty($tipoQuebra)) {
             $quebra = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
-            $andWhere     .= " AND QUEBRA.IND_TIPO_QUEBRA = '$quebra'";
+            $andWhere .= " AND QUEBRA.IND_TIPO_QUEBRA = '$quebra'";
             $andWhereConf .= " AND QUEBRA.IND_TIPO_QUEBRA = '$quebra'";
         }
 
         if (isset($idExpedicao) && !empty($idExpedicao)) {
-            $andWhere     .= " AND E.COD_EXPEDICAO = $idExpedicao";
+            $andWhere .= " AND E.COD_EXPEDICAO = $idExpedicao";
             $andWhereConf .= " AND E.COD_EXPEDICAO = $idExpedicao";
         }
 
         if (isset($idMapaSeparacao) && !empty($idMapaSeparacao)) {
-            $andWhere     .= " AND MS.COD_MAPA_SEPARACAO = $idMapaSeparacao";
+            $andWhere .= " AND MS.COD_MAPA_SEPARACAO = $idMapaSeparacao";
             $andWhereConf .= " AND MS.COD_MAPA_SEPARACAO = $idMapaSeparacao";
         }
 
         if (isset($dataInicio) && !empty($dataInicio)) {
             if (isset($horaInicio) && !empty($horaInicio)) {
-                $andWhere     .= " AND APONT.DTH_CONFERENCIA >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND APONT.DTH_CONFERENCIA >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
                 $andWhereConf .= " AND CONF.DTH_CONFERENCIA >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
             } else {
-                $andWhere     .= " AND APONT.DTH_CONFERENCIA >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND APONT.DTH_CONFERENCIA >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
                 $andWhereConf .= " AND CONF.DTH_CONFERENCIA >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
             }
         }
@@ -182,12 +179,12 @@ class ApontamentoMapaRepository extends EntityRepository
             $idExpedicaoAnterior = $value['COD_EXPEDICAO'];
             $idMapaSeparacaoAnterior = $value['COD_MAPA_SEPARACAO'];
 
-            $intervalo = date_diff($tempoInicial,$tempoFinal);
+            $intervalo = date_diff($tempoInicial, $tempoFinal);
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%h Hora(s) %i Minuto(s) %s Segundo(s)');
             $pesoTotal = $pesoTotal + $value['NUM_PESO'];
             $volumeTotal = $volumeTotal + $value['VOLUMES'];
             $quantidadeTotal = $quantidadeTotal + $value['QTD_PRODUTOS'];
-            list($h,$i,$s) = explode(':',$intervalo->format('%h:%i:%s'));
+            list($h, $i, $s) = explode(':', $intervalo->format('%h:%i:%s'));
             $seconds += $h * 3600;
             $seconds += $i * 60;
             $seconds += $s;
@@ -210,11 +207,9 @@ class ApontamentoMapaRepository extends EntityRepository
         $result[$qtdRows]['ATIVIDADE'] = '-';
 
         return $result;
-
     }
 
-    public function getProdutividadeDetalhe($params)
-    {
+    public function getProdutividadeDetalhe($params) {
 
         $idUsuario = $params['usuario'];
         $atividade = $params['atividade'];
@@ -237,25 +232,25 @@ class ApontamentoMapaRepository extends EntityRepository
             $hoje = new \DateTime();
             $params['dataFim'] = $dataFim = $hoje->format('d/m/Y');
         }
-        $dataInicio = str_replace('-','/',$dataInicio);
-        $dataFim = str_replace('-','/',$dataFim);
+        $dataInicio = str_replace('-', '/', $dataInicio);
+        $dataFim = str_replace('-', '/', $dataFim);
 
         if (isset($idUsuario) && !empty($idUsuario)) {
-            $andWhere     .= " AND PE.COD_PESSOA = $idUsuario";
+            $andWhere .= " AND COD_PESSOA = $idUsuario";
         }
 
         if (isset($atividade) && !empty($atividade)) {
-            $andWhere     .= " AND DSC_ATIVIDADE LIKE '$atividade'";
+            $andWhere .= " AND DSC_ATIVIDADE LIKE '$atividade'";
         }
         if (isset($idIdentidade) && !empty($idIdentidade)) {
-            $andWhere     .= " AND IDENTIDADE = $idIdentidade";
+            $andWhere .= " AND IDENTIDADE = $idIdentidade";
         }
 
         if (isset($dataInicio) && !empty($dataInicio)) {
             if (isset($horaInicio) && !empty($horaInicio)) {
-                $andWhere     .= " AND DTH_INICIO >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
             } else {
-                $andWhere     .= " AND DTH_INICIO >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
             }
         }
 
@@ -267,7 +262,7 @@ class ApontamentoMapaRepository extends EntityRepository
             }
         }
 
-        $sql =  " SELECT 
+        $sql = " SELECT 
                     PE.NOM_PESSOA, 
                     IDENTIDADE,
                     DSC_ATIVIDADE,
@@ -298,7 +293,6 @@ class ApontamentoMapaRepository extends EntityRepository
         $quantidadePaletes = 0;
         $quantidadeCarga = 0;
         $seconds = 0;
-
         foreach ($result as $key => $value) {
             $tempoFinal = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_FIM']);
             $tempoInicial = \DateTime::createFromFormat('d/m/Y H:i:s', $value['DTH_INICIO']);
@@ -309,7 +303,8 @@ class ApontamentoMapaRepository extends EntityRepository
             $result[$key]['QTD_VOLUMES'] = number_format($value['QTD_VOLUMES'], 2, ',', '.');
             $result[$key]['QTD_PESO'] = number_format($value['QTD_PESO'], 2, ',', '');
             $result[$key]['QTD_CUBAGEM'] = number_format($value['QTD_CUBAGEM'], 2, ',', '.');
-            $intervalo = date_diff($tempoInicial,$tempoFinal);
+            $intervalo = date_diff($tempoInicial, $tempoFinal);
+
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%H:%I:%S');
             $pesoTotal = $pesoTotal + $value['QTD_PESO'];
             $volumeTotal = $volumeTotal + $value['QTD_VOLUMES'];
@@ -317,17 +312,28 @@ class ApontamentoMapaRepository extends EntityRepository
             $quantidadeTotal = $quantidadeTotal + $value['QTD_PRODUTOS'];
             $quantidadeCarga = $quantidadeCarga + $value['QTD_CARGA'];
             $quantidadePaletes = $quantidadePaletes + $value['QTD_PALETES'];
-            list($h,$i,$s) = explode(':',$intervalo->format('%H:%I:%S'));
+            list($h, $i, $s) = explode(':', $intervalo->format('%H:%I:%S'));
             $seconds += $h * 3600;
             $seconds += $i * 60;
-            $seconds += $s;
+            $seconds += $s % 60;
         }
 
-        $hours = floor($seconds / 3600);
-        $seconds -= $hours * 3600;
-        $minutes = floor($seconds / 60);
-        $seconds -= $minutes * 60;
-
+        $hoje = date('Y-m-d H:i:s');
+        $intervalo = date_diff(\DateTime::createFromFormat('Y-m-d H:i:s', $hoje), \DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s', strtotime($hoje . '+ ' . $seconds . ' seconds'))));
+        $min = $intervalo->i;
+        $sec = $intervalo->s;
+        if($intervalo->i <10){
+            $min = '0'.$intervalo->i;
+        }
+        if($intervalo->s <10){
+            $sec = '0'.$intervalo->s;
+        }
+        if($intervalo->d > 0){
+            $hr = ($intervalo->d * 24) + $intervalo->h;
+            $tempoTotal = $hr.":".$min.':'.$sec;
+        }else{
+            $tempoTotal = date('H:i:s', strtotime("$intervalo->h:$min:$sec"));
+        }
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
         $result[$qtdRows]['IDENTIDADE'] = '-';
         $result[$qtdRows]['QTD_PESO'] = number_format($pesoTotal, 2, ',', '.');
@@ -338,10 +344,9 @@ class ApontamentoMapaRepository extends EntityRepository
         $result[$qtdRows]['QTD_PALETES'] = number_format($quantidadePaletes, 0, ',', '.');
         $result[$qtdRows]['DTH_INICIO'] = '-';
         $result[$qtdRows]['DTH_FIM'] = '-';
-        $result[$qtdRows]['TEMPO_GASTO'] = date('H:i:s', strtotime("$hours:$minutes:$seconds"));
+        $result[$qtdRows]['TEMPO_GASTO'] = $tempoTotal;
         $result[$qtdRows]['DSC_ATIVIDADE'] = '-';
 
         return $result;
-
     }
 }

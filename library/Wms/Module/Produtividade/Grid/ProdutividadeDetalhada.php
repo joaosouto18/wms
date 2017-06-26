@@ -30,7 +30,7 @@ class ProdutividadeDetalhada extends Grid
 //                    'index' => 'COD_MAPA_SEPARACAO',
 //                ));
                 $this->addColumn(array(
-                    'label' => 'Código',
+                    'label' => 'ID',
                     'index' => 'IDENTIDADE',
                 ));
                 $this->addColumn(array(
