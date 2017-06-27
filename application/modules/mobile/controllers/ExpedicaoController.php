@@ -260,13 +260,11 @@ class Mobile_ExpedicaoController extends Action {
             }
             $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
-            if (($statusMapaEmbalado == true) || ($confereQtd == true)) {
-                /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-                $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
-                if (count($produtosMapa) > 0) {
-                    $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                    $this->view->produtosMapa = $produtosMapa;
-                }
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+            $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+            if (count($produtosMapa) > 0) {
+                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                $this->view->produtosMapa = $produtosMapa;
             }
 
             /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
@@ -605,6 +603,17 @@ class Mobile_ExpedicaoController extends Action {
         $this->renderScript('menu.phtml');
     }
 
+    public function divergenciaAction(){
+        $request = $this->getRequest();
+        $idExpedicao = $request->getParam('idExpedicao');
+        $idMapa = $request->getParam('idMapa');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+        $this->view->produtos = $produtosMapa;
+    }
+
     public function finalizarAction() {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
@@ -637,6 +646,12 @@ class Mobile_ExpedicaoController extends Action {
         }
 
         if (is_string($result)) {
+
+            if (substr($result,0,46) == "Existem produtos para serem Conferidos no mapa") {
+                $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'divergencia', 'idExpedicao' => $idExpedicao, 'idMapa' => $idMapa)) . '" target="_self" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Ver Divergencias</a>';
+                $result = "$result - $linkImpressao";
+            }
+
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
                 $this->_redirect("mobile/expedicao/index/idCentral/$central");

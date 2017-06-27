@@ -1,0 +1,19 @@
+<form id="formGrid" method="post" action="">
+
+    <table>
+        <tbody>
+        <tr>
+            <td bgcolor="#dcdcdc" width=""><span>Cód. </span></td>
+            <td bgcolor="#dcdcdc" width=""><span>Produto</span></td>
+            <td bgcolor="#dcdcdc" width=""><span>Endereço</span></td>
+        </tr>
+        <?php foreach($this->produtos as $produto) : ?>
+            <tr>
+                <td><?php echo $produto['COD_PRODUTO'];?></td>
+                <td><?php echo $produto['DSC_PRODUTO'];?></td>
+                <td><?php echo $produto['DSC_DEPOSITO_ENDERECO'];?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</form>
