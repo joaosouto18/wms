@@ -637,6 +637,12 @@ class Mobile_ExpedicaoController extends Action {
         }
 
         if (is_string($result)) {
+            /*
+            if (substr($result,0,46) == "Existem produtos para serem Conferidos no mapa") {
+                $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'divergencia', 'idExpedicao' => $idExpedicao, 'idMapa' => $idMapa)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Ver Divergencias</a>';
+                $result = "$result - $linkImpressao";
+            }
+            */
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
                 $this->_redirect("mobile/expedicao/index/idCentral/$central");
