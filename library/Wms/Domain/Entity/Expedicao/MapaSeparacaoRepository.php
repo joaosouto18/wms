@@ -173,7 +173,7 @@ class MapaSeparacaoRepository extends EntityRepository
             if ($idMapa == null) {
                 return 'Existem produtos para serem Conferidos nesta Expedição';
             } else {
-                return 'Existem produtos para serem Conferidos neste Mapa';
+                return 'Existem produtos para serem Conferidos no mapa ' . $idMapa;
             }
         }
 
