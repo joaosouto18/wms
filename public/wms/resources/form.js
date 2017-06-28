@@ -10,11 +10,17 @@
  */
 ;
 (function ($) {
+
     $(window).load(function () {
-        $('.gOpcRow ul li ul').each(function () {
-            var body = $('body').height();
-            if ($(this).parent().offset().top > Math.round((body / 2) + 50)) {
-                $(this).css('top', '-298px');
+        var mousey = 0;
+        $("html").mousemove(function (mouse) {
+            mousey = mouse.pageY;
+        });
+        $('.gTdOpcRow').hover(function () {
+            if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height()  + $(window).scrollTop())) {
+                $(this).find('.gOpcRow ul li ul').css('top', '-298px');
+            } else {
+                $(this).find('.gOpcRow ul li ul').css('top', '0px');
             }
         });
     });
