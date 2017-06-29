@@ -1151,12 +1151,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'codPessoa' => $pessoaEn->getId(),
                 'serieNf' => trim($serieNF)));
 
-            $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno' => trim($numeroCarga),
-                'tipoCarga' => $tipoCarga->getId()));
-
             if (is_null($notaFiscalEn)) {
                 throw new \Exception('Nota Fiscal ' . $numeroNf . " / " . $serieNF . " não encontrada");
             }
+
+            $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno' => trim($numeroCarga),
+                'tipoCarga' => $tipoCarga->getId()));
 
             if (is_null($cargaEn)) {
                 throw new \Exception(strtolower($tipoCarga->getSigla()) . " " . $numeroCarga . " não encontrada");
