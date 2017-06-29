@@ -225,7 +225,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $produtos = array();
             foreach ($pedidoWs->produtos as $produtoWs) {
                 $produto['codProduto'] = $produtoWs->codProduto;
-                $produto['grade'] = $produtoWs->grade;
+                $produto['grade'] = (empty($produtoWs->grade) || $produtoWs->grade === "?") ? "UNICA" : trim($produtoWs->grade);
                 $produto['quantidade'] = $produtoWs->quantidade;
                 $produtos[] = $produto;
             }
