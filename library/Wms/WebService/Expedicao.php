@@ -264,6 +264,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
+        var_dump(count($cargas));
         $cargas = $this->trimArray($cargas);
         ini_set('max_execution_time', -1);
         try {
@@ -285,6 +286,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             );
 
             foreach($cargas as $k1 => $carga) {
+                var_dump($carga['pedidos']); exit;
                 foreach ($carga['pedidos'] as  $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
                         $idProduto = trim($cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto']);
