@@ -8,7 +8,7 @@ class Inventario_Relatorio_DivergenciaController extends \Wms\Controller\Action
         /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
         $inventarioRepo = $this->em->getRepository("wms:Inventario");
         $avariados = $inventarioRepo->getDivergencias($idInventario);
-        $this->exportPDF($avariados,'Enderecos-Divergencia-Inv-'.$idInventario,'Endereços Divergência','L');
+        $this->exportPDF($avariados,'Enderecos-Divergencia-Inv-'.$idInventario,'Endereços Divergência no inventário ' . $idInventario,'L');
     }
 
 }

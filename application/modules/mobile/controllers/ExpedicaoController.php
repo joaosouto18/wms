@@ -114,169 +114,190 @@ class Mobile_ExpedicaoController extends Action {
 
     public function lerProdutoMapaAction() {
 
-        $idMapa = $this->_getParam("idMapa");
-        $idVolume = $this->_getParam("idVolume");
-        $idExpedicao = $this->_getParam("idExpedicao");
-        $qtd = $this->_getParam("qtd");
-        $codBarras = $this->_getParam("codigoBarras");
-        $codPessoa = $this->_getParam('cliente');
+        try {
 
-        $sessao = new \Zend_Session_Namespace('coletor');
-        $central = $sessao->centralSelecionada;
+            $idMapa = $this->_getParam("idMapa");
+            $idVolume = $this->_getParam("idVolume");
+            $idExpedicao = $this->_getParam("idExpedicao");
+            $qtd = $this->_getParam("qtd");
+            $codBarras = $this->_getParam("codigoBarras");
+            $codPessoa = $this->_getParam('cliente');
+            $msg['msg'] = "";
+            $sessao = new \Zend_Session_Namespace('coletor');
+            $central = $sessao->centralSelecionada;
 
-        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $dscVolume = "";
-        $this->view->idVolume = $idVolume;
-        $this->view->idMapa = $idMapa;
-        $this->view->idExpedicao = $idExpedicao;
-        $this->view->central = $central;
-        $this->view->idPessoa = $codPessoa;
+            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+            $dscVolume = "";
+            $this->view->idVolume = $idVolume;
+            $this->view->idMapa = $idMapa;
+            $this->view->idExpedicao = $idExpedicao;
+            $this->view->central = $central;
+            $this->view->idPessoa = $codPessoa;
 
-        $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
-        $Expedicao->validacaoExpedicao();
-        $Expedicao->osLiberada();
+            $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
+            $Expedicao->validacaoExpedicao();
+            $Expedicao->osLiberada();
 
-        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
-        $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-        $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+            $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+            $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
+            $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+            $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
+            $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        $volumePatrimonioEn = null;
-        if ((isset($idVolume)) && ($idVolume != null)) {
-            $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-            if (!empty($volumePatrimonioEn))
-                $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
-        }
-
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
-        $mapaEn = $mapaSeparacaoRepo->find($idMapa);
-        $confereQtd = false;
-        $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
-        $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
-        /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
-        $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
-
-        if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-            if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
-                $confereQtd = true;
-            }
-        }
-
-        if ($mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-            if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
-                $confereQtd = true;
-            }
-        }
-
-        if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
-            try {
-                $codBarrasProcessado = intval($codBarras);
-                $tipoProvavelCodBarras = 'produto';
-                $produtoEmbalagenEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
-                $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codBarras));
-
-                if (!empty($produtoEmbalagenEn) || !empty($produtoVolumeEn)) {
-                    $tipoProvavelCodBarras = 'produto';
-                } elseif ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
-                    if (empty($volumePatrimonioEn)) {
-                        $tipoProvavelCodBarras = 'volume';
-                    }
-                }
-
-                if ($tipoProvavelCodBarras === 'volume') {
-                    if (!empty($volumePatrimonioEn)) {
-                        throw new \Exception("Já existe um volume patrimonio aberto, feche a caixa " . $volumePatrimonioEn->getId() . " antes de abrir um novo volume.");
-                    }
-                    $idVolume = $codBarrasProcessado;
-                    $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-                    if (empty($volumePatrimonioEn)) {
-                        throw new \Exception("Nenhum volume-patrimônio foi encontrado com o código $idVolume");
-                    }
-
+            $volumePatrimonioEn = null;
+            if ((isset($idVolume)) && ($idVolume != null)) {
+                $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                if (!empty($volumePatrimonioEn))
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
-                    /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
-                    $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+            }
 
-                    $codQuebra = 0;
-                    if ($modeloSeparacaoEn->getTipoQuebraVolume() == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
-                        $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE));
-                        if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
-                            $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
-                    }
-                    $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, $codQuebra);
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+            $confereQtd = false;
+            $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
+            $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
+            /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
+            $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
 
-                    $this->view->idVolume = $codBarras;
-                    $this->addFlashMessage('info', 'Volume ' . $codBarrasProcessado . ' vinculada a expedição');
-                } else if ($tipoProvavelCodBarras === 'produto') {
+            if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                    $confereQtd = true;
+                }
+            }
 
-                    if (empty($embalagens)) {
-                        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
-                        $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
-                    }
-                    $embalagemEn = $embalagens['embalagem'];
-                    $volumeEn = $embalagens['volume'];
-                    $produtoEn = $embalagens['produto'];
-                    $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn, $codPessoa);
-                    if ($resultado['return'] == false) {
-                        throw new \Exception($resultado['message']);
-                    }
-                    $idMapa = $resultado['idMapa'];
+            if ($mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                    $confereQtd = true;
+                }
+            }
 
-                    /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-                    $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+            if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+                try {
+                    $codBarrasProcessado = intval($codBarras);
+                    $tipoProvavelCodBarras = 'produto';
+                    $produtoEmbalagenEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+                    $produtoVolumeEn = $produtoVolumeRepo->findOneBy(array('codigoBarras' => $codBarras));
 
-                    if (isset($codPessoa) && !empty($codPessoa)) {
-                        if (count($mapaSeparacaoEmbaladoEn) <= 0) {
-                            $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa);
-                        } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                            $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $mapaSeparacaoEmbaladoEn[0]);
+                    if (!empty($produtoEmbalagenEn) || !empty($produtoVolumeEn)) {
+                        $tipoProvavelCodBarras = 'produto';
+                    } elseif ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
+                        if (empty($volumePatrimonioEn)) {
+                            $tipoProvavelCodBarras = 'volume';
                         }
                     }
 
-                    $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn, $volumeEn, $mapaEn, $volumePatrimonioEn, $qtd, $codPessoa);
-                    $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn, $produtoEn->getId(), $produtoEn->getGrade());
-                    $this->addFlashMessage('success', $msg['msg']);
+                    if ($tipoProvavelCodBarras === 'volume') {
+                        if (!empty($volumePatrimonioEn)) {
+                            throw new \Exception("Já existe um volume patrimonio aberto, feche a caixa " . $volumePatrimonioEn->getId() . " antes de abrir um novo volume.");
+                        }
+                        $idVolume = $codBarrasProcessado;
+                        $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                        if (empty($volumePatrimonioEn)) {
+                            throw new \Exception("Nenhum volume-patrimônio foi encontrado com o código $idVolume");
+                        }
+
+                        $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
+                        /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
+                        $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+
+                        $codQuebra = 0;
+                        if ($modeloSeparacaoEn->getTipoQuebraVolume() == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
+                            $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE));
+                            if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
+                                $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
+                        }
+                        $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, $codQuebra);
+
+                        $this->view->idVolume = $codBarras;
+                        $this->addFlashMessage('info', 'Volume ' . $codBarrasProcessado . ' vinculada a expedição');
+                    } else if ($tipoProvavelCodBarras === 'produto') {
+
+                        if (empty($embalagens)) {
+                            $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+                            $embalagens = $produtoRepo->getEmbalagensByCodBarras($codBarras);
+                        }
+                        $embalagemEn = $embalagens['embalagem'];
+                        $volumeEn = $embalagens['volume'];
+                        $produtoEn = $embalagens['produto'];
+                        $resultado = $mapaSeparacaoRepo->validaProdutoMapa($codBarras, $embalagemEn, $volumeEn, $mapaEn, $modeloSeparacaoEn, $volumePatrimonioEn, $codPessoa);
+                        if ($resultado['return'] == false) {
+                            throw new \Exception($resultado['message']);
+                        }
+                        $idMapa = $resultado['idMapa'];
+
+                        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+                        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+
+                        if (isset($codPessoa) && !empty($codPessoa)) {
+                            if (count($mapaSeparacaoEmbaladoEn) <= 0) {
+                                $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa);
+                            } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                                $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $mapaSeparacaoEmbaladoEn[0]);
+                            }
+                        }
+
+                        $mapaSeparacaoRepo->adicionaQtdConferidaMapa($embalagemEn, $volumeEn, $mapaEn, $volumePatrimonioEn, $qtd, $codPessoa);
+                        $msg = $mapaSeparacaoRepo->verificaConferenciaProduto($mapaEn, $produtoEn->getId(), $produtoEn->getGrade());
+                    }
+                } catch (\Exception $e) {
+                    throw new \Exception($e->getMessage());
                 }
-            } catch (\Exception $e) {
-                $this->addFlashMessage('error', $e->getMessage());
-                $this->_redirect("/mobile/expedicao/ler-produto-mapa/idMapa/$idMapa/idExpedicao/$idExpedicao/cliente/$codPessoa");
             }
-        }
 
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-        $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+            $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
-        /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
-        $statusMapaEmbalado = false;
-        if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-            $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-            if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                $statusMapaEmbalado = true;
+            /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
+            $statusMapaEmbalado = false;
+            if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
+                $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+                if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
+                    $statusMapaEmbalado = true;
+                }
             }
-        }
-        $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
+            $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
-        if (count($produtosMapa) > 0) {
-            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-            $this->view->produtosMapa = $produtosMapa;
-        }
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-        if (isset($codPessoa) && !empty($codPessoa)) {
-            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
-            if (count($produtosClientes) > 0) {
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+            $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+            if (count($produtosMapa) > 0) {
                 $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                $this->view->produtosClientes = $produtosClientes;
+                $this->view->produtosMapa = $produtosMapa;
+            }
+
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
+            if (isset($codPessoa) && !empty($codPessoa)) {
+                $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
+                if (count($produtosClientes) > 0) {
+                    $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+                    $this->view->produtosClientes = $produtosClientes;
+                }
+            }
+
+            $this->view->dscVolume = $dscVolume;
+            $this->view->exibeQtd = $confereQtd;
+
+            if ($confereQtd == true) {
+                if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+                    $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
+                    $this->_helper->json($vetRetorno);
+                }
+            } else {
+                if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+                    $this->addFlashMessage('success',$msg['msg']);
+                }
+            }
+        } catch (\Exception $e) {
+            if ($confereQtd == true) {
+                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
+                $this->_helper->json($vetRetorno);
+            } else {
+                $this->addFlashMessage('error',$e->getMessage());
             }
         }
 
-        $this->view->dscVolume = $dscVolume;
-        $this->view->exibeQtd = $confereQtd;
     }
 
     public function consultaProdutoAction() {
@@ -582,6 +603,17 @@ class Mobile_ExpedicaoController extends Action {
         $this->renderScript('menu.phtml');
     }
 
+    public function divergenciaAction(){
+        $request = $this->getRequest();
+        $idExpedicao = $request->getParam('idExpedicao');
+        $idMapa = $request->getParam('idMapa');
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao");
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+        $this->view->produtos = $produtosMapa;
+    }
+
     public function finalizarAction() {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
@@ -614,6 +646,12 @@ class Mobile_ExpedicaoController extends Action {
         }
 
         if (is_string($result)) {
+
+            if (substr($result,0,46) == "Existem produtos para serem Conferidos no mapa") {
+                $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'divergencia', 'idExpedicao' => $idExpedicao, 'idMapa' => $idMapa)) . '" target="_self" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Ver Divergencias</a>';
+                $result = "$result - $linkImpressao";
+            }
+
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
                 $this->_redirect("mobile/expedicao/index/idCentral/$central");

@@ -1,4 +1,12 @@
+<?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
+<span id="dummy"></span>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
 <script>
+
+    function playSound(soundfile) {
+        document.getElementById("bgSoundId").src = soundfile;
+    }
 
     function selecionar() {
         $('#qtd').select();
@@ -33,15 +41,20 @@
                 url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras,
                 type: 'get',
                 success: function (data) {
+
                     var codProduto         = data['result']['codProduto'];
                     var grade              = data['result']['grade'];
                     var descricao          = data['result']['descricao'];
                     var quantidade         = data['result']['quantidade'];
                     var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
 
-                    dadosProdutos = '<tr><td colspan="2"><b>Cod Produto: </b>'+codProduto+' - <b>Grade: </b>'+grade+'</td></tr>' +
+                    dadosProdutos =
+                        '<table class="info">' +
+                        '<tr><td colspan="2"><b>Cod Produto: </b>'+codProduto+' - <b>Grade: </b>'+grade+'</td></tr>' +
                         '<tr><td colspan="2"><b>Descrição: </b>'+descricao+'</td></tr>' +
-                        '<tr><td colspan="2"><b>Embalagem: </b>'+descricaoEmbalagem+' ('+quantidade+')</td></tr>';
+                        '<tr><td colspan="2"><b>Embalagem: </b>'+descricaoEmbalagem+' ('+quantidade+')</td></tr>' +
+                        '</table>';
+                    ;
                     $('#dados-produtos').html(dadosProdutos);
                 }
             });
@@ -65,6 +78,7 @@
         }
         return true;
     }
+
 </script>
 
 <?php if ($this->exibeQtd == false) : ?>
@@ -72,8 +86,20 @@
 <?php endif; ?>
 
 
+
 <table class="info">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
+    <tr>
+        <td>
+            <div id='erro' style="background-color: #ff0000; font-size: 20px" ></div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div id='success' style="background-color: lightgreen; font-size: 12px" >
+        </td>
+    </tr>
+
     <tr>
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
@@ -91,7 +117,6 @@
                     next: '#next',
                     timeout:  0
                 });
-
             });
         </script>
 
@@ -130,12 +155,10 @@
             <td style="width: 20%"> <button id="next"> >| </button></td>
         </tr>
     <?php endif; ?>
-
-
-
 </table>
 
-<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/ler-produto-mapa" method="post">
+
+<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
     <input type="hidden" name="uma" value="" id="uma">
     <dt id="identification-label">&nbsp;</dt>
     <dd id="identification-element">
@@ -188,3 +211,59 @@
         <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/'. $this->central ?>" >Alt. Mapa</a></td>
     <?php endif; ?>
 </form>
+
+
+<script>
+    $('#formulario').on('submit', function (e) {
+        var ret = true;
+        if (<?php if ($this->exibeQtd == true) {echo "'S'";} else {echo "'N'";}?> == 'S') {
+            //if (e.which == 13) {
+                $.ajax({
+                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
+                    data: $('form').serialize(),
+                    async: false,
+                    type: 'post',
+                    success: function (data) {
+                        if (data.retorno.resposta.length > 0) {
+                            ret = false;
+                            document.getElementById('qtd').value = "1";
+                            codigoBarras = document.getElementById('codigoBarras').value = "";
+
+                            var error = "";
+                            var success = "";
+                            var song = "";
+
+                            if (data.retorno.resposta == 'error') {
+                                error = data.retorno.message;
+                                success = "";
+                                song = "/alarme.mp3";
+                            } else {
+                                success = data.retorno.message;
+                                error = "";
+                                song = "/confirm2.mp3";
+                            }
+
+                            document.getElementById('codigoBarras').focus();
+
+                            $("#erro").html(error);
+                            $("#success").html(success);
+
+                            try {
+                                playSound(song);
+                            } catch (e) {
+                                alert(message);
+                            }
+
+                            if (data.retorno.resposta == 'error') {
+                                alert(data.retorno.message);
+                            }
+                        }
+                    }
+                });
+            //}
+        }
+        return ret;
+    });
+
+</script>
+

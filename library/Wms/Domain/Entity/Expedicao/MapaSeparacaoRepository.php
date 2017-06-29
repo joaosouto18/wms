@@ -173,7 +173,7 @@ class MapaSeparacaoRepository extends EntityRepository
             if ($idMapa == null) {
                 return 'Existem produtos para serem Conferidos nesta Expedição';
             } else {
-                return 'Existem produtos para serem Conferidos neste Mapa';
+                return 'Existem produtos para serem Conferidos no mapa ' . $idMapa;
             }
         }
 
@@ -410,6 +410,10 @@ class MapaSeparacaoRepository extends EntityRepository
     }
 
     public function verificaConferenciaProduto($mapaEn, $idProduto, $grade) {
+        /* TESTE DE PERFORMANCE - NÃO VERIFICAR SE TODOS OS PRODUTOS FORAM CONFERIDOS */
+        return array('result'=> true ,
+                     'msg' => 'Quantidade conferida com sucesso');
+
         $idMapa = $mapaEn->getId();
         $SQL = "SELECT SEP.COD_PRODUTO, SEP.DSC_GRADE, SEP.QTD_SEP, CONF.QTD_CONF, SEP.QTD_SEP - CONF.QTD_CONF as QTD_PEND
                   FROM (SELECT COD_PRODUTO, DSC_GRADE, SUM((QTD_EMBALAGEM* QTD_SEPARAR)- QTD_CORTADO) as QTD_SEP
@@ -727,7 +731,7 @@ class MapaSeparacaoRepository extends EntityRepository
     public function getMapaSeparacaoByExpedicao($idExpedicao)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('ms.id codBarras')
+            ->select('ms.id codBarras, ms.dscQuebra descricao')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->where("ms.expedicao = $idExpedicao");
 

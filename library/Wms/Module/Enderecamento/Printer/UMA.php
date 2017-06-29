@@ -107,11 +107,15 @@ class UMA extends Pdf
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $PaleteRepository */
         $PaleteRepository   = $em->getRepository('wms:Enderecamento\Palete');
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $PaleteProdutoRepository */
+        $PaleteProdutoRepository   = $em->getRepository('wms:Enderecamento\PaleteProduto');
 
         $font_size = 55;
         $line_width = 300;
 
         foreach($paletes as $palete) {
+            $PaleteProdutoEntity = $PaleteProdutoRepository->findOneBy(array('uma' => $palete['idUma']));
+            $produtoEn = $PaleteProdutoEntity->getProduto();
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
             } else {
