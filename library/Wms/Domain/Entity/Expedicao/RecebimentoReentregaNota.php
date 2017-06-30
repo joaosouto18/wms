@@ -25,6 +25,7 @@ class RecebimentoReentregaNota
     protected $recebimentoReentrega;
 
     /**
+     * @var NotaFiscalSaida
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\NotaFiscalSaida")
      * @JoinColumn(name="COD_NOTA_FISCAL", referencedColumnName="COD_NOTA_FISCAL_SAIDA")
      */
@@ -63,7 +64,7 @@ class RecebimentoReentregaNota
     }
 
     /**
-     * @return mixed
+     * @return NotaFiscalSaida
      */
     public function getNotaFiscalSaida()
     {
@@ -71,7 +72,7 @@ class RecebimentoReentregaNota
     }
 
     /**
-     * @param mixed $notaFiscalSaida
+     * @param mixed NotaFiscalSaida
      */
     public function setNotaFiscalSaida($notaFiscalSaida)
     {

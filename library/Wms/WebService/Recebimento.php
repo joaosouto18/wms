@@ -152,7 +152,7 @@ class Wms_WebService_Recebimento extends Wms_WebService
                             $item = new ItemNF;
                             $item->setNotaFiscal($notaFiscal)
                                     ->setProduto($produto)
-                                    ->setGrade($dadosItem->grade)
+                                    ->setGrade((empty($dadosItem->grade) || $dadosItem->grade === "?") ? "UNICA" : trim($dadosItem->grade))
                                     ->setQuantidade($dadosItem->quantidade);
 
                             $notaFiscal->getItens()->add($item);

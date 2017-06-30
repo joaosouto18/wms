@@ -10,6 +10,9 @@ namespace Wms\Domain\Entity\Expedicao;
  */
 class Carga
 {
+
+    const PREFIXO_CARGA_REENTREGA = 00;
+
     /**
      * @Column(name="COD_CARGA", type="integer", nullable=false)
      * @SequenceGenerator(sequenceName="SQ_CARGA_01", allocationSize=1, initialValue=1)

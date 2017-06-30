@@ -101,7 +101,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     public function buscar($idProduto, $grade) {
         try {
             $idProduto = trim ($idProduto);
-            $grade = trim ($grade);
+            $grade = (empty($grade) || $grade === "?") ? "UNICA" : trim($grade);
 
             $em = $this->__getDoctrineContainer()->getEntityManager();
             $produtoRepo = $em->getRepository('wms:Produto');
@@ -208,7 +208,7 @@ class Wms_WebService_Produto extends Wms_WebService {
 
         $idProduto = ProdutoUtil::formatar($idProduto);
 
-        $grade = trim ($grade);
+        $grade = (empty($grade) || $grade === "?") ? "UNICA" : trim($grade);
         $idFabricante = trim ($idFabricante);
         $tipo = trim ($tipo);
         $idClasse = trim($idClasse);
@@ -246,6 +246,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                 throw new \Exception('Classe do produto de codigo ' . $idClasse . ' inexistente');
 
             // define numero de volume e tipo de comercializacao do produto
+            /** @var ProdutoEntity\TipoComercializacao $tipoComercializacaoEntity */
             $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $tipo);
             $numVolumes = ($produto->getNumVolumes()) ? $produto->getNumVolumes() : 1;
 
@@ -397,7 +398,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     public function excluir($idProduto, $grade) {
 
         $idProduto = trim ($idProduto);
-        $grade = trim ($grade);
+        $grade = (empty($grade) || $grade === "?") ? "UNICA" : trim($grade);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
         $service = $this->__getServiceLocator()->getService('Produto');
