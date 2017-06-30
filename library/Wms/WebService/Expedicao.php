@@ -810,6 +810,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         ($statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
                         ($qtdCortadas == $qtdTotal)) {
 
+                        $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
+                        $PedidoRepo->remove($PedidoEntity,false);
+
+                    } else {
+
                         if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
                             if (!$isIntegracaoSQL)
                                 throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
@@ -817,10 +822,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                                 return false;
                         }
 
-                        $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
-                        $PedidoRepo->remove($PedidoEntity,false);
-
-                    } else {
                         if ($qtdCortadas > 0) {
                             if (!$isIntegracaoSQL)
                                 throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
