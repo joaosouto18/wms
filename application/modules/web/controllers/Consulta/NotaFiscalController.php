@@ -11,16 +11,14 @@ use Wms\Domain\Entity\NotaFiscal,
  *
  * @author Renato Medina <medinadato@gmail.com>
  */
-class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action
-{
+class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action {
 
     protected $entityName = 'NotaFiscal';
 
     /**
      * 
      */
-    public function indexAction()
-    {
+    public function indexAction() {
         $form = new FiltroNotaFiscal;
 
         if ($values = $form->getParams()) {
@@ -129,8 +127,7 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action
      *
      * @throws \Exception 
      */
-    public function viewAction()
-    {
+    public function viewAction() {
         //adding default buttons to the page
         Page::configure(array(
             'buttons' => array(
@@ -163,8 +160,7 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action
     /**
      * Nota Fiscal
      */
-    public function viewNotaAjaxAction()
-    {
+    public function viewNotaAjaxAction() {
         $id = $this->getRequest()->getParam('id');
         $em = $this->em;
 
@@ -191,9 +187,22 @@ class Web_Consulta_NotaFiscalController extends \Wms\Controller\Action
                 ->orderBy('nfi.id');
 
         $itens = $dql->getQuery()->execute();
-
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($itens as $key => $value) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['id'], $value['grade'], $value['quantidade']);
+            if (!empty($vetEmbalagens[0])) {
+                $embalagem = $vetEmbalagens[0];
+            } else {
+                $embalagem = '';
+            }
+            if (!empty($vetEmbalagens[1]) && $embalagem != '') {
+                $embalagem .= ' + ' . $vetEmbalagens[1];
+            } elseif (!empty($vetEmbalagens[1])) {
+                $embalagem .= $vetEmbalagens[1];
+            }
+            $itens[$key]['quantidade'] = $embalagem;
+        }
         $notaFiscal[0]['itens'] = $itens;
-
         $this->view->idStatusCancelado = NotaFiscalEntity::STATUS_CANCELADA;
         $this->view->notasFiscais = $notaFiscal;
     }
