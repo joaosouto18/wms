@@ -299,31 +299,32 @@ class PedidoRepository extends EntityRepository
                 }
                 $this->_em->remove($mapaSeparacaoPedidoEntity);
             }
+        }
 
-            foreach ($mapasRemover as $mapaSeparacaoEntity) {
-                $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
-                foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
-                    $this->_em->remove($mapaSeparacaoConferenciaEntity);
-                }
-
-                $mapaSeparacaoEmbaladoEntities = $mapaSeparacaoEmbaladoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
-                foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
-                    $this->_em->remove($mapaSeparacaoEmbaladoEntity);
-                }
-
-                $mapaSeparacaoQuebraEntities = $mapaSeparacaoQuebraRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
-                foreach ($mapaSeparacaoQuebraEntities as $mapaSeparacaoQuebraEntity) {
-                    $this->_em->remove($mapaSeparacaoQuebraEntity);
-                }
-
-                $mapaSeparacaoProdutoEntities = $mapaSeparacaProdutoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
-                foreach ($mapaSeparacaoProdutoEntities as $mapaSeparacaoProdutoEntity) {
-                    $this->_em->remove($mapaSeparacaoProdutoEntity);
-                }
-                $this->_em->remove($mapaSeparacaoEntity);
+        foreach ($mapasRemover as $mapaSeparacaoEntity) {
+            $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+            foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
+                $this->_em->remove($mapaSeparacaoConferenciaEntity);
             }
 
-            //APAGA PEDIDO_PRODUTO
+            $mapaSeparacaoEmbaladoEntities = $mapaSeparacaoEmbaladoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+            foreach ($mapaSeparacaoEmbaladoEntities as $mapaSeparacaoEmbaladoEntity) {
+                $this->_em->remove($mapaSeparacaoEmbaladoEntity);
+            }
+
+            $mapaSeparacaoQuebraEntities = $mapaSeparacaoQuebraRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+            foreach ($mapaSeparacaoQuebraEntities as $mapaSeparacaoQuebraEntity) {
+                $this->_em->remove($mapaSeparacaoQuebraEntity);
+            }
+
+            $mapaSeparacaoProdutoEntities = $mapaSeparacaProdutoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+            foreach ($mapaSeparacaoProdutoEntities as $mapaSeparacaoProdutoEntity) {
+                $this->_em->remove($mapaSeparacaoProdutoEntity);
+            }
+            $this->_em->remove($mapaSeparacaoEntity);
+        }
+
+        foreach ($pedidoProdutoEntities as $pedidoProdutoEntity) {
             $this->_em->remove($pedidoProdutoEntity);
         }
 
