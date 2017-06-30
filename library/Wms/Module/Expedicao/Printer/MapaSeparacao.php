@@ -382,8 +382,8 @@ class MapaSeparacao extends eFPDF {
                         $embalagem = $embalagemEn->getDescricao() . "(". $embalagemEn->getQuantidade(). ")";
                         $codigoBarras = $embalagemEn->getCodigoBarras();
                     } else {
-                        $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
                         $codigoBarras = $embalagem->getCodigoBarras();
+                        $embalagem   = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
                     }
                 }
 
