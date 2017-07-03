@@ -36,7 +36,6 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
         }
         $query = str_replace(":codFilial", $this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"), $query);
 
-        echo $query; exit;
         return $query;
 
 

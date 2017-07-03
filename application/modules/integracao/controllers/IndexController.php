@@ -33,7 +33,7 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
         $idAcao = $this->getRequest()->getParam('id');
-        $idFiltro = $this->getRequest()->getParam('idFiltro');
+        $idFiltro = $this->_getParam('idFiltro',\Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
 
         $acaoEn = $acaoIntRepo->find($idAcao);
         $acaoIntRepo->processaAcao($acaoEn,null,'E','P',null,$idFiltro);
