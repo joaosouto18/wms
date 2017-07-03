@@ -47,34 +47,16 @@ echo $this->doctype();
     <div id="content" class="container-fluid  text-center">
         <body>
             <div id="body">
-
-
-
-                <div id="top" class="col-xs-12">
-                    <nav id="userInfo"class="navbar navbar-default col-xs-2 text-center black">
-                        <div class="container-fluid">
-                            <button type="button" class="navbar-toggle collapsed col-xs-6" data-toggle="collapse" data-target="#bs-example-navbar-collapse-4" aria-expanded="false">
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </button>
-                            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-4">
-                                <div id="" class="col-xs-12 text-right">
-                                    <a class="btn" href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" >Inicio</a>
-                                </div>
-                                <div id="" class="col-xs-12 text-right">
-                                    <?php if ($this->urlVoltar) : ?>
-                                        <a class="btn" href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" >Voltar</a>
-                                    <?php else : ?>
-                                        <a class="btn" href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" >Voltar</a>
-                                    </div>
-                                <?php endif; ?>
-                                <div id="" class="col-xs-12 text-right">
-                                    <a class="btn" href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" >Sair</a>
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
+                <div id="top" class="col-xs-4">
+                    <div id="userInfo" class="col-xs-4 text-right">
+                        <a class="btn" href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" >Inicio</a>
+                        <?php if ($this->urlVoltar) : ?>
+                            <a class="btn" href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" >Voltar</a>
+                        <?php else : ?>
+                            <a class="btn" href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" >Voltar</a>
+                        <?php endif; ?>
+                        <a class="btn" href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" >Sair</a>
+                    </div>
                     <h1><a href="#" title="WMS - Imperium">WMS - Imperium</a></h1>
                 </div>
                 <div class="contentPadding">
