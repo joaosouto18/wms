@@ -1,11 +1,12 @@
-<h3>Inventários disponíveis</h3>
-<ul class="menu">
-    <?php if(count($this->inventarios) == 0): ?>
-        <li>Nenhum Inventário liberado para conferência.</li>
-    <?php endif;?>
-    <?php foreach($this->inventarios as $inventario): ?>
-        <li>
-            <a href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'] )); ?>" title="<?php echo $inventario['id'] ?>" >Cod. Inv. <?php echo $inventario['id'] ?> </a>
-        </li>
+<div class="col-xs-12">
+    <h3>Inventários disponíveis</h3>
+    <?php if (count($this->inventarios) == 0): ?>
+        <p>Nenhum Inventário liberado para conferência.</p>
+    <?php endif; ?>
+    <?php foreach ($this->inventarios as $inventario): ?>
+        <div class="col-xs-12">
+            <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'])); ?>" title="<?php echo $inventario['id'] ?>" >Cod. Inv. <?php echo $inventario['id'] ?> </a>
+        </div>
     <?php endforeach; ?>
-</ul>
+</div>
+

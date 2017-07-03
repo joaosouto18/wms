@@ -36,7 +36,7 @@ class Login extends \Core\Form
 	));
 
 	$this->addDisplayGroup(
-		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms-MS')
+		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms')
 	);
     }
 

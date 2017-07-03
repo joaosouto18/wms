@@ -1,26 +1,21 @@
-<?php
-if (isset($this->header)) {?>
-    <div><p><?php echo $this->header;?></label></p></div>
-<?php }?>
-<div>
-
-<ul class="menu">
-    <?php
-    foreach($this->menu as $menu): ?>
-        <li>
-            <a href="<?php echo $menu['url'] ?>" title="<?php echo $menu['label'] ?>" ><?php echo $menu['label'] ?></a>
-        </li>
-    <?php endforeach;?>
-</ul>
+<div id="userInfo" class="col-xs-12 ">
+<?php if (isset($this->header)) { ?>
+    <div><p><?php echo $this->header; ?></label></p></div>
+<?php } ?>
+<div class="row">
+    <?php foreach ($this->menu as $menu): ?>
+        <div class="col-xs-12">
+            <a class="btn gradientBtn" href="<?php echo $menu['url'] ?>" title="<?php echo $menu['label'] ?>" ><?php echo $menu['label'] ?></a>
+        </div>
+<?php endforeach; ?>
 </div>
 
-<?php
-if (isset($this->bottom)) {?>
-    <p><label style="font-size:17px"><?php echo $this->bottom;?></label></p>
-<?php }?>
-<div>
+<?php if (isset($this->bottom)) { ?>
+    <p><label style="font-size:17px"><?php echo $this->bottom; ?></label></p>
+<?php } ?>
+</div>
 
-<?php if ($this->showQuantidade) : ?>
-    <h3>Quantidade total: <?php echo count($this->menu) ?></h3>
-<?php endif; ?>
+    <?php if ($this->showQuantidade) : ?>
+        <h3>Quantidade total: <?php echo count($this->menu) ?></h3>
+    <?php endif; ?>
 
