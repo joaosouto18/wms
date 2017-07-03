@@ -67,13 +67,13 @@ class EmbalagemRepository extends EntityRepository {
 
     public function checkEstoqueReservaById($id) {
         $dql = $this->_em->createQueryBuilder()
-            ->select('NVL(e.id, rep.id)')
-            ->from('wms:Produto\Embalagem', 'pe')
-            ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pe.id = e.produtoEmbalagem')
-            ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH','pe.id = rep.codProdutoEmbalagem')
-            ->leftJoin("rep.reservaEstoque", 're')
-            ->where("pe.id = :id and re.atendida = 'N'")
-            ->setParameter('id',$id);
+                ->select('NVL(e.id, rep.id)')
+                ->from('wms:Produto\Embalagem', 'pe')
+                ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'pe.id = e.produtoEmbalagem')
+                ->leftJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH', 'pe.id = rep.codProdutoEmbalagem')
+                ->leftJoin("rep.reservaEstoque", 're')
+                ->where("pe.id = :id and re.atendida = 'N'")
+                ->setParameter('id', $id);
 
         $result = $dql->getQuery()->getResult();
         $msg = null;
@@ -100,20 +100,30 @@ class EmbalagemRepository extends EntityRepository {
      * @param int $qtd Description
      * @return array Description
      */
-    public function getQtdEmbalagensProduto($codProduto, $grade, $qtd) {
+    public function getQtdEmbalagensProduto($codProduto, $grade, $qtd, $array = 0) {
         $arrayQtds = array();
         $embalagensEn = $this->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
         $qtdRestante = $qtd;
 
-        foreach ($embalagensEn as $embalagem) {
+        foreach ($embalagensEn as $key => $embalagem) {
             $qtdEmbalagem = $embalagem->getQuantidade();
             if ($qtdRestante >= $qtdEmbalagem) {
                 $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
                 $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
-                if ($embalagem->getDescricao() != null) {
-                    $arrayQtds[] = $qtdSeparar . ' ' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                if ($array === 0) {
+                    if ($embalagem->getDescricao() != null) {
+                        $arrayQtds[] = $qtdSeparar . ' ' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                    } else {
+                        $arrayQtds[] = $qtd;
+                    }
                 } else {
-                    $arrayQtds[] = $qtd;
+                    if($embalagem->getDescricao() == null){
+                        $qtdSeparar = $qtd;
+                    }
+                    $arrayQtds[$key]['idEmbalagem'] = $embalagem->getId();
+                    $arrayQtds[$key]['qtd'] = $qtdSeparar;
+                    $arrayQtds[$key]['dsc'] = $embalagem->getDescricao();
+                    $arrayQtds[$key]['qtdEmbalagem'] = $embalagem->getQuantidade();
                 }
             }
         }

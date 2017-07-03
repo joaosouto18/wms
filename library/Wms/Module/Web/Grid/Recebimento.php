@@ -21,7 +21,7 @@ class Recebimento extends Grid
     public function init(array $params = array())
     {
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
-        $resultSet = $recebimentoRepo->buscar($params);
+        $resultSet = $recebimentoRepo->searchNew($params);
         $this->setAttrib('title','Recebimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($resultSet))
                 ->setId('recebimento-index-grid')
@@ -32,40 +32,42 @@ class Recebimento extends Grid
                 ))
                 ->addColumn(array(
                     'label' => 'Data Inicial',
-                    'index' => 'dataInicial',
-                    'render' => 'DataTime',
+                    'index' => 'DATAINICIAL',
                 ))
                 ->addColumn(array(
                     'label' => 'Data Final',
-                    'index' => 'dataFinal',
-                    'render' => 'DataTime',
+                    'index' => 'DATAFINAL',
                 ))
                 ->addColumn(array(
                     'label' => 'Status',
-                    'index' => 'status',
+                    'index' => 'STATUS',
                 ))
                 ->addColumn(array(
                     'label' => 'Box',
-                    'index' => 'dscBox'
+                    'index' => 'DSCBOX'
                 ))
                 ->addColumn(array(
                     'label' => 'Fornecedor',
-                    'index' => 'fornecedor',
+                    'index' => 'FORNECEDOR',
                 ))
                 ->addColumn(array(
                     'label' => 'Qtd. Nota Fiscal',
-                    'index' => 'qtdNotaFiscal',
+                    'index' => 'QTDNOTAFISCAL',
                 ))
                 ->addColumn(array(
-                    'label' => 'Qtd. Produtos',
-                    'index' => 'qtdProduto',
+                    'label' => 'Qtd. Caixas',
+                    'index' => 'QTDMAIOR',
+                ))
+                ->addColumn(array(
+                    'label' => 'Qtd. Fracões',
+                    'index' => 'QTDMENOR',
                 ))
                 ->addAction(array(
                     'label' => 'Iniciar Recebimento',
                     'actionName' => 'iniciar',
                     'pkIndex' => 'id',
                     'condition' => function ($row) {
-                        return $row['idStatus'] == RecebimentoEntity::STATUS_CRIADO;
+                        return $row['IDSTATUS'] == RecebimentoEntity::STATUS_CRIADO;
                     }
                 ))
                 ->addAction(array(
@@ -73,7 +75,7 @@ class Recebimento extends Grid
                     'actionName' => 'conferencia',
                     'pkIndex' => 'idOrdemServico',
                     'condition' => function ($row) {
-                        return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA) && $row['idOrdemServicoManual']);
+                        return (($row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA) && $row['IDORDEMSERVICOMANUAL']);
                     }
                 ));
 
@@ -91,7 +93,7 @@ class Recebimento extends Grid
                     'cssClass' => 'edit confirm',
                     'title' => 'Confirma finalizar a conferencia?',
                     'condition' => function ($row) {
-                        return (($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR) && $row['idOrdemServicoColetor']);
+                        return (($row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR) && $row['IDORDEMSERVICOCOLETOR']);
                     }
                 ))->addAction(array(
                     'label' => 'Parametros do Recebimento',
@@ -107,7 +109,7 @@ class Recebimento extends Grid
                     'cssClass' => 'view-ordem-servico dialogAjax',
                     'pkIndex' => 'id',
                     'condition' => function ($row) {
-                        return $row['idStatus'] != RecebimentoEntity::STATUS_CRIADO;
+                        return $row['IDSTATUS'] != RecebimentoEntity::STATUS_CRIADO;
                     }
                 ))
                 ->addAction(array(
@@ -117,7 +119,7 @@ class Recebimento extends Grid
                     'cssClass' => 'pdf',
                     'pkIndex' => 'id',
                     'condition' => function ($row) {
-                        return $row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA;
+                        return $row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA;
                     }
                 ))
                 ->addAction(array(
@@ -139,7 +141,7 @@ class Recebimento extends Grid
                     'actionName' => 'conferencia-cega',
                     'pkIndex' => 'id',
                     'condition' => function ($row) {
-                        return ($row['idStatus'] == RecebimentoEntity::STATUS_INICIADO);
+                        return ($row['IDSTATUS'] == RecebimentoEntity::STATUS_INICIADO);
                     }
                 ))
                 ->addAction(array(
@@ -165,7 +167,7 @@ class Recebimento extends Grid
                     'cssClass' => 'edit confirmee',
                     'title' => 'Confirma desfazer o recebimento?',
                     'condition' => function ($row) {
-                        return (!in_array($row['idStatus'], array(
+                        return (!in_array($row['IDSTATUS'], array(
                                     RecebimentoEntity::STATUS_CANCELADO,
                                     RecebimentoEntity::STATUS_FINALIZADO,
                                     RecebimentoEntity::STATUS_DESFEITO,

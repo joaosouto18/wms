@@ -4,6 +4,8 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\NotaFiscal;
+use Wms\Domain\Entity\Pessoa\Juridica;
+use Wms\Service\ExpedicaoService;
 
 class RecebimentoReentregaRepository extends EntityRepository
 {
@@ -66,16 +68,17 @@ class RecebimentoReentregaRepository extends EntityRepository
             $this->getEntityManager()->beginTransaction();
 
             /** @var \Wms\Domain\Entity\Util\Sigla $siglaRepo */
-            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+            $siglaRepo = $this->_em->getRepository("wms:Util\Sigla");
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
-            $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+            $notaFiscalSaidaRepo = $this->_em->getRepository('wms:Expedicao\NotaFiscalSaida');
             /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
-            $recebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentrega');
+            $recebimentoReentregaRepo = $this->_em->getRepository('wms:Expedicao\RecebimentoReentrega');
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
             $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
             /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
-            $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
+            $recebimentoReentregaNotaRepo = $this->_em->getRepository('wms:Expedicao\RecebimentoReentregaNota');
 
+            $expedicaoService = new ExpedicaoService($this->_em);
 
             $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
 
@@ -101,11 +104,13 @@ class RecebimentoReentregaRepository extends EntityRepository
 
             //GRAVO O ANDAMENTO DE CADA NOTA FALANDO QUE FOI FINALIZADO O RECEBIMENTO
             $notas = $recebimentoReentregaNotaRepo->findBy(array('recebimentoReentrega' => $recebimentoReentregaEn->getId()));
+            /** @var RecebimentoReentregaNota $nota */
             foreach ($notas as $nota){
                 $nfEntity = $nota->getNotaFiscalSaida();
                 $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CONCLUIDO,false, null,null, $recebimentoReentregaEn);
                 $nfEntity->setStatus($statusNfFinalizadaEn);
                 $this->getEntityManager()->persist($nfEntity);
+                $expedicaoService->createCargaReentrega($nfEntity);
             }
 
             $this->_em->flush();

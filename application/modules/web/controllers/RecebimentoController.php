@@ -90,7 +90,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 ->populate($values);
     }
 
-    public function excluirNotaAction () {
+    public function excluirNotaAction() {
         $em = $this->getEntityManager();
         $em->beginTransaction();
 
@@ -98,7 +98,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $idNf = $this->_getParam('id');
             $nfRepo = $em->getRepository("wms:NotaFiscal");
             /** @var \Wms\Domain\Entity\NotaFiscal $nf */
-            $nf = $nfRepo->findOneBy(array('id'=>$idNf));
+            $nf = $nfRepo->findOneBy(array('id' => $idNf));
             if ($nf == null)
                 throw new \Exception('Nota Fiscal não encontrado');
 
@@ -109,8 +109,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             $em->remove($nf);
             $em->commit();
-			$em->flush();
-			
+            $em->flush();
+
             $this->addFlashMessage('success', 'Nota Fiscal excluida com sucesso');
             $this->redirect('index');
         } catch (\Exception $e) {
@@ -120,7 +120,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $this->redirect('index');
         }
     }
-	
+
     /**
      * Iniciar Recebimento
      */
@@ -153,7 +153,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
-            
+
             //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimentoEntity->getId()));
@@ -265,7 +265,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $cancelarPaletesParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CANCELA_PALETES_DESFAZER_RECEBIMENTO'));
                 if ($cancelarPaletesParam->getValor() == "S") {
                     $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
-                    $paletesEn = $paleteRepo->findBy(array('recebimento'=>$idRecebimento));
+                    $paletesEn = $paleteRepo->findBy(array('recebimento' => $idRecebimento));
                     foreach ($paletesEn as $paleteEn) {
                         $paleteRepo->cancelaPalete($paleteEn->getId());
                     }
@@ -315,8 +315,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     /**
      * Conferencia (salva o produto e a quantidade conferida do recebimento)
      */
-    public function conferenciaAction()
-    {
+    public function conferenciaAction() {
         //adding default buttons to the page
         Page::configure(array(
             'buttons' => array(
@@ -395,27 +394,27 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
                 $numPeso = $this->getRequest()->getParam('numPeso');
 
-                /*$hoje = new Zend_Date;
-                foreach ($dataValidade as $idProduto => $grades) {
-                    foreach ($grades as $grade => $validade) {
-                        $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-                        $shelfLife = $produtoEn->getDiasVidaUtil();
-                        if (!is_null($shelfLife)) {
-                            $PeriodoUtil = $hoje->addDay($produtoEn->getDiasVidaUtil());
-                            $validade = new Zend_Date($validade);
-                            if ($validade <= $PeriodoUtil) {
-                                //Autoriza Recebimento?
-                                $this->redirect('autoriza-recebimento', 'recebimento', 'mobile', array(
-                                    'idOrdemServico' => serialize($idOrdemServico), 'qtdNFs' => serialize($qtdNFs),
-                                    'qtdAvarias' => serialize($qtdAvarias), 'qtdConferidas' => serialize($qtdConferidas),
-                                    'idConferente' => serialize($idConferente), 'gravaRecebimentoVolumeEmbalagem' => true,
-                                    'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade),
-                                    'conferenciaCega' => true, 'numPeso' => serialize($numPeso)));
-                            }
-                        }
+                /* $hoje = new Zend_Date;
+                  foreach ($dataValidade as $idProduto => $grades) {
+                  foreach ($grades as $grade => $validade) {
+                  $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                  $shelfLife = $produtoEn->getDiasVidaUtil();
+                  if (!is_null($shelfLife)) {
+                  $PeriodoUtil = $hoje->addDay($produtoEn->getDiasVidaUtil());
+                  $validade = new Zend_Date($validade);
+                  if ($validade <= $PeriodoUtil) {
+                  //Autoriza Recebimento?
+                  $this->redirect('autoriza-recebimento', 'recebimento', 'mobile', array(
+                  'idOrdemServico' => serialize($idOrdemServico), 'qtdNFs' => serialize($qtdNFs),
+                  'qtdAvarias' => serialize($qtdAvarias), 'qtdConferidas' => serialize($qtdConferidas),
+                  'idConferente' => serialize($idConferente), 'gravaRecebimentoVolumeEmbalagem' => true,
+                  'unMedida' => serialize($unMedida), 'dataValidade' => serialize($dataValidade),
+                  'conferenciaCega' => true, 'numPeso' => serialize($numPeso)));
+                  }
+                  }
 
-                    }
-                }*/
+                  }
+                  } */
                 // executa os dados da conferencia
                 $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
@@ -428,9 +427,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 if ($result['concluido'] == true) {
                     $this->redirect('index');
                 } else {
-                    $this->redirect('divergencia','recebimento',null,array('id' => $idOrdemServico));
+                    $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
                 }
-
             }
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
@@ -444,8 +442,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
      * Uma vez com os dados cadastrados redireciona para divergencia ou finalização
      * 
      */
-    public function conferenciaColetorAjaxAction()
-    {
+    public function conferenciaColetorAjaxAction() {
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 3000);
 
@@ -458,13 +455,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $descargaRepo */
         $descargaRepo = $this->em->getRepository('wms:Recebimento\Descarga');
         if ($descargaRepo->realizarDescarga($idRecebimento) === true) {
-            $this->redirect('index','descarga','produtividade',array('recebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico));
+            $this->redirect('index', 'descarga', 'produtividade', array('recebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico));
         }
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
-        $result =  $recebimentoRepo->conferenciaColetor($idRecebimento, $idOrdemServico);
+        $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOrdemServico);
 
         if ($result['exception'] != null) {
             throw $result['exception'];
@@ -475,7 +472,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         if ($result['concluido'] == true) {
             $this->redirect('index');
         } else {
-            $this->redirect('divergencia','recebimento',null,array('id' => $idOrdemServico));
+            $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
         }
     }
 
@@ -500,7 +497,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 3000);
-        
+
         try {
 
             $params = $this->getRequest()->getParams();
@@ -528,7 +525,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $this->view->recebimento = $recebimentoEntity;
             //conferente
             $this->view->conferentes = $this->em->getRepository('wms:Pessoa\Fisica\Conferente')->getIdValue();
-            
+
             //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $recebimentoEntity->getId()));
@@ -551,18 +548,17 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $this->view->pesoDivergente = false;
             foreach ($sumPesosRecebimentoProdutos as $sumPesoRecebimento) {
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
-                $tolerancia = str_replace(",",".",$produtoEn->getToleranciaNominal());
+                $tolerancia = str_replace(",", ".", $produtoEn->getToleranciaNominal());
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $sumPesoRecebimento['produto'], 'grade' => $sumPesoRecebimento['grade']));
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoUnitarioMargemS = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) + $tolerancia;
-                    $pesoUnitarioMargemI = (float)($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) - $tolerancia;
+                    $pesoUnitarioMargemS = (float) ($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) + $tolerancia;
+                    $pesoUnitarioMargemI = (float) ($pesoProduto->getPeso() * $sumPesoRecebimento['qtdConferida']) - $tolerancia;
 
-                    if (!((float)$sumPesoRecebimento['numPeso'] <= $pesoUnitarioMargemS && (float)$sumPesoRecebimento['numPeso'] >= $pesoUnitarioMargemI)) {
+                    if (!((float) $sumPesoRecebimento['numPeso'] <= $pesoUnitarioMargemS && (float) $sumPesoRecebimento['numPeso'] >= $pesoUnitarioMargemI)) {
                         $this->view->pesoDivergente = true;
                         break;
                     }
                 }
-
             }
 
             $this->view->ordemServicoEntity = $ordemServicoEntity;
@@ -598,14 +594,14 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->beginTransaction();
 
                         try {
-                            /*$ordemServicoEntity->setDataFinal(new \DateTime());
-                            $this->em->persist($ordemServicoEntity);
-                            $this->em->commit();
-                            $this->em->flush();
-                            $this->em->beginTransaction();*/
+                            /* $ordemServicoEntity->setDataFinal(new \DateTime());
+                              $this->em->persist($ordemServicoEntity);
+                              $this->em->commit();
+                              $this->em->flush();
+                              $this->em->beginTransaction(); */
                             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
                             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-                            $checkOs = $recebimentoRepo->checarConferenciaComDivergencia($idRecebimento,false);
+                            $checkOs = $recebimentoRepo->checarConferenciaComDivergencia($idRecebimento, false);
 
                             if ($checkOs['qtdConferencia'] > 0) {
                                 $ordemServicoEntity->setDataFinal(new \DateTime());
@@ -624,7 +620,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                             } else {
                                 $mensagem = 'A Ordem de Serviço Nº ' . $checkOs['id'] . ' já está aberta para este recebimento';
                             }
-                            
+
                             $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'conferencia-cega-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Conferência Cega</a>';
 
                             if ($ordemServicoEntity->getFormaConferencia() == OrdemServicoEntity::MANUAL)
@@ -674,11 +670,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
                         //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
                         if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
-                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(),
-                                array('acao'=>null,
-                                    'options'=>null,
-                                    'tipoExecucao' => 'E'
-                                ));
+                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array('acao' => null,
+                                'options' => null,
+                                'tipoExecucao' => 'E'
+                            ));
                             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
                         }
 
@@ -744,8 +739,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 ->addColumn(array(
                     'label' => 'Observação',
                     'index' => 'dscObservacao'
-                    ))
-
+                ))
                 ->setShowExport(false);
 
         $this->view->grid = $grid->build();
@@ -860,7 +854,24 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             $notasFiscais[$key]['itens'] = $itens;
         }
-
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($notasFiscais as $key1 => $vetItens) {
+            foreach ($vetItens['itens'] as $key => $value) {
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['id'], $value['grade'], $value['quantidade']);
+                $embalagem = '';
+                if (!empty($vetEmbalagens[0])) {
+                    $embalagem = $vetEmbalagens[0];
+                } else {
+                    $embalagem = '';
+                }
+                if (!empty($vetEmbalagens[1]) && $embalagem != '') {
+                    $embalagem .= ' + '.$vetEmbalagens[1];
+                } elseif(!empty($vetEmbalagens[1])) {
+                    $embalagem .= $vetEmbalagens[1];
+                }
+                $notasFiscais[$key1]['itens'][$key]['quantidade'] = $embalagem;
+            }
+        }
         $this->view->notasFiscais = $notasFiscais;
         $this->view->idStatusCancelado = NotaFiscalEntity::STATUS_CANCELADA;
     }
@@ -990,7 +1001,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
         if ($notaFiscalEntity)
             $this->view->placaVeiculo = $notaFiscalEntity->getPlaca();
-        
+
         // grid da conferencia
         $grid = new ConferenciaGrid;
         $this->view->grid = $grid->init(array('idOrdemServico' => $id))
@@ -1060,7 +1071,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         'idRecebimento' => $idRecebimento,
                         'idAtividade' => AtividadeEntity::CONFERIR_PRODUTO,
                         'formaConferencia' => OrdemServicoEntity::MANUAL,
-                        )));
+                )));
 
                 //verifica se existe produtos com impressão automática do código de barras
                 $produtoRepo = $this->em->getRepository('wms:Produto');
@@ -1117,7 +1128,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $values = $this->getRequest()->getParams();
         $notasFiscais = 0;
         try {
-            if (isset($values['notasFiscais'])){
+            if (isset($values['notasFiscais'])) {
                 $notasFiscais = count($values['notasFiscais']);
             }
             if ($notasFiscais == 0)
@@ -1154,18 +1165,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $params = array(
                 'dataEntradaInicial' => $dataI1->format('d/m/Y'),
                 'dataEntradaFinal' => $dataI2->format('d/m/Y'),
-                'idFornecedor'=>'',
-                'numero'=>'',
-                'serie'=>''
+                'idFornecedor' => '',
+                'numero' => '',
+                'serie' => ''
             );
             $filtroNotaFiscalForm->populate($params);
         }
 
         if ($params) {
-
-            $resultSet = $this->getEntityManager()
-                    ->getRepository('wms:NotaFiscal')
-                    ->search($params);
+            $entityNotaFiscal = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+            $resultSet = $entityNotaFiscal->search($params);
 
             $data = array();
 
@@ -1180,9 +1189,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $data[$key]['dataEntrada'] = $dataEntrada;
                 $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 20);
                 $data[$key]['status'] = $row[0]->getStatus()->getSigla();
-                $data[$key]['qtdProduto'] = (int) $row['qtdProduto'];
+                $vetEmbalagens = $entityNotaFiscal->getTotalPorEmbalagemNota($row[0]->getId());
+                $data[$key]['qtdProdutoMaior'] = (int) $vetEmbalagens[0]['QTDMAIOR'];
+                $data[$key]['qtdProdutoMenor'] = (int) $vetEmbalagens[0]['QTDMENOR'];
             }
-
             if (count($data) == 0)
                 $this->_helper->messenger('info', 'Nenhuma nota fiscal encontrada.');
 
@@ -1213,7 +1223,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $idRecebimento = $this->getRequest()->getParam('id');
         $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
 
-        switch($modelo) {
+        switch ($modelo) {
             case 1:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
                 break;
@@ -1225,16 +1235,14 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 break;
         }
 
-        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null ,$modelo);
+        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null, $modelo);
     }
 
-    public function __call($methodName, $args)
-    {
+    public function __call($methodName, $args) {
         parent::__call($methodName, $args);
     }
 
-    public function forcarCorrecaoAction()
-    {
+    public function forcarCorrecaoAction() {
         $idRecebimento = $this->getRequest()->getParam('id');
 
         $repository = $this->em->getRepository('wms:OrdemServico');
@@ -1250,11 +1258,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $this->_helper->messenger('info', 'Essa correção não pode ser usada, pois existe apenas uma Ordem de Serviço.');
             $this->redirect('index', 'recebimento', null);
         }
-
     }
 
-    public function modeloRecebimentoAction()
-    {
+    public function modeloRecebimentoAction() {
         Page::configure(array(
             'buttons' => array(
                 array(
@@ -1277,8 +1283,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->grid = $grid->init($modelos)->render();
     }
 
-    public function addAction()
-    {
+    public function addAction() {
         Page::configure(array(
             'buttons' => array(
                 array(
@@ -1311,7 +1316,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
                 $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
                 $this->_redirect('/recebimento/modelo-recebimento');
-
             }
             //$form->setDefaultsFromEntity($entity); // pass values to form
         } catch (\Exception $e) {
@@ -1321,8 +1325,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $form;
     }
 
-    public function deleteModeloAction()
-    {
+    public function deleteModeloAction() {
         try {
             $params = $this->getRequest()->getParams();
 
@@ -1335,14 +1338,12 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             $this->addFlashMessage('success', 'Modelo de Recebimento excluido com sucesso.');
             $this->_redirect('/recebimento/modelo-recebimento');
-
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
     }
 
-    public function editAction()
-    {
+    public function editAction() {
         Page::configure(array(
             'buttons' => array(
                 array(
@@ -1375,7 +1376,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
                 $this->addFlashMessage('success', 'Modelo de Recebimento cadastrado com sucesso.');
                 $this->_redirect('/recebimento/modelo-recebimento');
-
             }
             $form->setDefaultsFromEntity($modeloRecebimentoEn);
         } catch (\Exception $e) {
@@ -1385,32 +1385,30 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $form;
     }
 
-    public function parametrosAjaxAction()
-    {
+    public function parametrosAjaxAction() {
         $form = new RecebimentoForm\ParametrosRecebimento();
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
         $idRecebimento = $this->_getParam('id');
-        $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$idRecebimento));
+        $recebimentoEn = $recebimentoRepo->findOneBy(array('id' => $idRecebimento));
         $form->setDefaultsFromEntity($recebimentoEn);
         $this->view->form = $form;
     }
 
-    public function salvaParametrosAjaxAction()
-    {
+    public function salvaParametrosAjaxAction() {
         $params = $this->_getAllParams();
         $form = new RecebimentoForm\ParametrosRecebimento();
 
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
         try {
             $idRecebimento = $this->_getParam('id');
-            $recebimentoEn = $recebimentoRepo->findOneBy(array('id'=>$idRecebimento));
+            $recebimentoEn = $recebimentoRepo->findOneBy(array('id' => $idRecebimento));
 
             if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
 
                 $idModelo = $params['recebimento']['modelo'];
                 $modeloEn = null;
                 if ($idModelo != "") {
-                    $modeloEn = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo')->findOneBy(array('id'=>$idModelo));
+                    $modeloEn = $this->getEntityManager()->getRepository('wms:Enderecamento\Modelo')->findOneBy(array('id' => $idModelo));
                 }
                 $recebimentoEn->setModeloEnderecamento($modeloEn);
                 $this->getEntityManager()->persist($recebimentoEn);
@@ -1419,25 +1417,22 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $this->addFlashMessage('success', 'Modelo de Endereçamento alterado com sucesso.');
                 $this->_redirect('/recebimento');
             }
-        $this->view->form = $form;
+            $this->view->form = $form;
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
-
     }
 
-    public function usuarioRecebimentoPdfAction()
-    {
-        $idRecebimento = $this->_getParam('id',0);
+    public function usuarioRecebimentoPdfAction() {
+        $idRecebimento = $this->_getParam('id', 0);
         /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $recebimentoDescargaRepo */
         $recebimentoDescargaRepo = $this->getEntityManager()->getRepository('wms:Recebimento\Descarga');
         $recebimentoDescarga = $recebimentoDescargaRepo->getInfosDescarga($idRecebimento);
 
-        $this->exportPDF($recebimentoDescarga, 'usuario_descarga_'.$idRecebimento, 'Usuários Descarga Recebimento '.$idRecebimento, 'P');
+        $this->exportPDF($recebimentoDescarga, 'usuario_descarga_' . $idRecebimento, 'Usuários Descarga Recebimento ' . $idRecebimento, 'P');
     }
 
-    public function checkShelflifeAjaxAction()
-    {
+    public function checkShelflifeAjaxAction() {
         $request = $this->_request->getPost();
         $produtos = json_decode($request['data']);
 
@@ -1452,8 +1447,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->_helper->json(array('result' => $result));
     }
 
-    public function checkSenhaAutorizacaoAjaxAction()
-    {
+    public function checkSenhaAutorizacaoAjaxAction() {
         $senha = $this->getRequest()->getParam('senha');
         $senhaAutorizacao = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
         $result = false;

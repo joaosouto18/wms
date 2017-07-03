@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Wms\Domain\Entity\Pessoa;
+
 /**
  *
  * @Table(name="NOTA_FISCAL_SAIDA")
@@ -34,11 +36,13 @@ class NotaFiscalSaida
     protected $serieNf;
 
     /**
+     * @var int
      * @Column(name="COD_PESSOA", type="string",nullable=false)
      */
     protected $codPessoa;
 
     /**
+     * @var Pessoa
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa")
      * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_PESSOA")
      */
@@ -136,7 +140,7 @@ class NotaFiscalSaida
     }
 
     /**
-     * @param mixed $codPessoa
+     * @param int $codPessoa
      */
     public function setCodPessoa($codPessoa)
     {
@@ -144,7 +148,7 @@ class NotaFiscalSaida
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getCodPessoa()
     {
@@ -152,7 +156,7 @@ class NotaFiscalSaida
     }
 
     /**
-     * @param mixed $pessoa
+     * @param Pessoa $pessoa
      */
     public function setPessoa($pessoa)
     {
@@ -160,7 +164,7 @@ class NotaFiscalSaida
     }
 
     /**
-     * @return mixed
+     * @return Pessoa
      */
     public function getPessoa()
     {

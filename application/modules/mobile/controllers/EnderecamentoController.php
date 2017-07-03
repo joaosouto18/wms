@@ -876,8 +876,19 @@ class Mobile_EnderecamentoController extends Action
         $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
         if (empty($estoqueEn))
             throw new Exception("Não foi encontrado o estoque com endereco " . $endereco->getDescricao() . " produto " . $embalagemEn->getCodProduto() . " grade " . $embalagemEn->getGrade());
-
-        $this->view->qtd = $qtd = $estoqueEn->getQtd();
+        
+        if(!empty($codBarras)){
+            $qtd = round($estoqueEn->getQtd() / $embalagemEn->getQuantidade());
+            $qtdReal = round($estoqueEn->getQtd() / $embalagemEn->getQuantidade()) * $embalagemEn->getQuantidade();
+            $qtdEmbalagem = $embalagemEn->getQuantidade();
+        }else{
+            $qtd = $estoqueEn->getQtd();
+            $qtdReal = $estoqueEn->getQtd();
+            $qtdEmbalagem = 1;
+        }
+        $this->view->qtd = $qtd;
+        $this->view->qtdReal = $qtdReal;
+        $this->view->qtdEmbalagem = $qtdEmbalagem;
 
         $idEndereco = $endereco->getId();
         $codProduto = $embalagemEn->getCodProduto();
