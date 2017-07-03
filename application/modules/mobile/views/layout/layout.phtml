@@ -62,13 +62,13 @@ echo $this->doctype();
                     </div>
                     <div id="navbar" class="navbar-collapse collapse">
                         <ul class="nav navbar-nav navbar-right">
-                            <li class="active"><a href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" >Inicio <span class="sr-only">(current)</span></a></li>
+                            <li class="active"><a href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" ><b>Inicio</b> <span class="sr-only">(current)</span></a></li>
                             <?php if ($this->urlVoltar) : ?>
-                                <li><a href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" >Voltar</a></li>
+                                <li><a href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" ><b>Voltar</b></a></li>
                             <?php else : ?>
-                                <li><a  href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" >Voltar</a></li>
+                                <li><a  href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" ><b>Voltar</b></a></li>
                             <?php endif; ?>
-                            <li><a href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" >Sair</a></li>
+                            <li><a href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" ><b>Sair</b></a></li>
                         </ul>
                     </div><!--/.nav-collapse -->
                 </div><!--/.container-fluid -->
