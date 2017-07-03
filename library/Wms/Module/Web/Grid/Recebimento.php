@@ -40,7 +40,7 @@ class Recebimento extends Grid
                 ))
                 ->addColumn(array(
                     'label' => 'Status',
-                    'index' => 'IDSTATUS',
+                    'index' => 'STATUS',
                 ))
                 ->addColumn(array(
                     'label' => 'Box',
@@ -55,11 +55,11 @@ class Recebimento extends Grid
                     'index' => 'QTDNOTAFISCAL',
                 ))
                 ->addColumn(array(
-                    'label' => 'Maior Embalagem',
+                    'label' => 'Qtd. Caixas',
                     'index' => 'QTDMAIOR',
                 ))
                 ->addColumn(array(
-                    'label' => 'Menor Embalagem',
+                    'label' => 'Qtd. Fracões',
                     'index' => 'QTDMENOR',
                 ))
                 ->addAction(array(
