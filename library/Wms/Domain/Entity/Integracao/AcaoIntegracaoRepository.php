@@ -181,6 +181,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             $conexaoEn = $acaoEn->getConexao();
+            //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
 
             if ($dados == null) {
