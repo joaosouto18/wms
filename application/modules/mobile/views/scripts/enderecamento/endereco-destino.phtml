@@ -2,10 +2,10 @@
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('novoEndereco').value != "") {
-                nivel   = document.getElementById('nivel');
+                nivel = document.getElementById('nivel');
                 if (nivel) {
                     nivel.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -20,7 +20,8 @@
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'confirma-enderecamento')) ?>" method="post">
     <div>
         <label>Quantidade:</label>
-        <input type="text" name="qtd" id="qtd" value="<?php echo $this->qtd?>" />
+        <input type="text" name="qtd_fake" id="qtd_fake" value="<?php echo $this->qtd ?>" />
+        <input type="hidden" name="qtd" id="qtd" value="<?php echo $this->qtdReal ?>" />
     </div>
 
     <div>
@@ -34,13 +35,19 @@
     </div>
 
     <div>
-        <input type="hidden" name="uma" id="uma" value="<?php echo $this->codigoBarrasUMA?>"/>
-        <input type="hidden" name="etiquetaProduto" id="etiquetaProduto" value="<?php echo $this->etiquetaProduto?>"/>
-        <input type="hidden" name="idEstoque" id="idEstoque" value="<?php echo $this->idEstoque?>"/>
+        <input type="hidden" name="uma" id="uma" value="<?php echo $this->codigoBarrasUMA ?>"/>
+        <input type="hidden" name="etiquetaProduto" id="etiquetaProduto" value="<?php echo $this->etiquetaProduto ?>"/>
+        <input type="hidden" name="idEstoque" id="idEstoque" value="<?php echo $this->idEstoque ?>"/>
         <br>
     </div>
 
     <input type="submit" name="submit" id="submit" value="Movimentar" />
 </form>
+<script>
+    $('#qtd_fake').on('keyup', function (e) {
+        var qtdEmbalagem = <?php echo $this->qtdEmbalagem ?>;
+        $('#qtd').val(qtdEmbalagem * $(this).val());
+    });
 
+</script>
 

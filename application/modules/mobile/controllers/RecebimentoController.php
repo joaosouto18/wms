@@ -166,8 +166,13 @@ class Mobile_RecebimentoController extends Action
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade);
             if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto) && !is_null($getDataValidadeUltimoProduto['dataValidade'])) {
-                $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
-                $dataValidade = $dataValidade->toString();
+                /**
+                 * Deprecated: iconv_set_encoding(): Use of iconv.internal_encoding is deprecated in C:\wamp64\www\Imperium\wms\library\Zend\Locale\Format.php 
+                    $dataValidade = new Zend_Date($getDataValidadeUltimoProduto['dataValidade']);
+                    $dataValidade = $dataValidade->toString();
+                 * 
+                 */
+                $dataValidade = date('d/m/Y H:i:s', strtotime($getDataValidadeUltimoProduto['dataValidade']));
                 $this->view->dataValidade = $dataValidade;
             }
 

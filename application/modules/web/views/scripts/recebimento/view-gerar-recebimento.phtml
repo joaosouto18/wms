@@ -18,9 +18,10 @@ if (count($this->notasFiscais) > 0):
                 <td width=""><a title=""><span>Data Entrada</span></a></td>
                 <td width=""><a title=""><span>Fornecedor</span></a></td>
                 <td width=""><a title=""><span>Status</span></a></td>
-                <td width=""><a title=""><span>Qtd. Produtos</span></a></td>
+                <td width=""><a title=""><span>Maior Embalagem</span></a></td>
+                <td width=""><a title=""><span>Menor Embalagem</span></a></td>
             </tr>
-            <?php foreach ($this->notasFiscais as $notaFiscal): ?>
+            <?php foreach ($this->notasFiscais as $notaFiscal): //var_dump($notaFiscal);?>
                 <tr class="gTResultSet ">
                     <td class="gRowCheck"><input type="checkbox" name="notasFiscais[]" value="<?php echo $notaFiscal['id'] ?>" /></td>
                     <td class="gTdOpcRow">
@@ -41,7 +42,8 @@ if (count($this->notasFiscais) > 0):
                     <td style="text-align:left"><?php echo $notaFiscal['dataEntrada'] ?></td>
                     <td style="text-align:left"><?php echo $notaFiscal['fornecedor'] ?></td>
                     <td style="text-align:left"><?php echo $notaFiscal['status'] ?></td>
-                    <td style="text-align:left"><?php echo $notaFiscal['qtdProduto'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['qtdProdutoMaior'] ?></td>
+                    <td style="text-align:left"><?php echo $notaFiscal['qtdProdutoMenor'] ?></td>
                 <?php endforeach; ?>
             </tr>
         </table>
