@@ -79,6 +79,8 @@ h3 {
     text-indent: 5px;
     color: #333;
     padding: 4px;
+    font-size: 13px;
+    font-weight: bold;
 }
 
 .menu div {

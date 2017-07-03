@@ -4,9 +4,7 @@
         <p>Nenhum Inventário liberado para conferência.</p>
     <?php endif; ?>
     <?php foreach ($this->inventarios as $inventario): ?>
-        <div class="col-xs-12">
-            <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'])); ?>" title="<?php echo $inventario['id'] ?>" >Cod. Inv. <?php echo $inventario['id'] ?> </a>
-        </div>
+        <a class="btn btn-xs gradientBtn" href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'])); ?>" title="<?php echo $inventario['id'] ?>" >Cod. Inv. <?php echo $inventario['id'] ?> </a>
     <?php endforeach; ?>
 </div>
 
