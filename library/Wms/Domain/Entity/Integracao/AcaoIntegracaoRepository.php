@@ -160,10 +160,12 @@ class AcaoIntegracaoRepository extends EntityRepository
      *              R => Resumo do resultado
      * Destino => (P => Produção, T => Tabela temporária)
      */
-    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null) {
+    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
+        $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
         $idAcao = $acaoEn->getId();
         $sucess = "S";
         $observacao = "";
@@ -174,47 +176,13 @@ class AcaoIntegracaoRepository extends EntityRepository
         try {
             $this->_em->beginTransaction();
 
-            $conexaoEn = $acaoEn->getConexao();
-            $query = $acaoEn->getQuery();
-
-            if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
-                //PARAMETRIZA A DATA DE ULTIMA EXECUÇÃO DA QUERY
-                if ($acaoEn->getDthUltimaExecucao() == null) {
-                    $dthExecucao = "TO_DATE('01/01/1900 01:01:01','DD/MM/YY HH24:MI:SS')";
-                    if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO) {
-                        $query = str_replace("and p.dtcadastro > :dthExecucao", "", $query);
-                        $query = str_replace("AND (log.datainicio > :dthExecucao OR p.dtultaltcom > :dthExecucao)", "", $query);
-
-                    }
-                } else {
-                    $dthExecucao = "TO_DATE('" . $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s") . "','DD/MM/YYYY HH24:MI:SS')";
-                }
-
-                $query = str_replace(":dthExecucao", $dthExecucao, $query);
-
-                //PARAMETRIZA O COD_FILIAL PELO CODIGO DA FILIAL DE INTEGRAÇAO PARA INTEGRAÇÕES NO WINTHOR
-                $query = str_replace(":codFilial", $this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"), $query);
-
-                //DEFINI OS PARAMETROS PASSADOS EM OPTIONS
-                if (!is_null($options)) {
-                    foreach ($options as $key => $value) {
-                        $query = str_replace(":?" . ($key + 1), $value, $query);
-                    }
-                }
-            } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
-                $dthExecucao = null;
-                if ($acaoEn->getDthUltimaExecucao() == null) {
-                    if ($acaoEn->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PRODUTO) {
-                        $query = str_replace("and a.es1_dtalteracao > :dthExecucao", "" ,$query);
-                    } else {
-                        $hoje = new \DateTime();
-                        $dthExecucao = $hoje->format("Y-m-d");
-                    }
-                } else {
-                    $dthExecucao = $acaoEn->getDthUltimaExecucao()->format("Y-m-d");
-                }
-                $query = str_replace(":dthExecucao", "'$dthExecucao'" ,$query);
+            if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
+                $options[] = $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s");
             }
+
+            $conexaoEn = $acaoEn->getConexao();
+            $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
+
             if ($dados == null) {
                 $result = $conexaoRepo->runQuery($query,$conexaoEn);
             } else {
@@ -320,4 +288,5 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         return $result;
     }
+
 }
