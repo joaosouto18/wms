@@ -1607,7 +1607,7 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $sql = "  
-                SELECT 
+                SELECT DISTINCT
                    NF.COD_RECEBIMENTO AS id,
                    TO_CHAR(R.DTH_INICIO_RECEB,'DD/MM/YYYY HH24:MI:SS') AS dataInicial,
                    TO_CHAR(R.DTH_FINAL_RECEB,'DD/MM/YYYY HH24:MI:SS') AS dataFinal,
@@ -1654,13 +1654,13 @@ class RecebimentoRepository extends EntityRepository {
                        PR.COD_PRODUTO
                      ) AS qtdMenor
                  FROM 
-                   NOTA_FISCAL NF INNER JOIN 
-                   RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO) INNER JOIN
-                   BOX B ON (R.COD_BOX = B.COD_BOX) INNER JOIN
-                   SIGLA S ON (R.COD_STATUS = S.COD_SIGLA) INNER JOIN
-                   PESSOA P ON (NF.COD_FORNECEDOR = P.COD_PESSOA) LEFT JOIN
-                   ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL) LEFT JOIN
-                   ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
+                   NOTA_FISCAL NF
+                   INNER JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+                   LEFT JOIN BOX B ON (R.COD_BOX = B.COD_BOX)
+                   INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
+                   INNER JOIN PESSOA P ON (NF.COD_FORNECEDOR = P.COD_PESSOA)
+                   LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
+                   LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 
                 1 = 1" . $where;
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
