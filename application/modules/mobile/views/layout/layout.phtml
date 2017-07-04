@@ -27,14 +27,13 @@ echo $this->doctype();
             <script language="JavaScript" src="/bootstrap/js/bootstrap.js"></script>
 
             <?php
-//            echo $this->jQuery()
-//                    ->setLocalPath($this->baseUrl() . "/jquery/jquery-1.11.1.min")
-//                    ->uiEnable()
-//                    ->setUiLocalPath($this->baseUrl() . "/wms/resources/ui.js");
+            echo $this->jQuery()
+                    ->setLocalPath($this->baseUrl() . "/jquery/jquery-1.11.1.min")
+                    ->uiEnable()
+                    ->setUiLocalPath($this->baseUrl() . "/wms/resources/ui.js");
 
             echo $this->headScript();
             ?> 
-<script>alert('oiii');</script>
             <script>
                 $(document).ready(function () {
                     $('.focus').focus();
@@ -46,6 +45,7 @@ echo $this->doctype();
                     });
                 });
             </script>
+<script>alert('oiii');</script>
     </head>
 
     <div id="content" style="padding: initial;" class="container-fluid  text-center">
