@@ -19,7 +19,7 @@ class Pedidos extends Form
                   'disable' => true
               ))
               ->addElement('submit', 'submit', array(
-                  'label' => 'Importar Dados para WMS',
+                  'label' => 'Importar Dados por DATA',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper'),
               ))
@@ -28,7 +28,7 @@ class Pedidos extends Form
                   'label' => 'Códigos'
               ))
               ->addElement('submit','submitCodigos',array(
-                  'label' => 'Importar Códigos',
+                  'label' => 'Importar dados por CÓDIGOS',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper')
               ))

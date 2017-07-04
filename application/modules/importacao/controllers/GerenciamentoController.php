@@ -2,6 +2,7 @@
 
 use Wms\Module\Web\Controller\Action;
 use \Wms\Module\Web\Page;
+use \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro as AcaoIntegracaoFiltro;
 
 class Importacao_GerenciamentoController extends Action
 {
@@ -11,7 +12,6 @@ class Importacao_GerenciamentoController extends Action
         $request = $this->getRequest();
         $params = $request->getParams();
         $acao = $params['id'];
-        $idFiltro = $this->_getParam('idFiltro',\Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
 
         Page::configure(array(
             'buttons' => array(
@@ -22,18 +22,15 @@ class Importacao_GerenciamentoController extends Action
                         'module' => 'importacao',
                         'controller' => 'gerenciamento',
                         'action' => 'index',
-                        'id' => $acao
+                        'id' => $acao,
+                        'buscar' => 'buscar'
                     ),
                     'tag' => 'a'
                 )
             )
         ));
 
-
-        $em = $this->getEntityManager();
         try {
-//            $em->beginTransaction();
-
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             $acoesId = explode(",", $acao);
@@ -44,6 +41,25 @@ class Importacao_GerenciamentoController extends Action
             $form->populate($params);
             $this->view->form = $form;
 
+            $idFiltro = AcaoIntegracaoFiltro::DATA_ESPECIFICA;
+            $options = null;
+            if (isset($params['submitCodigos'])) {
+                $string = $params['codigo'];
+                /** verifica se existe o caracter especifico para cada tipo de filtro */
+                $conjuntoCodigo  = strpos($string,',');
+                $intervaloCodigo = strpos($string,'-');
+                if ($conjuntoCodigo == true) {
+                    $idFiltro = AcaoIntegracaoFiltro::CONJUNTO_CODIGO;
+                    $options[] = $string;
+                } else if ($intervaloCodigo == true) {
+                    $idFiltro = AcaoIntegracaoFiltro::INTERVALO_CODIGO;
+                    $options = explode('-',$string);
+                } else {
+                    $idFiltro = AcaoIntegracaoFiltro::CODIGO_ESPECIFICO;
+                    $options[] = $string;
+                }
+            }
+
             $integracoes = array();
             $arrayFinal = array();
 
@@ -51,20 +67,18 @@ class Importacao_GerenciamentoController extends Action
                 $acaoEn = $acaoIntRepo->find($id);
                 $integracoes[] = $acaoEn;
             }
-            if (isset($params['submit'])) {
+            if (isset($params['submit']) || isset($params['submitCodigos'])) {
                 $result = $acaoIntRepo->efetivaTemporaria($integracoes,$idFiltro);
                 if (!($result === true)) {
                     $this->addFlashMessage('error',$result);
                 }
-            } else {
-                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes, null, $idFiltro);
+            } else if (isset($params['buscar'])) {
+                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
             }
 
 
             $this->view->valores = $arrayFinal;
-//            $em->commit();
         } catch (\Exception $e) {
-//            $em->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
     }
