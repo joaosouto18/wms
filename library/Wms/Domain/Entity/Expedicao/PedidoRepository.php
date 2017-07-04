@@ -104,6 +104,7 @@ class PedidoRepository extends EntityRepository
                             INNER JOIN wms:Expedicao\PedidoProduto pp2
                             WITH pp2.pedido = ep.pedido
                          )
+                        AND ped.dataCancelamento is null
                         ";
 
         return  $this->getEntityManager()->createQuery($query)->getResult();
@@ -195,7 +196,7 @@ class PedidoRepository extends EntityRepository
 
                 if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
                     if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
-                        $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_CORTADO);
+                        $this->_em->remove($etiquetaEn);
                     } else {
                         $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
                     }
@@ -237,7 +238,7 @@ class PedidoRepository extends EntityRepository
         $EntPedido->setDataCancelamento(new \DateTime());
         $this->_em->persist($EntPedido);
 
-        if ((count($countEtiquetas) == 0) && (count($countMapas) == 0) && ($EntPedido->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_INTEGRADO)) {
+        if ((count($countEtiquetas) == 0) && (count($countMapas) == 0)) {
             $this->_em->remove($EntPedido);
         }
 
