@@ -63,14 +63,14 @@ class PickingLeitura extends \Core\Form
                     'required' => true,
                     'label' => $this->_labelElement,
                     'size' => 40,
-                    'class' => 'focus',
+                    'class' => 'focus form-control',
                     'maxlength' => 100,
                     'style' => 'width: 99%',
                 ))
                 ->addElement('hidden', 'uma')
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
-                    'class' => 'btn',
+                    'class' => 'btn gradientBtn',
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup(

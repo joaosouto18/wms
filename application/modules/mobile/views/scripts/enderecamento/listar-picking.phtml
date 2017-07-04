@@ -1,29 +1,38 @@
-﻿<?php echo $this->form; ?>
+﻿<div class="col-xs-12" >
+    ﻿<?php echo $this->form; ?>
+    <div id="quantidade-grid" class="grid">
+        <div class="table-responsive">
+            <table class="gTable  table-condensed">
+                <caption>Endereços Disponiveis</caption>
+                <tbody>
+                    <tr class ="gTTitle">
+                        <td>Endereço</td>
+                        <td>Produto</td>
+                        <td></td>
+                    </tr>
+                    <?php foreach ($this->pickings as $picking): $this->color = !($this->color); ?>
+                        <tr class = "<?php
+                        if (!$this->color) {
+                            echo 'gTResultSet gRowColor';
+                        } else {
+                            echo 'gTResultSet';
+                        }
+                        ?>">
+                            <td><?php echo $picking['endereco'] ?></td>
+                            <td><?php echo $picking['descricao'] ?></td>
+                            <td>
+                                <a class="btn reader button" href="<?php echo "/mobile/enderecamento/listar-picking/remover/" . $picking['endereco'] ?>">Remover</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class = "gPager"></div>
 
-<div id="quantidade-grid" class="grid">
-    <table class="gTable ">
-        <caption>Endereços Disponiveis</caption>
-        <tbody>
-        <tr class ="gTTitle">
-            <td>Endereço</td>
-            <td>Produto</td>
-            <td></td>
-        </tr>
-        <?php
-        foreach ($this->pickings as $picking): $this->color = !($this->color);?>
-            <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                <td><?php echo $picking['endereco'] ?></td>
-                <td><?php echo $picking['descricao'] ?></td>
-                <td>
-                    <a class="btn reader button" href="<?php echo "/mobile/enderecamento/listar-picking/remover/".$picking['endereco']?>">Remover</a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-    <div class = "gPager">
 
-
-<div id="footer">
-    <a class="btn button finalizar" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'leitura-picking')); ?>">Voltar</a>
+        <div id="footer">
+            <a class="btn button finalizar" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'leitura-picking')); ?>">Voltar</a>
+        </div>
+    </div>
 </div>

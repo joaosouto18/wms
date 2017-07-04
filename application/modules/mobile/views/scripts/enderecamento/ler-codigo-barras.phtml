@@ -1,11 +1,14 @@
-﻿<script>
+<?php
+//include '/../../layout/layout.phtml';
+?>﻿
+<script>
     function nextInput(event, id) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('uma').value != "") {
-                endereco   = document.getElementById('endereco');
+                endereco = document.getElementById('endereco');
                 if (endereco) {
                     endereco.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -18,19 +21,19 @@
 
     function nextInputCapacidade() {
 
-        var rua         = document.getElementById('rua-nivel').value;
-        var predio      = document.getElementById('predio-nivel').value;
+        var rua = document.getElementById('rua-nivel').value;
+        var predio = document.getElementById('predio-nivel').value;
         var apartamento = document.getElementById('apartamento-nivel').value;
-        var nivel       = document.getElementById('nivel').value;
+        var nivel = document.getElementById('nivel').value;
         var capacidadePicking = '';
         var countNivel = nivel.length;
 
         if (countNivel < 2) {
-            nivel = '0'+nivel;
+            nivel = '0' + nivel;
         }
 
         $.ajax({
-            url: 'get-capacidade-picking-ajax/endereco/'+rua+'.'+predio+'.'+nivel+'.'+apartamento,
+            url: 'get-capacidade-picking-ajax/endereco/' + rua + '.' + predio + '.' + nivel + '.' + apartamento,
             success: function (data) {
                 if (data.status == 'Ok') {
                     if (data.caracteristicaEndereco == 39) {
@@ -47,13 +50,13 @@
     function formSubmit(event)
     {
         uma = document.getElementById('uma');
-        endereco   = document.getElementById('endereco');
+        endereco = document.getElementById('endereco');
 
         if (uma.value !== "" && endereco.value !== "") {
             loadResult(uma, endereco);
         }
 
-        if(event.preventDefault) {
+        if (event.preventDefault) {
             event.preventDefault();
         } else {
             event.returnValue = false;
@@ -68,7 +71,7 @@
             loadResultNivel(nivel);
         }
 
-        if(event.preventDefault) {
+        if (event.preventDefault) {
             event.preventDefault();
         } else {
             event.returnValue = false;
@@ -79,21 +82,21 @@
     {
         nivel.disabled = true;
         document.getElementById('retorno').innerHTML = 'Pesquisando...';
-        load(document.getElementById('formulario-nivel').action, 'formulario-nivel', function(xhr){
+        load(document.getElementById('formulario-nivel').action, 'formulario-nivel', function (xhr) {
             document.getElementById('retorno').innerHTML = '';
             nivel.disabled = false;
             nivel.value = "";
             nivel.focus();
 
-            xmlDoc=xhr.responseXML;
+            xmlDoc = xhr.responseXML;
 
-            x=xmlDoc.getElementsByTagName("retorno");
-            i=0;
+            x = xmlDoc.getElementsByTagName("retorno");
+            i = 0;
 
-            exibeMensagem(x,i);
+            exibeMensagem(x, i);
 
             if (x[i].getElementsByTagName("resposta").length > 0) {
-                status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
+                status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
                 if (status == 'success' || status == 'error') {
                     voltarUma();
                 }
@@ -108,7 +111,7 @@
         endereco.disabled = true;
 
         document.getElementById('retorno').innerHTML = 'Pesquisando...';
-        load(document.getElementById('formulario').action, 'formulario', function(xhr){
+        load(document.getElementById('formulario').action, 'formulario', function (xhr) {
 
             document.getElementById('retorno').innerHTML = '';
 
@@ -118,12 +121,12 @@
             endereco.disabled = false;
             endereco.value = "";
 
-            xmlDoc=xhr.responseXML;
+            xmlDoc = xhr.responseXML;
 
-            x=xmlDoc.getElementsByTagName("retorno");
-            i=0;
+            x = xmlDoc.getElementsByTagName("retorno");
+            i = 0;
 
-            exibeMensagem(x,i);
+            exibeMensagem(x, i);
 
             if (x[i].getElementsByTagName("nivelzero").length > 0) {
                 hiddenElement("formulario");
@@ -138,15 +141,15 @@
         });
     }
 
-    function exibeMensagem(x,i)
+    function exibeMensagem(x, i)
     {
         if (x[i].getElementsByTagName("message").length > 0) {
-            message=(x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
-            document.getElementById("retorno").innerHTML=message;
+            message = (x[i].getElementsByTagName("message")[0].childNodes[0].nodeValue);
+            document.getElementById("retorno").innerHTML = message;
         }
 
         if (x[i].getElementsByTagName("resposta").length > 0) {
-            status=(x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
+            status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
             if (status == 'error') {
                 playSound('/alarme.mp3');
             }
@@ -154,8 +157,8 @@
 
         if (x[i].getElementsByTagName("redirect").length > 0) {
             uma.disabled = true;
-            redirect=(x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
-            setTimeout("location.href = redirect;",0);
+            redirect = (x[i].getElementsByTagName("redirect")[0].childNodes[0].nodeValue);
+            setTimeout("location.href = redirect;", 0);
         }
 
     }
@@ -170,36 +173,38 @@
 </script>
 
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
+<div class="col-xs-12 text-center" >
+    <div id='retorno'></div>
+    <span id="dummy"></span>
 
-<div id='retorno'></div>
-<span id="dummy"></span>
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'buscar')) ?>" onSubmit="formSubmit(event)" method="post">
 
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'buscar')) ?>" onSubmit="formSubmit(event)" method="post">
+        <div>
+            <label>U.M.A:</label>
+            <input class="form-control" type="text" name="uma" id="uma" value="" onkeydown="nextInput(event)" />
+        </div>
+        <div>
+            <label>ENDEREÇO:</label>
+            <input class="form-control" type="text" name="endereco" id="endereco" value="" />
+        </div>
+        <div class="col-xs-12" >
+            <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
+        </div>
+    </form>
 
-    <div>
-        <label>U.M.A:</label>
-        <input type="text" name="uma" id="uma" value="" onkeydown="nextInput(event)" />
-    </div>
-    <div>
-        <label>ENDEREÇO:</label>
-        <input type="text" name="endereco" id="endereco" value="" />
-    </div>
+    <form id="formulario-nivel" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'valida-nivel')) ?>" onSubmit="formSubmitNivel(event)" method="post">
 
-        <input type="submit" name="submit" id="submit" value="Buscar" />
-</form>
+        <div class="text-center col-xs-4">
+            <label>NÍVEL:</label>
+            <input type="text" class="form-control" size="40" value="" id="nivel" name="nivel" onkeyup="nextInputCapacidade()">
+            <input type="hidden" value="" id="uma-nivel" name="uma">
+            <input type="hidden" value="" id="rua-nivel" name="rua">
+            <input type="hidden" value="" id="predio-nivel" name="predio">
+            <input type="hidden" value="" id="apartamento-nivel" name="apartamento">
+        </div>
+        <div id="capacidade"></div>
+        <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
+        <input class="btn gradientBtn" type="button" name="voltar" id="voltar" value="Voltar" onclick="voltarUma()" />
+    </form>
 
-<form id="formulario-nivel" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'valida-nivel')) ?>" onSubmit="formSubmitNivel(event)" method="post">
-
-    <div>
-        <label>NÍVEL:</label>
-        <input type="text" style="width: 40px" size="40" value="" id="nivel" name="nivel" onkeyup="nextInputCapacidade() ">
-        <input type="hidden" value="" id="uma-nivel" name="uma">
-        <input type="hidden" value="" id="rua-nivel" name="rua">
-        <input type="hidden" value="" id="predio-nivel" name="predio">
-        <input type="hidden" value="" id="apartamento-nivel" name="apartamento">
-    </div>
-    <div id="capacidade"></div>
-    <input type="submit" name="submit" id="submit" value="Buscar" />
-    <input type="button" name="voltar" id="voltar" value="Voltar" onclick="voltarUma()" />
-</form>
-
+</div>

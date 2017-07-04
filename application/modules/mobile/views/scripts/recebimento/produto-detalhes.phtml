@@ -1,11 +1,13 @@
 <?php echo $this->render('recebimento/detalhes.phtml'); ?>
-<table class="info">
-    <caption>Dados do Produto</caption>
-    <tr class="title">
-        <td>Código - Descrição - Grade</td>
-    </tr>
-    <tr rowspan="2">
-        <td><?php echo $this->itemNF['idProduto'] . '-' . $this->itemNF['descricao'] . '-' . $this->itemNF['grade'] ?></td>
-    </tr>
-</table>
+<div class="col-xs-12" >
+    <table class="info">
+        <caption>Dados do Produto</caption>
+        <tr class="title">
+            <td>Código - Descrição - Grade</td>
+        </tr>
+        <tr rowspan="2">
+            <td><?php echo $this->itemNF['idProduto'] . '-' . $this->itemNF['descricao'] . '-' . $this->itemNF['grade'] ?></td>
+        </tr>
+    </table>
+</div>
 

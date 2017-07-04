@@ -1,13 +1,11 @@
-<h3>Recebimentos Finalizados Pendentes de Endereçamento</h3>
-<ul class="menu">
-    <?php if(count($this->recebimentos) == 0): ?>
-    <li>Nenhum Recebimento aguardando conferência.</li>    
-    <?php elseif(count($this->recebimentos) > 0): ?>
-        <?php foreach($this->recebimentos as $recebimento): ?>
-            <li>
-                <a href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'listar-paletes', 'id' => $recebimento['COD_RECEBIMENTO'])); ?>"
-                   title="<?php echo $recebimento['COD_RECEBIMENTO'] ?>" >Cod. Receb. <?php echo $recebimento['COD_RECEBIMENTO'] ?> - Box <?php echo $recebimento['BOX'] ?></a>
-            </li>
-        <?php endforeach; ?>
-    <?php endif;?>
-</ul>
+<div class="col-xs-12 text-center" >
+    <h3>Recebimentos Finalizados Pendentes de Endereçamento</h3>
+    <?php if (count($this->recebimentos) == 0): ?>
+        <p>Nenhum Recebimento aguardando conferência.</p>    
+    <?php elseif (count($this->recebimentos) > 0): ?>
+        <?php foreach ($this->recebimentos as $recebimento): ?>
+        <a class="btn gradientBtn" href="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'listar-paletes', 'id' => $recebimento['COD_RECEBIMENTO'])); ?>"
+               title="<?php echo $recebimento['COD_RECEBIMENTO'] ?>" >Cod. Receb. <?php echo $recebimento['COD_RECEBIMENTO'] ?> - Box <?php echo $recebimento['BOX'] ?></a>
+           <?php endforeach; ?>
+       <?php endif; ?>
+</div>

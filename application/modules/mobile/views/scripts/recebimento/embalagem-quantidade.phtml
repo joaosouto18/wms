@@ -1,80 +1,83 @@
-<?php echo $this->render('recebimento/produto-detalhes.phtml');?>
+<?php echo $this->render('recebimento/produto-detalhes.phtml'); ?>
+<div class="col-xs-12" >
+    <form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
 
-<form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" id="idRecebimento" name="idRecebimento" value="<?php echo $this->recebimento->getId() ?>" />
+        <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
+        <input type="hidden" id="idProdutoEmbalagem" name="idProdutoEmbalagem" value="<?php echo $this->itemNF['idEmbalagem'] ?>" />
+        <input type="hidden" id="unidadePorEmbalagem" name="unidadePorEmbalagem" value="<?php echo $this->itemNF['quantidadeEmbalagem'] ?>" />
+        <div class="table-responsive">
+            <table class="info  table table-striped">
+                <tr class="title">
+                    <td>Descrição Emb.</td>
+                    <td colspan="2">Código de Barras</td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->itemNF['descricaoEmbalagem'] ?></td>
+                    <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
+                </tr>
 
-    <input type="hidden" id="idRecebimento" name="idRecebimento" value="<?php echo $this->recebimento->getId() ?>" />
-    <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
-    <input type="hidden" id="idProdutoEmbalagem" name="idProdutoEmbalagem" value="<?php echo $this->itemNF['idEmbalagem'] ?>" />
-    <input type="hidden" id="unidadePorEmbalagem" name="unidadePorEmbalagem" value="<?php echo $this->itemNF['quantidadeEmbalagem'] ?>" />
+                <tr class="title">
+                    <td>Norma:</td>
+                    <td colspan="2"><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></td>
+                    <td colspan="2">
+                        <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">
+                            <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
+                                <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
 
-    <table class="info">
-        <tr class="title">
-            <td>Descrição Emb.</td>
-            <td colspan="2">Código de Barras</td>
-        </tr>
-        <tr>
-            <td><?php echo $this->itemNF['descricaoEmbalagem'] ?></td>
-            <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
-        </tr>
+                <tr class="title">
+                    <td>Unidades Por Emb.</td>
+                    <?php if ($this->itemNF['validade'] == 'S') : ?>
+                        <td><label class="field required" for="dataValidade">Data Validade</label></td>
+                    <?php endif; ?>
+                    <?php if ($this->pesoVariavel == 'N') : ?>
+                        <td><label class="field required" for="qtdConferida">Quantidade</label></td>
+                    <?php endif; ?>
+                    <?php if ($this->pesoVariavel == 'S') : ?>
+                        <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
+                    <?php endif; ?>
+                    <td>Total Unidades</td>
+                </tr>
 
-        <tr class="title">
-            <td>Norma:</td>
-            <td colspan="2"><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
-        </tr>
-        <tr>
-            <td><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></td>
-            <td colspan="2">
-                <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">
-                    <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
-                        <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </td>
-        </tr>
+                <tr>
+                    <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
+                    <?php if ($this->itemNF['validade'] == 'S') : ?>
+                        <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
+                    <?php endif; ?>
+                    <?php if ($this->pesoVariavel == 'N') : ?>
+                        <td><input type="text" maxlength="15" size="10" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus ";
+                    endif
+                        ?>" id="qtdConferida" name="qtdConferida" /></td>
+                               <?php endif; ?>
+                    <?php if ($this->pesoVariavel == 'S') : ?>
+                        <td><input type="text" maxlength="15" size="10" class="required focus" id="numPeso" name="numPeso"/></td>
+<?php endif; ?>
+                    <td><span id="totalQuantidade">0</span></td>
+                </tr>
 
-        <tr class="title">
-            <td>Unidades Por Emb.</td>
-            <?php if ($this->itemNF['validade'] == 'S') : ?>
-            <td><label class="field required" for="dataValidade">Data Validade</label></td>
-            <?php endif; ?>
-            <?php if ($this->pesoVariavel == 'N') : ?>
-            <td><label class="field required" for="qtdConferida">Quantidade</label></td>
-            <?php endif; ?>
-            <?php if ( $this->pesoVariavel == 'S' ) : ?>
-            <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
-            <?php endif; ?>
-            <td>Total Unidades</td>
-        </tr>
-
-        <tr>
-            <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
-            <?php if ($this->itemNF['validade'] == 'S') : ?>
-            <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
-            <?php endif; ?>
-            <?php if ($this->pesoVariavel == 'N') : ?>
-            <td><input type="text" maxlength="15" size="10" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif?>" id="qtdConferida" name="qtdConferida" /></td>
-            <?php endif; ?>
-            <?php if ( $this->pesoVariavel == 'S' ) : ?>
-            <td><input type="text" maxlength="15" size="10" class="required focus" id="numPeso" name="numPeso"/></td>
-            <?php endif; ?>
-            <td><span id="totalQuantidade">0</span></td>
-        </tr>
-
-    </table>
-
-    <input type="submit" class="btn" value="Salvar" id="submit" name="submit">
-</form>
+            </table>
+        </div>
+        <input type="submit" class="btn gradientBtn" value="Salvar" id="submit" name="submit">
+    </form>
+</div>
 
 <script>
     $(function () {
-        $("#dataValidade").keyup(function(event){
+        $("#dataValidade").keyup(function (event) {
 
             var v = $(this).val();
 
-            v = v.replace(/\D/g,"");
-            v = v.replace(/(\d{2})(\d)/,"$1/$2");
-            v = v.replace(/(\d{2})(\d)/,"$1/$2");
-            v = v.replace(/(\d{2})(\d{2})$/,"$1$2");
+            v = v.replace(/\D/g, "");
+            v = v.replace(/(\d{2})(\d)/, "$1/$2");
+            v = v.replace(/(\d{2})(\d)/, "$1/$2");
+            v = v.replace(/(\d{2})(\d{2})$/, "$1$2");
 
             $(this).val(v);
 
@@ -82,7 +85,7 @@
 
                 var strRegex = /^(((([0-2][0-8]|09|19)(-|\/)(0[1-9]|1[012]))|((29|30|31)(-|\/)(0[13578]|1[02]))|((29|30)(-|\/)(0[469]|11)))(-|\/)(\d{2}))|((29)(-|\/)(02)(-|\/)(([02468][048])|([13579][26])))$/;
                 var regexp = new RegExp(strRegex);
-                if (!regexp.test(v)){
+                if (!regexp.test(v)) {
                     alert('A data ' + v + ' é inválida');
                     $(this).val('');
                     return false;
@@ -107,9 +110,9 @@
             return checkValidade();
         });
 
-        function checkValidade(){
+        function checkValidade() {
             var obj = $("#dataValidade");
-            if ( obj.length ) {
+            if (obj.length) {
                 var data = obj.val();
                 if (data.length < 8) {
                     alert("O campo 'Data de validade' não foi preenchido corretamente!");

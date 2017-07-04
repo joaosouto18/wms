@@ -2,10 +2,10 @@
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codigoBarras').value != "") {
-                nivel   = document.getElementById('nivel');
+                nivel = document.getElementById('nivel');
                 if (nivel) {
                     nivel.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -16,80 +16,88 @@
         return true;
     }
 </script>
+<div class="col-xs-12" >
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'validar-endereco')) ?>" method="post">
+        <div>
+            <div class="table-responsive">
+                <table class="gTable table-condensed" style="width: 100%">
+                    <tbody>
+                        <tr>
+                            <td colspan="3"><b><?php echo $this->dscProduto ?></b></td>
+                        </tr>
+                        <tr>
+                            <td class="col-xs-4"><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
+                            <td class="col-xs-4"><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
+                            <td class="col-xs-4" style="font-size: 12px"><B>Qtd:</B>
+                                <?php foreach ($this->qtd as $qtd) { ?>
+                                    <div class="row"><?php echo $qtd; ?></div>
+                                <?php } ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" style="font-size: 145%"><B>Pulmão:</B> <?php echo $this->endPulmao ?></td>
+                            <td colspan="2" style="font-size: 145%"><B>Picking:</B> <?php echo $this->endPicking ?></td>
+                        </tr>
+                    </tbody>
+                </table>
 
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'validar-endereco')) ?>" method="post">
-    <div>
-        <table class="gTable" style="width: 100%">
-            <tbody>
-            <tr>
-                <td colspan="3"><b><?php echo $this->dscProduto?></b></td>
-            </tr>
-            <tr">
-                <td><B>Cod:</B> <?php echo $this->codProduto?></td>
-                <td><B>Grade:</B> <?php echo $this->grade?></td>
-                <td style="font-size: 175%"><B>Qtd:</B>
-                    <ul>
-                        <?php foreach ($this->qtd as $qtd) {?>
-                            <li style="font-size: 150%">
-                                <?php echo $qtd;?>
-                            </li>
+            </div>
 
-                            <?php }?>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1" style="font-size: 145%"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
-                <td colspan="2" style="font-size: 145%"><B>Picking:</B> <?php echo $this->endPicking?></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <br>
-    <div>
-        <label>Endereço:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
-    </div>
-    <div>
-        <label>Nível:</label>
-        <input type="text" name="nivel" id="nivel" value="" />
-    </div>
-    <input type="submit" name="submit" id="submit" value="Buscar" />
-    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'divergencia', 'idOnda' => $this->idOnda)); ?> " onclick="return confirm('Confirma divergencia de estoque?')">Divergencia de Estoque</a>
-    <input type="hidden" name="idOnda" id="idOnda" value="<?php echo $this->idOnda?>"/>
-    <input type="hidden" name="idEnderecoPulmao" id="idEnderecoPulmao" value="<?php echo $this->idEnderecoPulmao?>"/>
+            <div class="wrapper">
+                <div class="content-main"><label>Endereço:</label>
+                    <input class="focus form-control" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" /></div>
+                <div class="content-secondary"><label>Nível:</label>
+                    <input class="form-control" type="text" name="nivel" id="nivel" value="" />
+                </div>
+            </div>
+            <br />
+            <div class="col-xs-12" >
+                <input type="submit" name="submit" class="btn gradientBtn" id="submit" value="Buscar" />
+            </div>
+            <div class="col-xs-2 pull-right" >
+                <a class="btn finalizar" style="width: auto;" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'divergencia', 'idOnda' => $this->idOnda)); ?> " onclick="return confirm('Confirma divergencia de estoque?')">Divergencia de Estoque</a>
+            </div>
+            <input type="hidden" name="idOnda" id="idOnda" value="<?php echo $this->idOnda ?>"/>
+            <input type="hidden" name="idEnderecoPulmao" id="idEnderecoPulmao" value="<?php echo $this->idEnderecoPulmao ?>"/>
 
-    <?php if ($this->produtos[0]->getCodProdutoVolume() !=NULL) {?>
-        <div id="quantidade-grid" class="grid">
-        <table class="gTable" style="width: 70%; margin-left: 5%; margin-right: 5%; margin-top: 3%; margin-bottom:  3%">
-            <tbody>
-            <tr class ="gTTitle">
-                <td><b>Volumes</b></td>
-                <td><b>Quantidade</b></td>
-            </tr>
-            <?php
-            foreach ($this->produtos as $produto): $this->color = !($this->color);?>
-                <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                    <td><?php
-                        /** @var \Doctrine\ORM\EntityManager $em */
-                        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+            <?php if ($this->produtos[0]->getCodProdutoVolume() != NULL) { ?>
+                <div id="quantidade-grid" class="grid">
+                    <table class="table-condensed" style="width: 70%; margin-left: 5%; margin-right: 5%; margin-top: 3%; margin-bottom:  3%">
+                        <tbody>
+                            <tr class ="gTTitle">
+                                <td><b>Volumes</b></td>
+                                <td><b>Quantidade</b></td>
+                            </tr>
+                            <?php foreach ($this->produtos as $produto): $this->color = !($this->color); ?>
+                                <tr class = "<?php
+                                if (!$this->color) {
+                                    echo 'gTResultSet gRowColor';
+                                } else {
+                                    echo 'gTResultSet';
+                                }
+                                ?>">
+                                    <td><?php
+                                        /** @var \Doctrine\ORM\EntityManager $em */
+                                        $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
-                        if ($produto->getCodProdutoEmbalagem() == NULL) {
-                            $volumeEn = $em->getRepository("wms:Produto\Volume")->findOneBy(array('id'=>$produto->getCodProdutoVolume()));
-                            echo $volumeEn->getDescricao() ;
-                        } else {
-                            $embalagemEn = $em->getRepository("wms:Produto\Embalagem")->findOneBy(array('id'=>$produto->getCodProdutoEmbalagem()));
-                            echo $embalagemEn->getDescricao() ;
-                        }
-
-                        ?></td>
-                    <td><?php echo $produto->getQtd() ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-        <div class = "gPager">
-    <?php }?>
+                                        if ($produto->getCodProdutoEmbalagem() == NULL) {
+                                            $volumeEn = $em->getRepository("wms:Produto\Volume")->findOneBy(array('id' => $produto->getCodProdutoVolume()));
+                                            echo $volumeEn->getDescricao();
+                                        } else {
+                                            $embalagemEn = $em->getRepository("wms:Produto\Embalagem")->findOneBy(array('id' => $produto->getCodProdutoEmbalagem()));
+                                            echo $embalagemEn->getDescricao();
+                                        }
+                                        ?></td>
+                                    <td><?php echo $produto->getQtd() ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class = "gPager"></div>
+            <?php } ?>
 
 
-</form>
+    </form>
+</div>
+</div>

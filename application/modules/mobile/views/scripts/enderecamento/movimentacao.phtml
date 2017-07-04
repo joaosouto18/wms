@@ -2,10 +2,10 @@
     function nextInput(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codigoBarras').value != "") {
-                nivel   = document.getElementById('nivel');
+                nivel = document.getElementById('nivel');
                 if (nivel) {
                     nivel.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -16,15 +16,19 @@
         return true;
     }
 </script>
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'uma-by-endereco')) ?>" method="post">
-
-    <div>
-        <label>Endereço:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
-    </div>
-    <div>
-        <label>Nível:</label>
-        <input type="text" name="nivel" id="nivel" value="" />
-    </div>
-    <input type="submit" name="submit" id="submit" value="Buscar" />
-</form>
+<div class="col-xs-12" >
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'uma-by-endereco')) ?>" method="post">
+        <div>
+            <label>Endereço:</label>
+            <input class="focus form-control" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
+        </div>
+        <div>
+            <label>Nível:</label>
+            <input type="text" name="nivel" class="form-control" id="nivel" value="" />
+        </div>
+        <br>
+        <div class="col-xs-12 center-block" >
+            <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
+        </div>
+    </form>
+</div>

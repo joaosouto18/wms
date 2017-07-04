@@ -1,25 +1,29 @@
-﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
+<div class="col-xs-12">
+    ﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
 
-    <div id="descricao"></div>
-    <div>
-        <label>Endereco:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras"/>
-    </div>
-    <input type="submit" name="submit" id="submit" value="Buscar" />
-</form>
-<br>
-<div id="lista-endereco"></div>
-
+        <div id="descricao"></div>
+        <div>
+            <label>Endereco:</label>
+            <input class="focus form-control" type="text" name="codigoBarras" id="codigoBarras"/>
+        </div>
+        <br>
+        <div class="col-xs-12">
+            <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
+        </div>
+    </form>
+    <br>
+    <div id="lista-endereco"></div>
+</div>
 <script>
-    $(function(){
+    $(function () {
 
-        $('#formulario').submit( function(e) {
+        $('#formulario').submit(function (e) {
             e.preventDefault();
             consultar();
         });
 
-        $('#codigoBarras').keypress( function(e) {
-            if(e.which == 13 || e.keyCode == 13) {
+        $('#codigoBarras').keypress(function (e) {
+            if (e.which == 13 || e.keyCode == 13) {
                 consultar();
             }
         });
@@ -34,7 +38,7 @@
                         if (data.status === 'ok') {
                             $.each(data.result, function (key, value) {
                                 var txt = value.produto;
-                                if (value.grade != ''){
+                                if (value.grade != '') {
                                     txt += ' (' + value.grade + ')';
                                 }
                                 txt += ' - ' + value.desc + ' <br>';
