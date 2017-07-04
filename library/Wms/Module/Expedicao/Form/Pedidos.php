@@ -19,7 +19,7 @@ class Pedidos extends Form
                   'disable' => true
               ))
               ->addElement('submit', 'submit', array(
-                  'label' => 'Importar Dados por DATA',
+                  'label' => 'Buscar Dados por DATA',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper'),
               ))
@@ -28,7 +28,7 @@ class Pedidos extends Form
                   'label' => 'Códigos'
               ))
               ->addElement('submit','submitCodigos',array(
-                  'label' => 'Importar dados por CÓDIGOS',
+                  'label' => 'Buscar dados por CÓDIGOS',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper')
               ))

@@ -23,7 +23,7 @@ class Importacao_GerenciamentoController extends Action
                         'controller' => 'gerenciamento',
                         'action' => 'index',
                         'id' => $acao,
-                        'buscar' => 'buscar'
+                        'efetivar' => 'efetivar'
                     ),
                     'tag' => 'a'
                 )
@@ -68,12 +68,12 @@ class Importacao_GerenciamentoController extends Action
                 $integracoes[] = $acaoEn;
             }
             if (isset($params['submit']) || isset($params['submitCodigos'])) {
-                $result = $acaoIntRepo->efetivaTemporaria($integracoes,$idFiltro);
+                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
+            } else if (isset($params['efetivar'])) {
+                $result = $acaoIntRepo->efetivaTemporaria($integracoes);
                 if (!($result === true)) {
                     $this->addFlashMessage('error',$result);
                 }
-            } else if (isset($params['buscar'])) {
-                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
             }
 
 
