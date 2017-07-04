@@ -11,6 +11,7 @@ class Importacao_GerenciamentoController extends Action
         $request = $this->getRequest();
         $params = $request->getParams();
         $acao = $params['id'];
+        $idFiltro = $this->_getParam('idFiltro',\Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
 
         Page::configure(array(
             'buttons' => array(
@@ -51,12 +52,12 @@ class Importacao_GerenciamentoController extends Action
                 $integracoes[] = $acaoEn;
             }
             if (isset($params['submit'])) {
-                $result = $acaoIntRepo->efetivaTemporaria($integracoes);
+                $result = $acaoIntRepo->efetivaTemporaria($integracoes,$idFiltro);
                 if (!($result === true)) {
                     $this->addFlashMessage('error',$result);
                 }
             } else {
-                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes);
+                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes, null, $idFiltro);
             }
 
 

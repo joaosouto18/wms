@@ -23,7 +23,16 @@ class Pedidos extends Form
                   'class' => 'btn',
                   'decorators' => array('ViewHelper'),
               ))
-            ->addDisplayGroup(array('dataInicio','submit'), 'identificacao', array('legend' => 'Listar Pedidos ERP')
+              ->addElement('text','codigo',array(
+                  'size' => 25,
+                  'label' => 'Códigos'
+              ))
+              ->addElement('submit','submitCodigos',array(
+                  'label' => 'Importar Códigos',
+                  'class' => 'btn',
+                  'decorators' => array('ViewHelper')
+              ))
+            ->addDisplayGroup(array('dataInicio','submit','codigo','submitCodigos'), 'identificacao', array('legend' => 'Listar Pedidos ERP')
         );
     }
 
