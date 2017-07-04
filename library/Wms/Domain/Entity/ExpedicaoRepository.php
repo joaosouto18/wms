@@ -683,7 +683,7 @@ class ExpedicaoRepository extends EntityRepository
 
         $idCorte= $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
         $acaoEn = $acaoIntRepo->find($idCorte);
-        $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E');
+        $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E',"P",null,611);
 
         if (!($result === true)) {
             return $result;
@@ -857,9 +857,9 @@ class ExpedicaoRepository extends EntityRepository
             foreach ($cargas as $cargaEn) {
                 $options = array();
                 $options[] = $cargaEn->getCodCargaExterno();
-                $result = $acaoIntRepo->processaAcao($acaoResumoEn,$options);
+                $result = $acaoIntRepo->processaAcao($acaoResumoEn,$options,"E","P",null,611);
                 if (!($result === true)) {
-                    $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options);
+                    $result = $acaoIntRepo->processaAcao($acaoConferenciaEn, $options, "E","P",null,611);
                     if (!($result === true)) {
                         throw new \Exception($result);
                     }

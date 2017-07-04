@@ -168,7 +168,7 @@ class RecebimentoRepository extends EntityRepository {
                     1 => $notaFiscal->getSerie(),
                     2 => $notaFiscal->getNumero(),
                 );
-                $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn, $options);
+                $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn, $options, "E","P",null,611);
                 $serviceIntegracao = new Integracao($em, array('acao' => $acaoEn,
                     'options' => null,
                     'tipoExecucao' => 'E'));
@@ -1630,28 +1630,28 @@ class RecebimentoRepository extends EntityRepository {
                        TRUNC(SUM(NFI.QTD_ITEM / MAX(PE.QTD_EMBALAGEM))) AS MAIOR
                      FROM 
                        NOTA_FISCAL NF2 INNER JOIN 
-                       NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) INNER JOIN 
-                       PRODUTO PR ON (NFI.COD_PRODUTO = PR.COD_PRODUTO) INNER JOIN 
-                       PRODUTO_EMBALAGEM PE ON (PR.COD_PRODUTO = PE.COD_PRODUTO)
+                       NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) LEFT JOIN
+                       PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO)
                      WHERE 
                        NF2.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-                     GROUP BY  
+                     GROUP BY
+                       NFI.COD_NOTA_FISCAL,
                        NFI.QTD_ITEM,  
-                       PR.COD_PRODUTO
+                       NFI.COD_PRODUTO
                    ) AS qtdMaior,
                    (
                      SELECT
                        TRUNC(SUM((NFI.QTD_ITEM - (TRUNC(NFI.QTD_ITEM / MAX(PE.QTD_EMBALAGEM)) * MAX(PE.QTD_EMBALAGEM))) / MIN(PE.QTD_EMBALAGEM))) as ESTQ_MENOR_EMBALAGEM
                      FROM 
                        NOTA_FISCAL NF2 INNER JOIN 
-                       NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) INNER JOIN 
-                       PRODUTO PR ON (NFI.COD_PRODUTO = PR.COD_PRODUTO) INNER JOIN 
-                       PRODUTO_EMBALAGEM PE ON (PR.COD_PRODUTO = PE.COD_PRODUTO)
+                       NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) LEFT JOIN
+                       PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO)
                      WHERE 
                        NF2.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
                      GROUP BY 
+                       NFI.COD_NOTA_FISCAL,
                        NFI.QTD_ITEM, 
-                       PR.COD_PRODUTO
+                       NFI.COD_PRODUTO
                      ) AS qtdMenor
                  FROM 
                    NOTA_FISCAL NF
