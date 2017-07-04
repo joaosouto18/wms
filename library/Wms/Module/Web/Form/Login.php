@@ -18,7 +18,7 @@ class Login extends \Core\Form
 	    //'validators' => array('emailAddress'),
 	    'label' => 'Usuário',
 	    'size' => 25,
-            'class'=>'focus',
+            'class'=>'focus col-xs-12',
 	    'maxlength' => 15
 	));
 
@@ -26,17 +26,18 @@ class Login extends \Core\Form
 	    'required' => true,
 	    'label' => 'Senha',
 	    'size' => 25,
+            'class'=>'col-xs-12',
 	    'maxlength' => 15
 	));
 
 	$this->addElement('submit', 'submit', array(
 	    'label' => 'Entrar',
-	    'class' => 'btn',
+	    'class' => 'btn col-xs-12',
             'decorators' => array('ViewHelper'),
 	));
 
 	$this->addDisplayGroup(
-		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms')
+		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms', 'class' => 'col-xs-12')
 	);
     }
 
