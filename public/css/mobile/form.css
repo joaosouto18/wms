@@ -37,7 +37,7 @@ form input {
     border-left: 1px solid #999;
     border-bottom: 2px solid #999;
     border-right: 2px solid #999;
-    width: 400px!important;
+    /*width: 400px!important;*/
 }
 
 form ul.errors li, label.error {

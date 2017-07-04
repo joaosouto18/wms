@@ -18,7 +18,7 @@ class Login extends \Core\Form
 	    //'validators' => array('emailAddress'),
 	    'label' => 'Usuário',
 	    'size' => 25,
-            'class'=>'focus col-xs-12',
+            'class'=>'focus form-control',
 	    'maxlength' => 15
 	));
 
@@ -26,13 +26,13 @@ class Login extends \Core\Form
 	    'required' => true,
 	    'label' => 'Senha',
 	    'size' => 25,
-            'class'=>'col-xs-12',
+            'class'=>'form-control',
 	    'maxlength' => 15
 	));
 
 	$this->addElement('submit', 'submit', array(
 	    'label' => 'Entrar',
-	    'class' => 'btn col-xs-12',
+	    'class' => 'btn  gradientBtn',
             'decorators' => array('ViewHelper'),
 	));
 

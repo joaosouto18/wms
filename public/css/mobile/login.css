@@ -22,6 +22,9 @@
     height: 450px;
     margin-top: -62px;
     width: 455px;
+/*    position: absolute;
+    top: 370px;
+    left: 257px;*/
 }
 #loginBlock fieldset legend {
     color: #1c94c4;

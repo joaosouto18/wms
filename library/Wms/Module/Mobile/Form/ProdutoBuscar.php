@@ -56,11 +56,11 @@ class ProdutoBuscar extends \Core\Form
                 ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
-                    'class' => 'btn',
+                    'class' => 'btn gradientBtn',
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup(
-                array('idRecebimento', 'codigoBarras', 'submit'), 'identification', array('legend' => 'Busca do Produto')
+                array('idRecebimento', 'codigoBarras', 'submit'), 'identification', array('legend' => 'Busca do Produto', 'class' => 'col-xs-12')
         );
     }
 

@@ -2,22 +2,22 @@
 <?php echo $this->render('recebimento/detalhes.phtml'); ?>
 <?php echo $this->form; ?>
 <script type="text/javascript">
-    $(document).ready(function(){
-	$('#carousel').cycle({
-            fx:   'turnDown',
+    $(document).ready(function () {
+        $('#carousel').cycle({
+            fx: 'turnDown',
             next: '#next',
-            timeout:  0
+            timeout: 0
         });
 
     });
 
 </script>
-<div id="footer">
-    <a href="<?php echo "/mobile/recebimento/finalizar/id/" . $this->idRecebimento . "/os/". $this->os ?>" style="float: left" class="finalizar">
-       Finalizar
+<div id="footer" class="col-xs-12">
+    <a href="<?php echo "/mobile/recebimento/finalizar/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="float: left" class="finalizar">
+        Finalizar
     </a>
 
-    <a href="<?php echo "/mobile/enderecamento/listar-paletes/id/" . $this->idRecebimento . "/os/". $this->os ?>" style="float: left" class="finalizarAmarelo">
+    <a href="<?php echo "/mobile/enderecamento/listar-paletes/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="float: left" class="finalizarAmarelo">
         Endereçar
     </a>
 
