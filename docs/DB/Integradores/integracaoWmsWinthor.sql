@@ -138,7 +138,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  * ATUALIZAÇÃO DE RECEBIMENTO NO ERP - RECEBIMENTO BONUS
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (10,1,'Update pcbonusc set datarm = SYSDATE, codfuncrm = 1 where numbonus = :?1', 606,'S',NULL);
+  VALUES (10,1,'Update pcbonusc set datarm = SYSDATE, codfuncrm = 600, dtfechamento = sysdate, codfuncfecha = 600, tipodescarga = '||'''N'''||', dtfechamentototal = sysdate where numbonus = :?1', 606,'S',NULL);
 
 /*
  * ATUALIZAÇÃO DE RECEBIMENTO NO ERP - RECEBIMENTO BONUS
