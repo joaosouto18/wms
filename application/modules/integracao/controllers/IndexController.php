@@ -24,6 +24,7 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
 
         $this->getHelper('viewRenderer')->setNoRender(true);
     }
+
     public function runAction()
     {
         ini_set('memory_limit', '-1');

@@ -108,7 +108,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function efetivaTemporaria($acoes) {
+    public function efetivaTemporaria($acoes,$idFiltro) {
 
         /* Para efetivar no banco de dados, só vou efetivar uma unica vez mesmo que tenham sido disparados n consultas.
            Porem todas tem que compartilhar a mesma tabela temporaria, ou seja, ser da mesma ação */
@@ -119,7 +119,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
 
         /* Executo uma unica ação com todos os dados retornados */
-        $result = $this->processaAcao($acaoEn,null,"E","P",$dados);
+        $result = $this->processaAcao($acaoEn,null,"E","P", $dados,$idFiltro);
 
         /* Limpo os dados da tabela temporaria */
         $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
@@ -127,7 +127,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         return $result;
     }
 
-    public function listaTemporaria($acoes, $options = null) {
+    public function listaTemporaria($acoes, $options = null, $idFiltro) {
 
         $this->validaAcoesMesmoTipo($acoes);
 
@@ -136,7 +136,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
         /* Executa cada ação salvando os dados na tabela temporaria */
         foreach ($acoes as $acaoEn) {
-            $this->processaAcao($acaoEn,$options,"E","T");
+            $this->processaAcao($acaoEn,$options,"E","T",null,$idFiltro);
         }
 
 
@@ -181,6 +181,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             $conexaoEn = $acaoEn->getConexao();
+            //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
 
             if ($dados == null) {

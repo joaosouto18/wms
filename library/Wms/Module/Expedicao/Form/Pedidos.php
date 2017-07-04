@@ -19,11 +19,20 @@ class Pedidos extends Form
                   'disable' => true
               ))
               ->addElement('submit', 'submit', array(
-                  'label' => 'Importar Dados para WMS',
+                  'label' => 'Importar Dados por DATA',
                   'class' => 'btn',
                   'decorators' => array('ViewHelper'),
               ))
-            ->addDisplayGroup(array('dataInicio','submit'), 'identificacao', array('legend' => 'Listar Pedidos ERP')
+              ->addElement('text','codigo',array(
+                  'size' => 25,
+                  'label' => 'Códigos'
+              ))
+              ->addElement('submit','submitCodigos',array(
+                  'label' => 'Importar dados por CÓDIGOS',
+                  'class' => 'btn',
+                  'decorators' => array('ViewHelper')
+              ))
+            ->addDisplayGroup(array('dataInicio','submit','codigo','submitCodigos'), 'identificacao', array('legend' => 'Listar Pedidos ERP')
         );
     }
 
