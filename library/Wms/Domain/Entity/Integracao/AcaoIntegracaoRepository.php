@@ -184,7 +184,12 @@ class AcaoIntegracaoRepository extends EntityRepository
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
 
             if ($dados == null) {
-                $result = $conexaoRepo->runQuery($query,$conexaoEn);
+                $words = explode(" ",trim($query));
+                $update = true;
+                if (strtoupper($words[0]) == "SELECT") {
+                    $update = false;
+                }
+                $result = $conexaoRepo->runQuery($query,$conexaoEn, $update);
             } else {
                 $result = $dados;
             }
