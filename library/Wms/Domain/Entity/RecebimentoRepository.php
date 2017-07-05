@@ -1662,7 +1662,7 @@ class RecebimentoRepository extends EntityRepository {
                    LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
                    LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 
-                1 = 1" . $where;
+                1 = 1 ".$where." ORDER BY NF.COD_RECEBIMENTO ASC" ;
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key1 => $vet) {
             foreach ($vet as $key => $value) {
