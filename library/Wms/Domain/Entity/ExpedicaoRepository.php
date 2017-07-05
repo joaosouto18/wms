@@ -706,10 +706,6 @@ class ExpedicaoRepository extends EntityRepository
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
-        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
-        }
 
         if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') =='S') {
             $result = $this->importaCortesERP($idExpedicao);
@@ -750,10 +746,6 @@ class ExpedicaoRepository extends EntityRepository
                 }
 
             } else {
-                $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-                if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-                    return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
-                }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
             }

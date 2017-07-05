@@ -640,6 +640,8 @@ class Mobile_ExpedicaoController extends Action {
                 if ($mapaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CONFERIDO) {
                     $this->addFlashMessage('success', "Mapa de Separação $idMapa Finalizado com sucesso!");
                 }
+            } else {
+                $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C', $idMapa);
             }
         } else {
             $result = $ExpedicaoRepo->finalizarExpedicao($idExpedicao, $central, true, 'C');
