@@ -78,6 +78,7 @@ class ExpedicaoRepository extends EntityRepository
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND P.CENTRAL_ENTREGA = $filialExterno
                           AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0))>0
+                          AND P.DTH_CANCELAMENTO IS NULL
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -98,6 +99,7 @@ class ExpedicaoRepository extends EntityRepository
                           AND E.COD_EXPEDICAO IN (".$expedicoes.")
                           AND PED.CENTRAL_ENTREGA = $filialExterno
                           AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
+                          AND PED.DTH_CANCELAMENTO IS NULL
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, E.COD_EXPEDICAO, PED.COD_PEDIDO";
         $result = $this->getEntityManager()->getConnection()->query($Query)-> fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -334,7 +336,7 @@ class ExpedicaoRepository extends EntityRepository
                           INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                           LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
                           INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-                          WHERE P.CENTRAL_ENTREGA = $central  AND ORP.COD_PEDIDO IS NULL
+                          WHERE P.CENTRAL_ENTREGA = $central  AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL
                           GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
               LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
                            FROM PRODUTO P

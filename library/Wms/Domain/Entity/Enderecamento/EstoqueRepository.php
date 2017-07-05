@@ -136,14 +136,6 @@ class EstoqueRepository extends EntityRepository
             $validade = $validadeEsttoque;
         }
 
-//        if (!empty($validadeEsttoque) && !empty($validadeParam)){
-//            $validade = ($validadeParam < $validadeEsttoque)? $validadeParam : $validadeEsttoque;
-//        } elseif (!empty($validadeEsttoque)) {
-//            $validade = $validadeEsttoque;
-//        } elseif (!empty($validadeParam)) {
-//            $validade = $validadeParam;
-//        }
-
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
         if ($estoqueEn == NULL) {
             $novaQtd = $qtd;
