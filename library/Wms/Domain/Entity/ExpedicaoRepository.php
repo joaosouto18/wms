@@ -368,8 +368,8 @@ class ExpedicaoRepository extends EntityRepository
               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                                              OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
                   WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
-                    AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
                     AND DE.IND_SITUACAO = 'D'
+                    AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
                   ORDER BY Codigo, Grade, Produto
         ";
 
@@ -706,10 +706,6 @@ class ExpedicaoRepository extends EntityRepository
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
         $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
-        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
-        }
 
         if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') =='S') {
             $result = $this->importaCortesERP($idExpedicao);
@@ -750,10 +746,6 @@ class ExpedicaoRepository extends EntityRepository
                 }
 
             } else {
-                $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-                if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-                    return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
-                }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
             }
