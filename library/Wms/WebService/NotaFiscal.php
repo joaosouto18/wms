@@ -270,7 +270,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $itensNf = array();
                 foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
-                    $itemWs['grade'] = $grade = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
+                    $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
                     $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
                     $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
                     if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
