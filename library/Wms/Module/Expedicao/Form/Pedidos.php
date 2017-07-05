@@ -16,7 +16,8 @@ class Pedidos extends Form
                   'size' => 25,
                   'label' => 'Data Inicial',
                   'value' => $dataUltimaExecucao,
-                  'disable' => true
+                  'disable' => true,
+                  'decorators' => array('ViewHelper'),
               ))
               ->addElement('submit', 'submit', array(
                   'label' => 'Buscar Dados por DATA',
@@ -25,7 +26,8 @@ class Pedidos extends Form
               ))
               ->addElement('text','codigo',array(
                   'size' => 25,
-                  'label' => 'Códigos'
+                  'label' => 'Códigos',
+                  'decorators' => array('ViewHelper'),
               ))
               ->addElement('submit','submitCodigos',array(
                   'label' => 'Buscar dados por CÓDIGOS',

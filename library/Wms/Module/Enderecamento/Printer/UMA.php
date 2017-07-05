@@ -115,7 +115,10 @@ class UMA extends Pdf
 
         foreach($paletes as $palete) {
             $PaleteProdutoEntity = $PaleteProdutoRepository->findOneBy(array('uma' => $palete['idUma']));
-            $produtoEn = $PaleteProdutoEntity->getProduto();
+            $picking = null;
+            if (isset($PaleteProdutoEntity))
+                $produtoEn = $PaleteProdutoEntity->getProduto();
+
             if (isset($palete['picking'])) {
                 $picking = $palete['picking'];
             } else {

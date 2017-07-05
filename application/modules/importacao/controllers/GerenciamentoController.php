@@ -16,7 +16,7 @@ class Importacao_GerenciamentoController extends Action
         Page::configure(array(
             'buttons' => array(
                 array(
-                    'label' => 'Buscar Registros no ERP',
+                    'label' => 'Importar Dados',
                     'cssClass' => 'btnSave',
                     'urlParams' => array(
                         'module' => 'importacao',
