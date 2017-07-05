@@ -368,8 +368,8 @@ class ExpedicaoRepository extends EntityRepository
               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                                              OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
                   WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
+                    AND DE.IND_SITUACAO = 'D'
                     AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
-                    
                   ORDER BY Codigo, Grade, Produto
         ";
 
