@@ -430,9 +430,6 @@ class InventarioRepository extends EntityRepository
                         if (!empty($validadeEstoque)) {
                             $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
                         }
-                        var_dump($validadeContagem);
-                        var_dump($validadeEstoque);
-                        exit;
                         if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
                             $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtd, $osEn, $usuarioEn, $estoqueRepo);
                         }
