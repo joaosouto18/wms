@@ -369,7 +369,7 @@ class ExpedicaoRepository extends EntityRepository
                                              OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
                   WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
                     AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
-                    AND DE.IND_SITUACAO = 'D'
+                    
                   ORDER BY Codigo, Grade, Produto
         ";
 
