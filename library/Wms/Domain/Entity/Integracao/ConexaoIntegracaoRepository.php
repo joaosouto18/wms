@@ -83,7 +83,6 @@ class ConexaoIntegracaoRepository extends EntityRepository
                 throw new \Exception($erro['message']);
             }
 
-            echo $query; exit;
             $res = oci_parse($conexao, $query) or die ("erro");
             if (!$res) {
                 $erro = oci_error($conexao);
