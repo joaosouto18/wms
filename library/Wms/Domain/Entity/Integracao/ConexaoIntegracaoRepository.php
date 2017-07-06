@@ -78,7 +78,6 @@ class ConexaoIntegracaoRepository extends EntityRepository
             $connectionString = "$servidor:$porta/$sid";
             $conexao = oci_connect($usuario,$senha,$connectionString);
 
-            var_dump($connectionString); exit;
             if (!$conexao) {
                 $erro = oci_error();
                 throw new \Exception($erro['message']);
@@ -91,6 +90,7 @@ class ConexaoIntegracaoRepository extends EntityRepository
                 throw new \Exception($erro['message']);
             }
 
+            var_dump($connectionString); exit;
             $e = oci_execute($res);
             if (!$e) {
                 $erro = oci_error($res);
