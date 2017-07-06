@@ -184,7 +184,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
 
-            echo $query; exit;
             if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;
@@ -196,6 +195,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $result = $dados;
             }
 
+            var_dump($result); exit;
             if (($tipoExecucao == "E") && ($destino == "T")) {
                 $integracaoService = new Integracao($this->getEntityManager(),
                     array('acao'=>$acaoEn,
