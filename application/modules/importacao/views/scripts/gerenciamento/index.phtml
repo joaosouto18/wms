@@ -1,6 +1,89 @@
+<form id="integracao-form" class="header padding-top" method="get" action="">
+    <fieldset id="fieldset-endereco">
+
+        <table>
+            <tr height="10">
+
+                <?php if ($this->tipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) : ?>
+                    <td width="110">Data:</td>
+                    <td width="230"><input type="text" id="dataInicio" disabled name="dataInicio" value="<?php echo $this->dataInicio ?>"></td>
+
+                    <td colspan="2"></td>
+                    <td width="80">Número:</td>
+                    <td width="150"><input type="text" id="codigo" name="codigo"></td>
+
+                    <td width="80">Série:</td>
+                    <td width="150"><input type="text" id="serie" name="serie"></td>
+
+                    <td width="80">Fornecedor:</td>
+                    <td width="150">
+                        <select name="fornecedor">
+                            <?php foreach ($this->getFornecedores as $key => $fornecedor) : ?>
+                                <option value="<?php echo $key ?>"><?php echo $fornecedor ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+
+                <?php else : ?>
+                    <td width="50">Data:</td>
+                    <td width="300"><input type="text" id="dataInicio" disabled name="dataInicio" value="<?php echo $this->dataInicio ?>"></td>
+
+                    <td width="50">Código:</td>
+                    <td width="50"><input type="text" id="codigo" name="codigo"></td>
+                <?php endif; ?>
+            </tr>
+
+            <tr>
+                <?php if ($this->tipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) : ?>
+                    <td width="150"></td>
+                    <td><input type="submit" class="btn" id="submit" value="Buscar Dados por DATA" name="submit" style="margin-top: 30px"/></td>
+                    <td colspan="7"></td>
+                    <td><input type="submit" class="btn" id="submitCodigos" value="Buscar dados por CÓDIGOS" name="submitCodigos" style="margin-top: 30px"/></td>
+                <?php else : ?>
+                    <td width="50"></td>
+                    <td><input type="submit" class="btn" id="submit" value="Buscar Dados por DATA" name="submit" style="margin-top: 30px"/></td>
+                    <td colspan="1"></td>
+                    <td><input type="submit" class="btn" id="submitCodigos" value="Buscar dados por CÓDIGOS" name="submitCodigos" style="margin-top: 30px"/></td>
+                <?php endif; ?>
+
+            </tr>
+
+        </table>
+    </fieldset>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <?php
 
-echo $this->form;
+//echo $this->form;
 $arrayValues = $this->valores;
 
 echo '<table class="gTable ">
