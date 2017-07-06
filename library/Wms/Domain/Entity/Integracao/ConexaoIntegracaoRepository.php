@@ -91,6 +91,7 @@ class ConexaoIntegracaoRepository extends EntityRepository
             }
 
             $e = oci_execute($res);
+            var_dump($query); exit;
             if (!$e) {
                 $erro = oci_error($res);
                 oci_free_statement($res);

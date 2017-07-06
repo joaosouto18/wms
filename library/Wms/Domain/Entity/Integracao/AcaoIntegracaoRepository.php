@@ -191,7 +191,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $update = false;
                 }
                 $result = $conexaoRepo->runQuery($query,$conexaoEn, $update);
-                var_dump($result); exit;
             } else {
                 $result = $dados;
             }
